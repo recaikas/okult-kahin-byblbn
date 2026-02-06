@@ -175,24 +175,39 @@ st.markdown("""
         text-transform: uppercase;
     }
 
+    /* Surprise Box */
+    .surprise-box {
+        background: rgba(20, 0, 20, 0.6);
+        border: 1px dashed #bc13fe;
+        color: #e0e0e0;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    .surprise-item {
+        margin-bottom: 5px;
+        padding-left: 10px;
+        border-left: 2px solid #bc13fe;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
 # ==================== SCHIMMEL'S PHILOSOPHY ENGINE ====================
 
 SCHIMMEL_ARCHETYPES = {
-    1: {"name": "MONAD", "kw": "Mutlak Güç", "desc": "Birlik ve otorite.", "color": "#FFFFFF", "planet": "Sun"},
-    2: {"name": "DYAD", "kw": "Kutuplaşma", "desc": "Şüphe, ayrılık ve çatışma.", "color": "#A9A9A9", "planet": "Moon"},
-    3: {"name": "JUPITER", "kw": "Bolluk", "desc": "Şans, genişleme ve üretkenlik.", "color": "#FFD700", "planet": "Jupiter"},
-    4: {"name": "TETRAD", "kw": "Düzen", "desc": "Kuralcı, sağlam ama katı yapı.", "color": "#8B4513", "planet": "Earth"},
-    5: {"name": "MARS", "kw": "Savaş / Yıkım", "desc": "Agresiflik, heyecan ve risk.", "color": "#800020", "planet": "Mars"},
-    6: {"name": "HEXAD", "kw": "Uyum / Denge", "desc": "Mükemmel simetri ve beraberlik.", "color": "#00CED1", "planet": "Venus"},
-    7: {"name": "CHARIOT", "kw": "Zafer / İrade", "desc": "Zorlukları aşan ruhsal güç.", "color": "#9370DB", "planet": "Neptune"},
-    8: {"name": "SATURN", "kw": "Kısıtlama", "desc": "Engel, savunma ve disiplin.", "color": "#4B0082", "planet": "Saturn"},
-    9: {"name": "ENNEAD", "kw": "Tamamlanma", "desc": "Bir döngünün sonu ve hüküm.", "color": "#FF8C00", "planet": "Pluto"},
-    10: {"name": "DECIMAL", "kw": "Mükemmel Düzen", "desc": "Tanrısal otorite.", "color": "#FFFFFF", "planet": "Sun"},
-    11: {"name": "CHAOS", "kw": "Kaos / Ustalık", "desc": "Düzensizlik ve yüksek gerilim.", "color": "#FF4500", "planet": "Uranus"},
-    13: {"name": "JUDAS", "kw": "Lanet / Dönüşüm", "desc": "Hain pusu ve sistemi yıkan güç.", "color": "#2F4F4F", "planet": "Moon Node"}
+    1: {"name": "MONAD", "kw": "Mutlak Güç", "desc": "Birlik ve otorite.", "color": "#FFFFFF", "planet": "☉"},
+    2: {"name": "DYAD", "kw": "Kutuplaşma", "desc": "Şüphe, ayrılık ve çatışma.", "color": "#A9A9A9", "planet": "☽"},
+    3: {"name": "JUPITER", "kw": "Bolluk", "desc": "Şans, genişleme ve üretkenlik.", "color": "#FFD700", "planet": "♃"},
+    4: {"name": "TETRAD", "kw": "Düzen", "desc": "Kuralcı, sağlam ama katı yapı.", "color": "#8B4513", "planet": "⊕"},
+    5: {"name": "MARS", "kw": "Savaş / Yıkım", "desc": "Agresiflik, heyecan ve risk.", "color": "#800020", "planet": "♂"},
+    6: {"name": "HEXAD", "kw": "Uyum / Denge", "desc": "Mükemmel simetri ve beraberlik.", "color": "#00CED1", "planet": "♀"},
+    7: {"name": "CHARIOT", "kw": "Zafer / İrade", "desc": "Zorlukları aşan ruhsal güç.", "color": "#9370DB", "planet": "♆"},
+    8: {"name": "SATURN", "kw": "Kısıtlama", "desc": "Engel, savunma ve disiplin.", "color": "#4B0082", "planet": "♄"},
+    9: {"name": "ENNEAD", "kw": "Tamamlanma", "desc": "Bir döngünün sonu ve hüküm.", "color": "#FF8C00", "planet": "♇"},
+    10: {"name": "DECIMAL", "kw": "Mükemmel Düzen", "desc": "Tanrısal otorite.", "color": "#FFFFFF", "planet": "☉+"},
+    11: {"name": "CHAOS", "kw": "Kaos / Ustalık", "desc": "Düzensizlik ve yüksek gerilim.", "color": "#FF4500", "planet": "♅"},
+    13: {"name": "JUDAS", "kw": "Lanet / Dönüşüm", "desc": "Hain pusu ve sistemi yıkan güç.", "color": "#2F4F4F", "planet": "☊"}
 }
 
 def theosophical_reduction(n: int) -> int:
@@ -282,6 +297,11 @@ def main():
         a_points = (a_win * 3) + a_draw
         a_pts_soul = theosophical_reduction(a_points)
 
+        # Odds Soul Calculation
+        odd_1_soul = analyze_odd_soul(odd_1)
+        odd_x_soul = analyze_odd_soul(odd_x)
+        odd_2_soul = analyze_odd_soul(odd_2)
+
         # --- 2. NARRATIVE GENERATION ---
         
         # A. Win Authority
@@ -330,24 +350,12 @@ def main():
         narrative.append(f"{away} ise {a_win} galibiyetle ({a_win_soul}) {a_win_desc} bölgesinde.")
         if h_win_soul == 10 and a_rank == 2:
             narrative.append(f"Mükemmel Düzen'e (10) sahip liderin karşısında, 2. sıradaki (Kutuplaşma) takipçi var.")
-
-        # Loss Narrative
-        if h_loss == 0:
-            narrative.append(f"DİKKAT: {home} henüz mağlubiyet almadı (Lekesiz). Bu 'Hiçlik' kalkanı, rakibin işini zorlaştırır.")
         
         # Goal Resonance
         if h_gf_soul == a_ga_soul:
             narrative.append(f"REZONANS TESPİTİ: {home}'ın Attiği ({h_gf_soul}) ile {away}'nin Yediği ({a_ga_soul}) aynı frekansta. Anahtar kilide uyuyor, goller gelir.")
         elif h_gf_soul == 3 and a_ga_soul == 5:
             narrative.append(f"ENERJİ PATLAMASI: 3 (Jüpiter) Bereketi vs 5 (Mars) Yıkımı. Gol yağmuru (ÜST) kaçınılmaz.")
-        elif h_gf_soul == 2 and a_gf_soul == 2:
-            narrative.append(f"ÇATIŞMA: İki takımın da gol enerjisi 2 (İkilik). Maç satranç gibi kilitlenir, 6 (Beraberlik) limanına sığınabilir.")
-        
-        # Points Resonance
-        if h_pts_soul == h_gf_soul:
-            narrative.append(f"OMURGA SAĞLAM: {home}'ın Puan Ruhu ({h_pts_soul}) ile Gol Ruhu ({h_gf_soul}) uyumlu. İç çatışma yok.")
-        else:
-            narrative.append(f"İÇ KARIŞIKLIK: {home} puan ({h_pts_soul}) ve gol ({h_gf_soul}) arasında frekans farkı yaşıyor.")
 
         destiny_text = " ".join(narrative)
         
@@ -396,7 +404,6 @@ def main():
             with c1: render_soul_col("GALİBİYET", h_win, h_win_soul, h_win_desc, "#00FF00" if h_win_soul in [1,7,10] else "#FF0000")
             with c2: render_soul_col("BERABERLİK", h_draw, h_draw_soul, h_draw_desc)
             with c3: render_soul_col("MAĞLUBİYET", h_loss, h_loss_soul, h_loss_desc, "#00FFFF" if h_loss==0 else "#888")
-            
             c4, c5 = st.columns(2)
             with c4: render_soul_col("ATILAN GOL", h_gf, h_gf_soul, h_gf_desc)
             with c5: render_soul_col("PUAN RUHU", h_points, h_pts_soul, "Makam")
@@ -407,10 +414,121 @@ def main():
             with c1: render_soul_col("GALİBİYET", a_win, a_win_soul, a_win_desc, "#00FF00" if a_win_soul in [1,7,10] else "#FF0000")
             with c2: render_soul_col("BERABERLİK", a_draw, a_draw_soul, "Pasif")
             with c3: render_soul_col("MAĞLUBİYET", a_loss, a_loss_soul, a_loss_desc, "#00FFFF" if a_loss==0 else "#888")
-            
             c4, c5 = st.columns(2)
             with c4: render_soul_col("ATILAN GOL", a_gf, a_gf_soul, "Saldırı")
-            with c5: render_soul_col("YENİLEN GOL", a_ga, a_ga_ga_soul if 'a_ga_soul' in locals() else a_ga_soul, a_ga_desc)
+            with c5: render_soul_col("YENİLEN GOL", a_ga, a_ga_soul, a_ga_desc)
+
+        # --- 3. RESTORED & NEW FEATURES ---
+        
+        # AURA RADAR CHART (Restored)
+        st.markdown("---")
+        st.subheader("🌌 MAÇIN ENERJİ GEOMETRİSİ")
+        
+        # --- GRANULAR RADAR LOGIC ---
+        # Base stats for realism
+        axis_chaos = 40
+        axis_order = 40
+        axis_magic = 40
+        
+        # 1. CHAOS FACTORS (Mars/Uranus)
+        # Add small increments for each chaos indicator
+        if h_win_soul == 11: axis_chaos += 15
+        if a_win_soul == 11: axis_chaos += 15
+        if h_loss_soul == 5: axis_chaos += 10
+        if a_loss_soul == 5: axis_chaos += 10
+        if h_ga_soul in [5, 11]: axis_chaos += 10
+        if a_ga_soul in [5, 11]: axis_chaos += 10
+        # Check odd souls
+        if odd_1_soul in [5, 11]: axis_chaos += 5
+        if odd_x_soul in [5, 11]: axis_chaos += 5
+        if odd_2_soul in [5, 11]: axis_chaos += 5
+
+        # 2. ORDER FACTORS (Saturn/Sun)
+        if h_win_soul in [1, 10]: axis_order += 15
+        if a_win_soul in [1, 10]: axis_order += 15
+        if h_rank_soul == 8: axis_order += 10
+        if a_rank_soul == 8: axis_order += 10
+        if h_loss == 0: axis_order += 15
+        if a_loss == 0: axis_order += 15
+        if h_gf_soul == 4: axis_order += 10
+        if a_ga_soul == 4: axis_order += 10
+
+        # 3. MAGIC FACTORS (Jupiter/Neptune/Judas)
+        if h_win_soul == 13: axis_magic += 20
+        if a_win_soul == 13: axis_magic += 20
+        if h_gf_soul == 3: axis_magic += 10
+        if a_gf_soul == 3: axis_magic += 10
+        if h_rank_soul == 7: axis_magic += 10
+        if a_rank_soul == 7: axis_magic += 10
+        if odd_1_soul in [7, 13, 9]: axis_magic += 5
+        if odd_x_soul in [7, 13, 9]: axis_magic += 5
+
+        # Normalize to 100 max
+        axis_chaos = min(95, axis_chaos)
+        axis_order = min(95, axis_order)
+        axis_magic = min(95, axis_magic)
+        
+        categories = ['KAOS (Mars/Uranüs)', 'DÜZEN (Satürn/Güneş)', 'BÜYÜ (Jüpiter/Neptün)']
+        fig = go.Figure()
+        fig.add_trace(go.Scatterpolar(
+              r=[axis_chaos, axis_order, axis_magic],
+              theta=categories,
+              fill='toself',
+              line_color='#FFD700',
+              fillcolor='rgba(255, 215, 0, 0.2)'
+        ))
+        fig.update_layout(
+          polar=dict(
+            radialaxis=dict(visible=True, range=[0, 100], color="#555"),
+            bgcolor='rgba(0,0,0,0)'
+          ),
+          paper_bgcolor='rgba(0,0,0,0)',
+          font=dict(color="white", family="Cinzel"),
+          margin=dict(t=20, b=20, l=40, r=40)
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+        # SURPRISE SCENARIOS (Expanded)
+        st.subheader("🔮 OLASI SÜRPRİZ SENARYOLAR")
+        
+        # Pool of surprises with weights (Text, Weight)
+        surprise_pool = []
+        
+        # High Impact
+        if 5 in [h_loss_soul, a_loss_soul, h_ga_soul, a_ga_soul]:
+            surprise_pool.append(("🟥 **KIRMIZI KART / GERGİNLİK:** Mars (5) enerjisi sahada, sinirler çok gergin.", 10))
+        if 11 in [h_gf_soul, a_gf_soul, h_win_soul, a_win_soul]:
+            surprise_pool.append(("💻 **VAR / PENALTI:** Kaos (11) frekansı, ceza sahasında belirsizlik yaratıyor.", 9))
+        if 13 in [h_rank_soul, a_rank_soul, h_win_soul, a_win_soul]:
+            surprise_pool.append(("⚡ **BÜYÜK YIKIM:** Judas (13) devrede. Favori takım şok bir gol yiyebilir.", 10))
+            
+        # Medium Impact
+        if axis_magic > 70:
+            surprise_pool.append(("⏱️ **SON DAKİKA GOLÜ:** Büyü enerjisi yüksek. Maç bitti sanılırken skor değişebilir.", 7))
+        if axis_chaos > 70:
+            surprise_pool.append(("🌪️ **SKOR DALGALANMASI:** Kaos yüksek. Öne geçen takım skoru koruyamayabilir.", 7))
+        if abs(h_rank - a_rank) > 5 and axis_order < 50:
+             surprise_pool.append(("📉 **REHAVET TEHLİKESİ:** Favori takım konsantrasyon kaybı yaşayabilir.", 6))
+
+        # Fillers (Low Impact) to ensure diversity
+        surprise_pool.append(("🛡️ **İLK YARI KİLİDİ:** Düşük frekanslı başlangıç, ilk yarı 0-0 gidebilir.", 3))
+        surprise_pool.append(("🎯 **DURAN TOP GOLÜ:** Oyun kilitlenirse duran toplar kaderi belirler.", 3))
+        
+        # Sort by weight desc
+        surprise_pool.sort(key=lambda x: x[1], reverse=True)
+        
+        # Select Top 2 UNIQUE items
+        selected_surprises = []
+        seen = set()
+        for s_text, s_w in surprise_pool:
+            if len(selected_surprises) >= 2: break
+            if s_text not in seen:
+                selected_surprises.append(s_text)
+                seen.add(s_text)
+        
+        # Render
+        for s in selected_surprises:
+            st.markdown(f"<div class='surprise-box'><div class='surprise-item'>{s}</div></div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
