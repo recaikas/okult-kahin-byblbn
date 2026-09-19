@@ -4,95 +4,126 @@
   html,body{width:100%;height:100%;overflow:hidden;background:#0b2a3e;
     font-family:"Trebuchet MS",Verdana,system-ui,-apple-system,"Segoe UI",sans-serif;
     color:#fff;user-select:none;touch-action:none}
-
   html,body{height:100%}
   #game{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .hidden{display:none !important}
 
-  .hud{position:fixed;top:0;left:0;right:0;padding:10px 12px;display:flex;gap:8px;
+  /* ---- üst HUD ---- */
+  .hud{position:fixed;top:0;left:0;right:0;padding:8px 10px;display:flex;gap:6px;
     align-items:flex-start;pointer-events:none;z-index:5;
-    padding-top:calc(10px + env(safe-area-inset-top))}
-  .chip{background:rgba(8,32,48,.72);border:2px solid rgba(255,255,255,.18);
-    border-radius:14px;padding:7px 12px;font-weight:bold;font-size:17px;
-    display:flex;align-items:center;gap:7px;backdrop-filter:blur(6px);
-    box-shadow:0 4px 12px rgba(0,0,0,.28)}
-  .chip small{font-size:11px;opacity:.7;font-weight:normal;display:block;line-height:1}
+    padding-top:calc(8px + env(safe-area-inset-top,0px))}
+  .chip{background:rgba(8,30,46,.78);border:2px solid rgba(255,255,255,.16);
+    border-radius:13px;padding:6px 10px;font-weight:bold;font-size:15px;
+    display:flex;align-items:center;gap:6px;backdrop-filter:blur(6px);
+    box-shadow:0 4px 12px rgba(0,0,0,.3);line-height:1.15;white-space:nowrap}
+  .chip small{font-size:10px;opacity:.65;font-weight:normal;display:block}
   #money{color:#7ee08f}
+  #rep{color:#ffd76a}
+  .repbar{width:34px;height:5px;background:rgba(255,255,255,.18);border-radius:3px;overflow:hidden}
+  .repbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffd76a,#ffa63c);border-radius:3px;transition:width .3s}
   .spacer{flex:1}
-  .btn{pointer-events:auto;background:rgba(8,32,48,.72);border:2px solid rgba(255,255,255,.18);
-    border-radius:14px;width:42px;height:42px;font-size:19px;color:#fff;cursor:pointer;
+  #eventChip{background:rgba(46,20,8,.82);border-color:rgba(255,190,90,.5);color:#ffd9a0;font-size:13px}
+  .btn{pointer-events:auto;background:rgba(8,30,46,.78);border:2px solid rgba(255,255,255,.16);
+    border-radius:13px;min-width:44px;height:44px;font-size:19px;color:#fff;cursor:pointer;
     display:flex;align-items:center;justify-content:center;font-weight:bold}
   .btn:active{transform:scale(.93)}
 
-  #toast{position:fixed;left:50%;top:78px;transform:translateX(-50%) translateY(-14px);
+  /* ---- görev / sipariş kartı ---- */
+  #objective{position:fixed;left:50%;transform:translateX(-50%);
+    top:calc(60px + env(safe-area-inset-top,0px));z-index:5;pointer-events:none;
+    background:rgba(8,30,46,.8);border:2px solid rgba(255,214,110,.45);border-radius:14px;
+    padding:7px 13px;font-size:12.5px;font-weight:bold;text-align:center;max-width:76vw;
+    box-shadow:0 5px 16px rgba(0,0,0,.34);backdrop-filter:blur(6px)}
+  #objective .lbl{font-size:10px;letter-spacing:1.2px;opacity:.6;font-weight:normal;display:block;margin-bottom:2px}
+  #objective b{color:#ffd76a}
+
+  #queueHint{position:fixed;right:10px;top:calc(112px + env(safe-area-inset-top,0px));z-index:5;
+    background:rgba(120,30,20,.8);border:2px solid rgba(255,140,120,.45);border-radius:12px;
+    padding:6px 10px;font-size:12px;font-weight:bold;pointer-events:none}
+
+  #toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom,0px));
+    transform:translateX(-50%) translateY(12px);
     background:linear-gradient(180deg,#ffd76a,#f0a83c);color:#5a3208;font-weight:bold;
-    padding:10px 18px;border-radius:14px;opacity:0;transition:.35s;z-index:6;
-    box-shadow:0 6px 18px rgba(0,0,0,.35);font-size:15px;text-align:center;
+    padding:10px 18px;border-radius:14px;opacity:0;transition:.3s;z-index:6;
+    box-shadow:0 6px 18px rgba(0,0,0,.35);font-size:14px;text-align:center;
     border:2px solid #fff3cf;pointer-events:none;max-width:88vw}
   #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  .overlay{position:fixed;inset:0;background:rgba(4,18,30,.86);z-index:10;
-    display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
-  .overlay.hidden{display:none}
-  .card{background:linear-gradient(180deg,#14425f,#0c2a3e);border:3px solid rgba(255,255,255,.16);
-    border-radius:22px;padding:22px;max-width:430px;width:100%;text-align:center;
+  /* ---- paneller ---- */
+  .overlay{position:fixed;inset:0;background:rgba(4,18,30,.88);z-index:10;
+    display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+  .card{background:linear-gradient(180deg,#14425f,#0c2a3e);border:3px solid rgba(255,255,255,.14);
+    border-radius:20px;padding:18px;max-width:440px;width:100%;max-height:88vh;overflow-y:auto;
     box-shadow:0 18px 50px rgba(0,0,0,.5)}
-  .card h1{font-size:30px;margin-bottom:4px;color:#ffd76a;letter-spacing:1px;text-shadow:0 3px 0 #8a5a12}
-  .card h2{font-size:20px;margin-bottom:10px;color:#ffd76a}
-  .card p{font-size:14px;line-height:1.6;opacity:.92;margin-bottom:8px}
-  .card ul{text-align:left;font-size:14px;line-height:1.75;margin:10px 4px 14px;padding-left:18px;opacity:.94}
-  .go{margin-top:12px;background:linear-gradient(180deg,#5fd37a,#33a44f);border:none;
-    border-radius:16px;padding:14px 30px;font-size:19px;font-weight:bold;color:#06331a;
+  .card h1{font-size:27px;margin-bottom:4px;color:#ffd76a;letter-spacing:.5px;text-align:center;text-shadow:0 3px 0 #8a5a12}
+  .card h2{font-size:18px;margin-bottom:10px;color:#ffd76a;text-align:center}
+  .card p{font-size:13.5px;line-height:1.55;opacity:.92;margin-bottom:8px;text-align:center}
+  .card ul{text-align:left;font-size:13.5px;line-height:1.7;margin:8px 2px 12px;padding-left:18px}
+  .go{margin-top:10px;background:linear-gradient(180deg,#5fd37a,#33a44f);border:none;
+    border-radius:15px;padding:13px 26px;font-size:18px;font-weight:bold;color:#06331a;
     cursor:pointer;box-shadow:0 5px 0 #1d7135;width:100%}
   .go:active{transform:translateY(3px);box-shadow:0 2px 0 #1d7135}
-  .ghost{margin-top:10px;background:transparent;border:2px solid rgba(255,255,255,.25);
-    border-radius:14px;padding:10px 18px;color:#ffb0b0;font-size:14px;cursor:pointer;width:100%}
-  .kbd{display:inline-block;background:rgba(255,255,255,.14);border-radius:6px;
-    padding:1px 7px;font-size:13px;border:1px solid rgba(255,255,255,.2)}
+  .ghost{margin-top:8px;background:transparent;border:2px solid rgba(255,255,255,.22);
+    border-radius:13px;padding:9px 16px;color:#ffb0b0;font-size:13px;cursor:pointer;width:100%}
+  .kbd{display:inline-block;background:rgba(255,255,255,.14);border-radius:5px;padding:1px 6px;font-size:12px}
+
+  .tabs{display:flex;gap:6px;margin-bottom:12px}
+  .tab{flex:1;background:rgba(255,255,255,.07);border:2px solid transparent;border-radius:11px;
+    padding:9px 4px;font-size:12px;font-weight:bold;color:#cfe4f2;cursor:pointer;letter-spacing:.4px}
+  .tab.on{background:rgba(255,214,110,.16);border-color:rgba(255,214,110,.5);color:#ffd76a}
+  .row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);
+    border:2px solid rgba(255,255,255,.08);border-radius:13px;padding:9px 11px;margin-bottom:7px}
+  .row .ic{font-size:21px;width:26px;text-align:center}
+  .row .tx{flex:1;font-size:13px;line-height:1.35}
+  .row .tx small{display:block;opacity:.66;font-size:11px;font-weight:normal}
+  .row .vl{font-size:13px;font-weight:bold;color:#7ee08f;text-align:right;white-space:nowrap}
+  .row .vl small{display:block;color:#ffb27a;font-weight:normal;font-size:10.5px}
+  .empty{opacity:.6;font-size:13px;text-align:center;padding:14px 4px}
+  .stars{color:#ffd76a;letter-spacing:1px}
 </style>
 <canvas id="game"></canvas>
 
 <div class="hud">
   <div class="chip"><span>💵</span><span><small>PARA</small><span id="money">0</span></span></div>
-  <div class="chip"><span id="carryIcon">🎒</span><span><small>TAŞIMA</small><span id="carry">0/7</span></span></div>
+  <div class="chip"><span id="carryIcon">🎒</span><span><small>TAŞIMA</small><span id="carry">0/8</span></span></div>
+  <div class="chip"><span>⭐</span><span><small>İTİBAR</small><span id="rep">0</span></span><div class="repbar"><i id="repfill"></i></div></div>
   <div class="spacer"></div>
-  <button class="btn" id="soundBtn" title="Ses">🔊</button>
-  <button class="btn" id="helpBtn" title="Yardım">?</button>
+  <div class="chip hidden" id="eventChip"><span id="eventIcon">🐟</span><span><small id="eventName">OLAY</small><span id="eventT">0s</span></span></div>
+  <button class="btn" id="menuBtn">⋯</button>
 </div>
 
+<div id="objective"><span class="lbl">HEDEF</span><span id="objText">Ağın yanında bekle</span></div>
+<div id="queueHint" class="hidden"></div>
 <div id="toast"></div>
 
 <div class="overlay" id="startScreen">
   <div class="card">
     <h1>🐟 BALIKÇI TYCOON</h1>
-    <p>Buzul limanında balık tut, fileto doğra, müşterilere sat ve limanını büyüt!</p>
+    <p>Buzul limanında küçük bir ağla başla; balık türlerini, çalışanları, siparişleri ve füme hattını yönet.</p>
     <ul>
-      <li>🎣 <b>Ağın</b> yanında bekle → balık biriksin</li>
-      <li>🧺 Üstünden geç → balıkları <b>sırtla</b></li>
-      <li>🔪 <b>Kesim masasına</b> bırak → fileto olsun</li>
-      <li>🍣 Filetoları <b>tezgâha</b> taşı → müşteriler ödesin</li>
-      <li>💵 Parayı <b>kasaya</b> götür → yeni alanların kilidini aç</li>
+      <li>🎣 <b>Ağın</b> yanında bekle → balık birikir</li>
+      <li>🧺 Üstünden geç → sırtla (ağır balık çok yer kaplar)</li>
+      <li>🔪 <b>Kesim masası</b> → fileto</li>
+      <li>🍣 <b>Tezgâh</b> → müşteri siparişi öder</li>
+      <li>💵 Parayı <b>kasaya</b> götür → alan & çalışan aç</li>
     </ul>
-    <p style="font-size:13px;opacity:.8">
-      Kontrol: <span class="kbd">W A S D</span> / <span class="kbd">yön tuşları</span> — ya da ekrana parmağınla bas & sürükle.
+    <p style="font-size:12.5px;opacity:.8">
+      <span class="kbd">W A S D</span> / yön tuşları — veya ekrana bas & sürükle
     </p>
     <button class="go" id="playBtn">OYNA</button>
   </div>
 </div>
 
-<div class="overlay hidden" id="helpScreen">
+<div class="overlay hidden" id="menuScreen">
   <div class="card">
-    <h2>Nasıl Oynanır?</h2>
-    <ul>
-      <li>🎣 Ağın yanında dur, balıklar sandığa dolsun.</li>
-      <li>🧺 Sandığın üstünden geçerek balıkları topla.</li>
-      <li>🔪 Kesim masasına bırak, fileto hazır olsun.</li>
-      <li>🍣 Filetoyu tezgâha taşı; sarı montlu müşteriler öder.</li>
-      <li>💵 Tepsideki parayı al, <b>KASA</b>'ya bırak.</li>
-      <li>⭐ Parlayan alanlarda bekle → kapasite, hız, çırak ve yeni bölge satın al.</li>
-      <li>⏳ Müşteriler sinirlenirse gider, para gider!</li>
-    </ul>
-    <p style="font-size:13px;opacity:.8">Oyun otomatik kaydedilir.</p>
-    <button class="go" id="closeHelp">DEVAM ET</button>
+    <div class="tabs">
+      <button class="tab on" data-t="isletme">İŞLETME</button>
+      <button class="tab" data-t="personel">PERSONEL</button>
+      <button class="tab" data-t="urunler">ÜRÜNLER</button>
+      <button class="tab" data-t="yardim">YARDIM</button>
+    </div>
+    <div id="tabBody"></div>
+    <button class="go" id="closeMenu">DEVAM ET</button>
     <button class="ghost" id="resetBtn">Kaydı sıfırla (baştan başla)</button>
   </div>
 </div>
