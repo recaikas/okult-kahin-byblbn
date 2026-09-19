@@ -81,11 +81,27 @@ var STR = {
     /* alt panel */
     sheetBuild: 'YAPI NOKTASI', sheetBuildSub: 'Bu noktaya ne kuracaksın?',
     sheetProject: 'BÜYÜK PROJE', invest: 'YATIR', maxInvest: 'MAKS.', pct25: '%25',
-    stage: 'Aşama', done: 'TAMAM', owned: 'KURULU', replace: 'DEĞİŞTİR',
+    stage: 'Aşama', done: 'TAMAM', owned: 'KURULU', replace: 'DEĞİŞTİR', free: 'ücretsiz',
+    /* duraklatma + kayıt */
+    paused: 'DURAKLATILDI', play: 'OYNA', resume: '▶ DEVAM ET', newGame: 'YENİ OYUN',
+    saved: 'Oyun kaydedildi • {t}', savedQuit: 'Kaydedildi, ana menüye dönüldü',
+    noSave: 'Kayıt yok — yeni oyun başlar', never: 'hiç',
+    saveLine: 'Son kayıt {t}\nPara {c} • İtibar {r}* • {s} sipariş • {p} oynandı',
+    saveNow: '💾 KAYDET', saveQuit: '💾 KAYDET VE ÇIK', setSave: 'KAYIT',
+    noRun: 'Önce oyunu başlat',
+    newAsk: 'Mevcut kayıt silinip yeni oyun başlasın mı?',
     remaining: 'kalan', total: 'toplam',
     noMoney: 'Para yetmiyor',
-    barArea: 'ALAN', barLevel: 'YÜKSELTME', barBuild: 'YAPI', barProj: 'PROJE',
+    barArea: 'ALAN', barLevel: 'YÜKSELT', barBuild: 'YAPI', barProj: 'PROJE', barServ: 'BİNA',
     tArea: 'YENİ ALAN AÇ', tLevel: 'YÜKSELTMELER', tBuild: 'YAPI NOKTALARI', tProj: 'BÜYÜK PROJE',
+    tServ: 'LİMAN HİZMET BİNALARI',
+    /* v0.4 — hizmet binaları */
+    servBuilt: '{n} kuruldu', servUp: '{n} → Lv.{l}', servMoved: '{n} taşındı',
+    needServ: 'Önce {n} hizmet binası kur', needArea: '{n} bölgesi kapalı', noPlot: 'Uygun boş parsel yok',
+    move: 'BAŞKA PARSELE TAŞI', moveHere: 'BURAYA TAŞI', buildHere: 'İNŞA ET',
+    maxLv: 'Son seviye', nextLook: 'Sonraki görünüm', dormantB: 'Tekne sistemi gelince aktif',
+    servEmpty: 'Hizmet binası için önce bölge aç', pickPlot: 'Parsel seç',
+    plotOf: '{n} bölgesi', servInc: 'servis geliri',
     buy: 'SATIN AL', confirm: 'ONAYLA?', choose: 'SEÇ', back: '← GERİ',
     emptyArea: 'Açılacak yeni alan yok', emptyLevel: 'Şimdilik yükseltme yok',
     emptyBuild: 'Yapı noktası yok', emptyProj: 'Proje bu bölge açılınca gelir',
@@ -180,11 +196,25 @@ var STR = {
     mCtrl: 'Controls',
     sheetBuild: 'BUILD SPOT', sheetBuildSub: 'What will you build here?',
     sheetProject: 'BIG PROJECT', invest: 'INVEST', maxInvest: 'MAX', pct25: '25%',
-    stage: 'Stage', done: 'DONE', owned: 'BUILT', replace: 'REPLACE',
+    stage: 'Stage', done: 'DONE', owned: 'BUILT', replace: 'REPLACE', free: 'free',
+    paused: 'PAUSED', play: 'PLAY', resume: '▶ CONTINUE', newGame: 'NEW GAME',
+    saved: 'Game saved • {t}', savedQuit: 'Saved — back to main menu',
+    noSave: 'No save yet — a new game will start', never: 'never',
+    saveLine: 'Last save {t}\nCash {c} • Rep {r}* • {s} orders • {p} played',
+    saveNow: '💾 SAVE', saveQuit: '💾 SAVE & QUIT', setSave: 'SAVE',
+    noRun: 'Start the game first',
+    newAsk: 'Delete the current save and start a new game?',
     remaining: 'left', total: 'total',
     noMoney: 'Not enough cash',
-    barArea: 'AREA', barLevel: 'UPGRADE', barBuild: 'BUILD', barProj: 'PROJECT',
+    barArea: 'AREA', barLevel: 'UPGRADE', barBuild: 'BUILD', barProj: 'PROJECT', barServ: 'SERVICE',
     tArea: 'UNLOCK NEW AREA', tLevel: 'UPGRADES', tBuild: 'BUILD SPOTS', tProj: 'BIG PROJECT',
+    tServ: 'HARBOR SERVICE BUILDINGS',
+    servBuilt: '{n} built', servUp: '{n} → Lv.{l}', servMoved: '{n} relocated',
+    needServ: 'Build {n} service buildings first', needArea: '{n} area is locked', noPlot: 'No free plot available',
+    move: 'MOVE TO ANOTHER PLOT', moveHere: 'MOVE HERE', buildHere: 'BUILD',
+    maxLv: 'Max level', nextLook: 'Next look', dormantB: 'Activates with the boat system',
+    servEmpty: 'Unlock an area to place service buildings', pickPlot: 'Pick a plot',
+    plotOf: '{n} area', servInc: 'service income',
     buy: 'BUY', confirm: 'CONFIRM?', choose: 'PICK', back: '← BACK',
     emptyArea: 'No new area to unlock', emptyLevel: 'No upgrade available yet',
     emptyBuild: 'No build spot yet', emptyProj: 'Unlocks with that area',
@@ -428,7 +458,10 @@ var CUST = [
   { id: 'esnaf',  n: { tr: 'Esnaf', en: 'Merchant' }, coat: '#7b5ea7', coat2: '#674d8e', qty: [3, 5],  pat: 50,  mult: 1.35, rep: 2, lvl: 2, tag: 'rich' },
   { id: 'sef',    n: { tr: 'Şef', en: 'Chef' },       coat: '#f2efe6', coat2: '#dcd8cb', qty: [3, 4],  pat: 32,  mult: 1.80, rep: 2, lvl: 3, tag: 'premium', pen: 1 },
   { id: 'kaptan', n: { tr: 'Kaptan', en: 'Captain' }, coat: '#1f4e6b', coat2: '#173d55', qty: [8, 14], pat: 120, mult: 1.25, rep: 3, lvl: 3, tag: 'any' },
-  { id: 'vip',    n: { tr: 'VIP', en: 'VIP' },        coat: '#d4a029', coat2: '#b8881c', qty: [2, 3],  pat: 28,  mult: 3.00, rep: 3, lvl: 4, tag: 'fume', pen: 2 }
+  { id: 'vip',    n: { tr: 'VIP', en: 'VIP' },        coat: '#d4a029', coat2: '#b8881c', qty: [2, 3],  pat: 28,  mult: 3.00, rep: 3, lvl: 4, tag: 'fume', pen: 2 },
+  /* v0.4 — hizmet binalarıyla açılan tipler (§35.3, §35.4) */
+  { id: 'toptanci', n: { tr: 'Toptancı', en: 'Wholesaler' }, coat: '#4a7a3a', coat2: '#3a6230', qty: [10, 18], pat: 115, mult: 1.45, rep: 3, lvl: 1, tag: 'any', serv: 'toptanci' },
+  { id: 'turist',   n: { tr: 'Turist', en: 'Tourist' },      coat: '#e0679e', coat2: '#c4507f', qty: [2, 4],   pat: 62,  mult: 1.60, rep: 2, lvl: 1, tag: 'any', serv: 'turist' }
 ];
 
 var EVENTS = [
@@ -453,9 +486,9 @@ var AREAS = [
 var MAXLV = 3;
 function areaOf(i) { return AREAS[i]; }
 function areaNetMul(z) { return 1 + (AREAS[z].lvl - 1) * 0.18 + (slotEff(z, 'netrate') || 0) + perkSum('netrate') + perkSum('rate'); }
-function areaStock(z) { return 12 + (AREAS[z].lvl - 1) * 3 + (slotEff(z, 'stock') || 0) + Math.round(perkSum('stock') * 0.5); }
+function areaStock(z) { return 12 + (AREAS[z].lvl - 1) * 3 + (slotEff(z, 'stock') || 0) + Math.round(perkSum('stock') * 0.5) + servEff('stock'); }
 function areaFlow(z) { return 1 + (slotEff(z, 'flow') || 0) + (project.done ? 0.25 : 0) + perkSum('flow'); }
-function queueMax(z) { return AREAS[z].lvl >= 3 ? 5 : 4; }
+function queueMax(z) { return Math.min(7, (AREAS[z].lvl >= 3 ? 5 : 4) + servEff('queue')); }
 
 /* ---------------- yapı noktaları (GDD §22) ---------------- */
 var BUILDINGS = [
@@ -489,7 +522,7 @@ function slotEff(z, eff) {
   return v;
 }
 function staffCap() { return 3 + slotEff(null, 'staff'); }
-function workerSpeedMul() { return 1 + slotEff(null, 'wspeed') + perkSum('wspeed'); }
+function workerSpeedMul() { return 1 + slotEff(null, 'wspeed') + perkSum('wspeed') + servEff('wspeed'); }
 
 /* ---------------- büyük proje (GDD §23) ---------------- */
 var project = {
@@ -513,6 +546,257 @@ var DECOR = [
   { id: 'heykel', z: 2, x: 9.3, y: 12.6, cost: 2600, n: { tr: 'Balık Heykeli', en: 'Fish Statue' }, icon: '🗿', got: false }
 ];
 function decorCount() { var n = 0; for (var i = 0; i < DECOR.length; i++) if (DECOR[i].got) n++; return n; }
+
+/* =========================================================
+   v0.4 — LİMAN HİZMET BİNALARI & GÖRSEL EVRİM (GDD v0.4 §31-44)
+   Ana balık döngüsüne dokunmaz: kapasite / gelir / konfor katmanı.
+   ========================================================= */
+var SERVSCALE = 1.0;                       /* §38.1 tek global denge katsayısı */
+function sCost(v) { return Math.max(1, Math.round(v * SERVSCALE)); }
+
+/* Hizmet parselleri (§32) — yürüme koridoru ve kasa güvenli alanı dışında sabit. */
+var PLOTS = [
+  { id: 'p1', z: 0, x: 7.5, y: 4.4,  n: { tr: 'İskele Doğu', en: 'Pier East' },    allow: ['buzhane', 'tamirhane'], b: null },
+  { id: 'p2', z: 0, x: 3.4, y: 3.3,  n: { tr: 'İskele Orta', en: 'Pier Mid' },     allow: ['buzhane', 'tamirhane'], b: null },
+  { id: 'p3', z: 1, x: 1.7, y: 8.9,  n: { tr: 'Pazar Batı', en: 'Market West' },   allow: ['hal', 'restoran'], b: null },
+  { id: 'p4', z: 1, x: 6.5, y: 11.2, n: { tr: 'Pazar Güney', en: 'Market South' }, allow: ['hal', 'restoran', 'nakliye'], b: null },
+  { id: 'p5', z: 2, x: 1.7, y: 14.9, n: { tr: 'Depo Batı', en: 'Depot West' },     allow: ['nakliye', 'buzhane', 'yakit'], b: null },
+  { id: 'p6', z: 2, x: 6.3, y: 12.6, n: { tr: 'Rıhtım Kuzey', en: 'Quay North' },  allow: ['yakit', 'nakliye', 'tersane'], b: null },
+  { id: 'p7', z: 2, x: 8.7, y: 17.0, n: { tr: 'Tersane Ucu', en: 'Yard Point' },   allow: ['tersane', 'yakit', 'tamirhane'], b: null }
+];
+function plotActive(p) { return !AREAS[p.z].locked; }
+function plotById(id) { for (var i = 0; i < PLOTS.length; i++) if (PLOTS[i].id === id) return PLOTS[i]; return null; }
+
+/* Bina kataloğu (§35). inc = servis geliri/olay, ivl = olay aralığı (sn). */
+var SERV = [
+  { id: 'buzhane', icon: '🧊', n: { tr: 'Buzhane', en: 'Ice House' }, acc: '#7fb7d4',
+    r: { tr: 'Tezgâh arkası stok ve toplu sipariş altyapısı', en: 'Back stock for stalls and bulk orders' },
+    lv: [
+      { c: 900,   inc: 0,   ivl: 0,  mod: { stock: 2 },                d: { tr: '+2 arka stok / tür', en: '+2 back stock / type' },  v: { tr: 'Küçük ahşap buz kulübesi', en: 'Small wooden ice hut' } },
+      { c: 2600,  inc: 0,   ivl: 0,  mod: { stock: 4 },                d: { tr: '+4 arka stok / tür', en: '+4 back stock / type' },  v: { tr: 'Yalıtımlı kulübe, metal kapı', en: 'Insulated hut, metal door' } },
+      { c: 6800,  inc: 0,   ivl: 0,  mod: { stock: 6, buffer: 1 },     d: { tr: '+6 stok • toplu sipariş tamponu', en: '+6 stock • bulk order buffer' }, v: { tr: 'Tuğla soğuk depo, yükleme kapısı', en: 'Brick cold store, loading door' } },
+      { c: 17000, inc: 0,   ivl: 0,  mod: { stock: 9, wspeed: 0.10 },  d: { tr: '+9 stok • çırak %10 hızlı', en: '+9 stock • workers 10% faster' }, v: { tr: 'Büyük depo, dış ünite ve raflar', en: 'Large depot, outdoor unit, racks' } },
+      { c: 42000, inc: 0,   ivl: 0,  mod: { stock: 12, wspeed: 0.10, ctrslot: 1 }, d: { tr: '+12 stok • +1 kontrat kapasitesi', en: '+12 stock • +1 contract slot' }, v: { tr: 'Soğuk lojistik merkezi', en: 'Cold logistics centre' } }
+    ] },
+  { id: 'tamirhane', icon: '🛠️', n: { tr: 'Tamirhane', en: 'Repair Shop' }, acc: '#c98a3c',
+    r: { tr: 'Liman ekipmanı servisi; yükseltme maliyetini düşürür', en: 'Harbor equipment service; cuts upgrade costs' },
+    lv: [
+      { c: 1500,  inc: 14,  ivl: 46, mod: { upcost: 0.02 }, d: { tr: 'Servis geliri • yükseltme −%2', en: 'Service income • upgrades −2%' }, v: { tr: 'Açık tezgâh ve alet sandığı', en: 'Open bench and tool chest' } },
+      { c: 4200,  inc: 26,  ivl: 38, mod: { upcost: 0.04 }, d: { tr: 'Servis sıklığı +%20 • −%4', en: 'Service rate +20% • −4%' }, v: { tr: 'Ahşap atölye ve küçük vinç', en: 'Wooden workshop, small crane' } },
+      { c: 11000, inc: 52,  ivl: 34, mod: { upcost: 0.06 }, d: { tr: 'Tekne servis kontratları • −%6', en: 'Boat service contracts • −6%' }, v: { tr: 'Kapalı servis binası, büyük kapı', en: 'Closed service hall, big door' } },
+      { c: 28000, inc: 96,  ivl: 30, mod: { upcost: 0.08 }, d: { tr: 'Servis geliri +%20 • −%8', en: 'Service income +20% • −8%' }, v: { tr: 'Vinçli bakım alanı, parça rafları', en: 'Crane bay, parts racks' } },
+      { c: 70000, inc: 185, ivl: 26, mod: { upcost: 0.10 }, d: { tr: 'Özel bakım kontratları • −%10', en: 'Premium maintenance • −10%' }, v: { tr: 'İki gözlü profesyonel tesis', en: 'Two-bay professional facility' } }
+    ] },
+  { id: 'hal', icon: '🏪', n: { tr: 'Balık Hali', en: 'Fish Hall' }, acc: '#d8b45a',
+    r: { tr: 'Tezgâhların üstüne toptan satış katmanı ekler', en: 'Adds a wholesale layer above the stalls' },
+    lv: [
+      { c: 3200,   inc: 0,   ivl: 0,  mod: { queue: 1 }, d: { tr: 'Müşteri kapasitesi +1', en: 'Customer capacity +1' }, v: { tr: 'Açık masa ve tente grubu', en: 'Open tables and awnings' } },
+      { c: 8500,   inc: 0,   ivl: 0,  mod: { queue: 2 }, d: { tr: 'Müşteri kapasitesi +2', en: 'Customer capacity +2' }, v: { tr: 'Kapalı pazar çatısı, tezgâh sırası', en: 'Covered market roof, stall row' } },
+      { c: 21000,  inc: 0,   ivl: 0,  mod: { queue: 2 }, unl: 'toptanci', d: { tr: 'Toptancı müşteri tipi açılır', en: 'Wholesaler customer unlocked' }, v: { tr: 'Taş hal binası, yükleme kapısı', en: 'Stone hall, loading gate' } },
+      { c: 54000,  inc: 0,   ivl: 0,  mod: { queue: 3, wholesale: 0.10 }, unl: 'toptanci', d: { tr: 'Toptan ödülü +%10 • kapasite +3', en: 'Wholesale reward +10% • capacity +3' }, v: { tr: 'Büyümüş hal, ikinci giriş', en: 'Expanded hall, second entrance' } },
+      { c: 135000, inc: 0,   ivl: 0,  mod: { queue: 3, wholesale: 0.10, ctrslot: 1 }, unl: 'toptanci', d: { tr: 'Büyük alıcılar • +1 kontrat slotu', en: 'Major buyers • +1 contract slot' }, v: { tr: 'Bölgesel balık ticaret merkezi', en: 'Regional fish trade centre' } }
+    ] },
+  { id: 'restoran', icon: '🍽️', n: { tr: 'Restoran', en: 'Restaurant' }, acc: '#d1584a',
+    r: { tr: 'Ziyaretçiyi gelire çevirir; balık stoğunu tüketmez', en: 'Turns visitors into income; never eats fish stock' },
+    lv: [
+      { c: 4200,   inc: 30,  ivl: 40, mod: {}, d: { tr: 'Periyodik restoran geliri', en: 'Periodic restaurant income' }, v: { tr: 'Küçük balık büfesi, 2 masa', en: 'Small fish buffet, 2 tables' } },
+      { c: 11000,  inc: 52,  ivl: 32, mod: {}, d: { tr: 'Ziyaretçi sıklığı +%25', en: 'Visitor rate +25%' }, v: { tr: 'Kapalı lokanta ve oturma alanı', en: 'Indoor eatery and seating' } },
+      { c: 30000,  inc: 96,  ivl: 30, mod: { custval: 0.03 }, unl: 'turist', d: { tr: 'Turist tipi • müşteri geliri +%3', en: 'Tourist type • customer income +3%' }, v: { tr: 'Sahil restoranı, camlı teras', en: 'Seaside restaurant, glass terrace' } },
+      { c: 78000,  inc: 175, ivl: 26, mod: { custval: 0.03 }, unl: 'turist', d: { tr: 'Servis geliri +%25', en: 'Service income +25%' }, v: { tr: 'Büyük restoran, geniş teras', en: 'Large restaurant, wide terrace' } },
+      { c: 190000, inc: 320, ivl: 22, mod: { custval: 0.08 }, unl: 'turist', d: { tr: 'Prestij ziyaretçi • müşteri +%8', en: 'Prestige visitors • customers +8%' }, v: { tr: 'Prestijli deniz ürünleri kompleksi', en: 'Prestige seafood complex' } }
+    ] },
+  { id: 'nakliye', icon: '📋', n: { tr: 'Nakliye Ofisi', en: 'Shipping Office' }, acc: '#6f8fae',
+    r: { tr: 'Kontrat ve şirket işlerinin fiziksel merkezi', en: 'Physical hub for contracts and company deals' },
+    lv: [
+      { c: 8000,   inc: 22,  ivl: 50, mod: { ctrslot: 1 }, d: { tr: '+1 lojistik kontrat slotu', en: '+1 logistics contract slot' }, v: { tr: 'Ofis konteyneri ve pano', en: 'Office container and board' } },
+      { c: 22000,  inc: 40,  ivl: 44, mod: { ctrslot: 1, offer: 0.10 }, d: { tr: 'Teklif yenileme −%10', en: 'Offer refresh −10%' }, v: { tr: 'Ofis + küçük depo eki', en: 'Office with depot annex' } },
+      { c: 58000,  inc: 78,  ivl: 38, mod: { ctrslot: 1, offer: 0.10 }, unl: 'ctr', d: { tr: 'Şirket kontratları kilidi', en: 'Company contracts unlocked' }, v: { tr: 'Lojistik merkezi, yükleme alanı', en: 'Logistics hub, loading yard' } },
+      { c: 145000, inc: 150, ivl: 32, mod: { ctrslot: 2, offer: 0.15, ctrrew: 0.08 }, unl: 'ctr', d: { tr: '+1 aktif slot • ödül +%8', en: '+1 active slot • reward +8%' }, v: { tr: 'Büyük depo-ofis, araç rampası', en: 'Depot office, truck ramp' } },
+      { c: 360000, inc: 285, ivl: 26, mod: { ctrslot: 3, offer: 0.20, ctrrew: 0.15 }, unl: 'ctr', d: { tr: 'Stratejik kontratlar • ödül +%15', en: 'Strategic contracts • reward +15%' }, v: { tr: 'Bölgesel liman lojistik merkezi', en: 'Regional port logistics centre' } }
+    ] },
+  { id: 'yakit', icon: '⛽', n: { tr: 'Yakıt İstasyonu', en: 'Fuel Station' }, acc: '#9aa2aa',
+    r: { tr: 'Dış teknelere hizmet verir; sefer maliyetini düşürür', en: 'Serves visiting boats; cuts voyage costs' }, dormant: 'boat',
+    lv: [
+      { c: 10000,  inc: 34,  ivl: 52, mod: { voyage: 0.02 }, d: { tr: 'Servis teknesi geliri • sefer −%2', en: 'Boat service income • voyage −2%' }, v: { tr: 'Variller ve küçük pompa', en: 'Barrels and a small pump' } },
+      { c: 28000,  inc: 64,  ivl: 44, mod: { voyage: 0.04 }, d: { tr: 'Servis geliri +%20 • −%4', en: 'Service income +20% • −4%' }, v: { tr: 'Sundurmalı yakıt iskelesi', en: 'Covered fuelling jetty' } },
+      { c: 72000,  inc: 120, ivl: 38, mod: { voyage: 0.06 }, d: { tr: 'Ticari tekne müşterileri • −%6', en: 'Commercial boat clients • −6%' }, v: { tr: 'Tanklar ve güvenli pompa adası', en: 'Tanks and safe pump island' } },
+      { c: 180000, inc: 230, ivl: 30, mod: { voyage: 0.08 }, d: { tr: 'Servis sıklığı +%30 • −%8', en: 'Service rate +30% • −8%' }, v: { tr: 'Büyük tanklar, ikinci pompa', en: 'Large tanks, second pump' } },
+      { c: 440000, inc: 430, ivl: 24, mod: { voyage: 0.10 }, d: { tr: 'Filo hizmet kontratları • −%10', en: 'Fleet service contracts • −10%' }, v: { tr: 'Liman yakıt terminali', en: 'Port fuel terminal' } }
+    ] },
+  { id: 'tersane', icon: '🚢', n: { tr: 'Tersane', en: 'Shipyard' }, acc: '#8d5f33', need: 4,
+    r: { tr: 'İleri oyun yatırımı; filo ve büyük servis işleri', en: 'Late-game investment; fleet and major service jobs' }, dormant: 'boat',
+    lv: [
+      { c: 18000,  inc: 52,  ivl: 50, mod: { boatup: 0.00 }, d: { tr: 'Temel servis işi • tekne seçeneği', en: 'Basic service jobs • boat option' }, v: { tr: 'Açık kızak, iskele ve kereste', en: 'Open slipway, timber' } },
+      { c: 52000,  inc: 98,  ivl: 42, mod: { boatup: 0.05 }, d: { tr: 'Tekne yükseltmesi −%5', en: 'Boat upgrades −5%' }, v: { tr: 'Küçük atölyeli kızak', en: 'Slipway with workshop' } },
+      { c: 140000, inc: 190, ivl: 36, mod: { boatup: 0.05, ctrrew: 0.05 }, d: { tr: 'Büyük servis kontratları', en: 'Major service contracts' }, v: { tr: 'Kapalı atölye, vinç, büyük kızak', en: 'Closed shed, crane, big slipway' } },
+      { c: 350000, inc: 360, ivl: 30, mod: { boatup: 0.08, ctrrew: 0.08, fleet: 1 }, d: { tr: '+1 filo slotu • upgrade −%8', en: '+1 fleet slot • upgrades −8%' }, v: { tr: 'Geniş bakım havuzu, iki vinç', en: 'Wide dock, twin cranes' } },
+      { c: 820000, inc: 680, ivl: 24, mod: { boatup: 0.10, ctrrew: 0.12, fleet: 2 }, d: { tr: 'Amiral gemisi sınıfı • prestij servisi', en: 'Flagship class • prestige service' }, v: { tr: 'Tam teşekküllü tersane kompleksi', en: 'Full shipyard complex' } }
+    ] }
+];
+function sdef(id) { for (var i = 0; i < SERV.length; i++) if (SERV[i].id === id) return SERV[i]; return null; }
+
+/* Bina durumu (§40 ServiceBuildingState) — kurulmamış binalar listede yok. */
+var servState = {};
+function sState(id) { return servState[id] || null; }
+function sBuilt(id) { var s = servState[id]; return !!(s && s.lvl > 0); }
+function sLvl(id) { var s = servState[id]; return s ? s.lvl : 0; }
+function sMaxLv() { return 5; }
+function servCount() { var n = 0; for (var k in servState) if (servState[k] && servState[k].lvl > 0) n++; return n; }
+
+/* Toplam etki: kurulu her binanın mevcut seviyesindeki mod'ları toplar (§34 toplamsal). */
+var _seCache = null, _seT = -1;
+function servMods() {
+  if (_seT === gameT && _seCache) return _seCache;
+  var out = {};
+  for (var i = 0; i < SERV.length; i++) {
+    var d = SERV[i], st = servState[d.id];
+    if (!st || st.lvl < 1) continue;
+    var m = d.lv[st.lvl - 1].mod || {};
+    for (var k in m) out[k] = (out[k] || 0) + m[k];
+  }
+  _seCache = out; _seT = gameT;
+  return out;
+}
+function servEff(key) { return servMods()[key] || 0; }
+/* Bir kilit açık mı (toptanci / turist / ctr) */
+function servUnlock(tag) {
+  for (var i = 0; i < SERV.length; i++) {
+    var d = SERV[i], st = servState[d.id];
+    if (!st || st.lvl < 1) continue;
+    if (d.lv[st.lvl - 1].unl === tag) return true;
+  }
+  return false;
+}
+/* Tekne sistemi henüz yok → voyage/boatup/fleet bonusları dormant (§35.6, §42.7) */
+function servDormant(key) { return key === 'voyage' || key === 'boatup' || key === 'fleet'; }
+
+/* Bir bina şu an kurulabilir mi + neden değil (§37 tek satır kilit sebebi) */
+function servLockReason(d) {
+  if (sBuilt(d.id)) return null;
+  var ok = false;
+  for (var i = 0; i < PLOTS.length; i++) {
+    var p = PLOTS[i];
+    if (p.b || !plotActive(p)) continue;
+    if (p.allow.indexOf(d.id) >= 0) { ok = true; break; }
+  }
+  if (d.need && servCount() < d.need) return T('needServ', { n: d.need });
+  if (!ok) {
+    var z = -1;
+    for (var j = 0; j < PLOTS.length; j++) if (PLOTS[j].allow.indexOf(d.id) >= 0) { z = PLOTS[j].z; break; }
+    for (var j2 = 0; j2 < PLOTS.length; j2++) {
+      var q = PLOTS[j2];
+      if (q.allow.indexOf(d.id) >= 0 && AREAS[q.z].locked) { z = q.z; break; }
+    }
+    if (z >= 0 && AREAS[z].locked) return T('needArea', { n: NM(AREAS[z].n) });
+    return T('noPlot');
+  }
+  return null;
+}
+function servFreePlots(id) {
+  var out = [];
+  for (var i = 0; i < PLOTS.length; i++) {
+    var p = PLOTS[i];
+    if (p.b || !plotActive(p)) continue;
+    if (p.allow.indexOf(id) >= 0) out.push(p);
+  }
+  return out;
+}
+function servBuild(id, plot) {
+  var d = sdef(id); if (!d || sBuilt(id) || !plot || plot.b) return false;
+  plot.b = id;
+  servState[id] = { lvl: 1, plot: plot.id, cons: 2.2, fresh: 1, nextT: d.lv[0].ivl || 0, flash: 0 };
+  _seT = -1; rebuildCounters(); reassignWorkers();
+  sfx.build(); addPuff(plot.x, plot.y, '#ffc94a');
+  toast(T('servBuilt', { n: NM(d.n) }));
+  return true;
+}
+function servUp(id) {
+  var d = sdef(id), st = servState[id];
+  if (!d || !st || st.lvl >= 5) return false;
+  st.lvl++; st.cons = 1.3; st.fresh = 0; st.flash = 1.8;
+  st.nextT = d.lv[st.lvl - 1].ivl || 0;
+  _seT = -1; rebuildCounters(); reassignWorkers();
+  var p = plotById(st.plot);
+  if (p) addPuff(p.x, p.y, '#ffc94a');
+  sfx.build(); toast(T('servUp', { n: NM(d.n), l: st.lvl }));
+  return true;
+}
+/* §32.1 — ücretsiz taşıma, seviye korunur */
+function servMove(id, plot) {
+  var st = servState[id]; if (!st || !plot || plot.b) return false;
+  var old = plotById(st.plot); if (old) old.b = null;
+  plot.b = id; st.plot = plot.id; st.cons = 0;
+  sfx.build(); addPuff(plot.x, plot.y, '#9df5b0');
+  toast(T('servMoved', { n: NM(sdef(id).n) }));
+  return true;
+}
+/* §41 — kayıt: hiçbir bina otomatik satın alınmaz, para kesilmez */
+function servSave() {
+  var out = [];
+  for (var i = 0; i < SERV.length; i++) {
+    var st = servState[SERV[i].id];
+    if (st && st.lvl > 0) out.push([SERV[i].id, st.lvl, st.plot]);
+  }
+  return out;
+}
+function servLoad(arr) {
+  servState = {};
+  for (var i = 0; i < PLOTS.length; i++) PLOTS[i].b = null;
+  if (!arr || !arr.length) return;
+  for (var j = 0; j < arr.length; j++) {
+    var r = arr[j]; if (!r) continue;
+    var d = sdef(r[0]); if (!d) continue;                       /* bilinmeyen bina → atla */
+    var lv = clamp(parseInt(r[1], 10) || 1, 1, 5);
+    var p = plotById(r[2]);
+    if (!p || p.b || !plotActive(p) || p.allow.indexOf(d.id) < 0) {   /* geçersiz/kilitli parsel → uygun boşa taşı */
+      var alt = servFreePlots(d.id);
+      p = alt.length ? alt[0] : null;
+    }
+    if (!p) continue;                                            /* yer yoksa bina kurulmamış sayılır */
+    p.b = d.id;
+    servState[d.id] = { lvl: lv, plot: p.id, cons: 0, nextT: d.lv[lv - 1].ivl || 0, flash: 0 };
+  }
+  _seT = -1;
+}
+/* §41 doğrulama: parsel kasa güvenli alanını veya kuyruğu işgal etmiyor */
+function servValidate() {
+  var bad = [];
+  for (var i = 0; i < PLOTS.length; i++) {
+    var p = PLOTS[i];
+    if (dist2(p.x, p.y, safe.x, safe.y) < 4.0) bad.push(p.id + ':safe');
+    for (var k = 0; k < counters.length; k++) {
+      var c = counters[k];
+      if (Math.abs(p.x - c.x) < 1.2 && Math.abs(p.y - c.y) < 1.2) bad.push(p.id + ':queue');
+      if (p.x > 10.0) bad.push(p.id + ':lane');
+    }
+  }
+  return bad;
+}
+
+/* §34 / §38.2 — servis geliri: ana balık gelirinin %30'unu aşamaz */
+var fishRate = 0, servRate = 0;
+function noteFishIncome(v) { fishRate += v; }
+function servTick(dt) {
+  var dec = Math.pow(0.5, dt / 30);                 /* ~30 sn yarı ömür */
+  fishRate *= dec; servRate *= dec;
+  var cap = Math.max(12, fishRate * 0.30);
+  for (var i = 0; i < SERV.length; i++) {
+    var d = SERV[i], st = servState[d.id];
+    if (!st || st.lvl < 1) continue;
+    if (st.cons > 0) st.cons = Math.max(0, st.cons - dt);
+    if (st.flash > 0) st.flash = Math.max(0, st.flash - dt);
+    var L = d.lv[st.lvl - 1];
+    if (!L.inc || !L.ivl) continue;
+    st.nextT -= dt;
+    if (st.nextT > 0) continue;
+    st.nextT = L.ivl * rnd(0.8, 1.25);
+    if (servRate >= cap) continue;                  /* tavan: AFK para makinesi olmaz */
+    var pay = Math.round(L.inc * (1 + repLevel() * 0.04));
+    S.cash += pay; servRate += pay;
+    var p = plotById(st.plot);
+    if (p) { addFloat(p.x, p.y - 0.4, '+' + money(pay), '#9df5b0'); st.flash = 0.8; }
+  }
+}
 
 /* ---------------- istasyonlar ---------------- */
 var spots = [
@@ -544,7 +828,7 @@ var smoker = { z: 2, x: 3.4, y: 15.4, inn: [], cur: null, t: 0, belt: 0, mat: { 
 var counters = [];
 function mkCounter(z, x, y, key) {
   return { z: z, x: x, y: y, key: key || null, fish: null, buffer: [],
-    slots: [null, null, null, null, null], tray: { x: x - 0.6, y: y + 1.3, items: [] },
+    slots: [null, null, null, null, null, null, null], tray: { x: x - 0.6, y: y + 1.3, items: [] },
     spawnT: 3 + z * 2, eatT: 0 };
 }
 function rebuildCounters() {
@@ -693,7 +977,7 @@ var PADS = [
 /* ---------------- durum ---------------- */
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
-  served: 0, lost: 0, caught: 0, tut: 0, started: false
+  served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0
 };
 var player = { x: 4.5, y: 3.2, z: 0, vx: 0, vy: 0, bob: 0, face: 1, carry: [], act: 0, isPlayer: true };
 var workers = [], customers = [], flyers = [], floats = [], puffs = [], gulls = [];
@@ -706,7 +990,7 @@ function carryW(a) { var w = 0; for (var i = 0; i < a.carry.length; i++) w += it
 function repLevel() { var l = 1; for (var i = 0; i < REP_LEVELS.length; i++) if (S.rep >= REP_LEVELS[i].need) l = i + 1; return l; }
 function repTitle() { return NM(REP_LEVELS[repLevel() - 1].t); }
 function wageTotal() { var w = 0; for (var i = 0; i < workers.length; i++) w += ROLES[workers[i].role].wage; return w; }
-function upCost(v) { return Math.max(1, Math.round(v * (1 - perkSum('upcost')))); }
+function upCost(v) { return Math.max(1, Math.round(v * (1 - Math.min(0.45, perkSum('upcost') + servEff('upcost'))))); }
 function pct(n) { return lang === 'tr' ? '%' + n : n + '%'; }
 function perMin() { return lang === 'tr' ? '/dk' : '/min'; }
 function money(n) { return '$' + Math.round(n).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US'); }
@@ -716,7 +1000,8 @@ var SAVE_KEY = 'balikci_tycoon_v3';
 function save() {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: 3, lang: lang, snd: soundOn ? 1 : 0, zoom: zoomLvl,
+      v: 4, lang: lang, snd: soundOn ? 1 : 0, zoom: zoomLvl,
+      at: Date.now(), play: Math.round(S.play || 0),
       cash: S.cash, rep: S.rep, capLvl: S.capLvl, spdLvl: S.spdLvl, priceLvl: S.priceLvl,
       served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
       areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
@@ -724,6 +1009,7 @@ function save() {
       slots: SLOTS.map(function (s) { return s.b; }),
       decor: DECOR.map(function (d) { return d.got ? 1 : 0; }),
       proj: [Math.round(project.inv), project.stage, project.done ? 1 : 0],
+      serv: servSave(),
       workers: workers.map(function (w) { return w.role; }),
       mk: M
     }));
@@ -739,17 +1025,93 @@ function load() {
     S.cash = d.cash || 0; S.rep = d.rep || 0; S.capLvl = d.capLvl || 0; S.spdLvl = d.spdLvl || 0;
     S.priceLvl = d.priceLvl || 0; S.served = d.served || 0; S.lost = d.lost || 0;
     S.caught = d.caught || 0; S.tut = d.tut || 0;
+    S.play = d.play || 0; S.savedAt = d.at || 0;
     if (d.areas) d.areas.forEach(function (v, i) { if (AREAS[i]) { AREAS[i].locked = !!v[0]; AREAS[i].lvl = v[1] || 1; } });
     if (d.pads) d.pads.forEach(function (v, i) { if (PADS[i]) { PADS[i].paid = v[0]; PADS[i].lvl = v[1]; if (v[2]) PADS[i].price = v[2]; } });
     if (d.slots) d.slots.forEach(function (v, i) { if (SLOTS[i]) SLOTS[i].b = v; });
     if (d.decor) d.decor.forEach(function (v, i) { if (DECOR[i]) DECOR[i].got = !!v; });
     if (d.proj) { project.inv = d.proj[0] || 0; project.stage = d.proj[1] || 0; project.done = !!d.proj[2]; }
+    servLoad(d.serv);   /* v0.4 §41 — yoksa hiçbir bina kurulmaz, para kesilmez */
     if (d.workers) d.workers.forEach(function (r) { hire(r, true); });
     if (d.mk) M = migrateMarket(d.mk);
     return true;
   } catch (e) { return false; }
 }
 function wipe() { try { localStorage.removeItem(SAVE_KEY); } catch (e) { } location.reload(); }
+/* --- kayıt özeti / manuel kaydet (pause + kaydet-çık) --- */
+function saveMeta() {
+  try {
+    var raw = localStorage.getItem(SAVE_KEY); if (!raw) return null;
+    var d = JSON.parse(raw);
+    return { at: d.at || 0, cash: d.cash || 0, rep: d.rep || 0, served: d.served || 0, play: d.play || 0,
+      areas: (d.areas || []).filter(function (a) { return !a[0]; }).length };
+  } catch (e) { return null; }
+}
+function clockStr(sec) {
+  sec = Math.max(0, Math.round(sec));
+  var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60);
+  if (h) return lang === 'tr' ? (h + 'sa ' + m + 'dk') : (h + 'h ' + m + 'm');
+  if (m) return lang === 'tr' ? (m + 'dk') : (m + 'm');
+  return lang === 'tr' ? (sec + 'sn') : (sec + 's');
+}
+function agoStr(ts) {
+  if (!ts) return T('never');
+  var d = new Date(ts), p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+  return p2(d.getHours()) + ':' + p2(d.getMinutes()) + ' • ' + p2(d.getDate()) + '.' + p2(d.getMonth() + 1);
+}
+function saveSummary(m) {
+  if (!m) return T('noSave');
+  return T('saveLine', { t: agoStr(m.at), c: money(m.cash), r: m.rep, s: m.served, p: clockStr(m.play) });
+}
+function manualSave(msg) {
+  save();
+  S.savedAt = Date.now();
+  refreshSaveInfo();
+  toast(msg || T('saved', { t: agoStr(S.savedAt) }));
+  sfx.star && sfx.star();
+}
+function refreshSaveInfo() {
+  var m = saveMeta();
+  if (el.setSaveInfo) el.setSaveInfo.textContent = saveSummary(m);
+  if (el.saveInfo) {
+    el.saveInfo.textContent = saveSummary(m);
+    el.saveInfo.classList.toggle('hidden', !m);
+  }
+  if (el.newBtn) el.newBtn.classList.toggle('hidden', !m);
+  if (el.playBtn) el.playBtn.textContent = m ? T('resume') : T('play');
+}
+
+/* --- DURAKLATMA (pause) --- */
+var paused = false;
+function anyOverlay() {
+  return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden');
+}
+function syncPause() {
+  paused = S.started && anyOverlay();
+  el.pauseBadge.classList.toggle('hidden', !paused);
+  if (paused) el.pauseTxt.textContent = T('paused');
+}
+function openSettings(fromMenu) {
+  el.settingsScreen.classList.remove('hidden');
+  el.settingsScreen.dataset.from = fromMenu ? 'menu' : (S.started ? 'game' : 'start');
+  syncSettingsUI(); refreshSaveInfo(); syncPause();
+}
+function openPauseMenu() {
+  renderTab(); el.menuScreen.classList.remove('hidden'); syncPause();
+}
+function saveAndQuit() {
+  manualSave(T('savedQuit'));
+  el.settingsScreen.classList.add('hidden');
+  el.menuScreen.classList.add('hidden');
+  closeBar();
+  S.started = false;
+  document.getElementById('hud').classList.add('hidden');
+  document.getElementById('objective').classList.add('hidden');
+  el.devbar.classList.add('hidden');
+  if (el.tradeBtn) el.tradeBtn.classList.add('hidden');
+  el.startScreen.classList.remove('hidden');
+  refreshSaveInfo(); syncPause();
+}
 
 /* =========================================================
    TAŞIMA / ETKİLEŞİM
@@ -1184,6 +1546,7 @@ function updateStations(dt) {
     }
   }
   for (i = 0; i < counters.length; i++) if (!AREAS[counters[i].z].locked) updateCounter(counters[i], dt);
+  servTick(dt);                       /* v0.4 — hizmet binası gelir/inşaat döngüsü */
   safe.pop = Math.max(0, safe.pop - dt * 3);
 }
 
@@ -1242,7 +1605,7 @@ function updateCounter(c, dt) {
     /* tezgâh kullanılamıyorsa bu türe müşteri gelmez */
     if (!c.fish || !fishReady(c.fish)) return;
     var lvl = repLevel();
-    var pool = CUST.filter(function (t) { return t.lvl <= lvl && custFits(t, c); });
+    var pool = CUST.filter(function (t) { return t.lvl <= lvl && (!t.serv || servUnlock(t.serv)) && custFits(t, c); });
     if (!pool.length) return;
     var prem = perkSum('premium') + perkSum('vip');
     if (prem > 0 && Math.random() < prem * 2) {
@@ -1284,8 +1647,10 @@ function updateCounter(c, dt) {
 function finishOrder(c, cu) {
   var happy = cu.pat / cu.patMax;
   var unit = prodValue(cu.ord.k, cu.ord.f);
-  var pay = Math.round(cu.ord.need * unit * cu.type.mult * (happy > 0.5 ? 1.2 : 1) * (1 + perkSum('custval')));
+  var pay = Math.round(cu.ord.need * unit * cu.type.mult * (happy > 0.5 ? 1.2 : 1) *
+    (1 + perkSum('custval') + servEff('custval') + (cu.type.id === 'toptanci' ? servEff('wholesale') : 0)));
   payout(c, pay, cu.slot);
+  noteFishIncome(pay);
   cu.state = 'leave'; c.slots[cu.slot] = null; shiftQueue(c);
   S.served++; S.rep += cu.type.rep;
   var fp = queueSlotPos(c, cu.slot);
@@ -2164,6 +2529,197 @@ function drawProject() {
   labelAt(p.x, p.y + p.h / 2 + 0.3, 4, UP(NM(p.n)), '#ffc94a', '');
 }
 
+/* =========================================================
+   v0.4 — GÖRSEL EVRİM (§36): her seviyede siluet + malzeme değişir
+   Lv1 geçici/ahşap → Lv3 taş/tuğla/metal → Lv5 ticari kompleks
+   ========================================================= */
+var SERV_MAT = [
+  { top: '#c59a63', l: '#7a4e2a', r: '#9a6836', roof: null,      foot: 1.00, h: 16 },  /* Lv1 geçici/ahşap */
+  { top: '#d0a76e', l: '#845433', r: '#a87440', roof: null,      foot: 1.12, h: 21 },  /* Lv2 güçlendirilmiş */
+  { top: '#dcd2ba', l: '#9d8f74', r: '#bfb193', roof: '#b8442e', foot: 1.24, h: 27 },  /* Lv3 taş / tuğla */
+  { top: '#e6dcc5', l: '#a2947a', r: '#c8b99a', roof: '#a63d2a', foot: 1.34, h: 34 },  /* Lv4 ticari */
+  { top: '#f2e8d1', l: '#b0a184', r: '#d8c9a8', roof: '#8d3423', foot: 1.44, h: 42 }   /* Lv5 kompleks */
+];
+function servRoof(sx, sy, w, lv, col) {
+  var n = 5 + lv;
+  for (var r = 0; r < n; r++) px(sx - w / 2 + r * 2, sy - 3 - r * 1.4, w - r * 3.4, 2, r % 2 ? col : shade(col, 12));
+  px(sx - w / 2 - 2, sy - 3, w + 4, 2, '#5d3423');
+}
+function shade(c, n) {
+  var r = parseInt(c.substr(1, 2), 16), g = parseInt(c.substr(3, 2), 16), b = parseInt(c.substr(5, 2), 16);
+  function q(v) { return Math.max(0, Math.min(255, v + n)).toString(16).padStart(2, '0'); }
+  return '#' + q(r) + q(g) + q(b);
+}
+/* küçük fiziksel tabela — dev yazı yok (§36 Tabela kuralı) */
+function servSign(d, x, y, z, lv) {
+  var sx = R(pX(x, y)), sy = R(pY(x, y, z));
+  var w = 10 + lv * 3;
+  px(sx - w / 2, sy - 6, w, 5, '#123449');
+  px(sx - w / 2 + 1, sy - 5, w - 2, 3, d.acc);
+  if (lv >= 3) { px(sx - w / 2, sy - 1, 1, 4, '#3c4650'); px(sx + w / 2 - 1, sy - 1, 1, 4, '#3c4650'); }
+}
+/* idle animasyon: fan / duman / ışık — Lv3+ (§36 Animasyon) */
+function servIdle(d, sx, sy, lv) {
+  if (lv < 2) return;
+  var t = gameT;
+  if (d.id === 'buzhane') {
+    if (lv >= 3) { var f = Math.floor(t * 6) % 2; px(sx + 9, sy - 16, 4, 4, '#5d666e'); px(sx + 10, sy - 15 + f, 2, 1, '#cfe6f2'); }
+  } else if (d.id === 'tamirhane') {
+    var sp = Math.sin(t * 7) * 2;
+    px(sx - 12, sy - 12 + sp, 2, 2, '#ffd76a');
+  } else if (d.id === 'restoran') {
+    for (var i = 0; i < 3; i++) {
+      var yy = sy - 22 - lv * 3 - ((t * 9 + i * 7) % 14);
+      ctx.globalAlpha = 0.35; px(sx + 7 + Math.sin(t * 2 + i) * 1.5, yy, 2, 2, '#e8ddc8'); ctx.globalAlpha = 1;
+    }
+  } else if (d.id === 'yakit' && lv >= 2) {
+    if (Math.floor(t * 2) % 2) px(sx + 11, sy - 18, 2, 2, '#d1584a');
+  } else if (d.id === 'tersane' && lv >= 3) {
+    var hk = Math.sin(t * 1.4) * 5;
+    px(sx + 12, sy - 34 + hk, 1, 6, '#8a8f95');
+  } else if (d.id === 'hal' && lv >= 4) {
+    if (Math.floor(t * 1.5) % 2) px(sx - 14, sy - 26, 2, 2, '#ffd76a');
+  } else if (d.id === 'nakliye' && lv >= 3) {
+    var bl = Math.floor(t * 2.5) % 2;
+    px(sx + 10, sy - 22, 2, 2, bl ? '#5fd37a' : '#2a6a3c');
+  }
+}
+function drawServ(p) {
+  var id = p.b, d = sdef(id), st = servState[id];
+  if (!d || !st) return;
+  var lv = st.lvl, M2 = SERV_MAT[lv - 1];
+  var fw = M2.foot, hh = M2.h;
+  var sx = R(pX(p.x, p.y)), sy = R(pY(p.x, p.y, 0));
+
+  /* inşaat/yükseltme sekansı: işaretleme → iskelet → toz → reveal (§36.1) */
+  if (st.cons > 0 && !st.fresh) {
+    /* yükseltmede bina kullanılamaz hale gelmez: normal çizim + toz + iskele */
+    if (Math.random() < 0.3) addPuff(p.x + rnd(-0.5, 0.5), p.y + rnd(-0.5, 0.5), '#d8cfae');
+  }
+  if (st.cons > 0 && st.fresh) {
+    var ph = st.cons;                                   /* 2.2 → 0 */
+    ctx.save(); ctx.setLineDash([2, 2]); ctx.strokeStyle = '#ffc94a'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(R(pX(p.x - fw, p.y - fw)), R(pY(p.x - fw, p.y - fw, 0)));
+    ctx.lineTo(R(pX(p.x + fw, p.y - fw)), R(pY(p.x + fw, p.y - fw, 0)));
+    ctx.lineTo(R(pX(p.x + fw, p.y + fw)), R(pY(p.x + fw, p.y + fw, 0)));
+    ctx.lineTo(R(pX(p.x - fw, p.y + fw)), R(pY(p.x - fw, p.y + fw, 0)));
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+    if (ph < 1.6) {                                     /* iskelet */
+      for (var c2 = 0; c2 < 4; c2++) {
+        var ox = c2 % 2 ? fw : -fw, oy = c2 < 2 ? -fw : fw;
+        var bx = R(pX(p.x + ox * 0.8, p.y + oy * 0.8)), by = R(pY(p.x + ox * 0.8, p.y + oy * 0.8, 0));
+        px(bx - 1, by - hh * 0.7, 2, hh * 0.7, '#8d5f33');
+      }
+      px(sx - 12, sy - R(hh * 0.7), 24, 2, '#8d5f33');
+    }
+    if (ph > 0.5 && Math.random() < 0.25) addPuff(p.x + rnd(-0.6, 0.6), p.y + rnd(-0.6, 0.6), '#d8cfae');
+    uiText(p.x, p.y, hh + 12, '🔨', '#ffc94a', 13, 0.9);
+    return;
+  }
+
+  shadow(p.x, p.y, fw * 1.15);
+  /* temel: binayı ahşap zeminden ayıran taş platform */
+  isoQuad(p.x - fw * 0.64, p.y - fw * 0.64, fw * 1.28, fw * 1.28, 0.35, '#a8a08c');
+  isoQuad(p.x - fw * 0.58, p.y - fw * 0.58, fw * 1.16, fw * 1.16, 1.6, '#c0b8a2');
+  /* gövde */
+  isoBox(p.x - fw / 2, p.y - fw / 2, fw, fw, 1.6, hh, M2.top, M2.l, M2.r);
+  /* Lv4+ ikinci hacim (dikey/arka büyüme — koridora taşma yok) */
+  if (lv >= 4) isoBox(p.x - fw * 0.34, p.y - fw * 0.58, fw * 0.68, fw * 0.5, hh, hh + 9, shade(M2.top, 8), shade(M2.l, 6), shade(M2.r, 6));
+  /* çatı — Lv1-2 binanın kimlik rengi, Lv3+ kiremit + kimlik şeridi */
+  servRoof(sx, sy - hh, R(fw * 22), lv, M2.roof || d.acc);
+  px(sx - R(fw * 11) - 2, sy - hh - 2, R(fw * 22) + 4, 2, d.acc);
+  /* kapı + pencere */
+  px(sx - 4, sy - 10, 8, 10, lv >= 3 ? '#4a5258' : '#6f4526');
+  if (lv >= 2) { px(sx - 11, sy - R(hh * 0.62), 6, 5, '#3f6f8f'); px(sx + 5, sy - R(hh * 0.62), 6, 5, '#3f6f8f'); }
+  if (lv >= 3) { px(sx - 11, sy - R(hh * 0.62), 6, 1, '#7fb7d4'); px(sx + 5, sy - R(hh * 0.62), 6, 1, '#7fb7d4'); }
+  /* Lv2+ sundurma */
+  if (lv >= 2) { px(sx - R(fw * 11) - 3, sy - 12, R(fw * 22) + 6, 3, d.acc); px(sx - R(fw * 11) - 3, sy - 9, 2, 9, '#5d3c1c'); px(sx + R(fw * 11) + 2, sy - 9, 2, 9, '#5d3c1c'); }
+
+  /* --- binaya özgü proplar --- */
+  if (id === 'buzhane') {
+    for (var i = 0; i < Math.min(4, lv + 1); i++) { px(sx - 16 + i * 5, sy - 5, 4, 4, '#bfe0ef'); px(sx - 16 + i * 5, sy - 5, 4, 1, '#e6f4fb'); }
+    if (lv >= 3) { px(sx + 9, sy - 18, 5, 6, '#5d666e'); px(sx + 10, sy - 17, 3, 4, '#8b949c'); }
+    if (lv >= 4) { px(sx + 12, sy - 6, 6, 5, '#7d868e'); px(sx + 12, sy - 7, 6, 1, '#c9d0d6'); }
+  } else if (id === 'tamirhane') {
+    px(sx - 18, sy - 7, 10, 3, '#8d5f33'); px(sx - 17, sy - 10, 3, 3, '#c98a3c');
+    if (lv >= 2) { px(sx - 14, sy - 26, 2, 16, '#d8a52c'); px(sx - 20, sy - 27, 12, 2, '#d8a52c'); px(sx - 13, sy - 25, 1, 8, '#8a8f95'); }
+    if (lv >= 4) { px(sx + 13, sy - 14, 5, 14, '#5d666e'); for (var r4 = 0; r4 < 3; r4++) px(sx + 13, sy - 12 + r4 * 4, 5, 1, '#9aa2aa'); }
+  } else if (id === 'hal') {
+    for (var t2 = 0; t2 < Math.min(3, lv); t2++) {
+      var tx = sx - 20 + t2 * 15;
+      px(tx, sy - 8, 12, 3, '#c9a15e'); px(tx + 1, sy - 5, 2, 5, '#8d5f33'); px(tx + 9, sy - 5, 2, 5, '#8d5f33');
+      px(tx, sy - 11, 12, 3, t2 % 2 ? '#e30a17' : '#f0ece0');
+      px(tx + 3, sy - 9, 3, 2, '#7fb7d4');
+    }
+    if (lv >= 3) { px(sx + 12, sy - 20, 8, 14, '#9d8f74'); px(sx + 13, sy - 12, 6, 8, '#4a5258'); }
+  } else if (id === 'restoran') {
+    for (var m = 0; m < Math.min(3, lv); m++) {
+      var mx = sx - 22 + m * 13, my = sy - 2 + (m % 2) * 3;
+      px(mx, my - 5, 9, 2, '#e8ddc8'); px(mx + 3, my - 3, 3, 4, '#a9743f');
+      px(mx - 2, my - 4, 2, 3, '#8d5f33'); px(mx + 9, my - 4, 2, 3, '#8d5f33');
+    }
+    if (lv >= 3) { px(sx - 24, sy - 16, 48, 3, '#d1584a'); for (var st2 = 0; st2 < 6; st2++) px(sx - 24 + st2 * 8, sy - 16, 4, 3, '#f0ece0'); }
+    if (lv >= 5) { px(sx - 6, sy - hh - 20, 12, 8, '#ffd76a'); px(sx - 4, sy - hh - 18, 8, 4, '#d1584a'); }
+  } else if (id === 'nakliye') {
+    px(sx - 22, sy - 12, 14, 10, '#4a7a9a'); px(sx - 22, sy - 12, 14, 2, '#6f9cbd'); px(sx - 18, sy - 9, 2, 5, '#2b4a60');
+    if (lv >= 2) { px(sx + 10, sy - 12, 12, 10, '#7a6a4a'); px(sx + 10, sy - 12, 12, 2, '#9a8a66'); }
+    if (lv >= 4) { px(sx - 26, sy - 3, 18, 3, '#5d666e'); px(sx - 26, sy, 18, 2, '#3c4650'); }
+    px(sx - 9, sy - R(hh * 0.9), 18, 7, '#123449'); px(sx - 7, sy - R(hh * 0.9) + 2, 14, 3, '#9aa8b4');
+  } else if (id === 'yakit') {
+    for (var b2 = 0; b2 < Math.min(4, lv + 1); b2++) { px(sx - 20 + b2 * 6, sy - 9, 5, 8, b2 % 2 ? '#c94a1a' : '#d8a52c'); px(sx - 20 + b2 * 6, sy - 9, 5, 1, '#f0ece0'); }
+    px(sx + 10, sy - 14, 5, 13, '#d1584a'); px(sx + 11, sy - 12, 3, 4, '#f0ece0');
+    if (lv >= 3) { px(sx + 17, sy - 24, 12, 22, '#c2c8ce'); px(sx + 17, sy - 24, 12, 3, '#e2e8ee'); px(sx + 19, sy - 14, 8, 2, '#8b949c'); }
+    if (lv >= 5) { px(sx - 30, sy - 28, 11, 26, '#c2c8ce'); px(sx - 30, sy - 28, 11, 3, '#e2e8ee'); }
+  } else if (id === 'tersane') {
+    for (var k2 = 0; k2 < 5; k2++) px(sx - 24 + k2 * 4, sy + 1 + k2, 22, 2, '#7a5e3a');
+    px(sx - 26, sy - 8, 6, 9, '#8d5f33');
+    if (lv >= 2) { px(sx + 14, sy - 30, 2, 29, '#d8a52c'); px(sx + 6, sy - 32, 18, 2, '#d8a52c'); px(sx + 20, sy - 30, 1, 8, '#8a8f95'); }
+    if (lv >= 3) { px(sx - 20, sy - 20, 16, 18, '#9d8f74'); px(sx - 18, sy - 12, 12, 10, '#4a5258'); }
+    if (lv >= 4) { px(sx - 34, sy - 26, 2, 25, '#d8a52c'); px(sx - 40, sy - 28, 14, 2, '#d8a52c'); }
+    if (lv >= 5) { px(sx + 2, sy - hh - 16, 16, 7, '#1f4e6b'); px(sx + 4, sy - hh - 14, 12, 3, '#7fb7d4'); }
+  }
+
+  servSign(d, p.x, p.y + 0.52, 0, lv);
+  servIdle(d, sx, sy, lv);
+
+  /* seviye atlama parlaması */
+  if (st.flash > 0) {
+    ctx.save(); ctx.globalAlpha = Math.min(0.5, st.flash * 0.35);
+    isoQuad(p.x - fw / 2, p.y - fw / 2, fw, fw, hh + 2, '#ffe27a'); ctx.restore();
+  }
+  /* harita etiketi yalnız seçiliyken veya yakınken (§37 Harita Etiketi) */
+  if (servSel === id || (barTab === 'serv' && servPick === id)) {
+    uiLabel(p.x, p.y, hh + 20, NM(d.n) + ' Lv.' + lv, '#ffc94a', 1);
+  } else if (dist2(player.x, player.y, p.x, p.y) < 12) {
+    uiLabel(p.x, p.y, hh + 20, d.icon + ' Lv.' + lv, '#e8ddc8', 0.85);
+  }
+}
+/* boş parsel: yalnız Binalar sekmesinde bina seçiliyken ince çerçeve (§37) */
+function drawPlot(p) {
+  var ghost = barTab === 'serv' && servPick && p.allow.indexOf(servPick) >= 0 && !p.b;
+  var near = dist2(player.x, player.y, p.x, p.y) < 26;
+  if (!ghost && !near) return;
+  ctx.save();
+  ctx.globalAlpha = ghost ? 0.95 : 0.3;
+  ctx.setLineDash([3, 3]); ctx.lineDashOffset = -gameT * 8;
+  ctx.strokeStyle = ghost ? '#5fd37a' : '#c9a15e'; ctx.lineWidth = 1;
+  var w = 0.7;
+  ctx.beginPath();
+  ctx.moveTo(R(pX(p.x - w, p.y - w)), R(pY(p.x - w, p.y - w, 0)));
+  ctx.lineTo(R(pX(p.x + w, p.y - w)), R(pY(p.x + w, p.y - w, 0)));
+  ctx.lineTo(R(pX(p.x + w, p.y + w)), R(pY(p.x + w, p.y + w, 0)));
+  ctx.lineTo(R(pX(p.x - w, p.y + w)), R(pY(p.x - w, p.y + w, 0)));
+  ctx.closePath(); ctx.stroke(); ctx.restore();
+  if (ghost) {
+    ctx.save(); ctx.globalAlpha = 0.16 + Math.sin(gameT * 4) * 0.06;
+    isoQuad(p.x - w, p.y - w, w * 2, w * 2, 0.4, '#5fd37a'); ctx.restore();
+    uiLabel(p.x, p.y, 10, NM(p.n), '#9df5b0', 1);
+  } else if (near) {
+    uiText(p.x, p.y, 6, '🏗️', '#c9a15e', 11, 0.7);
+  }
+}
+
 /* ---------- kozmetik ---------- */
 function drawDecor(d) {
   var sx = R(pX(d.x, d.y)), sy = R(pY(d.x, d.y, 0));
@@ -2299,6 +2855,11 @@ function render() {
   for (i = 0; i < DECOR.length; i++) (function (d) {
     if (!d.got || AREAS[d.z].locked) return; push(d.x + d.y, function () { drawDecor(d); });
   })(DECOR[i]);
+  for (i = 0; i < PLOTS.length; i++) (function (p) {          /* v0.4 hizmet parselleri */
+    if (!plotActive(p)) return;
+    if (p.b) push(p.x + p.y, function () { drawServ(p); });
+    else push(p.x + p.y - 0.05, function () { drawPlot(p); });
+  })(PLOTS[i]);
   if (!AREAS[project.z].locked) push(project.x + project.y, drawProject);
   if (!AREAS[office.z].locked) push(office.x + office.y, drawOffice);
   for (i = 0; i < spots.length; i++) (function (s) {
@@ -2378,7 +2939,8 @@ var el = {};
  'objLbl', 'objText', 'queueHint', 'toast', 'devbar', 'devpanel', 'dpTitle', 'dpCards', 'dpClose',
  'hMoney', 'hCarry', 'hRep', 'startTag', 'startList', 'playBtn', 'setBtn', 'setTitle', 'setLang',
  'setSound', 'setZoom', 'setClose', 'resetBtn', 'closeMenu', 'menuSet', 'langLbl', 'tabBody',
- 'startScreen', 'settingsScreen', 'menuScreen', 'menuBtn', 'dtArea', 'dtLevel', 'dtBuild', 'dtProj'].forEach(function (id) {
+ 'startScreen', 'settingsScreen', 'menuScreen', 'menuBtn', 'dtArea', 'dtLevel', 'dtBuild', 'dtProj', 'dtServ',
+ 'pauseBadge', 'pauseTxt', 'saveInfo', 'setSaveInfo', 'saveBtn', 'saveQuitBtn', 'menuSave', 'newBtn', 'setSaveLbl'].forEach(function (id) {
   el[id] = document.getElementById(id);
 });
 var toastT = 0;
@@ -2394,11 +2956,16 @@ function applyLang() {
   el.playBtn.textContent = T('play'); el.setBtn.textContent = T('settings');
   el.setTitle.textContent = T('settings'); el.setLang.textContent = T('langLbl');
   el.setSound.textContent = T('soundLbl'); el.setZoom.textContent = T('zoomLbl');
-  el.setClose.textContent = T('ok'); el.resetBtn.textContent = T('reset');
-  el.closeMenu.textContent = T('cont'); el.menuSet.textContent = T('settings');
+  el.setClose.textContent = T('resume'); el.resetBtn.textContent = T('reset');
+  el.closeMenu.textContent = T('resume'); el.menuSet.textContent = T('settings');
+  el.saveBtn.textContent = T('saveNow'); el.saveQuitBtn.textContent = T('saveQuit');
+  el.menuSave.textContent = T('saveNow'); el.newBtn.textContent = T('newGame');
+  el.setSaveLbl.textContent = T('setSave'); el.pauseTxt.textContent = T('paused');
+  refreshSaveInfo();
   el.langLbl.textContent = T('langLbl');
   el.dtArea.textContent = T('barArea'); el.dtLevel.textContent = T('barLevel');
   el.dtBuild.textContent = T('barBuild'); el.dtProj.textContent = T('barProj');
+  el.dtServ.textContent = T('barServ');
   var oft = document.querySelectorAll('#ofTabs .tab');
   var ofn = ['tabMarket', 'tabCo', 'tabCtr', 'tabPort', 'tabNews', 'tabHold'];
   for (var q = 0; q < oft.length; q++) oft[q].textContent = T(ofn[q]);
@@ -2483,15 +3050,16 @@ function syncHUD(dt) {
    ALT GELİŞTİRME BARI (GDD v0.3.1 §3)
    ========================================================= */
 var barTab = null, barSlot = null, cfId = null, cfT = 0;
+var servSel = null, servPick = null;   /* v0.4 — seçili bina / parsel önizlemesi */
 function closeBar() {
-  barTab = null; barSlot = null; cfId = null;
+  barTab = null; barSlot = null; cfId = null; servPick = null;
   el.devpanel.classList.add('hidden');
   document.body.classList.remove('panel');
   Array.prototype.forEach.call(document.querySelectorAll('.dtab'), function (b) { b.classList.remove('on'); });
 }
 function openBar(t) {
   if (barTab === t) { closeBar(); return; }
-  barTab = t; barSlot = null; cfId = null;
+  barTab = t; barSlot = null; cfId = null; servPick = null;
   el.devpanel.classList.remove('hidden');
   document.body.classList.add('panel');
   Array.prototype.forEach.call(document.querySelectorAll('.dtab'), function (b) {
@@ -2569,6 +3137,51 @@ function barList() {
       }
       if (!n && out.length === 0) out.push({ empty: T('emptyBuild') });
     }
+  } else if (barTab === 'serv') {
+    /* v0.4 §37 — parsel seçimi (inşa veya ücretsiz taşıma) */
+    if (servPick) {
+      var pd = sdef(servPick), moving = sBuilt(servPick), fp = servFreePlots(servPick);
+      out.push({ id: 'back', ic: '↩', t: T('back'), s: NM(pd.n) + ' • ' + T('pickPlot'), back: true });
+      for (i = 0; i < fp.length; i++) (function (pl) {
+        if (moving) {
+          out.push({ id: 'pl' + pl.id, ic: '↔️', t: NM(pl.n), s: T('plotOf', { n: NM(AREAS[pl.z].n) }),
+            pick: T('moveHere'), go: function () { servMove(servPick, pl); servPick = null; save(); renderBar(); } });
+        } else {
+          out.push({ id: 'pl' + pl.id, ic: '🏗️', t: NM(pl.n), s: T('plotOf', { n: NM(AREAS[pl.z].n) }),
+            cost: upCost(sCost(pd.lv[0].c)), buyTxt: T('buildHere'),
+            go: function () { var id0 = servPick; servPick = null; servBuild(id0, pl); servSel = id0; } });
+        }
+      })(fp[i]);
+      if (!fp.length) out.push({ empty: T('noPlot') });
+      return out;
+    }
+    for (i = 0; i < SERV.length; i++) (function (d) {
+      var lv = sLvl(d.id);
+      if (lv > 0) {
+        var cur = d.lv[lv - 1];
+        if (lv >= 5) {
+          out.push({ id: 'sv' + d.id, ic: d.icon, t: NM(d.n) + '  Lv.5', s: NM(cur.d), owned: true });
+        } else {
+          var nx = d.lv[lv];
+          out.push({ id: 'sv' + d.id, ic: d.icon, t: NM(d.n) + '  Lv.' + lv + '→' + (lv + 1),
+            s: NM(nx.d) + ' • ' + T('nextLook') + ': ' + NM(nx.v) + (d.dormant ? ' • ' + T('dormantB') : ''),
+            cost: upCost(sCost(nx.c)),
+            go: function () { servUp(d.id); servSel = d.id; } });
+        }
+        if (servFreePlots(d.id).length) {
+          out.push({ id: 'mv' + d.id, ic: '↔️', t: T('move'), s: NM(d.n) + ' • ' + T('free'),
+            pick: T('choose'), go: function () { servPick = d.id; cfId = null; renderBar(); } });
+        }
+      } else {
+        var why = servLockReason(d), c0 = d.lv[0];
+        out.push({ id: 'sv' + d.id, ic: d.icon, t: NM(d.n),
+          s: NM(d.r) + ' • ' + NM(c0.d) + (c0.inc ? ' • ' + money(c0.inc) + '/' + Math.round(c0.ivl) + 's ' + T('servInc') : ''),
+          blocked: !!why, why: why || '',
+          pick: why ? null : money(upCost(sCost(c0.c))) + ' →',
+          go: function () { servPick = d.id; cfId = null; renderBar(); } });
+      }
+    })(SERV[i]);
+    if (!out.length) out.push({ empty: T('servEmpty') });
   }
   return out;
 }
@@ -2585,7 +3198,7 @@ function slotBuild(sl, id) {
 }
 function renderBar() {
   if (!barTab) return;
-  el.dpTitle.textContent = T(barTab === 'area' ? 'tArea' : barTab === 'level' ? 'tLevel' : barTab === 'build' ? 'tBuild' : 'tProj');
+  el.dpTitle.textContent = T(barTab === 'area' ? 'tArea' : barTab === 'level' ? 'tLevel' : barTab === 'build' ? 'tBuild' : barTab === 'serv' ? 'tServ' : 'tProj');
   if (barTab === 'proj') { renderProjPanel(); return; }
   var list = barList(), h = '';
   for (var i = 0; i < list.length; i++) {
@@ -2600,7 +3213,7 @@ function renderBar() {
       var aff = S.cash + (c.refund || 0) >= c.cost;
       var cf = cfId === c.id;
       btn = '<button class="buy' + (aff ? (cf ? ' cf' : '') : ' no') + '" data-i="' + i + '">' +
-        (cf ? T('confirm') : money(c.cost)) + '</button>';
+        (cf ? T('confirm') : (c.buyTxt ? c.buyTxt + ' ' + money(c.cost) : money(c.cost))) + '</button>';
     }
     h += '<div class="dcard' + (c.pick && !c.owned ? '' : '') + '"><span class="ic">' + c.ic + '</span><b>' +
       c.t + '</b><small>' + (c.s || '') + (c.refund ? ' (+' + money(c.refund) + ')' : '') + '</small>' + btn + '</div>';
@@ -2610,11 +3223,11 @@ function renderBar() {
     b.onclick = function () {
       var c = list[parseInt(b.dataset.i, 10)];
       if (!c) return;
-      if (c.back) { barSlot = null; cfId = null; renderBar(); return; }
+      if (c.back) { barSlot = null; servPick = null; cfId = null; renderBar(); return; }
       if (c.pick) { c.go(); return; }
       if (c.owned) return;
       if (c.blocked) { sfx.bad(); toast(c.why); return; }
-      var needCf = c.cost >= 1500 || barTab === 'area' || (barTab === 'level' && c.id.charAt(0) === 'l');
+      var needCf = c.cost >= 1500 || barTab === 'area' || barTab === 'serv' || (barTab === 'level' && c.id.charAt(0) === 'l');
       if (needCf && cfId !== c.id) { cfId = c.id; cfT = 3.5; renderBar(); return; }
       cfId = null;
       if (c.refund !== undefined) { c.go(); return; }
@@ -2688,7 +3301,7 @@ function bindProjExtra() {
   });
 }
 function barHot() {
-  var hot = { area: false, level: false, build: false, proj: false }, i;
+  var hot = { area: false, level: false, build: false, proj: false, serv: false }, i;
   for (i = 1; i < AREAS.length; i++) if (AREAS[i].locked && !AREAS[i - 1].locked && S.rep >= AREAS[i].rep && S.cash >= AREAS[i].cost) hot.area = true;
   for (i = 0; i < AREAS.length; i++) if (!AREAS[i].locked && AREAS[i].lvl < MAXLV && S.cash >= AREAS[i].up[AREAS[i].lvl]) hot.level = true;
   for (i = 0; i < PADS.length; i++) {
@@ -2700,6 +3313,11 @@ function barHot() {
   if (!AREAS[project.z].locked && !project.done && S.cash >= 1000) hot.proj = true;
   if (M && officeReady() && !M.office && S.rep >= ECON.officeRep && S.cash >= upCost(ECON.officeCost)) hot.proj = true;
   if (M && M.office && !M.license && S.rep >= ECON.licenseRep && S.cash >= upCost(ECON.licenseCost)) hot.proj = true;
+  for (i = 0; i < SERV.length; i++) {
+    var sd = SERV[i], slv = sLvl(sd.id);
+    if (slv === 0) { if (!servLockReason(sd) && S.cash >= upCost(sCost(sd.lv[0].c))) hot.serv = true; }
+    else if (slv < 5 && S.cash >= upCost(sCost(sd.lv[slv].c))) hot.serv = true;
+  }
   Array.prototype.forEach.call(document.querySelectorAll('.dtab'), function (b) {
     b.classList.toggle('hot', !!hot[b.dataset.t] && barTab !== b.dataset.t);
   });
@@ -2733,6 +3351,17 @@ function renderTab() {
     var tot = SLOTS.filter(slotActive).length;
     h += row('🔨', T('mSlots'), T('mStaffCap') + ': ' + workers.length + '/' + staffCap(), used + '/' + tot);
     h += row('🧾', T('mOrders'), T('mLost') + ': ' + S.lost + ' - ' + T('mCaught') + ': ' + S.caught, S.served + '');
+    /* v0.4 — liman hizmet binaları genel bakış */
+    for (i = 0; i < SERV.length; i++) {
+      var sd2 = SERV[i], slv2 = sLvl(sd2.id);
+      if (slv2 > 0) {
+        h += row(sd2.icon, NM(sd2.n), NM(sd2.lv[slv2 - 1].d), 'Lv.' + slv2 + '/5',
+          slv2 < 5 ? money(upCost(sCost(sd2.lv[slv2].c))) : T('maxLv'));
+      } else {
+        var wy = servLockReason(sd2);
+        h += row('🔒', NM(sd2.n), wy || NM(sd2.r), T('locked'), wy ? '' : money(upCost(sCost(sd2.lv[0].c))));
+      }
+    }
   } else if (curTab === 'personel') {
     if (!workers.length) h += '<div class="empty">' + T('mNoStaff') + '</div>';
     for (i = 0; i < workers.length; i++) {
@@ -2768,9 +3397,10 @@ Array.prototype.forEach.call(document.querySelectorAll('#menuTabs .tab'), functi
   };
 });
 el.dpClose.onclick = closeBar;
-el.menuBtn.onclick = function () { renderTab(); el.menuScreen.classList.remove('hidden'); };
-el.closeMenu.onclick = function () { el.menuScreen.classList.add('hidden'); };
-el.menuSet.onclick = function () { el.menuScreen.classList.add('hidden'); el.settingsScreen.classList.remove('hidden'); };
+el.menuBtn.onclick = function () { openPauseMenu(); };
+el.closeMenu.onclick = function () { el.menuScreen.classList.add('hidden'); syncPause(); };
+el.menuSet.onclick = function () { el.menuScreen.classList.add('hidden'); openSettings(true); };
+el.menuSave.onclick = function () { manualSave(); };
 
 /* ---------- ayarlar ---------- */
 function setLangTo(l) { lang = l; applyLang(); save(); }
@@ -2791,11 +3421,17 @@ Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), funct
     b.classList.add('on'); resize(); save();
   };
 });
-el.setBtn.onclick = function () { el.startScreen.classList.add('hidden'); el.settingsScreen.classList.remove('hidden'); };
+el.setBtn.onclick = function () { el.startScreen.classList.add('hidden'); openSettings(false); };
 el.setClose.onclick = function () {
+  var from = el.settingsScreen.dataset.from;
   el.settingsScreen.classList.add('hidden');
   if (!S.started) el.startScreen.classList.remove('hidden');
+  else if (from === 'menu') el.menuScreen.classList.remove('hidden');
+  syncPause();
 };
+el.saveBtn.onclick = function () { if (!S.started) { toast(T('noRun')); sfx.bad(); return; } manualSave(); };
+el.saveQuitBtn.onclick = function () { if (!S.started) { toast(T('noRun')); sfx.bad(); return; } saveAndQuit(); };
+el.newBtn.onclick = function () { if (confirm(T('newAsk'))) wipe(); };
 el.resetBtn.onclick = function () { if (confirm(T('resetAsk'))) wipe(); };
 function syncSettingsUI() {
   Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.toggle('on', (o.dataset.s === '1') === soundOn); });
@@ -2811,7 +3447,8 @@ function frame(ts) {
   var dt = Math.min(0.05, (ts - last) / 1000 || 0);
   last = ts;
   if (!S.started) { gameT += dt; updateFx(dt); render(); return; }
-  gameT += dt;
+  if (paused) { render(); return; }          /* duraklatıldı: dünya tamamen donar */
+  gameT += dt; S.play += dt;
   updatePlayer(dt);
   updateWorkers(dt);
   updateStations(dt);
@@ -2831,10 +3468,20 @@ function start() {
   document.getElementById('hud').classList.remove('hidden');
   document.getElementById('objective').classList.remove('hidden');
   el.devbar.classList.remove('hidden');
-  S.started = true;
+  S.started = true; paused = false; syncPause();
   if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { } }
 }
 el.playBtn.onclick = start;
+/* ESC: oyunu duraklat / devam ettir */
+window.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape' && e.key !== 'Esc') return;
+  if (!S.started) return;
+  if (!document.getElementById('officeScr').classList.contains('hidden')) return;
+  e.preventDefault();
+  if (!el.settingsScreen.classList.contains('hidden')) { el.setClose.click(); return; }
+  if (!el.menuScreen.classList.contains('hidden')) { el.closeMenu.click(); return; }
+  openPauseMenu();
+});
 window.addEventListener('beforeunload', save);
 document.addEventListener('visibilitychange', function () { if (document.hidden) save(); });
 
@@ -3204,7 +3851,7 @@ function applyBoard(entry, opt) {
    KONTRATLAR (§6, §7)
    ========================================================= */
 function ctype(id) { for (var i = 0; i < CTYPES.length; i++) if (CTYPES[i].id === id) return CTYPES[i]; return CTYPES[0]; }
-function maxActive() { return ECON.maxActiveContracts + Math.round(perkSum('ctrslot')); }
+function maxActive() { return ECON.maxActiveContracts + Math.round(perkSum('ctrslot')) + servEff('ctrslot'); }
 function genOffers() {
   M.offers = M.offers.filter(function (o) { return o.day >= M.day - 1; });
   var prods = availableProducts();
@@ -3218,9 +3865,9 @@ function genOffers() {
     var ty = sPick(types), p = sPick(prods);
     var need = Math.round(sr(ty.qty[0], ty.qty[1])) + Math.round(perkSum('ctrcap') * 0.4);
     var relMul = c.rel >= 95 ? 1.15 : c.rel >= 80 ? 1.10 : c.rel >= 60 ? 1.05 : 1;
-    var rew = Math.round(need * prodValue(p.k, p.f) * ty.mul * relMul * (1 + perkSum('ctrmul')) + need * 2);
+    var rew = Math.round(need * prodValue(p.k, p.f) * ty.mul * relMul * (1 + perkSum('ctrmul') + servEff('ctrrew')) + need * 2);
     M.offers.push({ id: 'o' + M.day + '_' + Math.floor(srand() * 99999), co: c.id, ty: ty.id,
-      k: p.k, f: p.f, need: need, dur: Math.round(sr(ty.dur[0], ty.dur[1]) * (1 + perkSum('ctrtime'))),
+      k: p.k, f: p.f, need: need, dur: Math.round(sr(ty.dur[0], ty.dur[1]) * (1 + perkSum('ctrtime') + servEff('offer'))),
       rew: rew, rel: ty.rel, day: M.day });
   }
 }
@@ -3272,7 +3919,7 @@ function iDeliverContract(a, dt) {
 }
 function completeContract(ct) {
   var c = cst(ct.co), d = cdef(ct.co), ty = ctype(ct.ty);
-  S.cash += ct.rew;
+  S.cash += ct.rew; noteFishIncome(ct.rew * 0.5);
   c.rel = clamp(c.rel + ct.rel, 0, 100);
   c.sent += 0.2 + (ty.mul - 1) * 0.5;
   c.health = clamp(c.health + (ty.id === 'proj' || ty.id === 'frame' ? 3 : 1), 0, 100);
@@ -3611,6 +4258,8 @@ if (!M) M = newMarket();
 lastRepLvl = repLevel();
 applyLang();
 syncSettingsUI();
+refreshSaveInfo();
+syncPause();
 resize();
 camX = pX(player.x, player.y); camY = pY(player.x, player.y, 0);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { });
@@ -3632,7 +4281,28 @@ window.BT = {
   snapshot: function () { return JSON.stringify(M); },
   restore: function (j) { M = JSON.parse(j); }, openOffice: openOffice, closeDay: function () { closeDay(); },
   buyShares: buyShares, sellShares: sellShares, acceptContract: acceptContract,
-  setEvent: function (id) { event = EVENTS.filter(function (e) { return e.id === id; })[0]; eventT = event.dur; }
+  setEvent: function (id) { event = EVENTS.filter(function (e) { return e.id === id; })[0]; eventT = event.dur; },
+  /* v0.4 hizmet binaları */
+  SERV: SERV, PLOTS: PLOTS,
+  serv: function () { return servState; },
+  servMods: function () { _seT = -1; return servMods(); },
+  servEff: function (k) { _seT = -1; return servEff(k); },
+  servBuild: function (id, plotId) { return servBuild(id, plotById(plotId) || servFreePlots(id)[0]); },
+  servUp: servUp, servMove: function (id, pid) { return servMove(id, plotById(pid)); },
+  servLock: function (id) { return servLockReason(sdef(id)); },
+  servFree: function (id) { return servFreePlots(id).map(function (p) { return p.id; }); },
+  servValidate: servValidate,
+  servRates: function () { return { fish: fishRate, serv: servRate, cap: Math.max(12, fishRate * 0.30) }; },
+  servUnlock: servUnlock, servCount: servCount,
+  /* duraklatma + kayıt */
+  paused: function () { return paused; },
+  saveNow: function () { manualSave(); return saveMeta(); },
+  saveQuit: saveAndQuit, saveMeta: saveMeta,
+  openSettings: function () { openSettings(false); },
+  openMenu: openPauseMenu,
+  closeOverlays: function () {
+    el.settingsScreen.classList.add('hidden'); el.menuScreen.classList.add('hidden'); syncPause();
+  }
 };
 
 

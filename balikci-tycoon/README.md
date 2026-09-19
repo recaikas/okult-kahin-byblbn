@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — v1.0.1 (pixel art)
+# 🐟 Balıkçı Tycoon — v1.1 (pixel art)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,54 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.1 — Liman Hizmet Binaları + Görsel Evrim (GDD v0.4) & Duraklatma/Kayıt
+
+Ana balık döngüsü (**Ağ → Kesim → Taşıma → Tezgâh → Satış**) hiç değişmedi. Üstüne iki katman eklendi.
+
+### A) Hizmet binaları (GDD v0.4 §31-44)
+
+7 bina, her biri **5 seviye**, her seviyede hem işlev hem **görünüm** değişir. Alt bardaki yeni **🏭 BİNA** sekmesinden kurulur.
+
+| Bina | Bölge | Lv.1 | Lv.5 | Ana etkisi |
+|---|---|---|---|---|
+| 🧊 Buzhane | İskele | $900 | $42.000 | Tür başına arka stok +2 → +12, +1 kontrat kapasitesi |
+| 🛠️ Tamirhane | İskele | $1.500 | $70.000 | Servis geliri + tüm yükseltmelerde −%2 → −%10 |
+| 🏪 Balık Hali | Pazar | $3.200 | $135.000 | Kuyruk +1 → +3, **Toptancı** müşteri tipi, toptan ödülü +%10 |
+| 🍽️ Restoran | Pazar | $4.200 | $190.000 | Otomatik ziyaretçi geliri, **Turist** tipi, müşteri geliri +%8 |
+| 📋 Nakliye Ofisi | Depo | $8.000 | $360.000 | Kontrat slotu +1 → +3, kontrat ödülü +%15 |
+| ⛽ Yakıt İstasyonu | Rıhtım | $10.000 | $440.000 | Servis geliri (sefer bonusu tekne sistemi gelene kadar uykuda) |
+| 🚢 Tersane | Rıhtım | $18.000 | $820.000 | Geç oyun sinki; 4 bina kurulmadan açılmaz |
+
+**Parseller (§32).** Serbest yerleştirme yok — haritada 7 sabit **hizmet parseli** var; her parsel yalnız uyumlu binaları kabul eder. Parseller Lv.5 ayak izine göre baştan rezerve edildi, yani yükseltme hiçbir zaman yürüme koridorunu, müşteri kuyruğunu veya **kasa güvenli alanını** daraltmaz (`BT.servValidate()` bunu test eder). Yanlış parsele kurulduysa **ücretsiz taşınır**, seviye korunur.
+
+**Görsel evrim (§36).** Lv.1 ahşap baraka → Lv.3 taş/tuğla gövde + kiremit çatı → Lv.5 iki hacimli kompleks. Her binanın kendi kimlik rengi (çatı şeridi), kendi propları (buz blokları, vinç, tenteler, masalar, konteynerler, tanklar, kızak) ve Lv.2+ hafif idle animasyonu var. Kurulumda 2,2 sn'lik şantiye sekansı oynar; **yükseltmede bina kullanılamaz hale gelmez**.
+
+**Satın alma güvenliği (§37).** Dünyada çarpınca para harcatan pad **yok**. Her işlem alt bardan, bina→parsel→onay akışıyla yapılır. Kamera hiç sallanmaz.
+
+**Servis geliri tavanı (§38.2).** Binaların pasif geliri, son ~45 sn'deki aktif balık gelirinin **%30'unu** geçemez (taban $12). Amaç AFK para makinesi değil, yatırımın görünür karşılığı.
+
+### B) Duraklatma + kayıt sistemi
+
+- **Pause:** ☰ menü veya Ayarlar açıldığında oyun **tamamen donar** (müşteri, çırak, piyasa, animasyon, oynanış saati). Ekranın üstünde `⏸ DURAKLATILDI` rozeti çıkar.
+- **ESC** duraklatır / devam ettirir.
+- **💾 KAYDET** — anında kaydeder, "Oyun kaydedildi • 21:07" bildirimi verir. Hem Ayarlar hem ☰ menüde var.
+- **💾 KAYDET VE ÇIK** — kaydeder ve ana menüye döner (HUD/alt bar kapanır).
+- **Kayıt kartı:** son kayıt saati, para, itibar, sipariş sayısı ve **toplam oynanış süresi**. Hem başlangıç ekranında hem Ayarlar'da.
+- Başlangıç ekranı kayıt varsa **▶ DEVAM ET** + **YENİ OYUN** (onay soran) gösterir.
+- Otomatik kayıt (6 sn) ve sekme kapanınca kayıt aynen duruyor.
+
+### Kayıt uyumluluğu (§41)
+Eski kayıtlar sorunsuz açılır: **hiçbir bina otomatik satın alınmaz, para kesilmez.** Bozuk kayıtlar temizlenir — bilinmeyen bina atlanır, seviye 1-5 aralığına kırpılır, geçersiz/dolu/kilitli parseldeki bina uygun boş parsele taşınır, yer yoksa kurulmamış sayılır.
+
+### Test
+```
+node --check game.js
+node test-world-render.js          # dünya çiziliyor mu (2 viewport)
+```
+Doğrulandı: parsel çakışması 0, kilitli tipte müşteri 0, 5 seviyede görsel fark, kayıt turu temiz, konsol hatası yok.
 
 ---
 

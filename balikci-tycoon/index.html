@@ -65,10 +65,10 @@
     padding-bottom:calc(4px + env(safe-area-inset-bottom,0px));
     background:linear-gradient(180deg,rgba(10,26,39,.0),rgba(10,26,39,.85) 40%)}
   .dtab{flex:1;background:var(--pnl);border:3px solid var(--edge);color:var(--ink2);
-    font-family:inherit;font-size:9.5px;letter-spacing:.5px;padding:3px 2px 4px;cursor:pointer;
+    font-family:inherit;font-size:8.4px;letter-spacing:0;padding:3px 1px 4px;cursor:pointer;white-space:nowrap;overflow:hidden;
     display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1;
     box-shadow:inset -2px -2px 0 rgba(0,0,0,.3),inset 2px 2px 0 rgba(255,255,255,.06)}
-  .dtab i{font-style:normal;font-size:17px}
+  .dtab i{font-style:normal;font-size:16px}
   .dtab.on{background:var(--gold);color:#3a2401;border-color:#7a5406}
   .dtab.hot{border-color:var(--green)}
   .dtab:active{transform:translate(1px,1px)}
@@ -168,6 +168,15 @@
   .alt{margin-top:8px;width:100%;background:var(--pnl2);border:3px solid var(--edge);color:var(--ink);
     padding:10px;font-size:15px;cursor:pointer;font-family:inherit;letter-spacing:1px}
   .danger{color:#ff9b8a;border-color:#3a1109}
+  .good{color:#9df5b0;border-color:#17532a}
+  .saveinfo{margin-top:6px;font-size:11px;line-height:1.6;text-align:center;color:var(--ink2);
+    background:var(--pnl2);border:3px solid var(--edge);padding:6px 8px;white-space:pre-line}
+  .saveinfo.hidden{display:none}
+  #pauseBadge{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:50%;
+    transform:translateX(-50%);z-index:12;
+    background:rgba(10,26,39,.94);border:3px solid var(--gold);color:var(--gold);
+    font-size:12px;letter-spacing:1px;padding:6px 12px;pointer-events:none}
+  #pauseBadge.hidden{display:none}
   .seg{display:flex;gap:6px;margin:6px 0 2px}
   .seg button{flex:1;background:var(--pnl2);border:3px solid var(--edge);color:var(--ink2);
     padding:9px 4px;font-size:14px;cursor:pointer;font-family:inherit;letter-spacing:1px}
@@ -204,6 +213,7 @@
 <div id="objective" class="hidden"><span class="lbl" id="objLbl">HEDEF</span><span id="objText">—</span></div>
 <div id="queueHint" class="hidden"></div>
 <div id="toast"></div>
+<div id="pauseBadge" class="hidden">⏸ <span id="pauseTxt">DURAKLATILDI</span></div>
 <button id="tradeBtn" class="hidden">🏛️ <span id="tradeLbl">TİCARET</span></button>
 
 <div id="devbar" class="hidden">
@@ -211,6 +221,7 @@
   <button class="dtab" data-t="level"><i>⬆️</i><span id="dtLevel">YÜKSELTME</span></button>
   <button class="dtab" data-t="build"><i>🔨</i><span id="dtBuild">YAPI</span></button>
   <button class="dtab" data-t="proj"><i>🏛️</i><span id="dtProj">PROJE</span></button>
+  <button class="dtab" data-t="serv"><i>🏭</i><span id="dtServ">BİNA</span></button>
 </div>
 <div id="devpanel" class="hidden">
   <div class="dphead"><b id="dpTitle">—</b><button class="btn" id="dpClose">✕</button></div>
@@ -230,7 +241,9 @@
       <button data-l="en" class="flag">🇬🇧 ENGLISH</button>
     </div>
     <ul id="startList"></ul>
+    <div class="saveinfo hidden" id="saveInfo">—</div>
     <button class="go" id="playBtn">OYNA</button>
+    <button class="alt hidden" id="newBtn">YENİ OYUN</button>
     <button class="alt" id="setBtn">AYARLAR</button>
   </div>
 </div>
@@ -252,7 +265,11 @@
     <div class="seg" id="zoomSeg">
       <button data-z="1">-</button><button data-z="2" class="on">◻</button><button data-z="3">+</button>
     </div>
-    <button class="go" id="setClose">TAMAM</button>
+    <span class="lbl" id="setSaveLbl">KAYIT</span>
+    <div class="saveinfo" id="setSaveInfo">—</div>
+    <button class="alt good" id="saveBtn">💾 KAYDET</button>
+    <button class="alt" id="saveQuitBtn">💾 KAYDET VE ÇIK</button>
+    <button class="go" id="setClose">▶ DEVAM ET</button>
     <button class="alt danger" id="resetBtn">KAYDI SIFIRLA</button>
   </div>
 </div>
@@ -282,7 +299,8 @@
       <button class="tab" data-t="yardim">YARDIM</button>
     </div>
     <div id="tabBody"></div>
-    <button class="go" id="closeMenu">DEVAM</button>
+    <button class="go" id="closeMenu">▶ DEVAM ET</button>
+    <button class="alt good" id="menuSave">💾 KAYDET</button>
     <button class="alt" id="menuSet">AYARLAR</button>
   </div>
 </div>
