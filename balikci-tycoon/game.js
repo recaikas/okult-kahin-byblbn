@@ -94,7 +94,32 @@ var STR = {
     lvEffect: 'Ağ +%18, tezgâh +4 stok, yeni yapı yeri',
     staffFull: 'Personel limiti dolu ({n})',
     tut6: 'Alt bardan bir yükseltme satın al',
-    nextStage: 'Sonraki aşama'
+    nextStage: 'Sonraki aşama',
+    /* borsa / kontrat / holding */
+    office: 'TİCARET OFİSİ', officeD: 'Şirketler, kontratlar ve borsa açılır',
+    trade: 'TİCARET', license: 'HOLDİNG LİSANSI', licenseD: '%30 üstü kontrol ve devralma açılır',
+    mktClosed: 'Pazar {d} kapandı • Liman 12: {i} (%{c})',
+    corpRaise: '{n}: sermaye artırımı', corpBuy: '{n}: geri alım', corpSplit: '{n}: hisse bölünmesi',
+    divPaid: 'Temettü: +{v}', privOffer: 'Yeni işletme satışta!', boardReady: '{n}: yönetim kurulu kararı',
+    ctrFull: 'Aktif kontrat limiti ({n})', ctrAccepted: '{n} kontratı kabul edildi',
+    ctrFailed: '{n}: kontrat süresi doldu', ctrDone: '{n} teslim edildi: {v}',
+    noShares: 'Serbest hisse yok', need51: 'Holding lisansı gerekli', orderTooBig: 'Emir çok büyük (böl)',
+    sellLock: 'Aynı pazar gününde satılamaz', sold: 'Satış: +{v}',
+    threshold: '{n}: %{p} ortaklık!', subsidiary: '{n} bağlı ortaklık oldu', privBought: '{n} satın alındı',
+    tabMarket: 'PİYASA', tabCo: 'ŞİRKET', tabCtr: 'KONTRAT', tabPort: 'PORTFÖY', tabNews: 'HABER', tabHold: 'HOLDİNG',
+    idx: 'Liman 12', day: 'Pazar Günü', health: 'Sağlık', growth: 'Büyüme', risk: 'Risk',
+    rel: 'İlişki', own: 'Pay', free: 'Serbest', price: 'Fiyat', buyB: 'AL', sellB: 'SAT',
+    accept: 'KABUL ET', commission: 'komisyon', takeover: 'DEVRAL', boardT: 'YÖNETİM KURULU',
+    stStrong: 'Güçlü', stOk: 'Dengeli', stPress: 'Baskı Altında', stRestr: 'Yeniden Yapılanma',
+    cyExpand: 'Genişleme', cyNormal: 'Normal', cySlow: 'Yavaşlama', cyRecover: 'Toparlanma',
+    relLv: ['Tanımsız Tedarikçi', 'Kayıtlı Tedarikçi', 'Tercihli Tedarikçi', 'Ana Tedarikçi', 'Stratejik Ortak', 'Amiral Ortak'],
+    bCap: 'Kapasite Yatırımı', bGrow: 'Agresif Büyüme', bCost: 'Maliyet Düşürme', bPort: 'Liman Projesi', bDebt: 'Borcu Azalt',
+    noContract: 'Şimdilik kontrat yok', noNews: 'Henüz haber yok', empty: 'Boş',
+    deliverAt: 'Ürünleri Ticaret Ofisi\'ne bırak', activeCtr: 'Aktif kontrat',
+    holdingV: 'Holding değeri', portV: 'Portföy', subsV: 'Bağlı ortaklık', harborV: 'Liman varlığı',
+    privInc: 'İşletme geliri', perks: 'Aktif perkler', buyPriv: 'SATIN AL', offerLeft: '{n} gün kaldı',
+    tutMarket: 'Ticaret Ofisi kuruldu! İlk kontratını al.',
+    privIncome: 'İşletme geliri: +{v}', creditGift: 'Eğitim kredisi: 10 {n} hissesi'
   },
   en: {
     money: 'CASH', carry: 'CARRY', rep: 'REP', goal: 'GOAL', menu: 'HARBOR',
@@ -164,7 +189,31 @@ var STR = {
     lvEffect: 'Nets +18%, stall +4 stock, new build spot',
     staffFull: 'Staff limit reached ({n})',
     tut6: 'Buy an upgrade from the bottom bar',
-    nextStage: 'Next stage'
+    nextStage: 'Next stage',
+    office: 'TRADE OFFICE', officeD: 'Unlocks companies, contracts and the market',
+    trade: 'TRADE', license: 'HOLDING LICENSE', licenseD: 'Unlocks control above 30% and takeovers',
+    mktClosed: 'Day {d} closed • Port 12: {i} ({c}%)',
+    corpRaise: '{n}: capital raise', corpBuy: '{n}: buyback', corpSplit: '{n}: share split',
+    divPaid: 'Dividend: +{v}', privOffer: 'A business is up for sale!', boardReady: '{n}: board decision',
+    ctrFull: 'Active contract limit ({n})', ctrAccepted: '{n} contract accepted',
+    ctrFailed: '{n}: contract expired', ctrDone: '{n} delivered: {v}',
+    noShares: 'No free shares', need51: 'Holding license required', orderTooBig: 'Order too big (split it)',
+    sellLock: 'Cannot sell on the same market day', sold: 'Sold: +{v}',
+    threshold: '{n}: {p}% stake!', subsidiary: '{n} is now a subsidiary', privBought: '{n} acquired',
+    tabMarket: 'MARKET', tabCo: 'COMPANY', tabCtr: 'CONTRACT', tabPort: 'PORTFOLIO', tabNews: 'NEWS', tabHold: 'HOLDING',
+    idx: 'Port 12', day: 'Market Day', health: 'Health', growth: 'Growth', risk: 'Risk',
+    rel: 'Relation', own: 'Stake', free: 'Float', price: 'Price', buyB: 'BUY', sellB: 'SELL',
+    accept: 'ACCEPT', commission: 'fee', takeover: 'TAKEOVER', boardT: 'BOARD',
+    stStrong: 'Strong', stOk: 'Stable', stPress: 'Under Pressure', stRestr: 'Restructuring',
+    cyExpand: 'Expansion', cyNormal: 'Normal', cySlow: 'Slowdown', cyRecover: 'Recovery',
+    relLv: ['Unrated Supplier', 'Registered Supplier', 'Preferred Supplier', 'Key Supplier', 'Strategic Partner', 'Flagship Partner'],
+    bCap: 'Capacity Investment', bGrow: 'Aggressive Growth', bCost: 'Cost Cutting', bPort: 'Port Project', bDebt: 'Reduce Debt',
+    noContract: 'No contracts yet', noNews: 'No news yet', empty: 'Empty',
+    deliverAt: 'Drop goods at the Trade Office', activeCtr: 'Active contracts',
+    holdingV: 'Holding value', portV: 'Portfolio', subsV: 'Subsidiaries', harborV: 'Harbor assets',
+    privInc: 'Business income', perks: 'Active perks', buyPriv: 'BUY', offerLeft: '{n} days left',
+    tutMarket: 'Trade Office built! Take your first contract.',
+    privIncome: 'Business income: +{v}', creditGift: 'Training credit: 10 {n} shares'
   }
 };
 function T(k, p) {
@@ -314,7 +363,7 @@ var FISH = {
 var FISH_ORDER = ['hamsi', 'uskumru', 'levrek', 'somon', 'ton'];
 var FUME_MUL = 2.4, FUME_TIME = 3.2;
 function prodName(k, f) { return NM(FISH[f].n) + (k === 'fume' ? (lang === 'tr' ? ' Füme' : ' Smoked') : (lang === 'tr' ? ' Fileto' : ' Fillet')); }
-function prodValue(k, f) { return Math.round(FISH[f].val * (k === 'fume' ? FUME_MUL : 1) * (1 + S.priceLvl * 0.1)); }
+function prodValue(k, f) { return Math.round(FISH[f].val * (k === 'fume' ? FUME_MUL : 1) * (1 + S.priceLvl * 0.1) * (1 + perkSum('value'))); }
 function itemW(it) { return it.k === 'fish' ? FISH[it.f].w : 1; }
 
 var ROLES = {
@@ -355,9 +404,9 @@ var AREAS = [
 ];
 var MAXLV = 3;
 function areaOf(i) { return AREAS[i]; }
-function areaNetMul(z) { return 1 + (AREAS[z].lvl - 1) * 0.18 + (slotEff(z, 'netrate') || 0); }
-function areaStock(z) { return 12 + (AREAS[z].lvl - 1) * 3 + (slotEff(z, 'stock') || 0); }
-function areaFlow(z) { return 1 + (slotEff(z, 'flow') || 0) + (project.done ? 0.25 : 0); }
+function areaNetMul(z) { return 1 + (AREAS[z].lvl - 1) * 0.18 + (slotEff(z, 'netrate') || 0) + perkSum('netrate') + perkSum('rate'); }
+function areaStock(z) { return 12 + (AREAS[z].lvl - 1) * 3 + (slotEff(z, 'stock') || 0) + Math.round(perkSum('stock') * 0.5); }
+function areaFlow(z) { return 1 + (slotEff(z, 'flow') || 0) + (project.done ? 0.25 : 0) + perkSum('flow'); }
 function queueMax(z) { return AREAS[z].lvl >= 3 ? 5 : 4; }
 
 /* ---------------- yapı noktaları (GDD §22) ---------------- */
@@ -392,7 +441,7 @@ function slotEff(z, eff) {
   return v;
 }
 function staffCap() { return 3 + slotEff(null, 'staff'); }
-function workerSpeedMul() { return 1 + slotEff(null, 'wspeed'); }
+function workerSpeedMul() { return 1 + slotEff(null, 'wspeed') + perkSum('wspeed'); }
 
 /* ---------------- büyük proje (GDD §23) ---------------- */
 var project = {
@@ -468,6 +517,9 @@ function rebuildCounters() {
 }
 function counterMax(c) { return 20 + (AREAS[c.z].lvl - 1) * 4 + slotEff(c.z, 'stock'); }
 var safe = { z: 0, x: 1.2, y: 4.9, pop: 0 };
+var office = { z: 2, x: 6.9, y: 16.2, w: 1.8, h: 1.4 };
+function officeBuilt() { return M && M.office; }
+function officeReady() { return !AREAS[office.z].locked; }
 
 /* ---------------- yükseltme alanları ---------------- */
 var PADS = [
@@ -501,6 +553,7 @@ function carryW(a) { var w = 0; for (var i = 0; i < a.carry.length; i++) w += it
 function repLevel() { var l = 1; for (var i = 0; i < REP_LEVELS.length; i++) if (S.rep >= REP_LEVELS[i].need) l = i + 1; return l; }
 function repTitle() { return NM(REP_LEVELS[repLevel() - 1].t); }
 function wageTotal() { var w = 0; for (var i = 0; i < workers.length; i++) w += ROLES[workers[i].role].wage; return w; }
+function upCost(v) { return Math.max(1, Math.round(v * (1 - perkSum('upcost')))); }
 function pct(n) { return lang === 'tr' ? '%' + n : n + '%'; }
 function perMin() { return lang === 'tr' ? '/dk' : '/min'; }
 function money(n) { return '$' + Math.round(n).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US'); }
@@ -518,7 +571,8 @@ function save() {
       slots: SLOTS.map(function (s) { return s.b; }),
       decor: DECOR.map(function (d) { return d.got ? 1 : 0; }),
       proj: [Math.round(project.inv), project.stage, project.done ? 1 : 0],
-      workers: workers.map(function (w) { return w.role; })
+      workers: workers.map(function (w) { return w.role; }),
+      mk: M
     }));
   } catch (e) { }
 }
@@ -538,6 +592,7 @@ function load() {
     if (d.decor) d.decor.forEach(function (v, i) { if (DECOR[i]) DECOR[i].got = !!v; });
     if (d.proj) { project.inv = d.proj[0] || 0; project.stage = d.proj[1] || 0; project.done = !!d.proj[2]; }
     if (d.workers) d.workers.forEach(function (r) { hire(r, true); });
+    if (d.mk) M = migrateMarket(d.mk);
     return true;
   } catch (e) { return false; }
 }
@@ -726,6 +781,7 @@ function updatePlayer(dt) {
     if (dist2(player.x, player.y, c.tray.x, c.tray.y) < 1.5) acted = iPickMoney(player, c, dt) || acted;
   }
   if (dist2(player.x, player.y, safe.x, safe.y) < 1.8) acted = iDeposit(player, dt) || acted;
+  if (officeBuilt() && dist2(player.x, player.y, office.x, office.y) < 3.4) acted = iDeliverContract(player, dt) || acted;
   if (!acted) player.act = 0;
 }
 
@@ -843,6 +899,11 @@ function aiTezgahtar(w, sp, dt) {
   if (w.mode !== 'drop' && (full || !m) && hasCarry(w, isGoods)) w.mode = 'drop';
   if (w.mode === 'drop' && !hasCarry(w, isGoods)) w.mode = 'load';
   if (w.mode === 'drop') {
+    if (officeBuilt() && M.active.length) {
+      var hasCtr = false;
+      for (i = 0; i < w.carry.length; i++) if (isGoods(w.carry[i]) && contractWants(w.carry[i])) { hasCtr = true; break; }
+      if (hasCtr) { if (goTo(w, office.x, office.y + 1.1, sp, dt, 1.0)) iDeliverContract(w, dt); return; }
+    }
     var c = counterWantingCarry(w) || nearestCounterWithSpace(w);
     if (c) { if (goTo(w, c.x - 0.5, c.y - 0.6, sp, dt, 1.0)) { if (!iDropCounter(w, c, dt)) w.mode = 'load'; } }
     else goTo(w, 7.2, 4.8, sp, dt, 1.0);
@@ -875,6 +936,12 @@ function aiFiletocu(w, sp, dt) {
    İSTASYONLAR
    ========================================================= */
 function poolPick(pool) {
+  var rare = perkSum('rare');
+  if (rare > 0 && Math.random() < rare * 3) {
+    var best = pool[0];
+    for (var q = 1; q < pool.length; q++) if (FISH[pool[q][0]].val > FISH[best[0]].val) best = pool[q];
+    return best[0];
+  }
   var tot = 0, i;
   for (i = 0; i < pool.length; i++) tot += pool[i][1];
   var r = Math.random() * tot;
@@ -900,7 +967,7 @@ function updateStations(dt) {
     t = tables[i]; if (AREAS[t.z].locked) continue;
     if (!t.cur && t.inn.length && t.mat.items.length < 16 + slotEff(t.z, 'stock')) { t.cur = t.inn.shift(); t.t = 0; }
     if (t.cur) {
-      t.t += dt * (t.worker ? 1.55 : 1);
+      t.t += dt * (t.worker ? 1.55 : 1) * (1 + perkSum('procspeed') + perkSum('rate'));
       if (t.t >= FISH[t.cur.f].cut) {
         var F = FISH[t.cur.f];
         for (var k = 0; k < F.out; k++) {
@@ -988,7 +1055,13 @@ function updateCounter(c, dt) {
   if (c.spawnT <= 0 && freeIdx >= 0) {
     c.spawnT = 5.4 * rnd(0.75, 1.3);
     var lvl = repLevel();
-    var type = pick(CUST.filter(function (t) { return t.lvl <= lvl; }));
+    var pool = CUST.filter(function (t) { return t.lvl <= lvl; });
+    var prem = perkSum('premium') + perkSum('vip');
+    if (prem > 0 && Math.random() < prem * 2) {
+      var hi = pool.filter(function (t) { return t.mult >= 1.8; });
+      if (hi.length) pool = hi;
+    }
+    var type = pick(pool);
     var ord = makeOrder(type);
     if (ord) {
       var q = queueSlotPos(c, freeIdx);
@@ -1021,7 +1094,7 @@ function updateCounter(c, dt) {
 function finishOrder(c, cu) {
   var happy = cu.pat / cu.patMax;
   var unit = prodValue(cu.ord.k, cu.ord.f);
-  var pay = Math.round(cu.ord.need * unit * cu.type.mult * (happy > 0.5 ? 1.2 : 1));
+  var pay = Math.round(cu.ord.need * unit * cu.type.mult * (happy > 0.5 ? 1.2 : 1) * (1 + perkSum('custval')));
   payout(c, pay, cu.slot);
   cu.state = 'leave'; c.slots[cu.slot] = null; shiftQueue(c);
   S.served++; S.rep += cu.type.rep;
@@ -1809,6 +1882,31 @@ function drawSlot(s) {
   if (near) uiText(s.x, s.y, 7, '🔨', '#ffc94a', 13, 0.9);
 }
 
+function drawOffice() {
+  var o = office, x = o.x - o.w / 2, y = o.y - o.h / 2;
+  var sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0));
+  if (!officeBuilt()) {
+    ctx.save(); ctx.setLineDash([3, 3]); ctx.lineDashOffset = -gameT * 6;
+    ctx.strokeStyle = '#c9a15e'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(R(pX(x, y)), R(pY(x, y, 0))); ctx.lineTo(R(pX(x + o.w, y)), R(pY(x + o.w, y, 0)));
+    ctx.lineTo(R(pX(x + o.w, y + o.h)), R(pY(x + o.w, y + o.h, 0))); ctx.lineTo(R(pX(x, y + o.h)), R(pY(x, y + o.h, 0)));
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+    if (dist2(player.x, player.y, o.x, o.y) < 50) uiLabel(o.x, o.y, 12, '🏛️ ' + T('office'), '#ffc94a', 0.85);
+    return;
+  }
+  isoBox(x + 0.1, y + 0.1, o.w - 0.2, o.h - 0.2, 0, 26, '#efe4cd', '#cbbd9e', '#ddcfb4');
+  for (var r = 0; r < 6; r++) px(sx - 20 + r * 3, sy - 32 - r, 40 - r * 5, 3, r % 2 ? '#b8442e' : '#c9533b');
+  px(sx - 22, sy - 32, 44, 3, '#8d3423');
+  px(sx - 14, sy - 26, 9, 8, '#3f6f8f'); px(sx + 5, sy - 26, 9, 8, '#3f6f8f');
+  px(sx - 5, sy - 16, 10, 16, '#7d5228');
+  px(sx - 16, sy - 40, 2, 9, '#d8d2c4');
+  px(sx - 14, sy - 40, 8, 5, '#e30a17');
+  px(sx - 21, sy - 12, 42, 8, '#123449');
+  uiText(o.x, o.y, 14, T('office'), '#ffc94a', 11);
+  if (M && M.active.length) uiLabel(o.x, o.y + o.h / 2 + 0.2, 8, '📦 ' + M.active.length + '/' + maxActive(), '#9df5b0', 1);
+}
+
 /* ---------- büyük proje aşamaları ---------- */
 function drawProject() {
   var p = project, st = p.stage;
@@ -2008,6 +2106,7 @@ function render() {
     if (!d.got || AREAS[d.z].locked) return; push(d.x + d.y, function () { drawDecor(d); });
   })(DECOR[i]);
   if (!AREAS[project.z].locked) push(project.x + project.y, drawProject);
+  if (!AREAS[office.z].locked) push(office.x + office.y, drawOffice);
   for (i = 0; i < spots.length; i++) (function (s) {
     if (AREAS[s.z].locked) return; push(s.x + s.y, function () { drawSpot(s); });
   })(spots[i]);
@@ -2106,6 +2205,11 @@ function applyLang() {
   el.langLbl.textContent = T('langLbl');
   el.dtArea.textContent = T('barArea'); el.dtLevel.textContent = T('barLevel');
   el.dtBuild.textContent = T('barBuild'); el.dtProj.textContent = T('barProj');
+  var oft = document.querySelectorAll('#ofTabs .tab');
+  var ofn = ['tabMarket', 'tabCo', 'tabCtr', 'tabPort', 'tabNews', 'tabHold'];
+  for (var q = 0; q < oft.length; q++) oft[q].textContent = T(ofn[q]);
+  document.getElementById('ofTitle').textContent = T('office');
+  document.getElementById('tradeLbl').textContent = T('trade');
   var tabs = document.querySelectorAll('#menuTabs .tab');
   for (var i = 0; i < tabs.length; i++) tabs[i].textContent = T('tabs')[i];
   Array.prototype.forEach.call(document.querySelectorAll('#langSeg button,#langSeg2 button'), function (b) {
@@ -2172,6 +2276,12 @@ function syncHUD(dt) {
   if (toastT > 0) { toastT -= dt; if (toastT <= 0) el.toast.classList.remove('on'); }
   if (cfT > 0) { cfT -= dt; if (cfT <= 0 && cfId) { cfId = null; renderBar(); } }
   barHot();
+  syncTradeBtn();
+  ofRefresh -= dt;
+  if (ofRefresh <= 0) {
+    ofRefresh = 1;
+    if (!document.getElementById('officeScr').classList.contains('hidden')) renderOffice();
+  }
 }
 
 /* ---------- alt panel ---------- */
@@ -2210,7 +2320,7 @@ function barList() {
       if (!a.locked || AREAS[i - 1].locked) continue;
       var blk = S.rep < a.rep;
       out.push({ id: 'a' + i, ic: '🔓', t: NM(a.n), s: T('areaGives') + (a.rep ? ' • ⭐' + a.rep : ''),
-        cost: a.cost, blocked: blk, why: T('needRep', { n: a.rep, c: S.rep }),
+        cost: upCost(a.cost), blocked: blk, why: T('needRep', { n: a.rep, c: S.rep }),
         go: function (k) { return function () { AREAS[k].locked = false; rebuildCounters(); reassignWorkers(); clampCam(); sfx.build(); toast(T('areaOpen', { n: NM(AREAS[k].n) })); }; }(i) });
       break;
     }
@@ -2220,7 +2330,7 @@ function barList() {
       var ar = AREAS[i];
       if (ar.locked || ar.lvl >= MAXLV) continue;
       out.push({ id: 'l' + i, ic: '🏗️', t: NM(ar.n) + '  ' + T('level') + ar.lvl + '→' + (ar.lvl + 1),
-        s: areaLevelEffect(ar), cost: ar.up[ar.lvl],
+        s: areaLevelEffect(ar), cost: upCost(ar.up[ar.lvl]),
         go: function (k) { return function () { AREAS[k].lvl++; rebuildCounters(); sfx.build(); toast(T('areaLvUp', { n: NM(AREAS[k].n), l: AREAS[k].lvl })); }; }(i) });
     }
     for (i = 0; i < PADS.length; i++) {
@@ -2229,7 +2339,7 @@ function barList() {
       if (AREAS[p.z].locked || p.lvl >= p.max) continue;
       var info = padInfo(p), bl = padBlocked(p);
       out.push({ id: p.id, ic: p.icon, t: info.t + (p.max > 1 ? '  ' + T('level') + p.lvl + '→' + (p.lvl + 1) : ''),
-        s: info.e, cost: padPrice(p), blocked: bl, why: T('staffFull', { n: staffCap() }),
+        s: info.e, cost: upCost(padPrice(p)), blocked: bl, why: T('staffFull', { n: staffCap() }),
         go: function (pp) { return function () { applyPad(pp); }; }(p) });
     }
     if (!out.length) out.push({ empty: T('emptyLevel') });
@@ -2242,7 +2352,7 @@ function barList() {
         if (sl.cats.indexOf(bd.cat) < 0) continue;
         var owned = sl.b === bd.id;
         var refund = sl.b ? Math.round(bdef(sl.b).cost * 0.6) : 0;
-        out.push({ id: 'b' + bd.id, ic: bd.icon, t: NM(bd.n), s: NM(bd.d), cost: bd.cost, refund: refund,
+        out.push({ id: 'b' + bd.id, ic: bd.icon, t: NM(bd.n), s: NM(bd.d), cost: upCost(bd.cost), refund: refund,
           owned: owned, go: function (b2) { return function () { slotBuild(barSlot, b2); }; }(bd.id) });
       }
     } else {
@@ -2269,11 +2379,11 @@ function barList() {
   return out;
 }
 function slotBuild(sl, id) {
-  var d = bdef(id);
-  var refund = sl.b ? Math.round(bdef(sl.b).cost * 0.6) : 0;
+  var d = bdef(id), price = upCost(d.cost);
+  var refund = sl.b ? Math.round(upCost(bdef(sl.b).cost) * 0.6) : 0;
   if (sl.b === id) return;
-  if (S.cash + refund < d.cost) { toast(T('noMoney')); sfx.bad(); return; }
-  S.cash += refund - d.cost;
+  if (S.cash + refund < price) { toast(T('noMoney')); sfx.bad(); return; }
+  S.cash += refund - price;
   sl.b = id; rebuildCounters(); reassignWorkers();
   sfx.build(); toast(T('built', { n: NM(d.n) }));
   addPuff(sl.x, sl.y, '#ffc94a');
@@ -2319,15 +2429,32 @@ function renderBar() {
   });
 }
 function renderProjPanel() {
-  if (AREAS[project.z].locked) { el.dpCards.innerHTML = '<div class="dempty">' + T('emptyProj') + '</div>'; return; }
+  var extra = '';
+  if (officeReady() && M && !M.office) {
+    var oc = upCost(ECON.officeCost), okRep = S.rep >= ECON.officeRep;
+    extra += '<div class="dcard"><span class="ic">🏛️</span><b>' + T('office') + '</b><small>' + T('officeD') +
+      (okRep ? '' : ' • ⭐' + ECON.officeRep) + '</small>' +
+      '<button class="buy' + (okRep && S.cash >= oc ? (cfId === 'office' ? ' cf' : '') : ' no') + '" data-x="office">' +
+      (okRep ? (cfId === 'office' ? T('confirm') : money(oc)) : T('needRep', { n: ECON.officeRep, c: S.rep })) + '</button></div>';
+  }
+  if (M && M.office && !M.license) {
+    var lc = upCost(ECON.licenseCost), okR2 = S.rep >= ECON.licenseRep;
+    extra += '<div class="dcard"><span class="ic">📜</span><b>' + T('license') + '</b><small>' + T('licenseD') + '</small>' +
+      '<button class="buy' + (okR2 && S.cash >= lc ? (cfId === 'lic' ? ' cf' : '') : ' no') + '" data-x="lic">' +
+      (okR2 ? (cfId === 'lic' ? T('confirm') : money(lc)) : T('needRep', { n: ECON.licenseRep, c: S.rep })) + '</button></div>';
+  }
+  if (AREAS[project.z].locked) {
+    el.dpCards.innerHTML = extra || '<div class="dempty">' + T('emptyProj') + '</div>';
+    bindProjExtra(); return;
+  }
   var pc = projPct();
   if (project.done) {
-    el.dpCards.innerHTML = '<div class="dcard dwide"><span class="ic">🏛️</span><b>' + NM(project.n) +
+    el.dpCards.innerHTML = extra + '<div class="dcard"><span class="ic">🏛️</span><b>' + NM(project.n) +
       '</b><small>' + T('done') + ' ✔</small></div>';
-    return;
+    bindProjExtra(); return;
   }
   var nextTh = project.stages[Math.min(project.stage, project.stages.length - 1)] * project.total;
-  el.dpCards.innerHTML = '<div class="dcard dwide"><b>' + NM(project.n) + '  ' + T('stage') + ' ' + project.stage + '/5</b>' +
+  el.dpCards.innerHTML = extra + '<div class="dcard dwide"><b>' + NM(project.n) + '  ' + T('stage') + ' ' + project.stage + '/5</b>' +
     '<div class="dbar"><i style="width:' + Math.round(pc * 100) + '%"></i></div>' +
     '<small>' + money(project.inv) + ' / ' + money(project.total) + ' — ' + T('nextStage') + ': ' + money(Math.max(0, nextTh - project.inv)) + '</small>' +
     '<div class="dinv"><button data-a="1000">+' + money(1000) + '</button><button data-a="10000">+' + money(10000) +
@@ -2336,6 +2463,33 @@ function renderProjPanel() {
     b.onclick = function () {
       var a = b.dataset.a;
       investProject(a === 'max' ? S.cash : a === 'q' ? S.cash * 0.25 : parseInt(a, 10));
+    };
+  });
+  bindProjExtra();
+}
+function bindProjExtra() {
+  Array.prototype.forEach.call(el.dpCards.querySelectorAll('.buy[data-x]'), function (b) {
+    b.onclick = function () {
+      var x = b.dataset.x;
+      if (x === 'office') {
+        if (S.rep < ECON.officeRep) { sfx.bad(); return; }
+        if (cfId !== 'office') { cfId = 'office'; cfT = 3.5; renderBar(); return; }
+        cfId = null;
+        purchase(upCost(ECON.officeCost), false, function () {
+          M.office = true; M.day = 1; M.t = 0; genOffers();
+          if (M.credit > 0) {
+            var tc = cst('atlas');
+            tc.free -= M.credit; tc.own += M.credit; M.credit = 0;
+            notify(T('creditGift', { n: NM(cdef('atlas').n) }), 'mid');
+          }
+          notify(T('tutMarket'), 'high'); sfx.build();
+        });
+      } else if (x === 'lic') {
+        if (S.rep < ECON.licenseRep) { sfx.bad(); return; }
+        if (cfId !== 'lic') { cfId = 'lic'; cfT = 3.5; renderBar(); return; }
+        cfId = null;
+        purchase(upCost(ECON.licenseCost), false, function () { M.license = true; sfx.build(); notify(T('license'), 'high'); });
+      }
     };
   });
 }
@@ -2350,6 +2504,8 @@ function barHot() {
   }
   for (i = 0; i < SLOTS.length; i++) if (slotActive(SLOTS[i]) && !SLOTS[i].b && S.cash >= 900) hot.build = true;
   if (!AREAS[project.z].locked && !project.done && S.cash >= 1000) hot.proj = true;
+  if (M && officeReady() && !M.office && S.rep >= ECON.officeRep && S.cash >= upCost(ECON.officeCost)) hot.proj = true;
+  if (M && M.office && !M.license && S.rep >= ECON.licenseRep && S.cash >= upCost(ECON.licenseCost)) hot.proj = true;
   Array.prototype.forEach.call(document.querySelectorAll('.dtab'), function (b) {
     b.classList.toggle('hot', !!hot[b.dataset.t] && barTab !== b.dataset.t);
   });
@@ -2467,6 +2623,7 @@ function frame(ts) {
   updateStations(dt);
   updateCustomers(dt);
   updateEvents(dt);
+  updateMarket(dt);
   updateTutorial();
   updateFx(dt);
   if (workers.length) S.cash = Math.max(0, S.cash - wageTotal() / 60 * dt);
@@ -2487,6 +2644,768 @@ el.playBtn.onclick = start;
 window.addEventListener('beforeunload', save);
 document.addEventListener('visibilitychange', function () { if (document.hidden) save(); });
 
+var ECON = {
+  dayLen: 300,            /* 1 Pazar Günü = 5 dk aktif oynanış (§4.1) */
+  comm: 0.015,            /* alım/satım komisyonu (§4.4) */
+  officeCost: 18000, officeRep: 40,
+  licenseCost: 90000, licenseRep: 90,
+  privScale: 0.25,        /* özel işletme fiyat ölçeği */
+  dividendEvery: 4, dividendHealth: 55,
+  maxActiveContracts: 3, offerPool: 6,
+  normalBand: 0.18, bigBand: 0.28,
+  takeoverPremium: 1.20, takeoverPremiumMax: 1.35,
+  perkCap: { carry: 0.20, upcost: 0.20, speed: 0.20, value: 0.20, rate: 0.25 }
+};
+var SEC = {
+  fleet:   { tr: 'Balıkçılık Filosu', en: 'Fishing Fleet' },
+  log:     { tr: 'Liman Lojistiği', en: 'Port Logistics' },
+  cold:    { tr: 'Depolama', en: 'Cold Storage' },
+  proc:    { tr: 'İşleme', en: 'Processing' },
+  yard:    { tr: 'Tersane', en: 'Shipyard' },
+  resto:   { tr: 'Restoran Zinciri', en: 'Restaurants' },
+  pack:    { tr: 'Paketleme', en: 'Packaging' },
+  marine:  { tr: 'Deniz Nakliyatı', en: 'Marine Freight' },
+  deep:    { tr: 'Açık Deniz', en: 'Deep Sea' },
+  mach:    { tr: 'Endüstri Ekipmanı', en: 'Machinery' },
+  whole:   { tr: 'Toptan Ticaret', en: 'Wholesale' },
+  tour:    { tr: 'Kruvaziyer / Turizm', en: 'Tourism' }
+};
+/* §3 kurgusal şirket evreni + §9 perkler + §18.1 başlangıç değerleri */
+var COMPANIES = [
+  { id: 'kuzey', n: { tr: 'Kuzey Ağları A.Ş.', en: 'North Nets Co.' }, sec: 'fleet', risk: 72, price: 32, fl: 0.60, div: 0.25, col: '#2f6f9e',
+    p5: { k: 'netstock', v: 1, t: { tr: 'Ağ stok +1', en: 'Net stock +1' } }, p15: { k: 'netrate', v: 0.08, t: { tr: 'Ağ üretimi +%8', en: 'Net output +8%' } },
+    ctrl: { tr: 'Filo İskelesi', en: 'Fleet Pier' } },
+  { id: 'mavihat', n: { tr: 'MaviHat Lojistik', en: 'BlueLine Logistics' }, sec: 'log', risk: 38, price: 48, fl: 0.55, div: 0.30, col: '#3f8fbf',
+    p5: { k: 'wspeed', v: 0.05, t: { tr: 'Personel taşıma +%5', en: 'Staff speed +5%' } }, p15: { k: 'ctrslot', v: 1, t: { tr: 'Toplu teslim slotu +1', en: 'Bulk slot +1' } },
+    ctrl: { tr: 'Yükleme Koridoru', en: 'Loading Corridor' } },
+  { id: 'buzmar', n: { tr: 'BuzMar Soğuk Zincir', en: 'IceMar Cold Chain' }, sec: 'cold', risk: 30, price: 42, fl: 0.50, div: 0.35, col: '#58b7c9',
+    p5: { k: 'stock', v: 10, t: { tr: 'Depo kapasitesi +10', en: 'Storage +10' } }, p15: { k: 'upcost', v: 0.10, t: { tr: 'Yükseltme -%10', en: 'Upgrades -10%' } },
+    ctrl: { tr: 'Merkezi Depo', en: 'Central Depot' } },
+  { id: 'okyanus', n: { tr: 'Okyanus Gıda', en: 'Ocean Foods' }, sec: 'proc', risk: 58, price: 65, fl: 0.55, div: 0.25, col: '#d98455',
+    p5: { k: 'procspeed', v: 0.05, t: { tr: 'İşleme hızı +%5', en: 'Processing +5%' } }, p15: { k: 'value', v: 0.08, t: { tr: 'İşlenmiş ürün +%8', en: 'Processed value +8%' } },
+    ctrl: { tr: 'İşleme Tesisi', en: 'Processing Plant' } },
+  { id: 'tersane', n: { tr: 'Tersane 47', en: 'Shipyard 47' }, sec: 'yard', risk: 70, price: 95, fl: 0.40, div: 0.20, col: '#b8763a',
+    p5: { k: 'upcost', v: 0.05, t: { tr: 'Yükseltme -%5', en: 'Upgrades -5%' } }, p15: { k: 'rate', v: 0.06, t: { tr: 'Ağ + işleme +%6', en: 'Nets + cutting +6%' } },
+    ctrl: { tr: 'Büyük Tersane', en: 'Grand Shipyard' } },
+  { id: 'kiyi', n: { tr: 'Kıyı Sofrası', en: 'Shore Table' }, sec: 'resto', risk: 50, price: 38, fl: 0.65, div: 0.30, col: '#c8553d',
+    p5: { k: 'custval', v: 0.03, t: { tr: 'Müşteri harcaması +%3', en: 'Customer spend +3%' } }, p15: { k: 'premium', v: 0.08, t: { tr: 'Premium müşteri +%8', en: 'Premium customers +8%' } },
+    ctrl: { tr: 'Restoran Meydanı', en: 'Restaurant Square' } },
+  { id: 'atlas', n: { tr: 'Atlas Ambalaj', en: 'Atlas Packaging' }, sec: 'pack', risk: 32, price: 28, fl: 0.60, div: 0.30, col: '#8a7f5c',
+    p5: { k: 'ctrcap', v: 5, t: { tr: 'Kontrat teslim kapasitesi +5', en: 'Contract capacity +5' } }, p15: { k: 'ctrmul', v: 0.05, t: { tr: 'Hacimli kontrat +%5', en: 'Bulk contracts +5%' } },
+    ctrl: { tr: 'Paketleme Merkezi', en: 'Packaging Center' } },
+  { id: 'marti', n: { tr: 'Martı Denizcilik', en: 'Gull Maritime' }, sec: 'marine', risk: 60, price: 72, fl: 0.50, div: 0.25, col: '#5f7f9c',
+    p5: { k: 'flow', v: 0.05, t: { tr: 'Müşteri akışı +%5', en: 'Customer flow +5%' } }, p15: { k: 'ctrslot', v: 1, t: { tr: 'Gemi kontrat slotu +1', en: 'Ship contract slot +1' } },
+    ctrl: { tr: 'Derin Su Rıhtımı', en: 'Deepwater Quay' } },
+  { id: 'derinsu', n: { tr: 'DerinSu Avcılık', en: 'DeepBlue Fishing' }, sec: 'deep', risk: 85, price: 120, fl: 0.35, div: 0.15, col: '#1f4e6b',
+    p5: { k: 'rare', v: 0.03, t: { tr: 'Nadir av şansı +%3', en: 'Rare catch +3%' } }, p15: { k: 'netrate', v: 0.10, t: { tr: 'Açık deniz ağları +%10', en: 'Deep sea nets +10%' } },
+    ctrl: { tr: 'Açık Deniz Üssü', en: 'Deep Sea Base' } },
+  { id: 'makina', n: { tr: 'Liman Makina', en: 'Port Machinery' }, sec: 'mach', risk: 48, price: 54, fl: 0.50, div: 0.25, col: '#8d8156',
+    p5: { k: 'upcost', v: 0.04, t: { tr: 'Mekanik yükseltme -%4', en: 'Mech upgrades -4%' } }, p15: { k: 'upcost', v: 0.08, t: { tr: 'İstasyon yükseltme -%8', en: 'Station upgrades -8%' } },
+    ctrl: { tr: 'Bakım Atölyesi', en: 'Maintenance Shop' } },
+  { id: 'ada', n: { tr: 'Ada Pazarlama', en: 'Isle Trading' }, sec: 'whole', risk: 52, price: 44, fl: 0.60, div: 0.30, col: '#7b5ea7',
+    p5: { k: 'flow', v: 0.05, t: { tr: 'Toptan müşteri +%5', en: 'Wholesale customers +5%' } }, p15: { k: 'ctrmul', v: 0.06, t: { tr: 'Büyük alıcı siparişleri', en: 'Big buyer orders' } },
+    ctrl: { tr: 'Toptan Balık Hali', en: 'Wholesale Hall' } },
+  { id: 'mercan', n: { tr: 'Mercan Turizm', en: 'Coral Tourism' }, sec: 'tour', risk: 68, price: 80, fl: 0.45, div: 0.20, col: '#d4a029',
+    p5: { k: 'vip', v: 0.03, t: { tr: 'VIP müşteri +%3', en: 'VIP customers +3%' } }, p15: { k: 'custval', v: 0.06, t: { tr: 'Kruvaziyer dalgası +%6', en: 'Cruise wave +6%' } },
+    ctrl: { tr: 'Turistik İskele', en: 'Tourist Pier' } }
+];
+/* §6 kontrat tipleri */
+var CTYPES = [
+  { id: 'std',  n: { tr: 'Standart Tedarik', en: 'Standard Supply' }, dur: [180, 360], mul: 1.25, rel: 3,  qty: [6, 12],  minRel: 0 },
+  { id: 'rush', n: { tr: 'Acil Sipariş', en: 'Rush Order' },          dur: [60, 120],  mul: 1.60, rel: 4,  qty: [3, 6],   minRel: 20 },
+  { id: 'bulk', n: { tr: 'Hacimli Sevkiyat', en: 'Bulk Shipment' },   dur: [360, 600], mul: 1.35, rel: 5,  qty: [16, 28], minRel: 20 },
+  { id: 'frame',n: { tr: 'Çerçeve Anlaşma', en: 'Framework Deal' },   dur: [420, 600], mul: 1.50, rel: 10, qty: [10, 18], minRel: 40, parts: 3 },
+  { id: 'spec', n: { tr: 'Özel Sipariş', en: 'Special Order' },       dur: [240, 480], mul: 1.80, rel: 6,  qty: [8, 14],  minRel: 60 },
+  { id: 'excl', n: { tr: 'Münhasır Anlaşma', en: 'Exclusive Deal' },  dur: [600, 900], mul: 1.55, rel: 15, qty: [20, 34], minRel: 80 },
+  { id: 'resc', n: { tr: 'Kurtarma Kontratı', en: 'Rescue Contract' },dur: [240, 420], mul: 1.70, rel: 12, qty: [10, 18], minRel: 20, rescue: true },
+  { id: 'proj', n: { tr: 'Büyük Proje Tedariği', en: 'Project Supply' }, dur: [480, 720], mul: 1.65, rel: 20, qty: [24, 40], minRel: 60 }
+];
+/* §13 haber kütüphanesi (24 olay) */
+var NEWS = [
+  { id: 'bereket', sec: 'fleet', lo: 6, hi: 10, n: { tr: 'Bereketli Av Sezonu', en: 'Bountiful Season' } },
+  { id: 'firtina', sec: 'fleet', lo: -14, hi: -8, n: { tr: 'Sert Fırtına', en: 'Heavy Storm' } },
+  { id: 'filosip', sec: 'yard', lo: 8, hi: 12, n: { tr: 'Yeni Filo Siparişi', en: 'New Fleet Order' } },
+  { id: 'parca', sec: 'yard', lo: -10, hi: -6, n: { tr: 'Motor Parça Sıkıntısı', en: 'Engine Part Shortage' } },
+  { id: 'yogun', sec: 'log', lo: -9, hi: -5, n: { tr: 'Liman Yoğunluğu', en: 'Port Congestion' } },
+  { id: 'depoac', sec: 'cold', lo: 5, hi: 9, n: { tr: 'Yeni Depo Açılışı', en: 'New Depot Opens' } },
+  { id: 'depoar', sec: 'cold', lo: -12, hi: -8, n: { tr: 'Depo Arızası', en: 'Depot Breakdown' }, rescue: true },
+  { id: 'restsz', sec: 'resto', lo: 6, hi: 11, n: { tr: 'Restoran Sezonu', en: 'Restaurant Season' } },
+  { id: 'kruvaz', sec: 'tour', lo: 8, hi: 14, n: { tr: 'Kruvaziyer Dalgası', en: 'Cruise Wave' } },
+  { id: 'sezson', sec: 'tour', lo: -12, hi: -7, n: { tr: 'Sezon Sonu', en: 'Season Ends' } },
+  { id: 'toptan', sec: 'whole', lo: 7, hi: 12, n: { tr: 'Büyük Toptan Anlaşma', en: 'Big Wholesale Deal' } },
+  { id: 'hammad', sec: 'pack', lo: -8, hi: -5, n: { tr: 'Hammadde Artışı', en: 'Raw Material Spike' } },
+  { id: 'yenihat', sec: 'proc', lo: 6, hi: 10, n: { tr: 'Yeni İşleme Hattı', en: 'New Process Line' } },
+  { id: 'iade', sec: 'proc', lo: -11, hi: -6, n: { tr: 'Ürün İadesi', en: 'Product Recall' }, rescue: true },
+  { id: 'rota', sec: 'marine', lo: 5, hi: 9, n: { tr: 'Yeni Rota Açıldı', en: 'New Route Opened' } },
+  { id: 'rotak', sec: 'marine', lo: -12, hi: -7, n: { tr: 'Rota Kesintisi', en: 'Route Disruption' } },
+  { id: 'ihale', sec: 'mach', lo: 5, hi: 8, n: { tr: 'Bakım İhaleleri', en: 'Maintenance Tenders' } },
+  { id: 'kurum', sec: null, lo: 4, hi: 10, n: { tr: 'Büyük Kurumsal Sipariş', en: 'Major Corporate Order' } },
+  { id: 'yonetim', sec: null, lo: -4, hi: 6, n: { tr: 'Yönetim Değişimi', en: 'Management Change' } },
+  { id: 'temar', sec: null, lo: 3, hi: 6, n: { tr: 'Temettü Artışı', en: 'Dividend Raise' } },
+  { id: 'temkes', sec: null, lo: -9, hi: -5, n: { tr: 'Temettü Kesintisi', en: 'Dividend Cut' } },
+  { id: 'sermay', sec: null, lo: -3, hi: 3, n: { tr: 'Sermaye Artırımı', en: 'Capital Raise' }, act: 'raise' },
+  { id: 'gerial', sec: null, lo: 3, hi: 8, n: { tr: 'Geri Alım Programı', en: 'Buyback Program' }, act: 'buyback' },
+  { id: 'ortak', sec: null, lo: 5, hi: 10, n: { tr: 'Stratejik Ortaklık', en: 'Strategic Partnership' } }
+];
+/* §16 satın alınabilir küçük işletmeler */
+var PRIVS = [
+  { id: 'buzdepo', n: { tr: 'Küçük Buz Deposu', en: 'Small Ice Depot' }, cost: 120000, inc: 350, b: { k: 'stock', v: 5, t: { tr: 'Depo +5', en: 'Storage +5' } } },
+  { id: 'lokanta', n: { tr: 'Yerel Balık Lokantası', en: 'Local Fish Diner' }, cost: 180000, inc: 500, b: { k: 'premium', v: 0.02, t: { tr: 'Premium müşteri +%2', en: 'Premium +2%' } } },
+  { id: 'filo', n: { tr: 'Mini Nakliye Filosu', en: 'Mini Freight Fleet' }, cost: 260000, inc: 700, b: { k: 'ctrtime', v: 0.10, t: { tr: 'Kontrat süresi +%10', en: 'Contract time +10%' } } },
+  { id: 'paket', n: { tr: 'Paketleme Atölyesi', en: 'Packing Workshop' }, cost: 350000, inc: 900, b: { k: 'ctrmul', v: 0.03, t: { tr: 'Kontrat ödülü +%3', en: 'Contract reward +3%' } } },
+  { id: 'hal', n: { tr: 'Kıyı Balık Hali', en: 'Shore Fish Hall' }, cost: 600000, inc: 1500, b: { k: 'flow', v: 0.08, t: { tr: 'Toptan müşteri +%8', en: 'Wholesale +8%' } } },
+  { id: 'tersane2', n: { tr: 'Bölgesel Tersane', en: 'Regional Shipyard' }, cost: 950000, inc: 2200, b: { k: 'upcost', v: 0.05, t: { tr: 'Yükseltme -%5', en: 'Upgrades -5%' } } }
+];
+var HOLD_TIERS = [
+  { v: 0, n: { tr: 'Yerel İşletme', en: 'Local Business' } },
+  { v: 500000, n: { tr: 'Liman Grubu', en: 'Port Group' } },
+  { v: 2000000, n: { tr: 'Denizcilik Grubu', en: 'Maritime Group' } },
+  { v: 8000000, n: { tr: 'Bölgesel Holding', en: 'Regional Holding' } },
+  { v: 25000000, n: { tr: 'Deniz İmparatorluğu', en: 'Sea Empire' } }
+];
+
+
+
+/* =========================================================
+   PİYASA MOTORU (§4, §5, §10-§14, §21)
+   ========================================================= */
+var M = null;
+function cdef(id) { for (var i = 0; i < COMPANIES.length; i++) if (COMPANIES[i].id === id) return COMPANIES[i]; return null; }
+function cst(id) { for (var i = 0; i < M.co.length; i++) if (M.co[i].id === id) return M.co[i]; return null; }
+function newMarket() {
+  return {
+    v: 1, day: 1, t: 0, cycle: 'normal', cycleLeft: 4, seed: (Math.random() * 4294967296) >>> 0,
+    idx: 1000, prevIdx: 1000, news: [], mom: {},
+    co: COMPANIES.map(function (c) {
+      return { id: c.id, price: c.price, prev: c.price, hist: [c.price], health: 58 + (100 - c.risk) * 0.12,
+        growth: 50, risk: c.risk, sent: 0, free: Math.round(10000 * c.fl), own: 0, rel: 0,
+        div: 0, status: 'ok', ev: [], lockDay: -1, board: 0, listed: true, resc: 0 };
+    }),
+    offers: [], active: [], done: 0, failed: 0, divDay: 0,
+    office: false, license: false, priv: [], privOffer: null, privDay: 5,
+    boardQ: [], tut: 0, credit: 10, notif: []
+  };
+}
+/* §21: tohum save'de tutulur; kapat-aç ile farklı sonuç üretilmez */
+function srand() {
+  M.seed = (M.seed + 0x6D2B79F5) | 0;
+  var t = M.seed;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+function sr(a, b) { return a + srand() * (b - a); }
+function sPick(arr) { return arr[Math.floor(srand() * arr.length)]; }
+
+/* ---------- perkler (§9) ---------- */
+var PERK_GROUP = { netrate: 'rate', rate: 'rate', procspeed: 'speed', wspeed: 'speed', upcost: 'upcost', value: 'value', custval: 'value' };
+var _pkCache = {}, _pkT = -1;
+function perkSum(key) {
+  if (!M) return 0;
+  if (_pkT !== gameT) { _pkCache = {}; _pkT = gameT; }
+  if (_pkCache[key] !== undefined) return _pkCache[key];
+  var v = 0, i;
+  for (i = 0; i < M.co.length; i++) {
+    var c = M.co[i], d = cdef(c.id), pct = c.own / 10000;
+    if (pct >= 0.05 && d.p5.k === key) v += d.p5.v;
+    if (pct >= 0.15 && d.p15.k === key) v += d.p15.v;
+    if (pct >= 0.51) { if (d.p5.k === key) v += d.p5.v * 0.5; if (d.p15.k === key) v += d.p15.v * 0.5; }
+  }
+  for (i = 0; i < M.priv.length; i++) {
+    var pd = PRIVS.filter(function (q) { return q.id === M.priv[i]; })[0];
+    if (pd && pd.b.k === key) v += pd.b.v;
+  }
+  var g = PERK_GROUP[key];
+  if (g && ECON.perkCap[g]) v = Math.min(v, ECON.perkCap[g]);
+  _pkCache[key] = v;
+  return v;
+}
+function ownPct(c) { return c.own / 10000; }
+function portfolioValue() {
+  if (!M) return 0;
+  var v = 0;
+  for (var i = 0; i < M.co.length; i++) v += M.co[i].own * M.co[i].price;
+  return v;
+}
+function subsValue() {
+  var v = 0;
+  for (var i = 0; i < M.co.length; i++) if (ownPct(M.co[i]) >= 1) v += 10000 * M.co[i].price * 1.2;
+  for (var j = 0; j < M.priv.length; j++) {
+    var pd = PRIVS.filter(function (q) { return q.id === M.priv[j]; })[0];
+    if (pd) v += pd.cost * ECON.privScale;
+  }
+  return v;
+}
+function harborValue() {
+  var v = 0, i;
+  for (i = 0; i < AREAS.length; i++) if (!AREAS[i].locked) v += AREAS[i].cost + (AREAS[i].lvl - 1) * 2000;
+  for (i = 0; i < SLOTS.length; i++) if (SLOTS[i].b) v += bdef(SLOTS[i].b).cost;
+  v += project.inv + (M && M.office ? ECON.officeCost : 0);
+  return v;
+}
+function holdingValue() { return S.cash + harborValue() + portfolioValue() + subsValue(); }
+function holdingTier() {
+  var t = HOLD_TIERS[0], v = holdingValue();
+  for (var i = 0; i < HOLD_TIERS.length; i++) if (v >= HOLD_TIERS[i].v) t = HOLD_TIERS[i];
+  return t;
+}
+
+/* ---------- pazar günü ---------- */
+function marketProgress() { return M ? clamp(M.t / ECON.dayLen, 0, 1) : 0; }
+function updateMarket(dt) {
+  if (!M || !M.office) return;
+  M.t += dt;
+  updateContracts(dt);
+  if (M.t >= ECON.dayLen) { M.t = 0; closeDay(); }
+}
+var CYCLES = ['expand', 'normal', 'slow', 'recover'];
+var CYCLE_SEC = { expand: ['tour', 'resto', 'proc', 'log'], slow: ['tour', 'resto', 'whole'], recover: ['yard', 'mach', 'fleet'] };
+function closeDay() {
+  var i, c, d;
+  M.day++;
+  /* döngü (§12) */
+  M.cycleLeft--;
+  if (M.cycleLeft <= 0) { M.cycle = sPick(CYCLES); M.cycleLeft = Math.round(sr(3, 6)); }
+  /* sektör momentumu */
+  M.mom = {};
+  var secs = Object.keys(SEC);
+  M.mom[sPick(secs)] = sr(0.01, 0.05);
+  M.mom[sPick(secs)] = -sr(0.01, 0.05);
+  var cs = CYCLE_SEC[M.cycle];
+  if (cs) for (i = 0; i < cs.length; i++) M.mom[cs[i]] = (M.mom[cs[i]] || 0) + (M.cycle === 'slow' ? -0.03 : 0.03);
+  /* haberler (§13) */
+  var nToday = srand() < 0.5 ? 1 : 2;
+  var todays = [];
+  for (i = 0; i < nToday; i++) {
+    var ev = sPick(NEWS);
+    var target = ev.sec ? M.co.filter(function (q) { return cdef(q.id).sec === ev.sec; }) : [sPick(M.co)];
+    if (!target.length) continue;
+    var imp = sr(ev.lo, ev.hi) / 100;
+    for (var k = 0; k < target.length; k++) target[k].ev.push({ id: ev.id, imp: imp, left: srand() < 0.4 ? 2 : 1 });
+    var tn = target.length === 1 ? NM(cdef(target[0].id).n) : NM(SEC[ev.sec]);
+    todays.push({ d: M.day, t: NM(ev.n), w: tn, imp: imp, big: Math.abs(imp) > 0.11 });
+    if (ev.act === 'raise') corpAction(target[0], 'raise');
+    if (ev.act === 'buyback') corpAction(target[0], 'buyback');
+    if (ev.rescue) target[0].resc = 3;
+  }
+  M.news = todays.concat(M.news).slice(0, 36);
+  /* fiyat kapanışı (§23.1) */
+  var capTot = 0, capPrev = 0, chs = [], chSum = 0;
+  for (i = 0; i < M.co.length; i++) {
+    c = M.co[i]; d = cdef(c.id);
+    var sector = clamp(M.mom[d.sec] || 0, -0.05, 0.05);
+    var health = ((c.health - 50) / 50) * 0.04;
+    var evTot = 0;
+    for (var e = c.ev.length - 1; e >= 0; e--) {
+      evTot += c.ev[e].imp * (c.ev[e].left > 1 ? 1 : 0.6);
+      c.ev[e].left--; if (c.ev[e].left <= 0) c.ev.splice(e, 1);
+    }
+    evTot = clamp(evTot, -0.12, 0.12);
+    var pl = clamp(c.sent * 0.02, -0.02, 0.02);
+    var noise = sr(-0.03, 0.03);
+    var big = Math.abs(evTot) > 0.11;
+    var ch = sector + health + evTot + pl + noise;
+    chs.push({ c: c, ch: ch, big: big });
+    chSum += ch;
+  }
+  /* piyasa nötrlemesi: ortalama sürüklenme kırpılır (endeks dengede kalır) */
+  var avgCh = chSum / Math.max(1, chs.length);
+  for (i = 0; i < chs.length; i++) {
+    c = chs[i].c; d = cdef(c.id);
+    var big = chs[i].big;
+    var ch = chs[i].ch - avgCh;
+    ch = clamp(ch, -(big ? ECON.bigBand : ECON.normalBand), (big ? ECON.bigBand : ECON.normalBand));
+    var sector = clamp(M.mom[d.sec] || 0, -0.05, 0.05);
+    var evTot = ch;
+    c.prev = c.price;
+    c.price = Math.max(8, Math.round(c.price * (1 + ch) * 100) / 100);
+    c.hist.push(c.price); if (c.hist.length > 12) c.hist.shift();
+    /* sağlık / büyüme / risk (§5) */
+    c.health = clamp(c.health + (55 - c.health) * 0.06 + (sector + evTot) * 35 + c.sent * 2 + sr(-2, 2), 5, 100);
+    c.growth = clamp(c.growth + (50 - c.growth) * 0.05 + (ch > 0 ? 2 : -2) + c.sent + sr(-3, 3), 0, 100);
+    c.risk = clamp(d.risk + (100 - c.health) * 0.25 + sr(-4, 4), 5, 100);
+    c.sent *= 0.5;
+    c.status = c.health >= 75 && c.growth >= 60 ? 'strong' : c.health >= 45 ? 'ok' : c.health >= 25 ? 'press' : 'restr';
+    if (c.status === 'restr' && c.resc <= 0) c.resc = 3;
+    if (srand() < 0.08) corpAction(c, c.price > 500 ? 'split' : (c.health > 70 ? 'buyback' : 'raise'));
+    capTot += c.price * 10000; capPrev += c.prev * 10000;
+  }
+  M.prevIdx = M.idx;
+  M.idx = Math.round(M.idx * (capTot / Math.max(1, capPrev)));
+  /* temettü (§10) */
+  M.divDay++;
+  if (M.divDay >= ECON.dividendEvery) {
+    M.divDay = 0; payDividends();
+  }
+  /* pasif işletme geliri (§16) */
+  var pinc = privIncome();
+  if (pinc > 0) { S.cash += pinc; notify(T('privIncome', { v: money(pinc) }), 'low'); }
+  /* kurtarma penceresi */
+  for (i = 0; i < M.co.length; i++) if (M.co[i].resc > 0) M.co[i].resc--;
+  /* kontrat havuzu + özel işletme teklifi + yönetim kurulu */
+  genOffers();
+  if (M.privOffer) { M.privOffer.left--; if (M.privOffer.left <= 0) M.privOffer = null; }
+  M.privDay--;
+  if (M.privDay <= 0 && !M.privOffer) { newPrivOffer(); M.privDay = Math.round(sr(4, 7)); }
+  for (i = 0; i < M.co.length; i++) {
+    c = M.co[i];
+    if (ownPct(c) >= 0.30) { c.board--; if (c.board <= 0) { c.board = 3; queueBoard(c); } }
+  }
+  var dch = M.idx - M.prevIdx;
+  if (!document.getElementById('officeScr').classList.contains('hidden')) renderOffice();
+  notify(T('mktClosed', { d: M.day, i: M.idx, c: (dch >= 0 ? '+' : '') + Math.round(dch / Math.max(1, M.prevIdx) * 1000) / 10 }), 'mid');
+  save();
+}
+function corpAction(c, kind) {
+  var d = cdef(c.id);
+  if (kind === 'raise') {
+    var add = Math.round(1000 * sr(0.5, 1.5));
+    c.free += add; c.price = Math.max(8, Math.round(c.price * 0.97 * 100) / 100);
+    c.health = clamp(c.health + 6, 0, 100);
+    notify(T('corpRaise', { n: NM(d.n) }), 'low');
+  } else if (kind === 'buyback') {
+    var rm = Math.min(c.free - 500, Math.round(600 * sr(0.5, 1.5)));
+    if (rm > 0) { c.free -= rm; c.price = Math.round(c.price * 1.04 * 100) / 100; notify(T('corpBuy', { n: NM(d.n) }), 'low'); }
+  } else if (kind === 'split') {
+    c.price = Math.round(c.price / 2 * 100) / 100; c.free *= 2; c.own *= 2;
+    notify(T('corpSplit', { n: NM(d.n) }), 'low');
+  }
+}
+function payDividends() {
+  var tot = 0;
+  for (var i = 0; i < M.co.length; i++) {
+    var c = M.co[i], d = cdef(c.id);
+    if (c.health < ECON.dividendHealth || c.status === 'press' || c.status === 'restr') continue;
+    if (!c.own) continue;
+    var pool = c.price * 10000 * 0.15 * d.div * (1 + (c.divBonus || 0));
+    var pay = Math.round(pool * ownPct(c));
+    if (pay > 0) { S.cash += pay; tot += pay; }
+  }
+  if (tot > 0) notify(T('divPaid', { v: money(tot) }), 'mid');
+}
+function newPrivOffer() {
+  var owned = M.priv;
+  var pool = PRIVS.filter(function (p) { return owned.indexOf(p.id) < 0 && p.cost * ECON.privScale <= Math.max(20000, holdingValue() * 0.8); });
+  if (!pool.length) return;
+  M.privOffer = { id: sPick(pool).id, left: 2 };
+  notify(T('privOffer'), 'mid');
+}
+function queueBoard(c) {
+  M.boardQ.push({ co: c.id, opts: ['cap', 'grow', 'cost', 'port', 'debt'].sort(function () { return srand() - 0.5; }).slice(0, 3) });
+  notify(T('boardReady', { n: NM(cdef(c.id).n) }), 'mid');
+}
+function applyBoard(entry, opt) {
+  var c = cst(entry.co), cost = Math.round(c.price * 10000 * 0.02);
+  if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return false; }
+  S.cash -= cost;
+  if (opt === 'cap') { c.health = clamp(c.health + 5, 0, 100); }
+  else if (opt === 'grow') { c.growth = clamp(c.growth + 12, 0, 100); c.risk = clamp(c.risk + 10, 0, 100); }
+  else if (opt === 'cost') { c.divBonus = (c.divBonus || 0) + 0.10; c.health = clamp(c.health + 2, 0, 100); }
+  else if (opt === 'port') { c.health = clamp(c.health + 3, 0, 100); S.rep += 3; }
+  else { c.health = clamp(c.health + 10, 0, 100); c.risk = clamp(c.risk - 10, 0, 100); }
+  M.boardQ.splice(M.boardQ.indexOf(entry), 1);
+  sfx.buy(); save(); return true;
+}
+/* =========================================================
+   KONTRATLAR (§6, §7)
+   ========================================================= */
+function ctype(id) { for (var i = 0; i < CTYPES.length; i++) if (CTYPES[i].id === id) return CTYPES[i]; return CTYPES[0]; }
+function maxActive() { return ECON.maxActiveContracts + Math.round(perkSum('ctrslot')); }
+function genOffers() {
+  M.offers = M.offers.filter(function (o) { return o.day >= M.day - 1; });
+  var prods = availableProducts();
+  if (!prods.length) return;
+  var tries = 0;
+  while (M.offers.length < ECON.offerPool && tries++ < 40) {
+    var c = sPick(M.co);
+    if (!c.listed && ownPct(c) >= 1) continue;
+    var types = CTYPES.filter(function (t) { return c.rel >= t.minRel && (!t.rescue || c.resc > 0); });
+    if (!types.length) continue;
+    var ty = sPick(types), p = sPick(prods);
+    var need = Math.round(sr(ty.qty[0], ty.qty[1])) + Math.round(perkSum('ctrcap') * 0.4);
+    var relMul = c.rel >= 95 ? 1.15 : c.rel >= 80 ? 1.10 : c.rel >= 60 ? 1.05 : 1;
+    var rew = Math.round(need * prodValue(p.k, p.f) * ty.mul * relMul * (1 + perkSum('ctrmul')) + need * 2);
+    M.offers.push({ id: 'o' + M.day + '_' + Math.floor(srand() * 99999), co: c.id, ty: ty.id,
+      k: p.k, f: p.f, need: need, dur: Math.round(sr(ty.dur[0], ty.dur[1]) * (1 + perkSum('ctrtime'))),
+      rew: rew, rel: ty.rel, day: M.day });
+  }
+}
+function acceptContract(o) {
+  if (M.active.length >= maxActive()) { toast(T('ctrFull', { n: maxActive() })); sfx.bad(); return false; }
+  var i = M.offers.indexOf(o);
+  if (i >= 0) M.offers.splice(i, 1);
+  M.active.push({ id: o.id, co: o.co, ty: o.ty, k: o.k, f: o.f, need: o.need, got: 0, rew: o.rew, rel: o.rel, left: o.dur, dur: o.dur });
+  sfx.buy(); notify(T('ctrAccepted', { n: NM(cdef(o.co).n) }), 'low'); save();
+  return true;
+}
+function updateContracts(dt) {
+  for (var i = M.active.length - 1; i >= 0; i--) {
+    var a = M.active[i];
+    a.left -= dt;
+    if (a.left <= 0) {
+      var c = cst(a.co), ty = ctype(a.ty);
+      c.rel = clamp(c.rel - (ty.id === 'rush' || ty.id === 'excl' ? 8 : 5), 0, 100);
+      c.sent -= 0.5;
+      M.active.splice(i, 1); M.failed++;
+      notify(T('ctrFailed', { n: NM(cdef(a.co).n) }), 'mid'); sfx.bad(); save();
+    }
+  }
+}
+function contractWants(it) {
+  for (var i = 0; i < M.active.length; i++) {
+    var a = M.active[i];
+    if (a.k === it.k && a.f === it.f && a.got < a.need) return a;
+  }
+  return null;
+}
+function iDeliverContract(a, dt) {
+  if (!M || !M.office || !M.active.length) return false;
+  var want = null, i;
+  for (i = 0; i < a.carry.length; i++) {
+    if (!isGoods(a.carry[i])) continue;
+    var w = contractWants(a.carry[i]);
+    if (w) { want = a.carry[i]; break; }
+  }
+  if (!want) return false;
+  return tryTake(a, dt, function () {
+    var ct = contractWants(want);
+    var it = popCarry(a, function (q) { return q === want; });
+    ct.got++;
+    fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), office.x, office.y, 16, it, 0.26);
+    sfx.drop();
+    if (ct.got >= ct.need) completeContract(ct);
+  });
+}
+function completeContract(ct) {
+  var c = cst(ct.co), d = cdef(ct.co), ty = ctype(ct.ty);
+  S.cash += ct.rew;
+  c.rel = clamp(c.rel + ct.rel, 0, 100);
+  c.sent += 0.2 + (ty.mul - 1) * 0.5;
+  c.health = clamp(c.health + (ty.id === 'proj' || ty.id === 'frame' ? 3 : 1), 0, 100);
+  if (ty.rescue) { c.health = clamp(c.health + 25, 0, 100); c.resc = 0; c.rel = clamp(c.rel + 3, 0, 100); }
+  S.rep += 1;
+  M.active.splice(M.active.indexOf(ct), 1); M.done++;
+  addFloat(office.x, office.y - 0.5, '+' + money(ct.rew), '#ffe27a');
+  notify(T('ctrDone', { n: NM(d.n), v: money(ct.rew) }), 'mid');
+  sfx.coin(); checkRepLevel(); save();
+}
+
+/* =========================================================
+   HİSSE İŞLEMLERİ (§4.4, §8, §22.6)
+   ========================================================= */
+function orderPremium(c, qty) {
+  var pctF = qty / Math.max(1, c.free);
+  if (pctF <= 0.01) return 0;
+  if (pctF <= 0.02) return 0.03;
+  if (pctF <= 0.03) return 0.06;
+  if (pctF <= 0.04) return 0.10;
+  if (pctF <= 0.05) return 0.15;
+  return -1;
+}
+function buyCost(c, qty) {
+  var pr = orderPremium(c, qty);
+  if (pr < 0) return -1;
+  return Math.round(c.price * qty * (1 + pr) * (1 + ECON.comm));
+}
+function buyShares(id, qty) {
+  var c = cst(id);
+  if (!c || !c.listed) return false;
+  qty = Math.min(qty, c.free);
+  if (qty <= 0) { toast(T('noShares')); sfx.bad(); return false; }
+  if (ownPct(c) + qty / 10000 > 0.30 && !M.license) {
+    var lim = Math.max(0, Math.floor(0.30 * 10000 - c.own));
+    if (lim <= 0) { toast(T('need51')); sfx.bad(); return false; }
+    qty = Math.min(qty, lim);
+  }
+  var cost = buyCost(c, qty);
+  if (cost < 0) { toast(T('orderTooBig')); sfx.bad(); return false; }
+  if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return false; }
+  var before = ownPct(c);
+  S.cash -= cost; c.free -= qty; c.own += qty; c.lockDay = M.day; c.inv = (c.inv || 0) + cost;
+  checkThreshold(c, before);
+  sfx.coin(); save(); return true;
+}
+function sellShares(id, qty) {
+  var c = cst(id);
+  if (!c || !c.own) return false;
+  if (c.lockDay === M.day) { toast(T('sellLock')); sfx.bad(); return false; }
+  qty = Math.min(qty, c.own);
+  var gain = Math.round(c.price * qty * (1 - ECON.comm));
+  var avg = c.inv ? c.inv / (c.own || 1) : c.price;
+  c.own -= qty; c.free += qty; S.cash += gain; c.inv = Math.max(0, (c.inv || 0) - avg * qty);
+  notify(T('sold', { v: money(gain) }), 'low');
+  sfx.coin(); save(); return true;
+}
+var TH = [0.01, 0.05, 0.15, 0.30, 0.51, 1];
+function checkThreshold(c, before) {
+  var now = ownPct(c);
+  for (var i = 0; i < TH.length; i++) {
+    if (before < TH[i] && now >= TH[i]) {
+      notify(T('threshold', { n: NM(cdef(c.id).n), p: Math.round(TH[i] * 100) }), 'mid');
+      sfx.star();
+      if (TH[i] >= 1) { c.listed = false; notify(T('subsidiary', { n: NM(cdef(c.id).n) }), 'high'); }
+    }
+  }
+}
+function takeoverPrice(c, target) {
+  var need = Math.max(0, Math.round(target * 10000) - c.own);
+  var prem = ECON.takeoverPremium + (c.health / 100) * (ECON.takeoverPremiumMax - ECON.takeoverPremium);
+  return { need: need, cost: Math.round(need * c.price * prem), prem: prem };
+}
+function canTakeover(c) { return M.license && ownPct(c) >= 0.30 && c.rel >= 80 && c.listed; }
+function doTakeover(id, target) {
+  var c = cst(id);
+  if (!canTakeover(c)) { sfx.bad(); return false; }
+  var t = takeoverPrice(c, target);
+  if (S.cash < t.cost) { toast(T('noMoney')); sfx.bad(); return false; }
+  var before = ownPct(c);
+  S.cash -= t.cost; c.own += t.need; c.free = Math.max(0, c.free - t.need); c.inv = (c.inv || 0) + t.cost;
+  checkThreshold(c, before);
+  sfx.build(); save(); return true;
+}
+function buyPrivate() {
+  if (!M.privOffer) return false;
+  var pd = PRIVS.filter(function (q) { return q.id === M.privOffer.id; })[0];
+  var cost = Math.round(pd.cost * ECON.privScale);
+  if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return false; }
+  S.cash -= cost; M.priv.push(pd.id); M.privOffer = null;
+  notify(T('privBought', { n: NM(pd.n) }), 'high'); sfx.build(); save(); return true;
+}
+function privIncome() {
+  var v = 0;
+  for (var i = 0; i < M.priv.length; i++) {
+    var pd = PRIVS.filter(function (q) { return q.id === M.priv[i]; })[0];
+    if (pd) v += pd.inc;
+  }
+  return v;
+}
+function notify(msg, lvl) {
+  if (!M) return;
+  M.notif.unshift({ m: msg, d: M.day }); if (M.notif.length > 20) M.notif.pop();
+  if (lvl !== 'low') toast(msg);
+}
+/* =========================================================
+   TİCARET OFİSİ ARAYÜZÜ (§19)
+   ========================================================= */
+function migrateMarket(d) {
+  var base = newMarket();
+  if (!d) return base;
+  for (var k in base) if (d[k] !== undefined && k !== 'co') base[k] = d[k];
+  if (d.co) base.co = base.co.map(function (c) {
+    var old = null;
+    for (var i = 0; i < d.co.length; i++) if (d.co[i].id === c.id) old = d.co[i];
+    if (old) for (var kk in c) if (old[kk] !== undefined) c[kk] = old[kk];
+    return c;
+  });
+  return base;
+}
+var ofTab = 'market', ofSel = null, ofRefresh = 1;
+function openOffice() {
+  if (!officeBuilt()) return;
+  document.getElementById('officeScr').classList.remove('hidden');
+  renderOffice();
+}
+function closeOffice() { document.getElementById('officeScr').classList.add('hidden'); }
+function relLevel(rel) { return rel >= 95 ? 5 : rel >= 80 ? 4 : rel >= 60 ? 3 : rel >= 40 ? 2 : rel >= 20 ? 1 : 0; }
+function statusName(st) { return T(st === 'strong' ? 'stStrong' : st === 'ok' ? 'stOk' : st === 'press' ? 'stPress' : 'stRestr'); }
+function chgPct(c) { return c.prev ? ((c.price - c.prev) / c.prev) * 100 : 0; }
+function chgCls(v) { return v > 0.05 ? 'up' : v < -0.05 ? 'dn' : 'fl'; }
+function fmtPct(v) { return (v >= 0 ? '+' : '') + (Math.round(v * 10) / 10).toString().replace('.', ',') + '%'; }
+
+function renderOffice() {
+  if (!M) return;
+  var body = document.getElementById('ofBody'), h = '';
+  document.getElementById('ofDay').textContent = T('day') + ' ' + M.day + ' • ' + T('cy' + (M.cycle.charAt(0).toUpperCase() + M.cycle.slice(1)));
+  document.getElementById('ofDayBar').style.width = (marketProgress() * 100) + '%';
+  var i, c, d;
+  if (ofTab === 'market') {
+    var ich = M.prevIdx ? ((M.idx - M.prevIdx) / M.prevIdx) * 100 : 0;
+    h += '<div class="crow" style="cursor:default"><div class="nm"><b>' + T('idx') + '</b><small>' + T('day') + ' ' + M.day + '</small></div>' +
+      '<div class="pr">' + M.idx + '<small class="' + chgCls(ich) + '">' + fmtPct(ich) + '</small></div></div>';
+    for (i = 0; i < M.co.length; i++) {
+      c = M.co[i]; d = cdef(c.id);
+      var ch = chgPct(c);
+      h += '<div class="crow" data-c="' + c.id + '"><span class="sq" style="background:' + d.col + '"></span>' +
+        '<div class="nm">' + NM(d.n) + '<small>' + NM(SEC[d.sec]) + (c.own ? ' • ' + T('own') + ' %' + (Math.round(ownPct(c) * 1000) / 10) : '') +
+        (c.listed ? '' : ' • ' + T('subsV')) + '</small></div>' +
+        '<div class="pr">' + money(c.price) + '<small class="' + chgCls(ch) + '">' + fmtPct(ch) + '</small></div></div>';
+    }
+  } else if (ofTab === 'co') {
+    if (!ofSel) ofSel = M.co[0].id;
+    c = cst(ofSel); d = cdef(ofSel);
+    var ch2 = chgPct(c), mx = Math.max.apply(null, c.hist), mn = Math.min.apply(null, c.hist);
+    h += '<div class="crow" style="cursor:default"><span class="sq" style="background:' + d.col + '"></span>' +
+      '<div class="nm"><b>' + NM(d.n) + '</b><small>' + NM(SEC[d.sec]) + ' • ' + statusName(c.status) + '</small></div>' +
+      '<div class="pr">' + money(c.price) + '<small class="' + chgCls(ch2) + '">' + fmtPct(ch2) + '</small></div></div>';
+    if (c.hist.length > 2 && mx > mn) {
+      h += '<div class="spark">';
+      for (i = 0; i < c.hist.length; i++) h += '<i style="height:' + (8 + ((c.hist[i] - mn) / (mx - mn)) * 92) + '%"></i>';
+      h += '</div>';
+    }
+    h += '<div class="stat">' +
+      '<div>' + T('health') + '<b>' + Math.round(c.health) + '</b><span class="mbar"><i style="width:' + Math.round(c.health) + '%;background:#5fd37a"></i></span></div>' +
+      '<div>' + T('growth') + '<b>' + Math.round(c.growth) + '</b><span class="mbar"><i style="width:' + Math.round(c.growth) + '%;background:#ffc94a"></i></span></div>' +
+      '<div>' + T('risk') + '<b>' + Math.round(c.risk) + '</b><span class="mbar"><i style="width:' + Math.round(c.risk) + '%;background:#e5533d"></i></span></div></div>';
+    h += '<div class="stat"><div>' + T('rel') + '<b>' + Math.round(c.rel) + '</b></div>' +
+      '<div>' + T('own') + '<b>%' + (Math.round(ownPct(c) * 1000) / 10) + '</b></div>' +
+      '<div>' + T('free') + '<b>' + c.free + '</b></div></div>';
+    h += '<div class="note">' + T('relLv')[relLevel(c.rel)] + ' • %5: ' + NM(d.p5.t) + ' • %15: ' + NM(d.p15.t) +
+      ' • %51: ' + NM(d.ctrl) + '</div>';
+    if (c.listed) {
+      h += '<div class="qrow">' +
+        '<button class="b" data-b="1">' + T('buyB') + ' 1</button>' +
+        '<button class="b" data-b="10">' + T('buyB') + ' 10</button>' +
+        '<button class="b" data-b="100">' + T('buyB') + ' 100</button>' +
+        '<button class="b" data-b="f5">' + T('buyB') + ' %5</button></div>';
+      h += '<div class="qrow">' +
+        '<button class="s" data-s="10">' + T('sellB') + ' 10</button>' +
+        '<button class="s" data-s="100">' + T('sellB') + ' 100</button>' +
+        '<button class="s" data-s="all">' + T('sellB') + ' ' + T('maxInvest') + '</button></div>';
+      h += '<div class="note">' + T('commission') + ' %1,5 • ' + (c.lockDay === M.day ? T('sellLock') : '') + '</div>';
+      if (canTakeover(c)) {
+        var tk = takeoverPrice(c, 0.51), tk2 = takeoverPrice(c, 1);
+        h += '<div class="qrow"><button data-t="51">' + T('takeover') + ' %51 — ' + money(tk.cost) + '</button>' +
+          '<button data-t="100">' + T('takeover') + ' %100 — ' + money(tk2.cost) + '</button></div>';
+      } else if (ownPct(c) >= 0.30) {
+        h += '<div class="note">' + T('takeover') + ': ' + (M.license ? '' : T('license') + ' • ') + T('rel') + ' 80+</div>';
+      }
+    }
+    var bq = null;
+    for (i = 0; i < M.boardQ.length; i++) if (M.boardQ[i].co === c.id) bq = M.boardQ[i];
+    if (bq) {
+      h += '<div class="ctrc"><b>' + T('boardT') + '</b><small>' + money(Math.round(c.price * 10000 * 0.02)) + '</small><div class="qrow">';
+      for (i = 0; i < bq.opts.length; i++) h += '<button data-bd="' + bq.opts[i] + '">' + T('b' + bq.opts[i].charAt(0).toUpperCase() + bq.opts[i].slice(1)) + '</button>';
+      h += '</div></div>';
+    }
+    h += '<div class="qrow">';
+    for (i = 0; i < M.co.length; i++) h += '<button data-sel="' + M.co[i].id + '" style="min-width:34px;font-size:10px;' +
+      (M.co[i].id === ofSel ? 'border-color:#ffc94a' : '') + '">' + NM(cdef(M.co[i].id).n).slice(0, 4) + '</button>';
+    h += '</div>';
+  } else if (ofTab === 'ctr') {
+    h += '<div class="note">' + T('deliverAt') + ' • ' + T('activeCtr') + ': ' + M.active.length + '/' + maxActive() + '</div>';
+    for (i = 0; i < M.active.length; i++) {
+      var a = M.active[i], ad = cdef(a.co);
+      h += '<div class="ctrc"><b>' + NM(ad.n) + ' — ' + NM(ctype(a.ty).n) + '</b>' +
+        '<small>' + prodName(a.k, a.f) + ' ' + a.got + '/' + a.need + ' • ' + money(a.rew) + ' • ' + Math.ceil(a.left) + 's</small>' +
+        '<div class="pbar2"><i style="width:' + Math.round(a.got / a.need * 100) + '%"></i></div></div>';
+    }
+    if (!M.offers.length) h += '<div class="empty">' + T('noContract') + '</div>';
+    for (i = 0; i < M.offers.length; i++) {
+      var o = M.offers[i], od = cdef(o.co), oc = cst(o.co);
+      h += '<div class="ctrc"><b>' + NM(od.n) + ' — ' + NM(ctype(o.ty).n) + '</b>' +
+        '<small>' + prodName(o.k, o.f) + ' x' + o.need + ' • ' + Math.round(o.dur) + 's • +' + o.rel + ' ' + T('rel') +
+        ' • ' + T('relLv')[relLevel(oc.rel)] + '</small>' +
+        '<button class="go2" data-o="' + o.id + '">' + T('accept') + ' — ' + money(o.rew) + '</button></div>';
+    }
+  } else if (ofTab === 'port') {
+    var tot = 0, inv = 0;
+    for (i = 0; i < M.co.length; i++) {
+      c = M.co[i]; if (!c.own) continue;
+      d = cdef(c.id);
+      var val = c.own * c.price, avg = c.inv ? c.inv / c.own : c.price;
+      tot += val; inv += c.inv || 0;
+      var pl = ((c.price - avg) / avg) * 100;
+      h += '<div class="crow" data-c="' + c.id + '"><span class="sq" style="background:' + d.col + '"></span>' +
+        '<div class="nm">' + NM(d.n) + '<small>' + c.own + ' • ' + T('price') + ' ' + money(avg) + ' • %' + (Math.round(ownPct(c) * 1000) / 10) + '</small></div>' +
+        '<div class="pr">' + money(val) + '<small class="' + chgCls(pl) + '">' + fmtPct(pl) + '</small></div></div>';
+    }
+    if (!tot) h += '<div class="empty">' + T('empty') + '</div>';
+    h += '<div class="stat"><div>' + T('portV') + '<b>' + money(tot) + '</b></div>' +
+      '<div>' + T('money') + '<b>' + money(S.cash) + '</b></div>' +
+      '<div>' + T('privInc') + '<b>' + money(privIncome()) + '</b></div></div>';
+  } else if (ofTab === 'news') {
+    if (!M.news.length) h += '<div class="empty">' + T('noNews') + '</div>';
+    for (i = 0; i < Math.min(M.news.length, 18); i++) {
+      var nw = M.news[i];
+      h += '<div class="newsr" style="border-color:' + (nw.imp >= 0 ? '#5fd37a' : '#e5533d') + '">' +
+        '<b>' + nw.t + '</b> — ' + nw.w + ' <span class="' + chgCls(nw.imp * 100) + '">' + fmtPct(nw.imp * 100) + '</span>' +
+        ' <small style="opacity:.6">' + T('day') + ' ' + nw.d + '</small></div>';
+    }
+  } else {
+    var tier = holdingTier();
+    h += '<div class="stat"><div>' + T('holdingV') + '<b>' + money(holdingValue()) + '</b></div>' +
+      '<div>' + NM(tier.n) + '<b>&nbsp;</b></div></div>';
+    h += '<div class="stat"><div>' + T('harborV') + '<b>' + money(harborValue()) + '</b></div>' +
+      '<div>' + T('portV') + '<b>' + money(portfolioValue()) + '</b></div>' +
+      '<div>' + T('subsV') + '<b>' + money(subsValue()) + '</b></div></div>';
+    if (M.privOffer) {
+      var pd = PRIVS.filter(function (q) { return q.id === M.privOffer.id; })[0];
+      var pcost = Math.round(pd.cost * ECON.privScale);
+      h += '<div class="ctrc"><b>' + NM(pd.n) + '</b><small>' + NM(pd.b.t) + ' • ' + money(pd.inc) + '/' + T('day') +
+        ' • ' + T('offerLeft', { n: M.privOffer.left }) + '</small>' +
+        '<button class="go2" data-p="1">' + T('buyPriv') + ' — ' + money(pcost) + '</button></div>';
+    }
+    for (i = 0; i < M.priv.length; i++) {
+      var op = PRIVS.filter(function (q) { return q.id === M.priv[i]; })[0];
+      h += '<div class="crow" style="cursor:default"><span class="sq" style="background:#5fd37a"></span>' +
+        '<div class="nm">' + NM(op.n) + '<small>' + NM(op.b.t) + '</small></div><div class="pr">' + money(op.inc) + '</div></div>';
+    }
+    var subs = M.co.filter(function (q) { return ownPct(q) >= 0.51; });
+    for (i = 0; i < subs.length; i++) {
+      var sd = cdef(subs[i].id);
+      h += '<div class="crow" style="cursor:default"><span class="sq" style="background:' + sd.col + '"></span>' +
+        '<div class="nm">' + NM(sd.n) + '<small>' + NM(sd.ctrl) + ' • %' + (Math.round(ownPct(subs[i]) * 1000) / 10) + '</small></div></div>';
+    }
+    var pk = [];
+    ['netrate', 'rate', 'stock', 'wspeed', 'procspeed', 'value', 'custval', 'flow', 'upcost', 'ctrmul', 'premium', 'vip', 'rare'].forEach(function (k) {
+      var v = perkSum(k); if (v > 0.0001) pk.push(k + ' +' + (v < 1 ? Math.round(v * 100) + '%' : Math.round(v)));
+    });
+    h += '<div class="note">' + T('perks') + ': ' + (pk.length ? pk.join(' • ') : '—') + '</div>';
+  }
+  body.innerHTML = h;
+  /* olaylar */
+  Array.prototype.forEach.call(body.querySelectorAll('.crow[data-c]'), function (r) {
+    r.onclick = function () { ofSel = r.dataset.c; setOfTab('co'); };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll('[data-b]'), function (b) {
+    b.onclick = function () {
+      var c2 = cst(ofSel), q = b.dataset.b;
+      var qty = q === 'f5' ? Math.max(1, Math.floor(c2.free * 0.05)) : parseInt(q, 10);
+      buyShares(ofSel, qty); renderOffice();
+    };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll('[data-s]'), function (b) {
+    b.onclick = function () {
+      var c2 = cst(ofSel), q = b.dataset.s;
+      sellShares(ofSel, q === 'all' ? c2.own : parseInt(q, 10)); renderOffice();
+    };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll('[data-t]'), function (b) {
+    b.onclick = function () { doTakeover(ofSel, b.dataset.t === '51' ? 0.51 : 1); renderOffice(); };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll('[data-bd]'), function (b) {
+    b.onclick = function () {
+      for (var q = 0; q < M.boardQ.length; q++) if (M.boardQ[q].co === ofSel) { applyBoard(M.boardQ[q], b.dataset.bd); break; }
+      renderOffice();
+    };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll('[data-sel]'), function (b) {
+    b.onclick = function () { ofSel = b.dataset.sel; renderOffice(); };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll('[data-o]'), function (b) {
+    b.onclick = function () {
+      for (var q = 0; q < M.offers.length; q++) if (M.offers[q].id === b.dataset.o) { acceptContract(M.offers[q]); break; }
+      renderOffice();
+    };
+  });
+  var pb = body.querySelector('[data-p]');
+  if (pb) pb.onclick = function () { buyPrivate(); renderOffice(); };
+}
+function setOfTab(t) {
+  ofTab = t;
+  Array.prototype.forEach.call(document.querySelectorAll('#ofTabs .tab'), function (b) { b.classList.toggle('on', b.dataset.t === t); });
+  renderOffice();
+}
+Array.prototype.forEach.call(document.querySelectorAll('#ofTabs .tab'), function (b) {
+  b.onclick = function () { setOfTab(b.dataset.t); };
+});
+document.getElementById('ofClose').onclick = closeOffice;
+document.getElementById('tradeBtn').onclick = openOffice;
+function syncTradeBtn() {
+  var btn = document.getElementById('tradeBtn');
+  var near = officeBuilt() && dist2(player.x, player.y, office.x, office.y) < 7 && !barTab;
+  btn.classList.toggle('hidden', !near);
+}
 /* =========================================================
    BAŞLAT
    ========================================================= */
@@ -2494,6 +3413,7 @@ resize();
 load();
 rebuildCounters();
 reassignWorkers();
+if (!M) M = newMarket();
 lastRepLvl = repLevel();
 applyLang();
 syncSettingsUI();
@@ -2509,7 +3429,17 @@ window.BT = {
   customers: customers, FISH: FISH, start: start, hire: hire, toast: toast,
   rebuildCounters: rebuildCounters, buyBuilding: buyBuilding, investProject: investProject,
   setLang: function (l) { setLangTo(l); },
+  M: function () { return M; },
+  snapshot: function () { return JSON.stringify(M); },
+  restore: function (j) { M = JSON.parse(j); }, openOffice: openOffice, closeDay: function () { closeDay(); },
+  buyShares: buyShares, sellShares: sellShares, acceptContract: acceptContract,
   setEvent: function (id) { event = EVENTS.filter(function (e) { return e.id === id; })[0]; eventT = event.dur; }
 };
+
+
+/* =========================================================
+   ŞİRKETLER • KONTRATLAR • LİMAN BORSASI  (FULL GDD v1.0)
+   Tek denge tablosu: ECON  (§24: kodda dağınık sabit yok)
+   ========================================================= */
 
 })();

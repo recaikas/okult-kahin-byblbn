@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — v0.3.1 (pixel art)
+# 🐟 Balıkçı Tycoon — v1.0 (pixel art)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,42 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.0 — Şirketler • Kontratlar • Liman Borsası
+
+Ana balık döngüsü aynı kaldı; derinlik, kazanılan paranın **kontratlara, hisselere, ortaklıklara ve satın almalara** akmasından geliyor.
+
+### Açılış
+**Liman Ticaret Ofisi** ($18.000 + 40 ⭐, Fümehane bölgesi) haritada fiziksel bina olarak kuruluyor. Yaklaşınca tek bir **TİCARET** butonu çıkıyor; ana ekranda sürekli finans paneli yok. Kurulunca 10 hisselik **eğitim kredisi** veriliyor.
+
+### Piyasa (§4)
+- **1 Pazar Günü = 5 dk aktif oynanış.** Fiyat yalnız kapanışta değişir.
+- Kapanış formülü: sektör (±%5) + şirket sağlığı (±%4) + haber (±%12) + oyuncu etkisi (±%2) + kontrollü rastgelelik (±%3); normal gün bandı **±%18**, büyük olayda ±%28.
+- **Liman 12 Endeksi**, 3-6 günlük piyasa döngüleri (Genişleme/Normal/Yavaşlama/Toparlanma), günlük sektör momentumu, **24 haber olayı**.
+- Piyasa nötrlemesi: ortalama sürüklenme kırpılır, endeks uzun vadede dengede kalır, göreli kazanan/kaybeden korunur.
+
+### 12 kurgusal şirket (§3)
+Kuzey Ağları, MaviHat Lojistik, BuzMar, Okyanus Gıda, Tersane 47, Kıyı Sofrası, Atlas Ambalaj, Martı Denizcilik, DerinSu Avcılık, Liman Makina, Ada Pazarlama, Mercan Turizm — her biri kendi sektörü, riski, **Sağlık / Büyüme / Risk** göstergeleri ve **%5 / %15 / %51 perkleri** ile. Tüm isimler ve kimlikler özgün ve kurgusaldır.
+
+### Kontratlar (§6-§7)
+8 tip (Standart, Acil, Hacimli, Çerçeve, Özel, Münhasır, Kurtarma, Büyük Proje). Kontrat = **mevcut üretim döngüsüyle** hazırlanan ürünleri Ticaret Ofisi'ne teslim etmek. Ödül = normal değer × tip çarpanı × ilişki çarpanı. Başarısızlıkta **para cezası yok**, sadece ilişki düşer. Tedarikçi kariyeri 6 seviye. Tezgâhtar çırağı kontrat ürünlerini de ofise taşır.
+
+### Sahiplik & holding (§8-§10, §15-§17)
+- Serbest dolaşımdan alım, **%1,5 komisyon**, aynı gün satış kilidi, **büyük emir primi** (>%5 tek emir reddedilir), short/kaldıraç yok.
+- Eşikler: %1 kayıtlı → %5 perk I → %15 perk II → %30 yönetim kurulu → %51 kontrol (Holding Lisansı) → %100 bağlı ortaklık.
+- **Temettü** her 4 pazar gününde (sağlık 55+), **yönetim kurulu projeleri** (%30+), **devralma teklifi** (prim ×1,20–1,35), **6 özel işletme** (pasif gelir + kalıcı bonus), **Holding değeri ve 5 kademe**.
+- Perkler gerçekten oyuna işliyor: ağ hızı/stoğu, işleme hızı, ürün değeri, müşteri harcaması/akışı, nadir av, VIP şansı, yükseltme indirimi, kontrat çarpanı — grup başına tavanlı (§9.1).
+
+### Kurumsal işlemler (§11)
+Sermaye artırımı, geri alım, 1:2 hisse bölünmesi ve yeniden yapılanma/kurtarma döngüsü.
+
+### Arayüz (§19)
+Ticaret Ofisi 6 sekme: **PİYASA** (endeks + 12 şirket), **ŞİRKET** (12 günlük mini grafik, sağlık/büyüme/risk, ilişki, perk eşikleri, al/sat, devralma, yönetim kurulu), **KONTRAT**, **PORTFÖY**, **HABER**, **HOLDİNG**. Ana HUD yalnız tek satırlık bildirim gösterir.
+
+### Anti-exploit / kayıt (§21)
+Kapanış tohumu (`seed`) save'de tutulur → **kapat-aç ile farklı sonuç üretilemez** (test edildi). Aynı gün satış kilidi, kontrat süresi ve haber geçmişi kaydedilir; negatif nakit oluşamaz; `marketState` ayrı şemayla migrate edilir (yeni şirket/olay eklenince eski kayıt bozulmaz).
 
 ---
 
