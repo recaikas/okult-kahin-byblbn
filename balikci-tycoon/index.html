@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b2a3e">
+<title>Balıkçı Tycoon</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{width:100%;height:100%;overflow:hidden;background:#0b2a3e;
+    font-family:"Trebuchet MS",Verdana,system-ui,-apple-system,"Segoe UI",sans-serif;
+    color:#fff;user-select:none;touch-action:none}
+  #game{position:fixed;inset:0;width:100%;height:100%;display:block}
+
+  .hud{position:fixed;top:0;left:0;right:0;padding:10px 12px;display:flex;gap:8px;
+    align-items:flex-start;pointer-events:none;z-index:5;
+    padding-top:calc(10px + env(safe-area-inset-top))}
+  .chip{background:rgba(8,32,48,.72);border:2px solid rgba(255,255,255,.18);
+    border-radius:14px;padding:7px 12px;font-weight:bold;font-size:17px;
+    display:flex;align-items:center;gap:7px;backdrop-filter:blur(6px);
+    box-shadow:0 4px 12px rgba(0,0,0,.28)}
+  .chip small{font-size:11px;opacity:.7;font-weight:normal;display:block;line-height:1}
+  #money{color:#7ee08f}
+  .spacer{flex:1}
+  .btn{pointer-events:auto;background:rgba(8,32,48,.72);border:2px solid rgba(255,255,255,.18);
+    border-radius:14px;width:42px;height:42px;font-size:19px;color:#fff;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-weight:bold}
+  .btn:active{transform:scale(.93)}
+
+  #toast{position:fixed;left:50%;top:78px;transform:translateX(-50%) translateY(-14px);
+    background:linear-gradient(180deg,#ffd76a,#f0a83c);color:#5a3208;font-weight:bold;
+    padding:10px 18px;border-radius:14px;opacity:0;transition:.35s;z-index:6;
+    box-shadow:0 6px 18px rgba(0,0,0,.35);font-size:15px;text-align:center;
+    border:2px solid #fff3cf;pointer-events:none;max-width:88vw}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .overlay{position:fixed;inset:0;background:rgba(4,18,30,.86);z-index:10;
+    display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
+  .overlay.hidden{display:none}
+  .card{background:linear-gradient(180deg,#14425f,#0c2a3e);border:3px solid rgba(255,255,255,.16);
+    border-radius:22px;padding:22px;max-width:430px;width:100%;text-align:center;
+    box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  .card h1{font-size:30px;margin-bottom:4px;color:#ffd76a;letter-spacing:1px;text-shadow:0 3px 0 #8a5a12}
+  .card h2{font-size:20px;margin-bottom:10px;color:#ffd76a}
+  .card p{font-size:14px;line-height:1.6;opacity:.92;margin-bottom:8px}
+  .card ul{text-align:left;font-size:14px;line-height:1.75;margin:10px 4px 14px;padding-left:18px;opacity:.94}
+  .go{margin-top:12px;background:linear-gradient(180deg,#5fd37a,#33a44f);border:none;
+    border-radius:16px;padding:14px 30px;font-size:19px;font-weight:bold;color:#06331a;
+    cursor:pointer;box-shadow:0 5px 0 #1d7135;width:100%}
+  .go:active{transform:translateY(3px);box-shadow:0 2px 0 #1d7135}
+  .ghost{margin-top:10px;background:transparent;border:2px solid rgba(255,255,255,.25);
+    border-radius:14px;padding:10px 18px;color:#ffb0b0;font-size:14px;cursor:pointer;width:100%}
+  .kbd{display:inline-block;background:rgba(255,255,255,.14);border-radius:6px;
+    padding:1px 7px;font-size:13px;border:1px solid rgba(255,255,255,.2)}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div class="hud">
+  <div class="chip"><span>💵</span><span><small>PARA</small><span id="money">0</span></span></div>
+  <div class="chip"><span id="carryIcon">🎒</span><span><small>TAŞIMA</small><span id="carry">0/7</span></span></div>
+  <div class="spacer"></div>
+  <button class="btn" id="soundBtn" title="Ses">🔊</button>
+  <button class="btn" id="helpBtn" title="Yardım">?</button>
+</div>
+
+<div id="toast"></div>
+
+<div class="overlay" id="startScreen">
+  <div class="card">
+    <h1>🐟 BALIKÇI TYCOON</h1>
+    <p>Buzul limanında balık tut, fileto doğra, müşterilere sat ve limanını büyüt!</p>
+    <ul>
+      <li>🎣 <b>Ağın</b> yanında bekle → balık biriksin</li>
+      <li>🧺 Üstünden geç → balıkları <b>sırtla</b></li>
+      <li>🔪 <b>Kesim masasına</b> bırak → fileto olsun</li>
+      <li>🍣 Filetoları <b>tezgâha</b> taşı → müşteriler ödesin</li>
+      <li>💵 Parayı <b>kasaya</b> götür → yeni alanların kilidini aç</li>
+    </ul>
+    <p style="font-size:13px;opacity:.8">
+      Kontrol: <span class="kbd">W A S D</span> / <span class="kbd">yön tuşları</span> — ya da ekrana parmağınla bas & sürükle.
+    </p>
+    <button class="go" id="playBtn">OYNA</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="helpScreen">
+  <div class="card">
+    <h2>Nasıl Oynanır?</h2>
+    <ul>
+      <li>🎣 Ağın yanında dur, balıklar sandığa dolsun.</li>
+      <li>🧺 Sandığın üstünden geçerek balıkları topla.</li>
+      <li>🔪 Kesim masasına bırak, fileto hazır olsun.</li>
+      <li>🍣 Filetoyu tezgâha taşı; sarı montlu müşteriler öder.</li>
+      <li>💵 Tepsideki parayı al, <b>KASA</b>'ya bırak.</li>
+      <li>⭐ Parlayan alanlarda bekle → kapasite, hız, çırak ve yeni bölge satın al.</li>
+      <li>⏳ Müşteriler sinirlenirse gider, para gider!</li>
+    </ul>
+    <p style="font-size:13px;opacity:.8">Oyun otomatik kaydedilir.</p>
+    <button class="go" id="closeHelp">DEVAM ET</button>
+    <button class="ghost" id="resetBtn">Kaydı sıfırla (baştan başla)</button>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
