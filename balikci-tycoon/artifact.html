@@ -16,6 +16,7 @@
   html,body{height:100%}
   #game{position:fixed;inset:0;width:100%;height:100%;display:block;
     image-rendering:pixelated;image-rendering:crisp-edges}
+  #ui{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:2}
 
   .pnl{background:var(--pnl);border:3px solid var(--edge);
     box-shadow:inset -3px -3px 0 rgba(0,0,0,.35),inset 3px 3px 0 rgba(255,255,255,.07),0 3px 0 rgba(0,0,0,.4)}
@@ -46,12 +47,28 @@
   #objective .lbl{font-size:9px;letter-spacing:1.5px;color:var(--gold);display:block;margin-bottom:1px}
   #queueHint{position:fixed;right:6px;top:calc(104px + env(safe-area-inset-top,0px));z-index:5;
     background:#4a1710;border:3px solid #190603;color:#ffc1b3;padding:4px 8px;font-size:12px;pointer-events:none}
-  #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transition:.2s;
+  #toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transition:.2s;
     transform:translateX(-50%) translateY(10px);background:var(--gold);color:#3a2401;
     padding:7px 14px;font-size:14px;z-index:8;border:3px solid #7a5406;opacity:0;transition:.2s;
     text-align:center;max-width:88vw;pointer-events:none}
   #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
   body.sheet #toast{bottom:calc(56vh + 10px)}
+
+  /* ---------- yakındaki yükseltme kartı ---------- */
+  #padCard{position:fixed;left:50%;transform:translateX(-50%);
+    bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:6;pointer-events:none;
+    width:min(94vw,430px);background:var(--pnl);border:3px solid var(--edge);
+    padding:8px 10px 10px;display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;
+    box-shadow:inset -3px -3px 0 rgba(0,0,0,.35),inset 3px 3px 0 rgba(255,255,255,.07)}
+  #padCard.no{border-color:#3a1109}
+  .pcIco{font-size:24px;text-align:center;grid-row:1}
+  .pcTx b{font-size:14px;color:var(--gold);letter-spacing:.5px;display:block;line-height:1.15}
+  .pcTx small{font-size:11.5px;color:var(--ink2);display:block;line-height:1.2}
+  .pcRight{font-size:17px;color:var(--green);text-align:right;white-space:nowrap}
+  #padCard.no .pcRight{color:#ff9b8a;font-size:12.5px;white-space:normal;max-width:140px}
+  .pcBar{grid-column:1/4;height:8px;background:#0a1a27;margin-top:2px}
+  .pcBar i{display:block;height:100%;width:0;background:var(--gold)}
+  body.sheet #padCard{display:none}
 
   /* ---------- alt panel (yapı / proje) ---------- */
   #sheet{position:fixed;left:0;right:0;bottom:0;z-index:7;padding:8px;
@@ -117,6 +134,7 @@
   .flag{letter-spacing:0}
 </style>
 <canvas id="game"></canvas>
+<canvas id="ui"></canvas>
 
 <div class="hud hidden" id="hud">
   <div class="chip"><i>💰</i><span><small id="hMoney">PARA</small><span id="money">0</span></span></div>
@@ -130,6 +148,13 @@
 <div id="objective" class="hidden"><span class="lbl" id="objLbl">HEDEF</span><span id="objText">—</span></div>
 <div id="queueHint" class="hidden"></div>
 <div id="toast"></div>
+
+<div id="padCard" class="hidden">
+  <div class="pcIco" id="pcIco">🧺</div>
+  <div class="pcTx"><b id="pcTitle">—</b><small id="pcEff">—</small></div>
+  <div class="pcRight"><span id="pcPrice">$0</span></div>
+  <div class="pcBar"><i id="pcBarFill"></i></div>
+</div>
 
 <div id="sheet">
   <button class="btn" id="sheetClose">✕</button>
