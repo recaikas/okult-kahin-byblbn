@@ -1277,7 +1277,9 @@ function clampCam() {
   if (x1 - x0 < W) camTX = (x0 + x1) / 2; else camTX = clamp(camTX, x0 + hw, x1 - hw);
   if (y1 - y0 < H) camTY = (y0 + y1) / 2; else camTY = clamp(camTY, y0 + ht, y1 - hb);
 }
+function projOK() { return isFinite(pX(1, 1)) && isFinite(pY(1, 1, 0)); }
 function updateCamera(dt) {
+  if (!projOK()) { console.error('BT: projeksiyon bozuk (TW/TH gölgelenmiş olabilir)'); return; }
   var tx = pX(player.x, player.y), ty = pY(player.x, player.y, 0);
   var dzx = W * 0.12, dzy = H * 0.10;
   var dx = tx - camTX, dy = ty - camTY;
@@ -1286,6 +1288,7 @@ function updateCamera(dt) {
   clampCam();
   var k = 1 - Math.pow(0.10, dt);
   camX = lerp(camX, camTX, k); camY = lerp(camY, camTY, k);
+  if (!isFinite(camX) || !isFinite(camY)) { camX = pX(player.x, player.y); camY = pY(player.x, player.y, 0); camTX = camX; camTY = camY; }
 }
 function updateFx(dt) {
   var i;
@@ -3136,14 +3139,14 @@ function sellShares(id, qty) {
   notify(T('sold', { v: money(gain) }), 'low');
   sfx.coin(); save(); return true;
 }
-var TH = [0.01, 0.05, 0.15, 0.30, 0.51, 1];
+var THRESH = [0.01, 0.05, 0.15, 0.30, 0.51, 1];
 function checkThreshold(c, before) {
   var now = ownPct(c);
-  for (var i = 0; i < TH.length; i++) {
-    if (before < TH[i] && now >= TH[i]) {
-      notify(T('threshold', { n: NM(cdef(c.id).n), p: Math.round(TH[i] * 100) }), 'mid');
+  for (var i = 0; i < THRESH.length; i++) {
+    if (before < THRESH[i] && now >= THRESH[i]) {
+      notify(T('threshold', { n: NM(cdef(c.id).n), p: Math.round(THRESH[i] * 100) }), 'mid');
       sfx.star();
-      if (TH[i] >= 1) { c.listed = false; notify(T('subsidiary', { n: NM(cdef(c.id).n) }), 'high'); }
+      if (THRESH[i] >= 1) { c.listed = false; notify(T('subsidiary', { n: NM(cdef(c.id).n) }), 'high'); }
     }
   }
 }
@@ -3430,6 +3433,9 @@ window.BT = {
   rebuildCounters: rebuildCounters, buyBuilding: buyBuilding, investProject: investProject,
   setLang: function (l) { setLangTo(l); },
   M: function () { return M; },
+  dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(),
+    pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
+    y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },
   snapshot: function () { return JSON.stringify(M); },
   restore: function (j) { M = JSON.parse(j); }, openOffice: openOffice, closeDay: function () { closeDay(); },
   buyShares: buyShares, sellShares: sellShares, acceptContract: acceptContract,
