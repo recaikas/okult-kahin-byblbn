@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#082f3d">
+<meta name="description" content="Türk sahil kasabası kültüründen ilham alan izometrik pixel-art balıkçılık ve liman işletme oyunu.">
+<title>Balıkçı Tycoon — Anadolu Limanı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#f4e9d2; --ink2:#a9c0cf;
+    --pnl:#14293c; --pnl2:#1d3a52; --edge:#0a1a27;
+    --gold:#ffc94a; --green:#5fd37a; --red:#e5533d; --sea:#1d6c8f;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{width:100%;height:100%;overflow:hidden;background:#0d2436;color:var(--ink);
+    font-family:"Pixelify Sans",ui-monospace,"Courier New",monospace;
+    user-select:none;touch-action:none;-webkit-font-smoothing:none;font-smooth:never}
+  .hidden{display:none !important}
+  #game{position:fixed;inset:0;width:100%;height:100%;display:block;
+    image-rendering:pixelated;image-rendering:crisp-edges}
+  #ui{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:2}
+
+  .pnl{background:var(--pnl);border:3px solid var(--edge);
+    box-shadow:inset -3px -3px 0 rgba(0,0,0,.35),inset 3px 3px 0 rgba(255,255,255,.07),0 3px 0 rgba(0,0,0,.4)}
+
+  /* ---------- HUD ---------- */
+  .hud{position:fixed;top:0;left:0;right:0;padding:6px;display:flex;gap:5px;align-items:flex-start;
+    pointer-events:none;z-index:5;padding-top:calc(6px + env(safe-area-inset-top,0px))}
+  .chip{background:var(--pnl);border:3px solid var(--edge);padding:2px 6px;font-size:12px;
+    display:flex;align-items:center;gap:5px;line-height:1.05;white-space:nowrap;
+    box-shadow:inset -2px -2px 0 rgba(0,0,0,.3),inset 2px 2px 0 rgba(255,255,255,.06)}
+  .chip i{font-style:normal;font-size:12px}
+  .chip small{font-size:8px;color:var(--ink2);display:block;letter-spacing:.5px}
+  #money{color:var(--green)} #rep{color:var(--gold)}
+  .bar{width:30px;height:6px;background:#0a1a27;border:2px solid #0a1a27}
+  .bar i{display:block;height:100%;width:0;background:var(--gold)}
+  .spacer{flex:1}
+  #eventChip{background:#3d2410;border-color:#160b03;color:#ffd9a0}
+  .btn{pointer-events:auto;background:var(--pnl);border:3px solid var(--edge);color:var(--ink);
+    min-width:36px;height:36px;font-size:15px;cursor:pointer;font-family:inherit;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:inset -2px -2px 0 rgba(0,0,0,.3),inset 2px 2px 0 rgba(255,255,255,.06)}
+  .btn:active{transform:translate(1px,1px)}
+
+  #objective{position:fixed;left:50%;transform:translateX(-50%);
+    top:calc(46px + env(safe-area-inset-top,0px));z-index:5;pointer-events:none;
+    background:rgba(10,26,39,.82);border:2px solid var(--edge);padding:3px 9px;font-size:11.5px;
+    text-align:center;max-width:78vw;line-height:1.15;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;display:flex;gap:6px;align-items:center}
+  #objective .lbl{font-size:9px;letter-spacing:1px;color:var(--gold);flex:0 0 auto}
+  #queueHint{position:fixed;right:6px;top:calc(104px + env(safe-area-inset-top,0px));z-index:5;
+    background:#4a1710;border:3px solid #190603;color:#ffc1b3;padding:4px 8px;font-size:12px;pointer-events:none}
+  #toast{position:fixed;left:50%;bottom:calc(64px + env(safe-area-inset-bottom,0px));transition:.2s;
+    transform:translateX(-50%) translateY(10px);background:var(--gold);color:#3a2401;
+    padding:7px 14px;font-size:14px;z-index:8;border:3px solid #7a5406;opacity:0;transition:.2s;
+    text-align:center;max-width:88vw;pointer-events:none}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  body.panel #toast{bottom:calc(42vh + 60px)}
+
+  /* ---------- alt geliştirme barı ---------- */
+  #devbar{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:3px;padding:4px 4px;
+    padding-bottom:calc(4px + env(safe-area-inset-bottom,0px));
+    background:linear-gradient(180deg,rgba(10,26,39,.0),rgba(10,26,39,.85) 40%)}
+  .dtab{flex:1;background:var(--pnl);border:3px solid var(--edge);color:var(--ink2);
+    font-family:inherit;font-size:8.4px;letter-spacing:0;padding:3px 1px 4px;cursor:pointer;white-space:nowrap;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1;
+    box-shadow:inset -2px -2px 0 rgba(0,0,0,.3),inset 2px 2px 0 rgba(255,255,255,.06)}
+  .dtab i{font-style:normal;font-size:16px}
+  .dtab.on{background:var(--gold);color:#3a2401;border-color:#7a5406}
+  .dtab.hot{border-color:var(--green)}
+  .dtab:active{transform:translate(1px,1px)}
+  #devpanel{position:fixed;left:0;right:0;z-index:6;
+    bottom:calc(52px + env(safe-area-inset-bottom,0px));
+    background:var(--pnl);border-top:3px solid var(--edge);border-bottom:3px solid var(--edge);
+    padding:6px 6px 8px;max-height:40vh;overflow:hidden}
+  .dphead{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+  .dphead b{font-size:13px;color:var(--gold);letter-spacing:1px}
+  #dpClose{min-width:28px;height:28px;font-size:13px}
+  .dpcards{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding-bottom:4px;
+    scroll-snap-type:x proximity}
+  .dcard{flex:0 0 152px;background:var(--pnl2);border:3px solid var(--edge);padding:7px 7px 8px;
+    scroll-snap-align:start;display:flex;flex-direction:column;gap:2px}
+  .dcard .ic{font-size:20px;line-height:1}
+  .dcard b{font-size:11.5px;color:var(--ink);letter-spacing:.3px;line-height:1.2}
+  .dcard small{font-size:10.5px;color:var(--ink2);line-height:1.25;min-height:26px}
+  .dcard .buy{margin-top:3px;background:var(--green);border:3px solid #17532a;color:#062f14;
+    font-family:inherit;font-size:12.5px;padding:6px 2px;cursor:pointer;letter-spacing:.5px}
+  .dcard .buy:active{transform:translate(1px,1px)}
+  .dcard .buy.no{background:var(--pnl);border-color:var(--edge);color:#ff9b8a;font-size:10.5px}
+  .dcard .buy.cf{background:var(--gold);border-color:#7a5406;color:#3a2401}
+  .dcard .buy.done{background:var(--pnl);border-color:#17532a;color:var(--green)}
+  .dcard.glow{border-color:var(--gold)}
+  .dwide{flex:0 0 100%;max-width:100%}
+  .dbar{height:12px;background:#0a1a27;border:3px solid var(--edge);margin:4px 0}
+  .dbar i{display:block;height:100%;background:var(--green);width:0}
+  .dinv{display:flex;gap:5px;margin-top:4px}
+  .dinv button{flex:1;background:var(--pnl);border:3px solid var(--edge);color:var(--ink);
+    font-family:inherit;font-size:11.5px;padding:7px 2px;cursor:pointer}
+  .dinv button:active{transform:translate(1px,1px)}
+  .dempty{color:var(--ink2);font-size:11.5px;padding:10px 4px}
+
+  /* ---------- ticaret ofisi ---------- */
+  #tradeBtn{position:fixed;left:50%;transform:translateX(-50%);z-index:6;
+    bottom:calc(64px + env(safe-area-inset-bottom,0px));background:var(--gold);color:#3a2401;
+    border:3px solid #7a5406;font-family:inherit;font-size:15px;padding:9px 18px;cursor:pointer;
+    letter-spacing:1px;box-shadow:inset -3px -3px 0 rgba(0,0,0,.2),inset 3px 3px 0 rgba(255,255,255,.3)}
+  #tradeBtn:active{transform:translateX(-50%) translate(1px,1px)}
+  .card.wide{max-width:560px}
+  .ohead{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .ohead b{font-size:15px;color:var(--gold);letter-spacing:1px;flex:1}
+  .ohead span{font-size:11px;color:var(--ink2)}
+  #ofClose{min-width:28px;height:28px;font-size:13px}
+  .dayb{height:5px;background:#0a1a27;margin-bottom:8px}
+  .dayb i{display:block;height:100%;background:var(--gold);width:0}
+  #ofTabs .tab{font-size:9.5px;padding:7px 1px;letter-spacing:0}
+  #ofBody{max-height:56vh;overflow-y:auto}
+  .crow{display:flex;align-items:center;gap:7px;background:var(--pnl2);border:3px solid var(--edge);
+    padding:6px 8px;margin-bottom:4px;cursor:pointer}
+  .crow .sq{width:12px;height:12px;flex:0 0 12px}
+  .crow .nm{flex:1;font-size:12px;line-height:1.2}
+  .crow .nm small{display:block;font-size:9.5px;color:var(--ink2)}
+  .crow .pr{font-size:12.5px;text-align:right;white-space:nowrap}
+  .crow .pr small{display:block;font-size:10px}
+  .up{color:var(--green)} .dn{color:#ff9b8a} .fl{color:var(--ink2)}
+  .spark{display:flex;align-items:flex-end;gap:1px;height:26px;margin:6px 0;background:#0a1a27;padding:2px}
+  .spark i{flex:1;background:var(--gold);min-height:1px}
+  .stat{display:flex;gap:6px;margin:4px 0}
+  .stat div{flex:1;font-size:10px;color:var(--ink2);text-align:center;min-width:0}
+  .stat b{display:block;font-size:13px;color:var(--ink)}
+  .mbar{display:block;height:6px;background:#0a1a27;margin-top:3px}
+  .mbar i{display:block;height:100%}
+  .qrow{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
+  .qrow button{flex:1;min-width:52px;background:var(--pnl2);border:3px solid var(--edge);color:var(--ink);
+    font-family:inherit;font-size:12px;padding:7px 2px;cursor:pointer}
+  .qrow button.b{background:var(--green);border-color:#17532a;color:#062f14}
+  .qrow button.s{background:#8d3423;border-color:#40150d;color:#ffe0d8}
+  .qrow button:active{transform:translate(1px,1px)}
+  .note{font-size:10.5px;color:var(--ink2);margin-top:4px;line-height:1.35}
+  .ctrc{background:var(--pnl2);border:3px solid var(--edge);padding:7px 9px;margin-bottom:5px}
+  .ctrc b{font-size:12px;display:block}
+  .ctrc small{font-size:10.5px;color:var(--ink2);display:block;margin:2px 0 4px}
+  .ctrc .go2{background:var(--green);border:3px solid #17532a;color:#062f14;font-family:inherit;
+    font-size:12px;padding:6px 12px;cursor:pointer}
+  .ctrc .pbar2{height:8px;background:#0a1a27;margin:4px 0}
+  .ctrc .pbar2 i{display:block;height:100%;background:var(--gold)}
+  .newsr{font-size:11px;padding:5px 7px;border-left:3px solid var(--edge);background:rgba(255,255,255,.03);margin-bottom:3px}
+  .newsr b{color:var(--ink)}
+
+  /* ---------- tam ekranlar ---------- */
+  .overlay{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
+    padding:14px;background:rgba(6,18,28,.9)}
+  .overlay.hidden{display:none}
+  .card{background:var(--pnl);border:3px solid var(--edge);padding:16px;max-width:420px;width:100%;
+    max-height:90vh;overflow-y:auto;
+    box-shadow:inset -3px -3px 0 rgba(0,0,0,.35),inset 3px 3px 0 rgba(255,255,255,.07)}
+  .card h1{font-size:28px;color:var(--gold);text-align:center;letter-spacing:1px;line-height:1.1;
+    text-shadow:3px 3px 0 #7a2b10}
+  .card h2{font-size:19px;color:var(--gold);text-align:center;margin-bottom:10px;letter-spacing:1px}
+  .card p{font-size:13px;line-height:1.5;text-align:center;margin-bottom:8px;color:var(--ink2)}
+  .card ul{font-size:13px;line-height:1.7;margin:8px 0 12px;padding-left:18px;text-align:left}
+  .go{margin-top:10px;width:100%;background:var(--green);border:3px solid #17532a;color:#062f14;
+    padding:12px;font-size:19px;cursor:pointer;font-family:inherit;letter-spacing:1px;
+    box-shadow:inset -3px -3px 0 rgba(0,0,0,.25),inset 3px 3px 0 rgba(255,255,255,.25)}
+  .go:active{transform:translate(2px,2px)}
+  .alt{margin-top:8px;width:100%;background:var(--pnl2);border:3px solid var(--edge);color:var(--ink);
+    padding:10px;font-size:15px;cursor:pointer;font-family:inherit;letter-spacing:1px}
+  .danger{color:#ff9b8a;border-color:#3a1109}
+  .good{color:#9df5b0;border-color:#17532a}
+  .saveinfo{margin-top:6px;font-size:11px;line-height:1.6;text-align:center;color:var(--ink2);
+    background:var(--pnl2);border:3px solid var(--edge);padding:6px 8px;white-space:pre-line}
+  .saveinfo.hidden{display:none}
+  #pauseBadge{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:50%;
+    transform:translateX(-50%);z-index:12;
+    background:rgba(10,26,39,.94);border:3px solid var(--gold);color:var(--gold);
+    font-size:12px;letter-spacing:1px;padding:6px 12px;pointer-events:none}
+  #pauseBadge.hidden{display:none}
+  .seg{display:flex;gap:6px;margin:6px 0 2px}
+  .seg button{flex:1;background:var(--pnl2);border:3px solid var(--edge);color:var(--ink2);
+    padding:9px 4px;font-size:14px;cursor:pointer;font-family:inherit;letter-spacing:1px}
+  .seg button.on{background:var(--gold);color:#3a2401;border-color:#7a5406}
+  .lbl{font-size:11px;color:var(--ink2);letter-spacing:1.5px;margin-top:10px;display:block}
+  .tabs{display:flex;gap:4px;margin-bottom:10px}
+  .tab{flex:1;background:var(--pnl2);border:3px solid var(--edge);color:var(--ink2);
+    padding:8px 2px;font-size:11px;cursor:pointer;font-family:inherit;letter-spacing:.5px}
+  .tab.on{background:var(--gold);color:#3a2401;border-color:#7a5406}
+  .row{display:flex;align-items:center;gap:8px;background:var(--pnl2);border:3px solid var(--edge);
+    padding:7px 9px;margin-bottom:5px}
+  .row .ic{font-size:19px;width:24px;text-align:center}
+  .row .tx{flex:1;font-size:12px;line-height:1.3}
+  .row .tx small{display:block;color:var(--ink2);font-size:10.5px}
+  .row .vl{font-size:12.5px;color:var(--green);text-align:right;white-space:nowrap}
+  .row .vl small{display:block;color:#ffb27a;font-size:10px}
+  .empty{color:var(--ink2);font-size:12.5px;text-align:center;padding:12px}
+  .flag{letter-spacing:0}
+</style>
+<link rel="stylesheet" href="remaster.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+<canvas id="ui"></canvas>
+
+<div class="hud hidden" id="hud">
+  <div class="chip"><i>💰</i><span><small id="hMoney">PARA</small><span id="money">0</span></span></div>
+  <div class="chip"><i id="carryIcon">🧺</i><span><small id="hCarry">TAŞIMA</small><span id="carry">0/8</span></span></div>
+  <div class="chip"><i>⭐</i><span><small id="hRep">İTİBAR</small><span id="rep">0</span></span><span class="bar"><i id="repfill"></i></span></div>
+  <div class="spacer"></div>
+  <div class="chip hidden" id="eventChip"><i id="eventIcon">🐟</i><span><small id="eventName">OLAY</small><span id="eventT">0s</span></span></div>
+  <button class="btn" id="menuBtn">☰</button>
+</div>
+
+<div id="objective" class="hidden"><span class="lbl" id="objLbl">HEDEF</span><span id="objText">—</span></div>
+<div id="queueHint" class="hidden"></div>
+<div id="toast"></div>
+<div id="pauseBadge" class="hidden">⏸ <span id="pauseTxt">DURAKLATILDI</span></div>
+<button id="tradeBtn" class="hidden">🏛️ <span id="tradeLbl">TİCARET</span></button>
+
+<div id="devbar" class="hidden">
+  <button class="dtab" data-t="area"><i>🔓</i><span id="dtArea">ALAN</span></button>
+  <button class="dtab" data-t="level"><i>⬆️</i><span id="dtLevel">YÜKSELTME</span></button>
+  <button class="dtab" data-t="build"><i>🔨</i><span id="dtBuild">YAPI</span></button>
+  <button class="dtab" data-t="proj"><i>🏛️</i><span id="dtProj">PROJE</span></button>
+  <button class="dtab" data-t="serv"><i>🏭</i><span id="dtServ">BİNA</span></button>
+</div>
+<div id="devpanel" class="hidden">
+  <div class="dphead"><b id="dpTitle">—</b><button class="btn" id="dpClose">✕</button></div>
+  <div class="dpcards" id="dpCards"></div>
+</div>
+</div>
+
+
+
+<div class="overlay" id="startScreen">
+  <div class="card">
+    <div class="pixel-seal" aria-hidden="true"><span>BT</span></div>
+    <h1>BALIKÇI<br>TYCOON</h1>
+    <p class="edition">ANADOLU LİMANI</p>
+    <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
+    <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
+    <div class="seg" id="langSeg">
+      <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
+      <button data-l="en" class="flag">🇬🇧 ENGLISH</button>
+    </div>
+    <ul id="startList"></ul>
+    <div class="saveinfo hidden" id="saveInfo">—</div>
+    <button class="go" id="playBtn">OYNA</button>
+    <button class="alt hidden" id="newBtn">YENİ OYUN</button>
+    <button class="alt" id="setBtn">AYARLAR</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="settingsScreen">
+  <div class="card">
+    <h2 id="setTitle">AYARLAR</h2>
+    <span class="lbl" id="setLang">DİL / LANGUAGE</span>
+    <div class="seg" id="langSeg2">
+      <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
+      <button data-l="en" class="flag">🇬🇧 ENGLISH</button>
+    </div>
+    <span class="lbl" id="setSound">SES</span>
+    <div class="seg" id="sndSeg">
+      <button data-s="1" class="on">🔊</button>
+      <button data-s="0">🔇</button>
+    </div>
+    <span class="lbl" id="setZoom">GÖRÜNTÜ / ZOOM</span>
+    <div class="seg" id="zoomSeg">
+      <button data-z="1">-</button><button data-z="2" class="on">◻</button><button data-z="3">+</button>
+    </div>
+    <span class="lbl" id="setSaveLbl">KAYIT</span>
+    <div class="saveinfo" id="setSaveInfo">—</div>
+    <button class="alt good" id="saveBtn">💾 KAYDET</button>
+    <button class="alt" id="saveQuitBtn">💾 KAYDET VE ÇIK</button>
+    <button class="go" id="setClose">▶ DEVAM ET</button>
+    <button class="alt danger" id="resetBtn">KAYDI SIFIRLA</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="officeScr">
+  <div class="card wide">
+    <div class="ohead"><b id="ofTitle">TİCARET OFİSİ</b><span id="ofDay"></span><button class="btn" id="ofClose">✕</button></div>
+    <div class="dayb"><i id="ofDayBar"></i></div>
+    <div class="tabs" id="ofTabs">
+      <button class="tab on" data-t="market">PİYASA</button>
+      <button class="tab" data-t="co">ŞİRKET</button>
+      <button class="tab" data-t="ctr">KONTRAT</button>
+      <button class="tab" data-t="port">PORTFÖY</button>
+      <button class="tab" data-t="news">HABER</button>
+      <button class="tab" data-t="hold">HOLDİNG</button>
+    </div>
+    <div id="ofBody"></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="menuScreen">
+  <div class="card">
+    <div class="tabs" id="menuTabs">
+      <button class="tab on" data-t="liman">LİMAN</button>
+      <button class="tab" data-t="personel">PERSONEL</button>
+      <button class="tab" data-t="urunler">ÜRÜNLER</button>
+      <button class="tab" data-t="yardim">YARDIM</button>
+    </div>
+    <div id="tabBody"></div>
+    <button class="go" id="closeMenu">▶ DEVAM ET</button>
+    <button class="alt good" id="menuSave">💾 KAYDET</button>
+    <button class="alt" id="menuSet">AYARLAR</button>
+  </div>
+</div>
+
+<script src="game.js"></script>
+<script src="remaster-ui.js"></script>
+</body>
+</html>
