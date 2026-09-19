@@ -1,72 +1,50 @@
-# 🐟 Balıkçı Tycoon — v0.2
+# 🐟 Balıkçı Tycoon — v0.3 (pixel art)
 
-İzometrik balıkçı idle/tycoon oyunu. Tek klasör, bağımlılık yok: `index.html` + `game.js`.
-v0.2, GDD "Sistem Genişleme + UI/UX Revizyonu" paketinin P0/P1 kapsamını uygular.
+İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
+Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 
 ## Oynamak için
-`index.html` dosyasını tarayıcıda aç (mobil + masaüstü).
-```bash
-npx http-server -p 8080 .   # ya da yerel sunucu
-```
+`index.html` dosyasını tarayıcıda aç (mobil + masaüstü). İstersen: `npx http-server -p 8080 .`
 
 ## Çekirdek döngü
-**AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → GELİŞTİR**
-Füme hattı: **Balık → Kesim → Fümeleme (bant) → Füme paketi (2.4× değer)**
+**AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
+Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
-## v0.2 sistemleri
+---
 
-### 1. Balık türleri (GDD §3)
-| Tür | Nadirlik | Taşıma | Kesim | Verim | Fileto |
-|---|---|---|---|---|---|
-| Hamsi | Yaygın | 1 | 0.42 sn | 1 | $6 |
-| Uskumru | Yaygın | 1 | 0.62 sn | 1 | $12 |
-| Levrek | Orta | 1 | 0.85 sn | 2 | $17 |
-| Somon | Orta | **2** | 1.10 sn | 3 | $27 |
-| Ton Balığı | Nadir | **3** | 1.70 sn | 5 | $46 |
+## v0.3 — Liman Genişleme + Yatırım (GDD Basic v1)
 
-Taşıma kapasitesi artık **ağırlık** bazlı: bir ton balığı 3 yer kaplar. Her ağın kendi tür havuzu var.
+| Sistem | Uygulama |
+|---|---|
+| **AREA** | 3 bölge: Balıkçı İskelesi / Balık Pazarı ($1.300 + 10⭐) / Fümehane ($4.600 + 30⭐). Kilitli alan haritada halat çit + tabela ile önceden görünür. |
+| **Bölge seviyesi** | Her bölge Lv.1→3. Her seviyede **görünür** değişim: yıpranmış tahta → düzgün zemin + tabela → taş zemin + sokak lambaları. Ayrıca ağ hızı, tezgâh kapasitesi, kuyruk sırası ve yeni yapı noktası açılır. |
+| **Yapı noktaları** | 7 sabit slot (3'ü Lv.3'te açılır), 6 yapı: Personel Kulübesi, Çay Ocağı, Ek Tezgâh (yeni satış noktası!), Reklam Panosu, Depo Kulübesi, Ağ Vinci. Slot başına uyumlu kategoriler; değiştirince %60 iade. |
+| **Büyük Proje** | **Kapalı Balık Hali** — $26.000, 5 aşama (temel → kolon → duvar/çatı → donatım → açılış). Parça parça yatırım: +$1.000 / +$10.000 / %25 / MAKS. Her eşikte şantiye modeli büyür; bitince yeni tezgâh + %25 müşteri akışı. |
+| **Kozmetik** | 8 satın alınabilir süs: Türk bayrağı, balıkçı teknesi, bank, simit arabası, sokak lambası, begonvil, çay masası, balık heykeli. (Her biri +%2 müşteri sabrı.) |
+| **Liman Planı** | `☰` menüsünde bölgeler / proje / yapı slotları / personel limiti tek ekranda. |
 
-### 2. Çalışanlar + maaş (GDD §5, §13)
-| Rol | Görev | Maaş |
-|---|---|---|
-| 🧺 Hamal | Ağdan kesim masasına taşır | $15/dk |
-| 🔪 Filetocu | Bağlı olduğu masayı %55 hızlandırır | $19/dk |
-| 🍣 Tezgâhtar | Siparişe göre ürünü tezgâha taşır | $22/dk |
-| 💵 Kasiyer | Tepsideki parayı kasaya işler | $17/dk |
+## v0.2'den devam eden sistemler
+- **5 balık türü** (Hamsi, Uskumru, Levrek, Somon, Orkinos) — ağırlık, kesim süresi, fileto verimi, fiyat farklı; taşıma **ağırlık** bazlı.
+- **4 çalışan rolü + maaş**: Hamal, Filetocu, Tezgâhtar, Kasiyer (maaş saniye saniye kasadan düşer, personel limiti yapıya bağlı).
+- **Sipariş sistemi**: 6 müşteri tipi (İşçi/Aile/Esnaf/Şef/Kaptan/VIP), ürün + adet + sabır halkası + ödül; VIP/Şef kaçarsa itibar düşer.
+- **İtibar**: 5 seviye; bölgeler para **+** itibar ile açılır.
+- **Olaylar**: 🐟 Balık Sürüsü, 🚢 Vapur, 🌊 Lodos.
 
-Maaşlar saniye saniye kasadan düşer — otomasyon bedava değil. Çıraklar "yükle → dağıt" görev kilidiyle
-toplu çalışır ve en yakın hedefi seçer; tezgâhtar kuyruktaki gerçek talebe göre ürün seçer.
+## Pixel art & Türkiye teması
+- Tüm sahne düşük çözünürlüklü tuvale çizilip `image-rendering: pixelated` ile büyütülür; yazılar **Pixelify Sans** (tam Türkçe karakter desteği).
+- Arka planda parallax Türk sahil kasabası: beyaz evler, kiremit çatılar, **cami + minare**, servi ve fıstık çamları, martılar, ahşap takalar.
+- Tezgâhlarda kırmızı-beyaz tenteler, çay ocağı, simit arabası, Türk bayrağı direği.
 
-### 3. Sipariş sistemi (GDD §6)
-Müşteri tipleri: İşçi, Aile, Tüccar, Şef, Kaptan (toplu sipariş), VIP (füme + 3× ödeme).
-Her sipariş = **ürün + adet + sabır + ödül**. Sabır dairesel halkayla azalır; Şef/VIP kaçarsa itibar düşer.
-Kuyruktaki herkes, ürünü hazırsa servis edilir (tek müşteri kuyruğu kilitlemez).
-
-### 4. İkinci/üçüncü bölge
-- **Balık Pazarı** — $650 + 10 itibar → yeni ağ (levrek/somon), masa, tezgâh
-- **Fümehane** — $2.400 + 30 itibar → ton balığı ağı + **füme üretim zinciri** (bantlı besleme)
-
-### 5. İtibar (GDD §7)
-Küçük Balıkçı → İskele Dükkânı (10) → Balık Pazarı (30) → Liman İşletmesi (75) → Balıkçılık Şirketi (150).
-Bölgeler **para + itibar** çift koşuluyla açılır.
-
-### 6. Olaylar (GDD §10)
-🐟 Balık Sürüsü (ağ ×2.2) • 🚢 Yolcu Gemisi (müşteri ×2.2) • ❄️ Kar Fırtınası (müşteri ×0.45)
-
-### 7. UI/UX revizyonu (GDD §11–12)
-- **Yığın kuralı:** 0-5 gerçek model → 6-19 arası 5 model + `×N` → 20+ tek kasa + `×N`
-- **Upgrade kartı:** uzakta yalnız ikon; yaklaşınca isim + seviye + etki + fiyat (aynı anda **tek** kart)
-- Üst HUD: Para • Taşıma • İtibar (+bar) • aktif olay • `⋯` menü
-- Tek satırlık hedef/sipariş kartı, "N müşteri bekliyor" göstergesi, birleşen floating text
-- Oyun içi 6 adımlı eğitim + hedefi gösteren parlayan ok
-- `⋯` menüsü: İŞLETME / PERSONEL / ÜRÜNLER / YARDIM kartları
+## Arayüz
+- Giriş ekranı (dil seçimi), **Ayarlar** (dil / ses / zoom / kaydı sıfırla), `☰` menü (Liman, Personel, Ürünler, Yardım).
+- Yığın kuralı: 0-5 gerçek model → 6-19 arası 5 model + `xN` → 20+ tek kasa + `xN`.
+- Yükseltme kartı sadece en yakın alan için açılır; uzaktaki etiketler kısalır/kaybolur.
+- Oyun içi 6 adımlı eğitim + hedefi gösteren ok. Yapı/proje panelleri alttan açılan kart şeridi.
 
 ## Kontroller
-- Masaüstü: `W A S D` / yön tuşları
-- Mobil: ekrana bas & sürükle (sanal joystick)
+Masaüstü `W A S D` / yön tuşları — Mobil: ekrana bas & sürükle.
 
 ## Notlar
-- İlerleme `localStorage` (`balikci_tycoon_v2`) ile otomatik kaydedilir.
-- Hata ayıklama: konsoldan `window.BT` (durum, istasyonlar, `BT.hire('hamal')`, `BT.setEvent('suru')`).
-- Henüz yok (GDD sonraki sürümler): tekne/sefer, hava sistemi tam hâli, kontratlar, yengeç özel istasyonu,
-  çalışan seviyeleri, offline gelir.
+- Kayıt: `localStorage` → `balikci_tycoon_v3` (bölgeler, seviyeler, yapılar, proje yatırımı, süsler, dil, ses, zoom).
+- Hata ayıklama: `window.BT` (`BT.hire('hamal')`, `BT.setEvent('suru')`, `BT.setLang('en')`, `BT.investProject(1000)`).
+- Sonraki sürümler için GDD'de kalanlar: tekne/sefer, kontratlar, konserve/ızgara hatları, çalışan seviyeleri, AREA 4-7.
