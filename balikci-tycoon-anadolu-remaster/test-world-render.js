@@ -1,5 +1,14 @@
 /* dünya gerçekten çiziliyor mu? (piksel örneklemesi) */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const path = require('path');
+let chromium;
+try { ({ chromium } = require('playwright')); }
+catch (firstError) {
+  try { ({ chromium } = require('playwright-core')); }
+  catch (secondError) {
+    console.error('Playwright bulunamadı. Önce proje ortamına playwright kurun.');
+    process.exit(2);
+  }
+}
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
   const b = await chromium.launch({ args: ['--ignore-certificate-errors'] });
@@ -8,7 +17,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     const p = await b.newPage({ viewport: vp });
     p.on('pageerror', e => errs.push(e.message));
     p.on('console', m => { if (m.type()==='error') errs.push('C:'+m.text()); });
-    await p.goto('file:///home/user/okult-kahin-byblbn/balikci-tycoon/index.html');
+    await p.goto('file://' + path.join(__dirname, 'index.html'));
     await sleep(900); await p.click('#playBtn'); await sleep(2500);
     const res = await p.evaluate(() => {
       const cv = document.getElementById('game');
