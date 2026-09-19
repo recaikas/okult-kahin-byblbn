@@ -119,7 +119,11 @@ var STR = {
     holdingV: 'Holding değeri', portV: 'Portföy', subsV: 'Bağlı ortaklık', harborV: 'Liman varlığı',
     privInc: 'İşletme geliri', perks: 'Aktif perkler', buyPriv: 'SATIN AL', offerLeft: '{n} gün kaldı',
     tutMarket: 'Ticaret Ofisi kuruldu! İlk kontratını al.',
-    privIncome: 'İşletme geliri: +{v}', creditGift: 'Eğitim kredisi: 10 {n} hissesi'
+    privIncome: 'İşletme geliri: +{v}', creditGift: 'Eğitim kredisi: 10 {n} hissesi',
+    newLine: '🎉 Yeni hat açıldı: {n}!', lineLocked: 'Kilitli — {s} gerekli',
+    lineOpen: 'Açık', stallOf2: 'Tezgâh: {s}', noStall: 'Tezgâh kurulmadı',
+    stB0: 'İskele Tezgâhı', stB1: 'Pazar Tezgâhı', stB2: 'Fümehane Tezgâhı',
+    stSS3: 'Pazar Ek Tezgâhı (yapı)', stSS6: 'Fümehane Ek Tezgâhı (yapı)', stHAL: 'Kapalı Balık Hali'
   },
   en: {
     money: 'CASH', carry: 'CARRY', rep: 'REP', goal: 'GOAL', menu: 'HARBOR',
@@ -213,7 +217,11 @@ var STR = {
     holdingV: 'Holding value', portV: 'Portfolio', subsV: 'Subsidiaries', harborV: 'Harbor assets',
     privInc: 'Business income', perks: 'Active perks', buyPriv: 'BUY', offerLeft: '{n} days left',
     tutMarket: 'Trade Office built! Take your first contract.',
-    privIncome: 'Business income: +{v}', creditGift: 'Training credit: 10 {n} shares'
+    privIncome: 'Business income: +{v}', creditGift: 'Training credit: 10 {n} shares',
+    newLine: '🎉 New line unlocked: {n}!', lineLocked: 'Locked — needs {s}',
+    lineOpen: 'Open', stallOf2: 'Stall: {s}', noStall: 'Stall not built',
+    stB0: 'Pier Stall', stB1: 'Market Stall', stB2: 'Smokehouse Stall',
+    stSS3: 'Market Extra Stall (build)', stSS6: 'Smokehouse Extra Stall (build)', stHAL: 'Covered Fish Hall'
   }
 };
 function T(k, p) {
@@ -356,11 +364,51 @@ var sfx = {
 var FISH = {
   hamsi:   { id: 'hamsi',   n: { tr: 'Hamsi', en: 'Anchovy' },   r: { tr: 'Yaygın', en: 'Common' }, w: 1, cut: 0.42, out: 1, val: 6,  col: '#8fa9bd', bel: '#d7e4ee', meat: '#dfe9f0' },
   uskumru: { id: 'uskumru', n: { tr: 'Uskumru', en: 'Mackerel' }, r: { tr: 'Yaygın', en: 'Common' }, w: 1, cut: 0.62, out: 1, val: 12, col: '#5f8f8a', bel: '#cfe6df', meat: '#bfe0d6' },
-  levrek:  { id: 'levrek',  n: { tr: 'Levrek', en: 'Sea Bass' },  r: { tr: 'Orta', en: 'Uncommon' }, w: 1, cut: 0.85, out: 2, val: 17, col: '#a8b6c2', bel: '#eef5f9', meat: '#eaf2f7' },
-  somon:   { id: 'somon',   n: { tr: 'Somon', en: 'Salmon' },     r: { tr: 'Orta', en: 'Uncommon' }, w: 2, cut: 1.10, out: 3, val: 27, col: '#d98455', bel: '#f7c9a4', meat: '#f08a3c' },
+  palamut: { id: 'palamut', n: { tr: 'Palamut', en: 'Bonito' },   r: { tr: 'Orta', en: 'Uncommon' }, w: 1, cut: 0.72, out: 2, val: 18, col: '#6f8fa8', bel: '#dbe9f2', meat: '#d2856b' },
+  levrek:  { id: 'levrek',  n: { tr: 'Levrek', en: 'Sea Bass' },  r: { tr: 'Orta', en: 'Uncommon' }, w: 1, cut: 0.85, out: 2, val: 24, col: '#a8b6c2', bel: '#eef5f9', meat: '#eaf2f7' },
+  somon:   { id: 'somon',   n: { tr: 'Somon', en: 'Salmon' },     r: { tr: 'Orta', en: 'Uncommon' }, w: 2, cut: 1.10, out: 3, val: 34, col: '#d98455', bel: '#f7c9a4', meat: '#f08a3c' },
   ton:     { id: 'ton',     n: { tr: 'Orkinos', en: 'Tuna' },     r: { tr: 'Nadir', en: 'Rare' },    w: 3, cut: 1.70, out: 5, val: 46, col: '#3f6a8c', bel: '#9fc0d8', meat: '#b8453f' }
 };
-var FISH_ORDER = ['hamsi', 'uskumru', 'levrek', 'somon', 'ton'];
+var FISH_ORDER = ['hamsi', 'uskumru', 'palamut', 'levrek', 'somon', 'ton'];
+
+/* =========================================================
+   BALIK HATTI  (balık ↔ tezgâh ↔ üretim noktası 1:1 eşleme)
+   Sıra doğrudan ilerleme sırasıdır; tek tablodan değiştirilir.
+   ========================================================= */
+var LINES = [
+  { f: 'hamsi',   stall: 'b0',  src: 0, w: 1.0 },   /* Balıkçı İskelesi tezgâhı — başlangıç */
+  { f: 'uskumru', stall: 'b1',  src: 1, w: 1.0 },   /* Balık Pazarı tezgâhı */
+  { f: 'palamut', stall: 'ss3', src: 1, w: 0.8 },   /* Pazar yapı noktası tezgâhı */
+  { f: 'levrek',  stall: 'b2',  src: 2, w: 0.8 },   /* Fümehane tezgâhı */
+  { f: 'somon',   stall: 'ss6', src: 2, w: 0.6 },   /* Fümehane yapı noktası tezgâhı */
+  { f: 'ton',     stall: 'hal', src: 1, w: 0.45 }   /* Kapalı Balık Hali — prestij hattı */
+];
+function lineOf(f) { for (var i = 0; i < LINES.length; i++) if (LINES[i].f === f) return LINES[i]; return null; }
+function stallName(k) { return T('st' + k.toUpperCase()); }
+function lineByStall(k) { for (var i = 0; i < LINES.length; i++) if (LINES[i].stall === k) return LINES[i]; return null; }
+function stallOf(f) {
+  var l = lineOf(f); if (!l) return null;
+  for (var i = 0; i < counters.length; i++) if (counters[i].key === l.stall && !AREAS[counters[i].z].locked) return counters[i];
+  return null;
+}
+/* üç koşul (spec): üretim noktası + işleme hattı + satış tezgâhı */
+function canProduce(f) {
+  var l = lineOf(f); if (!l) return false;
+  var sp = spots[l.src];
+  return !!sp && !AREAS[sp.z].locked;
+}
+function canProcess(k, f) {
+  if (!openTables().length) return false;
+  if (k === 'fume') return !AREAS[smoker.z].locked;
+  return true;
+}
+function canSell(f) { return !!stallOf(f); }
+function fishReady(f) { return canProduce(f) && canProcess('fileto', f) && canSell(f); }
+function sellableFish() {
+  var out = [];
+  for (var i = 0; i < LINES.length; i++) if (fishReady(LINES[i].f)) out.push(LINES[i].f);
+  return out;
+}
 var FUME_MUL = 2.4, FUME_TIME = 3.2;
 function prodName(k, f) { return NM(FISH[f].n) + (k === 'fume' ? (lang === 'tr' ? ' Füme' : ' Smoked') : (lang === 'tr' ? ' Fileto' : ' Fillet')); }
 function prodValue(k, f) { return Math.round(FISH[f].val * (k === 'fume' ? FUME_MUL : 1) * (1 + S.priceLvl * 0.1) * (1 + perkSum('value'))); }
@@ -468,10 +516,22 @@ function decorCount() { var n = 0; for (var i = 0; i < DECOR.length; i++) if (DE
 
 /* ---------------- istasyonlar ---------------- */
 var spots = [
-  { z: 0, x: 2.3, y: 0.9,  face: 'n', pool: [['hamsi', 60], ['uskumru', 40]], stock: [], t: 0, rate: 1.05 },
-  { z: 1, x: 1.0, y: 7.4,  face: 'w', pool: [['uskumru', 45], ['levrek', 35], ['somon', 20]], stock: [], t: 0, rate: 1.25 },
-  { z: 2, x: 1.0, y: 13.2, face: 'w', pool: [['levrek', 25], ['somon', 45], ['ton', 30]], stock: [], t: 0, rate: 1.5 }
+  { z: 0, x: 2.3, y: 0.9,  face: 'n', stock: [], t: 0, rate: 1.05 },
+  { z: 1, x: 1.0, y: 7.4,  face: 'w', stock: [], t: 0, rate: 1.25 },
+  { z: 2, x: 1.0, y: 13.2, face: 'w', stock: [], t: 0, rate: 1.5 }
 ];
+/* bu ağda hangi türler üretilebilir: hattı açık (tezgâhı kurulu) olanlar */
+function spotLines(i) {
+  var out = [];
+  for (var k = 0; k < LINES.length; k++) {
+    var l = LINES[k];
+    if (l.src !== i) continue;
+    if (!canSell(l.f)) continue;
+    if (!canProcess('fileto', l.f)) continue;
+    out.push(l);
+  }
+  return out;
+}
 function mkTable(z, x, y, mx, my) {
   return { z: z, x: x, y: y, inn: [], cur: null, t: 0, worker: null, mat: { x: mx, y: my, items: [] }, max: 10 };
 }
@@ -482,9 +542,10 @@ var tables = [
 ];
 var smoker = { z: 2, x: 3.4, y: 15.4, inn: [], cur: null, t: 0, belt: 0, mat: { x: 4.6, y: 16.1, items: [] }, max: 8 };
 var counters = [];
-function mkCounter(z, x, y, src) {
-  var c = { z: z, x: x, y: y, buffer: [], slots: [null, null, null, null, null], tray: { x: x - 0.6, y: y + 1.3, items: [] }, spawnT: 3 + z * 2, eatT: 0, src: src || null };
-  return c;
+function mkCounter(z, x, y, key) {
+  return { z: z, x: x, y: y, key: key || null, fish: null, buffer: [],
+    slots: [null, null, null, null, null], tray: { x: x - 0.6, y: y + 1.3, items: [] },
+    spawnT: 3 + z * 2, eatT: 0 };
 }
 function rebuildCounters() {
   var old = counters.slice(), keep = [], i;
@@ -506,6 +567,13 @@ function rebuildCounters() {
     if (counters.indexOf(old[i]) >= 0) continue;
     for (var j = customers.length - 1; j >= 0; j--) if (customers[j].c === old[i]) customers[j].state = 'leave';
   }
+  /* her tezgâha kendi balığını bağla (1:1) */
+  for (i = 0; i < counters.length; i++) {
+    var ln = lineByStall(counters[i].key);
+    counters[i].fish = ln ? ln.f : null;
+  }
+  announceLines();
+  validateWorld();
   /* kuyruk şeritleri */
   var byY = counters.slice().sort(function (a, b) { return a.y - b.y; });
   var lanes = [];
@@ -514,6 +582,91 @@ function rebuildCounters() {
     while (lanes[L] !== undefined && Math.abs(c2.y - lanes[L]) < 5.2) L++;
     c2.lane = L; lanes[L] = c2.y;
   }
+}
+var _lineSeen = null;
+function announceLines() {
+  var now = {};
+  for (var i = 0; i < LINES.length; i++) if (fishReady(LINES[i].f)) now[LINES[i].f] = 1;
+  if (_lineSeen) {
+    for (var f in now) if (!_lineSeen[f]) toast(T('newLine', { n: NM(FISH[f].n) }));
+  }
+  _lineSeen = now;
+}
+/* geçersiz ürünleri güvenle temizle / geçerliye dönüştür (soft-lock yok) */
+function validItem(it) {
+  if (!it) return false;
+  if (it.k === 'money') return true;
+  if (!FISH[it.f] || !lineOf(it.f)) return false;
+  if (it.k === 'fish') return canProduce(it.f);
+  /* ürün: üretilebilir + satılabilir olmalı, füme ise hattı açık olmalı */
+  if (!canProduce(it.f) || !canSell(it.f)) return false;
+  if (it.k === 'fume' && !canProcess('fume', it.f)) return false;
+  return true;
+}
+function fallbackFish() {
+  var s2 = sellableFish();
+  return s2.length ? s2[0] : null;
+}
+function fixList(arr) {
+  var fb = fallbackFish(), changed = 0;
+  for (var i = arr.length - 1; i >= 0; i--) {
+    var it = arr[i];
+    if (validItem(it)) continue;
+    if (it && it.k !== 'money' && fb && canProcess(it.k, fb)) { it.f = fb; changed++; }
+    else if (it && it.k === 'fume' && fb) { it.k = 'fileto'; it.f = fb; changed++; }
+    else { arr.splice(i, 1); changed++; }
+  }
+  return changed;
+}
+function validateWorld() {
+  var i, ch = 0;
+  for (i = 0; i < spots.length; i++) {
+    var allow = {}, sl = spotLines(i);
+    for (var k = 0; k < sl.length; k++) allow[sl[k].f] = 1;
+    for (var j = spots[i].stock.length - 1; j >= 0; j--) {
+      if (!allow[spots[i].stock[j].f]) {
+        if (sl.length) spots[i].stock[j].f = sl[Math.floor(Math.random() * sl.length)].f;
+        else { spots[i].stock.splice(j, 1); }
+        ch++;
+      }
+    }
+  }
+  for (i = 0; i < tables.length; i++) { ch += fixList(tables[i].inn); ch += fixList(tables[i].mat.items); }
+  ch += fixList(smoker.inn); ch += fixList(smoker.mat.items);
+  ch += fixList(player.carry);
+  for (i = 0; i < workers.length; i++) ch += fixList(workers[i].carry);
+  for (i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    ch += fixList(c.buffer);
+    /* tezgâh yalnız kendi balığını tutar: yanlış tür varsa doğru tezgâha taşı ya da düş */
+    for (var b = c.buffer.length - 1; b >= 0; b--) {
+      if (c.fish && c.buffer[b].f !== c.fish) {
+        var tgt = stallOf(c.buffer[b].f);
+        var it2 = c.buffer.splice(b, 1)[0];
+        if (tgt && tgt.buffer.length < counterMax(tgt)) tgt.buffer.push(it2);
+        ch++;
+      }
+    }
+  }
+  /* geçersiz sipariş: geçerli ürünle yeniden oluştur, olmazsa müşteriyi gönder */
+  for (i = customers.length - 1; i >= 0; i--) {
+    var cu = customers[i];
+    if (cu.state === 'leave') continue;
+    var bad = !cu.c || counters.indexOf(cu.c) < 0 || !cu.c.fish ||
+      cu.ord.f !== cu.c.fish || !fishReady(cu.ord.f) ||
+      (cu.ord.k === 'fume' && !canProcess('fume', cu.ord.f));
+    if (!bad) continue;
+    var host = cu.c && counters.indexOf(cu.c) >= 0 && cu.c.fish && fishReady(cu.c.fish) ? cu.c : null;
+    if (host) {
+      cu.ord.k = canProcess('fume', host.fish) && cu.type.tag === 'fume' ? 'fume' : 'fileto';
+      cu.ord.f = host.fish; cu.ord.got = Math.min(cu.ord.got, cu.ord.need);
+    } else {
+      if (cu.c && cu.c.slots) for (var q = 0; q < cu.c.slots.length; q++) if (cu.c.slots[q] === cu) cu.c.slots[q] = null;
+      cu.state = 'leave';
+    }
+    ch++;
+  }
+  return ch;
 }
 function counterMax(c) { return 20 + (AREAS[c.z].lvl - 1) * 4 + slotEff(c.z, 'stock'); }
 var safe = { z: 0, x: 1.2, y: 4.9, pop: 0 };
@@ -707,16 +860,21 @@ function globalWants() {
   }
   return g;
 }
+function acceptsAt(c, it) { return isGoods(it) && !!c.fish && it.f === c.fish; }
 function iDropCounter(a, c, dt) {
-  if (c.buffer.length >= counterMax(c) || !hasCarry(a, isGoods)) return false;
-  var m = counterWants(c), want = null, i;
+  if (c.buffer.length >= counterMax(c)) return false;
+  var m = counterWants(c), want = null, any = null, i;
   for (i = 0; i < a.carry.length; i++) {
     var it = a.carry[i];
-    if (isGoods(it) && m[itemKey(it)] > 0) { want = it; break; }
+    if (!acceptsAt(c, it)) continue;          /* tür ↔ tezgâh eşleşmesi zorunlu */
+    if (!any) any = it;
+    if (m[itemKey(it)] > 0) { want = it; break; }
   }
+  if (!want && !any) return false;
   if (!want && c.buffer.length >= 7) return false;
   return tryTake(a, dt, function () {
-    var got = want ? popCarry(a, function (q) { return q === want; }) : popCarry(a, isGoods);
+    var pickIt = want || any;
+    var got = popCarry(a, function (q) { return q === pickIt; });
     c.buffer.push(got);
     fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), c.x, c.y, 13, got, 0.26); sfx.drop();
   });
@@ -828,7 +986,7 @@ function counterWantingCarry(w) {
   for (var i = 0; i < list.length; i++) {
     var c = list[i]; if (c.buffer.length >= counterMax(c)) continue;
     var m = counterWants(c), hit = false;
-    for (var j = 0; j < w.carry.length; j++) if (isGoods(w.carry[j]) && m[itemKey(w.carry[j])] > 0) { hit = true; break; }
+    for (var j = 0; j < w.carry.length; j++) if (acceptsAt(c, w.carry[j]) && m[itemKey(w.carry[j])] > 0) { hit = true; break; }
     if (!hit) continue;
     var d = dist2(w.x, w.y, c.x, c.y);
     if (d < bd) { bd = d; best = c; }
@@ -837,10 +995,21 @@ function counterWantingCarry(w) {
 function nearestCounterWithSpace(w) {
   var list = openCounters(), best = null, bd = 1e9;
   for (var i = 0; i < list.length; i++) {
-    if (list[i].buffer.length >= 7) continue;
-    var d = dist2(w.x, w.y, list[i].x, list[i].y);
-    if (d < bd) { bd = d; best = list[i]; }
+    var c = list[i];
+    if (c.buffer.length >= 7) continue;
+    var ok = false;
+    for (var j = 0; j < w.carry.length; j++) if (acceptsAt(c, w.carry[j])) { ok = true; break; }
+    if (!ok) continue;                       /* yalnız kendi türünü kabul eden tezgâh */
+    var d = dist2(w.x, w.y, c.x, c.y);
+    if (d < bd) { bd = d; best = c; }
   } return best;
+}
+/* ürün bir yere teslim edilebilir mi (kendi tezgâhı ya da kontrat) */
+function deliverable(it) {
+  if (!isGoods(it)) return false;
+  if (M && M.office && contractWants(it)) return true;
+  var c = stallOf(it.f);
+  return !!c && c.buffer.length < counterMax(c);
 }
 function matWith(filter, w) {
   var mats = openTables().map(function (t) { return t.mat; }), best = null, bd = 1e9, i, j;
@@ -895,7 +1064,7 @@ function aiTezgahtar(w, sp, dt) {
   var m = matWith(wantFilter, w);
   var stockLow = openCounters().filter(function (q) { return q.buffer.length < 5; }).length > 0;
   var filt = wantFilter;
-  if (!m && stockLow) { m = matWith(isGoods, w); filt = isGoods; }
+  if (!m && stockLow) { m = matWith(deliverable, w); filt = deliverable; }
   if (w.mode !== 'drop' && (full || !m) && hasCarry(w, isGoods)) w.mode = 'drop';
   if (w.mode === 'drop' && !hasCarry(w, isGoods)) w.mode = 'load';
   if (w.mode === 'drop') {
@@ -905,8 +1074,18 @@ function aiTezgahtar(w, sp, dt) {
       if (hasCtr) { if (goTo(w, office.x, office.y + 1.1, sp, dt, 1.0)) iDeliverContract(w, dt); return; }
     }
     var c = counterWantingCarry(w) || nearestCounterWithSpace(w);
-    if (c) { if (goTo(w, c.x - 0.5, c.y - 0.6, sp, dt, 1.0)) { if (!iDropCounter(w, c, dt)) w.mode = 'load'; } }
-    else goTo(w, 7.2, 4.8, sp, dt, 1.0);
+    if (c) { w.idleT = 0; if (goTo(w, c.x - 0.5, c.y - 0.6, sp, dt, 1.0)) { if (!iDropCounter(w, c, dt)) w.mode = 'load'; } }
+    else {
+      w.idleT = (w.idleT || 0) + dt;
+      var back = matWith(function () { return true; }, w) || (openTables()[0] && openTables()[0].mat);
+      if (w.idleT > 8 && back && back.items.length < 18) {
+        if (goTo(w, back.x, back.y, sp, dt, 0.8)) {
+          var gi = popCarry(w, isGoods);
+          if (gi) { back.items.push(gi); fly(w.x, w.y, carryTopZ(w, w.carry.length + 1), back.x, back.y, 6, gi, 0.26); }
+          if (!hasCarry(w, isGoods)) { w.idleT = 0; w.mode = 'load'; }
+        }
+      } else goTo(w, 7.2, 4.8, sp, dt, 1.0);
+    }
     return;
   }
   if (m && !full) {
@@ -935,18 +1114,20 @@ function aiFiletocu(w, sp, dt) {
 /* =========================================================
    İSTASYONLAR
    ========================================================= */
-function poolPick(pool) {
+function spotPick(i) {
+  var ls = spotLines(i);
+  if (!ls.length) return null;
   var rare = perkSum('rare');
   if (rare > 0 && Math.random() < rare * 3) {
-    var best = pool[0];
-    for (var q = 1; q < pool.length; q++) if (FISH[pool[q][0]].val > FISH[best[0]].val) best = pool[q];
-    return best[0];
+    var best = ls[0];
+    for (var q = 1; q < ls.length; q++) if (FISH[ls[q].f].val > FISH[best.f].val) best = ls[q];
+    return best.f;
   }
-  var tot = 0, i;
-  for (i = 0; i < pool.length; i++) tot += pool[i][1];
+  var tot = 0, k;
+  for (k = 0; k < ls.length; k++) tot += ls[k].w;
   var r = Math.random() * tot;
-  for (i = 0; i < pool.length; i++) { r -= pool[i][1]; if (r <= 0) return pool[i][0]; }
-  return pool[0][0];
+  for (k = 0; k < ls.length; k++) { r -= ls[k].w; if (r <= 0) return ls[k].f; }
+  return ls[0].f;
 }
 function updateStations(dt) {
   var i, s, t, fishMul = event ? event.fishMul : 1;
@@ -956,7 +1137,9 @@ function updateStations(dt) {
     s.t += dt * fishMul * areaNetMul(s.z);
     if (s.t >= s.rate) {
       s.t = 0;
-      var it = { k: 'fish', f: poolPick(s.pool) };
+      var nf = spotPick(i);
+      if (!nf) continue;                      /* açık hat yoksa bu ağ üretmez */
+      var it = { k: 'fish', f: nf };
       s.stock.push(it); S.caught++;
       var ox = s.face === 'n' ? s.x + rnd(-1, 1) : s.x - rnd(2, 3.2);
       var oy = s.face === 'n' ? s.y - rnd(2, 3.2) : s.y + rnd(-1, 1);
@@ -1008,14 +1191,10 @@ function updateStations(dt) {
    MÜŞTERİ + SİPARİŞ
    ========================================================= */
 function availableProducts() {
-  var list = [], seen = {}, i, j;
-  for (i = 0; i < spots.length; i++) {
-    if (AREAS[spots[i].z].locked) continue;
-    for (j = 0; j < spots[i].pool.length; j++) {
-      var f = spots[i].pool[j][0];
-      if (!seen['fileto' + f]) { seen['fileto' + f] = 1; list.push({ k: 'fileto', f: f }); }
-      if (!AREAS[smoker.z].locked && !seen['fume' + f]) { seen['fume' + f] = 1; list.push({ k: 'fume', f: f }); }
-    }
+  var list = [], fs = sellableFish();
+  for (var i = 0; i < fs.length; i++) {
+    list.push({ k: 'fileto', f: fs[i] });
+    if (canProcess('fume', fs[i])) list.push({ k: 'fume', f: fs[i] });
   }
   return list;
 }
@@ -1029,20 +1208,26 @@ function filterByTag(list, tag) {
     return p.k === 'fileto';
   });
 }
-function makeOrder(type) {
-  var list = availableProducts();
-  var f = filterByTag(list, type.tag);
-  if (!f.length) f = filterByTag(list, 'any');
-  if (!f.length) f = list;
-  if (!f.length) return null;
-  var stock = {}, i, j;
-  var lists = openTables().map(function (t) { return t.mat.items; }).concat(openCounters().map(function (c) { return c.buffer; }));
-  if (!AREAS[smoker.z].locked) lists.push(smoker.mat.items);
-  for (i = 0; i < lists.length; i++) for (j = 0; j < lists[i].length; j++) stock[lists[i][j].k + '|' + lists[i][j].f] = 1;
-  var inStock = f.filter(function (q) { return stock[q.k + '|' + q.f]; });
-  if (inStock.length && Math.random() < 0.7) f = inStock;
-  var p = pick(f);
-  return { k: p.k, f: p.f, need: irnd(type.qty[0], type.qty[1]), got: 0 };
+/* müşteri tipi bu tezgâhta anlamlı mı (tür kilidi yerine tip kilidi) */
+function custFits(type, c) {
+  if (!c.fish) return false;
+  var v = FISH[c.fish].val;
+  if (type.tag === 'cheap') return v <= 18;
+  if (type.tag === 'rich') return v >= 18;
+  if (type.tag === 'premium') return v >= 24;
+  if (type.tag === 'fume') return canProcess('fume', c.fish);
+  return true;
+}
+/* sipariş yalnız bu tezgâhın satabildiği üründen üretilir (§ güvenlik kontrolü) */
+function makeOrderFor(c, type) {
+  if (!c.fish) return null;
+  var f = c.fish;
+  if (!canProduce(f) || !canProcess('fileto', f) || !canSell(f)) return null;
+  var k = 'fileto';
+  if (canProcess('fume', f) && (type.tag === 'fume' || Math.random() < 0.3)) k = 'fume';
+  if (k === 'fume' && !canProcess('fume', f)) k = 'fileto';
+  var need = irnd(type.qty[0], type.qty[1]);
+  return { k: k, f: f, need: need, got: 0 };
 }
 function queueSlotPos(c, i) { return { x: 10.8 + (c.lane || 0) * 1.7, y: c.y + 0.1 + i * 1.0 }; }
 function patienceMul() { return 1 + decorCount() * 0.02; }
@@ -1054,15 +1239,20 @@ function updateCounter(c, dt) {
   for (i = 0; i < qmax; i++) if (!c.slots[i]) { freeIdx = i; break; }
   if (c.spawnT <= 0 && freeIdx >= 0) {
     c.spawnT = 5.4 * rnd(0.75, 1.3);
+    /* tezgâh kullanılamıyorsa bu türe müşteri gelmez */
+    if (!c.fish || !fishReady(c.fish)) return;
     var lvl = repLevel();
-    var pool = CUST.filter(function (t) { return t.lvl <= lvl; });
+    var pool = CUST.filter(function (t) { return t.lvl <= lvl && custFits(t, c); });
+    if (!pool.length) return;
     var prem = perkSum('premium') + perkSum('vip');
     if (prem > 0 && Math.random() < prem * 2) {
       var hi = pool.filter(function (t) { return t.mult >= 1.8; });
       if (hi.length) pool = hi;
     }
     var type = pick(pool);
-    var ord = makeOrder(type);
+    var ord = makeOrderFor(c, type);
+    /* son güvenlik: üretilemeyen/işlenemeyen/satılamayan ürünle müşteri doğmaz */
+    if (ord && (!canProduce(ord.f) || !canProcess(ord.k, ord.f) || !canSell(ord.f))) ord = null;
     if (ord) {
       var q = queueSlotPos(c, freeIdx);
       var cu = {
@@ -1818,7 +2008,8 @@ function drawCounter(c) {
   px(sx - 13, sy - 23, 26, 2, '#8d5f33');
   px(sx - 13, sy - 23, 2, 23, '#8d5f33'); px(sx + 11, sy - 23, 2, 23, '#8d5f33');
   drawStack(c.x, c.y, c.buffer, 12, 3.2);
-  labelAt(c.x, c.y - 1.45, 10, T('stStall') + ' ' + c.buffer.length + '/' + counterMax(c), '#ffd9a8', '🐟' + c.buffer.length);
+  labelAt(c.x, c.y - 1.45, 10, (c.fish ? NM(FISH[c.fish].n) : T('stStall')) + ' ' + c.buffer.length + '/' + counterMax(c),
+    '#ffd9a8', (c.fish ? NM(FISH[c.fish].n).slice(0, 3) + ' ' : '') + c.buffer.length);
   var tr = c.tray;
   isoQuad(tr.x - 0.6, tr.y - 0.5, 1.2, 1.0, 0.4, '#2e7d43');
   isoQuad(tr.x - 0.45, tr.y - 0.36, 0.9, 0.72, 0.6, '#3f9e56');
@@ -2551,15 +2742,15 @@ function renderTab() {
     h += row('👷', T('mStaffCap'), '', workers.length + '/' + staffCap());
     if (workers.length) h += row('💸', T('mTotalWage'), '', money(wageTotal()) + perMin());
   } else if (curTab === 'urunler') {
-    for (i = 0; i < FISH_ORDER.length; i++) {
-      var F = FISH[FISH_ORDER[i]], open = false;
-      for (var s2 = 0; s2 < spots.length; s2++) {
-        if (AREAS[spots[s2].z].locked) continue;
-        for (var p2 = 0; p2 < spots[s2].pool.length; p2++) if (spots[s2].pool[p2][0] === F.id) open = true;
-      }
-      h += row(open ? '🐟' : '🔒', NM(F.n) + ' (' + NM(F.r) + ')',
-        T('mWeight') + ' ' + F.w + ' - ' + T('mCut') + ' ' + F.cut.toFixed(2) + 's - ' + F.out + ' ' + T('mYield'),
-        money(prodValue('fileto', F.id)), T('mSmoked') + ' ' + money(prodValue('fume', F.id)));
+    for (i = 0; i < LINES.length; i++) {
+      var L = LINES[i], F = FISH[L.f];
+      var open = fishReady(L.f);
+      var why = !canSell(L.f) ? T('lineLocked', { s: stallName(L.stall) })
+        : (!canProduce(L.f) ? T('lineLocked', { s: NM(AREAS[spots[L.src].z].n) }) : T('lineOpen'));
+      h += row(open ? '🐟' : '🔒', (i + 1) + '. ' + NM(F.n) + (open ? '' : ' 🔒'),
+        why + ' • ' + T('mWeight') + ' ' + F.w + ' • ' + T('mCut') + ' ' + F.cut.toFixed(2) + 's • ' + F.out + ' ' + T('mYield'),
+        open ? money(prodValue('fileto', L.f)) : '—',
+        open && canProcess('fume', L.f) ? T('mSmoked') + ' ' + money(prodValue('fume', L.f)) : '');
     }
   } else {
     h += row('🕹️', T('mCtrl'), T('ctrl'), '');
@@ -3433,6 +3624,8 @@ window.BT = {
   rebuildCounters: rebuildCounters, buyBuilding: buyBuilding, investProject: investProject,
   setLang: function (l) { setLangTo(l); },
   M: function () { return M; },
+  sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
+  validate: function () { return validateWorld(); }, stallOf: stallOf,
   dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(),
     pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
     y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },

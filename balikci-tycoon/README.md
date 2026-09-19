@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — v1.0 (pixel art)
+# 🐟 Balıkçı Tycoon — v1.0.1 (pixel art)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,34 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.0.1 — Balık ↔ Tezgâh Hattı (mapping bug fix)
+
+Kilitli balık türlerinin müşteri siparişlerine sızması engellendi. Çekirdek döngü aynı: **Ağ → Kesim → Taşıma → Tezgâh → Satış.**
+
+**Hat tablosu (tek satırdan düzenlenir — `LINES`):**
+
+| # | Balık | Tezgâh | Ağ | Açılış |
+|---|---|---|---|---|
+| 1 | Hamsi | İskele Tezgâhı | 1. ağ | başlangıç |
+| 2 | Uskumru | Pazar Tezgâhı | 2. ağ | Balık Pazarı bölgesi |
+| 3 | Palamut *(yeni)* | Pazar Ek Tezgâhı | 2. ağ | yapı noktasına "Ek Tezgâh" |
+| 4 | Levrek | Fümehane Tezgâhı | 3. ağ | Fümehane bölgesi |
+| 5 | Somon | Fümehane Ek Tezgâhı | 3. ağ | yapı noktasına "Ek Tezgâh" |
+| 6 | Orkinos | Kapalı Balık Hali | 2. ağ | büyük proje tamamlanınca |
+
+**Kurallar**
+- Bir tür ancak **üretim noktası açık + işleme hattı var + kendi tezgâhı kurulu** ise satılabilir (`canProduce && canProcess && canSell`). Biri eksikse o tür ne üretilir, ne sipariş edilir, ne de müşterisi doğar.
+- **Ağlar yalnız hattı açık türleri üretir.** Başlangıçta 1. ağ sadece Hamsi çıkarır; yeni tezgâh açıldığı anda ilgili ağ o türü de üretmeye başlar ("🎉 Yeni hat açıldı" bildirimi).
+- **Sipariş global listeden seçilmez**: her tezgâh yalnız kendi balığının siparişini üretir, müşteri kendi tezgâhına gider, başka tezgâhta beklemez.
+- Tezgâh **yalnız kendi türünü kabul eder** — oyuncu da çırak da yanlış tezgâha bırakamaz; çıraklar ürünü doğru tezgâha yönlendirir, teslim edilemeyecek ürünü hiç almaz (8 sn boşta kalırsa paspasa geri bırakır).
+- Müşteri tipleri tür yerine **tezgâh değerine** göre gelir (İşçi ucuz tezgâhta, Şef pahalı tezgâhta, VIP füme hattı açıkken).
+- Tezgâh kaldırılırsa/kapanırsa o türe yeni müşteri gelmez; mevcut müşteri kuyrukta kilitlenmez — siparişi geçerli ürüne **reroll** edilir, imkânsızsa müşteri gider.
+- **Fallback:** uygun tür yoksa müşteri hiç spawn edilmez; kilitli tür asla zorla seçilmez.
+- **Eski kayıt göçü:** yükleme ve her tezgâh değişiminde dünya taranır; elde/paspasta/tezgâhta/ağ stoğunda kalan geçersiz ürünler geçerli türe dönüştürülür veya temizlenir. Yeni oyuna başlamak gerekmez.
+- Balıkların GDD'deki farkları korundu (Somon 2 taşıma yeri/3 fileto, Orkinos 3 taşıma yeri/5 fileto, kesim süreleri, füme çarpanı); özel istasyon isteyen türler için `canProcess` kancası hazır.
 
 ---
 
