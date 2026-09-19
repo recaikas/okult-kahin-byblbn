@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — v0.3 (pixel art)
+# 🐟 Balıkçı Tycoon — v0.3.1 (pixel art)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,22 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v0.3.1 — UX / Bug Fix paketi
+
+| Sorun (geri bildirim) | Çözüm |
+|---|---|
+| **Kamera çok sallanıyor / mide bulandırıyor** | Ekran merkezinde **ölü bölge** (%24 × %20): karakter bu alanda gezerken kamera durur. Takip yumuşatıldı, **ekran sarsıntısı tamamen kaldırıldı**, kamera açık alan sınırına kilitli (yeni AREA açılınca sınır genişler). |
+| **Yanlışlıkla upgrade satın alma** | Zeminde **hiçbir satın alma tetikleyicisi kalmadı**. Alan açma, bölge seviyesi, yapı ve proje yatırımı yalnız alt bardan, açık seçimle yapılır. Alan açma / seviye ve ≥$1.500 işlemler **çift dokunuş onayı** ister. |
+| **Geliştirmeler okunmuyor** | Alt bar kartında ikon + isim + seviye + **etkisi** + fiyat net yazılır; parası yetmeyen kart kırmızı, uygun sekmeler yeşil çerçeveyle işaretlenir. |
+| **Aktif alan dar hissediliyor** | HUD kartları küçüldü, tutorial kutusu tek satırlık **görev bandına** indi ve eğitimden sonra sadece sabrı azalan sipariş varsa görünür. Alt bar kapalıyken ~50 px. |
+| **Kilitli alanlar fazla yer kaplıyor** | Kilitli bölgeler artık dolu zemin + dev tabela değil; **soluk siluet + kesikli sınır + küçük kilit etiketi** (yalnız yaklaşınca). |
+
+**Etkileşim önceliği (spec §8):** para taşırken kasa her şeyin önüne geçer → kasa çevresinde yanlış tetikleme yok.
+
+**Alt geliştirme barı:** `ALAN` (yeni bölge) • `YÜKSELTME` (bölge seviyesi + kapasite/hız/pazarlık + çırak tut) • `YAPI` (yapı noktaları + süsler) • `PROJE` (Kapalı Balık Hali'ne aşamalı yatırım).
 
 ---
 

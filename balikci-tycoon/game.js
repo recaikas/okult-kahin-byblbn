@@ -63,7 +63,7 @@ var STR = {
           'Balıkları kesim masasına bırak',
           'Filetoyu al ve tezgâha taşı',
           'Tepsideki parayı al, kasaya götür',
-          'Parlayan alanda bekle ve yükseltme al'],
+          'Alt bardan bir yükseltme satın al'],
     orderOf: '{n} SİPARİŞİ', waiting: '⏳ {n} müşteri bekliyor',
     idleGoal: 'Stok hazırla — müşteri yolda',
     /* menü */
@@ -83,7 +83,18 @@ var STR = {
     sheetProject: 'BÜYÜK PROJE', invest: 'YATIR', maxInvest: 'MAKS.', pct25: '%25',
     stage: 'Aşama', done: 'TAMAM', owned: 'KURULU', replace: 'DEĞİŞTİR',
     remaining: 'kalan', total: 'toplam',
-    noMoney: 'Para yetmiyor'
+    noMoney: 'Para yetmiyor',
+    barArea: 'ALAN', barLevel: 'YÜKSELTME', barBuild: 'YAPI', barProj: 'PROJE',
+    tArea: 'YENİ ALAN AÇ', tLevel: 'YÜKSELTMELER', tBuild: 'YAPI NOKTALARI', tProj: 'BÜYÜK PROJE',
+    buy: 'SATIN AL', confirm: 'ONAYLA?', choose: 'SEÇ', back: '← GERİ',
+    emptyArea: 'Açılacak yeni alan yok', emptyLevel: 'Şimdilik yükseltme yok',
+    emptyBuild: 'Yapı noktası yok', emptyProj: 'Proje bu bölge açılınca gelir',
+    slotEmpty: 'Boş yapı yeri', slotOf: '{n} bölgesi',
+    areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs',
+    lvEffect: 'Ağ +%18, tezgâh +4 stok, yeni yapı yeri',
+    staffFull: 'Personel limiti dolu ({n})',
+    tut6: 'Alt bardan bir yükseltme satın al',
+    nextStage: 'Sonraki aşama'
   },
   en: {
     money: 'CASH', carry: 'CARRY', rep: 'REP', goal: 'GOAL', menu: 'HARBOR',
@@ -124,7 +135,7 @@ var STR = {
           'Drop the fish on the cutting table',
           'Grab fillets and carry them to the stall',
           'Take the cash from the tray to the safe',
-          'Stand on a glowing spot to buy an upgrade'],
+          'Buy an upgrade from the bottom bar'],
     orderOf: '{n} ORDER', waiting: '⏳ {n} customers waiting',
     idleGoal: 'Stock up — customers on the way',
     mArea: 'Areas', mProject: 'Big project', mSlots: 'Build spots',
@@ -142,7 +153,18 @@ var STR = {
     sheetProject: 'BIG PROJECT', invest: 'INVEST', maxInvest: 'MAX', pct25: '25%',
     stage: 'Stage', done: 'DONE', owned: 'BUILT', replace: 'REPLACE',
     remaining: 'left', total: 'total',
-    noMoney: 'Not enough cash'
+    noMoney: 'Not enough cash',
+    barArea: 'AREA', barLevel: 'UPGRADE', barBuild: 'BUILD', barProj: 'PROJECT',
+    tArea: 'UNLOCK NEW AREA', tLevel: 'UPGRADES', tBuild: 'BUILD SPOTS', tProj: 'BIG PROJECT',
+    buy: 'BUY', confirm: 'CONFIRM?', choose: 'PICK', back: '← BACK',
+    emptyArea: 'No new area to unlock', emptyLevel: 'No upgrade available yet',
+    emptyBuild: 'No build spot yet', emptyProj: 'Unlocks with that area',
+    slotEmpty: 'Empty build spot', slotOf: '{n} area',
+    areaGives: 'New net, cutting table and stall', decorGroup: 'Decor',
+    lvEffect: 'Nets +18%, stall +4 stock, new build spot',
+    staffFull: 'Staff limit reached ({n})',
+    tut6: 'Buy an upgrade from the bottom bar',
+    nextStage: 'Next stage'
   }
 };
 function T(k, p) {
@@ -471,7 +493,7 @@ var S = {
 var player = { x: 4.5, y: 3.2, z: 0, vx: 0, vy: 0, bob: 0, face: 1, carry: [], act: 0, isPlayer: true };
 var workers = [], customers = [], flyers = [], floats = [], puffs = [], gulls = [];
 var event = null, eventT = 0, nextEvent = 80;
-var gameT = 0, camX = 0, camY = 0;
+var gameT = 0, camX = 0, camY = 0, camTX = 0, camTY = 0;
 
 function capacity() { return 8 + S.capLvl * 3; }
 function speed() { return 3.1 * Math.pow(1.11, S.spdLvl); }
@@ -680,6 +702,11 @@ function updatePlayer(dt) {
   moveActor(player, wx, wy, speed(), dt);
 
   var acted = false, i;
+  /* §8: para taşıyorken kasa önceliklidir */
+  if (hasCarry(player, isMoney) && dist2(player.x, player.y, safe.x, safe.y) < 3.2) {
+    iDeposit(player, dt);
+    return;
+  }
   for (i = 0; i < spots.length; i++) {
     var s = spots[i]; if (AREAS[s.z].locked) continue;
     if (dist2(player.x, player.y, s.x, s.y + 0.9) < 1.6) acted = iPickFish(player, s, dt) || acted;
@@ -1081,31 +1108,8 @@ function padBlocked(p) {
 }
 function padReady(p) { return !AREAS[p.z].locked && !padDone(p); }
 var nearestPad = null;
-function updatePads(dt) {
-  nearestPad = null;
-  var bestD = 6.2, q;
-  for (q = 0; q < PADS.length; q++) {
-    var pp = PADS[q];
-    if (!padReady(pp)) continue;
-    var d = dist2(player.x, player.y, pp.x, pp.y);
-    if (d < bestD) { bestD = d; nearestPad = pp; }
-  }
-  for (var i = 0; i < PADS.length; i++) {
-    var p = PADS[i];
-    if (!padReady(p) || padBlocked(p)) continue;
-    if (dist2(player.x, player.y, p.x, p.y) < 1.3) {
-      var price = padPrice(p);
-      var rate = Math.max(70, price / 2.6);
-      var d2 = Math.min(rate * dt, price - p.paid, S.cash);
-      if (d2 > 0) {
-        S.cash -= d2; p.paid += d2;
-        if (Math.random() < 0.3) addPuff(p.x, p.y, '#ffc94a');
-        if (Math.random() < 0.2) beep(400 + (p.paid / price) * 500, 0.03, 'square', 0.015);
-      }
-      if (p.paid >= price - 0.01) applyPad(p);
-    }
-  }
-}
+/* GDD v0.3.1 §2/§8: makro satın alma zeminden kaldırıldı, alt barda */
+function updatePads() { }
 function applyPad(p) {
   p.paid = 0; sfx.buy();
   if (p.kind === 'cap') { S.capLvl++; p.lvl++; toast(T('capUp', { n: capacity() })); }
@@ -1115,41 +1119,20 @@ function applyPad(p) {
   else if (p.kind === 'area') {
     AREAS[p.target].locked = false; rebuildCounters(); reassignWorkers();
     toast(T('areaOpen', { n: NM(AREAS[p.target].n) })); sfx.build();
-    camShake = 6;
+    
   } else if (p.kind === 'arealv') {
     var a = AREAS[p.area]; a.lvl++; rebuildCounters();
-    toast(T('areaLvUp', { n: NM(a.n), l: a.lvl })); sfx.build(); camShake = 5;
+    toast(T('areaLvUp', { n: NM(a.n), l: a.lvl })); sfx.build(); 
   } else if (p.kind === 'decor') {
     DECOR[p.decor].got = true;
     toast(T('decorBought', { n: NM(DECOR[p.decor].n) })); sfx.build();
   }
   if ((p.kind === 'cap' || p.kind === 'spd' || p.kind === 'price' || p.kind === 'hire') && p.lvl < p.max) p.price = Math.round(p.price * p.growth);
-  addPuff(p.x, p.y, '#ffc94a'); addPuff(p.x, p.y, '#ffffff');
+  addPuff(player.x, player.y, '#ffc94a'); addPuff(player.x, player.y, '#ffffff');
   save();
 }
 
 /* --- yapı noktaları + büyük proje (alt panel) --- */
-var sheet = { kind: null, target: null };
-function updateSlotsAndProject() {
-  var best = null, bd = 1.9, i;
-  for (i = 0; i < SLOTS.length; i++) {
-    var s = SLOTS[i]; if (!slotActive(s)) continue;
-    var d = dist2(player.x, player.y, s.x, s.y);
-    if (d < bd) { bd = d; best = { kind: 'build', target: s }; }
-  }
-  if (!AREAS[project.z].locked && !project.done) {
-    var pd = dist2(player.x, player.y, project.x, project.y + 1.4);
-    if (pd < 2.6 && pd < bd) best = { kind: 'project', target: project };
-  }
-  if (best) {
-    if (sheet.kind !== best.kind || sheet.target !== best.target) openSheet(best.kind, best.target);
-  } else if (sheet.kind) {
-    var away = sheet.kind === 'build'
-      ? dist2(player.x, player.y, sheet.target.x, sheet.target.y) > 3.4
-      : dist2(player.x, player.y, project.x, project.y + 1.4) > 4.6;
-    if (away) closeSheet();
-  }
-}
 function buyBuilding(slot, id) {
   var d = bdef(id); if (!d) return;
   var cost = d.cost;
@@ -1159,9 +1142,9 @@ function buyBuilding(slot, id) {
   S.cash += refund - cost;
   slot.b = id;
   rebuildCounters(); reassignWorkers();
-  toast(T('built', { n: NM(d.n) })); sfx.build(); camShake = 5;
+  toast(T('built', { n: NM(d.n) })); sfx.build(); 
   addPuff(slot.x, slot.y, '#ffc94a');
-  save(); renderSheet();
+  save(); renderBar();
 }
 function investProject(amount) {
   if (project.done) return;
@@ -1170,7 +1153,7 @@ function investProject(amount) {
   S.cash -= amt; project.inv += amt;
   var st = projStageOf(projPct());
   if (st > project.stage) {
-    project.stage = st; sfx.build(); camShake = 7;
+    project.stage = st; sfx.build(); 
     addPuff(project.x, project.y, '#ffc94a');
     if (st >= project.stages.length) {
       project.done = true; rebuildCounters();
@@ -1178,7 +1161,7 @@ function investProject(amount) {
       S.rep += 15; checkRepLevel();
     } else toast(T('projStage', { n: NM(project.n), p: Math.round(projPct() * 100) }));
   } else sfx.coin();
-  save(); renderSheet();
+  save(); renderBar();
 }
 
 /* =========================================================
@@ -1195,7 +1178,13 @@ var TUTOK = [
   function () { return tables[0].inn.length > 0 || tables[0].cur || tables[0].mat.items.length > 0; },
   function () { return counters.length && counters[0].buffer.length > 0; },
   function () { return S.cash > 0; },
-  function () { for (var i = 0; i < PADS.length; i++) if (PADS[i].lvl > 0 || (PADS[i].kind === 'decor' && DECOR[PADS[i].decor].got)) return true; return false; }
+  function () {
+    for (var i = 0; i < PADS.length; i++) if (PADS[i].lvl > 0) return true;
+    for (var j = 0; j < AREAS.length; j++) if (!AREAS[j].locked && AREAS[j].lvl > 1) return true;
+    for (var k = 0; k < SLOTS.length; k++) if (SLOTS[k].b) return true;
+    for (var d = 0; d < DECOR.length; d++) if (DECOR[d].got) return true;
+    return project.inv > 0;
+  }
 ];
 function updateTutorial() {
   if (S.tut >= TUTOK.length) return;
@@ -1206,6 +1195,25 @@ function updateTutorial() {
   }
 }
 var camShake = 0;
+/* GDD v0.3.1 §4: ölü bölge + yumuşak takip, mikro sarsıntı yok */
+function clampCam() {
+  var maxY = maxOpenY();
+  var x0 = pX(0, maxY) - 28, x1 = pX(10, 0) + 28;
+  var y0 = pY(0, 0, 0) - 46, y1 = pY(10, maxY, 0) + 42;
+  var hw = W / 2, ht = H * 0.46, hb = H - H * 0.46;
+  if (x1 - x0 < W) camTX = (x0 + x1) / 2; else camTX = clamp(camTX, x0 + hw, x1 - hw);
+  if (y1 - y0 < H) camTY = (y0 + y1) / 2; else camTY = clamp(camTY, y0 + ht, y1 - hb);
+}
+function updateCamera(dt) {
+  var tx = pX(player.x, player.y), ty = pY(player.x, player.y, 0);
+  var dzx = W * 0.12, dzy = H * 0.10;
+  var dx = tx - camTX, dy = ty - camTY;
+  if (dx > dzx) camTX += dx - dzx; else if (dx < -dzx) camTX += dx + dzx;
+  if (dy > dzy) camTY += dy - dzy; else if (dy < -dzy) camTY += dy + dzy;
+  clampCam();
+  var k = 1 - Math.pow(0.10, dt);
+  camX = lerp(camX, camTX, k); camY = lerp(camY, camTY, k);
+}
 function updateFx(dt) {
   var i;
   for (i = flyers.length - 1; i >= 0; i--) { flyers[i].t += dt; if (flyers[i].t >= flyers[i].d) flyers.splice(i, 1); }
@@ -1214,7 +1222,7 @@ function updateFx(dt) {
     var p = puffs[i]; p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; p.vz -= 55 * dt;
     if (p.t > 0.65) puffs.splice(i, 1);
   }
-  camShake = Math.max(0, camShake - dt * 18);
+  camShake = 0;
   for (i = 0; i < gulls.length; i++) {
     var g = gulls[i];
     g.x += g.vx * dt; g.y += g.vy * dt; g.f += dt * 9;
@@ -1553,22 +1561,19 @@ function drawLand() {
 function drawArea(a, i) {
   var w = a.x1 - a.x0, h = a.y1 - a.y0;
   if (a.locked) {
-    isoQuad(a.x0, a.y0, w, h, 0, '#9d8f63');
-    ctx.save(); ctx.globalAlpha = 0.35;
-    for (var g = 0; g < 26; g++) {
-      var gx = a.x0 + 0.4 + ((g * 7) % 9) * 1.0, gy = a.y0 + 0.5 + ((g * 3) % 5) * 1.0;
-      px(pX(gx, gy), pY(gx, gy, 0), 3, 2, '#7f7148');
-    }
+    ctx.save(); ctx.globalAlpha = 0.42;
+    isoQuad(a.x0, a.y0, w, h, 0, '#8d8156');
     ctx.restore();
-    /* halat çit: üst kenar */
-    for (var t = 0; t <= w; t += 1.1) {
-      var fx = a.x0 + t, fy = a.y0 + 0.15;
-      var sx0 = R(pX(fx, fy)), sy0 = R(pY(fx, fy, 0));
-      px(sx0 - 1, sy0 - 9, 2, 9, '#6b5334');
-      px(sx0 - 2, sy0 - 10, 4, 1, '#8a6f45');
-    }
-    isoLine(a.x0, a.y0 + 0.15, a.x1, a.y0 + 0.15, 7, '#c9a15e', 1);
-    isoLine(a.x0, a.y0 + 0.15, a.x1, a.y0 + 0.15, 4, '#a98b4e', 1);
+    ctx.save(); ctx.setLineDash([4, 4]); ctx.lineDashOffset = -gameT * 5;
+    ctx.strokeStyle = 'rgba(232,213,168,.55)'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(R(pX(a.x0, a.y0)), R(pY(a.x0, a.y0, 0)));
+    ctx.lineTo(R(pX(a.x1, a.y0)), R(pY(a.x1, a.y0, 0)));
+    ctx.lineTo(R(pX(a.x1, a.y1)), R(pY(a.x1, a.y1, 0)));
+    ctx.lineTo(R(pX(a.x0, a.y1)), R(pY(a.x0, a.y1, 0)));
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+    var mx = (a.x0 + a.x1) / 2, my = a.y0 + 0.45;
+    if (dist2(player.x, player.y, mx, my) < 60) uiLabel(mx, my, 10, '🔒 ' + NM(a.n), '#e8d5a8', 0.8);
     return;
   }
   var lv = a.lvl;
@@ -1791,18 +1796,17 @@ function drawBuilding(s) {
 }
 function drawSlot(s) {
   if (s.b) { drawBuilding(s); return; }
-  var pulse = Math.sin(gameT * 3) > 0 ? 1 : 0;
-  isoQuad(s.x - 0.6, s.y - 0.5, 1.2, 1.0, 0.3, 'rgba(20,41,60,.45)');
-  ctx.save(); ctx.setLineDash([3, 3]); ctx.lineDashOffset = -gameT * 8;
-  ctx.strokeStyle = pulse ? '#ffc94a' : '#c9a15e'; ctx.lineWidth = 1;
+  var near = dist2(player.x, player.y, s.x, s.y) < 40;
+  ctx.save(); ctx.globalAlpha = near ? 0.9 : 0.45;
+  ctx.setLineDash([3, 3]); ctx.lineDashOffset = -gameT * 6;
+  ctx.strokeStyle = '#c9a15e'; ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(R(pX(s.x - 0.6, s.y - 0.5)), R(pY(s.x - 0.6, s.y - 0.5, 0.4)));
   ctx.lineTo(R(pX(s.x + 0.6, s.y - 0.5)), R(pY(s.x + 0.6, s.y - 0.5, 0.4)));
   ctx.lineTo(R(pX(s.x + 0.6, s.y + 0.5)), R(pY(s.x + 0.6, s.y + 0.5, 0.4)));
   ctx.lineTo(R(pX(s.x - 0.6, s.y + 0.5)), R(pY(s.x - 0.6, s.y + 0.5, 0.4)));
   ctx.closePath(); ctx.stroke(); ctx.restore();
-  var sx = R(pX(s.x, s.y)), sy = R(pY(s.x, s.y, 0));
-  uiText(s.x, s.y, 8 + pulse, '🔨', '#ffc94a', 15);
+  if (near) uiText(s.x, s.y, 7, '🔨', '#ffc94a', 13, 0.9);
 }
 
 /* ---------- büyük proje aşamaları ---------- */
@@ -1816,7 +1820,7 @@ function drawProject() {
     ctx.moveTo(R(pX(x, y)), R(pY(x, y, 0))); ctx.lineTo(R(pX(x + p.w, y)), R(pY(x + p.w, y, 0)));
     ctx.lineTo(R(pX(x + p.w, y + p.h)), R(pY(x + p.w, y + p.h, 0))); ctx.lineTo(R(pX(x, y + p.h)), R(pY(x, y + p.h, 0)));
     ctx.closePath(); ctx.stroke(); ctx.restore();
-    labelAt(p.x, p.y + p.h / 2 + 0.3, 6, T('stProject'), '#ffc94a', '');
+    if (dist2(player.x, player.y, p.x, p.y) < 55) labelAt(p.x, p.y + p.h / 2 + 0.3, 6, T('stProject'), '#ffc94a', '');
     return;
   }
   /* temel */
@@ -1915,25 +1919,6 @@ function padInfo(p) {
   if (p.kind === 'decor') return { t: UP(NM(DECOR[p.decor].n)), e: T('stDecor') };
   return { t: UP(NM(ROLES[p.role].n)), e: NM(ROLES[p.role].d) + ' ' + money(ROLES[p.role].wage) + perMin() };
 }
-function drawPad(p) {
-  if (AREAS[p.z].locked) return;
-  var sx = R(pX(p.x, p.y)), sy = R(pY(p.x, p.y, 0));
-  if (padDone(p)) return;
-  var pulse = Math.sin(gameT * 3) > 0 ? 1 : 0;
-  var blocked = padBlocked(p);
-  isoQuad(p.x - 0.62, p.y - 0.5, 1.24, 1.0, 0.3, 'rgba(16,34,50,.42)');
-  var price = padPrice(p), frac = price > 0 ? p.paid / price : 0;
-  if (frac > 0) isoQuad(p.x - 0.62, p.y - 0.5, 1.24, Math.max(0.06, 1.0 * frac), 0.4, 'rgba(95,211,122,.7)');
-  ctx.save(); ctx.setLineDash([3, 3]); ctx.lineDashOffset = -gameT * 10;
-  ctx.strokeStyle = blocked ? '#7d8a94' : (pulse ? '#ffc94a' : '#c9a15e'); ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(R(pX(p.x - 0.62, p.y - 0.5)), R(pY(p.x - 0.62, p.y - 0.5, 0.45)));
-  ctx.lineTo(R(pX(p.x + 0.62, p.y - 0.5)), R(pY(p.x + 0.62, p.y - 0.5, 0.45)));
-  ctx.lineTo(R(pX(p.x + 0.62, p.y + 0.5)), R(pY(p.x + 0.62, p.y + 0.5, 0.45)));
-  ctx.lineTo(R(pX(p.x - 0.62, p.y + 0.5)), R(pY(p.x - 0.62, p.y + 0.5, 0.45)));
-  ctx.closePath(); ctx.stroke(); ctx.restore();
-  uiText(p.x, p.y, 7 + pulse, p.icon, '#fff', 17);
-}
 function drawArrow(tg) {
   var sx = R(pX(tg.x, tg.y)), sy = R(pY(tg.x, tg.y, 30 + (Math.sin(gameT * 4) > 0 ? 2 : 0)));
   px(sx - 3, sy - 8, 7, 4, '#ffc94a');
@@ -1974,7 +1959,7 @@ function tutorialTarget() {
   if (t === 2) return { x: tables[0].x, y: tables[0].y };
   if (t === 3) return hasCarry(player, isGoods) ? { x: counters[0].x, y: counters[0].y } : { x: tables[0].mat.x, y: tables[0].mat.y };
   if (t === 4) return hasCarry(player, isMoney) ? { x: safe.x, y: safe.y } : { x: counters[0].tray.x, y: counters[0].tray.y };
-  return { x: PADS[0].x, y: PADS[0].y };
+  return null;
 }
 function playerOccluded() {
   var pxp = pX(player.x, player.y), pyp = pY(player.x, player.y, 0), d = player.x + player.y + 0.3, i;
@@ -1995,7 +1980,7 @@ function render() {
   drawSea();
   drawVillage();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  var shk = camShake > 0 ? R(rnd(-camShake, camShake) * 0.3) : 0;
+  var shk = 0;
   camOX = R(W / 2 - camX) + shk; camOY = R(H * 0.46 - camY);
   ctx.translate(camOX, camOY);
 
@@ -2008,7 +1993,7 @@ function render() {
   function push(d, fn) { list.push({ d: d, f: fn }); }
 
   for (i = 0; i < AREAS.length; i++) (function (ar) {
-    if (ar.locked) { push((ar.x0 + ar.x1) / 2 + (ar.y0 + ar.y1) / 2, function () { drawSign(ar); }); return; }
+    if (ar.locked) return;
     if (ar.lvl >= 2) push(ar.x0 + ar.y1 - 0.2, function () { drawSign(ar); });
     if (ar.lvl >= 3) {
       push(ar.x0 + 0.5 + ar.y1 - 0.5, function () { drawLamp(ar.x0 + 0.5, ar.y1 - 0.5); });
@@ -2016,7 +2001,6 @@ function render() {
     }
   })(AREAS[i]);
   for (i = 0; i < scenery.length; i++) (function (d) { push(d.x + d.y - 0.1, function () { drawScenery(d); }); })(scenery[i]);
-  for (i = 0; i < PADS.length; i++) (function (p) { push(p.x + p.y - 0.9, function () { drawPad(p); }); })(PADS[i]);
   for (i = 0; i < SLOTS.length; i++) (function (s) {
     if (!slotActive(s)) return; push(s.x + s.y, function () { drawSlot(s); });
   })(SLOTS[i]);
@@ -2097,11 +2081,11 @@ function render() {
    ARAYÜZ (DOM)
    ========================================================= */
 var el = {};
-['money', 'carry', 'carryIcon', 'rep', 'repfill', 'eventChip', 'eventIcon', 'eventName', 'eventT',
- 'objLbl', 'objText', 'queueHint', 'toast', 'sheet', 'sheetTitle', 'sheetSub', 'sheetBody',
+['money', 'carry', 'carryIcon', 'rep', 'repfill', 'eventChip', 'eventIcon', 'eventName', 'eventT', 'objective',
+ 'objLbl', 'objText', 'queueHint', 'toast', 'devbar', 'devpanel', 'dpTitle', 'dpCards', 'dpClose',
  'hMoney', 'hCarry', 'hRep', 'startTag', 'startList', 'playBtn', 'setBtn', 'setTitle', 'setLang',
  'setSound', 'setZoom', 'setClose', 'resetBtn', 'closeMenu', 'menuSet', 'langLbl', 'tabBody',
- 'startScreen', 'settingsScreen', 'menuScreen', 'menuBtn', 'sheetClose'].forEach(function (id) {
+ 'startScreen', 'settingsScreen', 'menuScreen', 'menuBtn', 'dtArea', 'dtLevel', 'dtBuild', 'dtProj'].forEach(function (id) {
   el[id] = document.getElementById(id);
 });
 var toastT = 0;
@@ -2120,13 +2104,15 @@ function applyLang() {
   el.setClose.textContent = T('ok'); el.resetBtn.textContent = T('reset');
   el.closeMenu.textContent = T('cont'); el.menuSet.textContent = T('settings');
   el.langLbl.textContent = T('langLbl');
+  el.dtArea.textContent = T('barArea'); el.dtLevel.textContent = T('barLevel');
+  el.dtBuild.textContent = T('barBuild'); el.dtProj.textContent = T('barProj');
   var tabs = document.querySelectorAll('#menuTabs .tab');
   for (var i = 0; i < tabs.length; i++) tabs[i].textContent = T('tabs')[i];
   Array.prototype.forEach.call(document.querySelectorAll('#langSeg button,#langSeg2 button'), function (b) {
     b.classList.toggle('on', b.dataset.l === lang);
   });
   if (!el.menuScreen.classList.contains('hidden')) renderTab();
-  if (sheet.kind) renderSheet();
+  if (barTab) renderBar();
 }
 
 function urgentOrder() {
@@ -2154,26 +2140,7 @@ function carryIcon() {
   for (var k in n) if (n[k] > n[top]) top = k;
   return top === 'fish' ? '🐟' : top === 'fileto' ? '🍥' : top === 'fume' ? '🔥' : '💰';
 }
-var pcEl = {};
-['padCard', 'pcIco', 'pcTitle', 'pcEff', 'pcPrice', 'pcBarFill'].forEach(function (id) { pcEl[id] = document.getElementById(id); });
-function syncPadCard() {
-  var p = nearestPad;
-  if (!p || sheet.kind) { pcEl.padCard.classList.add('hidden'); return; }
-  pcEl.padCard.classList.remove('hidden');
-  var info = padInfo(p), blocked = padBlocked(p), price = padPrice(p);
-  pcEl.pcIco.textContent = p.icon;
-  pcEl.pcTitle.textContent = info.t;
-  pcEl.pcEff.textContent = info.e;
-  pcEl.padCard.classList.toggle('no', blocked);
-  if (blocked) {
-    pcEl.pcPrice.textContent = p.kind === 'hire' ? T('needStaff') : T('needRep', { n: AREAS[p.target].rep, c: S.rep });
-  } else {
-    pcEl.pcPrice.textContent = money(Math.max(0, price - p.paid));
-  }
-  pcEl.pcBarFill.style.width = clamp((p.paid / price) * 100, 0, 100) + '%';
-}
 function syncHUD(dt) {
-  syncPadCard();
   el.money.textContent = Math.round(S.cash).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US');
   el.carry.textContent = carryW(player) + '/' + capacity();
   el.carryIcon.textContent = carryIcon();
@@ -2187,69 +2154,209 @@ function syncHUD(dt) {
     el.eventT.textContent = Math.ceil(eventT) + 's';
   } else el.eventChip.classList.add('hidden');
   if (S.tut < TUTOK.length) {
+    el.objective.classList.remove('hidden');
     el.objLbl.textContent = T('goal') + ' ' + (S.tut + 1) + '/' + TUTOK.length;
     el.objText.textContent = T('tut')[S.tut];
   } else {
     var o = urgentOrder();
-    if (o) {
+    /* §7: görev bandı yalnız gerektiğinde */
+    if (o && o.pat < 26) {
+      el.objective.classList.remove('hidden');
       el.objLbl.textContent = T('orderOf', { n: UP(NM(o.type.n)) });
       el.objText.textContent = prodName(o.ord.k, o.ord.f) + ' x' + (o.ord.need - o.ord.got) + ' - ' + Math.ceil(o.pat) + 's';
-    } else {
-      el.objLbl.textContent = UP(repTitle());
-      el.objText.textContent = T('idleGoal');
-    }
+    } else el.objective.classList.add('hidden');
   }
   var w = waitingCount();
   if (w >= 4) { el.queueHint.classList.remove('hidden'); el.queueHint.textContent = T('waiting', { n: w }); }
   else el.queueHint.classList.add('hidden');
   if (toastT > 0) { toastT -= dt; if (toastT <= 0) el.toast.classList.remove('on'); }
+  if (cfT > 0) { cfT -= dt; if (cfT <= 0 && cfId) { cfId = null; renderBar(); } }
+  barHot();
 }
 
 /* ---------- alt panel ---------- */
-function openSheet(kind, target) {
-  sheet.kind = kind; sheet.target = target;
-  el.sheet.classList.add('on'); document.body.classList.add('sheet'); renderSheet();
+/* =========================================================
+   ALT GELİŞTİRME BARI (GDD v0.3.1 §3)
+   ========================================================= */
+var barTab = null, barSlot = null, cfId = null, cfT = 0;
+function closeBar() {
+  barTab = null; barSlot = null; cfId = null;
+  el.devpanel.classList.add('hidden');
+  document.body.classList.remove('panel');
+  Array.prototype.forEach.call(document.querySelectorAll('.dtab'), function (b) { b.classList.remove('on'); });
 }
-function closeSheet() { sheet.kind = null; sheet.target = null; el.sheet.classList.remove('on'); document.body.classList.remove('sheet'); }
-function renderSheet() {
-  if (!sheet.kind) return;
-  if (sheet.kind === 'build') {
-    var s = sheet.target;
-    el.sheetTitle.textContent = T('sheetBuild');
-    el.sheetSub.textContent = T('sheetBuildSub');
-    var opts = BUILDINGS.filter(function (b) { return s.cats.indexOf(b.cat) >= 0; });
-    el.sheetBody.innerHTML = '<div class="cards">' + opts.map(function (b) {
-      var owned = s.b === b.id;
-      var afford = S.cash + (s.b ? Math.round(bdef(s.b).cost * 0.6) : 0) >= b.cost;
-      return '<div class="bcard' + (owned ? ' owned' : (afford ? '' : ' no')) + '" data-b="' + b.id + '">' +
-        '<span class="ic">' + b.icon + '</span><b>' + NM(b.n) + '</b>' + NM(b.d) +
-        '<span class="pr">' + (owned ? T('owned') : money(b.cost)) + '</span></div>';
-    }).join('') + '</div>';
-    Array.prototype.forEach.call(el.sheetBody.querySelectorAll('.bcard'), function (c) {
-      c.onclick = function () { buyBuilding(s, c.dataset.b); };
-    });
-  } else {
-    var p = project, pc = projPct();
-    el.sheetTitle.textContent = UP(NM(p.n));
-    el.sheetSub.textContent = T('stage') + ' ' + p.stage + '/5 - ' + money(p.inv) + ' / ' + money(p.total);
-    var nextTh = p.stages[Math.min(p.stage, p.stages.length - 1)] * p.total;
-    el.sheetBody.innerHTML =
-      '<div class="pbar"><i style="width:' + Math.round(pc * 100) + '%"></i></div>' +
-      '<div class="sub">' + pct(Math.round(pc * 100)) + ' - ' + T('mNext') + ': ' + money(Math.max(0, nextTh - p.inv)) + '</div>' +
-      '<div class="prow">' +
-      '<button class="pbtn" data-a="1000">+' + money(1000) + '</button>' +
-      '<button class="pbtn" data-a="10000">+' + money(10000) + '</button>' +
-      '<button class="pbtn" data-a="q">' + T('pct25') + '</button>' +
-      '<button class="pbtn" data-a="max">' + T('maxInvest') + '</button></div>';
-    Array.prototype.forEach.call(el.sheetBody.querySelectorAll('.pbtn'), function (b) {
-      b.onclick = function () {
-        var a = b.dataset.a;
-        investProject(a === 'max' ? S.cash : a === 'q' ? S.cash * 0.25 : parseInt(a, 10));
-      };
-    });
+function openBar(t) {
+  if (barTab === t) { closeBar(); return; }
+  barTab = t; barSlot = null; cfId = null;
+  el.devpanel.classList.remove('hidden');
+  document.body.classList.add('panel');
+  Array.prototype.forEach.call(document.querySelectorAll('.dtab'), function (b) {
+    b.classList.toggle('on', b.dataset.t === t);
+  });
+  renderBar();
+}
+function purchase(cost, blocked, fn) {
+  if (blocked) { sfx.bad(); return false; }
+  if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return false; }
+  S.cash -= cost; fn(); save(); renderBar(); return true;
+}
+function areaLevelEffect(a) { return T('lvEffect'); }
+
+function barList() {
+  var out = [], i;
+  if (barTab === 'area') {
+    for (i = 1; i < AREAS.length; i++) {
+      var a = AREAS[i];
+      if (!a.locked || AREAS[i - 1].locked) continue;
+      var blk = S.rep < a.rep;
+      out.push({ id: 'a' + i, ic: '🔓', t: NM(a.n), s: T('areaGives') + (a.rep ? ' • ⭐' + a.rep : ''),
+        cost: a.cost, blocked: blk, why: T('needRep', { n: a.rep, c: S.rep }),
+        go: function (k) { return function () { AREAS[k].locked = false; rebuildCounters(); reassignWorkers(); clampCam(); sfx.build(); toast(T('areaOpen', { n: NM(AREAS[k].n) })); }; }(i) });
+      break;
+    }
+    if (!out.length) out.push({ empty: T('emptyArea') });
+  } else if (barTab === 'level') {
+    for (i = 0; i < AREAS.length; i++) {
+      var ar = AREAS[i];
+      if (ar.locked || ar.lvl >= MAXLV) continue;
+      out.push({ id: 'l' + i, ic: '🏗️', t: NM(ar.n) + '  ' + T('level') + ar.lvl + '→' + (ar.lvl + 1),
+        s: areaLevelEffect(ar), cost: ar.up[ar.lvl],
+        go: function (k) { return function () { AREAS[k].lvl++; rebuildCounters(); sfx.build(); toast(T('areaLvUp', { n: NM(AREAS[k].n), l: AREAS[k].lvl })); }; }(i) });
+    }
+    for (i = 0; i < PADS.length; i++) {
+      var p = PADS[i];
+      if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
+      if (AREAS[p.z].locked || p.lvl >= p.max) continue;
+      var info = padInfo(p), bl = padBlocked(p);
+      out.push({ id: p.id, ic: p.icon, t: info.t + (p.max > 1 ? '  ' + T('level') + p.lvl + '→' + (p.lvl + 1) : ''),
+        s: info.e, cost: padPrice(p), blocked: bl, why: T('staffFull', { n: staffCap() }),
+        go: function (pp) { return function () { applyPad(pp); }; }(p) });
+    }
+    if (!out.length) out.push({ empty: T('emptyLevel') });
+  } else if (barTab === 'build') {
+    if (barSlot) {
+      out.push({ id: 'back', ic: '↩', t: T('back'), s: '', back: true });
+      var sl = barSlot;
+      for (i = 0; i < BUILDINGS.length; i++) {
+        var bd = BUILDINGS[i];
+        if (sl.cats.indexOf(bd.cat) < 0) continue;
+        var owned = sl.b === bd.id;
+        var refund = sl.b ? Math.round(bdef(sl.b).cost * 0.6) : 0;
+        out.push({ id: 'b' + bd.id, ic: bd.icon, t: NM(bd.n), s: NM(bd.d), cost: bd.cost, refund: refund,
+          owned: owned, go: function (b2) { return function () { slotBuild(barSlot, b2); }; }(bd.id) });
+      }
+    } else {
+      var n = 0;
+      for (i = 0; i < SLOTS.length; i++) {
+        var s2 = SLOTS[i];
+        if (!slotActive(s2)) continue;
+        n++;
+        var d2 = s2.b ? bdef(s2.b) : null;
+        out.push({ id: 's' + s2.id, ic: d2 ? d2.icon : '🔨', t: d2 ? NM(d2.n) : T('slotEmpty'),
+          s: T('slotOf', { n: NM(AREAS[s2.z].n) }) + (d2 ? ' • ' + NM(d2.d) : ''),
+          pick: T(d2 ? 'replace' : 'choose'),
+          go: function (sx) { return function () { barSlot = sx; cfId = null; renderBar(); }; }(s2) });
+      }
+      for (i = 0; i < DECOR.length; i++) {
+        var dc = DECOR[i];
+        if (dc.got || AREAS[dc.z].locked) continue;
+        out.push({ id: 'd' + i, ic: dc.icon, t: NM(dc.n), s: T('decorGroup') + ' • ' + NM(AREAS[dc.z].n), cost: dc.cost,
+          go: function (k) { return function () { DECOR[k].got = true; sfx.build(); toast(T('decorBought', { n: NM(DECOR[k].n) })); }; }(i) });
+      }
+      if (!n && out.length === 0) out.push({ empty: T('emptyBuild') });
+    }
   }
+  return out;
 }
-el.sheetClose.onclick = closeSheet;
+function slotBuild(sl, id) {
+  var d = bdef(id);
+  var refund = sl.b ? Math.round(bdef(sl.b).cost * 0.6) : 0;
+  if (sl.b === id) return;
+  if (S.cash + refund < d.cost) { toast(T('noMoney')); sfx.bad(); return; }
+  S.cash += refund - d.cost;
+  sl.b = id; rebuildCounters(); reassignWorkers();
+  sfx.build(); toast(T('built', { n: NM(d.n) }));
+  addPuff(sl.x, sl.y, '#ffc94a');
+  barSlot = null; save(); renderBar();
+}
+function renderBar() {
+  if (!barTab) return;
+  el.dpTitle.textContent = T(barTab === 'area' ? 'tArea' : barTab === 'level' ? 'tLevel' : barTab === 'build' ? 'tBuild' : 'tProj');
+  if (barTab === 'proj') { renderProjPanel(); return; }
+  var list = barList(), h = '';
+  for (var i = 0; i < list.length; i++) {
+    var c = list[i];
+    if (c.empty) { h += '<div class="dempty">' + c.empty + '</div>'; continue; }
+    var btn;
+    if (c.back) btn = '<button class="buy" data-i="' + i + '">' + T('back') + '</button>';
+    else if (c.pick) btn = '<button class="buy" data-i="' + i + '">' + c.pick + '</button>';
+    else if (c.owned) btn = '<button class="buy done" data-i="' + i + '">✔ ' + T('owned') + '</button>';
+    else if (c.blocked) btn = '<button class="buy no" data-i="' + i + '">' + c.why + '</button>';
+    else {
+      var aff = S.cash + (c.refund || 0) >= c.cost;
+      var cf = cfId === c.id;
+      btn = '<button class="buy' + (aff ? (cf ? ' cf' : '') : ' no') + '" data-i="' + i + '">' +
+        (cf ? T('confirm') : money(c.cost)) + '</button>';
+    }
+    h += '<div class="dcard' + (c.pick && !c.owned ? '' : '') + '"><span class="ic">' + c.ic + '</span><b>' +
+      c.t + '</b><small>' + (c.s || '') + (c.refund ? ' (+' + money(c.refund) + ')' : '') + '</small>' + btn + '</div>';
+  }
+  el.dpCards.innerHTML = h;
+  Array.prototype.forEach.call(el.dpCards.querySelectorAll('.buy'), function (b) {
+    b.onclick = function () {
+      var c = list[parseInt(b.dataset.i, 10)];
+      if (!c) return;
+      if (c.back) { barSlot = null; cfId = null; renderBar(); return; }
+      if (c.pick) { c.go(); return; }
+      if (c.owned) return;
+      if (c.blocked) { sfx.bad(); toast(c.why); return; }
+      var needCf = c.cost >= 1500 || barTab === 'area' || (barTab === 'level' && c.id.charAt(0) === 'l');
+      if (needCf && cfId !== c.id) { cfId = c.id; cfT = 3.5; renderBar(); return; }
+      cfId = null;
+      if (c.refund !== undefined) { c.go(); return; }
+      purchase(c.cost, false, c.go);
+    };
+  });
+}
+function renderProjPanel() {
+  if (AREAS[project.z].locked) { el.dpCards.innerHTML = '<div class="dempty">' + T('emptyProj') + '</div>'; return; }
+  var pc = projPct();
+  if (project.done) {
+    el.dpCards.innerHTML = '<div class="dcard dwide"><span class="ic">🏛️</span><b>' + NM(project.n) +
+      '</b><small>' + T('done') + ' ✔</small></div>';
+    return;
+  }
+  var nextTh = project.stages[Math.min(project.stage, project.stages.length - 1)] * project.total;
+  el.dpCards.innerHTML = '<div class="dcard dwide"><b>' + NM(project.n) + '  ' + T('stage') + ' ' + project.stage + '/5</b>' +
+    '<div class="dbar"><i style="width:' + Math.round(pc * 100) + '%"></i></div>' +
+    '<small>' + money(project.inv) + ' / ' + money(project.total) + ' — ' + T('nextStage') + ': ' + money(Math.max(0, nextTh - project.inv)) + '</small>' +
+    '<div class="dinv"><button data-a="1000">+' + money(1000) + '</button><button data-a="10000">+' + money(10000) +
+    '</button><button data-a="q">' + T('pct25') + '</button><button data-a="max">' + T('maxInvest') + '</button></div></div>';
+  Array.prototype.forEach.call(el.dpCards.querySelectorAll('.dinv button'), function (b) {
+    b.onclick = function () {
+      var a = b.dataset.a;
+      investProject(a === 'max' ? S.cash : a === 'q' ? S.cash * 0.25 : parseInt(a, 10));
+    };
+  });
+}
+function barHot() {
+  var hot = { area: false, level: false, build: false, proj: false }, i;
+  for (i = 1; i < AREAS.length; i++) if (AREAS[i].locked && !AREAS[i - 1].locked && S.rep >= AREAS[i].rep && S.cash >= AREAS[i].cost) hot.area = true;
+  for (i = 0; i < AREAS.length; i++) if (!AREAS[i].locked && AREAS[i].lvl < MAXLV && S.cash >= AREAS[i].up[AREAS[i].lvl]) hot.level = true;
+  for (i = 0; i < PADS.length; i++) {
+    var p = PADS[i];
+    if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
+    if (!AREAS[p.z].locked && p.lvl < p.max && !padBlocked(p) && S.cash >= padPrice(p)) hot.level = true;
+  }
+  for (i = 0; i < SLOTS.length; i++) if (slotActive(SLOTS[i]) && !SLOTS[i].b && S.cash >= 900) hot.build = true;
+  if (!AREAS[project.z].locked && !project.done && S.cash >= 1000) hot.proj = true;
+  Array.prototype.forEach.call(document.querySelectorAll('.dtab'), function (b) {
+    b.classList.toggle('hot', !!hot[b.dataset.t] && barTab !== b.dataset.t);
+  });
+}
+Array.prototype.forEach.call(document.querySelectorAll('.dtab'), function (b) {
+  b.onclick = function () { openBar(b.dataset.t); };
+});
 
 /* ---------- menü ---------- */
 var curTab = 'liman';
@@ -2310,6 +2417,7 @@ Array.prototype.forEach.call(document.querySelectorAll('#menuTabs .tab'), functi
     b.classList.add('on'); curTab = b.dataset.t; renderTab();
   };
 });
+el.dpClose.onclick = closeBar;
 el.menuBtn.onclick = function () { renderTab(); el.menuScreen.classList.remove('hidden'); };
 el.closeMenu.onclick = function () { el.menuScreen.classList.add('hidden'); };
 el.menuSet.onclick = function () { el.menuScreen.classList.add('hidden'); el.settingsScreen.classList.remove('hidden'); };
@@ -2358,15 +2466,11 @@ function frame(ts) {
   updateWorkers(dt);
   updateStations(dt);
   updateCustomers(dt);
-  updatePads(dt);
-  updateSlotsAndProject();
   updateEvents(dt);
   updateTutorial();
   updateFx(dt);
   if (workers.length) S.cash = Math.max(0, S.cash - wageTotal() / 60 * dt);
-  var tx = pX(player.x, player.y), ty = pY(player.x, player.y, 0);
-  var k = 1 - Math.pow(0.0015, dt);
-  camX = lerp(camX, tx, k); camY = lerp(camY, ty, k);
+  updateCamera(dt);
   syncHUD(dt);
   saveT += dt; if (saveT > 6) { saveT = 0; save(); }
   render();
@@ -2375,6 +2479,7 @@ function start() {
   el.startScreen.classList.add('hidden');
   document.getElementById('hud').classList.remove('hidden');
   document.getElementById('objective').classList.remove('hidden');
+  el.devbar.classList.remove('hidden');
   S.started = true;
   if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { } }
 }
@@ -2398,6 +2503,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(function (
 requestAnimationFrame(frame);
 
 window.BT = {
+  cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },
   S: S, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
   customers: customers, FISH: FISH, start: start, hire: hire, toast: toast,
