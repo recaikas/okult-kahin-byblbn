@@ -366,26 +366,65 @@ cvs.addEventListener('pointerup', stickEnd);
 cvs.addEventListener('pointercancel', stickEnd);
 cvs.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
-/* ---------------- ses ---------------- */
-var AC = null, soundOn = true;
-function beep(f, d, t, v) {
-  if (!soundOn) return;
+/* ---------------- ses: dış dosyasız, prosedürel liman sesleri ---------------- */
+var AC = null, masterGain = null, harborLoop = null, soundOn = true;
+function ensureAudio() {
+  if (!soundOn) return null;
   try {
-    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
-    var o = AC.createOscillator(), g = AC.createGain();
-    o.type = t || 'square'; o.frequency.value = f; g.gain.value = v || 0.04;
-    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + (d || 0.08));
-    o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + (d || 0.08));
-  } catch (e) { }
+    if (!AC) {
+      AC = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = AC.createGain(); masterGain.gain.value = 0.82; masterGain.connect(AC.destination);
+    }
+    if (AC.state === 'suspended') AC.resume();
+    return AC;
+  } catch (e) { return null; }
+}
+function tone(f, d, t, v, delay, endF) {
+  var ac = ensureAudio(); if (!ac || !masterGain) return;
+  var at = ac.currentTime + (delay || 0), o = ac.createOscillator(), g = ac.createGain();
+  o.type = t || 'triangle'; o.frequency.setValueAtTime(f, at);
+  if (endF) o.frequency.exponentialRampToValueAtTime(endF, at + d);
+  g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(v || 0.025, at + 0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001, at + d);
+  o.connect(g); g.connect(masterGain); o.start(at); o.stop(at + d + 0.02);
+}
+function noise(d, v, freq, delay) {
+  var ac = ensureAudio(); if (!ac || !masterGain) return;
+  var at = ac.currentTime + (delay || 0), n = Math.max(1, Math.floor(ac.sampleRate * d));
+  var b = ac.createBuffer(1, n, ac.sampleRate), data = b.getChannelData(0);
+  for (var i = 0; i < n; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / n);
+  var src = ac.createBufferSource(), filter = ac.createBiquadFilter(), g = ac.createGain();
+  src.buffer = b; filter.type = 'lowpass'; filter.frequency.value = freq || 850;
+  g.gain.setValueAtTime(v || 0.018, at); g.gain.exponentialRampToValueAtTime(0.0001, at + d);
+  src.connect(filter); filter.connect(g); g.connect(masterGain); src.start(at);
+}
+function startHarborAmbience() {
+  var ac = ensureAudio(); if (!ac || harborLoop || !masterGain) return;
+  var seconds = 5, b = ac.createBuffer(1, ac.sampleRate * seconds, ac.sampleRate), data = b.getChannelData(0);
+  for (var i = 0; i < data.length; i++) {
+    var swell = 0.35 + 0.65 * Math.pow(Math.sin(Math.PI * i / data.length), 2);
+    data[i] = (Math.random() * 2 - 1) * swell;
+  }
+  var src = ac.createBufferSource(), filter = ac.createBiquadFilter(), g = ac.createGain();
+  src.buffer = b; src.loop = true; filter.type = 'lowpass'; filter.frequency.value = 420; g.gain.value = 0.012;
+  src.connect(filter); filter.connect(g); g.connect(masterGain); src.start(); harborLoop = { src: src, gain: g };
+}
+function stopHarborAmbience() {
+  if (!harborLoop) return;
+  try { harborLoop.src.stop(); } catch (e) { }
+  harborLoop = null;
 }
 var sfx = {
-  pick: function () { beep(620 + Math.random() * 120, 0.05, 'square', 0.025); },
-  drop: function () { beep(300 + Math.random() * 60, 0.05, 'square', 0.02); },
-  coin: function () { beep(880, 0.06, 'square', 0.035); setTimeout(function () { beep(1240, 0.08, 'square', 0.03); }, 50); },
-  buy: function () { beep(480, 0.08, 'square', 0.035); setTimeout(function () { beep(720, 0.12, 'square', 0.03); }, 70); },
-  build: function () { beep(220, 0.1, 'square', 0.04); setTimeout(function () { beep(330, 0.1, 'square', 0.035); }, 90); setTimeout(function () { beep(440, 0.16, 'square', 0.03); }, 180); },
-  bad: function () { beep(160, 0.18, 'sawtooth', 0.028); },
-  star: function () { beep(1000, 0.07, 'square', 0.035); setTimeout(function () { beep(1500, 0.11, 'square', 0.03); }, 70); }
+  pick: function () { tone(680 + Math.random() * 90, 0.07, 'triangle', 0.022, 0, 920); },
+  drop: function () { tone(230 + Math.random() * 45, 0.08, 'triangle', 0.026, 0, 150); noise(0.05, 0.012, 650); },
+  coin: function () { tone(920, 0.09, 'sine', 0.034); tone(1380, 0.13, 'sine', 0.028, 0.055); },
+  buy: function () { tone(430, 0.09, 'triangle', 0.028); tone(650, 0.12, 'triangle', 0.026, 0.07); },
+  build: function () { noise(0.07, 0.025, 1000); tone(190, 0.10, 'triangle', 0.034); noise(0.07, 0.022, 900, 0.10); tone(285, 0.14, 'triangle', 0.03, 0.10); },
+  bad: function () { tone(175, 0.22, 'sawtooth', 0.022, 0, 118); },
+  star: function () { tone(880, 0.08, 'sine', 0.03); tone(1175, 0.09, 'sine', 0.028, 0.07); tone(1568, 0.15, 'sine', 0.025, 0.14); },
+  ui: function () { tone(520, 0.055, 'triangle', 0.014, 0, 610); },
+  splash: function () { noise(0.16, 0.022, 1150); tone(145, 0.18, 'sine', 0.018, 0, 95); },
+  chop: function () { noise(0.045, 0.018, 1450); tone(310, 0.05, 'triangle', 0.013); }
 };
 
 /* =========================================================
@@ -997,6 +1036,32 @@ function money(n) { return '$' + Math.round(n).toLocaleString(lang === 'tr' ? 't
 
 /* ---------------- kayıt ---------------- */
 var SAVE_KEY = 'balikci_tycoon_v3';
+var _pendingWorld = null;
+function saveItem(it) { return it ? { k: it.k, f: it.f, v: it.v } : null; }
+function saveItems(a) { return (a || []).map(saveItem); }
+function loadItems(a) { return (a || []).filter(Boolean).map(function (it) { return { k: it.k, f: it.f, v: it.v }; }); }
+function worldSave() {
+  return {
+    player: [player.x, player.y, saveItems(player.carry)],
+    spots: spots.map(function (s) { return saveItems(s.stock); }),
+    tables: tables.map(function (t) { return { inn: saveItems(t.inn), cur: saveItem(t.cur), t: t.t, mat: saveItems(t.mat.items) }; }),
+    smoker: { inn: saveItems(smoker.inn), cur: saveItem(smoker.cur), t: smoker.t, mat: saveItems(smoker.mat.items) },
+    counters: counters.map(function (c) { return { key: c.key, buffer: saveItems(c.buffer), tray: saveItems(c.tray.items) }; })
+  };
+}
+function worldLoad(w) {
+  if (!w) return;
+  if (w.player) {
+    if (canStand(+w.player[0], +w.player[1])) { player.x = +w.player[0]; player.y = +w.player[1]; }
+    player.carry = loadItems(w.player[2]);
+  }
+  (w.spots || []).forEach(function (v, i) { if (spots[i]) spots[i].stock = loadItems(v); });
+  (w.tables || []).forEach(function (v, i) { if (!tables[i]) return; tables[i].inn = loadItems(v.inn); tables[i].cur = saveItem(v.cur); tables[i].t = +v.t || 0; tables[i].mat.items = loadItems(v.mat); });
+  if (w.smoker) { smoker.inn = loadItems(w.smoker.inn); smoker.cur = saveItem(w.smoker.cur); smoker.t = +w.smoker.t || 0; smoker.mat.items = loadItems(w.smoker.mat); }
+  (w.counters || []).forEach(function (v) {
+    for (var i = 0; i < counters.length; i++) if (counters[i].key === v.key) { counters[i].buffer = loadItems(v.buffer); counters[i].tray.items = loadItems(v.tray); break; }
+  });
+}
 function save() {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
@@ -1011,6 +1076,7 @@ function save() {
       proj: [Math.round(project.inv), project.stage, project.done ? 1 : 0],
       serv: servSave(),
       workers: workers.map(function (w) { return w.role; }),
+      world: worldSave(),
       mk: M
     }));
   } catch (e) { }
@@ -1033,6 +1099,7 @@ function load() {
     if (d.proj) { project.inv = d.proj[0] || 0; project.stage = d.proj[1] || 0; project.done = !!d.proj[2]; }
     servLoad(d.serv);   /* v0.4 §41 — yoksa hiçbir bina kurulmaz, para kesilmez */
     if (d.workers) d.workers.forEach(function (r) { hire(r, true); });
+    _pendingWorld = d.world || null;
     if (d.mk) M = migrateMarket(d.mk);
     return true;
   } catch (e) { return false; }
@@ -1084,7 +1151,9 @@ function refreshSaveInfo() {
 /* --- DURAKLATMA (pause) --- */
 var paused = false;
 function anyOverlay() {
-  return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden');
+  var officeScr = document.getElementById('officeScr');
+  return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') ||
+    !!officeScr && !officeScr.classList.contains('hidden');
 }
 function syncPause() {
   paused = S.started && anyOverlay();
@@ -1503,6 +1572,7 @@ function updateStations(dt) {
       if (!nf) continue;                      /* açık hat yoksa bu ağ üretmez */
       var it = { k: 'fish', f: nf };
       s.stock.push(it); S.caught++;
+      if (s.z === player.z && dist2(player.x, player.y, s.x, s.y) < 18) sfx.splash();
       var ox = s.face === 'n' ? s.x + rnd(-1, 1) : s.x - rnd(2, 3.2);
       var oy = s.face === 'n' ? s.y - rnd(2, 3.2) : s.y + rnd(-1, 1);
       fly(ox, oy, 2, s.x, s.y + 0.9, 8, it, 0.55);
@@ -1520,7 +1590,7 @@ function updateStations(dt) {
           t.mat.items.push(fil);
           fly(t.x, t.y, 13, t.mat.x, t.mat.y, 6, fil, 0.36 + k * 0.05);
         }
-        addPuff(t.x, t.y, '#ffffff'); t.cur = null; t.t = 0;
+        addPuff(t.x, t.y, '#ffffff'); sfx.chop(); t.cur = null; t.t = 0;
       }
     }
   }
@@ -3498,6 +3568,7 @@ Array.prototype.forEach.call(document.querySelectorAll('#langSeg button,#langSeg
 Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (b) {
   b.onclick = function () {
     soundOn = b.dataset.s === '1';
+    if (soundOn) { ensureAudio(); startHarborAmbience(); sfx.ui(); } else stopHarborAmbience();
     Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.remove('on'); });
     b.classList.add('on'); save();
   };
@@ -3557,14 +3628,14 @@ function start() {
   document.getElementById('objective').classList.remove('hidden');
   el.devbar.classList.remove('hidden');
   S.started = true; paused = false; syncPause();
-  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { } }
+  ensureAudio(); startHarborAmbience(); sfx.ui();
 }
 el.playBtn.onclick = start;
 /* ESC: oyunu duraklat / devam ettir */
 window.addEventListener('keydown', function (e) {
   if (e.key !== 'Escape' && e.key !== 'Esc') return;
   if (!S.started) return;
-  if (!document.getElementById('officeScr').classList.contains('hidden')) return;
+  if (!document.getElementById('officeScr').classList.contains('hidden')) { e.preventDefault(); closeOffice(); return; }
   e.preventDefault();
   if (!el.settingsScreen.classList.contains('hidden')) { el.setClose.click(); return; }
   if (!el.menuScreen.classList.contains('hidden')) { el.closeMenu.click(); return; }
@@ -3707,7 +3778,7 @@ function newMarket() {
     idx: 1000, prevIdx: 1000, news: [], mom: {},
     co: COMPANIES.map(function (c) {
       return { id: c.id, price: c.price, prev: c.price, hist: [c.price], health: 58 + (100 - c.risk) * 0.12,
-        growth: 50, risk: c.risk, sent: 0, free: Math.round(10000 * c.fl), own: 0, rel: 0,
+        growth: 50, risk: c.risk, sent: 0, total: 10000, free: Math.round(10000 * c.fl), own: 0, rel: 0,
         div: 0, status: 'ok', ev: [], lockDay: -1, board: 0, listed: true, resc: 0 };
     }),
     offers: [], active: [], done: 0, failed: 0, divDay: 0,
@@ -3735,7 +3806,7 @@ function perkSum(key) {
   if (_pkCache[key] !== undefined) return _pkCache[key];
   var v = 0, i;
   for (i = 0; i < M.co.length; i++) {
-    var c = M.co[i], d = cdef(c.id), pct = c.own / 10000;
+    var c = M.co[i], d = cdef(c.id), pct = ownPct(c);
     if (pct >= 0.05 && d.p5.k === key) v += d.p5.v;
     if (pct >= 0.15 && d.p15.k === key) v += d.p15.v;
     if (pct >= 0.51) { if (d.p5.k === key) v += d.p5.v * 0.5; if (d.p15.k === key) v += d.p15.v * 0.5; }
@@ -3749,7 +3820,8 @@ function perkSum(key) {
   _pkCache[key] = v;
   return v;
 }
-function ownPct(c) { return c.own / 10000; }
+function shareTotal(c) { return Math.max(1, c.total || 10000); }
+function ownPct(c) { return c.own / shareTotal(c); }
 function portfolioValue() {
   if (!M) return 0;
   var v = 0;
@@ -3758,7 +3830,7 @@ function portfolioValue() {
 }
 function subsValue() {
   var v = 0;
-  for (var i = 0; i < M.co.length; i++) if (ownPct(M.co[i]) >= 1) v += 10000 * M.co[i].price * 1.2;
+  for (var i = 0; i < M.co.length; i++) if (ownPct(M.co[i]) >= 1) v += shareTotal(M.co[i]) * M.co[i].price * 1.2;
   for (var j = 0; j < M.priv.length; j++) {
     var pd = PRIVS.filter(function (q) { return q.id === M.priv[j]; })[0];
     if (pd) v += pd.cost * ECON.privScale;
@@ -3857,7 +3929,7 @@ function closeDay() {
     c.status = c.health >= 75 && c.growth >= 60 ? 'strong' : c.health >= 45 ? 'ok' : c.health >= 25 ? 'press' : 'restr';
     if (c.status === 'restr' && c.resc <= 0) c.resc = 3;
     if (srand() < 0.08) corpAction(c, c.price > 500 ? 'split' : (c.health > 70 ? 'buyback' : 'raise'));
-    capTot += c.price * 10000; capPrev += c.prev * 10000;
+    capTot += c.price * shareTotal(c); capPrev += c.prev * shareTotal(c);
   }
   M.prevIdx = M.idx;
   M.idx = Math.round(M.idx * (capTot / Math.max(1, capPrev)));
@@ -3889,14 +3961,14 @@ function corpAction(c, kind) {
   var d = cdef(c.id);
   if (kind === 'raise') {
     var add = Math.round(1000 * sr(0.5, 1.5));
-    c.free += add; c.price = Math.max(8, Math.round(c.price * 0.97 * 100) / 100);
+    c.free += add; c.total = shareTotal(c) + add; c.price = Math.max(8, Math.round(c.price * 0.97 * 100) / 100);
     c.health = clamp(c.health + 6, 0, 100);
     notify(T('corpRaise', { n: NM(d.n) }), 'low');
   } else if (kind === 'buyback') {
     var rm = Math.min(c.free - 500, Math.round(600 * sr(0.5, 1.5)));
-    if (rm > 0) { c.free -= rm; c.price = Math.round(c.price * 1.04 * 100) / 100; notify(T('corpBuy', { n: NM(d.n) }), 'low'); }
+    if (rm > 0) { c.free -= rm; c.total = Math.max(c.own, shareTotal(c) - rm); c.price = Math.round(c.price * 1.04 * 100) / 100; notify(T('corpBuy', { n: NM(d.n) }), 'low'); }
   } else if (kind === 'split') {
-    c.price = Math.round(c.price / 2 * 100) / 100; c.free *= 2; c.own *= 2;
+    c.price = Math.round(c.price / 2 * 100) / 100; c.free *= 2; c.own *= 2; c.total = shareTotal(c) * 2;
     notify(T('corpSplit', { n: NM(d.n) }), 'low');
   }
 }
@@ -3906,7 +3978,7 @@ function payDividends() {
     var c = M.co[i], d = cdef(c.id);
     if (c.health < ECON.dividendHealth || c.status === 'press' || c.status === 'restr') continue;
     if (!c.own) continue;
-    var pool = c.price * 10000 * 0.15 * d.div * (1 + (c.divBonus || 0));
+    var pool = c.price * shareTotal(c) * 0.15 * d.div * (1 + (c.divBonus || 0));
     var pay = Math.round(pool * ownPct(c));
     if (pay > 0) { S.cash += pay; tot += pay; }
   }
@@ -3924,7 +3996,7 @@ function queueBoard(c) {
   notify(T('boardReady', { n: NM(cdef(c.id).n) }), 'mid');
 }
 function applyBoard(entry, opt) {
-  var c = cst(entry.co), cost = Math.round(c.price * 10000 * 0.02);
+  var c = cst(entry.co), cost = Math.round(c.price * shareTotal(c) * 0.02);
   if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return false; }
   S.cash -= cost;
   if (opt === 'cap') { c.health = clamp(c.health + 5, 0, 100); }
@@ -4041,8 +4113,8 @@ function buyShares(id, qty) {
   if (!c || !c.listed) return false;
   qty = Math.min(qty, c.free);
   if (qty <= 0) { toast(T('noShares')); sfx.bad(); return false; }
-  if (ownPct(c) + qty / 10000 > 0.30 && !M.license) {
-    var lim = Math.max(0, Math.floor(0.30 * 10000 - c.own));
+  if (ownPct(c) + qty / shareTotal(c) > 0.30 && !M.license) {
+    var lim = Math.max(0, Math.floor(0.30 * shareTotal(c) - c.own));
     if (lim <= 0) { toast(T('need51')); sfx.bad(); return false; }
     qty = Math.min(qty, lim);
   }
@@ -4077,7 +4149,7 @@ function checkThreshold(c, before) {
   }
 }
 function takeoverPrice(c, target) {
-  var need = Math.max(0, Math.round(target * 10000) - c.own);
+  var need = Math.max(0, Math.round(target * shareTotal(c)) - c.own);
   var prem = ECON.takeoverPremium + (c.health / 100) * (ECON.takeoverPremiumMax - ECON.takeoverPremium);
   return { need: need, cost: Math.round(need * c.price * prem), prem: prem };
 }
@@ -4132,9 +4204,9 @@ var ofTab = 'market', ofSel = null, ofRefresh = 1;
 function openOffice() {
   if (!officeBuilt()) return;
   document.getElementById('officeScr').classList.remove('hidden');
-  renderOffice();
+  renderOffice(); sfx.ui(); syncPause();
 }
-function closeOffice() { document.getElementById('officeScr').classList.add('hidden'); }
+function closeOffice() { document.getElementById('officeScr').classList.add('hidden'); sfx.ui(); syncPause(); }
 function relLevel(rel) { return rel >= 95 ? 5 : rel >= 80 ? 4 : rel >= 60 ? 3 : rel >= 40 ? 2 : rel >= 20 ? 1 : 0; }
 function statusName(st) { return T(st === 'strong' ? 'stStrong' : st === 'ok' ? 'stOk' : st === 'press' ? 'stPress' : 'stRestr'); }
 function chgPct(c) { return c.prev ? ((c.price - c.prev) / c.prev) * 100 : 0; }
@@ -4202,7 +4274,7 @@ function renderOffice() {
     var bq = null;
     for (i = 0; i < M.boardQ.length; i++) if (M.boardQ[i].co === c.id) bq = M.boardQ[i];
     if (bq) {
-      h += '<div class="ctrc"><b>' + T('boardT') + '</b><small>' + money(Math.round(c.price * 10000 * 0.02)) + '</small><div class="qrow">';
+      h += '<div class="ctrc"><b>' + T('boardT') + '</b><small>' + money(Math.round(c.price * shareTotal(c) * 0.02)) + '</small><div class="qrow">';
       for (i = 0; i < bq.opts.length; i++) h += '<button data-bd="' + bq.opts[i] + '">' + T('b' + bq.opts[i].charAt(0).toUpperCase() + bq.opts[i].slice(1)) + '</button>';
       h += '</div></div>';
     }
@@ -4341,6 +4413,7 @@ function syncTradeBtn() {
 resize();
 load();
 rebuildCounters();
+worldLoad(_pendingWorld);
 reassignWorkers();
 if (!M) M = newMarket();
 lastRepLvl = repLevel();
