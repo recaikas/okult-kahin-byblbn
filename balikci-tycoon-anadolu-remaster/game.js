@@ -1409,19 +1409,31 @@ function dayBestName() {
   var best = null, n = 0; for (var f in DAY.best) if (DAY.best[f] > n) { best = f; n = DAY.best[f]; }
   return best ? NM(FISH[best].n) + ' x' + n : '—';
 }
+var dayCardTimer = null;
+function beginNextDay() {
+  if (DAY.phase !== 'summary') return;
+  DAY.day++; DAY.t = 0; DAY.phase = 'intro'; DAY.phaseT = 0; DAY.market = DAY.day % 4 === 0; dayResetStats();
+  showDayCard('intro'); save();
+}
 function showDayCard(kind) {
   var scr = document.getElementById('dayScreen'), kicker = document.getElementById('dayKicker');
   var title = document.getElementById('dayTitle'), body = document.getElementById('dayBody');
   scr.classList.remove('hidden');
+  if (dayCardTimer) clearTimeout(dayCardTimer);
   if (kind === 'summary') {
     kicker.textContent = T('dayClose'); title.textContent = T('dayTitle', { n: DAY.day });
     body.innerHTML = '<div class="day-grid"><span>' + T('dayRevenue') + '</span><b>' + money(DAY.revenue) + '</b>' +
       '<span>' + T('dayCustomers') + '</span><b>' + DAY.served + '</b><span>' + T('dayFish') + '</span><b>' + DAY.sold + '</b>' +
       '<span>' + T('dayLost') + '</span><b>' + DAY.lost + '</b><span>' + T('dayBest') + '</span><b>' + dayBestName() + '</b></div>' +
       (((DAY.day + 1) % 4 === 0) ? '<div class="market-notice">' + T('marketTomorrow') + '</div>' : '');
+    dayCardTimer = setTimeout(beginNextDay, 3100);
   } else {
     kicker.textContent = DAY.market ? T('marketDay') : T('dayNew'); title.textContent = T('dayTitle', { n: DAY.day });
     body.innerHTML = DAY.market ? '<div class="market-notice">' + T('marketPrep') + '</div>' : '';
+    dayCardTimer = setTimeout(function () {
+      if (DAY.phase !== 'intro') return;
+      DAY.phase = 'play'; DAY.phaseT = 0; scr.classList.add('hidden');
+    }, 2100);
   }
 }
 function updateDay(dt) {
@@ -1432,8 +1444,7 @@ function updateDay(dt) {
   if (DAY.phase === 'summary') {
     DAY.phaseT += dt;
     if (DAY.phaseT >= 3.1) {
-      DAY.day++; DAY.t = 0; DAY.phase = 'intro'; DAY.phaseT = 0; DAY.market = DAY.day % 4 === 0; dayResetStats();
-      showDayCard('intro'); save();
+      beginNextDay();
     }
     return true;
   }
