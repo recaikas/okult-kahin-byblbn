@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — v1.2 (pixel art)
+# 🐟 Balıkçı Tycoon — v2.0 (Anadolu Pixel Art)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,74 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v2.0 — ANADOLU PIXEL ART: tüm oyunun görsel yeniden modellemesi
+
+Oyunun her çizilen pikseli tek bir sanat yönergesine göre yeniden yazıldı.
+
+### Stil rehberi (`PAL` + `ANIM`)
+Tek merkezi palet ve tek animasyon zamanlaması var; hiçbir renk artık koda gömülü değil.
+
+| Kural | Uygulama |
+|---|---|
+| Palet | Kireç badana, kagir taş, alaturka kiremit, kilim renkleri (kök boya, çivit, safran, krem), Kütahya çinisi mavisi, servi yeşili |
+| Işık | Sol üstten; sol yüz açık, sağ yüz koyu, 3 tonlu gölgeleme |
+| Kenar | Her nesnenin koyu taban konturu var, dithering yok |
+| Motif | Kilim geometrisi: baklava, çengel, göz |
+| Animasyon | 2 veya 4 kare, 6-8 fps hissi (`phase2` / `phase4`) |
+
+### Karakterler ve animasyonlar
+- **Gerçek 4 kareli yürüme döngüsü** (temas-geçiş-temas-geçiş): bacak/kol salınımı, gövde inip kalkması. Önceki 2 kareli zıplamanın yerini aldı.
+- **Oyuncu:** Karadenizli balıkçı — lacivert yün kazak (baklava desenli), muşamba önlük, kasket, lastik çizme, bıyık. Taşırken kollar öne gelir, iş yaparken öne eğilir.
+- **Çalışanlar rolüne göre giyinir:** hamal sırt küfesiyle, filetocu beyaz önlük ve bıçakla, tezgâhtar tepsiyle, kasiyer gözlük ve yelekle, dağıtımcı küfeyle. Başlarının üstünde küçük pixel rol rozeti var (taşıdıkça yükselir).
+- **Müşteriler Anadolu tipolojisi:** işçi (kasket), aile (başörtüsü), esnaf (yelek + kuşak), şef (aşçı kepi), kaptan (denizci kasketi + sakal), VIP (altın kuşak), toptancı (yeşil önlük), turist (hasır şapka + fotoğraf makinesi).
+- **Müşteri tepkileri:** beklerken kıpırdanır ve etrafa bakınır (sabırsızlaştıkça hızlanır), sabır azalınca kum saati, bitmek üzereyken öfke balonu çıkar, memnun ayrılırsa kalp, kaçarsa öfke. Ağız ifadesi ruh haline göre değişir.
+- **Sipariş tabelası** kilim çerçeveli, üstünde sabır çubuğu.
+
+### İstasyonlar
+Ağ noktasında dönen **ağ makarası**, sarılı halat, suya uzanan ağ ve mantar şamandıralar. Kesim masasında **mermer tezgâh**, zeytin kütüğü, inip kalkan satır, asılı bıçak rafı, hasır tepsi. Fümehanede **kagir ocak**, taş örgü dokusu, yanan ateş, teneke baca, kiremit şapka ve ipte sallanan füme balıklar. Pazar tezgâhında **kırmızı-beyaz çizgili tente** (saçağı rüzgârda oynar), **buz yatağı**, **kilim eteği** (baklava motifli), pirinç **terazi**, tebeşirli fiyat tabelası ve bakır sini.
+
+### Bina evrimi — gerçek Anadolu liman mimarisi
+| Seviye | Mimari |
+|---|---|
+| Lv.1 | Ahşap baraka, dikey tahta kaplama, çinko oluklu sac çatı |
+| Lv.2 | Boyalı ahşap, ahşap direkli sundurma, kepenkli pencereler |
+| Lv.3 | **Kagir taş duvar** (taş örgü dokusu), **alaturka kiremit çatı** |
+| Lv.4 | **Cumbalı ikinci kat** (öne taşan), dövme demir korkuluk, ışıklı pencereler |
+| Lv.5 | **Kemerli kapı**, **Kütahya çini kuşağı**, tabela, çatıda Türk bayrağı |
+
+Her binanın kendi kimlik rengi saçakta bir şerit olarak görünür ve kendi propları var: buzhanede buz kalıpları ve soğutma ünitesi, tamirhanede el vinci ve yedek parça rafı, halde tenteli tezgâh sırası, restoranda masalar ve teras ampulleri, nakliyede konteyner ve araç rampası, yakıtta variller ve tanklar, tersanede kızak, vinç ve tekne iskeleti.
+
+### Gerçek hayattaki Türk balıkçı barınağından eklenenler
+Gerçek bir balıkçı barınağının kurumları araştırılıp oyuna eklendi:
+
+| Yeni yapı | Gerçekte ne işe yarar | Oyundaki etkisi |
+|---|---|---|
+| 🤝 **Su Ürünleri Kooperatifi** | Balıkçıların ortak örgütü; giderleri paylaşır, taban fiyat sağlar | Maaş gideri −%6→−%28, ürün değeri +%12, itibar kazancı +%50, +1 kontrat |
+| 🔔 **Mezat Salonu** | Kabzımal mezatı: günün avı açık artırmayla satılır | Gün sonunda depo fazlası otomatik satılır (6→36 ürün, %55→%120 fiyat) |
+| 🕸️ **Ağ Tamir Sahası** | Yamalı ağ daha çok tutar | Bölge ağı +%18 |
+| ⚖️ **Kantar** | Doğru tartı, hak edilen fiyat | Ürün değeri +%6 |
+| ⛵ **Çekek Yeri** | Tekneler bakım için karaya çekilir | Müşteri akışı +%22 |
+| 🗼 **Mendirek Feneri** | Barınağın ağzındaki fener | Prestij süsü, geceleri döner ışık |
+
+Ayrıca **nazar boncuğu**, **Osmanlı çeşmesi** (akan su animasyonlu) ve **kilim sergisi** süsleri eklendi.
+
+### Çevre ve atmosfer
+Servi ve zeytin ağaçları ayrıştı, kıyıya çekilmiş sandallar, kurumaya asılı ağlar, hasır sepet yığınları eklendi. **Liman kedileri** limanda dolaşıyor, oturuyor ve uyuyor (uyurken 💤 çıkıyor). Martılar 4 kareli kanat çırpıyor. Denizde güneş parıltısı ve kıyı köpüğü var. Tekneler suda sallanıyor, sancak feneri yanıp sönüyor. Sokak lambaları gece daha güçlü parlıyor. Bölge zemini Lv.3'te **arnavut kaldırımına** dönüşüyor ve ortasından kilim motifli bir yol geçiyor.
+
+### UI
+- **41 adet elle çizilmiş 12×12 pixel ikon** emojilerin yerini aldı — hem canvas'ta hem HTML panellerinde (emoji→ikon dönüşümü tek fonksiyondan geçiyor).
+- Kartların üst kenarında **kilim şeridi**, satırların sol kenarında safran çizgi.
+- **Dünya yazısı bütçesi:** kalabalık limanda ekranı yazı kaplamasın diye ad etiketleri oyuncuya en yakın 6 taneyle, rozetler 14 taneyle sınırlı; yer bulamayan etiket hiç çizilmiyor. Tabelalar yalnız yakındayken görünüyor.
+
+### Test
+```
+node --check game.js
+node test-world-render.js
+```
+Doğrulandı: 60 FPS (tam kurulu limanda 9 bina + 5 çalışan + 9 müşteri ile), konsol hatası yok, tüm eski regresyonlar (hat eşleme, depo, gün döngüsü, kayıt migrasyonu, duraklatma) geçiyor.
 
 ---
 

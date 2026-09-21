@@ -7,6 +7,7 @@
     --ink:#f4e9d2; --ink2:#a9c0cf;
     --pnl:#14293c; --pnl2:#1d3a52; --edge:#0a1a27;
     --gold:#ffc94a; --green:#5fd37a; --red:#e5533d; --sea:#1d6c8f;
+    --kilim1:#a83d2b; --kilim2:#d9a441; --kilim3:#2a4c7d;
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{width:100%;height:100%;overflow:hidden;background:#0d2436;color:var(--ink);
@@ -24,6 +25,7 @@
   .hud{position:fixed;top:0;left:0;right:0;padding:6px;display:flex;gap:5px;align-items:flex-start;
     pointer-events:none;z-index:5;padding-top:calc(6px + env(safe-area-inset-top,0px))}
   .chip{background:var(--pnl);border:3px solid var(--edge);padding:2px 6px;font-size:12px;
+    border-top-color:#2a4c7d;
     display:flex;align-items:center;gap:5px;line-height:1.05;white-space:nowrap;
     box-shadow:inset -2px -2px 0 rgba(0,0,0,.3),inset 2px 2px 0 rgba(255,255,255,.06)}
   .chip i{font-style:normal;font-size:12px}
@@ -63,6 +65,10 @@
     display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1;
     box-shadow:inset -2px -2px 0 rgba(0,0,0,.3),inset 2px 2px 0 rgba(255,255,255,.06)}
   .dtab i{font-style:normal;font-size:16px}
+  .ci{display:inline-block;background-size:100% 100%;background-repeat:no-repeat;
+    image-rendering:pixelated;image-rendering:crisp-edges;width:18px;height:18px;flex:0 0 auto}
+  .dtab .ci{width:22px;height:22px;margin-bottom:1px}
+  .chip .ci{width:16px;height:16px}
   .dtab.on{background:var(--gold);color:#3a2401;border-color:#7a5406}
   .dtab.hot{border-color:var(--green)}
   .dtab:active{transform:translate(1px,1px)}
@@ -76,7 +82,10 @@
   .dpcards{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding-bottom:4px;
     scroll-snap-type:x proximity}
   .dcard{flex:0 0 152px;background:var(--pnl2);border:3px solid var(--edge);padding:7px 7px 8px;
-    scroll-snap-align:start;display:flex;flex-direction:column;gap:2px}
+    scroll-snap-align:start;display:flex;flex-direction:column;gap:2px;position:relative}
+  .dcard::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;
+    background:repeating-linear-gradient(90deg,
+      var(--kilim1) 0 3px, var(--kilim2) 3px 6px, var(--kilim3) 6px 9px, var(--kilim2) 9px 12px)}
   .dcard .ic{font-size:20px;line-height:1}
   .dcard b{font-size:11.5px;color:var(--ink);letter-spacing:.3px;line-height:1.2}
   .dcard small{font-size:10.5px;color:var(--ink2);line-height:1.25;min-height:26px}
@@ -148,8 +157,13 @@
     padding:14px;background:rgba(6,18,28,.9)}
   .overlay.hidden{display:none}
   .card{background:var(--pnl);border:3px solid var(--edge);padding:16px;max-width:420px;width:100%;
-    max-height:90vh;overflow-y:auto;
+    max-height:90vh;overflow-y:auto;position:relative;
     box-shadow:inset -3px -3px 0 rgba(0,0,0,.35),inset 3px 3px 0 rgba(255,255,255,.07)}
+  /* kilim şeridi: kartın üst kenarında baklava motifi */
+  .card::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;
+    background:repeating-linear-gradient(90deg,
+      var(--kilim1) 0 4px, var(--kilim2) 4px 8px, var(--kilim3) 8px 12px, var(--kilim2) 12px 16px)}
+  .card>*:first-child{margin-top:4px}
   .card h1{font-size:28px;color:var(--gold);text-align:center;letter-spacing:1px;line-height:1.1;
     text-shadow:3px 3px 0 #7a2b10}
   .card h2{font-size:19px;color:var(--gold);text-align:center;margin-bottom:10px;letter-spacing:1px}
@@ -203,7 +217,7 @@
     padding:8px 2px;font-size:11px;cursor:pointer;font-family:inherit;letter-spacing:.5px}
   .tab.on{background:var(--gold);color:#3a2401;border-color:#7a5406}
   .row{display:flex;align-items:center;gap:8px;background:var(--pnl2);border:3px solid var(--edge);
-    padding:7px 9px;margin-bottom:5px}
+    border-left-color:var(--kilim2);padding:7px 9px;margin-bottom:5px}
   .row .ic{font-size:19px;width:24px;text-align:center}
   .row .tx{flex:1;font-size:12px;line-height:1.3}
   .row .tx small{display:block;color:var(--ink2);font-size:10.5px}
@@ -211,18 +225,27 @@
   .row .vl small{display:block;color:#ffb27a;font-size:10px}
   .empty{color:var(--ink2);font-size:12.5px;text-align:center;padding:12px}
   .flag{letter-spacing:0}
+  /* --- pixel ikon --- */
+  .pxi{display:inline-block;width:18px;height:18px;vertical-align:-4px;
+    background-size:100% 100%;background-repeat:no-repeat;image-rendering:pixelated;
+    image-rendering:crisp-edges;flex:0 0 auto}
+  .row .ic .pxi{width:22px;height:22px;vertical-align:-5px}
+  .dcard .ic .pxi{width:24px;height:24px}
+  .chip .pxi{width:15px;height:15px;vertical-align:-3px}
+  .dtab .pxi{width:20px;height:20px}
+  .trow .ic .pxi{width:18px;height:18px}
 </style>
 
 <canvas id="game"></canvas>
 <canvas id="ui"></canvas>
 
 <div class="hud hidden" id="hud">
-  <div class="chip"><i>💰</i><span><small id="hMoney">PARA</small><span id="money">0</span></span></div>
-  <div class="chip"><i id="carryIcon">🧺</i><span><small id="hCarry">TAŞIMA</small><span id="carry">0/8</span></span></div>
-  <div class="chip"><i>⭐</i><span><small id="hRep">İTİBAR</small><span id="rep">0</span></span><span class="bar"><i id="repfill"></i></span></div>
-  <div class="chip" id="dayChip"><i id="dayIcon">🌅</i><span><small id="hDay">GÜN</small><span id="dayNum">1</span></span><span class="bar"><i id="dayfill"></i></span></div>
+  <div class="chip"><i class="ci" data-i="para"></i><span><small id="hMoney">PARA</small><span id="money">0</span></span></div>
+  <div class="chip"><i class="ci" id="carryIcon" data-i="kufe"></i><span><small id="hCarry">TAŞIMA</small><span id="carry">0/8</span></span></div>
+  <div class="chip"><i class="ci" data-i="itibar"></i><span><small id="hRep">İTİBAR</small><span id="rep">0</span></span><span class="bar"><i id="repfill"></i></span></div>
+  <div class="chip" id="dayChip"><i class="ci" id="dayIcon" data-i="gun"></i><span><small id="hDay">GÜN</small><span id="dayNum">1</span></span><span class="bar"><i id="dayfill"></i></span></div>
   <div class="spacer"></div>
-  <div class="chip hidden" id="eventChip"><i id="eventIcon">🐟</i><span><small id="eventName">OLAY</small><span id="eventT">0s</span></span></div>
+  <div class="chip hidden" id="eventChip"><i class="ci" id="eventIcon" data-i="hamsi"></i><span><small id="eventName">OLAY</small><span id="eventT">0s</span></span></div>
   <button class="btn" id="menuBtn">☰</button>
 </div>
 
@@ -234,11 +257,11 @@
 <button id="tradeBtn" class="hidden">🏛️ <span id="tradeLbl">TİCARET</span></button>
 
 <div id="devbar" class="hidden">
-  <button class="dtab" data-t="area"><i>🔓</i><span id="dtArea">ALAN</span></button>
-  <button class="dtab" data-t="level"><i>⬆️</i><span id="dtLevel">YÜKSELTME</span></button>
-  <button class="dtab" data-t="build"><i>🔨</i><span id="dtBuild">YAPI</span></button>
-  <button class="dtab" data-t="proj"><i>🏛️</i><span id="dtProj">PROJE</span></button>
-  <button class="dtab" data-t="serv"><i>🏭</i><span id="dtServ">BİNA</span></button>
+  <button class="dtab" data-t="area"><i class="ci" data-i="alan"></i><span id="dtArea">ALAN</span></button>
+  <button class="dtab" data-t="level"><i class="ci" data-i="yukselt"></i><span id="dtLevel">YÜKSELTME</span></button>
+  <button class="dtab" data-t="build"><i class="ci" data-i="yapi"></i><span id="dtBuild">YAPI</span></button>
+  <button class="dtab" data-t="proj"><i class="ci" data-i="proje"></i><span id="dtProj">PROJE</span></button>
+  <button class="dtab" data-t="serv"><i class="ci" data-i="bina"></i><span id="dtServ">BİNA</span></button>
 </div>
 <div id="devpanel" class="hidden">
   <div class="dphead"><b id="dpTitle">—</b><button class="btn" id="dpClose">✕</button></div>
