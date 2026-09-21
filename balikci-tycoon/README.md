@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — v1.1 (pixel art)
+# 🐟 Balıkçı Tycoon — v1.2 (pixel art)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,54 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.2 — Merkezi Depo + Balık Pazarı Günü (Birleşik Sistem GDD v1.1)
+
+Çekirdek döngü (**Ağ → Kesim → Taşıma → Tezgâh → Satış**) aynen duruyor. Bu sürüm tekrarlı taşıma işini orta oyunda bir **yönetim kararına** çeviriyor ve o kararı **Balık Pazarı Günü'nde** sınıyor.
+
+### A) Merkezi Depo + Otomatik Dağıtım (§3)
+
+**Açılış:** Balık Pazarı bölgesi açık + 25 sipariş tamamlanmış olunca depo kendiliğinden açılır (satın alma yok). Kapasite 40, her Buzhane seviyesi +8 ekler.
+
+**Akış:** oyuncu (veya tezgâhtar) fazla ürünü depoya bırakır → **Dağıtım Çalışanı** ($1.150, depo açılınca listelenir) tezgâhları hedef stoka göre besler.
+
+**Hedef stok + öncelik (§3.2).** Her tezgâhın bir hedefi (varsayılan 12) ve bir önceliği var: **DÜŞÜK / NORMAL / YÜKSEK**. Stok hedefin altına düşer ve depoda uygun balık varsa dağıtım işi oluşur; yüksek öncelikli tezgâh önce beslenir. Menüdeki yeni **DEPO** sekmesinden ayarlanır, tezgâhın üstünde `7/20 ▲` rozetiyle görünür.
+
+**Değişmez kural (§3.3).** Her balık yalnız kendi tezgâhına gider. Otomasyon yanlış balığı yanlış tezgâha gönderemez; depoda ürün yoksa sihirli ürün üretmez. Teslim edilemeyen ürünü dağıtımcı depoya geri koyar — ürün hiçbir zaman yok olmaz.
+
+### B) Balık Pazarı Günü (§4-6)
+
+Her **5. gün** Balık Pazarı. Bir önceki günün kapanış kartında haber verilir: *"YARIN BALIK PAZARI — Beklenen yoğunluk: Yüksek"*.
+
+**Pazar sabahı hazırlık ekranı:** depo stoğunu görürsün, her tezgâhın hedefini ve önceliğini **yalnız o pazar için** değiştirirsin. Normal hedeflerin bozulmaz — pazar bitince otomatik geri döner.
+
+**Pazar günü:** müşteri akışı ×2,2 yükselir. **Fiyat otomatik artmaz, balık otomatik oluşmaz.** Müşteri gerçekten gelir; servis edebilirsen satarsın, stok biterse müşteriyi kaybedersin. Kurduğun lojistik burada sınanır.
+
+**Pazar sonuç kartı:** toplam satış, müşteri (servis/toplam), satılan balık, kaçan müşteri, en çok satan tür ve **stok dışı kalınan süre** (hangi tezgâhın neden boş kaldığını gösterir).
+
+### C) Sade gün geçişi (§2)
+
+Gün sistemi yeni bir yönetim katmanı **değil** — sadece zamanın geçtiğini hissettirir.
+
+- HUD'da küçük bir **GÜN 4** sayacı + ilerleme çubuğu.
+- Gün boyunca ortam ışığı hafifçe sabah → gündüz → akşam tonuna döner.
+- Gün bitince yeni müşteri gelmez, sıradakiler tamamlanır, kısa özet kartı çıkar, sonra **GÜN 5** başlar.
+- Depo, tezgâh stokları, para ve tüm ilerleme aynen korunur.
+- Borsa günü artık oyun günüyle aynı — iki ayrı saat yok.
+
+**Bu sürümde bilinçli olarak YOK:** vardiya planlama, saat bazlı bonus, mevsim/hava, maaş günü, kira, gece oynanışı, güne özel görev.
+
+### Kayıt
+Gün sayısı, depo içeriği, tezgâh hedefleri ve öncelikleri kaydedilir. Eski kayıtlar sorunsuz açılır: depo boş başlar, hedefler varsayılana döner, para/ilerleme hiç etkilenmez. Geçersiz ürün kayıttan yüklenmez.
+
+### Test
+```
+node --check game.js
+node test-world-render.js
+```
+Doğrulandı: yanlış tür sızması 0, öncelik sıralaması doğru (YÜKSEK önce), geçici pazar hedefleri kalıcı hedefi ezmiyor, kayıt turu temiz, konsol hatası yok.
 
 ---
 

@@ -10,6 +10,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     p.on('console', m => { if (m.type()==='error') errs.push('C:'+m.text()); });
     await p.goto('file:///home/user/okult-kahin-byblbn/balikci-tycoon/index.html');
     await sleep(900); await p.click('#playBtn'); await sleep(2500);
+    /* v1.2: gün ışığı tonu renkleri kaydırır — örnekleme öğle saatinde (ton yok) yapılır */
+    await p.evaluate(() => { if (window.BT && BT.day) BT.day.t = BT.DAY_LEN * 0.45; });
+    await sleep(400);
     const res = await p.evaluate(() => {
       const cv = document.getElementById('game');
       const g = cv.getContext('2d');

@@ -169,6 +169,28 @@
     padding:10px;font-size:15px;cursor:pointer;font-family:inherit;letter-spacing:1px}
   .danger{color:#ff9b8a;border-color:#3a1109}
   .good{color:#9df5b0;border-color:#17532a}
+  #dayBanner{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);z-index:9;
+    text-align:center;pointer-events:none;transition:opacity .35s}
+  #dayBanner.hidden{display:none}
+  #dayBanner b{display:block;font-size:34px;color:var(--gold);letter-spacing:3px;
+    text-shadow:4px 4px 0 #7a2b10}
+  #dayBanner small{display:block;font-size:13px;color:var(--ink);letter-spacing:2px;margin-top:4px}
+  #dayChip #dayfill{background:#ffb27a}
+  .nextday{margin-top:8px;background:#3d2410;border:3px solid #7a5406;color:#ffd9a0;
+    padding:8px;font-size:12.5px;text-align:center;letter-spacing:1px;line-height:1.5}
+  .nextday.hidden{display:none}
+  .trow{display:flex;align-items:center;gap:6px;background:var(--pnl2);border:3px solid var(--edge);
+    padding:6px 7px;margin-bottom:4px}
+  .trow .ic{font-size:17px;width:22px;text-align:center}
+  .trow .nm{flex:1;font-size:11.5px;line-height:1.3;min-width:0}
+  .trow .nm small{display:block;color:var(--ink2);font-size:10px}
+  .trow .stp{display:flex;align-items:center;gap:3px}
+  .trow button{background:var(--pnl);border:3px solid var(--edge);color:var(--ink);
+    font-family:inherit;font-size:13px;min-width:28px;height:28px;cursor:pointer;padding:0}
+  .trow button:active{transform:translate(1px,1px)}
+  .trow .tv{font-size:12.5px;min-width:44px;text-align:center;color:var(--gold)}
+  .trow .pz{min-width:62px;font-size:10px;letter-spacing:.5px}
+  .pz.p0{color:var(--ink2)} .pz.p1{color:var(--ink)} .pz.p2{color:var(--green);border-color:#17532a}
   .saveinfo{margin-top:6px;font-size:11px;line-height:1.6;text-align:center;color:var(--ink2);
     background:var(--pnl2);border:3px solid var(--edge);padding:6px 8px;white-space:pre-line}
   .saveinfo.hidden{display:none}
@@ -205,6 +227,7 @@
   <div class="chip"><i>💰</i><span><small id="hMoney">PARA</small><span id="money">0</span></span></div>
   <div class="chip"><i id="carryIcon">🧺</i><span><small id="hCarry">TAŞIMA</small><span id="carry">0/8</span></span></div>
   <div class="chip"><i>⭐</i><span><small id="hRep">İTİBAR</small><span id="rep">0</span></span><span class="bar"><i id="repfill"></i></span></div>
+  <div class="chip" id="dayChip"><i id="dayIcon">🌅</i><span><small id="hDay">GÜN</small><span id="dayNum">1</span></span><span class="bar"><i id="dayfill"></i></span></div>
   <div class="spacer"></div>
   <div class="chip hidden" id="eventChip"><i id="eventIcon">🐟</i><span><small id="eventName">OLAY</small><span id="eventT">0s</span></span></div>
   <button class="btn" id="menuBtn">☰</button>
@@ -214,6 +237,7 @@
 <div id="queueHint" class="hidden"></div>
 <div id="toast"></div>
 <div id="pauseBadge" class="hidden">⏸ <span id="pauseTxt">DURAKLATILDI</span></div>
+<div id="dayBanner" class="hidden"><b id="dayBannerT">GÜN 1</b><small id="dayBannerS"></small></div>
 <button id="tradeBtn" class="hidden">🏛️ <span id="tradeLbl">TİCARET</span></button>
 
 <div id="devbar" class="hidden">
@@ -274,6 +298,25 @@
   </div>
 </div>
 
+<div class="overlay hidden" id="dayScr">
+  <div class="card">
+    <h2 id="dayTitle">GÜN 1 KAPANDI</h2>
+    <div id="dayRows"></div>
+    <div class="nextday hidden" id="dayNext">YARIN BALIK PAZARI</div>
+    <button class="go" id="dayGo">YENİ GÜN ▶</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="prepScr">
+  <div class="card">
+    <h2 id="prepTitle">🐟 BALIK PAZARI GÜNÜ</h2>
+    <p id="prepSub">Hedef stokları ve öncelikleri yalnız bu pazar için ayarla.</p>
+    <div id="prepDepot" class="saveinfo">—</div>
+    <div id="prepRows"></div>
+    <button class="go" id="prepGo">PAZARI AÇ ▶</button>
+  </div>
+</div>
+
 <div class="overlay hidden" id="officeScr">
   <div class="card wide">
     <div class="ohead"><b id="ofTitle">TİCARET OFİSİ</b><span id="ofDay"></span><button class="btn" id="ofClose">✕</button></div>
@@ -296,6 +339,7 @@
       <button class="tab on" data-t="liman">LİMAN</button>
       <button class="tab" data-t="personel">PERSONEL</button>
       <button class="tab" data-t="urunler">ÜRÜNLER</button>
+      <button class="tab" data-t="depo">DEPO</button>
       <button class="tab" data-t="yardim">YARDIM</button>
     </div>
     <div id="tabBody"></div>
