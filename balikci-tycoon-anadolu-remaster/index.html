@@ -207,6 +207,7 @@
   <div class="chip"><i>💰</i><span><small id="hMoney">PARA</small><span id="money">0</span></span></div>
   <div class="chip"><i id="carryIcon">🧺</i><span><small id="hCarry">TAŞIMA</small><span id="carry">0/8</span></span></div>
   <div class="chip"><i>⭐</i><span><small id="hRep">İTİBAR</small><span id="rep">0</span></span><span class="bar"><i id="repfill"></i></span></div>
+  <div class="chip day-chip"><i>☀</i><span><small id="hDay">GÜN</small><span id="dayNo">1</span></span></div>
   <div class="spacer"></div>
   <div class="chip hidden" id="eventChip"><i id="eventIcon">🐟</i><span><small id="eventName">OLAY</small><span id="eventT">0s</span></span></div>
   <button class="btn" id="menuBtn">☰</button>
@@ -217,6 +218,22 @@
 <div id="toast"></div>
 <div id="pauseBadge" class="hidden">⏸ <span id="pauseTxt">DURAKLATILDI</span></div>
 <button id="tradeBtn" class="hidden">🏛️ <span id="tradeLbl">TİCARET</span></button>
+<button id="depotBtn" class="hidden">▣ <span id="depotLbl">MERKEZİ DEPO</span></button>
+
+<div class="overlay hidden" id="dayScreen">
+  <div class="card day-card">
+    <p class="edition" id="dayKicker">YENİ GÜN</p>
+    <h2 id="dayTitle">GÜN 1</h2>
+    <div id="dayBody"></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="depotScreen">
+  <div class="card wide depot-card">
+    <div class="ohead"><b id="depotTitle">MERKEZİ DEPO</b><span id="depotCap">0 / 40</span><button class="btn" id="depotClose">✕</button></div>
+    <div id="depotBody"></div>
+  </div>
+</div>
 
 <div id="devbar" class="hidden">
   <button class="dtab" data-t="area"><i>🔓</i><span id="dtArea">ALAN</span></button>

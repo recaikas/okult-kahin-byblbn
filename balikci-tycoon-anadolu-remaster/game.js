@@ -91,7 +91,13 @@ var STR = {
     noRun: 'Önce oyunu başlat',
     newAsk: 'Mevcut kayıt silinip yeni oyun başlasın mı?',
     remaining: 'kalan', total: 'toplam',
-    noMoney: 'Para yetmiyor',
+    noMoney: 'Para yetmiyor', dayHud: 'GÜN', depot: 'MERKEZİ DEPO', depotLocked: '2. tezgâh veya 12 satışla açılır',
+    depotOpened: '▣ Merkezi Depo açıldı!', depotFull: 'Depo dolu', depotDrop: 'Ürünleri depoya bırak',
+    depotAuto: 'DAĞITIM ÇALIŞANI', depotAutoD: 'Hedef stoklara göre tezgâhları otomatik besler',
+    depotAutoOn: 'DAĞITIM AKTİF', target: 'Hedef', priority: 'Öncelik', prLow: 'Düşük', prNormal: 'Normal', prHigh: 'Yüksek',
+    dayNew: 'YENİ GÜN', dayTitle: 'GÜN {n}', dayClose: 'GÜN SONU', dayRevenue: 'Satış geliri', dayCustomers: 'Müşteri',
+    dayFish: 'Satılan balık', dayLost: 'Kaçan müşteri', dayBest: 'En çok satan', marketTomorrow: 'YARIN BALIK PAZARI',
+    marketDay: 'BALIK PAZARI GÜNÜ', marketPrep: 'Yoğunluk yüksek • geçici hedefler aktif',
     barArea: 'ALAN', barLevel: 'YÜKSELT', barBuild: 'YAPI', barProj: 'PROJE', barServ: 'BİNA',
     tArea: 'YENİ ALAN AÇ', tLevel: 'YÜKSELTMELER', tBuild: 'YAPI NOKTALARI', tProj: 'BÜYÜK PROJE',
     tServ: 'LİMAN HİZMET BİNALARI',
@@ -205,7 +211,13 @@ var STR = {
     noRun: 'Start the game first',
     newAsk: 'Delete the current save and start a new game?',
     remaining: 'left', total: 'total',
-    noMoney: 'Not enough cash',
+    noMoney: 'Not enough cash', dayHud: 'DAY', depot: 'CENTRAL DEPOT', depotLocked: 'Unlocks with stall 2 or 12 sales',
+    depotOpened: '▣ Central Depot unlocked!', depotFull: 'Depot is full', depotDrop: 'Drop goods at the depot',
+    depotAuto: 'DISTRIBUTION WORKER', depotAutoD: 'Automatically supplies stalls to their target stock',
+    depotAutoOn: 'DISTRIBUTION ACTIVE', target: 'Target', priority: 'Priority', prLow: 'Low', prNormal: 'Normal', prHigh: 'High',
+    dayNew: 'NEW DAY', dayTitle: 'DAY {n}', dayClose: 'DAY SUMMARY', dayRevenue: 'Sales revenue', dayCustomers: 'Customers',
+    dayFish: 'Fish sold', dayLost: 'Customers lost', dayBest: 'Best seller', marketTomorrow: 'FISH MARKET TOMORROW',
+    marketDay: 'FISH MARKET DAY', marketPrep: 'High demand • temporary targets active',
     barArea: 'AREA', barLevel: 'UPGRADE', barBuild: 'BUILD', barProj: 'PROJECT', barServ: 'SERVICE',
     tArea: 'UNLOCK NEW AREA', tLevel: 'UPGRADES', tBuild: 'BUILD SPOTS', tProj: 'BIG PROJECT',
     tServ: 'HARBOR SERVICE BUILDINGS',
@@ -1022,6 +1034,32 @@ var player = { x: 4.5, y: 3.2, z: 0, vx: 0, vy: 0, bob: 0, face: 1, carry: [], a
 var workers = [], customers = [], flyers = [], floats = [], puffs = [], gulls = [];
 var event = null, eventT = 0, nextEvent = 80;
 var gameT = 0, camX = 0, camY = 0, camTX = 0, camTY = 0;
+/* GDD v1.1 — sade gün ritmi + Merkezi Depo + Balık Pazarı */
+var DAY = { day: 1, t: 0, len: 180, phase: 'play', phaseT: 0, market: false,
+  revenue: 0, served: 0, sold: 0, lost: 0, best: {} };
+var DEPOT = { x: 6.2, y: 4.65, z: 0, unlocked: false, auto: false, cap: 40, items: [], tick: 0,
+  targets: {}, priorities: {}, marketTargets: {}, marketPriorities: {} };
+
+function depotOpenRule() {
+  var n = 0; for (var i = 0; i < counters.length; i++) if (!AREAS[counters[i].z].locked) n++;
+  return n >= 2 || S.served >= 12;
+}
+function depotCheckUnlock() {
+  if (!DEPOT.unlocked && depotOpenRule()) { DEPOT.unlocked = true; toast(T('depotOpened')); sfx.star(); }
+  return DEPOT.unlocked;
+}
+function depotTarget(c) {
+  var map = DAY.market ? DEPOT.marketTargets : DEPOT.targets;
+  if (map[c.key] === undefined) map[c.key] = DAY.market ? 15 : 10;
+  return clamp(map[c.key], 3, counterMax(c));
+}
+function depotPriority(c) {
+  var map = DAY.market ? DEPOT.marketPriorities : DEPOT.priorities;
+  if (map[c.key] === undefined) map[c.key] = DAY.market ? 2 : 1;
+  return clamp(map[c.key], 0, 2);
+}
+function depotStock(f) { var n = 0; for (var i = 0; i < DEPOT.items.length; i++) if (DEPOT.items[i].f === f) n++; return n; }
+function dayResetStats() { DAY.revenue = 0; DAY.served = 0; DAY.sold = 0; DAY.lost = 0; DAY.best = {}; }
 
 function capacity() { return 8 + S.capLvl * 3; }
 function speed() { return 3.1 * Math.pow(1.11, S.spdLvl); }
@@ -1077,6 +1115,9 @@ function save() {
       serv: servSave(),
       workers: workers.map(function (w) { return w.role; }),
       world: worldSave(),
+      dayState: DAY,
+      depot: { unlocked: DEPOT.unlocked, auto: DEPOT.auto, cap: DEPOT.cap, items: saveItems(DEPOT.items),
+        targets: DEPOT.targets, priorities: DEPOT.priorities, marketTargets: DEPOT.marketTargets, marketPriorities: DEPOT.marketPriorities },
       mk: M
     }));
   } catch (e) { }
@@ -1100,11 +1141,20 @@ function load() {
     servLoad(d.serv);   /* v0.4 §41 — yoksa hiçbir bina kurulmaz, para kesilmez */
     if (d.workers) d.workers.forEach(function (r) { hire(r, true); });
     _pendingWorld = d.world || null;
+    if (d.dayState) for (var dk in DAY) if (d.dayState[dk] !== undefined) DAY[dk] = d.dayState[dk];
+    if (d.depot) {
+      DEPOT.unlocked = !!d.depot.unlocked; DEPOT.auto = !!d.depot.auto; DEPOT.cap = d.depot.cap || 40;
+      DEPOT.items = loadItems(d.depot.items); DEPOT.targets = d.depot.targets || {}; DEPOT.priorities = d.depot.priorities || {};
+      DEPOT.marketTargets = d.depot.marketTargets || {}; DEPOT.marketPriorities = d.depot.marketPriorities || {};
+    }
     if (d.mk) M = migrateMarket(d.mk);
     return true;
   } catch (e) { return false; }
 }
-function wipe() { try { localStorage.removeItem(SAVE_KEY); } catch (e) { } location.reload(); }
+function wipe(autoStart) {
+  try { localStorage.removeItem(SAVE_KEY); if (autoStart) sessionStorage.setItem('bt_new_start', '1'); } catch (e) { }
+  location.reload();
+}
 /* --- kayıt özeti / manuel kaydet (pause + kaydet-çık) --- */
 function saveMeta() {
   try {
@@ -1153,7 +1203,7 @@ var paused = false;
 function anyOverlay() {
   var officeScr = document.getElementById('officeScr');
   return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') ||
-    !!officeScr && !officeScr.classList.contains('hidden');
+    !!officeScr && !officeScr.classList.contains('hidden') || !document.getElementById('depotScreen').classList.contains('hidden');
 }
 function syncPause() {
   paused = S.started && anyOverlay();
@@ -1172,6 +1222,7 @@ function saveAndQuit() {
   manualSave(T('savedQuit'));
   el.settingsScreen.classList.add('hidden');
   el.menuScreen.classList.add('hidden');
+  el.depotScreen.classList.add('hidden');
   closeBar();
   S.started = false;
   document.getElementById('hud').classList.add('hidden');
@@ -1329,6 +1380,78 @@ function iDeposit(a, dt) {
   addFloat(safe.x, safe.y - 0.4, '+' + money(it.v), '#8ef2a2'); sfx.coin();
   return true;
 }
+function iDropDepot(a, dt) {
+  if (!depotCheckUnlock() || DEPOT.items.length >= DEPOT.cap || !hasCarry(a, isGoods)) return false;
+  return tryTake(a, dt, function () {
+    var it = popCarry(a, isGoods); DEPOT.items.push(it);
+    fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), DEPOT.x, DEPOT.y, 12, it, 0.28); sfx.drop();
+  });
+}
+function updateDepot(dt) {
+  depotCheckUnlock();
+  if (!DEPOT.unlocked || !DEPOT.auto || !DEPOT.items.length || DAY.phase !== 'play') return;
+  DEPOT.tick -= dt; if (DEPOT.tick > 0) return; DEPOT.tick = 0.68;
+  var jobs = [], i, c, deficit;
+  for (i = 0; i < counters.length; i++) {
+    c = counters[i]; if (AREAS[c.z].locked || !c.fish) continue;
+    deficit = depotTarget(c) - c.buffer.length;
+    if (deficit > 0 && depotStock(c.fish) > 0) jobs.push({ c: c, score: depotPriority(c) * 100 + deficit });
+  }
+  jobs.sort(function (a, b) { return b.score - a.score; });
+  if (!jobs.length) return;
+  c = jobs[0].c; var idx = -1;
+  for (i = 0; i < DEPOT.items.length; i++) if (DEPOT.items[i].f === c.fish && acceptsAt(c, DEPOT.items[i])) { idx = i; break; }
+  if (idx < 0 || c.buffer.length >= counterMax(c)) return; /* ürün yoksa asla üretme */
+  var it = DEPOT.items.splice(idx, 1)[0]; c.buffer.push(it);
+  fly(DEPOT.x, DEPOT.y, 12, c.x, c.y, 13, it, 0.5); sfx.drop();
+}
+function dayBestName() {
+  var best = null, n = 0; for (var f in DAY.best) if (DAY.best[f] > n) { best = f; n = DAY.best[f]; }
+  return best ? NM(FISH[best].n) + ' x' + n : '—';
+}
+function showDayCard(kind) {
+  var scr = document.getElementById('dayScreen'), kicker = document.getElementById('dayKicker');
+  var title = document.getElementById('dayTitle'), body = document.getElementById('dayBody');
+  scr.classList.remove('hidden');
+  if (kind === 'summary') {
+    kicker.textContent = T('dayClose'); title.textContent = T('dayTitle', { n: DAY.day });
+    body.innerHTML = '<div class="day-grid"><span>' + T('dayRevenue') + '</span><b>' + money(DAY.revenue) + '</b>' +
+      '<span>' + T('dayCustomers') + '</span><b>' + DAY.served + '</b><span>' + T('dayFish') + '</span><b>' + DAY.sold + '</b>' +
+      '<span>' + T('dayLost') + '</span><b>' + DAY.lost + '</b><span>' + T('dayBest') + '</span><b>' + dayBestName() + '</b></div>' +
+      (((DAY.day + 1) % 4 === 0) ? '<div class="market-notice">' + T('marketTomorrow') + '</div>' : '');
+  } else {
+    kicker.textContent = DAY.market ? T('marketDay') : T('dayNew'); title.textContent = T('dayTitle', { n: DAY.day });
+    body.innerHTML = DAY.market ? '<div class="market-notice">' + T('marketPrep') + '</div>' : '';
+  }
+}
+function updateDay(dt) {
+  if (DAY.phase === 'intro') {
+    DAY.phaseT += dt; if (DAY.phaseT >= 2.1) { DAY.phase = 'play'; DAY.phaseT = 0; document.getElementById('dayScreen').classList.add('hidden'); }
+    return true;
+  }
+  if (DAY.phase === 'summary') {
+    DAY.phaseT += dt;
+    if (DAY.phaseT >= 3.1) {
+      DAY.day++; DAY.t = 0; DAY.phase = 'intro'; DAY.phaseT = 0; DAY.market = DAY.day % 4 === 0; dayResetStats();
+      showDayCard('intro'); save();
+    }
+    return true;
+  }
+  if (DAY.phase === 'play') {
+    DAY.t += dt;
+    if (DAY.t >= DAY.len) { DAY.phase = 'closing'; DAY.phaseT = 0; }
+  } else if (DAY.phase === 'closing') {
+    DAY.phaseT += dt;
+    if (!customers.length || DAY.phaseT >= 8) { DAY.phase = 'summary'; DAY.phaseT = 0; showDayCard('summary'); sfx.star(); }
+  }
+  /* stoksuz bekleme telemetrisi */
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i], waiting = false;
+    for (var q = 0; q < c.slots.length; q++) if (c.slots[q] && c.slots[q].state === 'wait' && c.slots[q].ord.got < c.slots[q].ord.need) waiting = true;
+    if (waiting && !c.buffer.length) c.stockout = (c.stockout || 0) + dt;
+  }
+  return false;
+}
 
 /* =========================================================
    OYUNCU
@@ -1351,6 +1474,7 @@ function updatePlayer(dt) {
     iDeposit(player, dt);
     return;
   }
+  if (DEPOT.unlocked && dist2(player.x, player.y, DEPOT.x, DEPOT.y) < 2.0) acted = iDropDepot(player, dt) || acted;
   for (i = 0; i < spots.length; i++) {
     var s = spots[i]; if (AREAS[s.z].locked) continue;
     if (dist2(player.x, player.y, s.x, s.y + 0.9) < 1.6) acted = iPickFish(player, s, dt) || acted;
@@ -1666,11 +1790,11 @@ function queueSlotPos(c, i) { return { x: 10.8 + (c.lane || 0) * 1.7, y: c.y + 0
 function patienceMul() { return 1 + decorCount() * 0.02; }
 
 function updateCounter(c, dt) {
-  var custMul = (event ? event.custMul : 1) * areaFlow(c.z);
+  var custMul = (event ? event.custMul : 1) * areaFlow(c.z) * (DAY.market ? 1.85 : 1);
   c.spawnT -= dt * custMul;
   var qmax = queueMax(c.z), freeIdx = -1, i;
   for (i = 0; i < qmax; i++) if (!c.slots[i]) { freeIdx = i; break; }
-  if (c.spawnT <= 0 && freeIdx >= 0) {
+  if (DAY.phase === 'play' && c.spawnT <= 0 && freeIdx >= 0) {
     c.spawnT = 5.4 * rnd(0.75, 1.3);
     /* tezgâh kullanılamıyorsa bu türe müşteri gelmez */
     if (!c.fish || !fishReady(c.fish)) return;
@@ -1723,6 +1847,8 @@ function finishOrder(c, cu) {
   noteFishIncome(pay);
   cu.state = 'leave'; c.slots[cu.slot] = null; shiftQueue(c);
   S.served++; S.rep += cu.type.rep;
+  DAY.revenue += pay; DAY.served++; DAY.sold += cu.ord.need;
+  DAY.best[cu.ord.f] = (DAY.best[cu.ord.f] || 0) + cu.ord.need;
   var fp = queueSlotPos(c, cu.slot);
   addFloat(fp.x, fp.y - 0.5, '+' + money(pay), '#ffe27a');
   addFloat(fp.x + 0.6, fp.y - 1.1, '+' + cu.type.rep + '*', '#ffd76a');
@@ -1768,6 +1894,7 @@ function updateCustomers(dt) {
       if (cu.pat <= 0) {
         cu.state = 'leave'; cu.c.slots[cu.slot] = null; shiftQueue(cu.c);
         S.lost++;
+        DAY.lost++;
         var pen = cu.type.pen || 0;
         if (pen) { S.rep = Math.max(0, S.rep - pen); addFloat(cu.x, cu.y - 0.6, '-' + pen + '*', '#ff8a7a'); }
         else addFloat(cu.x, cu.y - 0.6, ':(', '#ff8a7a');
@@ -2533,6 +2660,14 @@ function drawSafe() {
   uiText(safe.x, safe.y, 10 + pop, '₺', '#f3df9b', 13, 1, 0, 8);
   labelAt(safe.x, safe.y, 30 + pop, T('stSafe'), '#b7f7c7', '');
 }
+function drawDepot() {
+  isoBox(DEPOT.x - 0.72, DEPOT.y - 0.62, 1.44, 1.24, 0, 13, '#d8c49a', '#93643b', '#aa7748');
+  var sx = R(pX(DEPOT.x, DEPOT.y)), sy = R(pY(DEPOT.x, DEPOT.y, 13));
+  px(sx - 11, sy - 8, 22, 3, '#b8442e'); px(sx - 8, sy - 11, 16, 3, '#c9533b');
+  px(sx - 5, sy - 5, 10, 7, '#17485d'); px(sx - 3, sy - 3, 6, 3, '#e8b84e');
+  drawNazar(sx, sy - 2);
+  labelAt(DEPOT.x, DEPOT.y, 32, T('depot') + ' ' + DEPOT.items.length + '/' + DEPOT.cap, '#f3df9b', '▣ ' + DEPOT.items.length);
+}
 
 /* ---------- yapılar ---------- */
 function drawBuilding(s) {
@@ -3025,6 +3160,7 @@ function render() {
   for (i = 0; i < counters.length; i++) (function (c) {
     if (AREAS[c.z].locked) return; push(c.x + c.y, function () { drawCounter(c); });
   })(counters[i]);
+  if (DEPOT.unlocked) push(DEPOT.x + DEPOT.y, drawDepot);
   push(safe.x + safe.y, drawSafe);
 
   var maxY = maxOpenY(), lv = AREAS[0].lvl;
@@ -3079,6 +3215,11 @@ function render() {
 
   renderUI();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (S.started && DAY.phase === 'play') {
+    var sunP = clamp(DAY.t / DAY.len, 0, 1), dusk = Math.max(0, (sunP - 0.68) / 0.32);
+    ctx.fillStyle = dusk > 0 ? 'rgba(128,45,32,' + (dusk * 0.075) + ')' : 'rgba(255,220,145,' + ((1 - sunP / 0.68) * 0.025) + ')';
+    ctx.fillRect(0, 0, cvs.width, cvs.height);
+  }
   if (stick.active) {
     var jx = R(stick.bx / PXS), jy = R(stick.by / PXS);
     ctx.globalAlpha = 0.25;
@@ -3098,7 +3239,8 @@ var el = {};
  'hMoney', 'hCarry', 'hRep', 'startTag', 'startList', 'playBtn', 'setBtn', 'setTitle', 'setLang',
  'setSound', 'setZoom', 'setClose', 'resetBtn', 'closeMenu', 'menuSet', 'langLbl', 'tabBody',
  'startScreen', 'settingsScreen', 'menuScreen', 'menuBtn', 'dtArea', 'dtLevel', 'dtBuild', 'dtProj', 'dtServ',
- 'pauseBadge', 'pauseTxt', 'saveInfo', 'setSaveInfo', 'saveBtn', 'saveQuitBtn', 'menuSave', 'newBtn', 'setSaveLbl'].forEach(function (id) {
+ 'pauseBadge', 'pauseTxt', 'saveInfo', 'setSaveInfo', 'saveBtn', 'saveQuitBtn', 'menuSave', 'newBtn', 'setSaveLbl',
+ 'hDay', 'dayNo', 'depotBtn', 'depotLbl', 'depotScreen', 'depotClose', 'depotTitle', 'depotCap', 'depotBody'].forEach(function (id) {
   el[id] = document.getElementById(id);
 });
 var toastT = 0;
@@ -3119,6 +3261,7 @@ function applyLang() {
   el.saveBtn.textContent = T('saveNow'); el.saveQuitBtn.textContent = T('saveQuit');
   el.menuSave.textContent = T('saveNow'); el.newBtn.textContent = T('newGame');
   el.setSaveLbl.textContent = T('setSave'); el.pauseTxt.textContent = T('paused');
+  el.hDay.textContent = T('dayHud'); el.depotLbl.textContent = T('depot'); el.depotTitle.textContent = T('depot');
   refreshSaveInfo();
   el.langLbl.textContent = T('langLbl');
   el.dtArea.textContent = T('barArea'); el.dtLevel.textContent = T('barLevel');
@@ -3168,6 +3311,7 @@ function syncHUD(dt) {
   el.carry.textContent = carryW(player) + '/' + capacity();
   el.carryIcon.textContent = carryIcon();
   el.rep.textContent = S.rep;
+  el.dayNo.textContent = DAY.day + (DAY.market ? ' ★' : '');
   var lvl = repLevel(), cur = REP_LEVELS[lvl - 1].need, nxt = lvl < REP_LEVELS.length ? REP_LEVELS[lvl].need : cur + 1;
   el.repfill.style.width = clamp((S.rep - cur) / (nxt - cur) * 100, 0, 100) + '%';
   if (event) {
@@ -3196,12 +3340,60 @@ function syncHUD(dt) {
   if (cfT > 0) { cfT -= dt; if (cfT <= 0 && cfId) { cfId = null; renderBar(); } }
   barHot();
   syncTradeBtn();
+  el.depotBtn.classList.toggle('hidden', !DEPOT.unlocked || !S.started);
   ofRefresh -= dt;
   if (ofRefresh <= 0) {
     ofRefresh = 1;
     if (!document.getElementById('officeScr').classList.contains('hidden')) renderOffice();
   }
 }
+
+/* ---------- Merkezi Depo paneli (GDD v1.1) ---------- */
+function priorityName(v) { return T(v === 0 ? 'prLow' : v === 2 ? 'prHigh' : 'prNormal'); }
+function renderDepot() {
+  el.depotCap.textContent = DEPOT.items.length + ' / ' + DEPOT.cap;
+  var h = '<div class="depot-stock">';
+  for (var i = 0; i < FISH_ORDER.length; i++) {
+    var f = FISH_ORDER[i], n = depotStock(f); if (n) h += '<span><b>' + NM(FISH[f].n) + '</b> ×' + n + '</span>';
+  }
+  if (!DEPOT.items.length) h += '<span class="muted">' + T('depotDrop') + '</span>';
+  h += '</div>';
+  if (!DEPOT.auto) {
+    h += '<div class="depot-auto"><b>🧺 ' + T('depotAuto') + '</b><small>' + T('depotAutoD') + '</small>' +
+      '<button id="depotHire" class="go' + (S.cash < 2500 ? ' no' : '') + '">' + money(2500) + '</button></div>';
+  } else h += '<div class="depot-active">✓ ' + T('depotAutoOn') + '</div>';
+  h += '<div class="depot-lines">';
+  for (i = 0; i < counters.length; i++) {
+    var c = counters[i]; if (AREAS[c.z].locked || !c.fish) continue;
+    h += '<div class="depot-line" data-k="' + c.key + '"><div><b>' + NM(FISH[c.fish].n) + '</b><small>' +
+      c.buffer.length + ' / ' + counterMax(c) + '</small></div><div class="target-ctl"><span>' + T('target') + '</span>' +
+      '<button data-step="-1">−</button><b>' + depotTarget(c) + '</b><button data-step="1">+</button></div>' +
+      '<button class="priority p' + depotPriority(c) + '" data-pr="1">' + priorityName(depotPriority(c)) + '</button></div>';
+  }
+  el.depotBody.innerHTML = h + '</div>';
+  var hireBtn = document.getElementById('depotHire');
+  if (hireBtn) hireBtn.onclick = function () {
+    if (S.cash < 2500) { sfx.bad(); toast(T('noMoney')); return; }
+    S.cash -= 2500; DEPOT.auto = true; sfx.build(); save(); renderDepot();
+  };
+  Array.prototype.forEach.call(el.depotBody.querySelectorAll('.depot-line'), function (row) {
+    var c = null; for (var j = 0; j < counters.length; j++) if (counters[j].key === row.dataset.k) c = counters[j];
+    if (!c) return;
+    Array.prototype.forEach.call(row.querySelectorAll('[data-step]'), function (b) {
+      b.onclick = function () {
+        var map = DAY.market ? DEPOT.marketTargets : DEPOT.targets;
+        map[c.key] = clamp(depotTarget(c) + parseInt(b.dataset.step, 10), 3, counterMax(c)); sfx.ui(); save(); renderDepot();
+      };
+    });
+    row.querySelector('[data-pr]').onclick = function () {
+      var map = DAY.market ? DEPOT.marketPriorities : DEPOT.priorities;
+      map[c.key] = (depotPriority(c) + 1) % 3; sfx.ui(); save(); renderDepot();
+    };
+  });
+}
+function openDepot() { if (!DEPOT.unlocked) return; el.depotScreen.classList.remove('hidden'); renderDepot(); sfx.ui(); syncPause(); }
+function closeDepot() { el.depotScreen.classList.add('hidden'); sfx.ui(); syncPause(); }
+el.depotBtn.onclick = openDepot; el.depotClose.onclick = closeDepot;
 
 /* ---------- alt panel ---------- */
 /* =========================================================
@@ -3590,7 +3782,7 @@ el.setClose.onclick = function () {
 };
 el.saveBtn.onclick = function () { if (!S.started) { toast(T('noRun')); sfx.bad(); return; } manualSave(); };
 el.saveQuitBtn.onclick = function () { if (!S.started) { toast(T('noRun')); sfx.bad(); return; } saveAndQuit(); };
-el.newBtn.onclick = function () { if (confirm(T('newAsk'))) wipe(); };
+el.newBtn.onclick = function () { if (confirm(T('newAsk'))) wipe(true); };
 el.resetBtn.onclick = function () { if (confirm(T('resetAsk'))) wipe(); };
 function syncSettingsUI() {
   Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.toggle('on', (o.dataset.s === '1') === soundOn); });
@@ -3607,10 +3799,12 @@ function frame(ts) {
   last = ts;
   if (!S.started) { gameT += dt; updateFx(dt); render(); return; }
   if (paused) { render(); return; }          /* duraklatıldı: dünya tamamen donar */
+  if (updateDay(dt)) { updateFx(dt); syncHUD(dt); render(); return; }
   gameT += dt; S.play += dt;
   updatePlayer(dt);
   updateWorkers(dt);
   updateStations(dt);
+  updateDepot(dt);
   updateCustomers(dt);
   updateEvents(dt);
   updateMarket(dt);
@@ -3628,6 +3822,7 @@ function start() {
   document.getElementById('objective').classList.remove('hidden');
   el.devbar.classList.remove('hidden');
   S.started = true; paused = false; syncPause();
+  if (DAY.t === 0 && DAY.phase === 'play') { DAY.phase = 'intro'; DAY.phaseT = 0; DAY.market = DAY.day % 4 === 0; showDayCard('intro'); }
   ensureAudio(); startHarborAmbience(); sfx.ui();
 }
 el.playBtn.onclick = start;
@@ -3635,6 +3830,7 @@ el.playBtn.onclick = start;
 window.addEventListener('keydown', function (e) {
   if (e.key !== 'Escape' && e.key !== 'Esc') return;
   if (!S.started) return;
+  if (!document.getElementById('depotScreen').classList.contains('hidden')) { e.preventDefault(); closeDepot(); return; }
   if (!document.getElementById('officeScr').classList.contains('hidden')) { e.preventDefault(); closeOffice(); return; }
   e.preventDefault();
   if (!el.settingsScreen.classList.contains('hidden')) { el.setClose.click(); return; }
@@ -4425,6 +4621,9 @@ resize();
 camX = pX(player.x, player.y); camY = pY(player.x, player.y, 0);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { });
 requestAnimationFrame(frame);
+try {
+  if (sessionStorage.getItem('bt_new_start') === '1') { sessionStorage.removeItem('bt_new_start'); start(); }
+} catch (e) { }
 
 window.BT = {
   cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },
@@ -4459,6 +4658,7 @@ window.BT = {
   paused: function () { return paused; },
   saveNow: function () { manualSave(); return saveMeta(); },
   saveQuit: saveAndQuit, saveMeta: saveMeta,
+  day: DAY, depot: DEPOT, openDepot: openDepot, newGame: function () { wipe(true); },
   openSettings: function () { openSettings(false); },
   openMenu: openPauseMenu,
   closeOverlays: function () {
