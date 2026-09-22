@@ -646,9 +646,19 @@ function slotEff(z, eff) {
 }
 /* v2.1 — personel artık bölge bazlı: her açık bölge kendi kadrosunu taşır.
    Taban 1 kişi, bölge seviyesi başına +1, o bölgedeki Personel Kulübesi +1. */
+/* Bölgede açık olan her tezgâh bir personel hakkı verir: bir bölgeden kaç hat
+   geçiyorsa o kadar kişi alınabilir. Üstüne bölge seviyesi ve Personel Kulübesi. */
+function zoneOpenStalls(z) {
+  var n = 0;
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (c.open && c.fish && !AREAS[c.z].locked && zoneOfFish(c.fish) === z) n++;
+  }
+  return n;
+}
 function zoneStaffCap(z) {
   if (!zoneOpen(z)) return 0;
-  return 1 + (AREAS[z].lvl - 1) + slotEff(z, 'staff');
+  return Math.max(1, zoneOpenStalls(z)) + (AREAS[z].lvl - 1) + slotEff(z, 'staff');
 }
 function zoneStaff(z) {
   var n = 0;
@@ -1503,12 +1513,32 @@ function goTo(a, tx, ty, spd, dt, stopR) {
 function actDelay(a) { return a.isPlayer ? 0.075 : 0.1; }
 function tryTake(a, dt, fn) { a.act -= dt; if (a.act > 0) return true; a.act = actDelay(a); fn(); return true; }
 
+/* Bir bölgeden birden çok tür geçiyorsa hamal, tezgâhı en aç olan türü alır;
+   böylece kesim masası tek türle dolup diğer hatları aç bırakmaz. */
+function neediestIndex(s, a) {
+  var best = -1, bs = -1e9;
+  for (var i = s.stock.length - 1; i >= 0; i--) {
+    var it = s.stock[i];
+    if (!fits(a, it)) continue;
+    var c = stallOf(it.f);
+    if (!c) continue;                                   /* tezgâhı kapalı türü alma */
+    var fill = c.buffer.length / Math.max(1, counterMax(c));
+    var waiting = 0;
+    for (var q = 0; q < c.slots.length; q++) if (c.slots[q] && c.slots[q].state === 'wait') waiting++;
+    var sc = waiting * 8 - fill * 10 + (i === s.stock.length - 1 ? 0.5 : 0);
+    if (sc > bs) { bs = sc; best = i; }
+  }
+  if (best < 0) for (var j = s.stock.length - 1; j >= 0; j--) if (fits(a, s.stock[j])) return j;
+  return best;
+}
 function iPickFish(a, s, dt) {
   if (!s.stock.length) return false;
-  var it = s.stock[s.stock.length - 1];
+  var idx = a.isPlayer ? s.stock.length - 1 : neediestIndex(s, a);
+  if (idx < 0 || !s.stock[idx]) return false;
+  var it = s.stock[idx];
   if (!fits(a, it)) return false;
   return tryTake(a, dt, function () {
-    s.stock.pop(); a.carry.push(it);
+    s.stock.splice(idx, 1); a.carry.push(it);
     fly(s.x, s.y + 0.9, 8, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.26); sfx.pick();
   });
 }
@@ -4683,8 +4713,9 @@ function barList() {
     for (i = 0; i < zoneCount(); i++) (function (z2) {
       if (!zoneOpen(z2)) return;
       var free = zoneFree(z2);
+      var zfn = zoneFish(z2).filter(function (q) { return canSell(q); }).map(function (q) { return NM(FISH[q].n); });
       out.push({ id: 'zs' + z2, ic: '👷', t: T('zoneStaff', { n: NM(AREAS[z2].n) }),
-        s: T('zoneStaffD', { a: zoneStaff(z2), b: zoneStaffCap(z2) }),
+        s: T('zoneStaffD', { a: zoneStaff(z2), b: zoneStaffCap(z2) }) + (zfn.length ? ' • ' + zfn.join(', ') : ''),
         pick: free > 0 ? T('choose') : null, blocked: free <= 0, why: T('zoneFull'),
         go: function () { barZone = z2; cfId = null; renderBar(); } });
     })(i);

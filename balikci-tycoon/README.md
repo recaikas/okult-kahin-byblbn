@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — v2.1 (Anadolu Pixel Art)
+# 🐟 Balıkçı Tycoon — v2.2 (Anadolu Pixel Art)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -32,14 +32,18 @@ Bölge indeksi = ağ indeksi = kesim masası indeksi = AREA indeksi. Bir masaya 
 
 ### 3. Personel artık sabit değil, bölge bazlı
 
-Eski sabit "3 kişilik liman kadrosu" kalktı. Yerine:
+Eski sabit "3 kişilik liman kadrosu" kalktı. Yerine (v2.2'de rafine edildi):
 
 | | Kadro |
 |---|---|
-| Her açık bölge | **1 kişi** (taban) |
+| Bölgede **açık olan her tezgâh** | **+1 kişi** |
 | Bölge seviyesi başına | **+1** |
 | O bölgedeki Personel Kulübesi | **+1** |
 | Kasiyer | liman geneli, ayrı (1-3) |
+
+Yani bir bölgeden kaç üretim hattı geçiyorsa o kadar kişi alabilirsin: Balık Pazarı'nda yalnız uskumru açıkken kadro 1, palamutu da açınca 2 olur. Personel kartı o bölgenin türlerini de yazar (*"Balık Pazarı personeli — Kadro 1/2 — Uskumru, Palamut"*).
+
+Ayrıca hamal artık ağdan **tezgâhı en aç olan türü** alıyor (`neediestIndex`): bir bölgeden birden çok tür geçtiğinde kesim masası tek türle dolup diğer hattı aç bırakmıyor.
 
 Alt bardaki **YÜKSELT** sekmesinde her açık bölge için bir kart var: *"Balıkçı İskelesi personeli — Kadro 1/2 — rol seç"* → Hamal / Filetocu / Tezgâhtar. Fiyat hem o bölgedeki kadro sayısına hem de bölge numarasına göre artıyor. Böylece yeni alan açmak gerçekten yeni otomasyon kapasitesi demek.
 
