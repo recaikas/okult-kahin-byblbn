@@ -93,10 +93,7 @@ var STR = {
     noRun: 'Önce oyunu başlat',
     newAsk: 'Mevcut kayıt silinip yeni oyun başlasın mı?',
     remaining: 'kalan', total: 'toplam',
-    noMoney: 'Para yetmiyor', dayHud: 'GÜN', depot: 'MERKEZİ DEPO', depotLocked: '2. tezgâh veya 12 satışla açılır',
-    depotOpened: '▣ Merkezi Depo açıldı!', depotFull: 'Depo dolu', depotDrop: 'Ürünleri depoya bırak',
-    depotAuto: 'DAĞITIM ÇALIŞANI', depotAutoD: 'Hedef stoklara göre tezgâhları otomatik besler',
-    depotAutoOn: 'DAĞITIM AKTİF', target: 'Hedef', priority: 'Öncelik', prLow: 'Düşük', prNormal: 'Normal', prHigh: 'Yüksek',
+    noMoney: 'Para yetmiyor', dayHud: 'GÜN',
     dayNew: 'YENİ GÜN', dayTitle: 'GÜN {n}', dayClose: 'GÜN SONU', dayRevenue: 'Satış geliri', dayCustomers: 'Müşteri',
     dayFish: 'Satılan balık', dayLost: 'Kaçan müşteri', dayBest: 'En çok satan', marketTomorrow: 'YARIN BALIK PAZARI',
     marketDay: 'BALIK PAZARI GÜNÜ', marketPrep: 'Yoğunluk yüksek • geçici hedefler aktif',
@@ -114,7 +111,9 @@ var STR = {
     emptyArea: 'Açılacak yeni alan yok', emptyLevel: 'Şimdilik yükseltme yok',
     emptyBuild: 'Yapı noktası yok', emptyProj: 'Proje bu bölge açılınca gelir',
     slotEmpty: 'Boş yapı yeri', slotOf: '{n} bölgesi',
-    areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs',
+    areaGives: 'Yeni ağ ve kesim alanı', decorGroup: 'Süs',
+    stallBuild: '{n} Tezgâhı', stallBuildD: '{n} hattını satışa açar; müşteriler bu tezgâha gelir',
+    stallOpened: '🐟 {n} tezgâhı kuruldu!', stallBuilt: '{n} Tezgâhı', stallBuiltD: 'Satış hattı aktif',
     lvEffect: 'Ağ +%18, tezgâh +4 stok, yeni yapı yeri',
     staffFull: 'Personel limiti dolu ({n})',
     tut6: 'Alt bardan bir yükseltme satın al',
@@ -215,10 +214,7 @@ var STR = {
     noRun: 'Start the game first',
     newAsk: 'Delete the current save and start a new game?',
     remaining: 'left', total: 'total',
-    noMoney: 'Not enough cash', dayHud: 'DAY', depot: 'CENTRAL DEPOT', depotLocked: 'Unlocks with stall 2 or 12 sales',
-    depotOpened: '▣ Central Depot unlocked!', depotFull: 'Depot is full', depotDrop: 'Drop goods at the depot',
-    depotAuto: 'DISTRIBUTION WORKER', depotAutoD: 'Automatically supplies stalls to their target stock',
-    depotAutoOn: 'DISTRIBUTION ACTIVE', target: 'Target', priority: 'Priority', prLow: 'Low', prNormal: 'Normal', prHigh: 'High',
+    noMoney: 'Not enough cash', dayHud: 'DAY',
     dayNew: 'NEW DAY', dayTitle: 'DAY {n}', dayClose: 'DAY SUMMARY', dayRevenue: 'Sales revenue', dayCustomers: 'Customers',
     dayFish: 'Fish sold', dayLost: 'Customers lost', dayBest: 'Best seller', marketTomorrow: 'FISH MARKET TOMORROW',
     marketDay: 'FISH MARKET DAY', marketPrep: 'High demand • temporary targets active',
@@ -235,7 +231,9 @@ var STR = {
     emptyArea: 'No new area to unlock', emptyLevel: 'No upgrade available yet',
     emptyBuild: 'No build spot yet', emptyProj: 'Unlocks with that area',
     slotEmpty: 'Empty build spot', slotOf: '{n} area',
-    areaGives: 'New net, cutting table and stall', decorGroup: 'Decor',
+    areaGives: 'New net and cutting area', decorGroup: 'Decor',
+    stallBuild: '{n} Stall', stallBuildD: 'Opens the {n} sales line; customers will use this stall',
+    stallOpened: '🐟 {n} stall built!', stallBuilt: '{n} Stall', stallBuiltD: 'Sales line active',
     lvEffect: 'Nets +18%, stall +4 stock, new build spot',
     staffFull: 'Staff limit reached ({n})',
     tut6: 'Buy an upgrade from the bottom bar',
@@ -468,6 +466,12 @@ var LINES = [
   { f: 'somon',   stall: 'ss6', src: 2, w: 0.6,  cut: [5.0, 13.1, 6.3, 13.8] }, /* Fümehane ek hattı */
   { f: 'ton',     stall: 'hal', src: 1, w: 0.45, cut: [3.7, 9.8, 5.0, 10.5] }  /* Kapalı Balık Hali */
 ];
+/* İlk tezgâh başlangıç döngüsünün parçasıdır; diğerleri alan açıldıktan sonra ayrıca kurulur. */
+var STALLS = { b0: true, b1: false, b2: false };
+var BASE_STALLS = {
+  b1: { z: 1, x: 8.9, y: 10.4, cost: 850 },
+  b2: { z: 2, x: 8.9, y: 15.4, cost: 1700 }
+};
 function lineOf(f) { for (var i = 0; i < LINES.length; i++) if (LINES[i].f === f) return LINES[i]; return null; }
 function stallName(k) { return T('st' + k.toUpperCase()); }
 function lineByStall(k) { for (var i = 0; i < LINES.length; i++) if (LINES[i].stall === k) return LINES[i]; return null; }
@@ -894,8 +898,8 @@ function rebuildCounters() {
   }
   counters.length = 0;
   counters.push(get('b0', 0, 8.9, 3.0));
-  counters.push(get('b1', 1, 8.9, 10.4));
-  counters.push(get('b2', 2, 8.9, 15.4));
+  if (STALLS.b1 && !AREAS[1].locked) counters.push(get('b1', 1, 8.9, 10.4));
+  if (STALLS.b2 && !AREAS[2].locked) counters.push(get('b2', 2, 8.9, 15.4));
   for (i = 0; i < SLOTS.length; i++) {
     var sl = SLOTS[i];
     if (sl.b === 'tezgah' && slotActive(sl)) counters.push(get('s' + sl.id, sl.z, sl.x + 0.3, sl.y));
@@ -1057,31 +1061,9 @@ var player = { x: 4.5, y: 3.2, z: 0, vx: 0, vy: 0, bob: 0, face: 1, carry: [], a
 var workers = [], customers = [], flyers = [], floats = [], puffs = [], gulls = [];
 var event = null, eventT = 0, nextEvent = 80;
 var gameT = 0, camX = 0, camY = 0, camTX = 0, camTY = 0;
-/* GDD v1.1 — sade gün ritmi + Merkezi Depo + Balık Pazarı */
+/* GDD v1.1 — sade gün ritmi + Balık Pazarı */
 var DAY = { day: 1, t: 0, len: 180, phase: 'play', phaseT: 0, market: false,
   revenue: 0, served: 0, sold: 0, lost: 0, best: {} };
-var DEPOT = { x: 6.2, y: 4.65, z: 0, unlocked: false, auto: false, cap: 40, items: [], tick: 0,
-  targets: {}, priorities: {}, marketTargets: {}, marketPriorities: {} };
-
-function depotOpenRule() {
-  var n = 0; for (var i = 0; i < counters.length; i++) if (!AREAS[counters[i].z].locked) n++;
-  return n >= 2 || S.served >= 12;
-}
-function depotCheckUnlock() {
-  if (!DEPOT.unlocked && depotOpenRule()) { DEPOT.unlocked = true; toast(T('depotOpened')); sfx.star(); }
-  return DEPOT.unlocked;
-}
-function depotTarget(c) {
-  var map = DAY.market ? DEPOT.marketTargets : DEPOT.targets;
-  if (map[c.key] === undefined) map[c.key] = DAY.market ? 15 : 10;
-  return clamp(map[c.key], 3, counterMax(c));
-}
-function depotPriority(c) {
-  var map = DAY.market ? DEPOT.marketPriorities : DEPOT.priorities;
-  if (map[c.key] === undefined) map[c.key] = DAY.market ? 2 : 1;
-  return clamp(map[c.key], 0, 2);
-}
-function depotStock(f) { var n = 0; for (var i = 0; i < DEPOT.items.length; i++) if (DEPOT.items[i].f === f) n++; return n; }
 function dayResetStats() { DAY.revenue = 0; DAY.served = 0; DAY.sold = 0; DAY.lost = 0; DAY.best = {}; }
 
 function capacity() { return 8 + S.capLvl * 3; }
@@ -1141,21 +1123,20 @@ function save() {
   if (saveBlocked) return false;
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: 5, lang: lang, snd: soundOn ? 1 : 0, zoom: zoomLvl,
+      v: 6, lang: lang, snd: soundOn ? 1 : 0, zoom: zoomLvl,
       at: Date.now(), play: Math.round(S.play || 0),
       cash: S.cash, rep: S.rep, capLvl: S.capLvl, spdLvl: S.spdLvl, priceLvl: S.priceLvl,
       served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
       areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
       pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
       slots: SLOTS.map(function (s) { return s.b; }),
+      stalls: STALLS,
       decor: DECOR.map(function (d) { return d.got ? 1 : 0; }),
       proj: [Math.round(project.inv), project.stage, project.done ? 1 : 0],
       serv: servSave(),
       workers: workers.map(function (w) { return { role: w.role, fish: w.fish || null }; }),
       world: worldSave(),
       dayState: DAY,
-      depot: { unlocked: DEPOT.unlocked, auto: DEPOT.auto, cap: DEPOT.cap, items: saveItems(DEPOT.items),
-        targets: DEPOT.targets, priorities: DEPOT.priorities, marketTargets: DEPOT.marketTargets, marketPriorities: DEPOT.marketPriorities },
       mk: M
     }));
     return true;
@@ -1173,6 +1154,12 @@ function load() {
     S.caught = d.caught || 0; S.tut = d.tut || 0;
     S.play = d.play || 0; S.savedAt = d.at || 0;
     if (d.areas) d.areas.forEach(function (v, i) { if (AREAS[i]) { AREAS[i].locked = !!v[0]; AREAS[i].lvl = v[1] || 1; } });
+    STALLS.b0 = true;
+    if (d.stalls) { STALLS.b1 = !!d.stalls.b1; STALLS.b2 = !!d.stalls.b2; }
+    else { /* eski kayıtlarda açık alanların tezgâhları zaten kuruluydu */
+      STALLS.b1 = !!(d.areas && d.areas[1] && !d.areas[1][0]);
+      STALLS.b2 = !!(d.areas && d.areas[2] && !d.areas[2][0]);
+    }
     if (d.pads) d.pads.forEach(function (v, i) { if (PADS[i]) { PADS[i].paid = v[0]; PADS[i].lvl = v[1]; if (v[2]) PADS[i].price = v[2]; } });
     if (d.slots) d.slots.forEach(function (v, i) { if (SLOTS[i]) SLOTS[i].b = v; });
     if (d.decor) d.decor.forEach(function (v, i) { if (DECOR[i]) DECOR[i].got = !!v; });
@@ -1181,11 +1168,6 @@ function load() {
     _pendingWorkers = d.workers || [];
     _pendingWorld = d.world || null;
     if (d.dayState) for (var dk in DAY) if (d.dayState[dk] !== undefined) DAY[dk] = d.dayState[dk];
-    if (d.depot) {
-      DEPOT.unlocked = !!d.depot.unlocked; DEPOT.auto = !!d.depot.auto; DEPOT.cap = d.depot.cap || 40;
-      DEPOT.items = loadItems(d.depot.items); DEPOT.targets = d.depot.targets || {}; DEPOT.priorities = d.depot.priorities || {};
-      DEPOT.marketTargets = d.depot.marketTargets || {}; DEPOT.marketPriorities = d.depot.marketPriorities || {};
-    }
     if (d.mk) M = migrateMarket(d.mk);
     return true;
   } catch (e) { return false; }
@@ -1248,7 +1230,7 @@ var paused = false;
 function anyOverlay() {
   var officeScr = document.getElementById('officeScr');
   return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') ||
-    !!officeScr && !officeScr.classList.contains('hidden') || !document.getElementById('depotScreen').classList.contains('hidden');
+    !!officeScr && !officeScr.classList.contains('hidden');
 }
 function syncPause() {
   paused = S.started && anyOverlay();
@@ -1267,7 +1249,6 @@ function saveAndQuit() {
   manualSave(T('savedQuit'));
   el.settingsScreen.classList.add('hidden');
   el.menuScreen.classList.add('hidden');
-  el.depotScreen.classList.add('hidden');
   closeBar();
   S.started = false;
   document.getElementById('hud').classList.add('hidden');
@@ -1429,31 +1410,6 @@ function iDeposit(a, dt) {
   addFloat(safe.x, safe.y - 0.4, '+' + money(it.v), '#8ef2a2'); sfx.coin();
   return true;
 }
-function iDropDepot(a, dt) {
-  if (!depotCheckUnlock() || DEPOT.items.length >= DEPOT.cap || !hasCarry(a, isGoods)) return false;
-  return tryTake(a, dt, function () {
-    var it = popCarry(a, isGoods); DEPOT.items.push(it);
-    fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), DEPOT.x, DEPOT.y, 12, it, 0.28); sfx.drop();
-  });
-}
-function updateDepot(dt) {
-  depotCheckUnlock();
-  if (!DEPOT.unlocked || !DEPOT.auto || !DEPOT.items.length || DAY.phase !== 'play') return;
-  DEPOT.tick -= dt; if (DEPOT.tick > 0) return; DEPOT.tick = 0.68;
-  var jobs = [], i, c, deficit;
-  for (i = 0; i < counters.length; i++) {
-    c = counters[i]; if (AREAS[c.z].locked || !c.fish) continue;
-    deficit = depotTarget(c) - c.buffer.length;
-    if (deficit > 0 && depotStock(c.fish) > 0) jobs.push({ c: c, score: depotPriority(c) * 100 + deficit });
-  }
-  jobs.sort(function (a, b) { return b.score - a.score; });
-  if (!jobs.length) return;
-  c = jobs[0].c; var idx = -1;
-  for (i = 0; i < DEPOT.items.length; i++) if (DEPOT.items[i].f === c.fish && acceptsAt(c, DEPOT.items[i])) { idx = i; break; }
-  if (idx < 0 || c.buffer.length >= counterMax(c)) return; /* ürün yoksa asla üretme */
-  var it = DEPOT.items.splice(idx, 1)[0]; c.buffer.push(it);
-  fly(DEPOT.x, DEPOT.y, 12, c.x, c.y, 13, it, 0.5); sfx.drop();
-}
 function dayBestName() {
   var best = null, n = 0; for (var f in DAY.best) if (DAY.best[f] > n) { best = f; n = DAY.best[f]; }
   return best ? NM(FISH[best].n) + ' x' + n : '—';
@@ -1534,7 +1490,6 @@ function updatePlayer(dt) {
     iDeposit(player, dt);
     return;
   }
-  if (DEPOT.unlocked && dist2(player.x, player.y, DEPOT.x, DEPOT.y) < 2.0) acted = iDropDepot(player, dt) || acted;
   for (i = 0; i < spots.length; i++) {
     var s = spots[i]; if (AREAS[s.z].locked) continue;
     if (dist2(player.x, player.y, s.x, s.y + 0.9) < 1.6) acted = iPickFish(player, s, dt) || acted;
@@ -2754,15 +2709,6 @@ function drawSafe() {
   uiText(safe.x, safe.y, 10 + pop, '₺', '#f3df9b', 13, 1, 0, 8);
   labelAt(safe.x, safe.y, 30 + pop, T('stSafe'), '#b7f7c7', '');
 }
-function drawDepot() {
-  isoBox(DEPOT.x - 0.72, DEPOT.y - 0.62, 1.44, 1.24, 0, 13, '#d8c49a', '#93643b', '#aa7748');
-  var sx = R(pX(DEPOT.x, DEPOT.y)), sy = R(pY(DEPOT.x, DEPOT.y, 13));
-  px(sx - 11, sy - 8, 22, 3, '#b8442e'); px(sx - 8, sy - 11, 16, 3, '#c9533b');
-  px(sx - 5, sy - 5, 10, 7, '#17485d'); px(sx - 3, sy - 3, 6, 3, '#e8b84e');
-  drawNazar(sx, sy - 2);
-  labelAt(DEPOT.x, DEPOT.y, 32, T('depot') + ' ' + DEPOT.items.length + '/' + DEPOT.cap, '#f3df9b', '▣ ' + DEPOT.items.length);
-}
-
 /* ---------- yapılar ---------- */
 function drawBuilding(s) {
   var id = s.b, sx = R(pX(s.x, s.y)), sy = R(pY(s.x, s.y, 0));
@@ -3254,7 +3200,6 @@ function render() {
   for (i = 0; i < counters.length; i++) (function (c) {
     if (AREAS[c.z].locked) return; push(c.x + c.y, function () { drawCounter(c); });
   })(counters[i]);
-  if (DEPOT.unlocked) push(DEPOT.x + DEPOT.y, drawDepot);
   push(safe.x + safe.y, drawSafe);
 
   var maxY = maxOpenY(), lv = AREAS[0].lvl;
@@ -3334,7 +3279,7 @@ var el = {};
  'setSound', 'setZoom', 'setClose', 'resetBtn', 'closeMenu', 'menuSet', 'langLbl', 'tabBody',
  'startScreen', 'settingsScreen', 'menuScreen', 'menuBtn', 'dtArea', 'dtLevel', 'dtBuild', 'dtProj', 'dtServ',
  'pauseBadge', 'pauseTxt', 'saveInfo', 'setSaveInfo', 'saveBtn', 'saveQuitBtn', 'menuSave', 'newBtn', 'setSaveLbl',
- 'hDay', 'dayNo', 'depotBtn', 'depotLbl', 'depotScreen', 'depotClose', 'depotTitle', 'depotCap', 'depotBody'].forEach(function (id) {
+ 'hDay', 'dayNo'].forEach(function (id) {
   el[id] = document.getElementById(id);
 });
 var toastT = 0;
@@ -3355,7 +3300,7 @@ function applyLang() {
   el.saveBtn.textContent = T('saveNow'); el.saveQuitBtn.textContent = T('saveQuit');
   el.menuSave.textContent = T('saveNow'); el.newBtn.textContent = T('newGame');
   el.setSaveLbl.textContent = T('setSave'); el.pauseTxt.textContent = T('paused');
-  el.hDay.textContent = T('dayHud'); el.depotLbl.textContent = T('depot'); el.depotTitle.textContent = T('depot');
+  el.hDay.textContent = T('dayHud');
   refreshSaveInfo();
   el.langLbl.textContent = T('langLbl');
   el.dtArea.textContent = T('barArea'); el.dtLevel.textContent = T('barLevel');
@@ -3434,60 +3379,12 @@ function syncHUD(dt) {
   if (cfT > 0) { cfT -= dt; if (cfT <= 0 && cfId) { cfId = null; renderBar(); } }
   barHot();
   syncTradeBtn();
-  el.depotBtn.classList.toggle('hidden', !DEPOT.unlocked || !S.started);
   ofRefresh -= dt;
   if (ofRefresh <= 0) {
     ofRefresh = 1;
     if (!document.getElementById('officeScr').classList.contains('hidden')) renderOffice();
   }
 }
-
-/* ---------- Merkezi Depo paneli (GDD v1.1) ---------- */
-function priorityName(v) { return T(v === 0 ? 'prLow' : v === 2 ? 'prHigh' : 'prNormal'); }
-function renderDepot() {
-  el.depotCap.textContent = DEPOT.items.length + ' / ' + DEPOT.cap;
-  var h = '<div class="depot-stock">';
-  for (var i = 0; i < FISH_ORDER.length; i++) {
-    var f = FISH_ORDER[i], n = depotStock(f); if (n) h += '<span><b>' + NM(FISH[f].n) + '</b> ×' + n + '</span>';
-  }
-  if (!DEPOT.items.length) h += '<span class="muted">' + T('depotDrop') + '</span>';
-  h += '</div>';
-  if (!DEPOT.auto) {
-    h += '<div class="depot-auto"><b>🧺 ' + T('depotAuto') + '</b><small>' + T('depotAutoD') + '</small>' +
-      '<button id="depotHire" class="go' + (S.cash < 2500 ? ' no' : '') + '">' + money(2500) + '</button></div>';
-  } else h += '<div class="depot-active">✓ ' + T('depotAutoOn') + '</div>';
-  h += '<div class="depot-lines">';
-  for (i = 0; i < counters.length; i++) {
-    var c = counters[i]; if (AREAS[c.z].locked || !c.fish) continue;
-    h += '<div class="depot-line" data-k="' + c.key + '"><div><b>' + NM(FISH[c.fish].n) + '</b><small>' +
-      c.buffer.length + ' / ' + counterMax(c) + '</small></div><div class="target-ctl"><span>' + T('target') + '</span>' +
-      '<button data-step="-1">−</button><b>' + depotTarget(c) + '</b><button data-step="1">+</button></div>' +
-      '<button class="priority p' + depotPriority(c) + '" data-pr="1">' + priorityName(depotPriority(c)) + '</button></div>';
-  }
-  el.depotBody.innerHTML = h + '</div>';
-  var hireBtn = document.getElementById('depotHire');
-  if (hireBtn) hireBtn.onclick = function () {
-    if (S.cash < 2500) { sfx.bad(); toast(T('noMoney')); return; }
-    S.cash -= 2500; DEPOT.auto = true; sfx.build(); save(); renderDepot();
-  };
-  Array.prototype.forEach.call(el.depotBody.querySelectorAll('.depot-line'), function (row) {
-    var c = null; for (var j = 0; j < counters.length; j++) if (counters[j].key === row.dataset.k) c = counters[j];
-    if (!c) return;
-    Array.prototype.forEach.call(row.querySelectorAll('[data-step]'), function (b) {
-      b.onclick = function () {
-        var map = DAY.market ? DEPOT.marketTargets : DEPOT.targets;
-        map[c.key] = clamp(depotTarget(c) + parseInt(b.dataset.step, 10), 3, counterMax(c)); sfx.ui(); save(); renderDepot();
-      };
-    });
-    row.querySelector('[data-pr]').onclick = function () {
-      var map = DAY.market ? DEPOT.marketPriorities : DEPOT.priorities;
-      map[c.key] = (depotPriority(c) + 1) % 3; sfx.ui(); save(); renderDepot();
-    };
-  });
-}
-function openDepot() { if (!DEPOT.unlocked) return; el.depotScreen.classList.remove('hidden'); renderDepot(); sfx.ui(); syncPause(); }
-function closeDepot() { el.depotScreen.classList.add('hidden'); sfx.ui(); syncPause(); }
-el.depotBtn.onclick = openDepot; el.depotClose.onclick = closeDepot;
 
 /* ---------- alt panel ---------- */
 /* =========================================================
@@ -3578,6 +3475,20 @@ function barList() {
       }
     } else {
       var n = 0;
+      for (var sk in BASE_STALLS) {
+        var bs = BASE_STALLS[sk], bln = lineByStall(sk), bf = bln && FISH[bln.f];
+        if (AREAS[bs.z].locked || !bf) continue;
+        if (STALLS[sk]) {
+          out.push({ id: 'base' + sk, ic: '🐟', t: T('stallBuilt', { n: NM(bf.n) }), s: T('stallBuiltD'), owned: true });
+        } else {
+          out.push({ id: 'base' + sk, ic: '🐟', t: T('stallBuild', { n: NM(bf.n) }), s: T('stallBuildD', { n: NM(bf.n) }),
+            cost: upCost(bs.cost), go: function (key) { return function () {
+              var ln = lineByStall(key), fish = ln && FISH[ln.f];
+              STALLS[key] = true; rebuildCounters(); reassignWorkers(); sfx.build();
+              toast(T('stallOpened', { n: fish ? NM(fish.n) : '' }));
+            }; }(sk) });
+        }
+      }
       for (i = 0; i < SLOTS.length; i++) {
         var s2 = SLOTS[i];
         if (!slotActive(s2)) continue;
@@ -3770,6 +3681,10 @@ function barHot() {
     if (!AREAS[p.z].locked && p.lvl < p.max && !padBlocked(p) && S.cash >= padPrice(p)) hot.level = true;
   }
   for (i = 0; i < LINES.length; i++) if (fishReady(LINES[i].f) && !linePorter(LINES[i].f) && S.cash >= upCost(porterCost(LINES[i].f))) hot.level = true;
+  for (var sk in BASE_STALLS) {
+    var bs = BASE_STALLS[sk];
+    if (!AREAS[bs.z].locked && !STALLS[sk] && S.cash >= upCost(bs.cost)) hot.build = true;
+  }
   for (i = 0; i < SLOTS.length; i++) if (slotActive(SLOTS[i]) && !SLOTS[i].b && S.cash >= 900) hot.build = true;
   if (!AREAS[project.z].locked && !project.done && S.cash >= 1000) hot.proj = true;
   if (M && officeReady() && !M.office && S.rep >= ECON.officeRep && S.cash >= upCost(ECON.officeCost)) hot.proj = true;
@@ -3919,7 +3834,6 @@ function frame(ts) {
   updatePlayer(dt);
   updateWorkers(dt);
   updateStations(dt);
-  updateDepot(dt);
   updateCustomers(dt);
   updateEvents(dt);
   updateMarket(dt);
@@ -3945,7 +3859,6 @@ el.playBtn.onclick = start;
 window.addEventListener('keydown', function (e) {
   if (e.key !== 'Escape' && e.key !== 'Esc') return;
   if (!S.started) return;
-  if (!document.getElementById('depotScreen').classList.contains('hidden')) { e.preventDefault(); closeDepot(); return; }
   if (!document.getElementById('officeScr').classList.contains('hidden')) { e.preventDefault(); closeOffice(); return; }
   e.preventDefault();
   if (!el.settingsScreen.classList.contains('hidden')) { el.setClose.click(); return; }
@@ -3991,7 +3904,7 @@ var COMPANIES = [
     ctrl: { tr: 'Yükleme Koridoru', en: 'Loading Corridor' } },
   { id: 'buzmar', n: { tr: 'BuzMar Soğuk Zincir', en: 'IceMar Cold Chain' }, sec: 'cold', risk: 30, price: 42, fl: 0.50, div: 0.35, col: '#58b7c9',
     p5: { k: 'stock', v: 10, t: { tr: 'Depo kapasitesi +10', en: 'Storage +10' } }, p15: { k: 'upcost', v: 0.10, t: { tr: 'Yükseltme -%10', en: 'Upgrades -10%' } },
-    ctrl: { tr: 'Merkezi Depo', en: 'Central Depot' } },
+    ctrl: { tr: 'Soğuk Hava Tesisi', en: 'Cold Storage Facility' } },
   { id: 'okyanus', n: { tr: 'Okyanus Gıda', en: 'Ocean Foods' }, sec: 'proc', risk: 58, price: 65, fl: 0.55, div: 0.25, col: '#d98455',
     p5: { k: 'procspeed', v: 0.05, t: { tr: 'İşleme hızı +%5', en: 'Processing +5%' } }, p15: { k: 'value', v: 0.08, t: { tr: 'İşlenmiş ürün +%8', en: 'Processed value +8%' } },
     ctrl: { tr: 'İşleme Tesisi', en: 'Processing Plant' } },
@@ -4778,7 +4691,7 @@ window.BT = {
   paused: function () { return paused; },
   saveNow: function () { manualSave(); return saveMeta(); },
   saveQuit: saveAndQuit, saveMeta: saveMeta,
-  day: DAY, depot: DEPOT, openDepot: openDepot, newGame: function () { wipe(true); },
+  day: DAY, newGame: function () { wipe(true); },
   openSettings: function () { openSettings(false); },
   openMenu: openPauseMenu,
   closeOverlays: function () {
