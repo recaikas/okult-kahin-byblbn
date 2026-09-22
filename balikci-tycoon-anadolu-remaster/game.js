@@ -48,6 +48,8 @@ var STR = {
     evStormM: 'Lodos bastırdı, müşteri azaldı 🌊',
     /* olaylar/uyarılar */
     hired: '{i} {n} işe alındı — {w}',
+    linePorter: '{n} Hattı Hamalı', linePorterD: 'Yalnız {n} sandığı → {n} kesim tahtası',
+    linePorterOn: 'Bu hattın hamalı çalışıyor', mLineStaff: 'Hat otomasyonu',
     levelUp: '⭐ Yeni seviye: {t}!',
     areaOpen: '🔓 {n} açıldı!',
     areaLvUp: '🏗️ {n} → Sv.{l}',
@@ -71,7 +73,7 @@ var STR = {
     mWage: 'Maaş gideri', mOrders: 'Tamamlanan sipariş', mLost: 'Kaçan müşteri',
     mCaught: 'Tutulan balık', mNext: 'Sonraki', mMax: 'En üst seviye',
     mNoStaff: 'Henüz çalışanın yok. Haritadaki işe alım alanlarında bekle.',
-    mStaffCap: 'Personel limiti', mTotalWage: 'Toplam maaş',
+    mStaffCap: 'Hat otomasyonu', mTotalWage: 'Toplam maaş',
     mWeight: 'ağırlık', mCut: 'kesim', mYield: 'fileto', mSmoked: 'füme',
     mLoop: 'Döngü', mLoopE: 'Ağ → kesim → tezgâh → kasa',
     mSmokeE: 'Fileto → fümehane → 2.4× değer',
@@ -172,6 +174,8 @@ var STR = {
     evShipM: 'The ferry docked! Customer rush 🚢',
     evStormM: 'Rough sea, fewer customers 🌊',
     hired: '{i} {n} hired — {w}',
+    linePorter: '{n} Line Porter', linePorterD: '{n} crate → {n} cutting table only',
+    linePorterOn: 'This line porter is working', mLineStaff: 'Line automation',
     levelUp: '⭐ New rank: {t}!',
     areaOpen: '🔓 {n} unlocked!',
     areaLvUp: '🏗️ {n} → Lv.{l}',
@@ -193,7 +197,7 @@ var STR = {
     mWage: 'Wages', mOrders: 'Orders served', mLost: 'Customers lost',
     mCaught: 'Fish caught', mNext: 'Next', mMax: 'Max rank',
     mNoStaff: 'No staff yet. Stand on a hiring spot on the map.',
-    mStaffCap: 'Staff limit', mTotalWage: 'Total wages',
+    mStaffCap: 'Line automation', mTotalWage: 'Total wages',
     mWeight: 'weight', mCut: 'cut', mYield: 'fillets', mSmoked: 'smoked',
     mLoop: 'Loop', mLoopE: 'Net → cutting → stall → safe',
     mSmokeE: 'Fillet → smokehouse → 2.4× value',
@@ -457,12 +461,12 @@ var FISH_ORDER = ['hamsi', 'uskumru', 'palamut', 'levrek', 'somon', 'ton'];
    Sıra doğrudan ilerleme sırasıdır; tek tablodan değiştirilir.
    ========================================================= */
 var LINES = [
-  { f: 'hamsi',   stall: 'b0',  src: 0, w: 1.0 },   /* Balıkçı İskelesi tezgâhı — başlangıç */
-  { f: 'uskumru', stall: 'b1',  src: 1, w: 1.0 },   /* Balık Pazarı tezgâhı */
-  { f: 'palamut', stall: 'ss3', src: 1, w: 0.8 },   /* Pazar yapı noktası tezgâhı */
-  { f: 'levrek',  stall: 'b2',  src: 2, w: 0.8 },   /* Fümehane tezgâhı */
-  { f: 'somon',   stall: 'ss6', src: 2, w: 0.6 },   /* Fümehane yapı noktası tezgâhı */
-  { f: 'ton',     stall: 'hal', src: 1, w: 0.45 }   /* Kapalı Balık Hali — prestij hattı */
+  { f: 'hamsi',   stall: 'b0',  src: 0, w: 1.0,  cut: [5.4, 1.4, 6.7, 2.2] }, /* Balıkçı İskelesi */
+  { f: 'uskumru', stall: 'b1',  src: 1, w: 1.0,  cut: [2.2, 7.4, 3.5, 8.1] }, /* Balık Pazarı */
+  { f: 'palamut', stall: 'ss3', src: 1, w: 0.8,  cut: [5.2, 7.4, 6.5, 8.1] }, /* Pazar ek hattı */
+  { f: 'levrek',  stall: 'b2',  src: 2, w: 0.8,  cut: [2.5, 13.1, 3.8, 13.8] }, /* Fümehane */
+  { f: 'somon',   stall: 'ss6', src: 2, w: 0.6,  cut: [5.0, 13.1, 6.3, 13.8] }, /* Fümehane ek hattı */
+  { f: 'ton',     stall: 'hal', src: 1, w: 0.45, cut: [3.7, 9.8, 5.0, 10.5] }  /* Kapalı Balık Hali */
 ];
 function lineOf(f) { for (var i = 0; i < LINES.length; i++) if (LINES[i].f === f) return LINES[i]; return null; }
 function stallName(k) { return T('st' + k.toUpperCase()); }
@@ -479,9 +483,9 @@ function canProduce(f) {
   return !!sp && !AREAS[sp.z].locked;
 }
 function canProcess(k, f) {
-  if (!openTables().length) return false;
   if (k === 'fume') return !AREAS[smoker.z].locked;
-  return true;
+  var tb = tableOf(f);
+  return !!tb && !AREAS[tb.z].locked;
 }
 function canSell(f) { return !!stallOf(f); }
 function fishReady(f) { return canProduce(f) && canProcess('fileto', f) && canSell(f); }
@@ -496,7 +500,7 @@ function prodValue(k, f) { return Math.round(FISH[f].val * (k === 'fume' ? FUME_
 function itemW(it) { return it.k === 'fish' ? FISH[it.f].w : 1; }
 
 var ROLES = {
-  hamal:     { id: 'hamal',     n: { tr: 'Hamal', en: 'Porter' },     icon: '🧺', wage: 15, speed: 2.4, cap: 8,  d: { tr: 'Ağdan kesime taşır', en: 'Net → cutting table' } },
+  hamal:     { id: 'hamal',     n: { tr: 'Hat Hamalı', en: 'Line Porter' }, icon: '🧺', wage: 15, speed: 2.4, cap: 8, d: { tr: 'Yalnız atandığı balık hattında çalışır', en: 'Works only on the assigned fish line' } },
   filetocu:  { id: 'filetocu',  n: { tr: 'Filetocu', en: 'Filleter' }, icon: '🔪', wage: 19, speed: 2.3, cap: 4,  d: { tr: 'Masayı %55 hızlandırır', en: 'Table 55% faster' } },
   tezgahtar: { id: 'tezgahtar', n: { tr: 'Tezgâhtar', en: 'Vendor' },  icon: '🐟', wage: 22, speed: 2.5, cap: 8,  d: { tr: 'Siparişi tezgâha taşır', en: 'Goods → stall' } },
   kasiyer:   { id: 'kasiyer',   n: { tr: 'Kasiyer', en: 'Cashier' },   icon: '💰', wage: 17, speed: 2.6, cap: 10, d: { tr: 'Parayı kasaya işler', en: 'Cash → safe' } }
@@ -543,7 +547,7 @@ function queueMax(z) { return Math.min(7, (AREAS[z].lvl >= 3 ? 5 : 4) + servEff(
 
 /* ---------------- yapı noktaları (GDD §22) ---------------- */
 var BUILDINGS = [
-  { id: 'kulube', cat: 'personel', n: { tr: 'Personel Kulübesi', en: 'Staff Hut' }, icon: '🏚️', cost: 1500, eff: 'staff',   val: 1,    d: { tr: 'Personel limiti +1', en: 'Staff limit +1' } },
+  { id: 'kulube', cat: 'personel', n: { tr: 'Personel Kulübesi', en: 'Staff Hut' }, icon: '🏚️', cost: 1500, eff: 'wage', val: 0.08, d: { tr: 'Toplam maaş gideri -%8', en: 'Total wages -8%' } },
   { id: 'cay',    cat: 'personel', n: { tr: 'Çay Ocağı', en: 'Tea Stove' },        icon: '🫖', cost: 900,  eff: 'wspeed',  val: 0.12, d: { tr: 'Çıraklar %12 hızlı', en: 'Workers 12% faster' } },
   { id: 'tezgah', cat: 'ticaret',  n: { tr: 'Ek Tezgâh', en: 'Extra Stall' },      icon: '🐟', cost: 2200, eff: 'counter', val: 1,    d: { tr: 'Yeni satış noktası', en: 'New sales point' } },
   { id: 'pano',   cat: 'ticaret',  n: { tr: 'Reklam Panosu', en: 'Billboard' },    icon: '📣', cost: 1400, eff: 'flow',    val: 0.3,  d: { tr: 'Müşteri akışı +%30', en: 'Customer flow +30%' } },
@@ -572,7 +576,7 @@ function slotEff(z, eff) {
   }
   return v;
 }
-function staffCap() { return 3 + slotEff(null, 'staff'); }
+function staffCap() { return LINES.filter(function (l) { return fishReady(l.f); }).length; }
 function workerSpeedMul() { return 1 + slotEff(null, 'wspeed') + perkSum('wspeed') + servEff('wspeed'); }
 
 /* ---------------- büyük proje (GDD §23) ---------------- */
@@ -867,14 +871,14 @@ function spotLines(i) {
   }
   return out;
 }
-function mkTable(z, x, y, mx, my) {
-  return { z: z, x: x, y: y, inn: [], cur: null, t: 0, worker: null, mat: { x: mx, y: my, items: [] }, max: 10 };
+function mkTable(f, z, x, y, mx, my) {
+  return { fish: f, z: z, x: x, y: y, inn: [], cur: null, t: 0, worker: null, mat: { x: mx, y: my, items: [], fish: f }, max: 10 };
 }
-var tables = [
-  mkTable(0, 5.4, 1.4, 6.7, 2.2),
-  mkTable(1, 3.4, 7.6, 4.5, 8.3),
-  mkTable(2, 3.4, 13.0, 4.5, 13.8)
-];
+var tables = LINES.map(function (l) {
+  var z = spots[l.src].z, p = l.cut;
+  return mkTable(l.f, z, p[0], p[1], p[2], p[3]);
+});
+function tableOf(f) { for (var i = 0; i < tables.length; i++) if (tables[i].fish === f) return tables[i]; return null; }
 var smoker = { z: 2, x: 3.4, y: 15.4, inn: [], cur: null, t: 0, belt: 0, mat: { x: 4.6, y: 16.1, items: [] }, max: 8 };
 var counters = [];
 function mkCounter(z, x, y, key) {
@@ -967,6 +971,25 @@ function validateWorld() {
     }
   }
   for (i = 0; i < tables.length; i++) { ch += fixList(tables[i].inn); ch += fixList(tables[i].mat.items); }
+  /* Her kesim tahtası tek türe aittir; eski/karışık kaydı doğru hatta dağıt. */
+  for (i = 0; i < tables.length; i++) {
+    var tb0 = tables[i], j0, mv0, dst0;
+    for (j0 = tb0.inn.length - 1; j0 >= 0; j0--) if (tb0.inn[j0].f !== tb0.fish) {
+      mv0 = tb0.inn.splice(j0, 1)[0]; dst0 = tableOf(mv0.f);
+      if (dst0 && !AREAS[dst0.z].locked && dst0.inn.length < dst0.max) dst0.inn.push(mv0);
+      ch++;
+    }
+    for (j0 = tb0.mat.items.length - 1; j0 >= 0; j0--) if (tb0.mat.items[j0].f !== tb0.fish) {
+      mv0 = tb0.mat.items.splice(j0, 1)[0]; dst0 = tableOf(mv0.f);
+      if (dst0 && !AREAS[dst0.z].locked) dst0.mat.items.push(mv0);
+      ch++;
+    }
+    if (tb0.cur && tb0.cur.f !== tb0.fish) {
+      mv0 = tb0.cur; tb0.cur = null; tb0.t = 0; dst0 = tableOf(mv0.f);
+      if (dst0 && !AREAS[dst0.z].locked) dst0.inn.unshift(mv0);
+      ch++;
+    }
+  }
   ch += fixList(smoker.inn); ch += fixList(smoker.mat.items);
   ch += fixList(player.carry);
   for (i = 0; i < workers.length; i++) ch += fixList(workers[i].carry);
@@ -1066,7 +1089,10 @@ function speed() { return 3.1 * Math.pow(1.11, S.spdLvl); }
 function carryW(a) { var w = 0; for (var i = 0; i < a.carry.length; i++) w += itemW(a.carry[i]); return w; }
 function repLevel() { var l = 1; for (var i = 0; i < REP_LEVELS.length; i++) if (S.rep >= REP_LEVELS[i].need) l = i + 1; return l; }
 function repTitle() { return NM(REP_LEVELS[repLevel() - 1].t); }
-function wageTotal() { var w = 0; for (var i = 0; i < workers.length; i++) w += ROLES[workers[i].role].wage; return w; }
+function wageTotal() {
+  var w = 0; for (var i = 0; i < workers.length; i++) w += ROLES[workers[i].role].wage;
+  return Math.round(w * (1 - Math.min(0.35, slotEff(null, 'wage'))));
+}
 function upCost(v) { return Math.max(1, Math.round(v * (1 - Math.min(0.45, perkSum('upcost') + servEff('upcost'))))); }
 function pct(n) { return lang === 'tr' ? '%' + n : n + '%'; }
 function perMin() { return lang === 'tr' ? '/dk' : '/min'; }
@@ -1074,7 +1100,7 @@ function money(n) { return '$' + Math.round(n).toLocaleString(lang === 'tr' ? 't
 
 /* ---------------- kayıt ---------------- */
 var SAVE_KEY = 'balikci_tycoon_v3';
-var _pendingWorld = null;
+var _pendingWorld = null, _pendingWorkers = null;
 function saveItem(it) { return it ? { k: it.k, f: it.f, v: it.v } : null; }
 function saveItems(a) { return (a || []).map(saveItem); }
 function loadItems(a) { return (a || []).filter(Boolean).map(function (it) { return { k: it.k, f: it.f, v: it.v }; }); }
@@ -1082,7 +1108,7 @@ function worldSave() {
   return {
     player: [player.x, player.y, saveItems(player.carry)],
     spots: spots.map(function (s) { return saveItems(s.stock); }),
-    tables: tables.map(function (t) { return { inn: saveItems(t.inn), cur: saveItem(t.cur), t: t.t, mat: saveItems(t.mat.items) }; }),
+    tables: tables.map(function (t) { return { fish: t.fish, inn: saveItems(t.inn), cur: saveItem(t.cur), t: t.t, mat: saveItems(t.mat.items) }; }),
     smoker: { inn: saveItems(smoker.inn), cur: saveItem(smoker.cur), t: smoker.t, mat: saveItems(smoker.mat.items) },
     counters: counters.map(function (c) { return { key: c.key, buffer: saveItems(c.buffer), tray: saveItems(c.tray.items) }; })
   };
@@ -1094,7 +1120,16 @@ function worldLoad(w) {
     player.carry = loadItems(w.player[2]);
   }
   (w.spots || []).forEach(function (v, i) { if (spots[i]) spots[i].stock = loadItems(v); });
-  (w.tables || []).forEach(function (v, i) { if (!tables[i]) return; tables[i].inn = loadItems(v.inn); tables[i].cur = saveItem(v.cur); tables[i].t = +v.t || 0; tables[i].mat.items = loadItems(v.mat); });
+  for (var ti = 0; ti < tables.length; ti++) { tables[ti].inn = []; tables[ti].cur = null; tables[ti].t = 0; tables[ti].mat.items = []; }
+  (w.tables || []).forEach(function (v, i) {
+    var inn = loadItems(v.inn), mat = loadItems(v.mat), cur = saveItem(v.cur), j, dst;
+    for (j = 0; j < inn.length; j++) { dst = tableOf(inn[j].f); if (dst && dst.inn.length < dst.max) dst.inn.push(inn[j]); }
+    for (j = 0; j < mat.length; j++) { dst = tableOf(mat[j].f); if (dst) dst.mat.items.push(mat[j]); }
+    if (cur) {
+      dst = tableOf(cur.f);
+      if (dst) { if (!dst.cur) { dst.cur = cur; dst.t = +v.t || 0; } else if (dst.inn.length < dst.max) dst.inn.unshift(cur); }
+    }
+  });
   if (w.smoker) { smoker.inn = loadItems(w.smoker.inn); smoker.cur = saveItem(w.smoker.cur); smoker.t = +w.smoker.t || 0; smoker.mat.items = loadItems(w.smoker.mat); }
   (w.counters || []).forEach(function (v) {
     for (var i = 0; i < counters.length; i++) if (counters[i].key === v.key) { counters[i].buffer = loadItems(v.buffer); counters[i].tray.items = loadItems(v.tray); break; }
@@ -1103,7 +1138,7 @@ function worldLoad(w) {
 function save() {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: 4, lang: lang, snd: soundOn ? 1 : 0, zoom: zoomLvl,
+      v: 5, lang: lang, snd: soundOn ? 1 : 0, zoom: zoomLvl,
       at: Date.now(), play: Math.round(S.play || 0),
       cash: S.cash, rep: S.rep, capLvl: S.capLvl, spdLvl: S.spdLvl, priceLvl: S.priceLvl,
       served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
@@ -1113,7 +1148,7 @@ function save() {
       decor: DECOR.map(function (d) { return d.got ? 1 : 0; }),
       proj: [Math.round(project.inv), project.stage, project.done ? 1 : 0],
       serv: servSave(),
-      workers: workers.map(function (w) { return w.role; }),
+      workers: workers.map(function (w) { return { role: w.role, fish: w.fish || null }; }),
       world: worldSave(),
       dayState: DAY,
       depot: { unlocked: DEPOT.unlocked, auto: DEPOT.auto, cap: DEPOT.cap, items: saveItems(DEPOT.items),
@@ -1139,7 +1174,7 @@ function load() {
     if (d.decor) d.decor.forEach(function (v, i) { if (DECOR[i]) DECOR[i].got = !!v; });
     if (d.proj) { project.inv = d.proj[0] || 0; project.stage = d.proj[1] || 0; project.done = !!d.proj[2]; }
     servLoad(d.serv);   /* v0.4 §41 — yoksa hiçbir bina kurulmaz, para kesilmez */
-    if (d.workers) d.workers.forEach(function (r) { hire(r, true); });
+    _pendingWorkers = d.workers || [];
     _pendingWorld = d.world || null;
     if (d.dayState) for (var dk in DAY) if (d.dayState[dk] !== undefined) DAY[dk] = d.dayState[dk];
     if (d.depot) {
@@ -1291,19 +1326,23 @@ function goTo(a, tx, ty, spd, dt, stopR) {
 function actDelay(a) { return a.isPlayer ? 0.075 : 0.1; }
 function tryTake(a, dt, fn) { a.act -= dt; if (a.act > 0) return true; a.act = actDelay(a); fn(); return true; }
 
-function iPickFish(a, s, dt) {
+function iPickFish(a, s, dt, fish) {
   if (!s.stock.length) return false;
-  var it = s.stock[s.stock.length - 1];
+  var idx = -1;
+  for (var i = s.stock.length - 1; i >= 0; i--) if (!fish || s.stock[i].f === fish) { idx = i; break; }
+  if (idx < 0) return false;
+  var it = s.stock[idx];
   if (!fits(a, it)) return false;
   return tryTake(a, dt, function () {
-    s.stock.pop(); a.carry.push(it);
+    s.stock.splice(idx, 1); a.carry.push(it);
     fly(s.x, s.y + 0.9, 8, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.26); sfx.pick();
   });
 }
 function iDropTable(a, tb, dt) {
-  if (tb.inn.length >= tb.max || !hasCarry(a, isFish)) return false;
+  var match = function (it) { return isFish(it) && it.f === tb.fish; };
+  if (tb.inn.length >= tb.max || !hasCarry(a, match)) return false;
   return tryTake(a, dt, function () {
-    var it = popCarry(a, isFish); tb.inn.push(it);
+    var it = popCarry(a, match); tb.inn.push(it);
     fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), tb.x, tb.y, 11, it, 0.26); sfx.drop();
   });
 }
@@ -1512,14 +1551,32 @@ function updatePlayer(dt) {
 /* =========================================================
    ÇALIŞANLAR
    ========================================================= */
-function hire(role, silent) {
+function linePorter(f) {
+  for (var i = 0; i < workers.length; i++) if (workers[i].role === 'hamal' && workers[i].fish === f) return workers[i];
+  return null;
+}
+function firstFreePorterLine() {
+  for (var i = 0; i < LINES.length; i++) if (fishReady(LINES[i].f) && !linePorter(LINES[i].f)) return LINES[i].f;
+  return null;
+}
+function porterCost(f) { return Math.round(380 * Math.pow(1.55, Math.max(0, FISH_ORDER.indexOf(f)))); }
+function hire(role, silent, fish) {
+  if (role === 'hamal') {
+    fish = fish || firstFreePorterLine();
+    if (!fish || linePorter(fish)) return null;
+  }
+  var home = role === 'hamal' ? spots[lineOf(fish).src] : null;
   var w = {
-    role: role, x: 4.6 + rnd(-1, 1), y: 3.6 + rnd(-1, 1), z: 0, vx: 0, vy: 0,
-    carry: [], act: 0, bob: 0, face: 1, table: null, mode: 'load', name: pick(WNAMES)
+    role: role, fish: role === 'hamal' ? fish : null,
+    x: home ? home.x + 1 : 4.6 + rnd(-1, 1), y: home ? home.y + 1.6 : 3.6 + rnd(-1, 1), z: home ? home.z : 0,
+    vx: 0, vy: 0, carry: [], act: 0, bob: 0, face: 1, table: null, mode: 'load', name: pick(WNAMES)
   };
   workers.push(w);
   if (role === 'filetocu') assignFiletocu(w);
-  if (!silent) { toast(T('hired', { i: ROLES[role].icon, n: w.name, w: money(ROLES[role].wage) + perMin() })); }
+  if (!silent) {
+    var nm = role === 'hamal' ? (w.name + ' • ' + NM(FISH[fish].n)) : w.name;
+    toast(T('hired', { i: ROLES[role].icon, n: nm, w: money(ROLES[role].wage) + perMin() }));
+  }
   return w;
 }
 function assignFiletocu(w) {
@@ -1529,19 +1586,26 @@ function assignFiletocu(w) {
   }
   w.table = null;
 }
-function reassignWorkers() { for (var i = 0; i < workers.length; i++) if (workers[i].role === 'filetocu' && !workers[i].table) assignFiletocu(workers[i]); }
+function reassignWorkers() {
+  for (var i = 0; i < workers.length; i++) {
+    if (workers[i].role === 'hamal' && (!workers[i].fish || !lineOf(workers[i].fish))) workers[i].fish = firstFreePorterLine();
+    if (workers[i].role === 'filetocu' && !workers[i].table) assignFiletocu(workers[i]);
+  }
+}
 function openTables() { return tables.filter(function (t) { return !AREAS[t.z].locked; }); }
 function openCounters() { return counters.filter(function (c) { return !AREAS[c.z].locked; }); }
 function bestSpot(w) {
   var best = null, bs = -1e9;
   for (var i = 0; i < spots.length; i++) {
     var s = spots[i]; if (AREAS[s.z].locked) continue;
-    var sc = s.stock.length * 3 - (w ? Math.sqrt(dist2(w.x, w.y, s.x, s.y)) : 0);
+    if (w && w.fish && lineOf(w.fish).src !== i) continue;
+    var count = 0; for (var j = 0; j < s.stock.length; j++) if (!w || !w.fish || s.stock[j].f === w.fish) count++;
+    var sc = count * 3 - (w ? Math.sqrt(dist2(w.x, w.y, s.x, s.y)) : 0);
     if (sc > bs) { bs = sc; best = s; }
   } return best;
 }
 function tableWithSpace(w) {
-  var list = openTables().filter(function (t) { return t.inn.length < t.max; }), best = null, bd = 1e9;
+  var list = openTables().filter(function (t) { return t.inn.length < t.max && (!w || !w.fish || t.fish === w.fish); }), best = null, bd = 1e9;
   for (var i = 0; i < list.length; i++) {
     var d = (w ? dist2(w.x, w.y, list[i].x, list[i].y) : 0) + list[i].inn.length * 2;
     if (d < bd) { bd = d; best = list[i]; }
@@ -1607,19 +1671,23 @@ function updateWorkers(dt) {
   }
 }
 function aiHamal(w, sp, dt) {
+  if (!w.fish || !lineOf(w.fish)) { goTo(w, 3.0, 4.5, sp, dt, 1.0); return; }
+  var ownsFish = function (it) { return isFish(it) && it.f === w.fish; };
   var full = carryW(w) >= ROLES.hamal.cap - 0.5;
   var s = bestSpot(w);
-  var canLoad = s && s.stock.length && fits(w, s.stock[s.stock.length - 1]);
-  if (w.mode !== 'drop' && (full || !canLoad) && hasCarry(w, isFish)) w.mode = 'drop';
-  if (w.mode === 'drop' && !hasCarry(w, isFish)) w.mode = 'load';
+  var loadIt = null;
+  if (s) for (var si = s.stock.length - 1; si >= 0; si--) if (s.stock[si].f === w.fish) { loadIt = s.stock[si]; break; }
+  var canLoad = !!loadIt && fits(w, loadIt);
+  if (w.mode !== 'drop' && (full || !canLoad) && hasCarry(w, ownsFish)) w.mode = 'drop';
+  if (w.mode === 'drop' && !hasCarry(w, ownsFish)) w.mode = 'load';
   if (w.mode === 'drop') {
     var t = tableWithSpace(w);
     if (t) { if (goTo(w, t.x - 0.1, t.y - 0.35, sp, dt, 0.9)) iDropTable(w, t, dt); }
     else goTo(w, 5.2, 4.2, sp, dt, 1.0);
     return;
   }
-  if (canLoad) { if (goTo(w, s.x + 0.5, s.y + 1.3, sp, dt, 0.8)) iPickFish(w, s, dt); return; }
-  if (hasCarry(w, isFish)) { w.mode = 'drop'; return; }
+  if (canLoad) { if (goTo(w, s.x + 0.5, s.y + 1.3, sp, dt, 0.8)) iPickFish(w, s, dt, w.fish); return; }
+  if (hasCarry(w, ownsFish)) { w.mode = 'drop'; return; }
   if (s) goTo(w, s.x + 1.5, s.y + 1.8, sp, dt, 1.2);
 }
 function aiTezgahtar(w, sp, dt) {
@@ -1732,8 +1800,11 @@ function updateStations(dt) {
   if (!AREAS[smoker.z].locked) {
     smoker.belt += dt;
     if (smoker.belt >= 1.0) {
-      var src = tables[2].mat;
-      if (smoker.inn.length < smoker.max && src.items.length) {
+      var src = null;
+      for (var si2 = 0; si2 < tables.length; si2++) {
+        if (tables[si2].z === smoker.z && tables[si2].mat.items.length) { src = tables[si2].mat; break; }
+      }
+      if (src && smoker.inn.length < smoker.max && src.items.length) {
         smoker.belt = 0;
         var mv = src.items.pop(); smoker.inn.push(mv);
         fly(src.x, src.y, 6, smoker.x, smoker.y, 12, mv, 0.5);
@@ -1939,7 +2010,6 @@ function padDone(p) {
 }
 function padBlocked(p) {
   if (p.kind === 'area') return S.rep < AREAS[p.target].rep;
-  if (p.kind === 'hire') return workers.length >= staffCap();
   return false;
 }
 function padReady(p) { return !AREAS[p.z].locked && !padDone(p); }
@@ -1951,7 +2021,7 @@ function applyPad(p) {
   if (p.kind === 'cap') { S.capLvl++; p.lvl++; toast(T('capUp', { n: capacity() })); }
   else if (p.kind === 'spd') { S.spdLvl++; p.lvl++; toast(T('spdUp')); }
   else if (p.kind === 'price') { S.priceLvl++; p.lvl++; toast(T('priceUp')); }
-  else if (p.kind === 'hire') { p.lvl++; hire(p.role); }
+  else if (p.kind === 'hire') { var nw = hire(p.role); if (nw) p.lvl++; }
   else if (p.kind === 'area') {
     AREAS[p.target].locked = false; rebuildCounters(); reassignWorkers();
     toast(T('areaOpen', { n: NM(AREAS[p.target].n) })); sfx.build();
@@ -2594,12 +2664,15 @@ function drawSpot(s) {
   /* sandık */
   isoBox(s.x - 0.6, s.y + 0.45, 1.2, 0.9, 0, 5, '#6b4425', '#573620', '#7c4f2b');
   drawStack(s.x, s.y + 0.9, s.stock, 5, 3.2);
-  labelAt(s.x, s.y + 1.75, 6, T('stNet') + ' ' + s.stock.length, '#bfe9ff', '🎣' + s.stock.length);
+  var si = spots.indexOf(s), parts = [], counts = {}, sl = spotLines(si);
+  for (var q = 0; q < s.stock.length; q++) counts[s.stock[q].f] = (counts[s.stock[q].f] || 0) + 1;
+  for (q = 0; q < sl.length; q++) parts.push(NM(FISH[sl[q].f].n).slice(0, 3) + ':' + (counts[sl[q].f] || 0));
+  labelAt(s.x, s.y + 1.75, 6, T('stNet') + ' • ' + parts.join('  '), '#bfe9ff', '🎣' + s.stock.length);
 }
 function drawTable(tb) {
   isoBox(tb.x - 0.7, tb.y - 0.5, 1.4, 1.0, 0, 11, '#a9743f', '#604126', '#82572f');
   var sx = R(pX(tb.x, tb.y)), sy = R(pY(tb.x, tb.y, 11));
-  px(sx - 7, sy - 4, 14, 5, '#e8dec6'); px(sx - 7, sy - 4, 14, 1, '#1e7580');
+  px(sx - 7, sy - 4, 14, 5, '#e8dec6'); px(sx - 7, sy - 4, 14, 1, FISH[tb.fish].col);
   var chop = tb.cur ? (Math.sin(gameT * (tb.worker ? 13 : 9)) > 0 ? 1 : 0) : 0;
   px(sx + 4, sy - 8 - chop * 3, 1, 5, '#5a4630');
   px(sx + 3, sy - 12 - chop * 3, 3, 4, '#dfe8ee');
@@ -2611,7 +2684,7 @@ function drawTable(tb) {
   }
   if (tb.cur && Math.floor(gameT * 8) % 4 === 0) { dot(sx + 7, sy - 8, '#d5eef2'); dot(sx + 9, sy - 10, '#d5eef2'); }
   drawStack(tb.x - 0.25, tb.y + 0.1, tb.inn, 11, 3.2);
-  labelAt(tb.x, tb.y + 1.1, 8, T('stCut') + (tb.worker ? ' *' : ''), '#ffe6bf', '');
+  labelAt(tb.x, tb.y + 1.1, 8, NM(FISH[tb.fish].n) + ' • ' + T('stCut') + (tb.worker ? ' *' : ''), '#ffe6bf', NM(FISH[tb.fish].n).slice(0, 3));
   isoQuad(tb.mat.x - 0.6, tb.mat.y - 0.5, 1.2, 1.0, 0.4, '#efe6d2');
   isoQuad(tb.mat.x - 0.45, tb.mat.y - 0.36, 0.9, 0.72, 0.6, '#f7f1e2');
   drawStack(tb.mat.x, tb.mat.y, tb.mat.items, 2, 3.2);
@@ -3196,7 +3269,7 @@ function render() {
         bag: w.role === 'hamal' || w.role === 'tezgahtar', cap: w.role === 'filetocu' ? '#efe5cc' : '#304a56',
         capBand: w.role === 'kasiyer' ? '#d9ad4a' : null, must: true, role: w.role,
         sash: w.role === 'filetocu' ? '#f1e8d4' : '#a84836', shirt: '#e7d7b8' });
-      uiText(w.x, w.y, 26, ROLES[w.role].icon, '#fff', 11);
+      uiText(w.x, w.y, 26, ROLES[w.role].icon + (w.fish ? ' ' + NM(FISH[w.fish].n).slice(0, 3) : ''), '#fff', 11);
     });
   })(workers[i]);
   push(player.x + player.y + 0.25, function () {
@@ -3456,9 +3529,24 @@ function barList() {
         s: areaLevelEffect(ar), cost: upCost(ar.up[ar.lvl]),
         go: function (k) { return function () { AREAS[k].lvl++; rebuildCounters(); sfx.build(); toast(T('areaLvUp', { n: NM(AREAS[k].n), l: AREAS[k].lvl })); }; }(i) });
     }
+    /* Her açık balık hattı kendi hamal yuvasına sahiptir; global personel tavanı yoktur. */
+    for (i = 0; i < LINES.length; i++) {
+      var pl = LINES[i], pf = pl.f;
+      if (!fishReady(pf)) continue;
+      var hiredPorter = linePorter(pf);
+      if (hiredPorter) {
+        out.push({ id: 'hp' + pf, ic: '🧺', t: T('linePorter', { n: NM(FISH[pf].n) }),
+          s: hiredPorter.name + ' • ' + T('linePorterOn'), owned: true });
+      } else {
+        out.push({ id: 'hp' + pf, ic: '🧺', t: T('linePorter', { n: NM(FISH[pf].n) }),
+          s: T('linePorterD', { n: NM(FISH[pf].n) }), cost: upCost(porterCost(pf)),
+          go: function (fish) { return function () { hire('hamal', false, fish); }; }(pf) });
+      }
+    }
     for (i = 0; i < PADS.length; i++) {
       var p = PADS[i];
       if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
+      if (p.kind === 'hire' && p.role === 'hamal') continue; /* eski kayıt yuvası: hat kartları devraldı */
       if (AREAS[p.z].locked || p.lvl >= p.max) continue;
       var info = padInfo(p), bl = padBlocked(p);
       out.push({ id: p.id, ic: p.icon, t: info.t + (p.max > 1 ? '  ' + T('level') + p.lvl + '→' + (p.lvl + 1) : ''),
@@ -3668,8 +3756,10 @@ function barHot() {
   for (i = 0; i < PADS.length; i++) {
     var p = PADS[i];
     if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
+    if (p.kind === 'hire' && p.role === 'hamal') continue;
     if (!AREAS[p.z].locked && p.lvl < p.max && !padBlocked(p) && S.cash >= padPrice(p)) hot.level = true;
   }
+  for (i = 0; i < LINES.length; i++) if (fishReady(LINES[i].f) && !linePorter(LINES[i].f) && S.cash >= upCost(porterCost(LINES[i].f))) hot.level = true;
   for (i = 0; i < SLOTS.length; i++) if (slotActive(SLOTS[i]) && !SLOTS[i].b && S.cash >= 900) hot.build = true;
   if (!AREAS[project.z].locked && !project.done && S.cash >= 1000) hot.proj = true;
   if (M && officeReady() && !M.office && S.rep >= ECON.officeRep && S.cash >= upCost(ECON.officeCost)) hot.proj = true;
@@ -3710,7 +3800,8 @@ function renderTab() {
       project.done ? T('done') : pct(Math.round(projPct() * 100)), project.done ? '' : money(project.total - project.inv));
     var used = SLOTS.filter(function (s) { return s.b && slotActive(s); }).length;
     var tot = SLOTS.filter(slotActive).length;
-    h += row('🔨', T('mSlots'), T('mStaffCap') + ': ' + workers.length + '/' + staffCap(), used + '/' + tot);
+    var porterN = workers.filter(function (w) { return w.role === 'hamal' && w.fish; }).length;
+    h += row('🔨', T('mSlots'), T('mLineStaff') + ': ' + porterN + '/' + staffCap(), used + '/' + tot);
     h += row('🧾', T('mOrders'), T('mLost') + ': ' + S.lost + ' - ' + T('mCaught') + ': ' + S.caught, S.served + '');
     /* v0.4 — liman hizmet binaları genel bakış */
     for (i = 0; i < SERV.length; i++) {
@@ -3727,9 +3818,12 @@ function renderTab() {
     if (!workers.length) h += '<div class="empty">' + T('mNoStaff') + '</div>';
     for (i = 0; i < workers.length; i++) {
       var w = workers[i], Rl = ROLES[w.role];
-      h += row(Rl.icon, w.name + ' - ' + NM(Rl.n), NM(Rl.d), money(Rl.wage) + perMin(), T('carry') + ' ' + carryW(w) + '/' + Rl.cap);
+      var duty = w.role === 'hamal' && w.fish ? T('linePorterD', { n: NM(FISH[w.fish].n) }) : NM(Rl.d);
+      h += row(Rl.icon, w.name + ' - ' + NM(Rl.n) + (w.fish ? ' • ' + NM(FISH[w.fish].n) : ''), duty,
+        money(Rl.wage) + perMin(), T('carry') + ' ' + carryW(w) + '/' + Rl.cap);
     }
-    h += row('👷', T('mStaffCap'), '', workers.length + '/' + staffCap());
+    var pCount = workers.filter(function (w2) { return w2.role === 'hamal' && w2.fish; }).length;
+    h += row('⚙️', T('mLineStaff'), '', pCount + '/' + staffCap());
     if (workers.length) h += row('💸', T('mTotalWage'), '', money(wageTotal()) + perMin());
   } else if (curTab === 'urunler') {
     for (i = 0; i < LINES.length; i++) {
@@ -4620,8 +4714,13 @@ function syncTradeBtn() {
 resize();
 load();
 rebuildCounters();
+(_pendingWorkers || []).forEach(function (r) {
+  if (typeof r === 'string') hire(r, true);
+  else if (r && r.role) hire(r.role, true, r.fish);
+});
 worldLoad(_pendingWorld);
 reassignWorkers();
+validateWorld();
 if (!M) M = newMarket();
 lastRepLvl = repLevel();
 applyLang();
