@@ -48,7 +48,7 @@ var STR = {
     evStormM: 'Lodos bastırdı, müşteri azaldı 🌊',
     /* olaylar/uyarılar */
     hired: '{i} {n} işe alındı — {w}',
-    linePorter: '{n} Hattı Hamalı', linePorterD: 'Yalnız {n} sandığı → {n} kesim tahtası',
+    linePorter: '{n} Hattı Hamalı', linePorterD: 'Yalnız bu sandık → {n} kesim tahtası',
     linePorterOn: 'Bu hattın hamalı çalışıyor', mLineStaff: 'Hat otomasyonu',
     levelUp: '⭐ Yeni seviye: {t}!',
     areaOpen: '🔓 {n} açıldı!',
@@ -174,7 +174,7 @@ var STR = {
     evShipM: 'The ferry docked! Customer rush 🚢',
     evStormM: 'Rough sea, fewer customers 🌊',
     hired: '{i} {n} hired — {w}',
-    linePorter: '{n} Line Porter', linePorterD: '{n} crate → {n} cutting table only',
+    linePorter: '{n} Line Porter', linePorterD: 'This crate → {n} cutting table only',
     linePorterOn: 'This line porter is working', mLineStaff: 'Line automation',
     levelUp: '⭐ New rank: {t}!',
     areaOpen: '🔓 {n} unlocked!',
