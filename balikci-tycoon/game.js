@@ -431,26 +431,163 @@ cvs.addEventListener('pointercancel', stickEnd);
 cvs.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
 /* ---------------- ses ---------------- */
-var AC = null, soundOn = true;
-function beep(f, d, t, v) {
-  if (!soundOn) return;
+/* =========================================================
+   SES MOTORU v2 — 0.1 sürümü
+   • Tek master gain + 3 kademeli ses seviyesi (kapalı / kısık / açık)
+   • Her kullanıcı dokunuşunda AudioContext açılır ve resume edilir
+     (iOS/Safari ve mobil Chrome'un otomatik oynatma kilidi için)
+   • Zarf (attack/decay) ile tık sesi yok, kare dalga yumuşatılmış
+   ========================================================= */
+var AC = null, masterGain = null, soundOn = true, volLvl = 2;   /* 0 kapalı, 1 kısık, 2 açık */
+var VOLS = [0, 0.22, 0.5];
+var audioReady = false;
+
+function ensureAudio() {
   try {
-    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
-    var o = AC.createOscillator(), g = AC.createGain();
-    o.type = t || 'square'; o.frequency.value = f; g.gain.value = v || 0.04;
-    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + (d || 0.08));
-    o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + (d || 0.08));
+    if (!AC) {
+      var Ctor = window.AudioContext || window.webkitAudioContext;
+      if (!Ctor) return false;
+      AC = new Ctor();
+      masterGain = AC.createGain();
+      masterGain.gain.value = VOLS[volLvl] || 0;
+      masterGain.connect(AC.destination);
+    }
+    if (AC.state === 'suspended' && AC.resume) AC.resume();
+    audioReady = AC.state === 'running';
+    return audioReady;
+  } catch (e) { return false; }
+}
+function applyVolume() {
+  soundOn = volLvl > 0;
+  if (masterGain && AC) {
+    try { masterGain.gain.setTargetAtTime(VOLS[volLvl] || 0, AC.currentTime, 0.02); }
+    catch (e) { masterGain.gain.value = VOLS[volLvl] || 0; }
+  }
+}
+/* her dokunuş/tuş sesi açma şansı verir — mobilde kritik */
+['pointerdown', 'touchstart', 'keydown', 'mousedown'].forEach(function (ev) {
+  window.addEventListener(ev, function () { ensureAudio(); }, { passive: true });
+});
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden) ensureAudio();
+});
+
+/* --- temel ton: zarflı osilatör --- */
+function tone(f, d, type, v, o) {
+  if (!soundOn || !ensureAudio()) return;
+  o = o || {};
+  try {
+    var t0 = AC.currentTime + (o.at || 0);
+    var osc = AC.createOscillator(), g = AC.createGain();
+    osc.type = type || 'square';
+    osc.frequency.setValueAtTime(f, t0);
+    if (o.to) osc.frequency.exponentialRampToValueAtTime(Math.max(1, o.to), t0 + d);
+    var peak = Math.max(0.0001, v === undefined ? 0.5 : v);
+    var atk = o.atk === undefined ? 0.008 : o.atk;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(peak, t0 + atk);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+    var node = osc;
+    if (o.lp) {                                   /* alçak geçiren: sert kareyi yumuşatır */
+      var bq = AC.createBiquadFilter();
+      bq.type = 'lowpass'; bq.frequency.value = o.lp;
+      node.connect(bq); node = bq;
+    }
+    node.connect(g); g.connect(masterGain);
+    osc.start(t0); osc.stop(t0 + d + 0.02);
   } catch (e) { }
 }
+/* --- gürültü: su sıçraması, satır darbesi, kepenk --- */
+var _noiseBuf = null;
+function noiseBuffer() {
+  if (_noiseBuf) return _noiseBuf;
+  var n = Math.floor(AC.sampleRate * 0.5);
+  _noiseBuf = AC.createBuffer(1, n, AC.sampleRate);
+  var ch = _noiseBuf.getChannelData(0);
+  for (var i = 0; i < n; i++) ch[i] = Math.random() * 2 - 1;
+  return _noiseBuf;
+}
+function noise(d, v, o) {
+  if (!soundOn || !ensureAudio()) return;
+  o = o || {};
+  try {
+    var t0 = AC.currentTime + (o.at || 0);
+    var src = AC.createBufferSource(); src.buffer = noiseBuffer();
+    var bq = AC.createBiquadFilter();
+    bq.type = o.type || 'lowpass';
+    bq.frequency.setValueAtTime(o.f || 1200, t0);
+    if (o.to) bq.frequency.exponentialRampToValueAtTime(Math.max(40, o.to), t0 + d);
+    bq.Q.value = o.q || 1;
+    var g = AC.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0001, v), t0 + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+    src.connect(bq); bq.connect(g); g.connect(masterGain);
+    src.start(t0); src.stop(t0 + d + 0.02);
+  } catch (e) { }
+}
+function melody(notes, type, v, lp) {
+  for (var i = 0; i < notes.length; i++)
+    tone(notes[i][0], notes[i][1], type || 'square', v === undefined ? 0.4 : v, { at: notes[i][2], lp: lp || 2400 });
+}
+
 var sfx = {
-  pick: function () { beep(620 + Math.random() * 120, 0.05, 'square', 0.025); },
-  drop: function () { beep(300 + Math.random() * 60, 0.05, 'square', 0.02); },
-  coin: function () { beep(880, 0.06, 'square', 0.035); setTimeout(function () { beep(1240, 0.08, 'square', 0.03); }, 50); },
-  buy: function () { beep(480, 0.08, 'square', 0.035); setTimeout(function () { beep(720, 0.12, 'square', 0.03); }, 70); },
-  build: function () { beep(220, 0.1, 'square', 0.04); setTimeout(function () { beep(330, 0.1, 'square', 0.035); }, 90); setTimeout(function () { beep(440, 0.16, 'square', 0.03); }, 180); },
-  bad: function () { beep(160, 0.18, 'sawtooth', 0.028); },
-  star: function () { beep(1000, 0.07, 'square', 0.035); setTimeout(function () { beep(1500, 0.11, 'square', 0.03); }, 70); }
+  /* ürün alma: kısa, yumuşak blip */
+  pick: function () { tone(640 + Math.random() * 90, 0.07, 'triangle', 0.34, { lp: 2600, to: 880 }); },
+  /* bırakma: alçak tok ses */
+  drop: function () { tone(210, 0.09, 'sine', 0.42, { to: 140 }); noise(0.05, 0.10, { f: 700, to: 200 }); },
+  /* ağdan balık: su sıçraması */
+  splash: function () { noise(0.22, 0.16, { f: 2400, to: 300, q: 0.7 }); tone(420, 0.10, 'sine', 0.18, { to: 260 }); },
+  /* satır darbesi */
+  chop: function () { noise(0.07, 0.15, { f: 3000, to: 900, q: 1.4 }); tone(180, 0.05, 'square', 0.16, { lp: 900 }); },
+  /* para: iki notalık parlak arpej */
+  coin: function () { melody([[880, 0.07, 0], [1320, 0.11, 0.055]], 'triangle', 0.42, 3200); },
+  /* satın alma: yükselen üçlü */
+  buy: function () { melody([[523, 0.08, 0], [659, 0.08, 0.06], [784, 0.14, 0.12]], 'triangle', 0.36, 3000); },
+  /* inşaat: tok vuruş + yükseliş */
+  build: function () {
+    noise(0.16, 0.18, { f: 900, to: 160, q: 0.8 });
+    melody([[196, 0.12, 0.02], [262, 0.12, 0.11], [392, 0.2, 0.2]], 'triangle', 0.34, 2000);
+  },
+  /* hata / kayıp müşteri: inen sert ton */
+  bad: function () { tone(220, 0.26, 'sawtooth', 0.26, { to: 90, lp: 1100 }); },
+  /* itibar / başarı fanfarı */
+  star: function () { melody([[659, 0.08, 0], [784, 0.08, 0.07], [988, 0.08, 0.14], [1319, 0.22, 0.21]], 'triangle', 0.4, 3600); },
+  /* müşteri geldi: nazik iki nota */
+  cust: function () { melody([[523, 0.06, 0], [698, 0.09, 0.05]], 'sine', 0.2, 2400); },
+  /* arayüz dokunuşu */
+  tap: function () { tone(880, 0.035, 'triangle', 0.2, { lp: 3000 }); },
+  /* anahtar aç/kapa */
+  sw: function (on) {
+    if (on) melody([[600, 0.05, 0], [900, 0.07, 0.04]], 'triangle', 0.3, 2800);
+    else melody([[700, 0.05, 0], [420, 0.08, 0.04]], 'triangle', 0.28, 2000);
+  },
+  /* gün başlangıcı: sabah motifi */
+  dayIn: function () { melody([[392, 0.14, 0], [523, 0.14, 0.12], [659, 0.26, 0.24]], 'sine', 0.3, 2600); },
+  /* gün sonu: akşam motifi */
+  dayOut: function () { melody([[523, 0.16, 0], [440, 0.16, 0.14], [349, 0.3, 0.28]], 'sine', 0.3, 2200); },
+  /* mezat çanı */
+  bell: function () {
+    tone(1568, 0.6, 'sine', 0.26, { atk: 0.002, lp: 5000 });
+    tone(2093, 0.45, 'sine', 0.12, { atk: 0.002, at: 0.01 });
+  },
+  /* balık pazarı günü açılışı */
+  market: function () { melody([[523, 0.1, 0], [659, 0.1, 0.09], [784, 0.1, 0.18], [1047, 0.3, 0.27]], 'square', 0.26, 2600); }
 };
+/* --- çok hafif liman ortam sesi: dalga soluğu (yalnız tam seste) --- */
+var ambT = 0;
+function updateAmbient(dt) {
+  if (volLvl < 2 || !soundOn || !audioReady) return;
+  ambT -= dt;
+  if (ambT > 0) return;
+  ambT = rnd(5.5, 9.5);
+  noise(2.2, 0.030, { f: 520, to: 180, q: 0.5 });          /* kıyıya vuran dalga */
+  if (Math.random() < 0.28) {                                /* uzakta martı */
+    var f0 = rnd(900, 1150);
+    tone(f0, 0.10, 'triangle', 0.045, { to: f0 * 1.5, lp: 2600 });
+    tone(f0 * 1.4, 0.09, 'triangle', 0.035, { at: 0.13, to: f0, lp: 2600 });
+  }
+}
 
 /* =========================================================
    İÇERİK
@@ -1125,6 +1262,7 @@ function runAuction() {
     }
   }
   if (!sold) return null;
+  sfx.bell();
   S.cash += gain; noteDayIncome(gain); noteFishIncome(gain * 0.5);
   if (at) addFloat(at.x, at.y - 0.6, '+' + money(gain), '#ffe27a');
   return { n: sold, v: gain };
@@ -1138,6 +1276,7 @@ function endDay() {
   };
   if (M && M.office) closeDay();                 /* borsa günü oyun günüyle aynı */
   day.phase = 'summary';
+  sfx.dayOut();
   showDayCard();
   save();
 }
@@ -1149,6 +1288,7 @@ function beginNextDay(skipPrep) {
   day.t = 0;
   if (day.market && !skipPrep) { day.phase = 'prep'; showPrepCard(); return; }
   day.phase = 'intro'; day.ph = 1.7;
+  sfx.dayIn();
   syncPause();
   if (undecidedStalls().length) openStallScreen();   /* gün başı: yeni tezgâh kararı */
 }
@@ -1352,7 +1492,7 @@ var SAVE_KEY = 'balikci_tycoon_v3';
 function save() {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: 4, lang: lang, snd: soundOn ? 1 : 0, zoom: zoomLvl,
+      v: 5, lang: lang, snd: volLvl, zoom: zoomLvl,
       at: Date.now(), play: Math.round(S.play || 0),
       cash: S.cash, rep: S.rep, capLvl: S.capLvl, spdLvl: S.spdLvl, priceLvl: S.priceLvl,
       served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
@@ -1374,7 +1514,7 @@ function load() {
     var raw = localStorage.getItem(SAVE_KEY); if (!raw) return false;
     var d = JSON.parse(raw);
     if (d.lang) lang = d.lang;
-    if (d.snd !== undefined) soundOn = !!d.snd;
+    if (d.snd !== undefined) { volLvl = clamp(d.snd === true ? 2 : (d.snd | 0), 0, 2); applyVolume(); }
     if (d.zoom) zoomLvl = d.zoom;
     S.cash = d.cash || 0; S.rep = d.rep || 0; S.capLvl = d.capLvl || 0; S.spdLvl = d.spdLvl || 0;
     S.priceLvl = d.priceLvl || 0; S.served = d.served || 0; S.lost = d.lost || 0;
@@ -1453,6 +1593,7 @@ function refreshSaveInfo() {
 /* --- DURAKLATMA (pause) --- */
 var paused = false;
 function anyOverlay() {
+  if (hiddenPause) return true;                 /* sekme arkada: oyun donar */
   return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') ||
     !el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden') ||
     !el.stallScr.classList.contains('hidden');
@@ -1568,7 +1709,8 @@ function iPickFish(a, s, dt) {
   if (!fits(a, it)) return false;
   return tryTake(a, dt, function () {
     s.stock.splice(idx, 1); a.carry.push(it);
-    fly(s.x, s.y + 0.9, 8, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.26); sfx.pick();
+    fly(s.x, s.y + 0.9, 8, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.26);
+    if (a.isPlayer) sfx.splash(); else sfx.pick();
   });
 }
 /* v2.1: masa yalnız kendi bölgesinin balığını alır */
@@ -1999,6 +2141,7 @@ function updateStations(dt) {
   for (i = 0; i < counters.length; i++) if (!AREAS[counters[i].z].locked) updateCounter(counters[i], dt);
   servTick(dt);                       /* v0.4 — hizmet binası gelir/inşaat döngüsü */
   updateCats(dt);                     /* v2.0 — liman kedileri */
+  updateAmbient(dt);                  /* v0.1 — hafif liman ortam sesi */
   safe.pop = Math.max(0, safe.pop - dt * 3);
 }
 
@@ -2056,6 +2199,15 @@ function updateCounter(c, dt) {
   if (c.spawnT <= 0 && freeIdx >= 0) {
     c.spawnT = 5.4 * rnd(0.75, 1.3);
     if (!daySpawnOK()) return;                 /* gün kapanışında yeni müşteri gelmez (§2) */
+    /* v0.1 adalet: stoksuz tezgâha müşteri seyrek gelir, kuyrukta uzadıkça daha da seyrek.
+       Umutsuz müşteri doğup boşuna kızmasın. */
+    var bekleyen = 0;
+    for (var bq = 0; bq < c.slots.length; bq++) if (c.slots[bq]) bekleyen++;
+    if (!c.buffer.length) c.spawnT *= 3.2;                  /* stoksuz tezgâh: müşteri seyrekleşir */
+    if (bekleyen >= 2) c.spawnT *= 1 + (bekleyen - 1) * 0.7; /* kuyruk uzadıkça daha da seyrek */
+    /* liman geneli: servis edilemeyen talep birikmişse akış genel olarak yavaşlar */
+    var toplamBekleyen = waitingCount(), acikTezgah = openStallCount();
+    if (acikTezgah && toplamBekleyen > acikTezgah * 2) c.spawnT *= 1 + (toplamBekleyen / (acikTezgah * 2) - 1) * 0.9;
     /* tezgâh kullanılamıyorsa bu türe müşteri gelmez */
     if (!c.fish || !fishReady(c.fish)) return;
     var lvl = repLevel();
@@ -2078,6 +2230,7 @@ function updateCounter(c, dt) {
         mood: 1, hair: irnd(0, 2), tone: irnd(0, 2)
       };
       c.slots[freeIdx] = cu; customers.push(cu);
+      if (dist2(player.x, player.y, c.x, c.y) < 90) sfx.cust();
     }
   }
   c.eatT -= dt;
@@ -2344,10 +2497,14 @@ function isoBox(x, y, w, h, z0, z1, top, left, right) {
         [pX(bx, by), pY(bx, by, z0)], [pX(x, by), pY(x, by, z0)]], left);
   isoQuad(x, y, w, h, z1, top);
 }
+/* v0.1: iki katmanlı yumuşak gölge — dış halka soluk, iç çekirdek koyu */
 function shadow(x, y, r) {
-  ctx.save(); ctx.globalAlpha = 0.22;
   var cx = pX(x, y), cy = pY(x, y, 0);
-  quad([[cx - r * 6, cy], [cx, cy - r * 3], [cx + r * 6, cy], [cx, cy + r * 3]], '#123020');
+  ctx.save();
+  ctx.globalAlpha = 0.09;
+  quad([[cx - r * 8, cy], [cx, cy - r * 4], [cx + r * 8, cy], [cx, cy + r * 4]], '#16323f');
+  ctx.globalAlpha = 0.17;
+  quad([[cx - r * 5.4, cy], [cx, cy - r * 2.7], [cx + r * 5.4, cy], [cx, cy + r * 2.7]], '#14303c');
   ctx.restore();
 }
 function txt(s, x, y, c, font, align) {
@@ -3172,7 +3329,8 @@ function drawGull(g) {
 /* --- deniz: bantlar + parıltı + kıyı köpüğü --- */
 function drawSea() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  var bands = [['#17607f', 0], ['#1c7398', 0.28], ['#238bb0', 0.52], ['#2ea0c2', 0.76]];
+  var bands = [['#17607f', 0], ['#1a6b8c', 0.16], ['#1d7598', 0.30], ['#2180a4', 0.44],
+               ['#258bb0', 0.58], ['#2995bb', 0.72], ['#2ea0c6', 0.86]];
   for (var i = 0; i < bands.length; i++) {
     var y0 = Math.floor(H * bands[i][1]);
     var y1 = i < bands.length - 1 ? Math.floor(H * bands[i + 1][1]) : H;
@@ -3240,8 +3398,28 @@ function drawLand() {
   ctx.save(); ctx.globalAlpha = 0.5;
   for (var i = 0; i < grass.length; i++) px(pX(grass[i].x, grass[i].y), pY(grass[i].x, grass[i].y, 0), 2, 1, grass[i].c);
   ctx.restore();
+  /* v0.1: ıslak kum bandı — kara/deniz geçişini yumuşatır */
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  ctx.strokeStyle = '#b8a97e'; ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(R(pX(LANDX - 0.15, -0.55)), R(pY(LANDX - 0.15, -0.55, 0)));
+  ctx.lineTo(R(pX(-0.55, -0.55)), R(pY(-0.55, -0.55, 0)));
+  ctx.lineTo(R(pX(-0.55, LANDY - 0.15)), R(pY(-0.55, LANDY - 0.15, 0)));
+  ctx.lineTo(R(pX(LANDX - 0.15, LANDY - 0.15)), R(pY(LANDX - 0.15, LANDY - 0.15, 0)));
+  ctx.stroke();
+  /* köpük: hafifçe nefes alır */
+  ctx.globalAlpha = 0.18 + Math.sin(gameT * 0.7) * 0.06;
+  ctx.strokeStyle = '#e8f6fb'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(R(pX(LANDX + 0.1, -0.82)), R(pY(LANDX + 0.1, -0.82, 0)));
+  ctx.lineTo(R(pX(-0.82, -0.82)), R(pY(-0.82, -0.82, 0)));
+  ctx.lineTo(R(pX(-0.82, LANDY + 0.1)), R(pY(-0.82, LANDY + 0.1, 0)));
+  ctx.lineTo(R(pX(LANDX + 0.1, LANDY + 0.1)), R(pY(LANDX + 0.1, LANDY + 0.1, 0)));
+  ctx.stroke();
+  ctx.restore();
   /* rıhtım kenarı (tüm çevre) */
-  ctx.strokeStyle = '#b3aa93'; ctx.lineWidth = 3;
+  ctx.strokeStyle = '#bdb49c'; ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(R(pX(LANDX, -0.7)), R(pY(LANDX, -0.7, 0)));
   ctx.lineTo(R(pX(-0.7, -0.7)), R(pY(-0.7, -0.7, 0)));
@@ -3249,7 +3427,7 @@ function drawLand() {
   ctx.lineTo(R(pX(LANDX, LANDY)), R(pY(LANDX, LANDY, 0)));
   ctx.lineTo(R(pX(LANDX, -0.7)), R(pY(LANDX, -0.7, 0)));
   ctx.stroke();
-  ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(R(pX(LANDX + 0.35, -1.05)), R(pY(LANDX + 0.35, -1.05, 0)));
   ctx.lineTo(R(pX(-1.05, -1.05)), R(pY(-1.05, -1.05, 0)));
@@ -3505,6 +3683,8 @@ function drawTable(tb) {
   px(sx - 3, sy - 7, 2, 1, '#7a5a30'); px(sx + 1, sy - 6, 2, 1, '#7a5a30');
   /* satır — çalışırken iner kalkar */
   var chop = tb.cur ? (phase2(gameT, tb.worker ? 7 : 4.5) ? 1 : 0) : 0;
+  if (tb.cur && chop && !tb._ch) sfx.chop();
+  tb._ch = chop;
   var cy = sy - 9 - chop * 4;
   px(sx + 5, cy, 2, 6, '#5a4630');                      /* sap */
   px(sx + 3, cy - 4, 6, 4, '#e2eaf0');                  /* ağız */
@@ -4151,6 +4331,22 @@ function drawPlot(p) {
 }
 
 /* ---------- v1.2: gün ışığı tonu (§2 çok hafif) ---------- */
+/* köşeleri hafif koyultan yumuşak vinyet */
+var _vig = null, _vigW = 0, _vigH = 0;
+function drawVignette() {
+  if (!_vig || _vigW !== W || _vigH !== H) {
+    _vigW = W; _vigH = H;
+    try {
+      var g = ctx.createRadialGradient(W / 2, H * 0.48, Math.min(W, H) * 0.52,
+                                       W / 2, H * 0.48, Math.max(W, H) * 0.78);
+      g.addColorStop(0, 'rgba(8,24,36,0)');
+      g.addColorStop(1, 'rgba(8,24,36,0.24)');
+      _vig = g;
+    } catch (e) { _vig = null; }
+  }
+  if (!_vig) return;
+  ctx.save(); ctx.fillStyle = _vig; ctx.fillRect(0, 0, W, H); ctx.restore();
+}
 function dayTint() {
   var p = clamp(day.t / DAY_LEN, 0, 1), a = 0, col = '#ffb27a';
   if (day.phase === 'closing' || day.phase === 'summary') { a = 0.30; col = '#2b3f63'; }
@@ -4529,6 +4725,7 @@ function render() {
   if (S.started) { var tg = tutorialTarget(); if (tg) drawArrow(tg); }
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  drawVignette();                           /* v0.1 — kenarları yumuşatan vinyet */
   if (S.started) dayTint();                 /* v1.2 — sabah/gündüz/akşam tonu */
   ctx.translate(camOX, camOY);
   renderUI();
@@ -5077,7 +5274,7 @@ function renderStallScreen() {
       if (!c) return;
       c.seen = true;
       toggleStall(c);
-      sfx.pick();
+      sfx.sw(c.open);
       renderStallScreen();
     };
   });
@@ -5194,7 +5391,7 @@ el.dayGo.onclick = function () {
 el.prepGo.onclick = function () {
   el.prepScr.classList.add('hidden');
   day.phase = 'intro'; day.ph = 1.7;
-  syncPause(); save(); sfx.star();
+  syncPause(); save(); sfx.market();
 };
 
 /* ---------- ayarlar ---------- */
@@ -5204,9 +5401,11 @@ Array.prototype.forEach.call(document.querySelectorAll('#langSeg button,#langSeg
 });
 Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (b) {
   b.onclick = function () {
-    soundOn = b.dataset.s === '1';
+    volLvl = clamp(parseInt(b.dataset.s, 10) || 0, 0, 2);
+    applyVolume(); ensureAudio();
     Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.remove('on'); });
     b.classList.add('on'); save();
+    if (volLvl) sfx.tap();                       /* seçilen seviyeyi hemen duy */
   };
 });
 Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), function (b) {
@@ -5229,7 +5428,7 @@ el.saveQuitBtn.onclick = function () { if (!S.started) { toast(T('noRun')); sfx.
 el.newBtn.onclick = function () { if (confirm(T('newAsk'))) wipe(); };
 el.resetBtn.onclick = function () { if (confirm(T('resetAsk'))) wipe(); };
 function syncSettingsUI() {
-  Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.toggle('on', (o.dataset.s === '1') === soundOn); });
+  Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.s, 10) === volLvl); });
   Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.z, 10) === zoomLvl); });
 }
 
@@ -5242,7 +5441,7 @@ function frame(ts) {
   var dt = Math.min(0.05, (ts - last) / 1000 || 0);
   last = ts;
   if (!S.started) { gameT += dt; updateFx(dt); render(); return; }
-  if (paused) { render(); return; }          /* duraklatıldı: dünya tamamen donar */
+  if (paused) { if (!document.hidden) render(); return; }   /* duraklatıldı: dünya tamamen donar */
   gameT += dt; S.play += dt;
   updatePlayer(dt);
   updateWorkers(dt);
@@ -5265,7 +5464,7 @@ function start() {
   document.getElementById('objective').classList.remove('hidden');
   el.devbar.classList.remove('hidden');
   S.started = true; paused = false; syncPause();
-  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { } }
+  ensureAudio(); applyVolume();
 }
 el.playBtn.onclick = start;
 /* ESC: oyunu duraklat / devam ettir */
@@ -5281,7 +5480,12 @@ window.addEventListener('keydown', function (e) {
   openPauseMenu();
 });
 window.addEventListener('beforeunload', save);
-document.addEventListener('visibilitychange', function () { if (document.hidden) save(); });
+var hiddenPause = false;
+document.addEventListener('visibilitychange', function () {
+  if (document.hidden) { save(); hiddenPause = true; }
+  else { hiddenPause = false; last = 0; }      /* geri dönünce dev bir dt birikmesin */
+  syncPause();
+});
 
 var ECON = {
   dayLen: 300,            /* 1 Pazar Günü = 5 dk aktif oynanış (§4.1) */
@@ -6092,6 +6296,9 @@ window.BT = {
   servValidate: servValidate,
   servRates: function () { return { fish: fishRate, serv: servRate, cap: Math.max(12, fishRate * 0.30) }; },
   servUnlock: servUnlock, servCount: servCount,
+  T: T, STR: STR, lang: function () { return lang; },
+  sfx: sfx, audio: function () { return { state: AC && AC.state, vol: masterGain && +masterGain.gain.value.toFixed(3), lvl: volLvl, on: soundOn, ready: audioReady }; },
+  setVol: function (v) { volLvl = clamp(v | 0, 0, 2); applyVolume(); ensureAudio(); return volLvl; },
   /* duraklatma + kayıt */
   paused: function () { return paused; },
   saveNow: function () { manualSave(); return saveMeta(); },

@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — v2.3 (Anadolu Pixel Art)
+# 🐟 Balıkçı Tycoon — **v0.1** (ilk oynanabilir sürüm)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -12,7 +12,52 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
-## v2.1 — Bölge sistemi, oyuncunun açtığı tezgâhlar, deponun kaldırılması
+## v0.1 — İlk oynanabilir sürüm (cila + hata avı)
+
+Oyun bu sürümde "denenebilir" sayılıyor: baştan sona oynanıyor, ses çalışıyor, bilinen hata yok.
+
+### Ses motoru baştan yazıldı
+Eski ses sistemi teknik olarak çalışıyordu ama **duyulmuyordu**: master gain yoktu ve efekt seviyesi 0.025'ti.
+
+- Tek **master gain** + **3 kademeli ses**: 🔇 kapalı / 🔉 kısık / 🔊 açık (eskiden sadece aç-kapa)
+- Her dokunuş, tuş ve sekmeye dönüşte `AudioContext` açılır ve `resume` edilir — iOS/Safari ve mobil Chrome'un otomatik oynatma kilidi için
+- **Zarf (attack/decay)** eklendi: tık sesi yok; kare dalgalar alçak geçiren filtreden geçiyor
+- **16 efekt**: balık sıçraması, satır darbesi, para, satın alma, inşaat, itibar fanfarı, müşteri gelişi, tezgâh anahtarı, gün başı/sonu motifi, mezat çanı, pazar günü açılışı…
+- Tam seste çok hafif **liman ortam sesi**: kıyıya vuran dalga ve uzakta martı
+
+### Adalet: umutsuz müşteri yok
+Eskiden stoksuz bir tezgâha müşteri yağıyor ve kesin kaybediliyordu. Artık:
+- Stoksuz tezgâha müşteri **3,2 kat seyrek** gelir
+- Kuyruk uzadıkça o tezgâha akış daha da yavaşlar
+- Liman genelinde servis edilemeyen talep birikmişse akış genel olarak damperlenir
+
+**Ölçüm:** tam açık limanda kayıp oranı **%27 → %15**, ekranda aynı anda bekleyen müşteri **31 → 13**.
+
+### Görsel yumuşatma
+- **Vinyet**: ekran kenarları hafifçe koyulaşır, merkez öne çıkar
+- **İki katmanlı gölge**: sert elmas gölge yerine soluk dış halka + koyu çekirdek
+- **Deniz** 4 bant yerine **7 bant** — basamaklar yumuşadı
+- **Kıyı geçişi**: ıslak kum bandı + nefes alan köpük şeridi
+- **Arayüz**: saf siyah 3px kenarlar yerine 2px lacivert + üstte açık kenar, panellerde dikey gradyan, butonlarda basılma hissi ve gölge, toast yumuşak geçişle giriyor
+
+### Diğer düzeltmeler
+- **Sekme arkadayken oyun duraklıyor** — telefonda başka uygulamaya geçince müşteri kaybetmiyorsun
+- Geri dönüşte biriken dev `dt` sıçraması engellendi
+- Ses seviyesi kayda yazılıyor (3 kademe)
+
+### Doğrulama
+| Test | Sonuç |
+|---|---|
+| 80 sn ağır oynanış (10 çalışan, 6 hat, 4 gün) | konsol hatası **0**, NaN **0**, 60 FPS |
+| Yanlış masadaki balık / yanlış tezgâhtaki ürün | **0 / 0** |
+| Kapalı tezgâhta bekleyen müşteri | **0** |
+| Tüm ekranlar iki dilde tıklama turu | sorun **yok** |
+| 223 i18n anahtarı TR+EN | eksik **yok** |
+| Ses: 16 efekt, 3 kademe | master gain 0 / 0,21 / 0,50 |
+
+---
+
+## v2.3 — Bölge sistemi, oyuncunun açtığı tezgâhlar, deponun kaldırılması
 
 Bu sürüm üç somut oynanış şikâyetini çözüyor.
 

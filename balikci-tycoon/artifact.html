@@ -8,6 +8,7 @@
     --pnl:#14293c; --pnl2:#1d3a52; --edge:#0a1a27;
     --gold:#ffc94a; --green:#5fd37a; --red:#e5533d; --sea:#1d6c8f;
     --kilim1:#a83d2b; --kilim2:#d9a441; --kilim3:#2a4c7d;
+    --edge2:#1b354b; --soft:rgba(255,255,255,.07);
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{width:100%;height:100%;overflow:hidden;background:#0d2436;color:var(--ink);
@@ -24,8 +25,8 @@
   /* ---------- HUD ---------- */
   .hud{position:fixed;top:0;left:0;right:0;padding:6px;display:flex;gap:5px;align-items:flex-start;
     pointer-events:none;z-index:5;padding-top:calc(6px + env(safe-area-inset-top,0px))}
-  .chip{background:var(--pnl);border:3px solid var(--edge);padding:2px 6px;font-size:12px;
-    border-top-color:#2a4c7d;
+  .chip{background:linear-gradient(180deg,#1a3348,#122536);border:2px solid var(--edge);
+    border-top-color:#2d5170;padding:3px 7px;font-size:12px;
     display:flex;align-items:center;gap:5px;line-height:1.05;white-space:nowrap;
     box-shadow:inset -2px -2px 0 rgba(0,0,0,.3),inset 2px 2px 0 rgba(255,255,255,.06)}
   .chip i{font-style:normal;font-size:12px}
@@ -43,15 +44,17 @@
 
   #objective{position:fixed;left:50%;transform:translateX(-50%);
     top:calc(46px + env(safe-area-inset-top,0px));z-index:5;pointer-events:none;
-    background:rgba(10,26,39,.82);border:2px solid var(--edge);padding:3px 9px;font-size:11.5px;
+    background:rgba(16,36,52,.86);border:2px solid var(--edge);border-top-color:var(--edge2);
+    padding:4px 10px;font-size:11.5px;
     text-align:center;max-width:78vw;line-height:1.15;white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis;display:flex;gap:6px;align-items:center}
   #objective .lbl{font-size:9px;letter-spacing:1px;color:var(--gold);flex:0 0 auto}
   #queueHint{position:fixed;right:6px;top:calc(104px + env(safe-area-inset-top,0px));z-index:5;
     background:#4a1710;border:3px solid #190603;color:#ffc1b3;padding:4px 8px;font-size:12px;pointer-events:none}
-  #toast{position:fixed;left:50%;bottom:calc(64px + env(safe-area-inset-bottom,0px));transition:.2s;
-    transform:translateX(-50%) translateY(10px);background:var(--gold);color:#3a2401;
-    padding:7px 14px;font-size:14px;z-index:8;border:3px solid #7a5406;opacity:0;transition:.2s;
+  #toast{position:fixed;left:50%;bottom:calc(64px + env(safe-area-inset-bottom,0px));
+    transform:translateX(-50%) translateY(10px);background:linear-gradient(180deg,#ffd76a,#f0b833);
+    color:#3a2401;padding:8px 15px;font-size:14px;z-index:8;border:2px solid #8a5f08;
+    box-shadow:0 3px 0 rgba(4,12,20,.4);opacity:0;transition:.25s cubic-bezier(.2,.9,.3,1);
     text-align:center;max-width:88vw;pointer-events:none}
   #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
   body.panel #toast{bottom:calc(42vh + 60px)}
@@ -60,7 +63,8 @@
   #devbar{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:3px;padding:4px 4px;
     padding-bottom:calc(4px + env(safe-area-inset-bottom,0px));
     background:linear-gradient(180deg,rgba(10,26,39,.0),rgba(10,26,39,.85) 40%)}
-  .dtab{flex:1;background:var(--pnl);border:3px solid var(--edge);color:var(--ink2);
+  .dtab{flex:1;background:linear-gradient(180deg,#1a3348,#122536);border:2px solid var(--edge);
+    border-top-color:var(--edge2);color:var(--ink2);
     font-family:inherit;font-size:8.4px;letter-spacing:0;padding:3px 1px 4px;cursor:pointer;white-space:nowrap;overflow:hidden;
     display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1;
     box-shadow:inset -2px -2px 0 rgba(0,0,0,.3),inset 2px 2px 0 rgba(255,255,255,.06)}
@@ -81,7 +85,7 @@
   #dpClose{min-width:28px;height:28px;font-size:13px}
   .dpcards{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding-bottom:4px;
     scroll-snap-type:x proximity}
-  .dcard{flex:0 0 152px;background:var(--pnl2);border:3px solid var(--edge);padding:7px 7px 8px;
+  .dcard{flex:0 0 152px;background:linear-gradient(180deg,#23445f,#1a3549);border:2px solid var(--edge);padding:8px 8px 9px;
     scroll-snap-align:start;display:flex;flex-direction:column;gap:2px;position:relative}
   .dcard::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;
     background:repeating-linear-gradient(90deg,
@@ -89,8 +93,10 @@
   .dcard .ic{font-size:20px;line-height:1}
   .dcard b{font-size:11.5px;color:var(--ink);letter-spacing:.3px;line-height:1.2}
   .dcard small{font-size:10.5px;color:var(--ink2);line-height:1.25;min-height:26px}
-  .dcard .buy{margin-top:3px;background:var(--green);border:3px solid #17532a;color:#062f14;
-    font-family:inherit;font-size:12.5px;padding:6px 2px;cursor:pointer;letter-spacing:.5px}
+  .dcard .buy{margin-top:4px;background:linear-gradient(180deg,#6fe08a,#4cc46a);
+    border:2px solid #1b5d31;color:#052b12;
+    font-family:inherit;font-size:12.5px;padding:7px 2px;cursor:pointer;letter-spacing:.5px;
+    box-shadow:0 2px 0 rgba(4,12,20,.32)}
   .dcard .buy:active{transform:translate(1px,1px)}
   .dcard .buy.no{background:var(--pnl);border-color:var(--edge);color:#ff9b8a;font-size:10.5px}
   .dcard .buy.cf{background:var(--gold);border-color:#7a5406;color:#3a2401}
@@ -156,9 +162,9 @@
   .overlay{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
     padding:14px;background:rgba(6,18,28,.9)}
   .overlay.hidden{display:none}
-  .card{background:var(--pnl);border:3px solid var(--edge);padding:16px;max-width:420px;width:100%;
-    max-height:90vh;overflow-y:auto;position:relative;
-    box-shadow:inset -3px -3px 0 rgba(0,0,0,.35),inset 3px 3px 0 rgba(255,255,255,.07)}
+  .card{background:linear-gradient(180deg,#183149,#112333);border:3px solid var(--edge);
+    padding:17px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;position:relative;
+    box-shadow:inset -3px -3px 0 rgba(0,0,0,.28),inset 3px 3px 0 var(--soft),0 6px 0 rgba(4,12,20,.45)}
   /* kilim şeridi: kartın üst kenarında baklava motifi */
   .card::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;
     background:repeating-linear-gradient(90deg,
@@ -169,12 +175,17 @@
   .card h2{font-size:19px;color:var(--gold);text-align:center;margin-bottom:10px;letter-spacing:1px}
   .card p{font-size:13px;line-height:1.5;text-align:center;margin-bottom:8px;color:var(--ink2)}
   .card ul{font-size:13px;line-height:1.7;margin:8px 0 12px;padding-left:18px;text-align:left}
-  .go{margin-top:10px;width:100%;background:var(--green);border:3px solid #17532a;color:#062f14;
+  .go{margin-top:10px;width:100%;background:linear-gradient(180deg,#6fe08a,#4cc46a);
+    border:3px solid #1b5d31;color:#052b12;
     padding:12px;font-size:19px;cursor:pointer;font-family:inherit;letter-spacing:1px;
-    box-shadow:inset -3px -3px 0 rgba(0,0,0,.25),inset 3px 3px 0 rgba(255,255,255,.25)}
+    box-shadow:inset -3px -3px 0 rgba(0,0,0,.18),inset 3px 3px 0 rgba(255,255,255,.3),0 3px 0 rgba(4,12,20,.4);
+    transition:transform .06s}
   .go:active{transform:translate(2px,2px)}
-  .alt{margin-top:8px;width:100%;background:var(--pnl2);border:3px solid var(--edge);color:var(--ink);
-    padding:10px;font-size:15px;cursor:pointer;font-family:inherit;letter-spacing:1px}
+  .alt{margin-top:8px;width:100%;background:linear-gradient(180deg,#23445f,#1a3549);
+    border:2px solid var(--edge);border-top-color:var(--edge2);color:var(--ink);
+    padding:11px;font-size:15px;cursor:pointer;font-family:inherit;letter-spacing:1px;
+    box-shadow:0 3px 0 rgba(4,12,20,.35);transition:transform .06s}
+  .alt:active,.go:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(4,12,20,.35)}
   .danger{color:#ff9b8a;border-color:#3a1109}
   .good{color:#9df5b0;border-color:#17532a}
   #dayBanner{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);z-index:9;
@@ -214,16 +225,19 @@
     font-size:12px;letter-spacing:1px;padding:6px 12px;pointer-events:none}
   #pauseBadge.hidden{display:none}
   .seg{display:flex;gap:6px;margin:6px 0 2px}
-  .seg button{flex:1;background:var(--pnl2);border:3px solid var(--edge);color:var(--ink2);
-    padding:9px 4px;font-size:14px;cursor:pointer;font-family:inherit;letter-spacing:1px}
+  .seg button{flex:1;background:linear-gradient(180deg,#23445f,#1a3549);border:2px solid var(--edge);
+    border-top-color:var(--edge2);color:var(--ink2);
+    padding:10px 4px;font-size:14px;cursor:pointer;font-family:inherit;letter-spacing:1px;
+    box-shadow:0 2px 0 rgba(4,12,20,.3)}
   .seg button.on{background:var(--gold);color:#3a2401;border-color:#7a5406}
   .lbl{font-size:11px;color:var(--ink2);letter-spacing:1.5px;margin-top:10px;display:block}
   .tabs{display:flex;gap:4px;margin-bottom:10px}
-  .tab{flex:1;background:var(--pnl2);border:3px solid var(--edge);color:var(--ink2);
-    padding:8px 2px;font-size:11px;cursor:pointer;font-family:inherit;letter-spacing:.5px}
+  .tab{flex:1;background:linear-gradient(180deg,#23445f,#1a3549);border:2px solid var(--edge);
+    border-top-color:var(--edge2);color:var(--ink2);
+    padding:9px 2px;font-size:11px;cursor:pointer;font-family:inherit;letter-spacing:.5px}
   .tab.on{background:var(--gold);color:#3a2401;border-color:#7a5406}
-  .row{display:flex;align-items:center;gap:8px;background:var(--pnl2);border:3px solid var(--edge);
-    border-left-color:var(--kilim2);padding:7px 9px;margin-bottom:5px}
+  .row{display:flex;align-items:center;gap:8px;background:linear-gradient(180deg,#22425c,#1a3448);
+    border:2px solid var(--edge);border-left:3px solid var(--kilim2);padding:8px 10px;margin-bottom:5px}
   .row .ic{font-size:19px;width:24px;text-align:center}
   .row .tx{flex:1;font-size:12px;line-height:1.3}
   .row .tx small{display:block;color:var(--ink2);font-size:10.5px}
@@ -231,6 +245,7 @@
   .row .vl small{display:block;color:#ffb27a;font-size:10px}
   .empty{color:var(--ink2);font-size:12.5px;text-align:center;padding:12px}
   .flag{letter-spacing:0}
+  .ver{text-align:center;font-size:10px;letter-spacing:2px;color:var(--ink2);opacity:.55;margin:-4px 0 6px}
   /* --- pixel ikon --- */
   .pxi{display:inline-block;width:18px;height:18px;vertical-align:-4px;
     background-size:100% 100%;background-repeat:no-repeat;image-rendering:pixelated;
@@ -281,6 +296,7 @@
   <div class="card">
     <h1>BALIKÇI<br>TYCOON</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
+    <div class="ver">v0.1</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -304,8 +320,9 @@
     </div>
     <span class="lbl" id="setSound">SES</span>
     <div class="seg" id="sndSeg">
-      <button data-s="1" class="on">🔊</button>
       <button data-s="0">🔇</button>
+      <button data-s="1">🔉</button>
+      <button data-s="2" class="on">🔊</button>
     </div>
     <span class="lbl" id="setZoom">GÖRÜNTÜ / ZOOM</span>
     <div class="seg" id="zoomSeg">
