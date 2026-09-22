@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — v2.2 (Anadolu Pixel Art)
+# 🐟 Balıkçı Tycoon — v2.3 (Anadolu Pixel Art)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -47,15 +47,25 @@ Ayrıca hamal artık ağdan **tezgâhı en aç olan türü** alıyor (`neediestI
 
 Alt bardaki **YÜKSELT** sekmesinde her açık bölge için bir kart var: *"Balıkçı İskelesi personeli — Kadro 1/2 — rol seç"* → Hamal / Filetocu / Tezgâhtar. Fiyat hem o bölgedeki kadro sayısına hem de bölge numarasına göre artıyor. Böylece yeni alan açmak gerçekten yeni otomasyon kapasitesi demek.
 
-### 4. Tezgâhlar yalnız oyuncu açarsa çalışır
+### 4. Tezgâh aç/kapat anahtarı (v2.3'te düzeltildi)
 
 Eskiden ikinci bölgeyi açtığınız anda oradaki tezgâha müşteri gelmeye başlıyordu — oyuncu daha ilk tezgâha yetişemezken ikinci tezgâhta müşteri boşuna bekliyordu.
 
-Artık her tezgâh **kurulu ama kapalı** başlıyor (başlangıç hamsi tezgâhı hariç). Kapalı tezgâh dünyada kepengi inik, tentesi toplanmış ve "KAPALI" levhalı çizilir; **müşteri gelmez, ağ o türü üretmez, çalışan oraya ürün taşımaz**. Alt bardan açılır:
+Çözüm bir **aç/kapat anahtarı** — satın alma değil, ücretsiz.
 
-> 🐟 **Uskumru Tezgâhını Aç** — Balık Pazarı — açılınca müşteri gelmeye başlar — **$1.520**
+- **İlk tezgâh (hamsi) sabit açık**, kapatılamaz (`SABİT` yazar).
+- **İkinci tezgâhtan itibaren** her tezgâhın `AÇIK / KAPALI` anahtarı var.
+- Kapalı tezgâh: **müşteri gelmez, ağ o türü üretmez, çalışan oraya ürün taşımaz**. Dünyada kepengi inik, tentesi toplanmış, "KAPALI" levhalı çizilir. Kapattığınızda o an bekleyen müşteriler de dağılır.
 
-Fiyat balığın değerine göre (`380 + değer × 95`). Açtığınız anda o hattın tamamı canlanır: ağ o türü üretmeye, müşteri gelmeye başlar.
+**Nereden açılır — "AÇIK TEZGÂHLAR" ekranı:**
+
+| Nereden | Ne zaman |
+|---|---|
+| **Gün sonu kartı** | Her gün kapanışında "AÇIK TEZGÂHLAR" butonu |
+| **Gün başı** | Karar verilmemiş yeni bir tezgâh varsa kendiliğinden açılır |
+| **Alt bar → YÜKSELT** | İstediğin an |
+
+Ekran açıkken oyun duraklar. Yeni kurulmuş, henüz karar vermediğiniz tezgâhlar altın çerçeveyle işaretlenir.
 
 ### 5. Merkezi Depo kaldırıldı
 

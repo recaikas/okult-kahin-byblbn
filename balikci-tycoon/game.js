@@ -98,14 +98,17 @@ var STR = {
     mktDayTitle: '🐟 BALIK PAZARI GÜNÜ',
     prepSub: 'Bugün müşteri akışı iki katına çıkacak. Tezgâh stoklarını kontrol et.',
     goMarket: 'PAZARI AÇ ▶',
-    prepStock: 'Tezgâh stoğu {a} / {b} — {n} açık tezgâh',
+    prepStock: 'Tezgâh stoğu {a} / {b} — {n} açık tezgâh', nowStock: 'stok {n}',
     noStall: 'Açık tezgâh yok', active: 'AKTİF', none: 'YOK',
     /* v2.1 — bölge personeli + tezgâh açma */
     hiredZ: '{i} {n} işe alındı — {z}', harborWide: 'liman geneli',
     zoneStaff: '{n} personeli', zoneStaffD: 'Kadro {a}/{b} — rol seç',
     zoneFull: 'Bu bölgenin kadrosu dolu', zoneOf: '{n} bölgesi',
-    openStall: '{n} Tezgâhını Aç', openStallD: '{a} — açılınca müşteri gelmeye başlar',
-    stallOpened: '{n} tezgâhı açıldı', stallClosed: 'KAPALI',
+    stallSwitch: 'AÇIK TEZGÂHLAR', stallSwitchD: '{a}/{b} tezgâh açık — aç/kapat',
+    stallManage: 'AÇ / KAPAT', stallTitle: 'AÇIK TEZGÂHLAR',
+    stallSub: 'Yetişemediğin tezgâhı kapat: kapalı tezgâha müşteri gelmez, ağ o türü üretmez.',
+    swOn: 'AÇIK', swOff: 'KAPALI', swFixed: 'SABİT', stallClosed: 'KAPALI',
+    dayStalls: 'AÇIK TEZGÂHLAR', stallNew: 'Yeni tezgâh kuruldu — açmak ister misin?',
     tableFor: 'Kesim: {n}', tableAny: 'Kesim',
     mZoneStaff: 'Bölge kadrosu',
     noRun: 'Önce oyunu başlat',
@@ -231,13 +234,16 @@ var STR = {
     mktDayTitle: '🐟 FISH MARKET DAY',
     prepSub: 'Customer flow doubles today. Check your stall stock before opening.',
     goMarket: 'OPEN THE MARKET ▶',
-    prepStock: 'Stall stock {a} / {b} — {n} open stalls',
+    prepStock: 'Stall stock {a} / {b} — {n} open stalls', nowStock: 'stock {n}',
     noStall: 'No open stall', active: 'ACTIVE', none: 'NONE',
     hiredZ: '{i} {n} hired — {z}', harborWide: 'harbor-wide',
     zoneStaff: '{n} staff', zoneStaffD: 'Crew {a}/{b} — pick a role',
     zoneFull: "This zone's crew is full", zoneOf: '{n} zone',
-    openStall: 'Open {n} Stall', openStallD: '{a} — customers arrive once open',
-    stallOpened: '{n} stall opened', stallClosed: 'CLOSED',
+    stallSwitch: 'OPEN STALLS', stallSwitchD: '{a}/{b} stalls open — switch on/off',
+    stallManage: 'ON / OFF', stallTitle: 'OPEN STALLS',
+    stallSub: "Switch off a stall you can't keep up with: no customers arrive and its net stops.",
+    swOn: 'ON', swOff: 'OFF', swFixed: 'FIXED', stallClosed: 'CLOSED',
+    dayStalls: 'OPEN STALLS', stallNew: 'A new stall is built — switch it on?',
     tableFor: 'Cutting: {n}', tableAny: 'Cutting',
     mZoneStaff: 'Zone crew',
     noRun: 'Start the game first',
@@ -522,27 +528,48 @@ function stallBuilt(f) {
   }
   return null;
 }
-function stallCost(c) { return c.fish ? 380 + FISH[c.fish].val * 95 : 800; }
+/* v2.3 — İlk tezgâh (hamsi) her zaman açık; ikinciden itibaren oyuncu
+   ücretsiz bir aç/kapat anahtarıyla hangi hattın çalışacağını seçer.
+   Kapalı hat: müşteri gelmez, ağ o türü üretmez, çalışan oraya taşımaz. */
+var FIRST_STALL = 'b0';
+function isFirstStall(c) { return c && c.key === FIRST_STALL; }
 function openStarterStall() {
-  for (var i = 0; i < counters.length; i++) if (counters[i].key === 'b0') counters[i].open = true;
+  for (var i = 0; i < counters.length; i++) if (isFirstStall(counters[i])) counters[i].open = true;
 }
-function openStall(c) {
-  if (!c || c.open) return false;
-  c.open = true; c.spawnT = 4;
-  rebuildCounters(); reassignWorkers();
-  sfx.build(); addPuff(c.x, c.y, '#ffc94a');
-  toast(T('stallOpened', { n: c.fish ? NM(FISH[c.fish].n) : T('stStall') }));
-  return true;
-}
-function closedStalls() {
+/* anahtarı gösterilecek tezgâhlar: kurulu, bölgesi açık, ağı ve kesimi hazır */
+function switchableStalls() {
   var out = [];
   for (var i = 0; i < counters.length; i++) {
     var c = counters[i];
-    if (AREAS[c.z].locked || c.open || !c.fish) continue;
-    if (!canProduce(c.fish) || !canProcess('fileto', c.fish)) continue;   /* ağı/kesimi hazır olmayan tezgâh listelenmez */
+    if (AREAS[c.z].locked || !c.fish || isFirstStall(c)) continue;
+    if (!canProduce(c.fish) || !canProcess('fileto', c.fish)) continue;
     out.push(c);
   }
   return out;
+}
+function setStall(c, on) {
+  if (!c || isFirstStall(c)) return false;
+  if (c.open === !!on) return false;
+  c.open = !!on;
+  if (c.open) { c.spawnT = 4; addPuff(c.x, c.y, '#5fd37a'); }
+  else {                                    /* kapatınca bekleyen müşteriler dağılır */
+    for (var j = customers.length - 1; j >= 0; j--)
+      if (customers[j].c === c && customers[j].state !== 'leave') { customers[j].state = 'leave'; customers[j].happyLeave = true; customers[j].leaveT = 0; }
+    for (var k = 0; k < c.slots.length; k++) c.slots[k] = null;
+  }
+  rebuildCounters(); reassignWorkers(); save();
+  return true;
+}
+function toggleStall(c) { return setStall(c, !c.open); }
+/* yeni kurulan bir tezgâh hakkında oyuncu henüz karar vermedi mi */
+function undecidedStalls() {
+  var out = [], list = switchableStalls();
+  for (var i = 0; i < list.length; i++) if (!list[i].open && !list[i].seen) out.push(list[i]);
+  return out;
+}
+function markStallsSeen() {
+  var list = switchableStalls();
+  for (var i = 0; i < list.length; i++) list[i].seen = true;
 }
 /* üç koşul (spec): üretim noktası + işleme hattı + satış tezgâhı */
 function canProduce(f) {
@@ -1123,6 +1150,7 @@ function beginNextDay(skipPrep) {
   if (day.market && !skipPrep) { day.phase = 'prep'; showPrepCard(); return; }
   day.phase = 'intro'; day.ph = 1.7;
   syncPause();
+  if (undecidedStalls().length) openStallScreen();   /* gün başı: yeni tezgâh kararı */
 }
 
 /* ---------------- istasyonlar ---------------- */
@@ -1426,7 +1454,8 @@ function refreshSaveInfo() {
 var paused = false;
 function anyOverlay() {
   return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') ||
-    !el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden');
+    !el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden') ||
+    !el.stallScr.classList.contains('hidden');
 }
 function syncPause() {
   paused = S.started && anyOverlay();
@@ -4525,7 +4554,8 @@ var el = {};
  'startScreen', 'settingsScreen', 'menuScreen', 'menuBtn', 'dtArea', 'dtLevel', 'dtBuild', 'dtProj', 'dtServ',
  'pauseBadge', 'pauseTxt', 'saveInfo', 'setSaveInfo', 'saveBtn', 'saveQuitBtn', 'menuSave', 'newBtn', 'setSaveLbl',
  'dayChip', 'dayIcon', 'dayNum', 'dayfill', 'hDay', 'dayBanner', 'dayBannerT', 'dayBannerS',
- 'dayScr', 'dayTitle', 'dayRows', 'dayNext', 'dayGo', 'prepScr', 'prepTitle', 'prepSub',
+ 'dayScr', 'dayTitle', 'dayRows', 'dayNext', 'dayGo', 'dayStalls',
+ 'stallScr', 'stallTitle', 'stallSub', 'stallRows', 'stallGo', 'prepScr', 'prepTitle', 'prepSub',
  'prepDepot', 'prepRows', 'prepGo'].forEach(function (id) {
   el[id] = document.getElementById(id);
 });
@@ -4549,6 +4579,9 @@ function applyLang() {
   el.setSaveLbl.textContent = T('setSave'); el.pauseTxt.textContent = T('paused');
   el.hDay.textContent = T('dayLbl');
   el.prepTitle.textContent = T('mktDayTitle'); el.prepSub.textContent = T('prepSub');
+  el.stallTitle.textContent = T('stallTitle'); el.stallSub.textContent = T('stallSub');
+  el.stallGo.textContent = T('ok'); el.dayStalls.textContent = T('dayStalls');
+  if (!el.stallScr.classList.contains('hidden')) renderStallScreen();
   el.prepGo.textContent = T('goMarket');
   if (!el.dayScr.classList.contains('hidden') && day.last) showDayCard();
   if (!el.prepScr.classList.contains('hidden')) renderPrep();
@@ -4702,13 +4735,12 @@ function barList() {
       })(ZONE_ROLES[i]);
       return out;
     }
-    /* --- v2.1: kurulu ama kapalı tezgâhları aç --- */
-    var cs = closedStalls();
-    for (i = 0; i < cs.length; i++) (function (c) {
-      out.push({ id: 'st' + c.key, ic: '🐟', t: T('openStall', { n: NM(FISH[c.fish].n) }),
-        s: T('openStallD', { a: NM(AREAS[c.z].n) }), cost: upCost(stallCost(c)),
-        go: function () { openStall(c); } });
-    })(cs[i]);
+    /* --- v2.3: tezgâh aç/kapat ekranına kısayol (ücretsiz) --- */
+    if (switchableStalls().length) {
+      out.push({ id: 'stsw', ic: '🐟', t: T('stallSwitch'),
+        s: T('stallSwitchD', { a: openStallCount(), b: switchableStalls().length + 1 }),
+        pick: T('stallManage'), go: function () { openStallScreen(); } });
+    }
     /* --- v2.1: her açık bölge için personel kartı --- */
     for (i = 0; i < zoneCount(); i++) (function (z2) {
       if (!zoneOpen(z2)) return;
@@ -4947,8 +4979,7 @@ function barHot() {
     if (!AREAS[p.z].locked && p.lvl < p.max && !padBlocked(p) && S.cash >= padPrice(p)) hot.level = true;
   }
   for (i = 0; i < SLOTS.length; i++) if (slotActive(SLOTS[i]) && !SLOTS[i].b && S.cash >= 900) hot.build = true;
-  var cs2 = closedStalls();
-  for (i = 0; i < cs2.length; i++) if (S.cash >= upCost(stallCost(cs2[i]))) hot.level = true;
+  if (undecidedStalls().length) hot.level = true;
   for (i = 0; i < zoneCount(); i++) if (zoneOpen(i) && zoneFree(i) > 0 && S.cash >= hireCost('hamal', i)) hot.level = true;
   if (!AREAS[project.z].locked && !project.done && S.cash >= 1000) hot.proj = true;
   if (M && officeReady() && !M.office && S.rep >= ECON.officeRep && S.cash >= upCost(ECON.officeCost)) hot.proj = true;
@@ -5012,6 +5043,55 @@ function renderPrep() {
       '<span class="pz ' + col + '">' + pct(pctv) + '</span></div></div>';
   }
   el.prepRows.innerHTML = PX(h || '<div class="empty">' + T('noStall') + '</div>');
+}
+
+/* =========================================================
+   v2.3 — AÇIK TEZGÂHLAR EKRANI
+   İlk tezgâh sabit açık; ikinciden itibaren ücretsiz aç/kapat.
+   Gün sonu kartından, alt bardan ve gün başında (yeni tezgâh varsa) açılır.
+   ========================================================= */
+function openStallCount() {
+  var n = 0;
+  for (var i = 0; i < counters.length; i++)
+    if (counters[i].open && counters[i].fish && !AREAS[counters[i].z].locked) n++;
+  return n;
+}
+function renderStallScreen() {
+  var list = counters.filter(function (c) {
+    return c.fish && !AREAS[c.z].locked && (isFirstStall(c) || (canProduce(c.fish) && canProcess('fileto', c.fish)));
+  });
+  var h = '';
+  for (var i = 0; i < list.length; i++) {
+    var c = list[i], first = isFirstStall(c);
+    var yeni = !first && !c.seen && !c.open;
+    h += '<div class="trow' + (yeni ? ' newish' : '') + '"><div class="ic">' + FISH[c.fish].ic + '</div>' +
+      '<div class="nm">' + NM(FISH[c.fish].n) + (yeni ? ' <b style="color:var(--gold)">•</b>' : '') +
+      '<small>' + NM(AREAS[c.z].n) + ' • ' + T('nowStock', { n: c.buffer.length }) + '</small></div>' +
+      '<div class="stp"><button class="sw ' + (first ? 'lock' : (c.open ? 'on' : 'off')) + '" data-k="' + c.key + '"' +
+      (first ? ' disabled' : '') + '>' + (first ? T('swFixed') : (c.open ? T('swOn') : T('swOff'))) + '</button></div></div>';
+  }
+  el.stallRows.innerHTML = PX(h || '<div class="empty">' + T('noStall') + '</div>');
+  Array.prototype.forEach.call(el.stallRows.querySelectorAll('.sw:not([disabled])'), function (b) {
+    b.onclick = function () {
+      var c = counterByKey(b.dataset.k);
+      if (!c) return;
+      c.seen = true;
+      toggleStall(c);
+      sfx.pick();
+      renderStallScreen();
+    };
+  });
+}
+function openStallScreen() {
+  renderStallScreen();
+  el.stallScr.classList.remove('hidden');
+  syncPause();
+}
+function closeStallScreen() {
+  markStallsSeen();
+  el.stallScr.classList.add('hidden');
+  save(); syncPause();
+  if (barTab) renderBar();
 }
 function counterByKey(k) { for (var i = 0; i < counters.length; i++) if (counters[i].key === k) return counters[i]; return null; }
 
@@ -5103,6 +5183,8 @@ el.closeMenu.onclick = function () { el.menuScreen.classList.add('hidden'); sync
 el.menuSet.onclick = function () { el.menuScreen.classList.add('hidden'); openSettings(true); };
 el.menuSave.onclick = function () { manualSave(); };
 /* v1.2 — gün özeti / pazar hazırlığı */
+el.dayStalls.onclick = function () { openStallScreen(); };
+el.stallGo.onclick = function () { closeStallScreen(); };
 el.dayGo.onclick = function () {
   el.dayScr.classList.add('hidden');
   beginNextDay(false);
@@ -5192,6 +5274,7 @@ window.addEventListener('keydown', function (e) {
   if (!S.started) return;
   if (!document.getElementById('officeScr').classList.contains('hidden')) return;
   if (!el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden')) return;  /* gün kartı kendi butonuyla kapanır */
+  if (!el.stallScr.classList.contains('hidden')) { closeStallScreen(); return; }
   e.preventDefault();
   if (!el.settingsScreen.classList.contains('hidden')) { el.setClose.click(); return; }
   if (!el.menuScreen.classList.contains('hidden')) { el.closeMenu.click(); return; }
@@ -6019,8 +6102,9 @@ window.BT = {
   day: day, DAY_LEN: DAY_LEN,
   zones: function () { return spots.map(function (sp, i) { return { z: i, open: zoneOpen(i), cap: zoneStaffCap(i), staff: zoneStaff(i) }; }); },
   stalls: function () { return counters.map(function (c) { return [c.key, c.fish, c.open ? 'AÇIK' : 'KAPALI', c.buffer.length]; }); },
-  openStall: function (key) { var c = counterByKey(key); return c ? openStall(c) : false; },
-  stallCost: function (key) { var c = counterByKey(key); return c ? stallCost(c) : 0; },
+  setStall: function (key, on) { var c = counterByKey(key); return c ? setStall(c, on) : false; },
+  toggleStall: function (key) { var c = counterByKey(key); return c ? toggleStall(c) : false; },
+  stallScreen: openStallScreen, undecided: function () { return undecidedStalls().map(function (c) { return c.key; }); },
   hireCost: hireCost, zoneStaffCap: zoneStaffCap, zoneFree: zoneFree,
   workerZones: function () { return workers.map(function (w) { return w.role + '@' + (w.zone < 0 ? 'liman' : w.zone); }); },
   endDay: function () { day.t = DAY_LEN; },

@@ -199,6 +199,12 @@
   .trow .tv{font-size:12.5px;min-width:44px;text-align:center;color:var(--gold)}
   .trow .pz{min-width:62px;font-size:10px;letter-spacing:.5px}
   .pz.p0{color:var(--ink2)} .pz.p1{color:var(--ink)} .pz.p2{color:var(--green);border-color:#17532a}
+  /* tezgâh aç/kapat anahtarı */
+  .sw{min-width:64px;font-size:11px;letter-spacing:1px;padding:0 6px}
+  .sw.on{background:var(--green);border-color:#17532a;color:#062f14}
+  .sw.off{background:var(--pnl);border-color:var(--edge);color:var(--ink2)}
+  .sw.lock{background:var(--pnl2);border-color:var(--edge);color:var(--gold)}
+  .trow.newish{border-color:var(--gold)}
   .saveinfo{margin-top:6px;font-size:11px;line-height:1.6;text-align:center;color:var(--ink2);
     background:var(--pnl2);border:3px solid var(--edge);padding:6px 8px;white-space:pre-line}
   .saveinfo.hidden{display:none}
@@ -319,7 +325,17 @@
     <h2 id="dayTitle">GÜN 1 KAPANDI</h2>
     <div id="dayRows"></div>
     <div class="nextday hidden" id="dayNext">YARIN BALIK PAZARI</div>
+    <button class="alt good" id="dayStalls">AÇIK TEZGÂHLAR</button>
     <button class="go" id="dayGo">YENİ GÜN ▶</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="stallScr">
+  <div class="card">
+    <h2 id="stallTitle">AÇIK TEZGÂHLAR</h2>
+    <p id="stallSub">Yetişemediğin tezgâhı kapat; kapalı tezgâha müşteri gelmez.</p>
+    <div id="stallRows"></div>
+    <button class="go" id="stallGo">TAMAM</button>
   </div>
 </div>
 
