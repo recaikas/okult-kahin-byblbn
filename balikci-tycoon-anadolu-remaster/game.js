@@ -1101,6 +1101,8 @@ function money(n) { return '$' + Math.round(n).toLocaleString(lang === 'tr' ? 't
 /* ---------------- kayıt ---------------- */
 var SAVE_KEY = 'balikci_tycoon_v3';
 var _pendingWorld = null, _pendingWorkers = null;
+/* Yeni oyun sırasında beforeunload/visibilitychange eski dünyayı tekrar yazmamalı. */
+var saveBlocked = false;
 function saveItem(it) { return it ? { k: it.k, f: it.f, v: it.v } : null; }
 function saveItems(a) { return (a || []).map(saveItem); }
 function loadItems(a) { return (a || []).filter(Boolean).map(function (it) { return { k: it.k, f: it.f, v: it.v }; }); }
@@ -1136,6 +1138,7 @@ function worldLoad(w) {
   });
 }
 function save() {
+  if (saveBlocked) return false;
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       v: 5, lang: lang, snd: soundOn ? 1 : 0, zoom: zoomLvl,
@@ -1155,7 +1158,8 @@ function save() {
         targets: DEPOT.targets, priorities: DEPOT.priorities, marketTargets: DEPOT.marketTargets, marketPriorities: DEPOT.marketPriorities },
       mk: M
     }));
-  } catch (e) { }
+    return true;
+  } catch (e) { return false; }
 }
 function load() {
   try {
@@ -1187,7 +1191,13 @@ function load() {
   } catch (e) { return false; }
 }
 function wipe(autoStart) {
-  try { localStorage.removeItem(SAVE_KEY); if (autoStart) sessionStorage.setItem('bt_new_start', '1'); } catch (e) { }
+  /* location.reload() beforeunload tetikler; önce kaydı yeniden yazmayı kesin olarak kapat. */
+  saveBlocked = true;
+  try {
+    localStorage.removeItem(SAVE_KEY);
+    if (autoStart) sessionStorage.setItem('bt_new_start', '1');
+    else sessionStorage.removeItem('bt_new_start');
+  } catch (e) { }
   location.reload();
 }
 /* --- kayıt özeti / manuel kaydet (pause + kaydet-çık) --- */
