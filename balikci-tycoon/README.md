@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — v2.0 (Anadolu Pixel Art)
+# 🐟 Balıkçı Tycoon — v2.1 (Anadolu Pixel Art)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,60 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v2.1 — Bölge sistemi, oyuncunun açtığı tezgâhlar, deponun kaldırılması
+
+Bu sürüm üç somut oynanış şikâyetini çözüyor.
+
+### 1. Kesim masaları bölgeye bağlandı
+
+Eskiden hamal bütün limanı dolaşıp karışık balığı en yakın masaya bırakıyordu; masalar karışıyordu. Artık **bölge (zone)** kavramı var:
+
+> **bölge = bir ağ + o ağın kesim masası + o ağdan çıkan türlerin tezgâhları**
+
+Bölge indeksi = ağ indeksi = kesim masası indeksi = AREA indeksi. Bir masaya **yalnız kendi bölgesinin balığı** konulabilir (`tableAccepts`); hamsi ağının balığı uskumru masasına gitmez. Masanın etiketi hangi türleri kabul ettiğini yazıyor (`Kesim: Uskumru, Palamut`).
+
+### 2. Her çalışan kendi bölgesinde
+
+Çalışanlar artık bir bölgeye ait (`w.zone`). Hamal yalnız kendi ağından alır ve kendi masasına bırakır; filetocu kendi masasında durur; tezgâhtar yalnız kendi bölgesinin tepsisinden alıp kendi bölgesinin tezgâhlarına götürür. Boşta kalınca bölgesinde bekler, limanın öbür ucuna yürümez.
+
+**Ölçülen etki:** aynı 30 saniyelik otomasyon testinde tamamlanan sipariş **3-4'ten 16'ya** çıktı, kayıp 0.
+
+### 3. Personel artık sabit değil, bölge bazlı
+
+Eski sabit "3 kişilik liman kadrosu" kalktı. Yerine:
+
+| | Kadro |
+|---|---|
+| Her açık bölge | **1 kişi** (taban) |
+| Bölge seviyesi başına | **+1** |
+| O bölgedeki Personel Kulübesi | **+1** |
+| Kasiyer | liman geneli, ayrı (1-3) |
+
+Alt bardaki **YÜKSELT** sekmesinde her açık bölge için bir kart var: *"Balıkçı İskelesi personeli — Kadro 1/2 — rol seç"* → Hamal / Filetocu / Tezgâhtar. Fiyat hem o bölgedeki kadro sayısına hem de bölge numarasına göre artıyor. Böylece yeni alan açmak gerçekten yeni otomasyon kapasitesi demek.
+
+### 4. Tezgâhlar yalnız oyuncu açarsa çalışır
+
+Eskiden ikinci bölgeyi açtığınız anda oradaki tezgâha müşteri gelmeye başlıyordu — oyuncu daha ilk tezgâha yetişemezken ikinci tezgâhta müşteri boşuna bekliyordu.
+
+Artık her tezgâh **kurulu ama kapalı** başlıyor (başlangıç hamsi tezgâhı hariç). Kapalı tezgâh dünyada kepengi inik, tentesi toplanmış ve "KAPALI" levhalı çizilir; **müşteri gelmez, ağ o türü üretmez, çalışan oraya ürün taşımaz**. Alt bardan açılır:
+
+> 🐟 **Uskumru Tezgâhını Aç** — Balık Pazarı — açılınca müşteri gelmeye başlar — **$1.520**
+
+Fiyat balığın değerine göre (`380 + değer × 95`). Açtığınız anda o hattın tamamı canlanır: ağ o türü üretmeye, müşteri gelmeye başlar.
+
+### 5. Merkezi Depo kaldırıldı
+
+Depo, dağıtım çalışanı, hedef stok ve öncelik sistemi tamamen çıkarıldı (şimdilik). Menüdeki DEPO sekmesi kalktı.
+
+**Mezat Salonu korundu ama yeniden temellendirildi:** artık gün sonunda **tezgâha gitmemiş, hasır tepsilerde kalan işlenmiş ürünü** açık artırmayla satıyor. Bu hem daha gerçekçi (günün satılmayan avı mezata çıkar) hem de oyuncunun tezgâh stoğuna dokunmuyor.
+
+**Balık Pazarı hazırlık ekranı** de sadeleşti: artık hedef stok düzenlemek yerine her açık tezgâhın stok doluluğunu gösteriyor.
+
+### Kayıt uyumluluğu
+Eski kayıtlar açılır: kaldırılmış `dagitim` çalışanı atlanır, bölgesi kayıtlı olmayan çalışan uygun bir bölgeye yerleşir, kadrosu dolmuş bölgeye kayıtlı çalışan boş bölgeye kaydırılır, depo ve hedef stok alanları yok sayılır. Açık tezgâhlar ve çalışan bölgeleri artık kaydediliyor.
 
 ---
 
