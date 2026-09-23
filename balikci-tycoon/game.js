@@ -106,6 +106,8 @@ var STR = {
     zoneFull: 'Bu bölgenin kadrosu dolu', zoneOf: '{n} bölgesi',
     stallSwitch: 'AÇIK TEZGÂHLAR', stallSwitchD: '{a}/{b} tezgâh açık — aç/kapat',
     stallManage: 'AÇ / KAPAT', stallTitle: 'AÇIK TEZGÂHLAR',
+    newStallLbl: 'YENİ', newStallHint: 'Yeni tezgâh hazır — alt bardaki YÜKSELT › AÇIK TEZGÂHLAR',
+    howToOpen: 'YÜKSELT › AÇIK TEZGÂHLAR', stallNewN: '{n} yeni tezgâh kararını bekliyor',
     stallSub: 'Yetişemediğin tezgâhı kapat: kapalı tezgâha müşteri gelmez, ağ o türü üretmez.',
     swOn: 'AÇIK', swOff: 'KAPALI', swFixed: 'SABİT', stallClosed: 'KAPALI',
     dayStalls: 'AÇIK TEZGÂHLAR', stallNew: 'Yeni tezgâh kuruldu — açmak ister misin?',
@@ -241,6 +243,8 @@ var STR = {
     zoneFull: "This zone's crew is full", zoneOf: '{n} zone',
     stallSwitch: 'OPEN STALLS', stallSwitchD: '{a}/{b} stalls open — switch on/off',
     stallManage: 'ON / OFF', stallTitle: 'OPEN STALLS',
+    newStallLbl: 'NEW', newStallHint: 'New stall ready — bottom bar UPGRADE › OPEN STALLS',
+    howToOpen: 'UPGRADE › OPEN STALLS', stallNewN: '{n} new stall awaiting your call',
     stallSub: "Switch off a stall you can't keep up with: no customers arrive and its net stops.",
     swOn: 'ON', swOff: 'OFF', swFixed: 'FIXED', stallClosed: 'CLOSED',
     dayStalls: 'OPEN STALLS', stallNew: 'A new stall is built — switch it on?',
@@ -670,8 +674,19 @@ function stallBuilt(f) {
    Kapalı hat: müşteri gelmez, ağ o türü üretmez, çalışan oraya taşımaz. */
 var FIRST_STALL = 'b0';
 function isFirstStall(c) { return c && c.key === FIRST_STALL; }
+/* İlk tezgâh HER ZAMAN açık olmalı: kapalıysa hamsi satılamaz, ağ balık üretmez
+   ve oyun hiç başlamaz. Bu yüzden yalnız kayıt yüklenirken değil, tezgâhlar her
+   yeniden kurulduğunda çağrılır; ayrıca hiçbir tezgâh açık değilse ilkini açar. */
 function openStarterStall() {
-  for (var i = 0; i < counters.length; i++) if (isFirstStall(counters[i])) counters[i].open = true;
+  var i, ilk = null, acikVar = false;
+  for (i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (AREAS[c.z].locked) continue;
+    if (isFirstStall(c)) { c.open = true; acikVar = true; }
+    if (c.open) acikVar = true;
+    if (!ilk && c.fish) ilk = c;
+  }
+  if (!acikVar && ilk) ilk.open = true;      /* güvenlik ağı: en az bir tezgâh açık kalsın */
 }
 /* anahtarı gösterilecek tezgâhlar: kurulu, bölgesi açık, ağı ve kesimi hazır */
 function switchableStalls() {
@@ -1352,6 +1367,8 @@ function rebuildCounters() {
     var ln = lineByStall(counters[i].key);
     counters[i].fish = ln ? ln.f : null;
   }
+  openStarterStall();                        /* ilk tezgâh daima açık (yeni oyun dâhil) */
+  if (S.started && undecidedStalls().length) stallPrompt = true;   /* yeni tezgâh: hemen sor */
   announceLines();
   validateWorld();
   /* kuyruk şeritleri */
@@ -3661,8 +3678,10 @@ function drawCounterClosed(c) {
   ctx.save(); ctx.globalAlpha = 0.5 + Math.sin(gameT * 2) * 0.15;
   px(sx - 14, sy - 16, 28, 1, PAL.gold); ctx.restore();
   if (dist2(player.x, player.y, c.x, c.y) < 26)
-    labelAt(c.x, c.y - 1.5, 30,
-      (c.fish ? NM(FISH[c.fish].n) : T('stStall')) + ' — ' + T('stallClosed'), '#c9a15e', T('stallClosed'));
+    uiLabel(c.x, c.y - 1.5, 30,
+      (c.fish ? NM(FISH[c.fish].n) : T('stStall')) + ' — ' + T('stallClosed'), '#c9a15e', 1);
+  if (dist2(player.x, player.y, c.x, c.y) < 9)
+    uiLabel(c.x, c.y - 1.5, 44, T('howToOpen'), '#9df5b0', 1);
 }
 
 /* --- KESİM MASASI: mermer tezgâh, zeytin ağacı kütük, satır --- */
@@ -4843,6 +4862,10 @@ function syncHUD(dt) {
     el.objective.classList.remove('hidden');
     el.objLbl.textContent = T('goal') + ' ' + (S.tut + 1) + '/' + TUTOK.length;
     el.objText.textContent = T('tut')[S.tut];
+  } else if (undecidedStalls().length) {
+    el.objective.classList.remove('hidden');
+    el.objLbl.textContent = T('newStallLbl');
+    el.objText.textContent = T('newStallHint');
   } else {
     var o = urgentOrder();
     /* §7: görev bandı yalnız gerektiğinde */
@@ -4882,6 +4905,7 @@ function syncHUD(dt) {
 var barTab = null, barSlot = null, cfId = null, cfT = 0;
 var servSel = null, servPick = null;   /* v0.4 — seçili bina / parsel önizlemesi */
 var barZone = null;                    /* v2.1 — personel alınan bölge */
+var stallPrompt = false;               /* v0.1 — yeni tezgâh bildirimi bekliyor */
 function closeBar() {
   barTab = null; barSlot = null; cfId = null; servPick = null; barZone = null;
   el.devpanel.classList.add('hidden');
@@ -4932,10 +4956,12 @@ function barList() {
       })(ZONE_ROLES[i]);
       return out;
     }
-    /* --- v2.3: tezgâh aç/kapat ekranına kısayol (ücretsiz) --- */
+    /* --- v2.3: tezgâh aç/kapat ekranına kısayol (ücretsiz, listede ilk sırada) --- */
     if (switchableStalls().length) {
-      out.push({ id: 'stsw', ic: '🐟', t: T('stallSwitch'),
-        s: T('stallSwitchD', { a: openStallCount(), b: switchableStalls().length + 1 }),
+      var yeniVar = undecidedStalls().length;
+      out.push({ id: 'stsw', ic: '🐟', t: T('stallSwitch') + (yeniVar ? ' •' : ''),
+        s: yeniVar ? T('stallNewN', { n: yeniVar })
+                   : T('stallSwitchD', { a: openStallCount(), b: switchableStalls().length + 1 }),
         pick: T('stallManage'), go: function () { openStallScreen(); } });
     }
     /* --- v2.1: her açık bölge için personel kartı --- */
@@ -5456,6 +5482,10 @@ function frame(ts) {
   updateCamera(dt);
   syncHUD(dt);
   saveT += dt; if (saveT > 6) { saveT = 0; save(); }
+  if (stallPrompt && !anyOverlay()) {        /* yeni tezgâh kuruldu: kararı hemen sor */
+    stallPrompt = false;
+    if (undecidedStalls().length) { openStallScreen(); sfx.cust(); }
+  }
   render();
 }
 function start() {

@@ -16,6 +16,21 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 Oyun bu sürümde "denenebilir" sayılıyor: baştan sona oynanıyor, ses çalışıyor, bilinen hata yok.
 
+### 🔴 Kritik hata: yeni oyun oynanamıyordu
+`openStarterStall()` yalnızca **kayıt yüklenirken** çağrılıyordu. Hiç kaydı olmayan yepyeni bir oyunda `load()` erkenden çıkıyor, dolayısıyla başlangıç hamsi tezgâhı **kapalı** kalıyordu → hamsi satılamıyor → `spotLines()` boş dönüyor → **ağ hiç balık üretmiyordu.** Oyun ilk açılışta tamamen oynanamazdı.
+
+Testlerde yakalanmamasının sebebi: `localStorage.clear()` + `reload` akışında `beforeunload` yeni bir kayıt yazıyor, bu yüzden testler hep "kayıtlı oyun" yolundan geçiyordu.
+
+**Düzeltme:** `openStarterStall()` artık `rebuildCounters()` içinde, yani tezgâhlar her kurulduğunda çağrılıyor. Ayrıca güvenlik ağı: hiçbir tezgâh açık değilse ilki kendiliğinden açılır.
+**Kalıcı test:** `test-fresh-start.js` — temiz tarayıcı profiliyle açar, 16 saniye bekler, ağda balık yoksa başarısız olur.
+
+### Tezgâh açmayı bulunur kıldık
+Anahtarın nerede olduğu belli değildi. Artık:
+- Yeni bir tezgâh kullanılabilir olur olmaz **AÇIK TEZGÂHLAR ekranı kendiliğinden açılır** (gün sonunu beklemez)
+- Alt bar › YÜKSELT'te **ilk kart** o ve kararsız tezgâh varsa `• 1 yeni tezgâh kararını bekliyor` yazar
+- Kapalı tezgâhın yanına gidince üstünde `YÜKSELT › AÇIK TEZGÂHLAR` yönlendirmesi çıkar
+- Öğretici bittikten sonra hedef bandında kalıcı ipucu durur
+
 ### Ses motoru baştan yazıldı
 Eski ses sistemi teknik olarak çalışıyordu ama **duyulmuyordu**: master gain yoktu ve efekt seviyesi 0.025'ti.
 
@@ -48,6 +63,7 @@ Eskiden stoksuz bir tezgâha müşteri yağıyor ve kesin kaybediliyordu. Artık
 ### Doğrulama
 | Test | Sonuç |
 |---|---|
+| **Sıfırdan yeni oyun** (`test-fresh-start.js`) | tezgâh açık, 16 sn'de ağda 12 balık, müşteri geliyor |
 | 80 sn ağır oynanış (10 çalışan, 6 hat, 4 gün) | konsol hatası **0**, NaN **0**, 60 FPS |
 | Yanlış masadaki balık / yanlış tezgâhtaki ürün | **0 / 0** |
 | Kapalı tezgâhta bekleyen müşteri | **0** |
