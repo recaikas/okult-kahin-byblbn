@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Defterhane</title>
+<meta name="description" content="Hafızası olan tarihî rol yapma motoru. Anlatıcı anlatır; zar, kayıt ve kural motorda durur.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vollkorn:ital,wght@0,400;0,600;1,400&family=Fira+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --deniz:#0a141d; --deniz2:#0f1e2a; --deniz3:#152a39; --cizgi:#23394a;
+  --yazi:#d9e0e4; --soluk:#8fa3b0;
+  --pirinc:#c9a24a; --fener:#f0c566; --verdigri:#5aa894;
+  --kagit:#e9e5da; --kagit2:#dcd6c6; --murekkep:#1c232a; --kagit-soluk:#5b6570;
+  --kayip:#8a1c1c; --kazanc:#2d6e58;
+  --hata:#b3261e;
+  --serif:"Vollkorn","Gentium Book Plus",Georgia,"Times New Roman",serif;
+  --sans:"Fira Sans","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--deniz);color:var(--yazi);font-family:var(--sans);-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--fener);outline-offset:2px}
+.gizli{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+#app{position:fixed;left:0;top:0;width:100%;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;overflow:clip}
+
+/* ---------- başlık ---------- */
+header{display:flex;align-items:center;gap:.75rem;padding:.55rem .9rem;background:var(--deniz2);border-bottom:1px solid var(--cizgi);min-width:0}
+.marka{font-family:var(--serif);font-weight:600;font-size:1.2rem;color:var(--fener);letter-spacing:.04em;white-space:nowrap}
+.kunye{min-width:0;flex:1;font-size:.8rem;color:var(--soluk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kunye b{color:var(--yazi);font-weight:500}
+nav.ust{display:flex;gap:.35rem;flex-shrink:0}
+.dg{background:transparent;border:1px solid var(--cizgi);color:var(--yazi);padding:.38rem .7rem;border-radius:3px;cursor:pointer;font-size:.85rem;line-height:1.2;white-space:nowrap}
+.dg:hover{border-color:var(--pirinc);color:var(--fener)}
+.dg.ana{background:var(--pirinc);border-color:var(--pirinc);color:#1a1405;font-weight:600}
+.dg.ana:hover{background:var(--fener);color:#1a1405}
+.dg.uyari{border-color:var(--hata);color:#ffb4ab}
+.dg[disabled]{opacity:.5;cursor:not-allowed}
+.dg.kucuk{padding:.25rem .55rem;font-size:.78rem}
+#dg-durum{display:none}
+
+/* ---------- gövde ---------- */
+main{display:grid;grid-template-columns:minmax(0,1fr) 340px;min-height:0}
+#akis{overflow-y:auto;overscroll-behavior:contain;padding:1.25rem 1rem 2rem;min-height:0}
+#panel{overflow-y:auto;overscroll-behavior:contain;min-height:0;background:var(--deniz2);border-left:1px solid var(--cizgi);padding:1rem 1rem 2rem}
+
+/* ---------- sahne akışı ---------- */
+.yaprak{max-width:54rem;margin:0 auto 1.1rem}
+.sahne{display:grid;grid-template-columns:8.75rem minmax(0,1fr);background:var(--kagit);color:var(--murekkep);border-radius:2px;box-shadow:0 1px 0 rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6)}
+.hamis{border-right:1px solid var(--kagit2);padding:1rem .8rem;font-size:.76rem;line-height:1.45;color:var(--kagit-soluk);display:flex;flex-direction:column;gap:.35rem}
+.hamis .t{font-weight:600;color:var(--murekkep)}
+.hamis .zar{font-family:var(--sans);font-variant-numeric:tabular-nums;color:var(--murekkep)}
+.hamis .arti{color:var(--kazanc);font-weight:500}
+.hamis .eksi{color:var(--kayip);font-weight:500}
+.hamis .notr{color:var(--murekkep)}
+.hamis .not{font-style:italic;color:var(--kagit-soluk);border-top:1px dotted var(--kagit2);padding-top:.3rem}
+.metin{padding:1.15rem 1.5rem 1.25rem;font-family:var(--serif);font-size:1.08rem;line-height:1.62;overflow-wrap:anywhere}
+.metin p{margin:0 0 .8em}
+.metin p:last-child{margin-bottom:0}
+.sahne-alt{display:flex;justify-content:flex-end;gap:.5rem;margin-top:.35rem}
+.alt-dg{background:none;border:0;color:var(--soluk);font-size:.78rem;cursor:pointer;padding:.25rem .4rem;text-decoration:underline;text-underline-offset:3px}
+.alt-dg:hover{color:var(--fener)}
+.hamle{max-width:54rem;margin:0 auto 1.1rem;padding:.55rem .9rem;border-left:3px solid var(--pirinc);background:var(--deniz2);font-family:var(--serif);font-style:italic;font-size:1.02rem;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.hamle .kim{display:block;font-family:var(--sans);font-style:normal;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--pirinc);margin-bottom:.2rem}
+.hata-kutu{max-width:54rem;margin:0 auto 1.1rem;padding:.8rem 1rem;border:1px solid var(--hata);background:rgba(179,38,30,.15);color:#ffd9d4;border-radius:2px;display:flex;gap:1rem;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.tohum{max-width:54rem;margin:0 auto 1.1rem;border:1px solid var(--cizgi);background:var(--deniz2);border-radius:2px}
+.tohum summary{cursor:pointer;padding:.6rem .9rem;color:var(--soluk);font-size:.85rem}
+.tohum ol{margin:0;padding:.2rem 1.2rem 1rem 2.4rem;font-family:var(--serif);font-size:.95rem;line-height:1.5}
+.tohum li{margin:.35rem 0}
+.tohum li span{color:var(--pirinc);font-family:var(--sans);font-size:.75rem}
+.acilis{max-width:40rem;margin:2rem auto;text-align:center;color:var(--soluk);font-family:var(--serif);font-size:1.05rem;line-height:1.6}
+.imlec::after{content:"▍";color:var(--kagit-soluk);animation:yanip 1s steps(1) infinite}
+@keyframes yanip{50%{opacity:0}}
+.itiraz{max-width:54rem;margin:-.4rem auto 1.1rem;padding:.75rem .9rem;background:var(--deniz3);border:1px solid var(--cizgi);border-radius:2px;display:grid;gap:.5rem}
+.itiraz label{font-size:.8rem;color:var(--soluk)}
+.itiraz .oneri{font-family:var(--serif);font-size:1rem;color:var(--fener)}
+.satir{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+
+/* ---------- durum paneli ---------- */
+.p-bas{font-family:var(--serif);font-size:1.15rem;color:var(--fener);margin:0 0 .15rem}
+.p-alt{font-size:.8rem;color:var(--soluk);margin:0 0 .9rem;line-height:1.4}
+.p-kisim{margin:0 0 1rem}
+.p-kisim h3{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--verdigri);margin:0 0 .4rem;font-weight:600}
+.p-kisim ul{list-style:none;margin:0;padding:0}
+.p-kisim li{font-size:.84rem;line-height:1.4;padding:.22rem 0;border-bottom:1px solid rgba(35,57,74,.6)}
+.p-kisim li:last-child{border-bottom:0}
+.kv{display:flex;justify-content:space-between;gap:.75rem}
+.kv span:first-child{color:var(--soluk)}
+.kv span:last-child{text-align:right}
+.sayi-buyuk{font-family:var(--serif);font-size:1.6rem;color:var(--fener);font-variant-numeric:tabular-nums}
+.cubuk{display:grid;grid-template-columns:minmax(0,1fr) 2.2rem;gap:.1rem .5rem;align-items:center}
+.cubuk .ad{font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cubuk .deger{font-size:.8rem;text-align:right;font-variant-numeric:tabular-nums;color:var(--soluk)}
+.cubuk .iz{grid-column:1/-1;height:3px;background:var(--deniz3);border-radius:2px;overflow:hidden}
+.cubuk .iz i{display:block;height:100%;background:var(--pirinc)}
+li.yeni{background:linear-gradient(90deg,rgba(90,168,148,.18),transparent)}
+.olu{color:var(--soluk);text-decoration:line-through;text-decoration-color:rgba(143,163,176,.5)}
+.p-not{font-size:.74rem;color:var(--soluk);border-top:1px solid var(--cizgi);padding-top:.6rem;margin-top:1.2rem;line-height:1.4}
+
+/* ---------- giriş şeridi ---------- */
+footer#giris{background:var(--deniz2);border-top:1px solid var(--cizgi);padding:.6rem .9rem calc(.55rem + env(safe-area-inset-bottom))}
+.giris-ust{display:flex;gap:.6rem;align-items:flex-end;max-width:72rem;margin:0 auto}
+#hamle{flex:1;min-width:0;resize:none;font-size:16px;line-height:1.45;padding:.6rem .75rem;background:var(--deniz);border:1px solid var(--cizgi);border-radius:3px;max-height:30vh;font-family:var(--serif)}
+#hamle:focus{border-color:var(--pirinc);outline:none}
+#gonder{padding:.62rem 1.1rem}
+.giris-alt{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;max-width:72rem;margin:.4rem auto 0;font-size:.8rem;color:var(--soluk)}
+.giris-alt label{display:flex;gap:.35rem;align-items:center;cursor:pointer}
+.giris-alt select{background:var(--deniz);border:1px solid var(--cizgi);border-radius:3px;padding:.1rem .3rem;font-size:.8rem}
+#son-zar{font-variant-numeric:tabular-nums;color:var(--yazi)}
+#erisim-bilgi{margin-left:auto}
+
+/* ---------- çekmeceler ---------- */
+.ortu{position:absolute;inset:0;background:rgba(3,8,12,.6);z-index:30}
+.cekmece{position:absolute;top:0;right:0;height:100%;width:min(100%,30rem);background:var(--deniz2);border-left:1px solid var(--cizgi);z-index:40;display:grid;grid-template-rows:auto minmax(0,1fr) auto;transform:translateX(100%);visibility:hidden;transition:transform .22s ease,visibility 0s linear .22s}
+.cekmece.acik{transform:none;visibility:visible;transition:transform .22s ease}
+.c-bas{padding:.8rem 1rem;border-bottom:1px solid var(--cizgi);display:grid;gap:.6rem}
+.c-bas .ust{display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+.c-bas h2{margin:0;font-family:var(--serif);font-size:1.15rem;color:var(--fener);font-weight:600}
+.c-govde{overflow-y:auto;overscroll-behavior:contain;padding:.8rem 1rem 1.2rem;min-height:0}
+.c-alt{padding:.7rem 1rem calc(.7rem + env(safe-area-inset-bottom));border-top:1px solid var(--cizgi);display:flex;gap:.5rem;flex-wrap:wrap}
+.c-govde h3{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--verdigri);margin:1.1rem 0 .5rem}
+.c-govde h3:first-child{margin-top:0}
+.alan{width:100%;background:var(--deniz);border:1px solid var(--cizgi);border-radius:3px;padding:.5rem .6rem;font-size:16px;line-height:1.4}
+textarea.alan{resize:vertical;min-height:4.5rem}
+.alan:focus{border-color:var(--pirinc);outline:none}
+.kaide-l{list-style:none;margin:0;padding:0;counter-reset:k}
+.kaide-l li{display:grid;grid-template-columns:1.8rem minmax(0,1fr);gap:.4rem;padding:.55rem 0;border-bottom:1px solid var(--cizgi);counter-increment:k}
+.kaide-l li::before{content:counter(k) ".";color:var(--pirinc);font-variant-numeric:tabular-nums;font-size:.85rem;padding-top:.1rem}
+.kaide-l .mt{font-family:var(--serif);font-size:.98rem;line-height:1.45}
+.kaide-l .ek{display:flex;gap:.4rem;align-items:center;margin-top:.3rem;flex-wrap:wrap}
+.cip{font-size:.68rem;border:1px solid var(--cizgi);border-radius:2px;padding:.05rem .35rem;color:var(--soluk)}
+.cip.duzeltme{border-color:var(--verdigri);color:var(--verdigri)}
+.ikaz{background:rgba(201,162,74,.12);border:1px solid var(--pirinc);color:var(--fener);padding:.5rem .7rem;border-radius:2px;font-size:.85rem}
+.kanon-l{list-style:none;margin:0;padding:0}
+.kanon-l li{padding:.5rem 0;border-bottom:1px solid var(--cizgi);font-size:.88rem;line-height:1.45}
+.kanon-l .ust{display:flex;justify-content:space-between;gap:.5rem;color:var(--soluk);font-size:.74rem}
+.kanon-l .et{color:var(--verdigri);font-size:.72rem}
+.form-s{display:grid;gap:.35rem;margin-bottom:.7rem}
+.form-s label{font-size:.8rem;color:var(--soluk)}
+.radyo{display:grid;gap:.4rem;font-size:.9rem}
+.radyo label{display:flex;gap:.5rem;align-items:flex-start;cursor:pointer}
+.aciklama{font-size:.78rem;color:var(--soluk);line-height:1.45;margin:.2rem 0 .6rem}
+
+#bildirim{position:absolute;left:50%;bottom:6.5rem;transform:translateX(-50%);background:var(--deniz3);border:1px solid var(--pirinc);color:var(--yazi);padding:.55rem .9rem;border-radius:3px;font-size:.85rem;z-index:60;max-width:calc(100% - 2rem);box-shadow:0 8px 24px rgba(0,0,0,.5)}
+
+/* ---------- dar ekran ---------- */
+@media (max-width:860px){
+  main{grid-template-columns:minmax(0,1fr)}
+  #panel{position:absolute;top:0;right:0;height:100%;width:min(88%,22rem);z-index:40;transform:translateX(100%);visibility:hidden;transition:transform .22s ease,visibility 0s linear .22s;border-left:1px solid var(--cizgi)}
+  #panel.acik{transform:none;visibility:visible;transition:transform .22s ease}
+  #dg-durum{display:inline-block}
+  .sahne{grid-template-columns:minmax(0,1fr)}
+  .hamis{border-right:0;border-bottom:1px solid var(--kagit2);flex-direction:row;flex-wrap:wrap;gap:.2rem .8rem;padding:.55rem .9rem}
+  .hamis .not{border-top:0;padding-top:0}
+  .metin{padding:1rem 1rem 1.1rem;font-size:1.04rem}
+  #akis{padding:1rem .75rem 1.5rem}
+  .kunye{display:none}
+  header{gap:.5rem;padding:.5rem .6rem}
+  nav.ust{flex:1;justify-content:flex-end;flex-wrap:wrap}
+  .dg{padding:.35rem .5rem;font-size:.8rem}
+  #erisim-bilgi{margin-left:0}
+}
+@media (max-width:420px){ .marka{font-size:1rem} }
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <span class="marka">Defterhane</span>
+    <span class="kunye" id="kunye"></span>
+    <nav class="ust" aria-label="Ana düğmeler">
+      <button class="dg" id="dg-durum" type="button" aria-controls="panel">Durum</button>
+      <button class="dg" type="button" data-cekmece="c-kaide">Kaide</button>
+      <button class="dg" type="button" data-cekmece="c-kanon">Kanon</button>
+      <button class="dg" type="button" id="dg-disa">Dışa aktar</button>
+      <button class="dg" type="button" data-cekmece="c-ayar">Ayar</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="akis" aria-label="Sahne akışı" aria-live="polite"></section>
+    <aside id="panel" aria-label="Durum paneli"></aside>
+  </main>
+
+  <footer id="giris">
+    <form class="giris-ust" id="giris-form" autocomplete="off">
+      <label for="hamle" class="sr">Hamlen</label>
+      <textarea id="hamle" rows="2" placeholder="Hamleni yaz… (Ctrl/Cmd + Enter ile gönder)"></textarea>
+      <button class="dg ana" id="gonder" type="submit">Gönder</button>
+    </form>
+    <div class="giris-alt">
+      <label><input type="checkbox" id="zar-at"> zar at</label>
+      <span id="son-zar" title="Son atılan zar">d20 · —</span>
+      <label>derinlik
+        <select id="derinlik">
+          <option value="hizli">hızlı</option>
+          <option value="normal">normal</option>
+          <option value="derin">derin</option>
+        </select>
+      </label>
+      <span id="erisim-bilgi"></span>
+    </div>
+  </footer>
+
+  <div class="ortu gizli" id="ortu"></div>
+
+  <!-- KAİDE -->
+  <section class="cekmece" id="c-kaide" role="dialog" aria-modal="true" aria-labelledby="c-kaide-b">
+    <div class="c-bas">
+      <div class="ust"><h2 id="c-kaide-b">Kaide</h2><button class="dg kucuk" type="button" data-kapat>Kapat</button></div>
+      <form id="kaide-ekle" class="satir">
+        <label for="kaide-yeni" class="sr">Yeni kaide</label>
+        <textarea id="kaide-yeni" class="alan" rows="2" placeholder="Yeni kural (emir kipinde, kısa, denetlenebilir)"></textarea>
+        <button class="dg ana" type="submit">Ekle</button>
+      </form>
+    </div>
+    <div class="c-govde" id="kaide-govde"></div>
+    <div class="c-alt"><span class="aciklama" id="kaide-say" style="margin:0"></span></div>
+  </section>
+
+  <!-- KANON -->
+  <section class="cekmece" id="c-kanon" role="dialog" aria-modal="true" aria-labelledby="c-kanon-b">
+    <div class="c-bas"><div class="ust"><h2 id="c-kanon-b">Kanon</h2><button class="dg kucuk" type="button" data-kapat>Kapat</button></div></div>
+    <div class="c-govde" id="kanon-govde"></div>
+    <div class="c-alt">
+      <button class="dg" type="button" id="dg-son-sil">Son turu sil</button>
+      <button class="dg" type="button" id="dg-sahne-sil">Sahneleri sil, kaide kalsın</button>
+      <button class="dg" type="button" id="dg-sifirla">Her şeyi sıfırla</button>
+    </div>
+  </section>
+
+  <!-- AYAR -->
+  <section class="cekmece" id="c-ayar" role="dialog" aria-modal="true" aria-labelledby="c-ayar-b">
+    <div class="c-bas"><div class="ust"><h2 id="c-ayar-b">Ayar</h2><button class="dg kucuk" type="button" data-kapat>Kapat</button></div></div>
+    <div class="c-govde" id="ayar-govde"></div>
+    <div class="c-alt">
+      <button class="dg" type="button" id="dg-json-al">Yedek al (JSON)</button>
+      <label class="dg" for="json-yukle" style="display:inline-block">Yedek yükle</label>
+      <input type="file" id="json-yukle" accept="application/json,.json" class="sr">
+    </div>
+  </section>
+
+  <div id="bildirim" class="gizli" role="status"></div>
+</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   DEFTERHANE — tek dosya. Anlatıcı yalnız anlatır; zar, kayıt ve kural
+   motordadır. Dört kayıt: KAİDE · SÖZLÜK · DURUM · KANON.
+   ===================================================================== */
+
+const DEPO_ANAHTARI = 'defterhane.v1';
+const API_ANAHTARI = 'defterhane.api-anahtari';
+const BAGLAM_BUTCESI = 60000;
+const KAIDE_SINIRI = 35;
+const ITIBAR_SINIRI = 15;
+
+/* ---------------------------------------------------------------------
+   TOHUM VERİ — Balaban Vekâyinâmesi ve şartname §10, Ek A–E
+   --------------------------------------------------------------------- */
+
+const TOHUM_KAIDE = [
+  // 10.1 Dönem ve doğruluk
+  'Tarihî olaylar, isimler, tarihler ve kurumlar uydurulmaz. Bilinmeyen yerde boşluk bırakılır, doldurulmaz.',
+  'Vakit ölçüsü: ezan, kum saati, vardiya, güneşin yeri. Saat–dakika–saniye yok, kol saati yok.',
+  'Hitap ve rütbe doğru kullanılır: reis ≠ paşa. Paşa yalnız vezir ve beylerbeyi içindir.',
+  'Kurum, ceza ve usul döneme uygun olacak. Ceza merdiveni: tevbih → azl → habs/kalebend → müsadere → siyaset.',
+  'Anakronik terim yasaktır: yaver, teğmen, personel, motivasyon, stres, sistem, proje, dakika, saniye.',
+  // 10.2 Anlatım
+  'Sahneler insan insana geçer: konuşma, tasvir, koku, ses, hava. Oyun etiketleri (kriz · fırsat · görev) metnin içine serpiştirilmez.',
+  'Her cengin ağırlığı, kanı ve bedeli gösterilir. Zafer ucuz yazılmaz.',
+  'Oyuncunun hamlesi uygulanır; onun yerine karar verilmez. Karakter, oyuncunun yazmadığı bir şeyi yapmaz.',
+  'Sahne oyuncuya bir karar bırakarak biter. Anlatıcı sahneyi kendi kapatmaz.',
+  'Övgü ucuz dağıtılmaz. Kimse kahraman ilan edilmez.',
+  // 10.3 Karakter tutarlılığı
+  'Karakterin bedenî vasıfları ve yaraları durumda yazılıdır; sahne bunları yok saymaz.',
+  'Karakterin sertliği bir kusur değil bir vasıftır. Kurduğu otoriteyi özür dileyerek geri vermez.',
+  'Zimmetlenen tekneler, adamlar ve hatlar unutulmaz.',
+  'Emir zinciri tutarlı kalır. Kaldırılmış bir vazife ikinci kere verilmez; olmayan bir âmir atanmaz.',
+  // 10.4 Vaatler ve borçlar
+  'Vaat edilen şey (rütbe, in\'âm, gemi, emanet) şartlarıyla beraber hatırlanır. Şart tutulmadan verilmez, tutulunca da geciktirilmez.',
+  'Emanetler ve açık meseleler kendiliğinden çözülmez; oyuncu onlara dokunana kadar beklerler.',
+  // 10.5 Ölüm ve sonuç
+  'Ölen ölür. Diriltme yoktur.',
+  'Anlatıcı oyuncunun karakterini kendi başına öldürmez. Ölüm ancak şu üçü birlikteyse gelir: oyuncunun kendi kararı + kötü zar + durumda yazılı bir zafiyet.',
+  'Yan karakter ölümü bedava değildir; sebebi zincirlenebilir olmalıdır.',
+  // 10.6 Ölçek
+  'olcek alanı "kisi" ise oyun bir insanın hayatıdır: itibar, maharet, adamlar, emanetler.',
+  'olcek alanı "devlet" ise oyun bir ulusun idaresidir: hazine, nüfus, ordu, diplomasi, istikrar. Oyun promptundaki senaryolar ve durum raporu biçimi bu ölçekte esastır.',
+  'Motor ikisini de destekler; yalnız durum şeması ve panel başlıkları değişir. Anlatım kaideleri ikisinde de aynıdır.'
+];
+
+/* Başka çağlarda 2–5. maddeler dönemin kendisine göre yazılır. */
+const CAG_KAIDE_DEGISIM = {
+  1: 'Vakit ölçüsü ve âletler döneme uygun olur; dönemde olmayan âlet, silah ve buluş anılmaz.',
+  2: 'Hitap, unvan ve rütbe döneme ve ülkeye göre doğru kullanılır.',
+  3: 'Kurum, ceza ve usul döneme ve ülkeye uygun olacak.',
+  4: 'Anakronik terim yasaktır; SÖZLÜK\'teki yasak kelimeler hiçbir şekilde geçmez.'
+};
+
+const TOHUM_SOZLUK = {
+  izinli: [
+    'Ölçü: kulaç, kadem, karış, akçe, kantar, kum saati',
+    'Gemi: kadırga, göke, barça, fusta, kalyata, mavna, baştarda, karamürsel',
+    'Rütbe/görev: azeb, reis, kethüda, çavuş, kâtip, neccar, kalafatçı, topçu, kürekçi, çuhadar, duacı, serdar, beylerbeyi, vezirâzam',
+    'Gemi parçası: ıskarmoz, yeke, palamar, iskandil, safra, kalafat, üstüpü, ırgat, lombar, borda, kasara, mizana, grandi, aynalık',
+    'Levazım: peksimet, kırba, fıçı, barut, gülle, fitil, tozluk, tatar yayı',
+    'Usul: temennâ, buyruldu, arzuhal, zâbıt, in\'âm, tevbih, azl, müsadere, meşveret, divan, hâmiş, hulâsa'
+  ],
+  yasak: ['dakika','saniye','saat (âlet)','yaver','teğmen','kaptan (unvan olarak)','personel','motivasyon','stres','sistem','proje','enerji','moral']
+};
+
+const TOHUM_DURUM = {
+  olcek: 'kisi',
+  tarih: '12 Kasım 1522 / 19 Ramazan 928',
+  mevki: 'Rodos önleri — Şahbaz-ı Deryâ ve Nimet teknesi',
+  kisi: 'Balaban bin Ulaş',
+  unvan: 'Donanma mesâha hizmeti kâtibi — Serdar dairesine dâhil; ölçüm hizmetinde üstü yok',
+  kese: 34,
+  beden: {
+    'sol omuz': 'Öküz Burnu\'nda kopma; omuz hizasına ağır kalkıyor. Kılıç bir sene yasak',
+    'çene': 'sol tarafta bir buçuk parmak iz — sakal çıkmıyor'
+  },
+  maharet: {
+    'kuvvet': 'iyi+', 'çeviklik': 'ustaya yakın', 'dayanıklılık': 'iyi', 'boğuşma': 'iyi',
+    'hesap-kâtiplik': 'iyi+', 'istif-ambar': 'iyi', 'iskandil-seyir': 'iyi', 'insan idaresi': 'iyi+',
+    'tatar yayı': 'iyi (menzil sınırında iki isabet)', 'neccarlık': 'acemi+', 'topçuluk': 'acemi'
+  },
+  itibar: {
+    'Kara Mahmud Reis': 100, 'Kurtoğlu Muslihiddin Reis': 96, 'Vardar Ali': 92, 'Kılıç Bali Reis': 88,
+    'Serdar kethüdası': 82, 'Kubad Reis': 80, 'Hızır Reis': 78, 'Sinan Çavuş': 74,
+    'Pîrî Reis': 72, 'Yusuf Reis': 70, 'Ali bin Turgut Reis': 62, 'Çoban Mustafa Paşa': 60
+  },
+  adamlar: [
+    'Kemal (14) — kâtip; Şarköylü, Balaban\'ın hayatını kurtardı, nizama bir madde koydu',
+    'Tosun (20) — neccar; topal kaldı',
+    'Kara Yakub — dümenci; kolu eğri kaynadı',
+    'Hüseyin — gözcü (Kılıç Bali\'den: "bu sefer geri getir")',
+    'Turhan (25) — ölçücü; usul öğretildi, tevbih aldı',
+    'Bekir (40) — ölçücü',
+    'Sekiz kürekçi — 38–52 yaş; en yaşlısı Mehmed (52), Vardar Ali seçti'
+  ],
+  zimmet: [
+    'Nimet — 12 oturaklı hizmet teknesi; evvelce batmış, zâbıtla teslim alındı',
+    'İkinci tekne — 10 oturak; eksiksiz teslim alındı',
+    'Ölçüm defterleri ve Nizâm-ı Mesâha kış faslı'
+  ],
+  emanet: [
+    '180 akçe — Vardar Ali\'de ("sağ dönersen elinden alırsın")',
+    'Hızır Reis\'in dedesinin demir tırnağı — kışın sonunda iade',
+    'Kubad Reis\'in yirmi iki yıllık bakır tası — baharda iade',
+    'Bekir\'in Frenk hançeri — kuşakta',
+    'Pîrî Reis\'e söz — sağ dönülürse defteri Gelibolu\'ya götürmek',
+    'Davut Reis\'in notu ve Kara Mahmud\'un mektubu — bohçanın dibinde, yan yana'
+  ],
+  acik: [
+    'Kuşatma — kale hâlâ ayakta; kaleden kaçanlar başladı, içeride ekmek azalıyor',
+    'İn\'âm arz edildi — cevabı gelmedi',
+    'Ücret kesik — nizam tamamlanana kadar',
+    'Rütbe askıda — Kubad: "bu kışı sağ çıkarsan baharda sana gemi verecekler"; gemi ile kalem bir arada tutulmaz',
+    'Kış nizamının asıl sınavı — büyük fırtına',
+    'Frengistan\'dan imdat ihtimali',
+    'Bahar — zâbıt defteri Serdar dairesine teslim edilecek',
+    'Emanetlerin iadesi — hepsi "sağ dönmek" şartına bağlı'
+  ],
+  oluler: [
+    'Bekir — Menteşeli; firar kaydı kapatıldı ("Kaçmadın.")',
+    'Yakup Kara — bir günlük adamı ("Yüzünü hatırlamıyorum.")',
+    'Musa — Ayvalıklı, Kılıç Bali\'nin adamı',
+    'Adı bilinmeyen Rodoslu topçu — Öküz Burnu'
+  ]
+};
+
+const TOHUM_KANON = [
+  ['4 Haziran 1522','Gelibolu: küflü peksimet meselesi çözüldü (23 çürük, 62 ıslak, 312 sağlam), Receb rezil edilmedi; mevcut sayımında dokuz kaçak bulundu, Tosun küpeşteye yatırıldı, Kemal, Nikola, Hızır ve İlyas ortaya çıktı.',['Gelibolu','Receb','peksimet','Vardar Ali','Tosun','Kemal','Bekir','Nikola','Kara Mahmud Reis']],
+  ['5 Haziran 1522','Boğaz: Nara Burnu\'nda Pîrî Reis\'le tanışıldı; "Tuna seferi" yanlışıyla rezil olundu, üç sütun kaidesi doğdu; sağ dönülürse defteri Gelibolu\'ya götürme sözü verildi; 19. oturakta çürük ıskarmoz bulundu.',['Pîrî Reis','Nara Burnu','defter','söz','ıskarmoz','Gelibolu']],
+  ['6 Haziran 1522','Bababurnu: ana donanmayla buluşuldu; paşa gemisinde meşverette Kara Mahmud\'un yanında duruldu; bütün filoyu teftiş izni istenip azar yendi; Kemal kâtip yapıldı.',['Bababurnu','meşveret','Kurtoğlu','Kara Mahmud Reis','Kemal']],
+  ['9–12 Haziran 1522','Çeşme: Kurtoğlu\'nun huzurunda dört kanaat sunuldu, buyruldu verildi; Balaban ölçücülerin başı oldu, nizamı yazdı; 180 akçe Vardar Ali\'ye emanet bırakıldı.',['Çeşme','Kurtoğlu','buyruldu','nizam','Vardar Ali','emanet','akçe']],
+  ['23 Haziran 1522','Rodos, sığlık muharebesi: ölçüm bitirilip sığlığa kaçıldı; kayıktan gelen kırk kişilik çıkarma beş kişiyle imha edildi; Bekir şehit, Tosun ve Kara Yakub yaralı; Kemal Balaban\'ın hayatını kurtardı; ölçüm kayıklarına dörder yay buyruldu.',['Rodos','sığlık','fusta','Bekir','Tosun','Kara Yakub','Kemal','Kılıç Bali Reis','yay']],
+  ['24 Haziran 1522','Öküz Burnu ölçüldü: yüklü mavna 4,5 kulaçta oturur, sal şart; sırtta metris ve üç top; kayık battı, iki okla doldurucu ve fitilci vuruldu; Yakup Kara öldü, defter kurtarıldı, sol omuz koptu.',['Öküz Burnu','top','metris','Yakup Kara','Yusuf Efendi','defter','sol omuz']],
+  ['25–26 Haziran 1522','Defterhane: beş bölüğün ölçüsü tek ölçüye çevrildi, 840 ölçü tek harita oldu, kenarına dört isim yazıldı; Kara Murad Reis metrisi bastı, kuşatma topları kayıpsız karaya indi.',['defterhane','harita','Kara Murad Reis','mavna','sal','Serdar kethüdası']],
+  ['29 Temmuz 1522','Kanuni Sultan Süleyman karaya indi; Serdar-ı Ekrem meşveretinde harita anlatıldı, kış tavsiyesi verildi; Balaban mesâha hizmeti kâtibi yazıldı, rütbe huzurda reddedildi, azeblik kaydı askıda bırakıldı.',['Kanuni','Pîrî Mehmed Paşa','Hasan Reis','meşveret','rütbe','azeblik']],
+  ['30 Temmuz–5 Ağustos 1522','Kışlama tertibi: yer, geminin su çekimi ve barınağın dibiyle tayin olunur; zâbıt maddesi kondu; Kubad Reis itiraz etti, Kurtoğlu rakama dayandı; Balaban\'a bir tekne tahsis edildi.',['kışlama','Kubad Reis','Kurtoğlu','zâbıt','tekne','Çoban Mustafa Paşa']],
+  ['6–12 Ağustos 1522','Mürettebat kuruldu (13 nefer + 1 kâtip); tekne gizli yama ve çürüklerle zâbıtla teslim alındı, Sinan Çavuş şahit; tekneye Nimet adı kondu.',['Nimet','mürettebat','Vardar Ali','Sinan Çavuş','zâbıt','Kara Yakub','Tosun','Hüseyin']],
+  ['30–31 Ekim 1522','Fırtına gecesi: kum kuşağı demir hattını kapattı; dört kapı çalındı, Kubad, Yusuf ve bir kalyata reisi kalktı, Hızır Reis kalmadı; Nimet fener ve bağırışla tempo verip kadırgayı kayadan 140 kulaçta tuttu; Kerimullah barçası oturdu, 11 şehit.',['fırtına','Kubad Reis','Yusuf Reis','Hızır Reis','Nimet','Kerimullah','tokmak']],
+  ['31 Ekim 1522','Divan: Hüsrev bin Abdullah azl ve ihraç, Hasan bin İbrahim azl; Balaban nizamı kışa göre yazmadığını ikrar etti: tevbih, nizamı yeniden yazmak, ücret kesintisi; in\'âm talebi Serdar\'a arz edildi.',['divan','Hüsrev','Hasan','tevbih','nizam','ücret','in\'âm']],
+  ['4–12 Kasım 1522','Kubad Reis\'le çorba içildi, düşmanlık bitti; Nizâm-ı Mesâha kış faslı yazıldı; ikinci tekne alındı; Turhan\'ın yalanı ikrar ettirildi, usul öğretildi; haftalık arz kabul edildi, nizama yeni madde eklendi.',['Kubad Reis','nizam','kış faslı','Turhan','Bekir','arz','Kemal','Sinan Çavuş']]
+];
+
+const BALABAN_KUNYE = `Kampanya: Balaban Vekâyinâmesi — Rodos Seferi Defteri, 928 / 1522.
+Karakter: Balaban bin Ulaş, 24 yaşında, Köprülü Vovograd köyünden maraba oğlu. Babası Ulaş, anası Ayşe Hatun, kardeşleri Alime ve Mehmet. Kara Şahin kadırgasında azeb olarak başladı; şimdi donanma mesâha hizmeti kâtibi, Serdar dairesine dâhil. Rütbe huzurda reddedildi; azeblik kaydı kendi talebiyle askıda.
+Defter usulü (kendi kurduğu): dört sütun — işitilen · görülen · ölçülen · kanaat. Kanaati yalnız kendisi yazar.
+Balaban'ın vukuat kaideleri: gördüğün, ölçtüğün, işittiğin, kanaatin aynı sayfaya karışmaz · kanaate herkes itiraz eder, ölçüye kimse itiraz edemez · taarruzda açığa değil sığa kaç · sudan gelen adam zayıftır, kayıktan inilmez · rüzgârda tokmak sesi gitmez, insan sesi gider · yapılmayan iş sessizdir, yazılmazsa devlet duymaz · bir nizam adamı fazilete zorlamalı, faziletine güvenmemeli · bir nizam adamdan bilmediği bir işi istememeli · emir verme, haber ver; reddetme, imkânsız kıl · ikinci ölüyü birinciye ödeyemezsin.
+Hâmiler ve üstler: Kara Mahmud Reis (Kara Şahin reisi; hâmi ve usta; iki kez rütbe istedi, ikisinde de reddedildi) · Kurtoğlu Muslihiddin Reis (donanmanın sevk ve idaresi; buyruldu onun) · Çoban Mustafa Paşa (Serdar-ı Ekrem; tekneyi tahsis etti) · Vezirâzam Pîrî Mehmed Paşa · Serdar kethüdası (kınalı sakal; Balaban'a "Efendi" diyen ilk devlet adamı) · Pîrî Reis (kötü çizer, doğru ölçer; Gelibolu sözü).
+Dostlar: Kılıç Bali Reis · Vardar Ali (kürekçi çavuşu; 180 akçe onda) · Kubad Reis (düşmandan dosta; bakır tası emanet) · Hızır Reis (demir tırnak emanet) · Ali bin Turgut Reis (26; saha hizmetinin başında) · Yusuf Reis · Mahmud Reis · Kâtip Nuh Efendi · Şaban Efendi (tersane, 32 yıllık) · Sinan Çavuş.
+Azledilenler: Hasan Reis / Hasan bin İbrahim (gece körlüğünü gizledi) · Hüsrev bin Abdullah (Kerimullah reisi; ihraç).
+Üslup ölçütü — vekâyinâmeden sözler: "Gördüğün. Ölçtüğün. Kanaatin." · "Yetki senin cebinden çıkmaz, birinin ağzından çıkar." · "Övünen adam 'ben yaptım' der. Bildiren adam 'şöyle olur' der." · "Bir felaketi önlersen, önlediğini kimse görmez. Yalnız sen bilirsin." · "Bir adamın hizmeti kabahatini örtmez; kabahati de hizmetini silmez." · "Korku yalanı yazdırır. Cehalet yalanı gerektirir." · "Sana kızmadım. Otuz yıla kızdım." · "Nizam henüz bitmedi." — "İyi. Bitmesin."`;
+
+/* Oyun promptundan (PAx Historia tarzı) — devlet ölçeği çerçevesi ve senaryolar */
+const DEVLET_GM_KURALLARI = `Devlet ölçeğinde anlatıcı, bir ulusun (ya da kabile, paralı ordu, gemi, kervan) idaresini yürüten bir Büyük Strateji oyununun yöneticisidir. Dünyayı simüle eder, hamlelerin sonucunu hesaplar, olay üretir, öteki ulusları kendi kişilikleri, hedefleri, dinleri ve oyuncuya duruşlarıyla yönetir. Oyuncuya bir danışman gibi hitap eder; hitap ve unvan dönemine göredir, ama övgü ucuz dağıtılmaz.
+Diyalog simülasyonu: Oyuncu bir lider/elçiyle görüşmek isterse oyun normal akıştan çıkar; buluşma yeri, ambiyans (ses, koku, ışık, hava) anlatılır; anlatıcı o kişinin karakterine bürünür, kendi çıkarıyla konuşur ve sözü oyuncuya bırakır. Acil bir konuşma bitmeden başka işe geçilmez. Görüşme oyuncu "görüşmeyi sonlandırıyorum" deyince biter; başarısı sonuçlara ve ilişkilere yansır. Anlatıcı da olaylara bağlı elçi gönderebilir. Çağa ve ülkeye uygun tarihî isimler kullanılır.
+Tur: Oyuncu her tur birkaç kategoriden (Ekonomi/İnşaat, Diplomasi/Casusluk, Askerî, Teknoloji, İç Politika, Din, Kültür) hamle yazar. Zaman oyuncu "turu geç" deyince ve onun belirlediği kadar (gün/hafta/ay/yıl) ilerler. İnşaat, sefer, reform gibi işlerin tamamlanma tarihi gerçekçi verilir.
+Sapma (divergence): her büyük hamlede tarihten sapma yüzdesi değerlendirilir (0–25 tarihsel uyum · 26–50 bölgesel sapma · 51–75 küresel sapma · 76–100 alternatif tarih rejimi) ve vaziyet.Sapma alanında tutulur. Tarihî olaylar esnek çekirdektir; oyuncunun hamlesine göre ertelenir, değişir ya da gerçekleşmez.
+Dünya tepkisi: itibar + çıkar uyumu − tehdit = diplomatik tepki (destekliyor · tarafsız · karşı çıkıyor). Savaş sonunda zafer, beraberlik ya da yenilgi; sınır değişimi, haraç, isyan riski buna göre.
+İç gruplar: en az dört grup (ör. aristokratlar, din adamları, tüccarlar, ordu, halk) her hamleden etkilenir.
+Durum raporu (oyunun başında ve oyuncu turu geçirdiğinde), sayıları yalnız DURUM'dan alarak şu biçimde verilir:
+🕰️ Tarih · 👑 Yönetici · 💰 Hazine · 👥 Nüfus / okuryazarlık · ⚔️ Askerî güç · 📚 Teknoloji · 🕌 Dinî bütünlük / Zeal · 🎭 Prestij · 🏛️ İç gruplar (mutluluk) · 📍 Dünya durumu · ⚠️ Kriz · 💡 Fırsat · 🔁 Zar · ❤️ Görüşme bekleyenler.
+Rapordaki her sayı değişikliği yine cevabın sonundaki blokla önerilir; motor uygular.
+Oyuncu zor bir ulusla oynuyorsa zarına açıkça gösterilen +4'e kadar bir artı konabilir.`;
+
+const SENARYOLAR = {
+  balaban: { ad: 'Balaban Vekâyinâmesi — Rodos, 1522', olcek: 'kisi', tohum: true },
+  s1911: {
+    ad: '1911 — Bütün savaşları bitirecek savaş', olcek: 'devlet', tarih: '1 Ocak 1911',
+    yasak: ['internet','bilgisayar','televizyon','radar','nükleer','NATO','Birleşmiş Milletler','Avrupa Birliği','helikopter','jet'],
+    metin: `1 Ocak 1911'e kadar her şey tarihte olduğu gibi oldu. Akılda tutulacak tarihî olaylar (birebir kopyalanmaz; bu oyunda olup bitenlere göre simüle edilir, gerekirse hiç olmaz): Stolipin suikastı (Eylül 1911) · Trablusgarp Savaşı (29 Eylül 1911 – Ekim 1912) · İkinci Fas (Agadir) Krizi: Mayıs 1911 Fransız müdahalesi, 1 Temmuz 1911 Alman gambotu Agadir'de, 4 Kasım 1911 uzlaşma — Fas Fransa'ya, İspanyol Fası ve Cape Juby İspanya'ya, tarihsel akışta Neukamerun Almanya'ya · Xinhai Devrimi (10 Ekim 1911, genellikle Hubei'de başlar): olursa "Çin Cumhuriyeti" adlı YENİ bir devlet doğar, "Büyük Qing" dağıtılmaz; isyan bölgeleri cumhuriyete geçer, Moğolistan ve Tannu Uriankhai de ayrılır; Qing'in kazanıp kazanmayacağı oyuncunun yaptıklarına bağlıdır · I. Balkan Savaşı (8 Ekim 1912 – Mayıs 1913) · II. Balkan Savaşı (16 Haziran – 18 Ağustos 1913).`
+  },
+  s1935: {
+    ad: '1935 — Aralık dünyası', olcek: 'devlet', tarih: '1 Aralık 1935',
+    yasak: ['internet','bilgisayar','nükleer santral','NATO','Birleşmiş Milletler','Avrupa Birliği','jet uçağı','uydu'],
+    metin: `1 Aralık 1935'ten önce her şey tarihte olduğu gibi oldu; tek istisna oyuncunun devleti, o tarihte var olmayan (yalnız bir tane) uydurma bir devlet olabilir. Oyuncu yalnız kendi devletini yönetir; başka devletler adına karar veremez, onları ancak siyaset, diplomasi ya da savaşla etkileyebilir. Barbarossa olursa Almanya kesintisiz bir cephe hattıyla ilerler; Ukrayna ve Baltık bölgeleri dikkatle devredilir. Rus ve Çin bölgeleri bugünkü oblast/eyalet sınırlarıyla düşünülür. Tek bölgeli devletlerde (ör. Habeşistan) bölge ancak tamamı işgal edilince el değiştirir. Faşist İtalya Habeşistan'ı alırsa, oyuncu engellemedikçe Eritre, Habeşistan ve Somali'den "İtalyan Doğu Afrikası" kurulur.`
+  },
+  s1444: {
+    ad: '1444 — Orta Çağın sonu', olcek: 'devlet', tarih: '11 Kasım 1444',
+    yasak: ['dakika','saniye','tüfek','tabanca','Amerika','personel','sistem','proje','motivasyon','stres','gazete','fabrika'],
+    metin: `11 Kasım 1444'ten önce her şey tarihte olduğu gibi oldu. İLK OLARAK oyuncunun dünyayı ne kadar bildiğini anlatan bir olay verilir; keşfedilmemiş ülkelerle etkileşim yok sayılır. Resmî konuşulur. Avrupa devletlerinin çoğu Amerika'yı, Hindistan'ı, Doğu Asya'yı ve Sahra altını bilmez. Deniz seferlerinde hedef söylenir ama sonuç rastlantısaldır: batabilir ya da plan dışı topraklar bulabilir; seferler birkaç yılda döner, hiçbir zaman durağan kalmaz, çoğunlukla denizde kalır, uzun kara yürüyüşü yapmaz. Sömürgecilik iyi teknoloji ve yakın deniz üsleri ister; İberya önde, Fransa, İngiltere ve Norveç yeterli. Amerika'nın tamamı 1650 civarından önce sömürgeleşmez. Afrika'da yalnız Ümit Burnu, Angola, Mozambik, Kongo'nun bir kısmı, Habeşistan ve Kuzey Afrika'nın çoğu sömürgeleşebilir; her yeni sömürgede çıkarılabilecek ürün belirtilir. İnka birleşmesi: Cuzco, Wanka, Colla, Huyla, Chimu ve Cajamarca'yı yaklaşık 25 yılda alırsa İnka İmparatorluğu ilan olunur. Tarihî çekirdekler: Yüz Yıl Savaşı'nın sonu (1444–1453) · Portekiz'in Batı Afrika kıyısı seferi (1444) · Papa V. Nicolaus seçimi (1447) · Ming'in Tumu buhranı (1449) · Konstantiniyye'nin fethi (1453; Avrupa yardımı yoksa Bizans düşer) · Güller Savaşı (1455) · Kolomb'un teklifi (1475–1485).`
+  },
+  s1836: {
+    ad: 'Buhar ve Gölge Çağı — 1836–1915', olcek: 'devlet', tarih: '1 Ocak 1836',
+    yasak: ['internet','bilgisayar','radyo','televizyon','uçak','otomobil','tank','NATO','Birleşmiş Milletler'],
+    metin: `"Sanayinin Tanrıları ve İmparatorlukların Gölgesi." Kapsam bütün dünyadır. Buhar makineleri yeni güçler doğurur, eski imparatorluklar çürür; liberalizm, milliyetçilik ve sosyalizm aynı anda yükselir, sömürge rekabeti dünyayı boğar. Çağlar: Sanayi Şafağı (1836–1850: demiryolu furyası, kömür-demir-pamuk, Tanzimat 1839, Mehmed Ali Paşa buhranı 1840, Afyon Savaşı 1839–42, Corn Laws 1846, 1848 devrimleri) · Milletlerin Uyanışı (1850–1870: Kırım Savaşı, Islahat Fermanı, Meiji, Amerikan İç Savaşı, İtalyan ve Alman birliği tohumları, Süveyş 1869) · Demir İmparatorluklar (1870–1890: Alman birliği 1871, Paris Komünü, Kanun-i Esasi 1876, 93 Harbi, Berlin Kongresi, Üçlü İttifak) · İmparatorluklar Yarışı (1890–1915: Afrika'nın paylaşılması, Boer, Rus-Japon Savaşı, Jön Türk Devrimi, Trablusgarp, Balkan Savaşları, Xinhai, 1914 kıvılcımı). Ek mekanikler: ideoloji (monarşi → liberalizm, sosyalizm, faşizm; yavaş geçiş) · hızlı sanayileşme refah ve prestij getirir ama kirlilik, eşitsizlik ve istikrarsızlık da getirir · devrim riski istikrar ve halk desteğine bağlıdır · romanlar, anıtlar ve buluşlar prestij kazandırır · dünya gerginliği (0–30 barış, 31–60 gerilim, 61–90 silahlanma, 91–100 savaş eşiği) vaziyet.Gerginlik alanında tutulabilir.`
+  },
+  kendi: { ad: 'Kendi senaryom', olcek: null }
+};
+
+/* ---------------------------------------------------------------------
+   ŞEMALAR — değişim alanları ölçeğe göre
+   --------------------------------------------------------------------- */
+const SEMA = {
+  kisi: {
+    sayi: { kese: 'kese' },
+    olcekli: {},
+    harita: { itibar: 'puan', beden: 'metin', maharet: 'metin' },
+    liste: ['adamlar','zimmet','emanet','acik','oluler'],
+    korunan: ['zimmet'],
+    etiket: { kese:'kese', itibar:'itibar', beden:'beden', maharet:'maharet', adamlar:'adamlar', zimmet:'zimmet', emanet:'emanet', acik:'açık', oluler:'ölüler' }
+  },
+  devlet: {
+    sayi: { hazine: 'hazine' },
+    olcekli: { istikrar: 'istikrar', prestij: 'prestij' },
+    harita: { gruplar: 'puan', diplomasi: 'puan', ordu: 'metin', vaziyet: 'metin' },
+    liste: ['adamlar','kaynak','emanet','acik','oluler'],
+    korunan: [],
+    etiket: { hazine:'hazine', istikrar:'istikrar', prestij:'prestij', gruplar:'grup', diplomasi:'diplomasi', ordu:'ordu', vaziyet:'vaziyet', adamlar:'saray', kaynak:'kaynak', emanet:'antlaşma/vaat', acik:'açık', oluler:'ölüler' }
+  }
+};
+
+/* ---------------------------------------------------------------------
+   YARDIMCILAR
+   --------------------------------------------------------------------- */
+const $ = (s, r = document) => r.querySelector(s);
+const kopya = o => JSON.parse(JSON.stringify(o));
+const bugun = () => new Date().toISOString().slice(0, 10);
+
+function h(tag, props, ...cocuk) {
+  const e = document.createElement(tag);
+  if (props) for (const [k, v] of Object.entries(props)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2), v);
+    else if (k === 'value') e.value = v;
+    else if (k === 'checked' || k === 'disabled' || k === 'selected') e[k] = !!v;
+    else e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of cocuk.flat()) if (c != null && c !== false) e.append(c instanceof Node ? c : String(c));
+  return e;
+}
+
+function kacis(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+/* Türkçe duyarlı sadeleştirme: küçük harf, düzeltme işaretleri ve Türkçe harfler atılır. */
+function sade(s) {
+  return String(s).toLocaleLowerCase('tr')
+    .replace(/ı/g, 'i').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[’'`]/g, "'").replace(/\s+/g, ' ').trim();
+}
+/* Liste öğesinin anahtarı: " — " öncesindeki kısım. */
+function anahtar(s) { return sade(String(s).split(/\s+[—–-]\s+/)[0]); }
+
+function sahneHtml(metin) {
+  return String(metin).trim().split(/\n\s*\n/).map(p => {
+    let t = kacis(p.trim()).replace(/\n/g, '<br>');
+    t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*])\*(?!\s)(.+?)\*/g, '$1<em>$2</em>');
+    return `<p>${t}</p>`;
+  }).join('');
+}
+
+function isaret(n) { return n > 0 ? '+' + n : n < 0 ? '−' + Math.abs(n) : '±0'; }
+
+let bildirimZaman;
+function bildir(m, sure = 3200) {
+  const b = $('#bildirim');
+  b.textContent = m; b.classList.remove('gizli');
+  clearTimeout(bildirimZaman);
+  bildirimZaman = setTimeout(() => b.classList.add('gizli'), sure);
+}
+
+/* Yıkıcı işlemler iki basış ister. */
+function ikiBasis(btn, fn) {
+  const asil = btn.textContent;
+  let kurulu = false, z;
+  btn.addEventListener('click', () => {
+    if (!kurulu) {
+      kurulu = true; btn.textContent = 'Emin misin? Tekrar bas'; btn.classList.add('uyari');
+      z = setTimeout(() => { kurulu = false; btn.textContent = asil; btn.classList.remove('uyari'); }, 4000);
+      return;
+    }
+    clearTimeout(z); kurulu = false; btn.textContent = asil; btn.classList.remove('uyari');
+    fn();
+  });
+}
+
+/* ---------------------------------------------------------------------
+   KAYIT (kalıcı depo)
+   --------------------------------------------------------------------- */
+let DEPO_VAR = false;
+try { localStorage.setItem('defterhane.sinama', '1'); localStorage.removeItem('defterhane.sinama'); DEPO_VAR = true; } catch (e) { DEPO_VAR = false; }
+
+function varsayilanAyar() {
+  return {
+    zar: true, derinlik: 'normal', erisim: 'otomatik',
+    modeller: { hizli: 'claude-haiku-4-5-20251001', normal: 'claude-sonnet-5', derin: 'claude-opus-5-5' },
+    depoBildirildi: false
+  };
+}
+
+function balabanKampanyasi(ayar) {
+  return {
+    v: 1,
+    kampanya: { ad: 'Balaban Vekâyinâmesi', senaryo: 'balaban', kunye: BALABAN_KUNYE, kurulum: false },
+    durum: kopya(TOHUM_DURUM),
+    durumTohum: kopya(TOHUM_DURUM),
+    kaide: TOHUM_KAIDE.map((m, i) => ({ id: 'k' + (i + 1), metin: m, kaynak: 'tohum', tarih: bugun() })),
+    sozluk: kopya(TOHUM_SOZLUK),
+    kanon: TOHUM_KANON.map(([tarih, ozet, etiket], i) => ({
+      id: 't' + (i + 1), sira: i + 1, rol: 'tohum', tarih, metin: '', ozet, etiket,
+      zar: { atildi: false }, degisim: [], durumOnce: null
+    })),
+    ayar: ayar || varsayilanAyar()
+  };
+}
+
+let S = null;
+function depoOku() {
+  if (!DEPO_VAR) return null;
+  try { const t = localStorage.getItem(DEPO_ANAHTARI); return t ? JSON.parse(t) : null; } catch (e) { return null; }
+}
+function depoYaz() {
+  if (!DEPO_VAR) return;
+  try { localStorage.setItem(DEPO_ANAHTARI, JSON.stringify(S)); }
+  catch (e) { bildir('Kayıt yazılamadı — depo dolu ya da kapalı. Dışa aktarmayı unutma.', 6000); }
+}
+function apiAnahtari() { try { return localStorage.getItem(API_ANAHTARI) || ''; } catch (e) { return ''; } }
+
+/* ---------------------------------------------------------------------
+   BAĞLAM KURULUMU (§5)
+   --------------------------------------------------------------------- */
+function cerceve() {
+  const devlet = S.durum.olcek === 'devlet';
+  const alanlar = devlet
+    ? 'hazine · istikrar · prestij · gruplar.<ad> · diplomasi.<ulus> · ordu.<birlik> · vaziyet.<ad> · adamlar · kaynak · emanet · acik · oluler'
+    : 'kese · itibar.<isim> · beden.<uzuv> · maharet.<ad> · adamlar · zimmet · emanet · acik · oluler';
+  const ornek = devlet ? '{"alan":"gruplar.Tüccarlar","islem":"+3","sebep":"liman imtiyazı"}' : '{"alan":"itibar.Kubad Reis","islem":"+3","sebep":"çorba sahnesi"}';
+  return `Sen Defterhane'nin anlatıcısısın: tarihî bir rol yapma oyununda oyuncu ${devlet ? 'bir devleti idare eder' : 'bir karakteri oynar'} ve hamlesini yazar; sen dünyayı, öteki insanları ve hamlenin sonucunu anlatırsın.
+
+GÖREVİN YALNIZ ANLATMAKTIR. HAKEM SEN DEĞİLSİN.
+- Zarı motor atar. [8] ZAR'daki sayıyı değiştirmez, yeniden atmaz, yok saymazsın.
+- DURUM'u sen yazamazsın. Yalnız cevabın sonundaki blokta değişiklik ÖNERİRSİN; motor denetler ve uygular. Sayıları (${devlet ? 'hazine, istikrar' : 'akçe, itibar'}) sahne metnine gömme; metin anlatır, blok sayar.
+- KAİDE'nin her maddesi her sahnede geçerlidir. SÖZLÜK'teki yasak kelimeler hiçbir biçimde geçmez.
+- DURUM'daki emanetler, açık meseleler, zimmet ve ölüler kampanyanın taşıyıcı ipleridir; unutulmaz, kendiliğinden çözülmez.
+
+ÜSLUP. Ölçüt, KAMPANYA KÜNYESİ'ndeki vekâyinâmenin sesidir: kısa, ağır cümleler; somut ayrıntı; insanlar konuşarak var olur; hikmet anlatıcının nasihati olarak değil, birinin ağzından söz olarak çıkar. Sahne 250–600 kelime. Başlık, madde işareti, oyun etiketi kullanma${devlet ? ' (durum raporu istendiğinde onun biçimi hariç)' : ''}.
+
+ZAR. Bu turda zar atıldıysa sonucu belirsiz olan işi o zarla yorumla. Artı-eksileri (maharet, yara, hâl) sen koyarsın ama sahnenin içinde TEK SATIRDA açıkça gösterirsin, örnek: (Zar 14 + 2 hesap − 2 sol omuz = 14 → başarılı, bedelli). Ölçek: 1–5 başarısız, üstüne bir bedel · 6–10 başarısız ama kapı kapanmaz · 11–14 başarılı, bedelli · 15–19 başarılı · 20+ beklenenden fazlası. Doğal 1 ve doğal 20 özel değildir; otomatik felaket ya da otomatik zafer yoktur.
+
+ÇIKTI SÖZLEŞMESİ. Cevabını DAİMA şu blokla bitir; bloktan önceki her şey sahne metnidir, bloktan sonra hiçbir şey yazma:
+<<<DURUM>>>
+{
+  "ozet": "tek cümlelik sahne özeti",
+  "etiket": ["kişi/yer/mesele adları"],
+  "tarih": "sahne sonundaki tarih",
+  "mevki": "sahne sonundaki yer",
+  "degisim": [ ${ornek} ],
+  "kaide_onerisi": null
+}
+<<<SON>>>
+Değişim alanları: ${alanlar}
+İşlemler: "+5" · "-5" · "=değer" · "ekle:metin" · "sil:metin"
+- Yalnız değişeni yaz; degisim boş dizi olabilir. Şemada olmayan alan yok sayılır.
+- Liste öğelerini "İsim — kısa not" biçiminde yaz; silerken ismi yazman yeter.
+- Tek turda bir ${devlet ? 'grubun ya da ulusun puanı' : 'kişinin itibarı'} ±${ITIBAR_SINIRI}'ten fazla değişmez; puanlar 0–100 arasıdır.
+- ${devlet ? 'Kaynak ya da saray listesinden' : 'Zimmetten'} bir şeyi silmeden önce kaybını sahnede açıkça yaz.
+- etiket: sahnede geçen kişi, yer ve mesele adları; geri çağırma bunlarla yapılır.
+- kaide_onerisi: kendi anlatımında tekrar eden bir hata fark edersen tek satırlık kural önerisi; yoksa null. Oyuncu onaylamadan kaideye girmez.
+${devlet ? '\n' + DEVLET_GM_KURALLARI + '\n' : ''}
+KAMPANYA KÜNYESİ
+${S.kampanya.kunye || '(künye yok)'}`;
+}
+
+function oyuncuVeGmKayitlari() { return S.kanon.filter(k => k.rol !== 'tohum'); }
+
+/* Son N turun kayıtlarını (hamle + sahne) döndürür; güncel hamle hariç. */
+function sonTurlar(haric, n) {
+  const kayit = oyuncuVeGmKayitlari().filter(k => k !== haric && !(k.rol === 'oyuncu' && k.hata && k !== haric));
+  const sonuc = []; let tur = 0;
+  for (let i = kayit.length - 1; i >= 0 && tur < n; i--) {
+    sonuc.unshift(kayit[i]);
+    if (kayit[i].rol === 'oyuncu') tur++;
+  }
+  return sonuc;
+}
+
+function istemKur(hamleKaydi, sinir) {
+  const { son, ilgili, gecmisSiniri } = sinir;
+  const yakin = sonTurlar(hamleKaydi, son);
+  const yakinSet = new Set(yakin);
+  const eski = S.kanon.filter(k => k.ozet && !yakinSet.has(k) && k !== hamleKaydi);
+
+  const b = [];
+  b.push('### [1] ÇERÇEVE\n' + cerceve());
+  b.push('### [2] KAİDE\n' + S.kaide.map((k, i) => `${i + 1}. ${k.metin}`).join('\n'));
+  b.push('### [3] SÖZLÜK\nİzinli terimler:\n' + S.sozluk.izinli.map(s => '- ' + s).join('\n') +
+         '\nYasak kelimeler: ' + S.sozluk.yasak.join(', '));
+  b.push('### [4] DURUM\n' + JSON.stringify(S.durum, null, 1));
+
+  const gecmis = gecmisSiniri ? eski.slice(-gecmisSiniri) : eski;
+  b.push('### [5] GEÇMİŞ (özet)\n' + (gecmis.length ? gecmis.map(k => `- ${k.tarih || ''} — ${k.ozet}`).join('\n') : '(yok)'));
+
+  // §9(b) etiket eşleşmesi — hamlede geçen adlar eski sahnelerin etiketleriyle
+  const hs = ' ' + sade(hamleKaydi.metin).replace(/[^a-z0-9' ]/g, ' ') + ' ';
+  const puanli = eski.map(k => {
+    let p = 0;
+    for (const et of (k.etiket || [])) {
+      const e = sade(et).replace(/[^a-z0-9' ]/g, ' ').trim();
+      if (e.length >= 3 && hs.includes(' ' + e)) p++;
+    }
+    return { k, p };
+  }).filter(x => x.p > 0).sort((a, b) => b.p - a.p || b.k.sira - a.k.sira).slice(0, ilgili);
+  b.push('### [6] İLGİLİ SAHNELER\n' + (puanli.length
+    ? puanli.map(({ k }) => `- ${k.tarih || ''} — ${k.ozet} [etiket: ${(k.etiket || []).join(', ')}]` +
+        (k.degisim && k.degisim.length ? ` [değişim: ${k.degisim.map(d => d.yazi).join('; ')}]` : '')).join('\n')
+    : '(eşleşme yok)'));
+
+  b.push('### [7] SON SAHNELER\n' + (yakin.length
+    ? yakin.map(k => k.rol === 'oyuncu' ? `[OYUNCU HAMLESİ]\n${k.metin}` : `[SAHNE ${k.sira} — ${k.tarih || ''}]\n${k.metin}`).join('\n\n')
+    : '(henüz sahne yok — kampanya açılıyor)'));
+
+  const z = hamleKaydi.zar;
+  b.push('### [8] ZAR\n' + (z && z.atildi
+    ? `Bu turun zarı: d20 = ${z.d20}. Bu sayıyı DEĞİŞTİRME, yeniden atma, yok sayma. Sahnede tek satırda artı-eksileriyle göster.`
+    : 'Bu tur zar atılmadı. Zar sayısı uydurma; sonucu belirsiz bir iş varsa hamlenin makul ve kesin sonucunu anlat ya da sonucu askıda bırak.'));
+  b.push('### [9] HAMLE\n' + hamleKaydi.metin);
+  return b.join('\n\n');
+}
+
+/* Bütçe: 60.000 karakter. Kaide ve sözlük asla kısaltılmaz. */
+function istemButceli(hamleKaydi) {
+  const adimlar = [
+    { son: 6, ilgili: 3, gecmisSiniri: 0 },
+    { son: 4, ilgili: 3, gecmisSiniri: 0 },
+    { son: 4, ilgili: 1, gecmisSiniri: 0 },
+    { son: 4, ilgili: 1, gecmisSiniri: 40 },
+    { son: 2, ilgili: 1, gecmisSiniri: 40 },
+    { son: 1, ilgili: 0, gecmisSiniri: 20 }
+  ];
+  let istem = '';
+  for (const a of adimlar) {
+    istem = istemKur(hamleKaydi, a);
+    if (istem.length <= BAGLAM_BUTCESI) return { istem, adim: a };
+  }
+  return { istem, adim: adimlar[adimlar.length - 1] };
+}
+
+/* ---------------------------------------------------------------------
+   ANLATICIYA ERİŞİM — anahtar dosyaya gömülmez
+   --------------------------------------------------------------------- */
+const SISTEM = 'Sen Defterhane\'nin anlatıcısısın. İstemdeki ÇERÇEVE\'ye, KAİDE\'ye ve SÖZLÜK\'e harfiyen uy. Türkçe yaz. Cevabını daima <<<DURUM>>> … <<<SON>>> bloğuyla bitir.';
+
+function ortamVar() { return !!(window.claude && typeof window.claude.complete === 'function'); }
+function erisimYolu() {
+  const e = S.ayar.erisim;
+  if (e === 'sinama') return 'sinama';
+  if (e === 'api') return apiAnahtari() ? 'api' : 'yok';
+  if (e === 'ortam') return ortamVar() ? 'ortam' : 'yok';
+  if (ortamVar()) return 'ortam';
+  if (apiAnahtari()) return 'api';
+  return 'yok';
+}
+function erisimAdi(y) {
+  return { ortam: 'anlatıcı: ortam', api: 'anlatıcı: Anthropic API', sinama: 'anlatıcı: sınama (çevrimdışı)', yok: 'anlatıcı bağlı değil — Ayar' }[y];
+}
+
+async function modelCagir({ istem, sistem = SISTEM, derinlik = 'normal', azami = 3000, parca = () => {}, tur = 'sahne' }) {
+  const yol = erisimYolu();
+  if (yol === 'yok') throw new Error('Anlatıcıya erişim yok. Ayar bölümünden Anthropic API anahtarını gir ya da sınama anlatıcısını seç.');
+  if (yol === 'sinama') return sinamaAnlaticisi(istem, parca, tur);
+  if (yol === 'ortam') {
+    const t = String(await window.claude.complete(sistem + '\n\n' + istem));
+    for (let i = 0; i < t.length; i += 24) { parca(t.slice(0, i + 24)); await new Promise(r => setTimeout(r, 8)); }
+    return t;
+  }
+  const model = S.ayar.modeller[derinlik] || S.ayar.modeller.normal;
+  const yanit = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': apiAnahtari(),
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({ model, max_tokens: azami, stream: true, system: sistem, messages: [{ role: 'user', content: istem }] })
+  });
+  if (!yanit.ok) {
+    let m = yanit.status + ' ' + yanit.statusText;
+    try { const j = await yanit.json(); if (j.error && j.error.message) m = j.error.message; } catch (e) {}
+    throw new Error('Anlatıcı cevap vermedi: ' + m);
+  }
+  const okuyucu = yanit.body.getReader();
+  const coz = new TextDecoder();
+  let tampon = '', metin = '';
+  for (;;) {
+    const { value, done } = await okuyucu.read();
+    if (done) break;
+    tampon += coz.decode(value, { stream: true });
+    let i;
+    while ((i = tampon.indexOf('\n')) >= 0) {
+      const satir = tampon.slice(0, i).trim(); tampon = tampon.slice(i + 1);
+      if (!satir.startsWith('data:')) continue;
+      const veri = satir.slice(5).trim();
+      if (!veri || veri === '[DONE]') continue;
+      let o; try { o = JSON.parse(veri); } catch (e) { continue; }
+      if (o.type === 'content_block_delta' && o.delta && o.delta.type === 'text_delta') { metin += o.delta.text; parca(metin); }
+      else if (o.type === 'error') throw new Error('Anlatıcı hatası: ' + ((o.error && o.error.message) || 'bilinmiyor'));
+    }
+  }
+  return metin;
+}
+
+/* Sınama anlatıcısı: ağsız deneme ve kabul ölçütleri için. Hamlede
+   #ölü #itibar #zimmet #bozuk #zarhile #yasak komutlarını tanır. */
+async function sinamaAnlaticisi(istem, parca, tur) {
+  let t;
+  if (tur === 'kural') {
+    const itiraz = ((istem.split('OYUNCUNUN İTİRAZI:')[1] || '').split('\n')[0] || '').trim().replace(/[.。]+$/, '');
+    t = itiraz ? `Sahne şu hatayı tekrar etmez: ${itiraz}.` : 'Karakter, oyuncunun yazmadığı bir şeyi yapmaz.';
+  } else {
+    const zm = istem.match(/d20 = (\d+)/);
+    const d = zm ? +zm[1] : null;
+    const hamle = (istem.split('### [9] HAMLE\n')[1] || '').trim();
+    const devlet = /"olcek": "devlet"/.test(istem);
+    const durumBolumu = (istem.split('### [4] DURUM')[1] || '').split('### [5]')[0];
+    const tarih = (durumBolumu.match(/"tarih": "([^"]*)"/) || [])[1] || '';
+    const mevki = (durumBolumu.match(/"mevki": "([^"]*)"/) || [])[1] || '';
+    const var_ = k => hamle.includes(k);
+    const temiz = hamle.replace(/#\S+/g, '').trim() || 'Beklemek';
+    let m = `Poyraz gece yarısından sonra döndü; tentenin kenarı ıslak bir el gibi omza vurdu. ${devlet ? 'Divanda mumlar yarıya inmişti.' : 'Nimet\'in kıçında fener bir tutuşup bir sönüyordu.'}\n\n`;
+    m += `Hamle yazıldığı gibi yürüdü: “${temiz.slice(0, 160)}”. Kemal kalemi mürekkebe batırdı, bir şey sormadı; soracağını yüzünden okudu insan.\n\n`;
+    if (var_('#yasak')) m += 'Bir dakika sonra herkes yerindeydi.\n\n';
+    if (d != null) {
+      const yazilan = var_('#zarhile') ? (d === 20 ? 1 : d + 1) : d;
+      const top = yazilan + 1;
+      const net = top <= 5 ? 'başarısız, üstüne bir bedel' : top <= 10 ? 'başarısız ama kapı kapanmaz' : top <= 14 ? 'başarılı, bedelli' : top <= 19 ? 'başarılı' : 'beklenenden fazlası';
+      m += `(Zar ${yazilan} + 1 hesap = ${top} → ${net})\n\n`;
+    }
+    m += 'Vardar Ali tokmağı dizine koydu. "Şimdi ne yazalım?" dedi. Sıra sende.';
+    const degisim = devlet
+      ? [{ alan: 'istikrar', islem: '+1', sebep: 'sınama' }, { alan: 'hazine', islem: '-10', sebep: 'sınama' }]
+      : [{ alan: 'itibar.Kubad Reis', islem: '+2', sebep: 'sınama' }, { alan: 'kese', islem: '-1', sebep: 'sınama' }];
+    if (var_('#ölü')) degisim.push({ alan: 'adamlar', islem: 'ekle:Yakup Kara — geri gelen kürekçi', sebep: 'sınama' });
+    if (var_('#itibar')) degisim.push({ alan: 'itibar.Çoban Mustafa Paşa', islem: '+40', sebep: 'sınama' });
+    if (var_('#zimmet')) degisim.push({ alan: 'zimmet', islem: 'sil:Nimet', sebep: 'sınama' });
+    degisim.push({ alan: 'uydurma', islem: '+99', sebep: 'şemada olmayan alan' });
+    const blok = var_('#bozuk')
+      ? '<<<DURUM>>>\n{ "ozet": "bozuk blok, "degisim": [\n<<<SON>>>'
+      : '<<<DURUM>>>\n' + JSON.stringify({ ozet: 'Sınama sahnesi: ' + temiz.slice(0, 60), etiket: ['Kemal', 'Vardar Ali', 'Nimet'], tarih, mevki, degisim, kaide_onerisi: null }, null, 2) + '\n<<<SON>>>';
+    t = m + '\n\n' + blok;
+  }
+  for (let i = 0; i < t.length; i += 14) { parca(t.slice(0, i + 14)); await new Promise(r => setTimeout(r, 6)); }
+  parca(t);
+  return t;
+}
+
+/* ---------------------------------------------------------------------
+   AYRIŞTIRMA (§6) ve HAKEM (§7)
+   --------------------------------------------------------------------- */
+function gorunenMetin(t) {
+  const i = t.indexOf('<<<DURUM');
+  if (i >= 0) return t.slice(0, i);
+  const m = t.match(/<{1,3}(?:D(?:U(?:R(?:U(?:M)?)?)?)?)?$/);
+  return m ? t.slice(0, m.index) : t;
+}
+
+function ayristir(tam) {
+  const i = tam.indexOf('<<<DURUM>>>');
+  if (i < 0) return { sahne: tam.trim(), blok: null };
+  const sahne = tam.slice(0, i).trim();
+  let govde = tam.slice(i + 11);
+  const s = govde.indexOf('<<<SON>>>');
+  if (s >= 0) govde = govde.slice(0, s);
+  govde = govde.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+  try { const blok = JSON.parse(govde); return { sahne, blok: (blok && typeof blok === 'object') ? blok : null }; }
+  catch (e) { return { sahne, blok: null }; }
+}
+
+function netice(t) {
+  if (t <= 5) return 'basarisiz_bedelli';
+  if (t <= 10) return 'basarisiz_kapi_acik';
+  if (t <= 14) return 'basarili_bedelli';
+  if (t <= 19) return 'basarili';
+  return 'fazlasi';
+}
+const NETICE_ADI = { basarisiz_bedelli: 'başarısız, bedelli', basarisiz_kapi_acik: 'başarısız, kapı açık', basarili_bedelli: 'başarılı, bedelli', basarili: 'başarılı', fazlasi: 'beklenenden fazlası' };
+
+function haritaAnahtari(harita, ad) {
+  const s = sade(ad);
+  return Object.keys(harita).find(k => sade(k) === s) || null;
+}
+function listeBul(liste, metin) {
+  const a = anahtar(metin), s = sade(metin);
+  let i = liste.findIndex(x => anahtar(x) === a || sade(x) === s);
+  if (i < 0 && a.length >= 3) i = liste.findIndex(x => anahtar(x).startsWith(a) || sade(x).includes(a));
+  return i;
+}
+const KAYIP_KOKLERI = ['kaybet','kaybol','kayb','kayip','batti','batir','batmis','batan','yandi','yakil','yanmis','zapt','elden cik','el konul','calin','calindi','parcalan','dagil','tesl','alindi','alip goturdu','goturul','terk','karaya oturdu','kirildi','harap'];
+
+function kaybiAcik(sahne, oge) {
+  const a = anahtar(oge);
+  if (!a) return false;
+  const cumleler = sade(sahne).split(/[.!?\n]+/);
+  return cumleler.some(c => c.includes(a) && KAYIP_KOKLERI.some(k => c.includes(k)));
+}
+
+/* Motorun denetim görevleri — anlatıcıya güvenilmez. */
+function hakem(blok, sahne, zar) {
+  const d = S.durum;
+  const sema = SEMA[d.olcek] || SEMA.kisi;
+  const degisim = [], notlar = [], dokunulan = [];
+  const turFark = {};
+  const kurulum = !!S.kampanya.kurulum;
+
+  // Zar denetimi
+  let zarKaydi = { atildi: false };
+  if (zar && zar.atildi) {
+    zarKaydi = { atildi: true, d20: zar.d20, sonuc: null };
+    const m = sahne.match(/(?:\bzar(?!ar)|\bd20)\D{0,12}?(\d{1,2})/i);
+    const gecti = new RegExp('(^|\\D)' + zar.d20 + '(\\D|$)').test(sahne);
+    if (m && +m[1] !== zar.d20) notlar.push(`anlatıcı zarı ${m[1]} yazdı — esas: d20 · ${zar.d20}`);
+    else if (!gecti) notlar.push(`zar metinde geçmedi — esas: d20 · ${zar.d20}`);
+    let toplam = zar.d20;
+    const satir = sahne.split('\n').find(s => /\bzar(?!ar)|\bd20/i.test(s));
+    if (satir && m && +m[1] === zar.d20) {
+      const t = satir.match(/=\s*(\d{1,2})/);
+      if (t) toplam = +t[1];
+    }
+    zarKaydi.sonuc = netice(toplam);
+  }
+
+  // Sözlük denetimi (anakronizm sayısı)
+  const sahneSade = ' ' + sade(sahne) + ' ';
+  const yakalanan = [];
+  for (const y of (S.sozluk.yasak || [])) {
+    if (/\(/.test(y)) continue; // bağlama bağlı olanlar (saat (âlet), kaptan (unvan)) motor tarafından sayılmaz
+    const k = sade(y);
+    if (!k) continue;
+    const re = new RegExp('(^|[^a-z0-9])' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    if (re.test(sahneSade)) yakalanan.push(y);
+  }
+  if (yakalanan.length) notlar.push('sözlük: yasak kelime geçti — ' + yakalanan.join(', '));
+
+  if (!blok) {
+    notlar.push('durum okunamadı');
+    return { degisim, notlar, zar: zarKaydi, ozet: '', etiket: [], dokunulan, kaideOnerisi: null };
+  }
+
+  if (typeof blok.tarih === 'string' && blok.tarih.trim()) d.tarih = blok.tarih.trim().slice(0, 120);
+  if (typeof blok.mevki === 'string' && blok.mevki.trim()) d.mevki = blok.mevki.trim().slice(0, 160);
+
+  const sayiOku = islem => {
+    const m = String(islem).trim().replace(/−/g, '-').match(/^([+\-=])\s*(-?\d+(?:[.,]\d+)?)/);
+    if (!m) return null;
+    return { op: m[1], n: Math.round(parseFloat(m[2].replace(',', '.'))) };
+  };
+
+  const puanUygula = (kap, ad, islem, etiket, anahtarAdi) => {
+    const s = sayiOku(islem); if (!s) return;
+    const onceki = kap[ad];
+    const eski = typeof onceki === 'number' ? onceki : 50;
+    let hedef = s.op === '+' ? eski + s.n : s.op === '-' ? eski - s.n : s.n;
+    if (onceki === undefined && s.op === '=') { kap[ad] = Math.max(0, Math.min(100, hedef)); degisim.push({ yazi: `${etiket} ${kap[ad]} (yeni)`, yon: 'notr' }); dokunulan.push(anahtarAdi); return; }
+    let fark = hedef - eski;
+    const onceFark = turFark[anahtarAdi] || 0;
+    if (!kurulum) {
+      const kalanUst = ITIBAR_SINIRI - onceFark, kalanAlt = -ITIBAR_SINIRI - onceFark;
+      if (fark > kalanUst || fark < kalanAlt) {
+        const kirpik = Math.max(kalanAlt, Math.min(kalanUst, fark));
+        notlar.push(`${etiket}: ${isaret(fark)} önerildi — ±${ITIBAR_SINIRI}'e kırpıldı (${isaret(kirpik)})`);
+        fark = kirpik;
+      }
+    }
+    let yeni = Math.max(0, Math.min(100, eski + fark));
+    fark = yeni - eski;
+    turFark[anahtarAdi] = onceFark + fark;
+    if (fark === 0 && onceki !== undefined) return;
+    kap[ad] = yeni;
+    degisim.push({ yazi: `${etiket} ${isaret(fark)}`, yon: fark > 0 ? 'arti' : fark < 0 ? 'eksi' : 'notr' });
+    dokunulan.push(anahtarAdi);
+  };
+
+  for (const dg of (Array.isArray(blok.degisim) ? blok.degisim : [])) {
+    if (!dg || typeof dg.alan !== 'string' || typeof dg.islem !== 'string') continue;
+    const nokta = dg.alan.indexOf('.');
+    const kok = (nokta >= 0 ? dg.alan.slice(0, nokta) : dg.alan).trim().toLowerCase();
+    const alt = nokta >= 0 ? dg.alan.slice(nokta + 1).trim() : '';
+    const islem = dg.islem.trim();
+
+    if (sema.sayi[kok]) {
+      const s = sayiOku(islem); if (!s) continue;
+      const eski = typeof d[kok] === 'number' ? d[kok] : 0;
+      let yeni = s.op === '+' ? eski + s.n : s.op === '-' ? eski - s.n : s.n;
+      if (yeni < 0) { notlar.push(`${sema.sayi[kok]} sıfırın altına inemez — 0'da durdu`); yeni = 0; }
+      if (yeni === eski) continue;
+      d[kok] = yeni;
+      degisim.push({ yazi: `${sema.sayi[kok]} ${isaret(yeni - eski)}`, yon: yeni > eski ? 'arti' : 'eksi' });
+      dokunulan.push(kok);
+    }
+    else if (sema.olcekli[kok]) {
+      const kap = { [kok]: d[kok] };
+      puanUygula(kap, kok, islem, sema.olcekli[kok], kok);
+      if (kap[kok] !== undefined) d[kok] = kap[kok];
+    }
+    else if (sema.harita[kok]) {
+      if (!alt) continue;
+      if (!d[kok] || typeof d[kok] !== 'object') d[kok] = {};
+      const kap = d[kok];
+      const ad = haritaAnahtari(kap, alt) || alt;
+      if (sema.harita[kok] === 'puan') { puanUygula(kap, ad, islem, ad, `${kok}.${sade(ad)}`); continue; }
+      // metin haritası (beden, maharet, ordu, vaziyet)
+      if (/^sil\b/i.test(islem)) {
+        if (kap[ad] === undefined) continue;
+        delete kap[ad];
+        degisim.push({ yazi: `${ad}: kalktı`, yon: kok === 'beden' ? 'arti' : 'notr' });
+      } else {
+        const m = islem.match(/^(?:=|ekle:)\s*([\s\S]+)$/i);
+        if (!m) continue;
+        const deger = m[1].trim().slice(0, 200);
+        if (kap[ad] === deger) continue;
+        kap[ad] = deger;
+        degisim.push({ yazi: `${ad}: ${deger}`, yon: kok === 'beden' ? 'eksi' : kok === 'maharet' ? 'arti' : 'notr' });
+      }
+      dokunulan.push(`${kok}.${sade(ad)}`);
+    }
+    else if (sema.liste.includes(kok)) {
+      if (!Array.isArray(d[kok])) d[kok] = [];
+      const liste = d[kok];
+      const m = islem.match(/^(ekle|sil)\s*:\s*([\s\S]+)$/i);
+      if (!m) continue;
+      const tur = m[1].toLowerCase(), metin = m[2].trim().slice(0, 220);
+      const et = sema.etiket[kok];
+      if (tur === 'ekle') {
+        if (kok === 'adamlar') {
+          const olu = (d.oluler || []).find(o => anahtar(o) === anahtar(metin));
+          if (olu) { notlar.push(`"${metin.split(/\s+[—–-]\s+/)[0]}" ölüler defterinde — adamlara eklenemez`); continue; }
+        }
+        if (liste.some(x => anahtar(x) === anahtar(metin))) continue;
+        liste.push(metin);
+        if (kok === 'oluler') {
+          const ai = (d.adamlar || []).findIndex(x => anahtar(x) === anahtar(metin));
+          if (ai >= 0) d.adamlar.splice(ai, 1);
+        }
+        degisim.push({ yazi: `${et}: + ${metin.split(/\s+[—–-]\s+/)[0]}`, yon: kok === 'oluler' ? 'eksi' : kok === 'acik' ? 'notr' : 'arti' });
+      } else {
+        if (kok === 'oluler') { notlar.push('ölen ölür — ölüler defterinden silme reddedildi'); continue; }
+        const i = listeBul(liste, metin);
+        if (i < 0) continue;
+        if (sema.korunan.includes(kok) && !kaybiAcik(sahne, liste[i])) {
+          notlar.push(`${et}: "${liste[i].split(/\s+[—–-]\s+/)[0]}" silinmedi — kaybı sahnede açıkça geçmiyor`);
+          continue;
+        }
+        const giden = liste.splice(i, 1)[0];
+        degisim.push({ yazi: `${et}: − ${giden.split(/\s+[—–-]\s+/)[0]}`, yon: kok === 'acik' ? 'arti' : 'eksi' });
+      }
+      dokunulan.push(kok);
+    }
+    // şemada olmayan alan: sessizce yok sayılır
+  }
+
+  const ozet = typeof blok.ozet === 'string' ? blok.ozet.trim().slice(0, 400) : '';
+  const etiket = Array.isArray(blok.etiket) ? blok.etiket.filter(x => typeof x === 'string').map(x => x.trim()).filter(Boolean).slice(0, 20) : [];
+  const kaideOnerisi = typeof blok.kaide_onerisi === 'string' && blok.kaide_onerisi.trim() ? blok.kaide_onerisi.trim().slice(0, 300) : null;
+  return { degisim, notlar, zar: zarKaydi, ozet, etiket, dokunulan, kaideOnerisi };
+}
+
+/* ---------------------------------------------------------------------
+   TUR DÖNGÜSÜ (§4)
+   --------------------------------------------------------------------- */
+let mesgul = false;
+let canli = null; // { kayit, metin }
+let sonDokunulan = new Set();
+
+function sonrakiSira() { return S.kanon.reduce((m, k) => Math.max(m, k.sira || 0), 0) + 1; }
+
+async function turCevir() {
+  if (mesgul) return;
+  const alan = $('#hamle');
+  const metin = alan.value.trim();
+  if (!metin) { alan.focus(); return; }
+  const zar = S.ayar.zar ? { atildi: true, d20: 1 + Math.floor(Math.random() * 20) } : { atildi: false };
+  const kayit = { id: 'o' + Date.now(), sira: sonrakiSira(), rol: 'oyuncu', tarih: S.durum.tarih, metin, zar };
+  S.kanon.push(kayit);                      // 2. hamle kanona
+  depoYaz();
+  alan.value = ''; boyAyarla();
+  $('#son-zar').textContent = zar.atildi ? `d20 · ${zar.d20}` : 'd20 · —';
+  yapiskan = true;
+  cizAkis();
+  await anlat(kayit);
+}
+
+async function anlat(hamleKaydi) {
+  mesgul = true; girisKilit(true);
+  delete hamleKaydi.hata;
+  const durumOnce = kopya(S.durum);
+  const { istem, adim } = istemButceli(hamleKaydi);      // 4. bağlam
+  console.groupCollapsed(`Defterhane — tur istemi (${istem.length} karakter; son ${adim.son}, ilgili ${adim.ilgili}${adim.gecmisSiniri ? ', geçmiş ' + adim.gecmisSiniri : ''})`);
+  console.log(istem);
+  console.groupEnd();
+
+  canli = { kayit: hamleKaydi, metin: '' };
+  cizAkis();
+  let tam;
+  try {
+    tam = await modelCagir({ istem, derinlik: S.ayar.derinlik, azami: S.ayar.derinlik === 'derin' ? 4000 : S.ayar.derinlik === 'hizli' ? 1800 : 3000,
+      parca: t => { canli.metin = t; canliGuncelle(); } });   // 5. tek istek
+  } catch (e) {
+    hamleKaydi.hata = e.message || String(e);
+    canli = null; mesgul = false; girisKilit(false);
+    depoYaz(); cizAkis();
+    return;
+  }
+  canli = null;
+  const { sahne, blok } = ayristir(tam);                                 // 6. ayrıştır
+  const h_ = hakem(blok, sahne || '(anlatıcı boş döndü)', hamleKaydi.zar); // 7. doğrula ve uygula
+  const kayit = {
+    id: 's' + Date.now(), sira: sonrakiSira(), rol: 'gm', tarih: S.durum.tarih,
+    metin: sahne || '(anlatıcı boş döndü)', ozet: h_.ozet || (sahne || '').replace(/\s+/g, ' ').slice(0, 140),
+    etiket: h_.etiket, zar: h_.zar, degisim: h_.degisim, notlar: h_.notlar, durumOnce,
+    kaideOnerisi: h_.kaideOnerisi || undefined
+  };
+  S.kanon.push(kayit);
+  if (S.kampanya.kurulum) S.kampanya.kurulum = false;
+  sonDokunulan = new Set(h_.dokunulan);
+  depoYaz();                                                             // 8. kalıcı depo
+  mesgul = false; girisKilit(false);
+  cizHepsi();                                                            // 9. panel ve hâmiş
+}
+
+function girisKilit(k) {
+  $('#gonder').disabled = k;
+  $('#gonder').textContent = k ? 'Anlatılıyor…' : 'Gönder';
+}
+
+/* ---------------------------------------------------------------------
+   ÖĞRENME DÖNGÜSÜ (§8)
+   --------------------------------------------------------------------- */
+const acikItiraz = new Map(); // sahne id → { adim, itiraz, oneri }
+
+async function kuralUret(sahneKaydi, itiraz) {
+  const istem = `Bu itirazı, bundan sonraki BÜTÜN turlarda geçerli olacak tek satırlık genel bir kurala dönüştür. Emir kipinde, kısa, denetlenebilir. Bu sahneye değil, tekrar eden davranışa bak. Yalnız kuralı yaz.
+
+İTİRAZ EDİLEN SAHNE (kısaltılmış):
+${sahneKaydi.metin.slice(0, 2500)}
+
+OYUNCUNUN İTİRAZI: ${itiraz}
+
+MEVCUT KAİDE (tekrar etme):
+${S.kaide.map((k, i) => `${i + 1}. ${k.metin}`).join('\n')}`;
+  const t = await modelCagir({ istem, sistem: 'Kısa ve kesin yaz. Yalnız tek satırlık kuralı döndür.', derinlik: 'hizli', azami: 200, tur: 'kural' });
+  return t.split('\n').map(s => s.trim()).filter(Boolean)[0].replace(/^[-*\d.)\s"“]+/, '').replace(/["”]+$/, '').trim();
+}
+
+function kaideyeEkle(metin, kaynak) {
+  S.kaide.push({ id: 'k' + Date.now(), metin, kaynak, tarih: bugun() });
+  depoYaz(); cizKaide();
+  bildir(`Kaide ${S.kaide.length}. madde eklendi — sonraki turun istemine girecek.`);
+  if (S.kaide.length > KAIDE_SINIRI) setTimeout(() => bildir('Kaide şişti, gözden geçir.', 5000), 3300);
+}
+
+/* ---------------------------------------------------------------------
+   ÇİZİM
+   --------------------------------------------------------------------- */
+const akis = $('#akis');
+let yapiskan = true;
+akis.addEventListener('scroll', () => { yapiskan = akis.scrollHeight - akis.scrollTop - akis.clientHeight < 80; }, { passive: true });
+function asagi() { if (yapiskan) akis.scrollTop = akis.scrollHeight; }
+
+function hamisCiz(k) {
+  const hm = h('div', { class: 'hamis', 'aria-label': 'Hâmiş' });
+  hm.append(h('span', { class: 't' }, k.tarih || ''));
+  if (k.zar && k.zar.atildi) hm.append(h('span', { class: 'zar' }, `d20 · ${k.zar.d20}` + (k.zar.sonuc ? ` — ${NETICE_ADI[k.zar.sonuc] || ''}` : '')));
+  for (const d of (k.degisim || [])) hm.append(h('span', { class: d.yon || 'notr' }, d.yazi));
+  for (const n of (k.notlar || [])) hm.append(h('span', { class: 'not' }, 'hakem: ' + n));
+  return hm;
+}
+
+function sahneCiz(k) {
+  const kutu = h('article', { class: 'yaprak', 'data-id': k.id });
+  const kart = h('div', { class: 'sahne' });
+  kart.append(hamisCiz(k));
+  const mt = h('div', { class: 'metin' }); mt.innerHTML = sahneHtml(k.metin);
+  kart.append(mt);
+  kutu.append(kart);
+  const alt = h('div', { class: 'sahne-alt' },
+    h('button', { class: 'alt-dg', type: 'button', onclick: () => { acikItiraz.set(k.id, { adim: 'yaz', itiraz: '', oneri: '' }); cizAkis(false); } }, 'Bu yanlıştı'));
+  kutu.append(alt);
+  if (k.kaideOnerisi) {
+    kutu.append(h('div', { class: 'itiraz' },
+      h('label', null, 'Anlatıcının kaide önerisi (onaysız eklenmez):'),
+      h('div', { class: 'oneri' }, k.kaideOnerisi),
+      h('div', { class: 'satir' },
+        h('button', { class: 'dg ana kucuk', type: 'button', onclick: () => { kaideyeEkle(k.kaideOnerisi, 'duzeltme'); delete k.kaideOnerisi; depoYaz(); cizAkis(false); } }, 'Kaideye ekle'),
+        h('button', { class: 'dg kucuk', type: 'button', onclick: () => { delete k.kaideOnerisi; depoYaz(); cizAkis(false); } }, 'Reddet'))));
+  }
+  const it = acikItiraz.get(k.id);
+  if (it) kutu.append(itirazCiz(k, it));
+  return kutu;
+}
+
+function itirazCiz(k, it) {
+  const kapat = () => { acikItiraz.delete(k.id); cizAkis(false); };
+  if (it.adim === 'yaz' || it.adim === 'bekle') {
+    const ta = h('textarea', { class: 'alan', rows: 2, placeholder: 'Ne yanlıştı? (ör. "Paşa diye hitap etti, o bir reis")' });
+    ta.value = it.itiraz;
+    const gon = h('button', { class: 'dg ana kucuk', type: 'button', disabled: it.adim === 'bekle' }, it.adim === 'bekle' ? 'Kural yazılıyor…' : 'Kurala dönüştür');
+    gon.addEventListener('click', async () => {
+      const itiraz = ta.value.trim(); if (!itiraz) { ta.focus(); return; }
+      it.itiraz = itiraz; it.adim = 'bekle'; cizAkis(false);
+      try { it.oneri = await kuralUret(k, itiraz); it.adim = 'onay'; }
+      catch (e) { it.adim = 'yaz'; bildir(e.message || String(e), 6000); }
+      cizAkis(false);
+    });
+    setTimeout(() => { if (it.adim === 'yaz') ta.focus(); }, 0);
+    return h('div', { class: 'itiraz' }, h('label', null, 'Bu sahnede ne yanlıştı?'), ta,
+      h('div', { class: 'satir' }, gon, h('button', { class: 'dg kucuk', type: 'button', onclick: kapat }, 'Vazgeç')));
+  }
+  // onay adımı — öneri oyuncuya gösterilir; onaylamadan kaideye düşmez
+  const oneri = h('textarea', { class: 'alan', rows: 2 }); oneri.value = it.oneri;
+  return h('div', { class: 'itiraz' },
+    h('label', null, 'Önerilen kural — düzeltebilirsin. Onaylarsan kaideye girer:'), oneri,
+    h('div', { class: 'satir' },
+      h('button', { class: 'dg ana kucuk', type: 'button', onclick: () => {
+        const m = oneri.value.trim(); if (!m) return;
+        k.duzeltmeler = (k.duzeltmeler || []).concat({ itiraz: it.itiraz, kural: m, onay: true, tarih: bugun() });
+        kaideyeEkle(m, 'duzeltme'); acikItiraz.delete(k.id); depoYaz(); cizAkis(false);
+      } }, 'Onayla, kaideye ekle'),
+      h('button', { class: 'dg kucuk', type: 'button', onclick: () => {
+        k.duzeltmeler = (k.duzeltmeler || []).concat({ itiraz: it.itiraz, kural: oneri.value.trim(), onay: false, tarih: bugun() });
+        depoYaz(); kapat();
+      } }, 'Reddet')));
+}
+
+function cizAkis(kaydir = true) {
+  const ust = akis.scrollTop;
+  akis.replaceChildren();
+  const tohum = S.kanon.filter(k => k.rol === 'tohum');
+  if (tohum.length) {
+    akis.append(h('details', { class: 'tohum' },
+      h('summary', null, `Önceki defter — ${tohum.length} kayıt (özet)`),
+      h('ol', null, tohum.map(k => h('li', null, h('span', null, k.tarih + ' · '), k.ozet)))));
+  }
+  const kayit = oyuncuVeGmKayitlari();
+  if (!kayit.length && !canli) {
+    akis.append(h('div', { class: 'acilis' },
+      S.kampanya.senaryo === 'balaban'
+        ? 'Defter 12 Kasım 1522\'de, Rodos önlerinde açık duruyor. Nizam henüz bitmedi. İlk hamleni yaz.'
+        : 'Defter açık. İlk hamleni yaz — oyunu başlat, ulusunu ve liderini söyle; anlatıcı ilk durum raporunu verecek.'));
+  }
+  for (const k of kayit) {
+    if (k.rol === 'oyuncu') {
+      akis.append(h('div', { class: 'hamle' }, h('span', { class: 'kim' }, 'Hamle'), k.metin));
+      if (k.hata && !(canli && canli.kayit === k)) {
+        akis.append(h('div', { class: 'hata-kutu', role: 'alert' },
+          h('span', null, k.hata),
+          h('button', { class: 'dg kucuk', type: 'button', disabled: mesgul, onclick: () => { if (!mesgul) anlat(k); } }, 'Tekrar dene')));
+      }
+      if (canli && canli.kayit === k) {
+        const kutu = h('article', { class: 'yaprak', id: 'canli' });
+        const kart = h('div', { class: 'sahne' });
+        kart.append(h('div', { class: 'hamis' }, h('span', { class: 't' }, S.durum.tarih),
+          k.zar && k.zar.atildi ? h('span', { class: 'zar' }, `d20 · ${k.zar.d20}`) : null));
+        kart.append(h('div', { class: 'metin imlec', id: 'canli-metin' }));
+        kutu.append(kart);
+        akis.append(kutu);
+      }
+    } else {
+      akis.append(sahneCiz(k));
+    }
+  }
+  if (kaydir) asagi(); else akis.scrollTop = ust;
+  if (canli) canliGuncelle();
+}
+
+function canliGuncelle() {
+  const e = $('#canli-metin'); if (!e || !canli) return;
+  e.innerHTML = sahneHtml(gorunenMetin(canli.metin)) || '<p>&nbsp;</p>';
+  asagi();
+}
+
+function panelCiz() {
+  const d = S.durum, p = $('#panel');
+  const yeni = k => sonDokunulan.has(k) ? 'yeni' : null;
+  const kisim = (baslik, ...ic) => h('section', { class: 'p-kisim' }, h('h3', null, baslik), ...ic);
+  const liste = (arr, k, sinif) => h('ul', null, (arr || []).length ? arr.map(x => h('li', { class: sinif || null }, x)) : h('li', { class: 'olu' }, '—'));
+  const cubuklar = (harita, kok) => h('ul', null, Object.entries(harita || {}).sort((a, b) => b[1] - a[1]).map(([ad, v]) =>
+    h('li', { class: yeni(kok ? `${kok}.${sade(ad)}` : sade(ad)) }, h('div', { class: 'cubuk' }, h('span', { class: 'ad', title: ad }, ad), h('span', { class: 'deger' }, v),
+      h('span', { class: 'iz' }, h('i', { style: `width:${Math.max(0, Math.min(100, v))}%` }))))));
+  const metinler = (harita, kok) => h('ul', null, Object.entries(harita || {}).length ? Object.entries(harita).map(([ad, v]) =>
+    h('li', { class: yeni(`${kok}.${sade(ad)}`) }, h('div', { class: 'kv' }, h('span', null, ad), h('span', null, v)))) : h('li', { class: 'olu' }, '—'));
+  const ic = [];
+  ic.push(h('h2', { class: 'p-bas' }, d.kisi || S.kampanya.ad));
+  ic.push(h('p', { class: 'p-alt' }, d.unvan || '', h('br'), d.tarih || '', ' · ', d.mevki || ''));
+  if (d.olcek === 'devlet') {
+    ic.push(kisim('Hazine', h('div', { class: 'sayi-buyuk' + (yeni('hazine') ? ' yeni' : '') }, (d.hazine ?? 0).toLocaleString('tr-TR'))));
+    ic.push(kisim('İstikrar ve prestij', cubuklar({ İstikrar: d.istikrar ?? 50, Prestij: d.prestij ?? 50 }, null)));
+    ic.push(kisim('İç gruplar', cubuklar(d.gruplar, 'gruplar')));
+    ic.push(kisim('Diplomasi', cubuklar(d.diplomasi, 'diplomasi')));
+    ic.push(kisim('Ordu', metinler(d.ordu, 'ordu')));
+    ic.push(kisim('Vaziyet', metinler(d.vaziyet, 'vaziyet')));
+    ic.push(kisim('Saray ve danışmanlar', liste(d.adamlar)));
+    ic.push(kisim('Kaynaklar', liste(d.kaynak)));
+    ic.push(kisim('Antlaşmalar ve vaatler', liste(d.emanet)));
+  } else {
+    ic.push(kisim('Kese', h('div', { class: 'sayi-buyuk' + (yeni('kese') ? ' yeni' : '') }, `${d.kese ?? 0} akçe`)));
+    ic.push(kisim('Beden', metinler(d.beden, 'beden')));
+    ic.push(kisim('Maharet', metinler(d.maharet, 'maharet')));
+    ic.push(kisim('İtibar', cubuklar(d.itibar, 'itibar')));
+    ic.push(kisim('Adamlar', liste(d.adamlar)));
+    ic.push(kisim('Zimmet', liste(d.zimmet)));
+    ic.push(kisim('Emanetler', liste(d.emanet)));
+  }
+  ic.push(kisim('Açık meseleler', liste(d.acik)));
+  ic.push(kisim('Ölüler', liste(d.oluler, null, 'olu')));
+  ic.push(h('p', { class: 'p-not' }, DEPO_VAR
+    ? 'Kayıt bu tarayıcının yerel deposunda (localStorage) tutuluyor. Başka cihaza geçmek ya da saklamak için Ayar → Yedek al.'
+    : 'Kalıcı depo kullanılamıyor: sekme kapanınca oyun kaybolur. Dışa aktarmayı ve yedeği unutma.'));
+  p.replaceChildren(...ic);
+  $('#kunye').innerHTML = `<b>${kacis(d.kisi || S.kampanya.ad)}</b> · ${kacis(d.tarih || '')} · ${kacis(d.mevki || '')}`;
+}
+
+function cizKaide() {
+  const g = $('#kaide-govde');
+  const ic = [];
+  if (S.kaide.length > KAIDE_SINIRI) ic.push(h('p', { class: 'ikaz' }, 'Kaide şişti, gözden geçir.'));
+  ic.push(h('h3', null, 'Anlatım kaideleri'));
+  const ol = h('ol', { class: 'kaide-l' });
+  S.kaide.forEach((k, i) => {
+    const li = h('li');
+    const govde = h('div');
+    if (k._duzen) {
+      const ta = h('textarea', { class: 'alan', rows: 3 }); ta.value = k.metin;
+      govde.append(ta, h('div', { class: 'ek' },
+        h('button', { class: 'dg ana kucuk', type: 'button', onclick: () => { const m = ta.value.trim(); if (m) { k.metin = m; if (k.kaynak === 'tohum') k.kaynak = 'elle'; } delete k._duzen; depoYaz(); cizKaide(); } }, 'Kaydet'),
+        h('button', { class: 'dg kucuk', type: 'button', onclick: () => { delete k._duzen; cizKaide(); } }, 'Vazgeç')));
+      setTimeout(() => ta.focus(), 0);
+    } else {
+      const sil = h('button', { class: 'dg kucuk', type: 'button' }, 'Sil');
+      ikiBasis(sil, () => { S.kaide.splice(S.kaide.indexOf(k), 1); depoYaz(); cizKaide(); });
+      govde.append(h('div', { class: 'mt' }, k.metin), h('div', { class: 'ek' },
+        h('span', { class: 'cip ' + k.kaynak }, k.kaynak === 'duzeltme' ? 'düzeltme' : k.kaynak),
+        h('button', { class: 'dg kucuk', type: 'button', onclick: () => { k._duzen = true; cizKaide(); } }, 'Düzenle'), sil));
+    }
+    li.append(govde); ol.append(li);
+  });
+  ic.push(ol);
+  // Sözlük
+  ic.push(h('h3', null, 'Sözlük'));
+  const iz = h('textarea', { class: 'alan', rows: 6, 'aria-label': 'İzinli terimler (her satır bir grup)' }); iz.value = S.sozluk.izinli.join('\n');
+  const ya = h('textarea', { class: 'alan', rows: 3, 'aria-label': 'Yasak kelimeler (virgülle)' }); ya.value = S.sozluk.yasak.join(', ');
+  ic.push(h('div', { class: 'form-s' }, h('label', null, 'İzinli terimler — her satır bir grup'), iz));
+  ic.push(h('div', { class: 'form-s' }, h('label', null, 'Yasak kelimeler — virgülle ayır'), ya));
+  ic.push(h('button', { class: 'dg kucuk', type: 'button', onclick: () => {
+    S.sozluk.izinli = iz.value.split('\n').map(s => s.trim()).filter(Boolean);
+    S.sozluk.yasak = ya.value.split(',').map(s => s.trim()).filter(Boolean);
+    depoYaz(); bildir('Sözlük kaydedildi.');
+  } }, 'Sözlüğü kaydet'));
+  g.replaceChildren(...ic);
+  $('#kaide-say').textContent = `${S.kaide.length} madde · her turda tamamı isteme girer${S.kaide.length > KAIDE_SINIRI ? ' · Kaide şişti, gözden geçir.' : ''}`;
+}
+
+function cizKanon() {
+  const g = $('#kanon-govde');
+  const ic = [h('p', { class: 'aciklama' }, 'Sahneler eklenir, silinmez. İsteme son 6 tur tam metin, öncekiler tek cümlelik özet olarak girer; hamlede geçen adlar eşleşen en fazla 3 eski sahneyi geri çağırır.')];
+  const ul = h('ul', { class: 'kanon-l' });
+  for (const k of S.kanon.filter(k => k.rol !== 'oyuncu').slice().reverse()) {
+    ul.append(h('li', null,
+      h('div', { class: 'ust' }, h('span', null, `${k.sira}. ${k.tarih || ''}`), h('span', null, k.rol === 'tohum' ? 'tohum' : (k.zar && k.zar.atildi ? `d20 · ${k.zar.d20}` : ''))),
+      h('div', null, k.ozet || ''),
+      (k.etiket || []).length ? h('div', { class: 'et' }, k.etiket.join(' · ')) : null));
+  }
+  if (!ul.children.length) ul.append(h('li', null, 'Kanon boş.'));
+  ic.push(ul);
+  g.replaceChildren(...ic);
+}
+
+function cizAyar() {
+  const g = $('#ayar-govde');
+  const a = S.ayar;
+  const ic = [];
+  ic.push(h('h3', null, 'Anlatıcıya erişim'));
+  const secenek = (deger, baslik, acik) => h('label', null,
+    h('input', { type: 'radio', name: 'erisim', value: deger, checked: a.erisim === deger, onchange: () => { a.erisim = deger; depoYaz(); cizErisim(); } }),
+    h('span', null, h('b', null, baslik), h('br'), h('span', { class: 'aciklama' }, acik)));
+  ic.push(h('div', { class: 'radyo' },
+    secenek('otomatik', 'Otomatik', 'Ortam bir model yolu sunuyorsa onu, yoksa kayıtlı API anahtarını kullanır.'),
+    secenek('api', 'Anthropic API', 'Anahtarı aşağıya gir. Tarayıcıdan doğrudan çağrılır.'),
+    secenek('sinama', 'Sınama anlatıcısı', 'Ağsız, sahte anlatıcı. Motoru denemek için: hamlede #ölü #itibar #zimmet #bozuk #zarhile #yasak.')));
+  ic.push(h('p', { class: 'aciklama' }, 'Durum: ' + erisimAdi(erisimYolu()) + (ortamVar() ? ' · ortam model yolu bulundu' : '')));
+
+  ic.push(h('h3', null, 'API anahtarı'));
+  const an = h('input', { class: 'alan', type: 'password', placeholder: apiAnahtari() ? '•••••• kayıtlı' : 'sk-ant-…', autocomplete: 'off', 'aria-label': 'API anahtarı' });
+  ic.push(h('div', { class: 'form-s' }, an,
+    h('p', { class: 'aciklama' }, 'Anahtar dosyaya ve dışa aktarıma yazılmaz; yalnız bu tarayıcıda, bu sayfanın deposunda durur. Ortak bir bilgisayarda kullanma.'),
+    h('div', { class: 'satir' },
+      h('button', { class: 'dg ana kucuk', type: 'button', onclick: () => { const v = an.value.trim(); if (!v) return; try { localStorage.setItem(API_ANAHTARI, v); bildir('Anahtar kaydedildi.'); } catch (e) { bildir('Anahtar kaydedilemedi: depo kapalı.'); } cizAyar(); cizErisim(); } }, 'Kaydet'),
+      h('button', { class: 'dg kucuk', type: 'button', onclick: () => { try { localStorage.removeItem(API_ANAHTARI); } catch (e) {} bildir('Anahtar unutuldu.'); cizAyar(); cizErisim(); } }, 'Unut'))));
+
+  ic.push(h('h3', null, 'Derinlik → model'));
+  for (const [k, ad] of [['hizli', 'hızlı'], ['normal', 'normal'], ['derin', 'derin']]) {
+    const inp = h('input', { class: 'alan', value: a.modeller[k] || '', 'aria-label': ad + ' model adı', onchange: e => { a.modeller[k] = e.target.value.trim(); depoYaz(); } });
+    ic.push(h('div', { class: 'form-s' }, h('label', null, ad), inp));
+  }
+
+  ic.push(h('h3', null, 'Yeni kampanya'));
+  ic.push(h('p', { class: 'aciklama' }, 'Mevcut oyun silinir. Önce "Dışa aktar" ya da "Yedek al" yapmayı unutma.'));
+  const sec = h('select', { class: 'alan', 'aria-label': 'Senaryo' }, Object.entries(SENARYOLAR).map(([k, s]) => h('option', { value: k }, s.ad)));
+  const olcek = h('select', { class: 'alan', 'aria-label': 'Ölçek' }, h('option', { value: 'devlet' }, 'devlet — bir ulusun idaresi'), h('option', { value: 'kisi' }, 'kişi — bir insanın hayatı'));
+  const ad = h('input', { class: 'alan', placeholder: 'Ulus / karakter adı (ör. Osmanlı Devleti, Balaban bin Ulaş)' });
+  const lider = h('input', { class: 'alan', placeholder: 'Lider / unvan (ör. II. Abdülhamid)' });
+  const tarih = h('input', { class: 'alan', placeholder: 'Başlangıç tarihi' });
+  const mevki = h('input', { class: 'alan', placeholder: 'Mevki (ör. İstanbul — Yıldız Sarayı)' });
+  const metin = h('textarea', { class: 'alan', rows: 5, placeholder: 'Kendi senaryonu yaz: yer, dönem, kısa hikâye, avantaj ve dezavantaj, kültürel ve dinî durum.' });
+  const kendiAlan = h('div', { class: 'form-s' }, h('label', null, 'Senaryo metni'), metin);
+  const olcekAlan = h('div', { class: 'form-s' }, h('label', null, 'Ölçek'), olcek);
+  const alanlar = h('div', null,
+    h('div', { class: 'form-s' }, h('label', null, 'Ad'), ad),
+    h('div', { class: 'form-s' }, h('label', null, 'Lider / unvan'), lider),
+    h('div', { class: 'form-s' }, h('label', null, 'Tarih'), tarih),
+    h('div', { class: 'form-s' }, h('label', null, 'Mevki'), mevki));
+  const guncelle = () => {
+    const s = SENARYOLAR[sec.value];
+    alanlar.classList.toggle('gizli', !!s.tohum);
+    kendiAlan.classList.toggle('gizli', sec.value !== 'kendi');
+    olcekAlan.classList.toggle('gizli', sec.value !== 'kendi');
+    if (s.tarih && !tarih.value) tarih.placeholder = s.tarih;
+  };
+  sec.addEventListener('change', guncelle);
+  const ac = h('button', { class: 'dg ana', type: 'button' }, 'Kampanyayı aç');
+  ikiBasis(ac, () => {
+    kampanyaAc(sec.value, { olcek: olcek.value, ad: ad.value.trim(), lider: lider.value.trim(), tarih: tarih.value.trim(), mevki: mevki.value.trim(), metin: metin.value.trim() });
+    cekmeceKapat();
+  });
+  ic.push(h('div', { class: 'form-s' }, h('label', null, 'Senaryo'), sec), olcekAlan, alanlar, kendiAlan, ac);
+  g.replaceChildren(...ic);
+  guncelle();
+}
+
+function cizErisim() { $('#erisim-bilgi').textContent = erisimAdi(erisimYolu()); }
+
+function cizHepsi() { cizAkis(); panelCiz(); cizKaide(); cizKanon(); cizErisim(); $('#zar-at').checked = !!S.ayar.zar; $('#derinlik').value = S.ayar.derinlik; }
+
+/* ---------------------------------------------------------------------
+   KAMPANYA AÇILIŞI (Ek E)
+   --------------------------------------------------------------------- */
+function kampanyaAc(anahtarAdi, f) {
+  const ayar = S.ayar;
+  if (anahtarAdi === 'balaban') { S = balabanKampanyasi(ayar); sonDokunulan = new Set(); depoYaz(); cizHepsi(); bildir('Balaban Vekâyinâmesi açıldı.'); return; }
+  const s = SENARYOLAR[anahtarAdi];
+  const olcek = s.olcek || f.olcek || 'devlet';
+  const tarih = f.tarih || s.tarih || '';
+  const ad = f.ad || (olcek === 'devlet' ? 'Adsız devlet' : 'Adsız karakter');
+  const durum = olcek === 'devlet'
+    ? { olcek, tarih, mevki: f.mevki || '', kisi: ad, unvan: f.lider || '', hazine: 0, istikrar: 50, prestij: 50, gruplar: {}, diplomasi: {}, ordu: {}, vaziyet: {}, adamlar: [], kaynak: [], emanet: [], acik: [], oluler: [] }
+    : { olcek, tarih, mevki: f.mevki || '', kisi: ad, unvan: f.lider || '', kese: 0, beden: {}, maharet: {}, itibar: {}, adamlar: [], zimmet: [], emanet: [], acik: [], oluler: [] };
+  const kaide = TOHUM_KAIDE.map((m, i) => ({ id: 'k' + (i + 1), metin: CAG_KAIDE_DEGISIM[i] || m, kaynak: 'tohum', tarih: bugun() }));
+  const senaryoMetni = anahtarAdi === 'kendi' ? (f.metin || '(oyuncu senaryosu verilmedi)') : s.metin;
+  S = {
+    v: 1,
+    kampanya: {
+      ad, senaryo: anahtarAdi, kurulum: true,
+      kunye: `Senaryo: ${s.ad}\n${senaryoMetni}\n\nOyuncunun ${olcek === 'devlet' ? 'devleti' : 'karakteri'}: ${ad}${f.lider ? ' — ' + f.lider : ''}. Başlangıç: ${tarih || '(oyuncu belirleyecek)'}${f.mevki ? ', ' + f.mevki : ''}.\nİlk tur kuruluş turudur: DURUM boştur; başlangıç değerlerini "=değer" ve "ekle:" işlemleriyle önerirsin (bu turda ±${ITIBAR_SINIRI} sınırı uygulanmaz). Sonraki turlarda sınır geçerlidir.`
+    },
+    durum, durumTohum: kopya(durum), kaide,
+    sozluk: { izinli: [], yasak: (s.yasak || []).slice() },
+    kanon: [], ayar
+  };
+  sonDokunulan = new Set();
+  depoYaz(); cizHepsi();
+  $('#hamle').value = olcek === 'devlet'
+    ? `Oyunu başlat. Ulusum: ${ad}${f.lider ? ', liderim: ' + f.lider : ''}${tarih ? ', başlangıç: ' + tarih : ''}. Dünyanın bana bilinen hâlini anlat ve ilk durum raporunu ver.`
+    : `Oyunu başlat. Ben ${ad}${f.lider ? ', ' + f.lider : ''}${tarih ? '; tarih ' + tarih : ''}${f.mevki ? ', ' + f.mevki : ''}. İlk sahneyi aç.`;
+  boyAyarla();
+  bildir('Yeni kampanya açıldı. İlk hamle hazır; gözden geçirip gönder.');
+}
+
+/* ---------------------------------------------------------------------
+   KANON İŞLEMLERİ
+   --------------------------------------------------------------------- */
+function sonTuruSil() {
+  if (mesgul) return bildir('Anlatıcı yazarken silinemez.');
+  const kayit = oyuncuVeGmKayitlari();
+  if (!kayit.length) return bildir('Silinecek tur yok.');
+  const son = kayit[kayit.length - 1];
+  if (son.rol === 'gm') {
+    if (son.durumOnce) S.durum = kopya(son.durumOnce);   // itibar, kese, yara — hepsi eski hâline
+    S.kanon.splice(S.kanon.indexOf(son), 1);
+    const onceki = oyuncuVeGmKayitlari().slice(-1)[0];
+    if (onceki && onceki.rol === 'oyuncu') {
+      S.kanon.splice(S.kanon.indexOf(onceki), 1);
+      $('#hamle').value = onceki.metin; boyAyarla();
+    }
+  } else {
+    S.kanon.splice(S.kanon.indexOf(son), 1);
+    $('#hamle').value = son.metin; boyAyarla();
+  }
+  sonDokunulan = new Set();
+  depoYaz(); cizHepsi();
+  bildir('Son tur silindi; durum geri yüklendi. Hamle yazı kutusuna geri kondu.');
+}
+
+function sahneleriSil() {
+  if (mesgul) return;
+  S.kanon = S.kanon.filter(k => k.rol === 'tohum');
+  S.durum = kopya(S.durumTohum || S.durum);
+  if (S.kampanya.senaryo !== 'balaban') S.kampanya.kurulum = true;
+  sonDokunulan = new Set();
+  depoYaz(); cizHepsi();
+  bildir('Sahneler silindi; kaide ve sözlük korundu.');
+}
+
+function hepsiniSifirla() {
+  if (mesgul) return;
+  S = balabanKampanyasi(S.ayar);
+  sonDokunulan = new Set();
+  depoYaz(); cizHepsi();
+  bildir('Her şey sıfırlandı.');
+}
+
+/* ---------------------------------------------------------------------
+   DIŞA AKTARMA — veri hapsi yok
+   --------------------------------------------------------------------- */
+function indir(ad, icerik, tur) {
+  const b = new Blob([icerik], { type: tur });
+  const u = URL.createObjectURL(b);
+  const a = h('a', { href: u, download: ad });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 2000);
+}
+function dosyaAdi(uzanti) {
+  return (S.kampanya.ad || 'defterhane').toLocaleLowerCase('tr').replace(/ı/g, 'i').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + bugun() + '.' + uzanti;
+}
+
+function markdownUret() {
+  const d = S.durum, L = [];
+  const liste = (b, arr) => { L.push(`### ${b}`); (arr && arr.length ? arr : ['—']).forEach(x => L.push(`- ${x}`)); L.push(''); };
+  const harita = (b, o) => { L.push(`### ${b}`); const e = Object.entries(o || {}); (e.length ? e : [['—', '']]).forEach(([k, v]) => L.push(`- **${k}**${v !== '' ? ': ' + v : ''}`)); L.push(''); };
+  L.push(`# ${S.kampanya.ad} — Vekâyinâme`, '');
+  L.push(`_Defterhane'den dışa aktarıldı: ${bugun()}_`, '');
+  L.push('## Durum', '');
+  L.push(`- **${d.olcek === 'devlet' ? 'Devlet' : 'Kişi'}:** ${d.kisi || ''}`);
+  if (d.unvan) L.push(`- **${d.olcek === 'devlet' ? 'Yönetici' : 'Unvan'}:** ${d.unvan}`);
+  L.push(`- **Tarih:** ${d.tarih || ''}`, `- **Mevki:** ${d.mevki || ''}`);
+  if (d.olcek === 'devlet') {
+    L.push(`- **Hazine:** ${d.hazine ?? 0}`, `- **İstikrar:** ${d.istikrar ?? ''}`, `- **Prestij:** ${d.prestij ?? ''}`, '');
+    harita('İç gruplar', d.gruplar); harita('Diplomasi', d.diplomasi); harita('Ordu', d.ordu); harita('Vaziyet', d.vaziyet);
+    liste('Saray ve danışmanlar', d.adamlar); liste('Kaynaklar', d.kaynak); liste('Antlaşmalar ve vaatler', d.emanet);
+  } else {
+    L.push(`- **Kese:** ${d.kese ?? 0} akçe`, '');
+    harita('Beden', d.beden); harita('Maharet', d.maharet);
+    L.push('### İtibar', '', '| Kişi | İtibar |', '|---|---:|');
+    Object.entries(d.itibar || {}).sort((a, b) => b[1] - a[1]).forEach(([k, v]) => L.push(`| ${k} | ${v} |`));
+    L.push('');
+    liste('Adamlar', d.adamlar); liste('Zimmet', d.zimmet); liste('Emanetler ve borçlar', d.emanet);
+  }
+  liste('Açık meseleler', d.acik); liste('Ölüler', d.oluler);
+  L.push('## Kronoloji', '');
+  for (const k of S.kanon) {
+    if (k.rol === 'tohum') { L.push(`### ${k.sira}. ${k.tarih}`, '', k.ozet, ''); continue; }
+    if (k.rol === 'oyuncu') { L.push(`> **Hamle:** ${k.metin.replace(/\n/g, '\n> ')}`, ''); continue; }
+    L.push(`### ${k.sira}. ${k.tarih || ''}`, '');
+    const hm = [];
+    if (k.zar && k.zar.atildi) hm.push(`d20 · ${k.zar.d20}${k.zar.sonuc ? ' (' + NETICE_ADI[k.zar.sonuc] + ')' : ''}`);
+    (k.degisim || []).forEach(x => hm.push(x.yazi));
+    if (hm.length) L.push(`_Hâmiş: ${hm.join(' · ')}_`, '');
+    L.push(k.metin, '');
+  }
+  L.push('## Kaide', '');
+  S.kaide.forEach((k, i) => L.push(`${i + 1}. ${k.metin}${k.kaynak === 'duzeltme' ? ' _(düzeltme)_' : ''}`));
+  L.push('', '## Sözlük', '');
+  S.sozluk.izinli.forEach(s => L.push(`- ${s}`));
+  L.push(`- **Yasak:** ${S.sozluk.yasak.join(', ')}`, '');
+  return L.join('\n');
+}
+
+/* ---------------------------------------------------------------------
+   ÇEKMECELER, KLAVYE, GÖRÜNÜM ALANI
+   --------------------------------------------------------------------- */
+let acikCekmece = null, oncekiOdak = null;
+function cekmeceAc(id) {
+  cekmeceKapat(false);
+  const c = document.getElementById(id);
+  if (id === 'c-kaide') cizKaide();
+  if (id === 'c-kanon') cizKanon();
+  if (id === 'c-ayar') cizAyar();
+  oncekiOdak = document.activeElement;
+  c.classList.add('acik'); $('#ortu').classList.remove('gizli');
+  acikCekmece = c;
+  setTimeout(() => { const f = c.querySelector('button,textarea,input,select'); if (f) f.focus({ preventScroll: true }); }, 30);
+}
+function cekmeceKapat(odakDon = true) {
+  document.querySelectorAll('.cekmece.acik, #panel.acik').forEach(e => e.classList.remove('acik'));
+  $('#ortu').classList.add('gizli');
+  acikCekmece = null;
+  if (odakDon && oncekiOdak && oncekiOdak.focus) oncekiOdak.focus();
+}
+
+function boyAyarla() {
+  const t = $('#hamle');
+  t.style.height = 'auto';
+  t.style.height = Math.min(t.scrollHeight + 2, window.innerHeight * 0.3) + 'px';
+}
+
+/* Mobil klavye: yükseklik görünür alana göre düzeltilir; sayfa bütünü kaymaz. */
+function gorunumDuzelt() {
+  const app = $('#app');
+  const vv = window.visualViewport;
+  if (vv) {
+    app.style.height = vv.height + 'px';
+    app.style.transform = `translateY(${vv.offsetTop}px)`;
+  } else {
+    app.style.height = window.innerHeight + 'px';
+  }
+  if (window.scrollY) window.scrollTo(0, 0);
+  if (app.scrollLeft || app.scrollTop) { app.scrollLeft = 0; app.scrollTop = 0; }
+  asagi();
+}
+
+/* ---------------------------------------------------------------------
+   BAŞLAT
+   --------------------------------------------------------------------- */
+function baslat() {
+  const eski = depoOku();
+  if (eski && eski.v === 1 && eski.durum && Array.isArray(eski.kanon)) {
+    S = eski;
+    S.ayar = Object.assign(varsayilanAyar(), S.ayar || {});
+    S.ayar.modeller = Object.assign(varsayilanAyar().modeller, S.ayar.modeller || {});
+  } else {
+    S = balabanKampanyasi();
+  }
+  // Yarıda kalmış istek: son hamlenin cevabı yoksa tekrar denenebilir hâle getir.
+  const son = oyuncuVeGmKayitlari().slice(-1)[0];
+  if (son && son.rol === 'oyuncu' && !son.hata) son.hata = 'Bu hamlenin cevabı tamamlanmadan sayfa kapandı.';
+  depoYaz();
+  cizHepsi();
+
+  if (!DEPO_VAR) bildir('Kalıcı depo kullanılamıyor: sekme kapanınca oyun kaybolur. Dışa aktarmayı unutma.', 8000);
+  else if (!S.ayar.depoBildirildi) {
+    bildir('Oyun bu tarayıcının yerel deposunda (localStorage) saklanıyor. Yedek için Ayar → Yedek al.', 7000);
+    S.ayar.depoBildirildi = true; depoYaz();
+  }
+
+  $('#giris-form').addEventListener('submit', e => { e.preventDefault(); turCevir(); });
+  $('#hamle').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); turCevir(); } });
+  $('#hamle').addEventListener('input', boyAyarla);
+  $('#zar-at').addEventListener('change', e => { S.ayar.zar = e.target.checked; depoYaz(); });
+  $('#derinlik').addEventListener('change', e => { S.ayar.derinlik = e.target.value; depoYaz(); });
+  document.querySelectorAll('[data-cekmece]').forEach(b => b.addEventListener('click', () => cekmeceAc(b.dataset.cekmece)));
+  document.querySelectorAll('[data-kapat]').forEach(b => b.addEventListener('click', () => cekmeceKapat()));
+  $('#ortu').addEventListener('click', () => cekmeceKapat());
+  $('#dg-durum').addEventListener('click', () => {
+    cekmeceKapat(false); oncekiOdak = document.activeElement;
+    $('#panel').classList.add('acik'); $('#ortu').classList.remove('gizli');
+    $('#panel').setAttribute('tabindex', '-1'); $('#panel').focus({ preventScroll: true });
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && (acikCekmece || $('#panel').classList.contains('acik'))) cekmeceKapat(); });
+  $('#kaide-ekle').addEventListener('submit', e => {
+    e.preventDefault();
+    const t = $('#kaide-yeni'); const m = t.value.trim(); if (!m) return t.focus();
+    t.value = ''; kaideyeEkle(m, 'elle');
+  });
+  ikiBasis($('#dg-son-sil'), sonTuruSil);
+  ikiBasis($('#dg-sahne-sil'), sahneleriSil);
+  ikiBasis($('#dg-sifirla'), hepsiniSifirla);
+  $('#dg-disa').addEventListener('click', () => { indir(dosyaAdi('md'), markdownUret(), 'text/markdown;charset=utf-8'); bildir('Vekâyinâme Markdown olarak indirildi.'); });
+  $('#dg-json-al').addEventListener('click', () => indir(dosyaAdi('json'), JSON.stringify(S, null, 2), 'application/json'));
+  $('#json-yukle').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const o = JSON.parse(await f.text());
+      if (!o || o.v !== 1 || !o.durum || !Array.isArray(o.kanon) || !Array.isArray(o.kaide)) throw new Error('biçim tanınmadı');
+      o.ayar = Object.assign(varsayilanAyar(), S.ayar);
+      S = o; sonDokunulan = new Set(); depoYaz(); cizHepsi(); cekmeceKapat();
+      bildir('Yedek yüklendi.');
+    } catch (er) { bildir('Yedek okunamadı: ' + er.message, 5000); }
+    e.target.value = '';
+  });
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', gorunumDuzelt);
+    window.visualViewport.addEventListener('scroll', gorunumDuzelt);
+  }
+  window.addEventListener('resize', gorunumDuzelt);
+  gorunumDuzelt();
+  boyAyarla();
+}
+
+// Sınama ve konsoldan erişim için
+window.Defterhane = { get durum() { return S; }, istemButceli, hakem, ayristir, markdownUret };
+baslat();
+</script>
+</body>
+</html>

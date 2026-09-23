@@ -1,0 +1,26 @@
+{
+  "aciklama": "Şartname §13 kalite ölçümü: kaide her büyütüldüğünde bu yirmi girdi Balaban kampanyasının tohum durumunda yeniden çalıştırılır ve çıktılar üç ölçüyle gözden geçirilir: anakronizm sayısı · unutulan açık borç sayısı · oyuncunun düzeltme ihtiyacı.",
+  "olculer": ["anakronizm_sayisi", "unutulan_acik_borc", "duzeltme_ihtiyaci"],
+  "girdiler": [
+    { "no": 1, "hamle": "Ambar çavuşunu çağırtıp peksimet çuvallarının altına kalas konup konmadığını soruyorum.", "yoklanan": "ambar, dönem dili" },
+    { "no": 2, "hamle": "Kemal'e haftalık arzın suretini çıkarttırıyor, dokuz hattın hâlini tek tek okutturuyorum.", "yoklanan": "nizam, Kemal'in maddesi" },
+    { "no": 3, "hamle": "Vardar Ali'nin yanına gidip emanet bıraktığım akçeyi soruyorum.", "yoklanan": "180 akçe emaneti — şart: sağ dönmek" },
+    { "no": 4, "hamle": "Turhan'ı yanıma alıp rüzgârda kurşun sarkıtmayı bir daha gösteriyorum.", "yoklanan": "Turhan'ın cehaleti, usul öğretme maddesi" },
+    { "no": 5, "hamle": "Kubad Reis'in bordasına çıkıp bakır tası için teşekkür ediyorum.", "yoklanan": "bakır tası emaneti — baharda iade" },
+    { "no": 6, "hamle": "Hızır Reis'e demir tırnağı hâlâ kuşağımda taşıdığımı gösteriyorum.", "yoklanan": "demir tırnak emaneti" },
+    { "no": 7, "hamle": "Sol kolumla tatar yayını germeyi deniyorum.", "yoklanan": "sol omuz yarası, kılıç yasağı" },
+    { "no": 8, "hamle": "Serdar kethüdasına in'âm arzımın akıbetini soruyorum.", "yoklanan": "açık mesele: in'âm cevabı" },
+    { "no": 9, "hamle": "Nimet'in ıskarmozlarını Tosun'la birlikte yokluyorum.", "yoklanan": "zimmet: Nimet, Tosun neccar" },
+    { "no": 10, "hamle": "Gece fırtına çıkıyor; demir hattına ölçücü göndermek istiyorum.", "yoklanan": "kış nizamı: gece ölçüm yasak" },
+    { "no": 11, "hamle": "Kurtoğlu'nun huzuruna çıkıp ücretimin ne zaman açılacağını soruyorum.", "yoklanan": "ücret kesik, hitap: reis ≠ paşa" },
+    { "no": 12, "hamle": "Kaleden kaçan bir Rodosluyu sorguya çekiyorum.", "yoklanan": "kuşatma, dönem usulü" },
+    { "no": 13, "hamle": "Bekir'in hançerini Kemal'e veriyorum.", "yoklanan": "ölü Bekir ile ölçücü Bekir karışmamalı" },
+    { "no": 14, "hamle": "Pîrî Reis'e Gelibolu sözümü hatırlatan bir mektup yazdırıyorum.", "yoklanan": "Pîrî Reis'e söz" },
+    { "no": 15, "hamle": "Yakup Kara'nın ailesini soruşturuyorum.", "yoklanan": "ölen ölür — diriltme yok" },
+    { "no": 16, "hamle": "Ali bin Turgut Reis'le saha hizmetinin yeni hatlarını konuşuyorum.", "yoklanan": "emir zinciri" },
+    { "no": 17, "hamle": "Kürekçilerden en yaşlısı Mehmed'i yanıma çağırıyorum.", "yoklanan": "adamlar listesi" },
+    { "no": 18, "hamle": "Frengistan'dan imdat geldiği söylentisini kethüdaya bildiriyorum.", "yoklanan": "açık mesele: Frenk imdadı" },
+    { "no": 19, "hamle": "Defterime dört sütunu açıp bugünkü ölçüleri yazıyorum.", "yoklanan": "defter usulü: işitilen · görülen · ölçülen · kanaat" },
+    { "no": 20, "hamle": "Kara Mahmud Reis'in mektubunu bohçadan çıkarıp yeniden okuyorum.", "yoklanan": "bohçadaki mektup emaneti" }
+  ]
+}
