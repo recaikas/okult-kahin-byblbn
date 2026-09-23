@@ -32,11 +32,12 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 - Tabela önizlemesi; ad kayda (`company`) yazılır. Adı olmayan eski kayıtlar **DEVAM ET**'te bir kez ad sorar.
 
 ### 🏆 Skor tablosu
-- **Skor = kasaya giren toplam para** (`S.earned`): kasaya bırakılan satış parası, mezat, hizmet binaları, kontrat, temettü, işletme geliri. İadeler ve hisse satışı sayılmaz.
-- Otomatik gönderim: her kayıtta (6 sn), gün sonunda, kaydet/çık'ta. Gün sonu kartında `Skor • N. sıra`.
+- **Skor = ağlardan çıkan toplam balık** (`S.caught`). Harcamayla düşmez, parayla şişirilemez.
+- Tabloda ikincil bilgi: kasaya giren toplam para (`S.earned` — satış, mezat, binalar, kontrat, temettü, işletme geliri; iade ve hisse satışı hariç).
+- Otomatik gönderim: her kayıtta (6 sn), gün sonunda, kaydet/çık'ta. Gün sonu kartında `N balık • N. sıra`.
 - İlk 20 + kendi sıran (altındaysan ayrıca gösterilir), 1-2-3 madalya rengi, **SEN** etiketi.
 - Ana menüde **🏆 SKOR**, oyun içi menüde **🏆 SKOR TABLOSU**.
-- Tablo kayıttan ayrı anahtarda (`balikci_board_v1`): Yeni Oyun kaydı siler, tabloyu silmez.
+- Tablo kayıttan ayrı anahtarda (`balikci_board_v2`; v1 para bazlıydı, birimler karışmasın diye ayrıldı): Yeni Oyun kaydı siler, tabloyu silmez.
 - Depolama tek arayüzden geçer (`Board.fetch` / `Board.submit`). **Şu an cihaz içi** — paylaşımlı (herkesin göreceği) tabloya geçerken yalnız bu nesne değişir.
 
 ### Hata düzeltmeleri

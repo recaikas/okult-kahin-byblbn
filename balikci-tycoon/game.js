@@ -22,13 +22,13 @@ var STR = {
   tr: {
     money: 'PARA', carry: 'TAŞIMA', rep: 'İTİBAR', goal: 'HEDEF', menu: 'LİMAN',
     play: 'OYNA', settings: 'AYARLAR', ok: 'TAMAM', cont: 'DEVAM', reset: 'KAYDI SIFIRLA',
-    story: '📰 HİKÂYE', board: '🏆 SKOR', boardTitle: '🏆 SKOR TABLOSU', boardSub: 'Sıralama: kasaya giren toplam para',
+    story: '📰 HİKÂYE', board: '🏆 SKOR', boardTitle: '🏆 SKOR TABLOSU', boardSub: 'Sıralama: tutulan toplam balık',
     boardEmpty: 'Henüz kimse yok — ilk sen ol!', boardYou: 'SEN', boardDay: '{d}. gün',
     boardLocal: 'Şimdilik bu cihazda oynanan oyunlar listeleniyor.', close: 'KAPAT',
     nameTitle: 'İŞLETMENİN ADI', nameSub: 'Tabelaya ne yazalım? Bu isim skor tablosunda görünecek.',
     nameIdeas: 'ÖNERİLER', nameGo: 'İŞE BAŞLA ▶', nameShort: 'En az 2 harf yaz.', nameDice: 'Rastgele isim',
     welcomeCo: 'Hayırlı olsun! {n} kapılarını açtı.', tapStart: '▶ BAŞLAMAK İÇİN DOKUN', skip: 'ATLA ▶▶',
-    dayScore: 'Skor (toplam kazanç)', dayRank: '{s} • {r}. sıra',
+    dayScore: 'Skor (toplam balık)', dayRank: '{s} • {r}. sıra', fishN: '{n} balık',
     tag: 'KÜÇÜK İSKELEDEN BÜYÜK LİMANA',
     langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM',
     resetAsk: 'Tüm ilerleme silinsin mi?',
@@ -176,13 +176,13 @@ var STR = {
   en: {
     money: 'CASH', carry: 'CARRY', rep: 'REP', goal: 'GOAL', menu: 'HARBOR',
     play: 'PLAY', settings: 'SETTINGS', ok: 'OK', cont: 'CONTINUE', reset: 'RESET SAVE',
-    story: '📰 STORY', board: '🏆 SCORES', boardTitle: '🏆 LEADERBOARD', boardSub: 'Ranked by total money earned',
+    story: '📰 STORY', board: '🏆 SCORES', boardTitle: '🏆 LEADERBOARD', boardSub: 'Ranked by total fish caught',
     boardEmpty: 'Nobody here yet — be the first!', boardYou: 'YOU', boardDay: 'Day {d}',
     boardLocal: 'For now this lists games played on this device.', close: 'CLOSE',
     nameTitle: 'NAME YOUR BUSINESS', nameSub: 'What goes on the sign? This name appears on the leaderboard.',
     nameIdeas: 'IDEAS', nameGo: 'OPEN FOR BUSINESS ▶', nameShort: 'Type at least 2 letters.', nameDice: 'Random name',
     welcomeCo: '{n} is open for business!', tapStart: '▶ TAP TO BEGIN', skip: 'SKIP ▶▶',
-    dayScore: 'Score (total earned)', dayRank: '{s} • #{r}',
+    dayScore: 'Score (total fish)', dayRank: '{s} • #{r}', fishN: '{n} fish',
     tag: 'FROM A TINY PIER TO A GRAND HARBOR',
     langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM',
     resetAsk: 'Erase all progress?',
@@ -5296,7 +5296,8 @@ function showDayCard() {
   if (S.company) {
     submitScore();
     var rk = myRank(Board.sort(Board.read()));
-    h += dayRow('🏆', T('dayScore'), rk ? T('dayRank', { s: money(S.earned), r: rk }) : money(S.earned));
+    var fs = T('fishN', { n: fmtN(S.caught) });
+    h += dayRow('🏆', T('dayScore'), rk ? T('dayRank', { s: fs, r: rk }) : fs);
   }
   el.dayRows.innerHTML = PX(h);
   el.dayNext.classList.toggle('hidden', !L.next);
@@ -6402,16 +6403,18 @@ function randomCompany(avoid) {
   }
   return 'Hasan Balıkçılık';
 }
+function fmtN(n) { return Math.round(n || 0).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US'); }
 function escH(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 function newRunId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 
 /* ---------- SKOR TABLOSU ----------
-   Skor = kasaya giren toplam para (S.earned). Tablo kayıttan AYRI anahtarda tutulur:
+   Skor = ağlardan çıkan toplam balık (S.caught). Kasaya giren toplam para (S.earned)
+   tabloda ikincil bilgi olarak durur. Tablo kayıttan AYRI anahtarda tutulur:
    "Yeni Oyun" kaydı siler ama tabloyu silmez. Depolama tek arayüzden geçer (Board.fetch /
    Board.submit) — paylaşımlı bir sunucuya geçerken yalnız burası değişir. */
-var BOARD_KEY = 'balikci_board_v1', BOARD_MAX = 50, BOARD_SHOW = 20;
+var BOARD_KEY = 'balikci_board_v2', BOARD_MAX = 50, BOARD_SHOW = 20;
 var Board = {
   scope: 'local',
   read: function () {
@@ -6427,7 +6430,7 @@ var Board = {
   submit: function (e) {
     var a = Board.read(), f = null;
     for (var i = 0; i < a.length; i++) if (a[i].id === e.id) { f = a[i]; break; }
-    if (f) { f.n = e.n; f.s = Math.max(f.s, e.s); f.d = Math.max(f.d || 1, e.d); f.at = e.at; }
+    if (f) { f.n = e.n; f.s = Math.max(f.s, e.s); f.m = Math.max(f.m || 0, e.m); f.d = Math.max(f.d || 1, e.d); f.at = e.at; }
     else a.push(e);
     a = Board.sort(a);
     if (a.length > BOARD_MAX) a = a.slice(0, BOARD_MAX);
@@ -6436,7 +6439,7 @@ var Board = {
 };
 function submitScore() {
   if (!S.company || !S.runId) return;
-  Board.submit({ id: S.runId, n: S.company, s: Math.round(S.earned), d: day.n, at: Date.now() });
+  Board.submit({ id: S.runId, n: S.company, s: S.caught, m: Math.round(S.earned), d: day.n, at: Date.now() });
 }
 function myRank(list) {
   for (var i = 0; i < list.length; i++) if (list[i].id === S.runId) return i + 1;
@@ -6446,8 +6449,8 @@ function boardRow(e, i, mine) {
   var medal = i < 3 ? ' m' + (i + 1) : '';
   return '<div class="brow' + medal + (mine ? ' me' : '') + '"><span class="rk">' + (i + 1) + '</span>' +
     '<span class="bn">' + escH(e.n) + (mine ? ' <em>' + T('boardYou') + '</em>' : '') +
-    '<small>' + T('boardDay', { d: e.d || 1 }) + '</small></span>' +
-    '<span class="bs">' + money(e.s) + '</span></div>';
+    '<small>' + T('boardDay', { d: e.d || 1 }) + ' • ' + money(e.m || 0) + '</small></span>' +
+    '<span class="bs">' + T('fishN', { n: fmtN(e.s) }) + '</span></div>';
 }
 function renderBoard() {
   Board.fetch(function (list) {
