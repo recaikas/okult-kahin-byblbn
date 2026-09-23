@@ -255,6 +255,82 @@
   .chip .pxi{width:15px;height:15px;vertical-align:-3px}
   .dtab .pxi{width:20px;height:20px}
   .trow .ic .pxi{width:18px;height:18px}
+
+  /* ---------- v0.2 giriş hikâyesi: masa üstünde dönen gazete ---------- */
+  #introScr{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:10px;padding:14px 12px calc(14px + env(safe-area-inset-bottom,0px));
+    background:radial-gradient(ellipse at 50% 38%,#4a3220 0%,#2a1b10 55%,#140c06 100%);cursor:pointer}
+  #introScr.hidden{display:none}
+  #introScr::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.18;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.5) 0 2px,transparent 2px 22px)}
+  #introCv{image-rendering:pixelated;image-rendering:crisp-edges;display:block;position:relative}
+  .isub{position:relative;width:min(560px,100%);min-height:96px;background:rgba(10,8,6,.86);
+    border:3px solid #0a0604;border-top-color:#6b4a2a;padding:12px 16px 14px;font-size:15px;line-height:1.5;
+    color:var(--ink);box-shadow:0 4px 0 rgba(0,0,0,.45)}
+  .isub::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;
+    background:repeating-linear-gradient(90deg,var(--kilim1) 0 3px,var(--kilim2) 3px 6px,var(--kilim3) 6px 9px,var(--kilim2) 9px 12px)}
+  #introNext{position:absolute;right:10px;bottom:6px;color:var(--gold);font-size:13px;animation:blink 1s steps(2) infinite}
+  #introNext.hidden{display:none}
+  @keyframes blink{50%{opacity:0}}
+  #introGate{position:absolute;top:46%;left:50%;transform:translate(-50%,-50%);text-align:center;white-space:nowrap}
+  #introGate b{display:block;font-size:40px;line-height:1.05;color:var(--gold);letter-spacing:2px;text-shadow:4px 4px 0 #7a2b10}
+  #introGate small{display:block;font-size:12px;letter-spacing:2px;color:var(--ink2);margin:10px 0 34px}
+  #introTap{display:block;font-size:17px;letter-spacing:2px;color:var(--ink);text-shadow:2px 2px 0 #000;animation:blink 1.2s steps(2) infinite}
+  #introGate.hidden{display:none}
+  #introScr.gate .isub,#introScr.gate #introDots,#introScr.gate #introCv{visibility:hidden}
+  #introSkip{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:10px;z-index:2;
+    background:rgba(10,8,6,.7);border:2px solid #6b4a2a;color:var(--ink);font-family:inherit;font-size:13px;
+    padding:7px 12px;cursor:pointer;letter-spacing:1px}
+  #introLang{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:10px;z-index:2;display:flex;gap:4px}
+  #introLang button{background:rgba(10,8,6,.7);border:2px solid #6b4a2a;color:var(--ink2);font-family:inherit;
+    font-size:12px;padding:6px 8px;cursor:pointer}
+  #introLang button.on{color:var(--gold);border-color:var(--gold)}
+  #introDots{display:flex;gap:6px;position:relative}
+  #introDots i{width:8px;height:8px;background:#3a2716;border:2px solid #0a0604}
+  #introDots i.d{background:#8a6a44} #introDots i.on{background:var(--gold)}
+
+  /* ---------- işletme adı ---------- */
+  .sign{position:relative;margin:14px auto 8px;max-width:330px;padding:14px 12px 13px;text-align:center;
+    background:repeating-linear-gradient(0deg,#8a5a33 0 7px,#7a4e2b 7px 9px);border:3px solid #3b2412;
+    color:var(--gold);font-size:20px;letter-spacing:1px;line-height:1.2;text-shadow:2px 2px 0 #3b2412;
+    word-break:break-word;box-shadow:inset 0 0 0 2px #a8734a,0 4px 0 rgba(0,0,0,.4)}
+  .sign::before,.sign::after{content:"";position:absolute;top:-14px;width:3px;height:12px;background:#2b1a0c}
+  .sign::before{left:22%} .sign::after{right:22%}
+  .nrow{display:flex;gap:6px;margin-top:6px}
+  #nameIn{flex:1;min-width:0;background:#0a1a27;border:3px solid var(--edge);border-top-color:#05101a;color:var(--ink);
+    font-family:inherit;font-size:17px;padding:10px;user-select:text;-webkit-user-select:text;outline:none}
+  #nameIn:focus{border-color:var(--gold)}
+  #nameDice{min-width:48px;height:auto;font-size:20px}
+  .nhint{font-size:11px;color:var(--ink2);text-align:right;margin-top:3px}
+  .nhint.bad{color:#ff9b8a}
+  .nchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+  .nchip{background:var(--pnl2);border:2px solid var(--edge);border-top-color:var(--edge2);color:var(--ink);
+    font-family:inherit;font-size:12.5px;padding:6px 9px;cursor:pointer}
+  .nchip:active{transform:translate(1px,1px)}
+  .go.dim{filter:saturate(.35) brightness(.8)}
+  .card.pop{animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes pop{0%{transform:scale(.85);opacity:0}100%{transform:scale(1);opacity:1}}
+  .card.shake{animation:shake .3s}
+  @keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+
+  /* ---------- skor tablosu ---------- */
+  .duo{display:flex;gap:6px}
+  .duo .alt{flex:1}
+  .brow{display:flex;align-items:center;gap:8px;background:linear-gradient(180deg,#22425c,#1a3448);
+    border:2px solid var(--edge);padding:7px 9px;margin-bottom:4px}
+  .brow .rk{width:26px;height:26px;flex:0 0 26px;display:flex;align-items:center;justify-content:center;
+    background:#0a1a27;border:2px solid var(--edge);font-size:13px;color:var(--ink2)}
+  .brow.m1 .rk{background:#ffc94a;color:#3a2401;border-color:#7a5406}
+  .brow.m2 .rk{background:#c9d3dc;color:#1f2a33;border-color:#5d6a75}
+  .brow.m3 .rk{background:#c98a4f;color:#2e1706;border-color:#6b3f18}
+  .brow .bn{flex:1;min-width:0;font-size:13px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .brow .bn small{display:block;font-size:10px;color:var(--ink2)}
+  .brow .bn em{font-style:normal;font-size:9.5px;background:var(--gold);color:#3a2401;padding:1px 4px;margin-left:2px}
+  .brow .bs{font-size:13px;color:var(--green);white-space:nowrap}
+  .brow.me{border-color:var(--gold)}
+  .bsep{text-align:center;color:var(--ink2);font-size:11px;letter-spacing:3px;margin:2px 0 6px}
+  #boardRows{max-height:52vh;overflow-y:auto}
+  .bnote{font-size:10.5px;color:var(--ink2);text-align:center;margin-top:8px;opacity:.8}
 </style>
 
 <canvas id="game"></canvas>
@@ -296,7 +372,7 @@
   <div class="card">
     <h1>BALIKÇI<br>TYCOON</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v0.1</div>
+    <div class="ver">v0.2</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -306,6 +382,7 @@
     <div class="saveinfo hidden" id="saveInfo">—</div>
     <button class="go" id="playBtn">OYNA</button>
     <button class="alt hidden" id="newBtn">YENİ OYUN</button>
+    <div class="duo"><button class="alt" id="boardBtn">🏆 SKOR</button><button class="alt" id="storyBtn">📰 HİKÂYE</button></div>
     <button class="alt" id="setBtn">AYARLAR</button>
   </div>
 </div>
@@ -393,9 +470,41 @@
     <div id="tabBody"></div>
     <button class="go" id="closeMenu">▶ DEVAM ET</button>
     <button class="alt good" id="menuSave">💾 KAYDET</button>
+    <button class="alt" id="menuBoard">🏆 SKOR TABLOSU</button>
     <button class="alt" id="menuSet">AYARLAR</button>
   </div>
 </div>
 
-<script src="game.js"></script>
+<div class="overlay hidden" id="nameScr">
+  <div class="card" id="nameCard">
+    <h2 id="nameTitle">İŞLETMENİN ADI</h2>
+    <p id="nameSub">Tabelaya ne yazalım? Bu isim skor tablosunda görünecek.</p>
+    <div class="sign" id="nameSign">Hasan Balıkçılık</div>
+    <div class="nrow"><input id="nameIn" type="text" maxlength="24" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="go"><button class="btn" id="nameDice">🎲</button></div>
+    <div class="nhint" id="nameHint">0/24</div>
+    <span class="lbl" id="nameIdeasLbl">ÖNERİLER</span>
+    <div class="nchips" id="nameChips"></div>
+    <button class="go" id="nameGo">İŞE BAŞLA ▶</button>
+  </div>
+</div>
 
+<div class="overlay hidden" id="boardScr">
+  <div class="card">
+    <h2 id="boardTitle">🏆 SKOR TABLOSU</h2>
+    <p id="boardSub">Sıralama: kasaya giren toplam para</p>
+    <div id="boardRows"></div>
+    <div class="bnote" id="boardNote"></div>
+    <button class="go" id="boardClose">KAPAT</button>
+  </div>
+</div>
+
+<div class="hidden" id="introScr">
+  <div id="introLang"><button data-l="tr">TR</button><button data-l="en">EN</button></div>
+  <button id="introSkip">ATLA ▶▶</button>
+  <canvas id="introCv" width="216" height="272"></canvas>
+  <div id="introGate"><b>BALIKÇI<br>TYCOON</b><small id="introTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</small><span id="introTap">▶ BAŞLAMAK İÇİN DOKUN</span></div>
+  <div id="introDots"></div>
+  <div class="isub"><span id="introSub"></span><span id="introNext" class="hidden">▶</span></div>
+</div>
+
+<script src="game.js"></script>

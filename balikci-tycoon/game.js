@@ -22,6 +22,13 @@ var STR = {
   tr: {
     money: 'PARA', carry: 'TAŞIMA', rep: 'İTİBAR', goal: 'HEDEF', menu: 'LİMAN',
     play: 'OYNA', settings: 'AYARLAR', ok: 'TAMAM', cont: 'DEVAM', reset: 'KAYDI SIFIRLA',
+    story: '📰 HİKÂYE', board: '🏆 SKOR', boardTitle: '🏆 SKOR TABLOSU', boardSub: 'Sıralama: kasaya giren toplam para',
+    boardEmpty: 'Henüz kimse yok — ilk sen ol!', boardYou: 'SEN', boardDay: '{d}. gün',
+    boardLocal: 'Şimdilik bu cihazda oynanan oyunlar listeleniyor.', close: 'KAPAT',
+    nameTitle: 'İŞLETMENİN ADI', nameSub: 'Tabelaya ne yazalım? Bu isim skor tablosunda görünecek.',
+    nameIdeas: 'ÖNERİLER', nameGo: 'İŞE BAŞLA ▶', nameShort: 'En az 2 harf yaz.', nameDice: 'Rastgele isim',
+    welcomeCo: 'Hayırlı olsun! {n} kapılarını açtı.', tapStart: '▶ BAŞLAMAK İÇİN DOKUN', skip: 'ATLA ▶▶',
+    dayScore: 'Skor (toplam kazanç)', dayRank: '{s} • {r}. sıra',
     tag: 'KÜÇÜK İSKELEDEN BÜYÜK LİMANA',
     langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM',
     resetAsk: 'Tüm ilerleme silinsin mi?',
@@ -169,6 +176,13 @@ var STR = {
   en: {
     money: 'CASH', carry: 'CARRY', rep: 'REP', goal: 'GOAL', menu: 'HARBOR',
     play: 'PLAY', settings: 'SETTINGS', ok: 'OK', cont: 'CONTINUE', reset: 'RESET SAVE',
+    story: '📰 STORY', board: '🏆 SCORES', boardTitle: '🏆 LEADERBOARD', boardSub: 'Ranked by total money earned',
+    boardEmpty: 'Nobody here yet — be the first!', boardYou: 'YOU', boardDay: 'Day {d}',
+    boardLocal: 'For now this lists games played on this device.', close: 'CLOSE',
+    nameTitle: 'NAME YOUR BUSINESS', nameSub: 'What goes on the sign? This name appears on the leaderboard.',
+    nameIdeas: 'IDEAS', nameGo: 'OPEN FOR BUSINESS ▶', nameShort: 'Type at least 2 letters.', nameDice: 'Random name',
+    welcomeCo: '{n} is open for business!', tapStart: '▶ TAP TO BEGIN', skip: 'SKIP ▶▶',
+    dayScore: 'Score (total earned)', dayRank: '{s} • #{r}',
     tag: 'FROM A TINY PIER TO A GRAND HARBOR',
     langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM',
     resetAsk: 'Erase all progress?',
@@ -413,7 +427,9 @@ function pY(x, y, z) { return (x + y) * (TH / 2) - (z || 0); }
 
 /* ---------------- girdi ---------------- */
 var keys = {};
+function typing(e) { var tg = e.target && e.target.tagName; return tg === 'INPUT' || tg === 'TEXTAREA'; }
 window.addEventListener('keydown', function (e) {
+  if (typing(e)) return;
   keys[e.key.toLowerCase()] = true;
   if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].indexOf(e.key.toLowerCase()) >= 0) e.preventDefault();
 });
@@ -1173,7 +1189,7 @@ function servTick(dt) {
     st.nextT = L.ivl * rnd(0.8, 1.25);
     if (servRate >= cap) continue;                  /* tavan: AFK para makinesi olmaz */
     var pay = Math.round(L.inc * (1 + repLevel() * 0.04));
-    S.cash += pay; servRate += pay;
+    S.cash += pay; servRate += pay; earn(pay);
     var p = plotById(st.plot);
     if (p) { addFloat(p.x, p.y - 0.4, '+' + money(pay), '#9df5b0'); st.flash = 0.8; }
   }
@@ -1278,7 +1294,7 @@ function runAuction() {
   }
   if (!sold) return null;
   sfx.bell();
-  S.cash += gain; noteDayIncome(gain); noteFishIncome(gain * 0.5);
+  S.cash += gain; earn(gain); noteDayIncome(gain); noteFishIncome(gain * 0.5);
   if (at) addFloat(at.x, at.y - 0.6, '+' + money(gain), '#ffe27a');
   return { n: sold, v: gain };
 }
@@ -1486,8 +1502,12 @@ var PADS = [
 /* ---------------- durum ---------------- */
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
-  served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0
+  served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
+  earned: 0, company: '', runId: ''     /* skor: kasaya giren toplam gelir + işletme adı */
 };
+/* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
+   İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
+function earn(v) { if (v > 0) S.earned += v; }
 var player = { x: 4.5, y: 3.2, z: 0, vx: 0, vy: 0, bob: 0, face: 1, carry: [], act: 0, isPlayer: true };
 var workers = [], customers = [], flyers = [], floats = [], puffs = [], gulls = [];
 var event = null, eventT = 0, nextEvent = 80;
@@ -1505,14 +1525,32 @@ function perMin() { return lang === 'tr' ? '/dk' : '/min'; }
 function money(n) { return '$' + Math.round(n).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US'); }
 
 /* ---------------- kayıt ---------------- */
-var SAVE_KEY = 'balikci_tycoon_v3';
+var SAVE_KEY = 'balikci_tycoon_v3', PREF_KEY = 'balikci_pref', wiping = false;
+function savePref() {
+  try { localStorage.setItem(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl })); } catch (e) { }
+}
+function loadPref() {
+  try {
+    var d = JSON.parse(localStorage.getItem(PREF_KEY) || 'null'); if (!d) return;
+    if (d.lang) lang = d.lang;
+    if (d.snd !== undefined) { volLvl = clamp(d.snd | 0, 0, 2); applyVolume(); }
+    if (d.zoom) zoomLvl = d.zoom;
+  } catch (e) { }
+}
 function save() {
+  if (wiping) return;                 /* "Yeni Oyun": sayfa kapanırken eski kayıt geri yazılmasın */
+  savePref();
+  var has = false;
+  try { has = !!localStorage.getItem(SAVE_KEY); } catch (e) { }
+  if (!S.started && !has) return;     /* hiç oynanmamış oyun kayıt oluşturmaz */
+  if (S.started) submitScore();
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       v: 5, lang: lang, snd: volLvl, zoom: zoomLvl,
       at: Date.now(), play: Math.round(S.play || 0),
       cash: S.cash, rep: S.rep, capLvl: S.capLvl, spdLvl: S.spdLvl, priceLvl: S.priceLvl,
       served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
+      earned: Math.round(S.earned), company: S.company, runId: S.runId,
       areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
       pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
       slots: SLOTS.map(function (s) { return s.b; }),
@@ -1537,6 +1575,7 @@ function load() {
     S.priceLvl = d.priceLvl || 0; S.served = d.served || 0; S.lost = d.lost || 0;
     S.caught = d.caught || 0; S.tut = d.tut || 0;
     S.play = d.play || 0; S.savedAt = d.at || 0;
+    S.earned = d.earned || 0; S.company = cleanName(d.company || '') || ''; S.runId = d.runId || '';
     if (d.areas) d.areas.forEach(function (v, i) { if (AREAS[i]) { AREAS[i].locked = !!v[0]; AREAS[i].lvl = v[1] || 1; } });
     if (d.pads) d.pads.forEach(function (v, i) { if (PADS[i]) { PADS[i].paid = v[0]; PADS[i].lvl = v[1]; if (v[2]) PADS[i].price = v[2]; } });
     if (d.slots) d.slots.forEach(function (v, i) { if (SLOTS[i]) SLOTS[i].b = v; });
@@ -1563,13 +1602,19 @@ function load() {
     return true;
   } catch (e) { return false; }
 }
-function wipe() { try { localStorage.removeItem(SAVE_KEY); } catch (e) { } location.reload(); }
+function wipe(toName) {
+  wiping = true;
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) { }
+  try { if (toName) sessionStorage.setItem('bt_new', '1'); } catch (e) { }
+  location.reload();
+}
 /* --- kayıt özeti / manuel kaydet (pause + kaydet-çık) --- */
 function saveMeta() {
   try {
     var raw = localStorage.getItem(SAVE_KEY); if (!raw) return null;
     var d = JSON.parse(raw);
     return { at: d.at || 0, cash: d.cash || 0, rep: d.rep || 0, served: d.served || 0, play: d.play || 0,
+      co: d.company || '', earned: d.earned || 0,
       areas: (d.areas || []).filter(function (a) { return !a[0]; }).length };
   } catch (e) { return null; }
 }
@@ -1587,7 +1632,7 @@ function agoStr(ts) {
 }
 function saveSummary(m) {
   if (!m) return T('noSave');
-  return T('saveLine', { t: agoStr(m.at), c: money(m.cash), r: m.rep, s: m.served, p: clockStr(m.play) });
+  return (m.co ? '« ' + m.co + ' »\n' : '') + T('saveLine', { t: agoStr(m.at), c: money(m.cash), r: m.rep, s: m.served, p: clockStr(m.play) });
 }
 function manualSave(msg) {
   save();
@@ -1604,7 +1649,7 @@ function refreshSaveInfo() {
     el.saveInfo.classList.toggle('hidden', !m);
   }
   if (el.newBtn) el.newBtn.classList.toggle('hidden', !m);
-  if (el.playBtn) el.playBtn.textContent = m ? T('resume') : T('play');
+  if (el.playBtn) el.playBtn.textContent = m ? T('resume') : T('newGame');
 }
 
 /* --- DURAKLATMA (pause) --- */
@@ -1613,7 +1658,7 @@ function anyOverlay() {
   if (hiddenPause) return true;                 /* sekme arkada: oyun donar */
   return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') ||
     !el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden') ||
-    !el.stallScr.classList.contains('hidden');
+    !el.stallScr.classList.contains('hidden') || !el.boardScr.classList.contains('hidden');
 }
 function syncPause() {
   paused = S.started && anyOverlay();
@@ -1828,7 +1873,7 @@ function iDeposit(a, dt) {
   a.act -= dt; if (a.act > 0) return true;
   a.act = 0.05;
   var it = popCarry(a, isMoney);
-  S.cash += it.v; safe.pop = 1;
+  S.cash += it.v; earn(it.v); safe.pop = 1;
   fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), safe.x, safe.y, 13, it, 0.24);
   addFloat(safe.x, safe.y - 0.4, '+' + money(it.v), '#8ef2a2'); sfx.coin();
   return true;
@@ -4772,7 +4817,10 @@ var el = {};
  'dayChip', 'dayIcon', 'dayNum', 'dayfill', 'hDay', 'dayBanner', 'dayBannerT', 'dayBannerS',
  'dayScr', 'dayTitle', 'dayRows', 'dayNext', 'dayGo', 'dayStalls',
  'stallScr', 'stallTitle', 'stallSub', 'stallRows', 'stallGo', 'prepScr', 'prepTitle', 'prepSub',
- 'prepDepot', 'prepRows', 'prepGo'].forEach(function (id) {
+ 'prepDepot', 'prepRows', 'prepGo', 'introScr', 'introCv', 'introSub', 'introNext', 'introSkip', 'introGate',
+ 'introDots', 'introTap', 'introTag', 'nameScr', 'nameCard', 'nameTitle', 'nameSub', 'nameSign', 'nameIn', 'nameDice', 'nameHint',
+ 'nameIdeasLbl', 'nameChips', 'nameGo', 'boardScr', 'boardTitle', 'boardSub', 'boardRows', 'boardNote',
+ 'boardClose', 'boardBtn', 'storyBtn', 'menuBoard'].forEach(function (id) {
   el[id] = document.getElementById(id);
 });
 var toastT = 0;
@@ -4786,6 +4834,15 @@ function applyLang() {
     return '<li>' + T(k) + '</li>';
   }).join('') + '<li style="opacity:.7">' + T('ctrl') + '</li>');
   el.playBtn.textContent = T('play'); el.setBtn.textContent = T('settings');
+  el.boardBtn.textContent = T('board'); el.storyBtn.textContent = T('story'); el.menuBoard.textContent = T('boardTitle');
+  el.boardTitle.textContent = T('boardTitle'); el.boardSub.textContent = T('boardSub');
+  el.boardNote.textContent = T('boardLocal'); el.boardClose.textContent = T('close');
+  el.nameTitle.textContent = T('nameTitle'); el.nameSub.textContent = T('nameSub');
+  el.nameIdeasLbl.textContent = T('nameIdeas'); el.nameGo.textContent = T('nameGo'); el.nameDice.title = T('nameDice');
+  el.introSkip.textContent = T('skip'); el.introTap.textContent = T('tapStart'); el.introTag.textContent = T('tag');
+  if (intro.on && intro.ph === 'hold') { intro.typed = 0; el.introSub.textContent = ''; }
+  if (!el.boardScr.classList.contains('hidden')) renderBoard();
+  if (!el.nameScr.classList.contains('hidden')) { syncNamePreview(); renderNameChips(); }
   el.setTitle.textContent = T('settings'); el.setLang.textContent = T('langLbl');
   el.setSound.textContent = T('soundLbl'); el.setZoom.textContent = T('zoomLbl');
   el.setClose.textContent = T('resume'); el.resetBtn.textContent = T('reset');
@@ -4813,7 +4870,7 @@ function applyLang() {
   document.getElementById('tradeLbl').textContent = T('trade');
   var tabs = document.querySelectorAll('#menuTabs .tab');
   for (var i = 0; i < tabs.length; i++) tabs[i].textContent = T('tabs')[i];
-  Array.prototype.forEach.call(document.querySelectorAll('#langSeg button,#langSeg2 button'), function (b) {
+  Array.prototype.forEach.call(document.querySelectorAll('#langSeg button,#langSeg2 button,#introLang button'), function (b) {
     b.classList.toggle('on', b.dataset.l === lang);
   });
   if (!el.menuScreen.classList.contains('hidden')) renderTab();
@@ -5236,6 +5293,11 @@ function showDayCard() {
   if (L.top) h += dayRow('🏆', T('dayTop'), NM(FISH[L.top.f].n) + ' ×' + L.top.n);
   if (L.out) h += dayRow('⚠️', T('dayOut'), NM(FISH[L.out.f].n) + ' ' + fmtDur(L.out.t));
   if (L.auc) h += dayRow('🔔', T('dayAuction'), L.auc.n + ' × ' + money(L.auc.v));
+  if (S.company) {
+    submitScore();
+    var rk = myRank(Board.sort(Board.read()));
+    h += dayRow('🏆', T('dayScore'), rk ? T('dayRank', { s: money(S.earned), r: rk }) : money(S.earned));
+  }
   el.dayRows.innerHTML = PX(h);
   el.dayNext.classList.toggle('hidden', !L.next);
   if (L.next) el.dayNext.innerHTML = T('mktTomorrow') + '<br><small>' + T('mktExpect') + '</small>';
@@ -5422,7 +5484,7 @@ el.prepGo.onclick = function () {
 
 /* ---------- ayarlar ---------- */
 function setLangTo(l) { lang = l; applyLang(); save(); }
-Array.prototype.forEach.call(document.querySelectorAll('#langSeg button,#langSeg2 button'), function (b) {
+Array.prototype.forEach.call(document.querySelectorAll('#langSeg button,#langSeg2 button,#introLang button'), function (b) {
   b.onclick = function () { setLangTo(b.dataset.l); };
 });
 Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (b) {
@@ -5451,7 +5513,7 @@ el.setClose.onclick = function () {
 };
 el.saveBtn.onclick = function () { if (!S.started) { toast(T('noRun')); sfx.bad(); return; } manualSave(); };
 el.saveQuitBtn.onclick = function () { if (!S.started) { toast(T('noRun')); sfx.bad(); return; } saveAndQuit(); };
-el.newBtn.onclick = function () { if (confirm(T('newAsk'))) wipe(); };
+el.newBtn.onclick = function () { if (confirm(T('newAsk'))) wipe(true); };
 el.resetBtn.onclick = function () { if (confirm(T('resetAsk'))) wipe(); };
 function syncSettingsUI() {
   Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.s, 10) === volLvl); });
@@ -5466,6 +5528,7 @@ function frame(ts) {
   requestAnimationFrame(frame);
   var dt = Math.min(0.05, (ts - last) / 1000 || 0);
   last = ts;
+  if (intro.on) { updateIntro(dt); return; }
   if (!S.started) { gameT += dt; updateFx(dt); render(); return; }
   if (paused) { if (!document.hidden) render(); return; }   /* duraklatıldı: dünya tamamen donar */
   gameT += dt; S.play += dt;
@@ -5496,7 +5559,32 @@ function start() {
   S.started = true; paused = false; syncPause();
   ensureAudio(); applyVolume();
 }
-el.playBtn.onclick = start;
+/* OYNA: kayıt varsa devam; yoksa işletme adı → oyun. Adı olmayan eski kayıt önce ad sorar. */
+el.playBtn.onclick = function () {
+  var m = saveMeta();
+  if (!m) { openNameScreen('new'); sfx.tap(); return; }
+  if (!S.company) { openNameScreen('legacy'); sfx.tap(); return; }
+  start();
+};
+el.storyBtn.onclick = function () { openIntro(null); };
+el.boardBtn.onclick = function () { openBoard('start'); };
+el.menuBoard.onclick = function () { openBoard('menu'); };
+el.boardClose.onclick = closeBoard;
+el.nameGo.onclick = confirmName;
+el.nameDice.onclick = function () { el.nameIn.value = randomCompany([el.nameIn.value]); syncNamePreview(); renderNameChips(); sfx.pick(); };
+el.nameIn.addEventListener('input', syncNamePreview);
+el.nameIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); confirmName(); } });
+el.introScr.addEventListener('pointerdown', function (e) {
+  if (e.target === el.introSkip || (e.target.closest && e.target.closest('#introLang'))) return;
+  introAdvance();
+});
+el.introSkip.onclick = function (e) { e.stopPropagation(); ensureAudio(); sfx.tap(); closeIntro(); };
+window.addEventListener('keydown', function (e) {
+  if (!intro.on) return;
+  if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); closeIntro(); return; }
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); introAdvance(); }
+});
+window.addEventListener('resize', introResize);
 /* ESC: oyunu duraklat / devam ettir */
 window.addEventListener('keydown', function (e) {
   if (e.key !== 'Escape' && e.key !== 'Esc') return;
@@ -5505,6 +5593,7 @@ window.addEventListener('keydown', function (e) {
   if (!el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden')) return;  /* gün kartı kendi butonuyla kapanır */
   if (!el.stallScr.classList.contains('hidden')) { closeStallScreen(); return; }
   e.preventDefault();
+  if (!el.boardScr.classList.contains('hidden')) { closeBoard(); return; }
   if (!el.settingsScreen.classList.contains('hidden')) { el.setClose.click(); return; }
   if (!el.menuScreen.classList.contains('hidden')) { el.closeMenu.click(); return; }
   openPauseMenu();
@@ -5811,7 +5900,7 @@ function closeDay() {
   }
   /* pasif işletme geliri (§16) */
   var pinc = privIncome();
-  if (pinc > 0) { S.cash += pinc; notify(T('privIncome', { v: money(pinc) }), 'low'); }
+  if (pinc > 0) { S.cash += pinc; earn(pinc); notify(T('privIncome', { v: money(pinc) }), 'low'); }
   /* kurtarma penceresi */
   for (i = 0; i < M.co.length; i++) if (M.co[i].resc > 0) M.co[i].resc--;
   /* kontrat havuzu + özel işletme teklifi + yönetim kurulu */
@@ -5851,7 +5940,7 @@ function payDividends() {
     if (!c.own) continue;
     var pool = c.price * 10000 * 0.15 * d.div * (1 + (c.divBonus || 0));
     var pay = Math.round(pool * ownPct(c));
-    if (pay > 0) { S.cash += pay; tot += pay; }
+    if (pay > 0) { S.cash += pay; earn(pay); tot += pay; }
   }
   if (tot > 0) notify(T('divPaid', { v: money(tot) }), 'mid');
 }
@@ -5950,7 +6039,7 @@ function iDeliverContract(a, dt) {
 }
 function completeContract(ct) {
   var c = cst(ct.co), d = cdef(ct.co), ty = ctype(ct.ty);
-  S.cash += ct.rew; noteFishIncome(ct.rew * 0.5);
+  S.cash += ct.rew; earn(ct.rew); noteFishIncome(ct.rew * 0.5);
   c.rel = clamp(c.rel + ct.rel, 0, 100);
   c.sent += 0.2 + (ty.mul - 1) * 0.5;
   c.health = clamp(c.health + (ty.id === 'proj' || ty.id === 'frame' ? 3 : 1), 0, 100);
@@ -6279,9 +6368,577 @@ function syncTradeBtn() {
   btn.classList.toggle('hidden', !near);
 }
 /* =========================================================
+   v0.2 — GİRİŞ HİKÂYESİ (pixel gazete) • İŞLETME ADI • SKOR TABLOSU
+   ========================================================= */
+
+/* ---------- işletme adı ---------- */
+function cleanName(s) {
+  return String(s == null ? '' : s).replace(/<[^>]*>/g, '').replace(/[\u0000-\u001f\u007f<>`\\{}\[\]]/g, '')
+    .replace(/\s+/g, ' ').trim().slice(0, 24);
+}
+/* Türkçe -ın/-in/-un/-ün eki (ünlü uyumu): Hasan'ın, Ayşe'nin, Dursun'un, Şükrü'nün */
+function trGen(w) {
+  var V = 'aeıioöuü', low = w.toLocaleLowerCase('tr'), v = 'e', i;
+  for (i = low.length - 1; i >= 0; i--) if (V.indexOf(low[i]) >= 0) { v = low[i]; break; }
+  var suf = { a: 'ın', 'ı': 'ın', e: 'in', i: 'in', o: 'un', u: 'un', 'ö': 'ün', 'ü': 'ün' }[v];
+  if (V.indexOf(low[low.length - 1]) >= 0) suf = 'n' + suf;
+  return w + "'" + suf;
+}
+var NAME_FIRST = ['Hasan', 'Özcan', 'Mehmet', 'Ayşe', 'Kemal', 'Recai', 'Temel', 'Dursun', 'İdris', 'Selim',
+  'Zeynep', 'Elif', 'Yusuf', 'Rıza', 'Fadime', 'Hüseyin', 'Nuri', 'Şükrü', 'Hatice', 'Emine', 'Mustafa',
+  'Cafer', 'Hamdi', 'Sevim', 'İsmail', 'Nazmi', 'Cemile', 'Erol', 'Bayram', 'Gülsüm'];
+var NAME_FMT = ['{f} Balıkçılık', '{f} Mutfak', '{f} Balık Evi', '{g} Balık Evi', '{g} Mutfağı',
+  '{f} Deniz Ürünleri', '{f} Balık Lokantası', '{f} & Oğulları', '{f} Kardeşler', '{f} Reis Balıkçılık',
+  'Kaptan {f} Balıkçılık', '{g} Tezgâhı', '{f} Usta Balık Pazarı', '{f} Su Ürünleri', '{g} Sofrası'];
+var NAME_FIX = ['Hamsi Keyfi', 'Martı Balıkçılık', 'Mavi Liman', 'Poyraz Balık', 'Yakamoz Balık Evi',
+  'Nazar Balıkçılık', 'Karadeniz Sofrası', 'Lodos Su Ürünleri', 'İskele Başı', 'Ağ & Olta', 'Dalga Balıkçılık',
+  'Palamut Durağı', 'Rıhtım Balık Evi', 'Uskumru Kardeşler', 'Yıldız Balık Evi', 'Kuzey Rüzgârı'];
+function randomCompany(avoid) {
+  for (var k = 0; k < 40; k++) {
+    var n;
+    if (Math.random() < 0.22) n = pick(NAME_FIX);
+    else { var f = pick(NAME_FIRST); n = pick(NAME_FMT).replace('{f}', f).replace('{g}', trGen(f)); }
+    if (n.length <= 24 && (!avoid || avoid.indexOf(n) < 0)) return n;
+  }
+  return 'Hasan Balıkçılık';
+}
+function escH(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function newRunId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+/* ---------- SKOR TABLOSU ----------
+   Skor = kasaya giren toplam para (S.earned). Tablo kayıttan AYRI anahtarda tutulur:
+   "Yeni Oyun" kaydı siler ama tabloyu silmez. Depolama tek arayüzden geçer (Board.fetch /
+   Board.submit) — paylaşımlı bir sunucuya geçerken yalnız burası değişir. */
+var BOARD_KEY = 'balikci_board_v1', BOARD_MAX = 50, BOARD_SHOW = 20;
+var Board = {
+  scope: 'local',
+  read: function () {
+    try {
+      var a = JSON.parse(localStorage.getItem(BOARD_KEY) || '[]');
+      if (!Array.isArray(a)) return [];
+      return a.filter(function (e) { return e && typeof e.id === 'string' && typeof e.n === 'string' && isFinite(e.s); });
+    } catch (e) { return []; }
+  },
+  write: function (a) { try { localStorage.setItem(BOARD_KEY, JSON.stringify(a)); } catch (e) { } },
+  sort: function (a) { return a.sort(function (x, y) { return y.s - x.s || x.at - y.at; }); },
+  fetch: function (cb) { cb(Board.sort(Board.read())); },
+  submit: function (e) {
+    var a = Board.read(), f = null;
+    for (var i = 0; i < a.length; i++) if (a[i].id === e.id) { f = a[i]; break; }
+    if (f) { f.n = e.n; f.s = Math.max(f.s, e.s); f.d = Math.max(f.d || 1, e.d); f.at = e.at; }
+    else a.push(e);
+    a = Board.sort(a);
+    if (a.length > BOARD_MAX) a = a.slice(0, BOARD_MAX);
+    Board.write(a);
+  }
+};
+function submitScore() {
+  if (!S.company || !S.runId) return;
+  Board.submit({ id: S.runId, n: S.company, s: Math.round(S.earned), d: day.n, at: Date.now() });
+}
+function myRank(list) {
+  for (var i = 0; i < list.length; i++) if (list[i].id === S.runId) return i + 1;
+  return 0;
+}
+function boardRow(e, i, mine) {
+  var medal = i < 3 ? ' m' + (i + 1) : '';
+  return '<div class="brow' + medal + (mine ? ' me' : '') + '"><span class="rk">' + (i + 1) + '</span>' +
+    '<span class="bn">' + escH(e.n) + (mine ? ' <em>' + T('boardYou') + '</em>' : '') +
+    '<small>' + T('boardDay', { d: e.d || 1 }) + '</small></span>' +
+    '<span class="bs">' + money(e.s) + '</span></div>';
+}
+function renderBoard() {
+  Board.fetch(function (list) {
+    var h = '', me = myRank(list) - 1, i;
+    if (!list.length) h = '<div class="empty">' + T('boardEmpty') + '</div>';
+    for (i = 0; i < Math.min(BOARD_SHOW, list.length); i++) h += boardRow(list[i], i, i === me);
+    if (me >= BOARD_SHOW) h += '<div class="bsep">• • •</div>' + boardRow(list[me], me, true);
+    el.boardRows.innerHTML = h;
+  });
+}
+function openBoard(from) {
+  if (S.started) submitScore();
+  el.boardScr.dataset.from = from || 'start';
+  el.startScreen.classList.add('hidden');
+  el.menuScreen.classList.add('hidden');
+  renderBoard();
+  el.boardScr.classList.remove('hidden');
+  syncPause(); sfx.tap();
+}
+function closeBoard() {
+  var from = el.boardScr.dataset.from;
+  el.boardScr.classList.add('hidden');
+  if (from === 'menu' && S.started) openPauseMenu();
+  else if (!S.started) el.startScreen.classList.remove('hidden');
+  syncPause();
+}
+
+/* ---------- İŞLETME ADI EKRANI ---------- */
+var nameMode = 'new';
+function nameIdeas(cur) {
+  var a = [cur];
+  for (var i = 0; i < 4; i++) a.push(randomCompany(a));
+  return a.slice(1);
+}
+function renderNameChips() {
+  var ideas = nameIdeas(el.nameIn.value);
+  el.nameChips.innerHTML = ideas.map(function (n) { return '<button class="nchip">' + escH(n) + '</button>'; }).join('');
+  Array.prototype.forEach.call(el.nameChips.querySelectorAll('.nchip'), function (b) {
+    b.onclick = function () { el.nameIn.value = b.textContent; syncNamePreview(); sfx.pick(); };
+  });
+}
+function syncNamePreview() {
+  var n = cleanName(el.nameIn.value);
+  el.nameSign.textContent = n || '· · ·';
+  var ok = n.length >= 2;
+  el.nameHint.textContent = ok ? (n.length + '/24') : T('nameShort');
+  el.nameHint.classList.toggle('bad', !ok);
+  el.nameGo.classList.toggle('dim', !ok);
+}
+function openNameScreen(mode) {
+  nameMode = mode || 'new';
+  el.startScreen.classList.add('hidden');
+  el.nameIn.value = S.company || randomCompany();
+  syncNamePreview(); renderNameChips();
+  el.nameScr.classList.remove('hidden');
+  el.nameCard.classList.remove('pop'); void el.nameCard.offsetWidth; el.nameCard.classList.add('pop');
+}
+function confirmName() {
+  var n = cleanName(el.nameIn.value);
+  if (n.length < 2) {
+    sfx.bad();
+    el.nameCard.classList.remove('shake'); void el.nameCard.offsetWidth; el.nameCard.classList.add('shake');
+    el.nameIn.focus();
+    return;
+  }
+  el.nameIn.blur();
+  S.company = n;
+  if (!S.runId) S.runId = newRunId();
+  el.nameScr.classList.add('hidden');
+  start();
+  save();
+  sfx.star();
+  toast(T('welcomeCo', { n: n }));
+}
+
+/* ---------- GİRİŞ HİKÂYESİ: dönen pixel gazete + alt yazı ----------
+   Gazete 180×240 px'lik düşük çözünürlüklü bir tuvale çizilir, sahneye döndürülerek
+   ölçeklenir (en yakın komşu → kırık pixel kenarlar). Yazılar eşiklenir: yumuşatma yok. */
+var PAPER_W = 180, PAPER_H = 240, STAGE_W = 216, STAGE_H = 272;
+var INTRO = [
+  { art: 'pier', date: { tr: '3 NİSAN 1974', en: 'APRIL 3, 1974' },
+    hl: { tr: 'KASABANIN İSKELESİ SESSİZLİĞE GÖMÜLDÜ', en: 'THE OLD TOWN PIER FALLS SILENT' },
+    cap: { tr: '▲ Terk edilmiş iskele', en: '▲ The abandoned pier' },
+    sub: { tr: 'Karadeniz kıyısında küçük bir kasaba... Dedemin iskelesi yıllardır sessizdi. Ağlar kurumuş, tezgâhlar boş kalmıştı.',
+      en: 'A small town on the Black Sea... My grandfather\'s pier had been silent for years. The nets were dry, the stalls empty.' } },
+  { art: 'school', date: { tr: '18 NİSAN 1974', en: 'APRIL 18, 1974' },
+    hl: { tr: 'HAMSİ SÜRÜLERİ KOYA GERİ DÖNDÜ!', en: 'ANCHOVY SHOALS RETURN TO THE BAY!' },
+    cap: { tr: '▲ Koyda hamsi bolluğu', en: '▲ Anchovy bonanza' },
+    sub: { tr: 'Derken bir sabah manşetler çınladı: gümüş hamsi sürüleri koya geri dönmüştü!',
+      en: 'Then one morning the headlines rang out: silver anchovy shoals were back in the bay!' } },
+  { art: 'ad', date: { tr: '2 MAYIS 1974', en: 'MAY 2, 1974' },
+    hl: { tr: 'LİMAN CESUR BİR BALIKÇI ARIYOR', en: 'HARBOR SEEKS A BRAVE FISHERMAN' },
+    cap: { tr: '▲ Belediye ilanı', en: '▲ Town hall notice' },
+    sub: { tr: 'Belediye ilan vermişti: eski iskeleyi yeniden canlandıracak cesur birini arıyorlardı.',
+      en: 'Town hall had posted a notice: they were looking for someone brave enough to bring the old pier back to life.' } },
+  { art: 'dawn', date: { tr: '9 MAYIS 1974', en: 'MAY 9, 1974' },
+    hl: { tr: 'GENÇ BALIKÇI İŞİ DEVRALDI', en: 'YOUNG FISHER TAKES OVER THE PIER' },
+    cap: { tr: '▲ Şafakta ilk ağ', en: '▲ First net at dawn' },
+    sub: { tr: 'Cebimde birkaç kuruş, omzumda dedemin ağı... Şafak sökerken iskeleye geri döndüm.',
+      en: 'A few coins in my pocket, grandpa\'s net on my shoulder... I walked back to the pier as dawn broke.' } },
+  { art: 'harbor', date: { tr: 'YARIN', en: 'TOMORROW' },
+    hl: { tr: 'BUGÜN KÜÇÜK BİR TEZGÂH, YARIN KOCA BİR LİMAN', en: 'A TINY STALL TODAY, A GRAND HARBOR TOMORROW' },
+    cap: { tr: '▲ Hayal: koca bir liman', en: '▲ The dream: a grand harbor' },
+    sub: { tr: 'Bugün küçük bir tezgâh. Yarın koca bir liman. Ama önce... tabelaya bir isim lazım.',
+      en: 'A tiny stall today. A grand harbor tomorrow. But first... the sign needs a name.' } }
+];
+var intro = { on: false, gate: false, i: 0, t: 0, ph: 'in', out: 0, typed: 0, tick: 0, then: null, cv: null, g: null, pc: null, pg: null };
+
+/* 5×7 bitmap yazı tipi — gazete için. Tarayıcı fontu küçük boyda eşiklenince harfler
+   bozuluyordu (G→B, Ç→Q); bu yüzden her harf elle çizildi. Türkçe harfler temel harf +
+   işaretten kurulur (İ Ö Ü Ğ Ç Ş Â). Küçük harfler büyüğe çevrilir. */
+var GLY = {
+  A: '.###.|#...#|#...#|#####|#...#|#...#|#...#', B: '####.|#...#|#...#|####.|#...#|#...#|####.',
+  C: '.###.|#...#|#....|#....|#....|#...#|.###.', D: '####.|#...#|#...#|#...#|#...#|#...#|####.',
+  E: '#####|#....|#....|####.|#....|#....|#####', F: '#####|#....|#....|####.|#....|#....|#....',
+  G: '.###.|#...#|#....|#.###|#...#|#...#|.####', H: '#...#|#...#|#...#|#####|#...#|#...#|#...#',
+  I: '###|.#.|.#.|.#.|.#.|.#.|###', J: '..###|...#.|...#.|...#.|#..#.|#..#.|.##..',
+  K: '#...#|#..#.|#.#..|##...|#.#..|#..#.|#...#', L: '#....|#....|#....|#....|#....|#....|#####',
+  M: '#...#|##.##|#.#.#|#.#.#|#...#|#...#|#...#', N: '#...#|##..#|#.#.#|#..##|#...#|#...#|#...#',
+  O: '.###.|#...#|#...#|#...#|#...#|#...#|.###.', P: '####.|#...#|#...#|####.|#....|#....|#....',
+  Q: '.###.|#...#|#...#|#...#|#.#.#|#..#.|.##.#', R: '####.|#...#|#...#|####.|#.#..|#..#.|#...#',
+  S: '.####|#....|#....|.###.|....#|....#|####.', T: '#####|..#..|..#..|..#..|..#..|..#..|..#..',
+  U: '#...#|#...#|#...#|#...#|#...#|#...#|.###.', V: '#...#|#...#|#...#|#...#|#...#|.#.#.|..#..',
+  W: '#...#|#...#|#...#|#.#.#|#.#.#|#.#.#|.#.#.', X: '#...#|#...#|.#.#.|..#..|.#.#.|#...#|#...#',
+  Y: '#...#|#...#|.#.#.|..#..|..#..|..#..|..#..', Z: '#####|....#|...#.|..#..|.#...|#....|#####',
+  '0': '.###.|#...#|#..##|#.#.#|##..#|#...#|.###.', '1': '.#.|##.|.#.|.#.|.#.|.#.|###',
+  '2': '.###.|#...#|....#|...#.|..#..|.#...|#####', '3': '####.|....#|....#|.###.|....#|....#|####.',
+  '4': '...#.|..##.|.#.#.|#..#.|#####|...#.|...#.', '5': '#####|#....|####.|....#|....#|#...#|.###.',
+  '6': '..##.|.#...|#....|####.|#...#|#...#|.###.', '7': '#####|....#|...#.|..#..|.#...|.#...|.#...',
+  '8': '.###.|#...#|#...#|.###.|#...#|#...#|.###.', '9': '.###.|#...#|#...#|.####|....#|...#.|.##..',
+  '.': '.|.|.|.|.|.|#', ',': '..|..|..|..|..|.#|#.', '!': '#|#|#|#|#|.|#', "'": '#|#|.|.|.|.|.',
+  '?': '.###.|#...#|....#|...#.|..#..|.....|..#..', ':': '.|#|.|.|.|#|.', '-': '...|...|...|###|...|...|...',
+  '&': '.##..|#..#.|#.#..|.#...|#.#.#|#..#.|.##.#', '▲': '.....|.....|..#..|.###.|#####|.....|.....',
+  '/': '....#|...#.|...#.|..#..|.#...|.#...|#....'
+};
+var GLY_MARK = { 'İ': ['I', 'dot'], 'Ö': ['O', 'uml'], 'Ü': ['U', 'uml'], 'Ğ': ['G', 'brv'], 'Ç': ['C', 'ced'], 'Ş': ['S', 'ced'], 'Â': ['A', 'crc'] };
+var _gly = {};
+function glyph(ch) {
+  if (_gly[ch]) return _gly[ch];
+  var base = ch, mark = null;
+  if (GLY_MARK[ch]) { base = GLY_MARK[ch][0]; mark = GLY_MARK[ch][1]; }
+  var src = GLY[base];
+  if (!src) return null;
+  var rows = src.split('|'), w = rows[0].length, px = [], x, y;
+  for (y = 0; y < 7; y++) for (x = 0; x < w; x++) if (rows[y][x] === '#') px.push([x, y]);
+  var c = Math.floor(w / 2);
+  if (mark === 'dot') px.push([c, -2]);
+  if (mark === 'uml') { px.push([1, -2]); px.push([w - 2, -2]); }
+  if (mark === 'brv') { px.push([1, -2]); px.push([w - 2, -2]); px.push([2, -1]); }
+  if (mark === 'crc') { px.push([c, -2]); px.push([c - 1, -1]); px.push([c + 1, -1]); }
+  if (mark === 'ced') { px.push([c, 7]); px.push([c - 1, 8]); }
+  _gly[ch] = { w: w, px: px };
+  return _gly[ch];
+}
+/* yazı genişliği (piksel) — sx: yatay ölçek, bold: her pikseli bir sağa kalınlaştır */
+function pxMeasure(str, sx, bold) {
+  var w = 0, s = UP(str);
+  for (var i = 0; i < s.length; i++) {
+    var gl = s[i] === ' ' ? null : glyph(s[i]);
+    w += ((gl ? gl.w : 3) + (bold ? 1 : 0) + 1) * sx;
+  }
+  return Math.max(0, w - sx);
+}
+function pxText(g, str, x, y, sx, sy, bold, color, align) {
+  var s = UP(str), w = pxMeasure(s, sx, bold);
+  var cx = Math.round(align === 'center' ? x - w / 2 : align === 'right' ? x - w : x);
+  g.fillStyle = color;
+  for (var i = 0; i < s.length; i++) {
+    var gl = s[i] === ' ' ? null : glyph(s[i]);
+    if (gl) for (var k = 0; k < gl.px.length; k++) {
+      var p = gl.px[k];
+      g.fillRect(cx + p[0] * sx, Math.round(y) + p[1] * sy, sx * (bold ? 2 : 1), sy);
+    }
+    cx += ((gl ? gl.w : 3) + (bold ? 1 : 0) + 1) * sx;
+  }
+  return w;
+}
+function pxWrap(str, sx, bold, maxW) {
+  var words = UP(str).split(' '), lines = [], cur = '';
+  for (var i = 0; i < words.length; i++) {
+    var t = cur ? cur + ' ' + words[i] : words[i];
+    if (cur && pxMeasure(t, sx, bold) > maxW) { lines.push(cur); cur = words[i]; }
+    else cur = t;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+/* sabit tohumlu rastgele — sütun yazıları ve kâğıt lekeleri her karede aynı kalsın */
+function seedRnd(seed) { var s = seed >>> 0; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+/* baskı paleti: sepya tonlar (anlamsal anahtarlar → son sahnede renkli palet) */
+var PAL_SEPIA = { sky: '#d9c9a3', sky2: '#5e4e38', sea: '#8f7a57', sea2: '#6b5a40', lite: '#efe4c9',
+  wood: '#5a4731', wood2: '#3d3022', ink: '#2c231a', sun: '#f3e8cc', aw1: '#6b5a40', aw2: '#d9c9a3', gold: '#b9a171' };
+var PAL_COLOR = { sky: '#ffcf8a', sky2: '#27466b', sea: '#2b7fa6', sea2: '#1d5f80', lite: '#fff4d6',
+  wood: '#8a5a33', wood2: '#5a3a22', ink: '#1a1410', sun: '#ffe27a', aw1: '#c8553d', aw2: '#f4e9d2', gold: '#ffc94a' };
+
+function artPier(g, P, t, W, H) {
+  g.fillStyle = P.sky2; g.fillRect(0, 0, W, H);
+  var r = seedRnd(7), i;
+  for (i = 0; i < 26; i++) {                                    /* yıldızlar göz kırpar */
+    var sx = Math.floor(r() * W), sy = Math.floor(r() * 50), ph = r() * 6;
+    if (Math.sin(t * 2.2 + ph) > -0.3) { g.fillStyle = P.lite; g.fillRect(sx, sy, 1, 1); }
+  }
+  g.fillStyle = P.lite;                                          /* ay */
+  for (i = -8; i <= 8; i++) { var w = Math.round(Math.sqrt(64 - i * i)); g.fillRect(128 - w, 18 + i, w * 2, 1); }
+  g.fillStyle = P.sky2; for (i = -6; i <= 6; i++) { var w2 = Math.round(Math.sqrt(36 - i * i)); g.fillRect(132 - w2, 15 + i, w2 * 2, 1); }
+  g.fillStyle = P.sea2; g.fillRect(0, 56, W, H - 56);            /* deniz */
+  for (i = 0; i < 9; i++) {                                      /* ay yansıması */
+    var ry = 60 + i * 3, rw = 12 - i + Math.round(Math.sin(t * 3 + i) * 2);
+    g.fillStyle = P.lite; g.fillRect(126 - rw / 2 + Math.round(Math.sin(t * 2 + i) * 2), ry, rw, 1);
+  }
+  g.fillStyle = P.sea;
+  for (i = 0; i < 14; i++) { var wx = ((i * 23 + t * 6) % (W + 20)) - 10, wy = 62 + (i * 7) % 28; g.fillRect(Math.round(wx), wy, 6, 1); }
+  g.fillStyle = P.wood;  g.fillRect(0, 50, 92, 5);               /* iskele */
+  g.fillStyle = P.wood2; g.fillRect(0, 55, 92, 1);
+  for (i = 0; i < 92; i += 6) { g.fillStyle = P.wood2; g.fillRect(i, 50, 1, 5); }
+  for (i = 4; i < 92; i += 16) { g.fillStyle = P.wood2; g.fillRect(i, 56, 3, 14); }
+  g.fillStyle = P.ink; g.fillRect(70, 30, 2, 20); g.fillRect(66, 30, 10, 2);   /* söner fener */
+  if (Math.sin(t * 7) > 0.6 || Math.sin(t * 1.3) > 0.2) { g.fillStyle = P.sun; g.fillRect(68, 32, 6, 3); }
+  var by = 66 + Math.round(Math.sin(t * 1.6) * 1.2);             /* bağlı kayık */
+  g.fillStyle = P.wood; g.fillRect(100, by, 26, 4); g.fillRect(102, by + 4, 22, 2);
+  g.fillStyle = P.wood2; g.fillRect(100, by, 26, 1);
+  g.fillStyle = P.ink; g.fillRect(92, 55, 1, 1); g.fillRect(93, 56, 3, 1); g.fillRect(96, 58, 4, 1); g.fillRect(100, 61, 1, by - 61);
+  /* kurumuş ağ */
+  g.fillStyle = P.sea;
+  for (i = 0; i < 5; i++) { g.fillRect(20 + i * 4, 40, 1, 10); g.fillRect(18, 40 + i * 2, 20, 1); }
+}
+function artSchool(g, P, t, W, H) {
+  g.fillStyle = P.sky; g.fillRect(0, 0, W, 34);
+  g.fillStyle = P.sun; for (var i = -7; i <= 7; i++) { var w = Math.round(Math.sqrt(49 - i * i)); g.fillRect(24 - w, 14 + i, w * 2, 1); }
+  g.fillStyle = P.sea2; g.fillRect(0, 34, W, H - 34);
+  g.fillStyle = P.sea; for (i = 0; i < 6; i++) g.fillRect(0, 38 + i * 9, W, 2);
+  var cx = 84, cy = 62, k;
+  for (k = 0; k < 70; k++) {                                   /* dönen hamsi sürüsü */
+    var a = k * 0.61 + t * (0.9 + (k % 5) * 0.05), rr = 10 + (k * 7) % 26;
+    var fx = Math.round(cx + Math.cos(a) * rr * 1.6), fy = Math.round(cy + Math.sin(a) * rr * 0.55);
+    var dir = -Math.sin(a) >= 0 ? 1 : -1;
+    g.fillStyle = (k + Math.floor(t * 6)) % 7 === 0 ? P.lite : P.aw2;
+    g.fillRect(fx, fy, 4, 1); g.fillStyle = P.sky; g.fillRect(dir > 0 ? fx + 4 : fx - 1, fy, 1, 1);
+  }
+  for (k = 0; k < 4; k++) {                                    /* sıçrayan balıklar */
+    var ph = (t * 0.7 + k * 0.27) % 1, jx = 20 + k * 38 + ph * 18, jy = 36 - Math.sin(ph * Math.PI) * 18;
+    if (ph < 0.95) { g.fillStyle = P.lite; g.fillRect(Math.round(jx), Math.round(jy), 4, 2); g.fillStyle = P.ink; g.fillRect(Math.round(jx) + 3, Math.round(jy), 1, 1); }
+    if (ph > 0.9 || ph < 0.08) { g.fillStyle = P.lite; g.fillRect(Math.round(jx) - 2, 34, 1, 1); g.fillRect(Math.round(jx) + 5, 33, 1, 1); }
+  }
+  for (k = 0; k < 3; k++) {                                    /* martılar */
+    var gx = Math.round((k * 60 + t * 14) % (W + 20)) - 10, gy = 8 + k * 6, f = Math.sin(t * 8 + k) > 0;
+    g.fillStyle = P.ink;
+    g.fillRect(gx, gy + (f ? 0 : 1), 3, 1); g.fillRect(gx + 3, gy + 1, 1, 1); g.fillRect(gx + 4, gy + (f ? 0 : 1), 3, 1);
+  }
+}
+function artAd(g, P, t, W, H) {
+  g.fillStyle = P.sky; g.fillRect(0, 0, W, H);                   /* tuğla duvar */
+  var i, j;
+  for (j = 0; j < H; j += 6) {
+    g.fillStyle = P.sea; g.fillRect(0, j, W, 1);
+    for (i = (j / 6) % 2 ? 0 : 7; i < W; i += 14) g.fillRect(i, j, 1, 6);
+  }
+  var px = 26, py = 8, pw = 114, ph = 76;
+  g.fillStyle = P.ink; g.fillRect(px + 2, py + 2, pw, ph);         /* ilan kâğıdı */
+  g.fillStyle = P.lite; g.fillRect(px, py, pw, ph);
+  var flap = Math.round(Math.max(0, Math.sin(t * 2.4)) * 4);     /* rüzgârda köşe kalkar */
+  g.fillStyle = P.sky; g.fillRect(px + pw - flap, py + ph - flap, flap, flap);
+  g.fillStyle = P.aw2; for (i = 0; i < flap; i++) g.fillRect(px + pw - flap + i, py + ph - flap + (flap - 1 - i), i + 1, 1);
+  g.fillStyle = P.ink; g.fillRect(px + 3, py + 3, pw - 6, 1); g.fillRect(px + 3, py + ph - 4, pw - 6, 1);
+  pxText(g, lang === 'tr' ? 'İLAN' : 'NOTICE', px + pw / 2, py + 9, 2, 2, true, P.ink, 'center');
+  pxText(g, lang === 'tr' ? 'BALIKÇI ARANIYOR!' : 'FISHER WANTED!', px + pw / 2, py + 28, 1, 1, false, P.aw1, 'center');
+  g.fillStyle = P.sea;
+  for (i = 0; i < 5; i++) g.fillRect(px + 10, py + 41 + i * 5, pw - 20 - (i === 4 ? 30 : (i * 7) % 12), 2);
+  g.fillStyle = P.aw1; g.fillRect(px + 2, py + 1, 3, 3); g.fillRect(px + pw - 5, py + 1, 3, 3);   /* raptiye */
+  /* mühür */
+  g.fillStyle = P.aw1;
+  for (i = -6; i <= 6; i++) { var w = Math.round(Math.sqrt(36 - i * i)); g.fillRect(px + pw - 20 - w, py + ph - 16 + i, w * 2, 1); }
+  g.fillStyle = P.lite; g.fillRect(px + pw - 23, py + ph - 17, 6, 1); g.fillRect(px + pw - 21, py + ph - 19, 2, 5);
+  /* ilanın üstündeki martı */
+  var hop = Math.sin(t * 3) > 0.85 ? 1 : 0, mx = px + 12, my = py - 7 - hop;
+  g.fillStyle = P.lite; g.fillRect(mx, my, 7, 4); g.fillRect(mx + 6, my - 3, 3, 3);
+  g.fillStyle = P.sea2; g.fillRect(mx, my, 4, 2);
+  g.fillStyle = P.gold; g.fillRect(mx + 9, my - 2, 2, 1); g.fillRect(mx + 2, my + 4, 1, 3); g.fillRect(mx + 5, my + 4, 1, 3);
+  g.fillStyle = P.ink; g.fillRect(mx + 7, my - 2, 1, 1);
+}
+function artDawn(g, P, t, W, H) {
+  var i, rise = Math.min(1, t / 6);
+  g.fillStyle = P.sky; g.fillRect(0, 0, W, 50);
+  g.fillStyle = P.aw2; for (i = 0; i < 50; i += 2) if (i > 30) g.fillRect(0, i, W, 1);
+  var sy = 52 - Math.round(rise * 12);                         /* doğan güneş */
+  g.fillStyle = P.sun;
+  for (i = -14; i <= 0; i++) { var w = Math.round(Math.sqrt(196 - i * i)); g.fillRect(120 - w, sy + i, w * 2, 1); }
+  for (i = 0; i < 8; i++) {                                     /* ışınlar */
+    var a = Math.PI + (i + 0.5) * Math.PI / 8 + Math.sin(t) * 0.03;
+    for (var d = 18; d < 30; d += 2) g.fillRect(Math.round(120 + Math.cos(a) * d), Math.round(sy + Math.sin(a) * d), 1, 1);
+  }
+  g.fillStyle = P.sea2; g.fillRect(0, 52, W, H - 52);
+  for (i = 0; i < 10; i++) {                                    /* güneş yolu */
+    var gw = 20 - i * 1.5 + Math.sin(t * 3 + i) * 3;
+    g.fillStyle = P.sun; g.fillRect(Math.round(120 - gw / 2), 55 + i * 3, Math.round(gw), 1);
+  }
+  g.fillStyle = P.wood; g.fillRect(0, 60, 80, 5);                /* iskele */
+  for (i = 4; i < 80; i += 14) { g.fillStyle = P.wood2; g.fillRect(i, 65, 3, 20); }
+  /* balıkçı silueti: omzunda ağ, kıyıya doğru yürür */
+  var bx = Math.round(10 + Math.min(1, t / 5) * 48), step = Math.floor(t * 4) % 2, by = 60;
+  g.fillStyle = P.ink;
+  g.fillRect(bx + 1, by - 22, 5, 5);                              /* baş */
+  g.fillRect(bx, by - 24, 7, 2);                                  /* kasket */
+  g.fillRect(bx, by - 17, 7, 9);                                  /* gövde */
+  if (t < 5) { g.fillRect(bx + (step ? 0 : 1), by - 8, 2, 8); g.fillRect(bx + (step ? 5 : 4), by - 8, 2, 8); }
+  else { g.fillRect(bx + 1, by - 8, 2, 8); g.fillRect(bx + 4, by - 8, 2, 8); }
+  g.fillStyle = P.sea;                                             /* sırttaki ağ */
+  for (i = 0; i < 4; i++) { g.fillRect(bx - 5, by - 18 + i * 3, 6, 1); g.fillRect(bx - 5 + i * 2, by - 19, 1, 11); }
+  for (i = 0; i < 3; i++) {                                       /* martılar */
+    var mx = Math.round((i * 50 + t * 10) % (W + 10)) - 5, my = 12 + i * 7, f = Math.sin(t * 7 + i) > 0;
+    g.fillStyle = P.ink; g.fillRect(mx, my + (f ? 0 : 1), 3, 1); g.fillRect(mx + 3, my + 1, 1, 1); g.fillRect(mx + 4, my + (f ? 0 : 1), 3, 1);
+  }
+}
+function artHarbor(g, P, t, W, H) {
+  var i, r = seedRnd(31);
+  g.fillStyle = P.sky; g.fillRect(0, 0, W, H);
+  g.fillStyle = P.lite; for (i = 0; i < 3; i++) g.fillRect(Math.round((i * 70 + t * 5) % (W + 30)) - 20, 6 + i * 5, 18, 2);
+  /* deniz feneri + dönen ışık */
+  g.fillStyle = P.lite; g.fillRect(150, 18, 7, 34); g.fillStyle = P.aw1; g.fillRect(150, 26, 7, 4); g.fillRect(150, 38, 7, 4);
+  g.fillStyle = P.ink; g.fillRect(149, 14, 9, 4);
+  var beam = Math.sin(t * 2.2);
+  g.fillStyle = P.sun;
+  for (i = 1; i < 16; i++) g.fillRect(Math.round(153 + beam * i * 1.4), 15 - Math.floor(i / 5), 1, 2);
+  /* şehir silueti */
+  for (i = 0; i < 12; i++) {
+    var bw = 8 + Math.floor(r() * 8), bh = 12 + Math.floor(r() * 26), bx = i * 12;
+    g.fillStyle = i % 2 ? P.wood : P.wood2; g.fillRect(bx, 56 - bh, bw, bh);
+    g.fillStyle = P.sun;
+    for (var wy = 56 - bh + 3; wy < 52; wy += 5) for (var wx = bx + 2; wx < bx + bw - 2; wx += 3) if (r() > 0.45) g.fillRect(wx, wy, 1, 2);
+  }
+  /* kilim desenli pazar tentesi */
+  for (i = 0; i < 5; i++) {
+    var tx = 6 + i * 22;
+    for (var s = 0; s < 18; s += 3) { g.fillStyle = (s / 3) % 2 ? P.aw2 : P.aw1; g.fillRect(tx + s, 52, 3, 5); }
+    g.fillStyle = P.wood2; g.fillRect(tx, 57, 1, 6); g.fillRect(tx + 17, 57, 1, 6);
+    g.fillStyle = P.gold; g.fillRect(tx + 3, 60, 12, 3);
+  }
+  g.fillStyle = P.wood; g.fillRect(0, 63, W, 3);                  /* rıhtım */
+  g.fillStyle = P.sea2; g.fillRect(0, 66, W, H - 66);
+  g.fillStyle = P.sea; for (i = 0; i < 10; i++) g.fillRect(Math.round((i * 19 + t * 8) % (W + 10)) - 5, 70 + (i * 5) % 20, 5, 1);
+  /* gemiler salınır */
+  for (i = 0; i < 2; i++) {
+    var sx = 30 + i * 70, sy = 72 + Math.round(Math.sin(t * 1.5 + i * 2) * 1.2);
+    g.fillStyle = P.aw1; g.fillRect(sx, sy, 34, 6); g.fillStyle = P.ink; g.fillRect(sx + 2, sy + 6, 30, 2);
+    g.fillStyle = P.lite; g.fillRect(sx + 8, sy - 6, 14, 6); g.fillStyle = P.ink; g.fillRect(sx + 24, sy - 18, 1, 18);
+    g.fillStyle = P.aw2; g.fillRect(sx + 25, sy - 18, 6, 4);
+  }
+}
+var ARTS = { pier: artPier, school: artSchool, ad: artAd, dawn: artDawn, harbor: artHarbor };
+
+function drawPaper(g, sc, idx, t) {
+  var W = PAPER_W, H = PAPER_H, INK = '#2c231a', i, j;
+  g.fillStyle = '#e8dcc0'; g.fillRect(0, 0, W, H);
+  var r = seedRnd(101);                                             /* eskimiş kâğıt lekeleri */
+  for (i = 0; i < 160; i++) { g.fillStyle = r() > 0.5 ? '#ddd0b0' : '#efe5cc'; g.fillRect(Math.floor(r() * W), Math.floor(r() * H), 1 + Math.floor(r() * 2), 1); }
+  g.fillStyle = '#d3c39f'; g.fillRect(0, 0, W, 1); g.fillRect(0, H - 1, W, 1); g.fillRect(0, 0, 1, H); g.fillRect(W - 1, 0, 1, H);
+  g.fillStyle = '#cbbb96'; g.fillRect(W / 2, 0, 1, H);             /* orta katlama izi */
+  g.fillStyle = INK;
+  g.fillRect(6, 5, W - 12, 1);
+  pxText(g, lang === 'tr' ? 'LİMAN GAZETESİ' : 'HARBOR GAZETTE', W / 2, 13, 2, 2, false, INK, 'center');
+  g.fillRect(6, 30, W - 12, 2); g.fillRect(6, 43, W - 12, 1);
+  pxText(g, NM(sc.date), 8, 34, 1, 1, false, INK, 'left');
+  pxText(g, lang === 'tr' ? '25 KURUŞ' : '25 CENTS', W - 8, 34, 1, 1, false, INK, 'right');
+  /* manşet: dar ve uzun gazete harfi (yatay 1, dikey 2 kat) */
+  var lines = pxWrap(NM(sc.hl), 1, true, W - 14), lh = lines.length > 2 ? 12 : 19, sy = lines.length > 2 ? 1 : 2;
+  var hy = lines.length === 1 ? 58 : 50;
+  for (i = 0; i < lines.length; i++) { pxText(g, lines[i], W / 2, hy, 1, sy, true, INK, 'center'); hy += lh; }
+  /* resim kutusu */
+  var ax = 7, ay = 90, aw = W - 14, ah = 84;
+  g.save(); g.beginPath(); g.rect(ax, ay, aw, ah); g.clip(); g.translate(ax, ay);
+  var art = ARTS[sc.art];
+  art(g, PAL_SEPIA, t, aw, ah);
+  if (sc.art === 'harbor') {                                      /* hayal sahnesi renge bürünür */
+    var k = clamp((t - 1.2) / 2.2, 0, 1);
+    if (k > 0) { g.globalAlpha = k; art(g, PAL_COLOR, t, aw, ah); g.globalAlpha = 1; }
+  }
+  g.restore();
+  g.fillStyle = INK; g.fillRect(ax - 1, ay - 1, aw + 2, 1); g.fillRect(ax - 1, ay + ah, aw + 2, 1);
+  g.fillRect(ax - 1, ay - 1, 1, ah + 2); g.fillRect(ax + aw, ay - 1, 1, ah + 2);
+  pxText(g, NM(sc.cap), ax, ay + ah + 5, 1, 1, false, '#5a4a36', 'left');
+  /* sahte sütun yazıları */
+  var cy = ay + ah + 17, cw = Math.floor((W - 14 - 8) / 3), rr = seedRnd(11 + idx * 17);
+  for (j = 0; j < 3; j++) {
+    var cx = 7 + j * (cw + 4), yy = cy;
+    g.fillStyle = INK; g.fillRect(cx, yy, Math.floor(cw * (0.55 + rr() * 0.4)), 3); yy += 6;
+    while (yy < H - 6) {
+      var par = rr() < 0.18, lw = par ? Math.floor(cw * (0.3 + rr() * 0.4)) : cw - Math.floor(rr() * 3);
+      g.fillStyle = '#6f604b'; g.fillRect(cx, yy, lw, 1);
+      yy += par ? 5 : 3;
+    }
+    if (j < 2) { g.fillStyle = '#b6a47f'; g.fillRect(cx + cw + 1, cy, 1, H - 6 - cy); }
+  }
+}
+
+function introResize() {
+  if (!intro.cv) return;
+  var subH = Math.min(170, Math.max(120, innerHeight * 0.24));
+  var aw = innerWidth - 24, ah = innerHeight - subH - 40;
+  var sc = Math.min(aw / STAGE_W, ah / STAGE_H);
+  if (sc >= 2) sc = Math.floor(sc);
+  intro.cv.style.width = Math.round(STAGE_W * sc) + 'px';
+  intro.cv.style.height = Math.round(STAGE_H * sc) + 'px';
+}
+function openIntro(then) {
+  intro.then = then || null;
+  intro.cv = el.introCv; intro.g = intro.cv.getContext('2d');
+  intro.cv.width = STAGE_W; intro.cv.height = STAGE_H;
+  if (!intro.pc) { intro.pc = document.createElement('canvas'); intro.pc.width = PAPER_W; intro.pc.height = PAPER_H; intro.pg = intro.pc.getContext('2d'); }
+  el.startScreen.classList.add('hidden');
+  el.introScr.classList.remove('hidden');
+  el.introSkip.textContent = T('skip');
+  el.introTap.textContent = T('tapStart');
+  introResize();
+  intro.on = true; intro.i = 0; intro.t = 0; intro.ph = 'gate'; intro.typed = 0;
+  el.introSub.textContent = ''; el.introNext.classList.add('hidden');
+  el.introGate.classList.remove('hidden');
+  el.introScr.classList.add('gate');
+  el.introDots.innerHTML = INTRO.map(function () { return '<i></i>'; }).join('');
+  syncIntroDots();
+}
+function syncIntroDots() {
+  Array.prototype.forEach.call(el.introDots.children, function (d, k) { d.className = k < intro.i ? 'd' : k === intro.i ? 'on' : ''; });
+}
+function introScene(i) {
+  intro.i = i; intro.t = 0; intro.ph = 'in'; intro.typed = 0;
+  el.introSub.textContent = ''; el.introNext.classList.add('hidden');
+  syncIntroDots();
+  noise(0.55, 0.13, { f: 500, to: 3600, q: 0.6, type: 'bandpass' });   /* vınn: dönen gazete */
+}
+function introAdvance() {
+  if (!intro.on) return;
+  ensureAudio();
+  if (intro.ph === 'gate') { el.introGate.classList.add('hidden'); el.introScr.classList.remove('gate'); introScene(0); return; }
+  var full = NM(INTRO[intro.i].sub);
+  if (intro.ph === 'in') { intro.t = 0.95; return; }                   /* dönmeyi atla */
+  if (intro.typed < full.length) { intro.typed = full.length; el.introSub.textContent = full; el.introNext.classList.remove('hidden'); return; }
+  if (intro.ph === 'hold') { intro.ph = 'out'; intro.out = 0; sfx.drop(); }
+}
+function closeIntro() {
+  intro.on = false;
+  el.introScr.classList.add('hidden');
+  var f = intro.then; intro.then = null;
+  if (f) f(); else el.startScreen.classList.remove('hidden');
+}
+function updateIntro(dt) {
+  var g = intro.g, sc = INTRO[intro.i];
+  intro.t += dt;
+  g.imageSmoothingEnabled = false;
+  g.clearRect(0, 0, STAGE_W, STAGE_H);
+  if (intro.ph === 'gate') return;
+  var e = 1, rot = 0, s = 1, ox = 0;
+  if (intro.ph === 'in') {
+    e = clamp(intro.t / 0.9, 0, 1);
+    var q = 1 - Math.pow(1 - e, 3);
+    rot = (1 - q) * Math.PI * 5; s = 0.06 + q * 0.94;
+    if (e >= 1) { intro.ph = 'hold'; intro.t = 0; sfx.drop(); noise(0.12, 0.14, { f: 1400, to: 300 }); }
+  } else if (intro.ph === 'out') {
+    intro.out += dt;
+    var o = clamp(intro.out / 0.38, 0, 1);
+    rot = -o * 0.5; ox = -o * o * 260; s = 1 - o * 0.15;
+    if (o >= 1) { if (intro.i + 1 < INTRO.length) introScene(intro.i + 1); else { closeIntro(); return; } }
+  }
+  /* alt yazı: daktilo */
+  if (intro.ph === 'hold') {
+    var full = NM(sc.sub);
+    if (intro.typed < full.length) {
+      var prev = Math.floor(intro.typed);
+      intro.typed = Math.min(full.length, intro.typed + dt * 34);
+      if (Math.floor(intro.typed) !== prev) {
+        el.introSub.textContent = full.slice(0, Math.floor(intro.typed));
+        intro.tick++;
+        if (intro.tick % 3 === 0 && full[prev] !== ' ') tone(1500 + Math.random() * 300, 0.018, 'square', 0.05, { lp: 3000 });
+      }
+      if (intro.typed >= full.length) el.introNext.classList.remove('hidden');
+    }
+  }
+  drawPaper(intro.pg, sc, intro.i, intro.ph === 'in' ? 0 : intro.t);
+  g.save();
+  g.translate(Math.round(STAGE_W / 2 + ox), Math.round(STAGE_H / 2));
+  g.rotate(rot); g.scale(s, s);
+  g.fillStyle = 'rgba(0,0,0,.38)'; g.fillRect(-PAPER_W / 2 + 4, -PAPER_H / 2 + 5, PAPER_W, PAPER_H);
+  g.drawImage(intro.pc, -PAPER_W / 2, -PAPER_H / 2);
+  g.restore();
+}
+
+/* =========================================================
    BAŞLAT
    ========================================================= */
 resize();
+loadPref();
 load();
 rebuildCounters();
 reassignWorkers();
@@ -6295,11 +6952,19 @@ syncPause();
 resize();
 camX = pX(player.x, player.y); camY = pY(player.x, player.y, 0);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { });
+/* açılış akışı: kayıt yoksa gazete hikâyesi → ana menü. "Yeni Oyun" ile silinip gelindiyse
+   hikâye → doğrudan işletme adı (oyuncu zaten yeni oyun dedi). */
+(function bootFlow() {
+  var fresh = false;
+  try { fresh = sessionStorage.getItem('bt_new') === '1'; sessionStorage.removeItem('bt_new'); } catch (e) { }
+  if (fresh) openIntro(function () { openNameScreen('new'); });
+  else if (!saveMeta()) openIntro(null);
+})();
 requestAnimationFrame(frame);
 
 window.BT = {
   cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },
-  S: S, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
+  S: S, safe: safe, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
   customers: customers, FISH: FISH, start: start, hire: hire, toast: toast,
   rebuildCounters: rebuildCounters, buyBuilding: buyBuilding, investProject: investProject,

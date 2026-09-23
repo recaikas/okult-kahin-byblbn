@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — **v0.1** (ilk oynanabilir sürüm)
+# 🐟 Balıkçı Tycoon — **v0.2** (hikâye girişi + skor tablosu)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,43 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v0.2 — Gazete hikâyesi, işletme adı, skor tablosu
+
+### Açılış akışı
+**İlk açılış (kayıt yok):** gazete hikâyesi → ana menü → **YENİ OYUN** → işletme adı → oyun
+**Kayıtlı oyun:** ana menü → **▶ DEVAM ET** (hikâye menüdeki **📰 HİKÂYE** ile tekrar izlenir)
+**Yeni Oyun (kayıt varken):** onay → kayıt silinir → hikâye → doğrudan işletme adı
+
+### 📰 Pixel gazete hikâyesi
+- Masa üstüne dönerek düşen **LİMAN GAZETESİ** (EN: HARBOR GAZETTE), 5 sayı, 1974 → "YARIN"
+- Her sayfada animasyonlu pixel çizim: sessiz iskele (gece) • hamsi sürüsü • belediye ilanı • şafakta genç balıkçı • hayal limanı (sepyadan renge döner)
+- Altta daktilo efektli alt yazı; dokun = yazıyı tamamla / sonraki sayfa, **ATLA ▶▶**, Space/Enter/Esc
+- Yazılar tarayıcı fontuyla değil, **elle çizilmiş 5×7 bitmap yazı tipiyle** (İ Ö Ü Ğ Ç Ş Â dahil) basılır — küçük boyda Pixelify eşiklenince G→B, Ç→Q oluyordu
+- İlk ekran "BAŞLAMAK İÇİN DOKUN": tarayıcı ses iznini buradan alır; TR/EN seçilebilir
+
+### 🪧 İşletme adı
+- Rastgele öneri: *Hasan Balıkçılık, Özcan Mutfak, Ayşe'nin Balık Evi, Yakamoz Balık Evi…* (Türkçe ek uyumu: Hasan'ın / Ayşe'nin / Dursun'un)
+- 🎲 yeni öneri, 4 hazır öneri çipi, kendi adını yazabilirsin (2–24 karakter, HTML temizlenir)
+- Tabela önizlemesi; ad kayda (`company`) yazılır. Adı olmayan eski kayıtlar **DEVAM ET**'te bir kez ad sorar.
+
+### 🏆 Skor tablosu
+- **Skor = kasaya giren toplam para** (`S.earned`): kasaya bırakılan satış parası, mezat, hizmet binaları, kontrat, temettü, işletme geliri. İadeler ve hisse satışı sayılmaz.
+- Otomatik gönderim: her kayıtta (6 sn), gün sonunda, kaydet/çık'ta. Gün sonu kartında `Skor • N. sıra`.
+- İlk 20 + kendi sıran (altındaysan ayrıca gösterilir), 1-2-3 madalya rengi, **SEN** etiketi.
+- Ana menüde **🏆 SKOR**, oyun içi menüde **🏆 SKOR TABLOSU**.
+- Tablo kayıttan ayrı anahtarda (`balikci_board_v1`): Yeni Oyun kaydı siler, tabloyu silmez.
+- Depolama tek arayüzden geçer (`Board.fetch` / `Board.submit`). **Şu an cihaz içi** — paylaşımlı (herkesin göreceği) tabloya geçerken yalnız bu nesne değişir.
+
+### Hata düzeltmeleri
+- **"Yeni Oyun" / "Kaydı sıfırla" aslında sıfırlamıyordu:** kayıt silinip sayfa yenilenirken `beforeunload` eski durumu geri yazıyordu. Artık silme sırasında kayıt yazılmıyor.
+- Hiç başlanmamış oyun artık kayıt oluşturmuyor (menüde bekleyip kapatmak "DEVAM ET" gösteriyordu). Dil/ses/zoom ayrı tercih anahtarında (`balikci_pref`).
+- Yazı kutusuna yazarken oyun tuşları (WASD, boşluk) devreye girmiyor.
+
+### Test
+`test-fresh-start.js` ve `test-world-render.js` yeni akışa (hikâye → menü → ad) göre güncellendi.
 
 ---
 
