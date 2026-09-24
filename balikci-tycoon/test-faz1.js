@@ -45,7 +45,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   await sleep(200);
   await p.click('.dtab[data-t="build"]'); await sleep(300);
   R.sub = await p.$$eval('#dpSub button', a => a.map(x => x.textContent.trim()));
-  ok(R.sub.length === 3 && !(await p.evaluate(() => document.getElementById('dpSub').classList.contains('hidden'))), 'alt sekmeler yok');
+  ok(R.sub.length === 4 && !(await p.evaluate(() => document.getElementById('dpSub').classList.contains('hidden'))), 'alt sekmeler yok');
   await p.click('#dpSub button[data-s="decor"]'); await sleep(200);
   R.decorCards = await p.$$eval('#dpCards .dcard', a => a.map(x => x.textContent));
   ok(R.decorCards.some(t => /Seviye 6/.test(t)), 'süs seviye kilidi görünmüyor');

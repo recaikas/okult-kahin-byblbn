@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — **v0.6** (oyun içi müzik + çöp kovası)
+# 🐟 Balıkçı Tycoon — **v0.7** (Faz 3: Liman Meydanı)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,27 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v0.7 — Faz 3: Liman Meydanı
+
+Yönetim binaları **tezgâh bölgelerinin dışında**: müşteri yolunun doğusunda ayrı bir **Liman Meydanı**.
+1. bölgeye **ahşap yaya köprüsüyle** bağlı (köprü kuyrukların kuzeyinden geçer, müşteriyle kesişmez).
+Çalışanlar bölge ↔ meydan arasında köprüden rota bulur (`routeVia`). Binalar YAPI › **🏛️ Meydan** sekmesinden kurulur.
+
+| Bina | Nasıl çalışır |
+|---|---|
+| 🏚️ **Personel Kulübesi** (Sv1–5) | Her seviye **her bölgeye +1 personel yeri**. Kapısında **👷 PERSONEL** düğmesi. Eski parsel kulübesi otomatik Sv1'e dönüşür. |
+| 📦 **Depo** (Sv1–4, 30→160 raf) | Fazla fileto/füme **türüne göre raflarda** (karışmaz). Oyuncu kapıda durunca elindeki malı rafa koyar. Kendi personeli (sınır = depo seviyesi): |
+| · Depo Hamalı | Tezgâhı dolu ürünün fazlasını hasırdan depoya taşır; stoğu azalan tezgâhı depodan besler (taşıyabildiği kadar yükler). |
+| · Sevkiyatçı | Kabul edilen kontratın ürününü depodan alıp **Ticaret Merkezi**'ne teslim eder. |
+| 🏛️ **Ticaret Merkezi** | Eski Ticaret Ofisi meydana taşındı; yürüyerek gidilir (kuruluş yine PROJE sekmesinden). |
+| 🏪 **Toptancı Hali** | Depodaki malı **günün fiyatıyla** sat (%85 ± dalgalanma) ya da toptan al (%130 ± dalgalanma). Fiyatlar her gün değişir (▲▼). Kapısında düğme. |
+
+Eski parsel binası "Depo Kulübesi" isim karışmasın diye **Soğuk Sandık** oldu (etkisi aynı).
+**Test:** `test-faz3.js` — köprüden yürüme, bina kurma, depoya koyma, 3. bölgeden köprüyle tezgâh besleme (12 sn),
+fazlanın depoya taşınması, sevkiyatçının kontrat teslimi (11 sn), hal al/sat, kayıt ve eski kulübe göçü. Tüm önceki testler yeşil.
 
 ---
 
