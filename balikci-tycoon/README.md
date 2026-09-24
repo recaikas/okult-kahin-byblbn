@@ -12,6 +12,26 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## 🌍 Herkese açık skor tablosu + oyuncu sayacı (kurulum)
+
+Oyun, `config.js` doluysa skorları **Supabase**'e gönderir; boşsa (veya bağlantı yoksa) tablo cihaz içi çalışır.
+
+1. **supabase.com** › ücretsiz hesap › *New project*
+2. *SQL Editor* › `online/schema.sql` dosyasının tamamını yapıştır › **Run**
+3. *Project Settings › API*: **Project URL** ve **anon public** anahtarını `config.js`'e yaz
+   (anon anahtarın tarayıcıda görünmesi normaldir: tablolara doğrudan yazma kapalı, yalnız doğrulayan fonksiyonlar açık)
+4. GitHub › *Settings › Pages › Source: GitHub Actions* — `main`'e her push'ta
+   `.github/workflows/balikci-pages.yml` oyunu **https://recaikas.github.io/okult-kahin-byblbn/** adresine yayınlar
+
+**Tutulanlar:** skor (`bt_scores`: işletme adı, balık, para, gün, oyun süresi) ve her oyun açılışı (`bt_plays`: anonim oyuncu kimliği, dil).
+Tabloda `👥 N oyuncu • 🎮 M oyun` görünür. Ayrıntı için `schema.sql` sonundaki hazır sorgular (günlük oyuncu sayısı, uygunsuz isim silme).
+
+**Hile/spam koruması (sunucuda):** isim 2–24 karakter + HTML temizliği • skor oyun süresine göre makul olmalı • skor geriye gitmez •
+başkasının kaydına yazılamaz • 8 sn'den sık gönderim ve saatte 20'den fazla yeni kayıt reddedilir. Anon anahtarla tablolara doğrudan
+ekleme/güncelleme/oyun kayıtlarını okuma `permission denied` döner (PostgreSQL 16'da `anon` rolüyle test edildi).
+
+---
+
 ## v0.2 — Gazete hikâyesi, işletme adı, skor tablosu
 
 ### Açılış akışı

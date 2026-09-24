@@ -24,7 +24,9 @@ var STR = {
     play: 'OYNA', settings: 'AYARLAR', ok: 'TAMAM', cont: 'DEVAM', reset: 'KAYDI SIFIRLA',
     story: '📰 HİKÂYE', board: '🏆 SKOR', boardTitle: '🏆 SKOR TABLOSU', boardSub: 'Sıralama: tutulan toplam balık',
     boardEmpty: 'Henüz kimse yok — ilk sen ol!', boardYou: 'SEN', boardDay: '{d}. gün',
-    boardLocal: 'Şimdilik bu cihazda oynanan oyunlar listeleniyor.', close: 'KAPAT',
+    boardLocal: 'Bu tablo bu cihazdaki oyunları gösteriyor.', close: 'KAPAT',
+    boardLoading: 'Tablo yükleniyor…', boardOffline: 'Bağlantı yok — bu cihazdaki oyunlar gösteriliyor.',
+    boardStats: '👥 {p} oyuncu • 🎮 {g} oyun',
     nameTitle: 'İŞLETMENİN ADI', nameSub: 'Tabelaya ne yazalım? Bu isim skor tablosunda görünecek.',
     nameIdeas: 'ÖNERİLER', nameGo: 'İŞE BAŞLA ▶', nameShort: 'En az 2 harf yaz.', nameDice: 'Rastgele isim',
     welcomeCo: 'Hayırlı olsun! {n} kapılarını açtı.', tapStart: '▶ BAŞLAMAK İÇİN DOKUN', skip: 'ATLA ▶▶',
@@ -178,7 +180,9 @@ var STR = {
     play: 'PLAY', settings: 'SETTINGS', ok: 'OK', cont: 'CONTINUE', reset: 'RESET SAVE',
     story: '📰 STORY', board: '🏆 SCORES', boardTitle: '🏆 LEADERBOARD', boardSub: 'Ranked by total fish caught',
     boardEmpty: 'Nobody here yet — be the first!', boardYou: 'YOU', boardDay: 'Day {d}',
-    boardLocal: 'For now this lists games played on this device.', close: 'CLOSE',
+    boardLocal: 'This table shows games played on this device.', close: 'CLOSE',
+    boardLoading: 'Loading leaderboard…', boardOffline: 'Offline — showing games on this device.',
+    boardStats: '👥 {p} players • 🎮 {g} games',
     nameTitle: 'NAME YOUR BUSINESS', nameSub: 'What goes on the sign? This name appears on the leaderboard.',
     nameIdeas: 'IDEAS', nameGo: 'OPEN FOR BUSINESS ▶', nameShort: 'Type at least 2 letters.', nameDice: 'Random name',
     welcomeCo: '{n} is open for business!', tapStart: '▶ TAP TO BEGIN', skip: 'SKIP ▶▶',
@@ -1674,6 +1678,7 @@ function openPauseMenu() {
   renderTab(); el.menuScreen.classList.remove('hidden'); syncPause();
 }
 function saveAndQuit() {
+  submitScore(true);
   manualSave(T('savedQuit'));
   el.settingsScreen.classList.add('hidden');
   el.menuScreen.classList.add('hidden');
@@ -5294,10 +5299,17 @@ function showDayCard() {
   if (L.out) h += dayRow('⚠️', T('dayOut'), NM(FISH[L.out.f].n) + ' ' + fmtDur(L.out.t));
   if (L.auc) h += dayRow('🔔', T('dayAuction'), L.auc.n + ' × ' + money(L.auc.v));
   if (S.company) {
-    submitScore();
+    submitScore(true);
     var rk = myRank(Board.sort(Board.read()));
     var fs = T('fishN', { n: fmtN(S.caught) });
-    h += dayRow('🏆', T('dayScore'), rk ? T('dayRank', { s: fs, r: rk }) : fs);
+    h += dayRow('🏆', T('dayScore'), '<span class="dayRankV">' + (ONLINE ? fs : (rk ? T('dayRank', { s: fs, r: rk }) : fs)) + '</span>');
+    if (ONLINE) setTimeout(function () {             /* sunucu sırası gelince satırı güncelle */
+      Board.fetch(function (l, info) {
+        if (info.src !== 'online' || !info.me || el.dayScr.classList.contains('hidden')) return;
+        var v = el.dayRows.querySelector('.dayRankV');
+        if (v) v.textContent = T('dayRank', { s: fs, r: info.me.rank });
+      });
+    }, 1500);
   }
   el.dayRows.innerHTML = PX(h);
   el.dayNext.classList.toggle('hidden', !L.next);
@@ -5559,6 +5571,7 @@ function start() {
   el.devbar.classList.remove('hidden');
   S.started = true; paused = false; syncPause();
   ensureAudio(); applyVolume();
+  logPlay();
 }
 /* OYNA: kayıt varsa devam; yoksa işletme adı → oyun. Adı olmayan eski kayıt önce ad sorar. */
 el.playBtn.onclick = function () {
@@ -6415,8 +6428,28 @@ function newRunId() { return Date.now().toString(36) + Math.random().toString(36
    "Yeni Oyun" kaydı siler ama tabloyu silmez. Depolama tek arayüzden geçer (Board.fetch /
    Board.submit) — paylaşımlı bir sunucuya geçerken yalnız burası değişir. */
 var BOARD_KEY = 'balikci_board_v2', BOARD_MAX = 50, BOARD_SHOW = 20;
+/* herkese açık tablo: config.js içindeki Supabase adresi/anahtarı. Yoksa (ör. claude.ai
+   önizlemesi) tablo cihaz içi çalışır; bağlantı koparsa da cihaz içine düşer. */
+var ONLINE = (function () {
+  var c = window.BT_ONLINE;
+  return c && /^https?:\/\//.test(c.url || '') && c.key ? { url: c.url.replace(/\/+$/, ''), key: c.key } : null;
+})();
+/* kalıcı anonim oyuncu kimliği — "kaç kişi oynadı" sayımı için; Yeni Oyun'da silinmez */
+var PLAYER_ID = (function () {
+  var k = 'balikci_pid', v = null;
+  try { v = localStorage.getItem(k); } catch (e) { }
+  if (!v || v.length < 6) { v = 'p' + newRunId(); try { localStorage.setItem(k, v); } catch (e) { } }
+  return v;
+})();
+function rpc(name, args) {
+  return fetch(ONLINE.url + '/rest/v1/rpc/' + name, {
+    method: 'POST',
+    headers: { apikey: ONLINE.key, Authorization: 'Bearer ' + ONLINE.key, 'Content-Type': 'application/json' },
+    body: JSON.stringify(args)
+  }).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); });
+}
 var Board = {
-  scope: 'local',
+  online: !!ONLINE,
   read: function () {
     try {
       var a = JSON.parse(localStorage.getItem(BOARD_KEY) || '[]');
@@ -6426,7 +6459,14 @@ var Board = {
   },
   write: function (a) { try { localStorage.setItem(BOARD_KEY, JSON.stringify(a)); } catch (e) { } },
   sort: function (a) { return a.sort(function (x, y) { return y.s - x.s || x.at - y.at; }); },
-  fetch: function (cb) { cb(Board.sort(Board.read())); },
+  /* cb(liste, bilgi) — bilgi: {src:'local'|'online'|'offline', me:{rank,...}, stats:{players,plays,runs}} */
+  fetch: function (cb) {
+    var local = Board.sort(Board.read());
+    if (!ONLINE) { cb(local, { src: 'local' }); return; }
+    rpc('bt_board', { p_run: S.runId || '' }).then(function (d) {
+      cb(d.top || [], { src: 'online', me: d.me, stats: d.stats });
+    }, function () { cb(local, { src: 'offline' }); });
+  },
   submit: function (e) {
     var a = Board.read(), f = null;
     for (var i = 0; i < a.length; i++) if (a[i].id === e.id) { f = a[i]; break; }
@@ -6437,9 +6477,32 @@ var Board = {
     Board.write(a);
   }
 };
-function submitScore() {
+/* çevrimiçi gönderim seyreltilir (en sık 30 sn); gün sonu / kaydet-çık "force" ile gider.
+   Sunucu çok sık gelen isteği reddederse bir sonraki fırsatta yeniden denenir. */
+var netSent = { at: 0, s: -1, busy: false, dirty: false };
+function submitScore(force) {
   if (!S.company || !S.runId) return;
-  Board.submit({ id: S.runId, n: S.company, s: S.caught, m: Math.round(S.earned), d: day.n, at: Date.now() });
+  var e = { id: S.runId, n: S.company, s: S.caught, m: Math.round(S.earned), d: day.n, at: Date.now() };
+  Board.submit(e);
+  if (!ONLINE) return;
+  var now = Date.now();
+  if (netSent.busy) { netSent.dirty = true; return; }
+  if (!force && now - netSent.at < 30000) return;
+  if (!force && e.s === netSent.s && !netSent.dirty) return;
+  netSent.busy = true; netSent.dirty = false;
+  rpc('bt_submit', { p_run: e.id, p_player: PLAYER_ID, p_company: e.n, p_fish: e.s, p_money: e.m,
+    p_day: e.d, p_play: Math.round(S.play || 0) }).then(function (r) {
+    netSent.busy = false;
+    if (r === 'ok') { netSent.at = Date.now(); netSent.s = e.s; }
+    else if (r === 'too_fast') netSent.dirty = true;
+  }, function () { netSent.busy = false; netSent.dirty = true; netSent.at = Date.now(); });
+}
+/* her oturum açılışında bir kez: oyuncu + oyun sayacı */
+var playLogged = false;
+function logPlay() {
+  if (!ONLINE || playLogged) return;
+  playLogged = true;
+  rpc('bt_play', { p_player: PLAYER_ID, p_run: S.runId || '', p_lang: lang }).then(function () { }, function () { });
 }
 function myRank(list) {
   for (var i = 0; i < list.length; i++) if (list[i].id === S.runId) return i + 1;
@@ -6452,13 +6515,22 @@ function boardRow(e, i, mine) {
     '<small>' + T('boardDay', { d: e.d || 1 }) + ' • ' + money(e.m || 0) + '</small></span>' +
     '<span class="bs">' + T('fishN', { n: fmtN(e.s) }) + '</span></div>';
 }
+var boardReq = 0;
 function renderBoard() {
-  Board.fetch(function (list) {
+  var req = ++boardReq;
+  if (ONLINE) { el.boardRows.innerHTML = '<div class="empty">' + T('boardLoading') + '</div>'; el.boardNote.textContent = ''; }
+  Board.fetch(function (list, info) {
+    if (req !== boardReq) return;                       /* eski cevap geç geldiyse yok say */
     var h = '', me = myRank(list) - 1, i;
     if (!list.length) h = '<div class="empty">' + T('boardEmpty') + '</div>';
     for (i = 0; i < Math.min(BOARD_SHOW, list.length); i++) h += boardRow(list[i], i, i === me);
-    if (me >= BOARD_SHOW) h += '<div class="bsep">• • •</div>' + boardRow(list[me], me, true);
+    if (info.src === 'online' && info.me && me < 0) {
+      h += '<div class="bsep">• • •</div>' + boardRow(info.me, info.me.rank - 1, true);
+    } else if (me >= BOARD_SHOW) h += '<div class="bsep">• • •</div>' + boardRow(list[me], me, true);
     el.boardRows.innerHTML = h;
+    el.boardNote.textContent = info.src === 'online'
+      ? T('boardStats', { p: fmtN(info.stats && info.stats.players), g: fmtN(info.stats && info.stats.plays) })
+      : T(info.src === 'offline' ? 'boardOffline' : 'boardLocal');
   });
 }
 function openBoard(from) {
