@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — **v0.8** (otomatik kayıt + gelişen çevre)
+# 🐟 Balıkçı Tycoon — **v0.9** (özel isimli müşteriler)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,31 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v0.9 — Özel isimli müşteriler
+
+Yeni ekonomi/sipariş mekaniği **yok**: özel müşteriler normal sipariş verir, normal öder; tezgâh sistemine karakter ve yaşam hissi katarlar.
+
+**Günlük düzen (her gün 2 kişi):**
+normal müşteriler → **1. özel müşteri** (günün ilk 3 normal müşterisinden sonra, normal kuyruğun içinde) → normal akış →
+kapanışa ~40 sn kala kısa bildirim **"Özel bir müşteri geliyor..."** (oyunu durdurmaz) → **2. özel müşteri** kendi tezgâhına yürür →
+işi bitince kapanış normal devam eder (servis edilemezse kapanış en fazla CLOSE_MAX+30 sn bekler).
+Her gün iki farklı kişi seçilir, dünküler ertesi gün tekrar gelmez. Gün sonu kartında **"⭐ Özel müşteriler: …"**.
+
+**Karakterler (havuz 50'ye göre kurulu; şu an 10 tanımlı):**
+Caner (Kaliteci — uzun boy + belirgin göbek, kedi sever) · Pelin (Biyolog — turuncu gür kıvırcık saç, ince) ·
+Rıza (Tesisat ustası — kasket, kalın bıyık, hafif göbek) · Nermin (Emekli öğretmen — kısa, tombul, büyük çanta) ·
+Kemal (Lokanta işletmecisi — uzun, ince, not defteri) · Şule (Terzi — topuz, uzun etek) · Okan (Kurye — atletik, omuz çantası) ·
+Fatoş (Ev aşçısı — renkli eşarp) · Burak (Bankacı — hafif sakal, ceket) · Ayfer (Eczacı — kısa kıvırcık saç, gözlük).
+
+- Her birinin kendi balığı var (ör. Pelin → levrek); o tezgâh açık değilse açık olana gider.
+- Başının üstünde **★ İsim · Meslek** etiketi; gelince selam, mutlu giderken teşekkür cümlesi (TR/EN).
+- Karakter çizimine yeni bedenler eklendi: uzun/kısa boy, göbek, gür kıvırcık saç, topuz, uzun etek, not defteri, büyük çanta, kalın bıyık, desenli eşarp.
+- Tanışılan özel müşteriler kayda yazılır (`met`) — ileride "müşteri defteri" için.
+- Yeni kişi eklemek: `SPECIALS` dizisine bir satır.
+- **Test:** `test-specials.js`. Etiketler artık ekran kenarından taşmıyor.
 
 ---
 

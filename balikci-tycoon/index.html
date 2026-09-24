@@ -229,6 +229,14 @@
   .coach .keys i:nth-child(2){grid-column:1;grid-row:2}
   .coach .keys i:nth-child(3){grid-column:2;grid-row:2}
   .coach .keys i:nth-child(4){grid-column:3;grid-row:2}
+  /* özel müşteri bildirimi: kısa, oyunu durdurmaz */
+  #specPop{position:fixed;left:0;right:0;margin:0 auto;width:max-content;max-width:88vw;top:30%;z-index:9;pointer-events:none;
+    display:flex;align-items:center;gap:8px;padding:10px 18px;background:rgba(40,24,8,.93);border:3px solid var(--gold);
+    color:var(--ink);font-size:16px;letter-spacing:1px;box-shadow:0 4px 0 rgba(0,0,0,.45)}
+  #specPop.hidden{display:none}
+  #specPop i{font-style:normal;color:var(--gold);font-size:20px;animation:blink 0.8s steps(2) infinite}
+  #specPop.go{animation:spIn 3.2s ease forwards}
+  @keyframes spIn{0%{opacity:0;transform:translateY(8px)}10%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
   /* seviye atlama şeridi — tıklamayı engellemez, oyun akmaya devam eder */
   #lvlUp{position:fixed;left:50%;top:calc(50px + env(safe-area-inset-top,0px));z-index:9;pointer-events:none;
     transform:translate(-50%,-140%);min-width:230px;max-width:92vw;text-align:center;padding:8px 16px 9px;
@@ -450,6 +458,7 @@
 <div id="toast"></div>
 <div id="pauseBadge" class="hidden">⏸ <span id="pauseTxt">DURAKLATILDI</span></div>
 <div id="coach" class="coach hidden"></div>
+<div id="specPop" class="hidden"><i>★</i><span id="specPopT">Özel bir müşteri geliyor...</span></div>
 <div id="lvlUp" class="hidden"><div id="lvlConf"></div><small id="lvlNum">SEVİYE 2</small><b id="lvlTitle">Tayfa</b><div id="lvlList"></div></div>
 <div id="dayBanner" class="hidden"><b id="dayBannerT">GÜN 1</b><small id="dayBannerS"></small></div>
 <button id="actBtn" class="hidden">—</button>
@@ -475,7 +484,7 @@
   <div class="card">
     <h1>BALIKÇI<br>TYCOON</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v0.8</div>
+    <div class="ver">v0.9</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>

@@ -85,6 +85,7 @@ var STR = {
     halEmpty: 'Henüz ürün yok', halSold: '{n} ürün satıldı: +{v}', halBought: '{n} ürün alındı: {v}', kFume: 'füme', kFileto: 'fileto',
     envUp1: '🌿 Liman canlanıyor: yol çakıl oldu, ağaçlar yeşeriyor', envUp2: '🪨 Yol arnavut kaldırımı oldu, sahil toparlandı',
     envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
+    specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
     featDay: 'Günün müşterisi: {n}', levelUp: '⭐ Yeni seviye: {t}!', lvlN: 'SEVİYE {l}', lvShort: 'SV {l}', lvBonus: 'Satış primi {p}',
     areaOpen: '🔓 {n} açıldı!',
     areaLvUp: '🏗️ {n} → Sv.{l}',
@@ -276,6 +277,7 @@ var STR = {
     halEmpty: 'No goods yet', halSold: '{n} sold: +{v}', halBought: '{n} bought: {v}', kFume: 'smoked', kFileto: 'fillet',
     envUp1: '🌿 The harbor comes alive: gravel road, trees turning green', envUp2: '🪨 The road is cobbled now, the shore tidied up',
     envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
+    specComing: 'A special customer is coming...', daySpec: 'Special customers',
     featDay: 'Customer of the day: {n}', levelUp: '⭐ New rank: {t}!', lvlN: 'LEVEL {l}', lvShort: 'LV {l}', lvBonus: 'Sales bonus {p}',
     areaOpen: '🔓 {n} unlocked!',
     areaLvUp: '🏗️ {n} → Lv.{l}',
@@ -497,6 +499,7 @@ function renderUI() {
       uctx.font = uiFont(fs);
       var w = Math.round(uctx.measureText(q.s).width) + 9, h = fs + 6;
       var rect = { x: cx - w / 2, y: cy - h, w: w, h: h };
+      if (VW && w < VW - 8) { rect.x = clamp(rect.x, 4, VW - w - 4); cx = rect.x + w / 2; }   /* v0.9: ekrandan taşmasın */
       for (var tr = 0; tr < 5 && hits(rect); tr++) rect.y -= h + 2;
       if (hits(rect)) continue;                       /* yer yoksa hiç çizme */
       taken.push(rect);
@@ -1392,6 +1395,13 @@ function loadDay(d) {
     day.t = clamp(parseFloat(d.day[1]) || 0, 0, DAY_LEN - 1);
     day.market = !!d.day[2] && isMarketDay(day.n);
     day.feat = custById(d.day[3]) ? d.day[3] : null;
+    var sps = String(d.day[4] || '').split(',').filter(function (q) { return specById(q); });
+    if (sps.length === 2) {
+      day.spec = sps; day.normals = parseInt(d.day[6], 10) || 0;
+      var sp0 = parseInt(d.day[5], 10) || 0;
+      day.sp = sp0 === 2 ? 1 : sp0 === 3 ? 4 : sp0;   /* müşteriler kaydedilmez: yarım kalan adımı güvenle sürdür */
+      day.popT = 0;
+    } else day.spec = null;
   }
   day.phase = 'play'; day.ph = 0; day.st = newDayStats(); day.last = null;
   if (d && d.stalls) {
@@ -1457,7 +1467,7 @@ var day = {
   n: 1, t: 0, phase: 'play', ph: 0, market: false,
   st: null, last: null
 };
-function newDayStats() { return { inc: 0, served: 0, lost: 0, fish: 0, by: {}, out: {}, outAt: {} }; }
+function newDayStats() { return { inc: 0, served: 0, lost: 0, fish: 0, by: {}, out: {}, outAt: {}, spec: [] }; }
 day.st = newDayStats();
 function isMarketDay(n) { return n > 1 && n % MARKET_EVERY === 0; }
 function dayNext() { return isMarketDay(day.n + 1); }
@@ -1509,7 +1519,8 @@ function updateDay(dt) {
   }
   if (day.phase === 'closing') {
     day.ph += dt;
-    /* yeni müşteri gelmez; mevcutlar tamamlansın */
+    /* yeni müşteri gelmez; mevcutlar tamamlansın. v0.9: günün 2. özel müşterisi işini bitirene kadar beklenir */
+    if (specHoldsClose()) return;
     if (!customers.length || day.ph > CLOSE_MAX) { endDay(); }
     return;
   }
@@ -1570,7 +1581,7 @@ function endDay() {
   var auc = runAuction();
   day.last = {
     n: day.n, market: day.market, inc: day.st.inc, served: day.st.served,
-    lost: day.st.lost, fish: day.st.fish, top: topSeller(), out: worstOut(),
+    lost: day.st.lost, fish: day.st.fish, top: topSeller(), out: worstOut(), spec: (day.st.spec || []).slice(),
     next: isMarketDay(day.n + 1), auc: auc
   };
   if (M && M.office) closeDay();                 /* borsa günü oyun günüyle aynı */
@@ -1583,6 +1594,7 @@ function endDay() {
 function beginNextDay(skipPrep) {
   day.n++;
   pickFeatured();
+  pickSpecials();
   day.market = isMarketDay(day.n);
   day.st = newDayStats();
   day.t = 0;
@@ -1796,7 +1808,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0     /* skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: []     /* skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -1873,14 +1885,14 @@ function buildSave() {
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
     auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
-    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0], autoMin: S.autoMin || 0,
+    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0], autoMin: S.autoMin || 0, met: S.met || [],
     areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
     decor: DECOR.map(function (d) { return d.got ? 1 : 0; }),
     proj: [Math.round(project.inv), project.stage, project.done ? 1 : 0],
     serv: servSave(),
-    day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || ''],
+    day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || '', (day.spec || []).join(','), day.sp || 0, day.normals || 0],
     stalls: counters.map(function (c) { return [c.key, c.open ? 1 : 0]; }),
     workers: workers.map(function (w) { return [w.role, w.zone === undefined ? 0 : w.zone]; }),
     mk: M
@@ -1906,6 +1918,7 @@ function loadFrom(d) {
     S.auto = Array.isArray(d.auto) ? d.auto.map(function (v) { return !!v; }) : [];
     S.hero = cleanHero(d.hero);
     S.autoMin = AUTO_OPTS.indexOf(d.autoMin) >= 0 ? d.autoMin : 0;
+    S.met = Array.isArray(d.met) ? d.met.filter(function (q) { return typeof q === 'string'; }) : [];
     if (d.areas) d.areas.forEach(function (v, i) { if (AREAS[i]) { AREAS[i].locked = !!v[0]; AREAS[i].lvl = v[1] || 1; } });
     if (d.pads) d.pads.forEach(function (v, i) { if (PADS[i]) { PADS[i].paid = v[0]; PADS[i].lvl = v[1]; if (v[2]) PADS[i].price = v[2]; } });
     if (d.slots) d.slots.forEach(function (v, i) { if (SLOTS[i]) SLOTS[i].b = v; });
@@ -1952,7 +1965,7 @@ function resetWorld() {
   for (k = 0; k < tables.length; k++) { var tb = tables[k]; tb.inn.length = 0; tb.cur = null; tb.t = 0; tb.worker = null; tb.mat.items.length = 0; }
   smoker.inn.length = 0; smoker.cur = null; smoker.t = 0; smoker.belt = 0; smoker.mat.items.length = 0;
   counters.length = 0;
-  day.feat = null; day.last = null;
+  day.feat = null; day.last = null; day.spec = null; day.sp = 0; day.normals = 0;
   M = newMarket();
   loadFrom(BOOT);
   if (!M) M = newMarket();
@@ -2757,6 +2770,7 @@ function updateCounter(c, dt) {
         mood: 1, hair: irnd(0, 2), tone: irnd(0, 2)
       };
       c.slots[freeIdx] = cu; customers.push(cu);
+      day.normals = (day.normals || 0) + 1;           /* v0.9: özel müşteri zamanlaması için */
       if (dist2(player.x, player.y, c.x, c.y) < 90) sfx.cust();
     }
   }
@@ -2785,6 +2799,7 @@ function finishOrder(c, cu) {
     (1 + perkSum('custval') + servEff('custval') + repBonus() + (cu.type.id === 'toptanci' ? servEff('wholesale') : 0)));
   payout(c, pay, cu.slot);
   noteFishIncome(pay); noteDayIncome(pay); noteDaySale(cu);
+  if (cu.spec && specById(cu.spec)) { (day.st.spec = day.st.spec || []).push(specById(cu.spec).n); }
   cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; c.slots[cu.slot] = null; shiftQueue(c);
   S.served++; S.rep += Math.max(1, Math.round(cu.type.rep * (1 + servEff('rep'))));
   var fp = queueSlotPos(c, cu.slot);
@@ -3431,16 +3446,24 @@ function drawPerson(a, o) {
   var pants = o.pants || '#2b3a45';
   var boot = o.boot || '#1a2830';
 
-  /* --- bacaklar + lastik çizme --- */
+  /* --- bacaklar + lastik çizme --- (v0.9: uzun/kısa boy, uzun etek) */
   var fl = w ? w.fl : 0, bl = w ? w.bl : 0;
-  px(sx - 3, y - 7, 3, 5, pants);
-  px(sx + 1, y - 7, 3, 5, pants);
-  px(sx - 3 + (fl > 0 ? 1 : 0), y - 2, 3, 2, boot);
-  px(sx + 1 + (bl > 0 ? 1 : 0), y - 2, 3, 2, boot);
-  if (o.boots !== false) {                            /* çizme ağzı */
-    px(sx - 3, y - 4, 3, 1, o.bootTop || '#2f4450');
-    px(sx + 1, y - 4, 3, 1, o.bootTop || '#2f4450');
+  var hup = o.tall ? 4 : o.short ? -2 : 0;
+  if (o.skirt) {                                      /* uzun etek */
+    px(sx - 4, y - 8 - hup, 8, 7 + hup, o.skirt);
+    px(sx - 5, y - 3, 10, 2, o.skirt); px(sx - 4, y - 8 - hup, 8, 1, shade(o.skirt, 16));
+    px(sx - 3 + (fl > 0 ? 1 : 0), y - 1, 3, 1, boot); px(sx + 1 + (bl > 0 ? 1 : 0), y - 1, 3, 1, boot);
+  } else {
+    px(sx - 3, y - 7 - hup, 3, 5 + hup, pants);
+    px(sx + 1, y - 7 - hup, 3, 5 + hup, pants);
+    px(sx - 3 + (fl > 0 ? 1 : 0), y - 2, 3, 2, boot);
+    px(sx + 1 + (bl > 0 ? 1 : 0), y - 2, 3, 2, boot);
+    if (o.boots !== false) {                          /* çizme ağzı */
+      px(sx - 3, y - 4, 3, 1, o.bootTop || '#2f4450');
+      px(sx + 1, y - 4, 3, 1, o.bootTop || '#2f4450');
+    }
   }
+  y -= hup;                                           /* gövde ve baş boya göre yukarı/aşağı */
 
   /* --- gövde: yün kazak --- */
   px(sx - 4 + lean, y - 15, 8, 9, coat);
@@ -3461,6 +3484,15 @@ function drawPerson(a, o) {
     px(sx + 2 + lean, y - 15, 2, 8, o.vest);
   }
   if (o.sash) px(sx - 4 + lean, y - 9, 8, 2, o.sash); /* kuşak */
+  if (o.belly) {                                      /* göbek: öne taşan yuvarlak (silüette belirgin) */
+    var fs = fx > 0 ? 1 : -1, bx0 = sx + (fs > 0 ? 4 : -7) + lean;
+    px(sx - 5 + lean, y - 12, 10, 6, coat);                 /* gövde genişler */
+    px(bx0, y - 12, 3, 6, coat);                            /* öne taşan kısım */
+    px(bx0 + (fs > 0 ? 3 : -1), y - 11, 1, 4, coat);
+    px(bx0 + (fs > 0 ? 1 : 0), y - 12, 2, 1, shade(coat, 18));
+    px(sx - 5 + lean, y - 7, 10, 1, shade(coat, -26));      /* kemer çizgisi */
+    px(bx0, y - 7, 3, 1, shade(coat, -26));
+  }
 
   /* --- kollar --- */
   var carrying = a.carry && a.carry.length;
@@ -3490,6 +3522,15 @@ function drawPerson(a, o) {
     px(kx, y - 9, 4, 1, '#7a5a30');
   }
   if (o.bag) px(fx > 0 ? sx - 7 : sx + 5, y - 13, 2, 5, '#4a3a2a');
+  if (o.bigBag) {                                     /* büyük el çantası */
+    var gx = fx > 0 ? sx - 10 : sx + 5;
+    px(gx, y - 11, 5, 7, o.bigBag); px(gx, y - 11, 5, 1, shade(o.bigBag, 20)); px(gx + 1, y - 13, 3, 2, shade(o.bigBag, -25));
+    px(gx + 2, y - 8, 1, 1, PAL.brass);
+  }
+  if (o.notebook) {                                   /* küçük not defteri */
+    var nbx = sx + fx * 5;
+    px(nbx - 1, y - 11, 3, 4, '#e8ddc8'); px(nbx - 1, y - 11, 3, 1, '#b3422f'); px(nbx, y - 9, 1, 1, '#6f604b');
+  }
   if (o.knife) { var nx = sx + fx * 6; px(nx, y - 10, 1, 4, '#cfd8de'); px(nx, y - 6, 1, 2, '#6f4526'); }
   if (o.tray) { px(sx + fx * 5 - 2, y - 12, 6, 1, '#c9a15e'); px(sx + fx * 5 - 1, y - 13, 4, 1, '#e8ddc8'); }
 
@@ -3503,6 +3544,7 @@ function drawPerson(a, o) {
   if (o.scarf) {                                      /* başörtüsü */
     px(sx - 4, hy - 1, 8, 4, o.scarf);
     px(sx - 4, hy - 1, 8, 1, shade(o.scarf, 20));
+    if (o.scarfDots) { px(sx - 3, hy, 1, 1, o.scarfDots); px(sx, hy + 1, 1, 1, o.scarfDots); px(sx + 2, hy, 1, 1, o.scarfDots); px(sx - 5, hy + 3, 1, 1, o.scarfDots); }
     px(sx - 5, hy + 1, 1, 5, o.scarf);
     px(sx + 4, hy + 1, 1, 5, o.scarf);
     px(sx - 4, hy + 5, 2, 3, shade(o.scarf, -14));
@@ -3534,7 +3576,13 @@ function drawPerson(a, o) {
   } else {
     px(sx - 4, hy - 2, 8, 3, hair);
     px(sx - 4, hy + 1, 1, 3, hair); px(sx + 3, hy + 1, 1, 3, hair);
-    if (o.hairStyle === 1) {                          /* dalgalı */
+    if (o.hairStyle === 5) {                          /* gür, kıvırcık (bulut gibi) */
+      px(sx - 5, hy - 3, 10, 3, hair); px(sx - 6, hy - 1, 2, 7, hair); px(sx + 4, hy - 1, 2, 7, hair);
+      px(sx - 4, hy - 4, 2, 1, hair); px(sx, hy - 4, 3, 1, hair); px(sx - 7, hy + 2, 1, 3, hair); px(sx + 6, hy + 2, 1, 3, hair);
+      px(sx - 3, hy - 3, 1, 1, shade(hair, 30)); px(sx + 2, hy - 2, 1, 1, shade(hair, 30)); px(sx - 6, hy + 3, 1, 1, shade(hair, 30));
+    } else if (o.hairStyle === 6) {                   /* topuz */
+      px(sx - 2, hy - 5, 4, 3, hair); px(sx - 1, hy - 6, 2, 1, hair); px(sx - 2, hy - 4, 4, 1, shade(hair, 25));
+    } else if (o.hairStyle === 1) {                   /* dalgalı */
       px(sx - 5, hy - 1, 1, 3, hair); px(sx + 4, hy - 1, 1, 3, hair);
       px(sx - 3, hy - 3, 2, 1, hair); px(sx + 1, hy - 3, 2, 1, hair);
     } else if (o.hairStyle === 2) {                   /* uzun */
@@ -3553,6 +3601,7 @@ function drawPerson(a, o) {
   dot(sx + (fx > 0 ? 1 : -2), ey, PAL.edge);
   dot(sx + (fx > 0 ? 2 : -1), ey, PAL.edge);
   if (o.must) px(sx - 1, ey + 2, 3, 1, hair);         /* bıyık */
+  if (o.thickMust) { px(sx - 2, ey + 2, 5, 2, hair); px(sx - 3, ey + 3, 1, 1, hair); px(sx + 3, ey + 3, 1, 1, hair); }
   if (o.beard) { px(sx - 3, ey + 2, 6, 3, hair); px(sx - 2, ey + 3, 4, 1, skinS); }
   if (o.glasses) { px(sx - 3, ey, 2, 1, '#cfd8de'); px(sx + 1, ey, 2, 1, '#cfd8de'); px(sx - 1, ey, 2, 1, '#7d868e'); }
   /* ağız: ruh haline göre */
@@ -3604,6 +3653,7 @@ var CUST_FIT = {
   turist:   { sunHat: '#f0ece0', bag: true, glasses: true, pants: '#6a4a5e' }
 };
 function custOutfit(cu) {
+  if (cu.spec && specById(cu.spec)) return specOutfit(specById(cu.spec), cu.face);
   var t = cu.type, f = CUST_FIT[t.id] || {}, o = {}, k;
   for (k in f) o[k] = f[k];
   o.coat = t.coat; o.coat2 = t.coat2;
@@ -3683,6 +3733,7 @@ function drawCustomer(cu) {
     if (Math.sin(cu.fidget * 3) > 0.94) o.face = -cu.face;      /* etrafa bakınma */
   }
   drawPerson(cu, o);
+  if (cu.spec) drawSpecialTag(cu);
   if (cu.state === 'leave') {                                    /* mutlu ayrılış */
     if ((cu.leaveT = (cu.leaveT || 0) + 0.016) < 1.2) drawEmote(cu.x, cu.y, 34, cu.happyLeave === false ? 'angry' : 'love');
     return;
@@ -5507,7 +5558,7 @@ var el = {};
  'slotRows', 'slotBack', 'nameBack', 'askScr', 'askMsg', 'askYes', 'askNo', 'heroScr', 'heroCard', 'heroCv',
  'heroName', 'heroNameDice', 'heroRows', 'heroDice', 'heroGo', 'heroBack', 'heroTitle', 'heroSub', 'heroNameLbl',
  'actBtn', 'halScr', 'halTitle', 'halSub', 'halRows', 'halClose', 'autoScr', 'autoTitle', 'autoSub', 'autoOpts', 'autoBadge',
- 'setAuto'].forEach(function (id) {
+ 'setAuto', 'specPop', 'specPopT'].forEach(function (id) {
   el[id] = document.getElementById(id);
 });
 var toastT = 0;
@@ -6015,6 +6066,7 @@ function showDayCard() {
   if (L.top) h += dayRow('🏆', T('dayTop'), NM(FISH[L.top.f].n) + ' ×' + L.top.n);
   if (L.out) h += dayRow('⚠️', T('dayOut'), NM(FISH[L.out.f].n) + ' ' + fmtDur(L.out.t));
   if (L.auc) h += dayRow('🔔', T('dayAuction'), L.auc.n + ' × ' + money(L.auc.v));
+  if (L.spec && L.spec.length) h += dayRow('⭐', T('daySpec'), escH(L.spec.join(', ')));
   if (S.company) {
     submitScore(true);
     var rk = myRank(Board.sort(Board.read()));
@@ -6286,6 +6338,7 @@ function frame(ts) {
   updateStations(dt);
   updateCustomers(dt);
   updateDay(dt);                    /* v1.2 — gün döngüsü + depo kilidi */
+  updateSpecials(dt);               /* v0.9 — özel isimli müşteriler */
   updateEvents(dt);
   updateMarket(dt);
   updateTutorial();
@@ -8359,6 +8412,157 @@ function syncMeydanBtn() {
 }
 
 /* =========================================================
+   v0.9 — ÖZEL İSİMLİ MÜŞTERİLER
+   Yeni ekonomi/sipariş mekaniği DEĞİL: mevcut tezgâh sistemine karakter ve yaşam hissi katar.
+   Her gün 2 özel müşteri: 1.si birkaç normal müşteriden sonra kuyruğa katılır, 2.si kapanışa yakın
+   "Özel bir müşteri geliyor..." bildiriminden sonra gelir; kapanış onun işi bitince devam eder.
+   Havuz ilk aşamada 50 kişilik planlanır; şu an tanımlı olanlar aşağıda (yeni kişi = diziye bir satır).
+   ========================================================= */
+var SPECIALS = [
+  { id: 'caner', n: 'Caner', fav: 'hamsi', job: { tr: 'Kaliteci', en: 'Quality inspector' },
+    look: { tall: 1, belly: 1, coat: '#5b6d7c', coat2: '#6f8394', hair: '#2e2018', hairStyle: 0, sk: 1, pants: '#33393f' },
+    hi: { tr: 'Önce bir bakayım… tamam, bundan alalım.', en: 'Let me take a look… right, I\'ll have this.' },
+    bye: { tr: 'Kalitesi yerinde. Kedilere de bir parça ayırdım.', en: 'Quality checks out. Saved a bite for the cats.' } },
+  { id: 'pelin', n: 'Pelin', fav: 'levrek', job: { tr: 'Biyolog', en: 'Biologist' },
+    look: { coat: '#3f7f7a', coat2: '#56988f', hair: '#d9772b', hairStyle: 5, sk: 0, pants: '#2b3a45' },
+    hi: { tr: 'Gözleri parlak, solungaçlar kırmızı. Güzel.', en: 'Bright eyes, red gills. Good.' },
+    bye: { tr: 'Net ve temiz. Teşekkürler.', en: 'Clean and precise. Thank you.' } },
+  { id: 'riza', n: 'Rıza', fav: 'hamsi', job: { tr: 'Tesisat ustası', en: 'Plumber' },
+    look: { belly: 1, coat: '#3f5f8f', coat2: '#557aa8', cap: '#2b2b2b', thickMust: true, hair: '#1d1713', hairStyle: 0, sk: 2, pants: '#2e3a4a' },
+    hi: { tr: 'Sabahın köründe iş başı, önce balık!', en: 'Up at dawn — fish comes first!' },
+    bye: { tr: 'Eline sağlık. Musluk bozulursa bana haber ver.', en: 'Cheers. If a tap leaks, you know who to call.' } },
+  { id: 'nermin', n: 'Nermin', fav: 'uskumru', job: { tr: 'Emekli öğretmen', en: 'Retired teacher' },
+    look: { short: 1, belly: 1, coat: '#8a4a6a', coat2: '#a45f82', hair: '#9a9a96', hairStyle: 1, sk: 0, skirt: '#4a3a4a', bigBag: '#6b2f3a' },
+    hi: { tr: 'Evladım, bugün hangisi taze?', en: 'Dear, which one is fresh today?' },
+    bye: { tr: 'Aferin sana. Hep böyle düzenli ol.', en: 'Well done, dear. Keep it this tidy.' } },
+  { id: 'kemal', n: 'Kemal', fav: 'levrek', job: { tr: 'Lokanta işletmecisi', en: 'Restaurant owner' },
+    look: { tall: 1, coat: '#e8e2d2', coat2: '#f4efe4', vest: '#3a2f28', notebook: true, hair: '#2e2018', hairStyle: 0, sk: 1, pants: '#2a2724' },
+    hi: { tr: 'Akşam servisi için not alıyorum…', en: 'Taking notes for tonight\'s service…' },
+    bye: { tr: 'Yarın yine gelirim, masalar dolu.', en: 'Back tomorrow — the tables are full.' } },
+  { id: 'sule', n: 'Şule', fav: 'uskumru', job: { tr: 'Terzi', en: 'Tailor' },
+    look: { coat: '#7a2b4a', coat2: '#94405f', hair: '#3d2a1a', hairStyle: 6, sk: 0, skirt: '#2f3a5a' },
+    hi: { tr: 'Tezgâhın ne kadar derli toplu, beğendim.', en: 'Such a neat stall. I like it.' },
+    bye: { tr: 'Paketi de özenli yapmışsın, sağ ol.', en: 'Wrapped with care, too. Thank you.' } },
+  { id: 'okan', n: 'Okan', fav: 'hamsi', job: { tr: 'Kurye', en: 'Courier' },
+    look: { coat: '#e0a030', coat2: '#f0bd55', bag: true, hair: '#1d1713', hairStyle: 0, sk: 2, pants: '#2b3a45' },
+    hi: { tr: 'Çabuk olursak iyi olur, teslimat bekliyor!', en: 'Quick if we can — a delivery\'s waiting!' },
+    bye: { tr: 'Hızlı servis, tam benlik!', en: 'Fast service, just my style!' } },
+  { id: 'fatos', n: 'Fatoş', fav: 'uskumru', job: { tr: 'Ev aşçısı', en: 'Home cook' },
+    look: { belly: 1, coat: '#c8553d', coat2: '#dc6d55', scarf: '#e0679e', scarfDots: '#ffd76a', apron: '#f0ece0', hair: '#3d2a1a', sk: 1, skirt: '#5a3f7a' },
+    hi: { tr: 'Bu akşam buğulama yapacağım, en tazesinden!', en: 'Steamed fish tonight — the freshest, please!' },
+    bye: { tr: 'Afiyetle yiyelim, sana da bir tabak ayırırım!', en: 'Enjoy! I\'ll save you a plate!' } },
+  { id: 'burak', n: 'Burak', fav: 'levrek', job: { tr: 'Bankacı', en: 'Banker' },
+    look: { coat: '#2f3f5a', coat2: '#43557a', vest: '#e8e2d2', beard: true, hair: '#2e2018', hairStyle: 0, sk: 0, pants: '#252c38' },
+    hi: { tr: 'Hesap kitap tamam, şimdi balık zamanı.', en: 'Books are balanced — fish time.' },
+    bye: { tr: 'Teşekkürler, iyi işler.', en: 'Thanks. Good business to you.' } },
+  { id: 'ayfer', n: 'Ayfer', fav: 'hamsi', job: { tr: 'Eczacı', en: 'Pharmacist' },
+    look: { coat: '#f0ece0', coat2: '#fbf8f0', glasses: true, hair: '#3d2a1a', hairStyle: 1, sk: 0, pants: '#3a4450' },
+    hi: { tr: 'Omega-3 için haftada iki kez balık, reçetem bu.', en: 'Fish twice a week — that\'s my prescription.' },
+    bye: { tr: 'Düzenli beslenmek önemli. Görüşürüz.', en: 'Eat regularly. See you soon.' } }
+];
+var SPEC_NORMALS = 3;              /* 1. özel müşteriden önce gelen normal müşteri sayısı */
+var SPEC2_AT = 42;                 /* 2. özel müşteri: gün bitmeden bu kadar saniye önce bildirimle */
+function specById(id) { for (var i = 0; i < SPECIALS.length; i++) if (SPECIALS[i].id === id) return SPECIALS[i]; return null; }
+/* günün iki özel müşterisini seç (dünküler tekrar gelmesin) */
+function pickSpecials() {
+  var prev = day.spec || [], pool = SPECIALS.filter(function (s) { return prev.indexOf(s.id) < 0; });
+  if (pool.length < 2) pool = SPECIALS.slice();
+  var a = pick(pool), rest = pool.filter(function (s) { return s !== a; }), b2 = rest.length ? pick(rest) : a;
+  day.spec = [a.id, b2.id]; day.sp = 0; day.normals = 0; day.popT = 0;
+}
+function specType(sp) {
+  return { id: 'spec_' + sp.id, n: { tr: sp.n, en: sp.n }, coat: sp.look.coat, coat2: sp.look.coat2,
+    qty: [3, 5], pat: 150, mult: 1.1, rep: 3, lvl: 1, tag: 'any', special: sp.id };
+}
+function specOutfit(sp, face) {
+  var o = {}, k;
+  for (k in sp.look) o[k] = sp.look[k];
+  o.skin = PAL.skin[sp.look.sk || 0]; o.face = face;
+  return o;
+}
+/* özel müşteri hangi tezgâha: kendi balığının tezgâhı; olmuyorsa açık ve satış yapabilen herhangi biri */
+function specStall(sp) {
+  var best = null;
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (AREAS[c.z].locked || !c.open || !c.fish || !fishReady(c.fish)) continue;
+    var free = false;
+    for (var j = 0; j < c.slots.length; j++) if (!c.slots[j]) { free = true; break; }   /* özel müşteri yedek sırayı da kullanabilir */
+    if (!free) continue;
+    if (c.fish === sp.fav) return c;
+    if (!best) best = c;
+  }
+  return best;
+}
+function mkCustomer(c, type, slot, ord, spec) {
+  var q = queueSlotPos(c, slot);
+  var cu = {
+    x: q.x + 2.0, y: 20.5 + rnd(0, 2), z: 0, bob: rnd(0, 6), face: -1, type: type, ord: ord,
+    state: 'walk', slot: slot, c: c, pat: type.pat * patienceMul(), patMax: type.pat * patienceMul(),
+    mood: 1, hair: irnd(0, 2), tone: irnd(0, 2)
+  };
+  if (spec) { cu.spec = spec.id; cu.sayT = 0; }
+  c.slots[slot] = cu; customers.push(cu);
+  return cu;
+}
+function spawnSpecial(idx) {
+  var sp = specById(day.spec && day.spec[idx]); if (!sp) return false;
+  var c = specStall(sp); if (!c) return false;
+  var type = specType(sp), ord = makeOrderFor(c, type);
+  if (!ord || !canProduce(ord.f) || !canProcess(ord.k, ord.f) || !canSell(ord.f)) return false;
+  var slot = -1, qmax = queueMax(c.z), j;
+  for (j = 0; j < qmax; j++) if (!c.slots[j]) { slot = j; break; }
+  if (slot < 0) for (j = qmax; j < c.slots.length; j++) if (!c.slots[j]) { slot = j; break; }
+  if (slot < 0) return false;
+  mkCustomer(c, type, slot, ord, sp);
+  if (S.met.indexOf(sp.id) < 0) S.met.push(sp.id);
+  return true;
+}
+function specActive(idx) {
+  var id = day.spec && day.spec[idx];
+  for (var i = 0; i < customers.length; i++) if (customers[i].spec === id && customers[i].state !== 'leave') return true;
+  return false;
+}
+/* gün akışı: normal → 1. özel → normal → (bildirim) 2. özel → kapanış */
+function updateSpecials(dt) {
+  if (!day.spec) pickSpecials();
+  if (day.phase !== 'play' && day.phase !== 'closing') return;
+  /* 1. özel müşteri: birkaç normal müşteriden sonra; hiç gelemediyse gün ortasında zorla */
+  if (day.sp === 0 && day.phase === 'play' && (day.normals >= SPEC_NORMALS || day.t > DAY_LEN * 0.55)) {
+    if (spawnSpecial(0)) day.sp = 1;
+  }
+  /* 2. özel müşteri: kapanışa yakın bildirim → birkaç saniye sonra yola çıkar */
+  if (day.sp <= 1 && day.t >= DAY_LEN - SPEC2_AT) {
+    day.sp = 2; day.popT = 3.2;
+    el.specPop.classList.remove('hidden', 'go'); void el.specPop.offsetWidth; el.specPop.classList.add('go');
+    el.specPopT.textContent = T('specComing');
+    sfx.bell();
+  }
+  if (day.sp === 2) {
+    day.popT -= dt;
+    if (day.popT <= 0) {
+      el.specPop.classList.add('hidden');
+      if (spawnSpecial(1)) day.sp = 3;
+      else day.popT = 1;                           /* kuyruk doluysa birazdan tekrar dene */
+    }
+  }
+  if (day.sp === 3 && !specActive(1)) day.sp = 4;  /* işi bitti → kapanış serbest */
+}
+/* kapanış 2. özel müşteriyi bekler (en fazla CLOSE_MAX + 30 sn; servis edilemezse gün yine kapanır) */
+function specHoldsClose() { return (day.sp === 2 || day.sp === 3) && day.ph < CLOSE_MAX + 30; }
+/* konuşma balonu: gelince selam, mutlu giderken teşekkür */
+function drawSpecialTag(cu) {
+  var sp = specById(cu.spec); if (!sp) return;
+  uiLabel(cu.x, cu.y, 44, '★ ' + sp.n + ' · ' + NM(sp.job), '#ffc94a', 0.95);
+  if (cu.state === 'wait') cu.sayT = (cu.sayT || 0) + 0.016;
+  var line = null;
+  if (cu.state === 'wait' && cu.sayT < 5) line = NM(sp.hi);
+  if (cu.state === 'leave' && cu.happyLeave !== false) { if (!cu.byeT) cu.byeT = 0.001; cu.byeT += 0.016; if (cu.byeT < 3.2) line = NM(sp.bye); }
+  if (cu.state === 'wait' && cu.sayT >= 5) cu.saidHi = true;
+  if (line) uiLabel(cu.x, cu.y, 56, '“' + line + '”', '#f4e9d2', 0.95);
+}
+
+/* =========================================================
    BAŞLAT
    ========================================================= */
 resize();
@@ -8389,7 +8593,11 @@ requestAnimationFrame(frame);
 
 window.BT = {
   cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },
-  envStage: function () { return envStage(); }, scenery: scenery,
+  envStage: function () { return envStage(); }, scenery: scenery, SPECIALS: SPECIALS,
+  /* test/önizleme: bir kıyafeti verilen tuvale çiz */
+  drawOutfitOn: function (cv, o, t) { var old = ctx, g = cv.getContext('2d'); ctx = g; try { g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), cv.height - 4); drawPerson({ x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: t || 0, act: 0, carry: [] }, o); } catch (e) { } ctx = old; },
+  specOutfit: function (id, face) { return specOutfit(specById(id), face || 1); },
+  specState: function () { return { spec: day.spec, sp: day.sp, normals: day.normals, active: customers.filter(function (c) { return c.spec; }).map(function (c) { return c.spec + ':' + c.state; }) }; },
   autoState: function () { return { min: S.autoMin, t: Math.round(saveT), left: Math.round(autoLeft()) }; }, fastForwardAutosave: function (sec) { saveT += sec; },
   CTYPES: CTYPES, S: S, safe: safe, BINS: BINS, HUT: HUT, DEPOT: DEPOT, WHALL: WHALL, office: office, MEYDAN: MEYDAN, BRIDGE: BRIDGE, depotCount: function () { return depotCount(); }, openHal: function () { openHal(); }, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
