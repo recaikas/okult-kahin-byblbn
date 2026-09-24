@@ -126,6 +126,15 @@ var STR = {
     mZoneStaff: 'Bölge kadrosu',
     noRun: 'Önce oyunu başlat',
     newAsk: 'Mevcut kayıt silinip yeni oyun başlasın mı?',
+    loadGame: '📂 KAYITLI OYUNLAR', slotN: 'Slot {n}', slotTitleNew: 'YENİ OYUN — SLOT SEÇ', slotTitleLoad: 'KAYITLI OYUNLAR',
+    slotSubNew: 'Yeni oyunu hangi slota kuralım?', slotSubLoad: 'Devam etmek istediğin oyunu seç.',
+    slotNew: '＋ YENİ OYUN', slotOver: '↺ ÜZERİNE YENİ OYUN', slotLoad: '▶ OYNA', slotDel: 'Sil',
+    slotEmptyT: 'BOŞ SLOT', slotEmptyS: 'Burada yeni bir işletme kurabilirsin', slotNoName: 'İsimsiz işletme',
+    slotLine: '{d}. gün • {f} balık • {c}', slotWhen: 'Son kayıt {t} • {p} oynandı',
+    overAsk: 'Slot {n}\'deki "{c}" silinip yerine yeni oyun kurulacak. Emin misin?', overYes: 'SİL VE BAŞLA',
+    delAsk: 'Slot {n}\'deki "{c}" kalıcı olarak silinsin mi?', delYes: 'SİL', slotEmpty2: 'bu oyun',
+    slotDeleted: 'Slot {n} silindi', slotLoaded: 'Slot {n} yüklendi: {c}', yes: 'EVET', cancel: 'VAZGEÇ',
+    noStorage: '⚠ Bu tarayıcı kalıcı kayda izin vermiyor: kayıtlar sayfa kapanınca silinir.', delSlot: '🗑 BU SLOTU SİL',
     remaining: 'kalan', total: 'toplam',
     noMoney: 'Para yetmiyor',
     barArea: 'ALAN', barLevel: 'YÜKSELT', barBuild: 'YAPI', barProj: 'PROJE', barServ: 'BİNA',
@@ -276,6 +285,15 @@ var STR = {
     mZoneStaff: 'Zone crew',
     noRun: 'Start the game first',
     newAsk: 'Delete the current save and start a new game?',
+    loadGame: '📂 SAVED GAMES', slotN: 'Slot {n}', slotTitleNew: 'NEW GAME — PICK A SLOT', slotTitleLoad: 'SAVED GAMES',
+    slotSubNew: 'Which slot should the new game use?', slotSubLoad: 'Pick the game you want to continue.',
+    slotNew: '＋ NEW GAME', slotOver: '↺ NEW GAME HERE', slotLoad: '▶ PLAY', slotDel: 'Delete',
+    slotEmptyT: 'EMPTY SLOT', slotEmptyS: 'Start a new business here', slotNoName: 'Unnamed business',
+    slotLine: 'Day {d} • {f} fish • {c}', slotWhen: 'Saved {t} • {p} played',
+    overAsk: '"{c}" in slot {n} will be deleted and replaced by a new game. Sure?', overYes: 'DELETE & START',
+    delAsk: 'Permanently delete "{c}" in slot {n}?', delYes: 'DELETE', slotEmpty2: 'this game',
+    slotDeleted: 'Slot {n} deleted', slotLoaded: 'Slot {n} loaded: {c}', yes: 'YES', cancel: 'CANCEL',
+    noStorage: '⚠ This browser blocks permanent saves: saves are lost when the page closes.', delSlot: '🗑 DELETE THIS SLOT',
     remaining: 'left', total: 'total',
     noMoney: 'Not enough cash',
     barArea: 'AREA', barLevel: 'UPGRADE', barBuild: 'BUILD', barProj: 'PROJECT', barServ: 'SERVICE',
@@ -1701,53 +1719,83 @@ function pct(n) { return lang === 'tr' ? '%' + n : n + '%'; }
 function perMin() { return lang === 'tr' ? '/dk' : '/min'; }
 function money(n) { return '$' + Math.round(n).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US'); }
 
-/* ---------------- kayıt ---------------- */
-var SAVE_KEY = 'balikci_tycoon_v3', PREF_KEY = 'balikci_pref', wiping = false;
-function savePref() {
-  try { localStorage.setItem(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl })); } catch (e) { }
+/* ---------------- kayıt (v0.4 — 3 slot) ----------------
+   • Store: localStorage; tarayıcı izin vermezse (gizli pencere, kısıtlı iframe) oturum içi
+     hafızaya düşer → "Kaydet ve Çık" yine çalışır, yalnız sayfa kapanınca kaybolur (uyarı gösterilir).
+   • 3 kayıt slotu. Eski tek kayıt (balikci_tycoon_v3) ilk açılışta boş bir slota taşınır.
+   • Yeni oyun / slot değiştirme sayfayı YENİDEN YÜKLEMEZ: resetWorld() açılış anındaki temiz
+     durumu (BOOT) geri kurar. Kısıtlı iframe'de reload ve confirm() güvenilir değildi. */
+var Store = (function () {
+  var mem = {}, ok = false;
+  try { var t = '__bt_test'; localStorage.setItem(t, '1'); localStorage.removeItem(t); ok = true; } catch (e) { }
+  return {
+    persistent: ok,
+    get: function (k) {
+      if (Object.prototype.hasOwnProperty.call(mem, k)) return mem[k];
+      if (ok) { try { return localStorage.getItem(k); } catch (e) { } }
+      return null;
+    },
+    set: function (k, v) { mem[k] = String(v); if (ok) { try { localStorage.setItem(k, String(v)); } catch (e) { } } },
+    del: function (k) { mem[k] = null; if (ok) { try { localStorage.removeItem(k); } catch (e) { } } }
+  };
+})();
+var SLOT_N = 3, SLOT_PREFIX = 'balikci_slot_', LAST_KEY = 'balikci_last', OLD_KEY = 'balikci_tycoon_v3', PREF_KEY = 'balikci_pref';
+var curSlot = 0, BOOT = null, S0 = null;
+function slotKey(n) { return SLOT_PREFIX + n; }
+function readSlot(n) {
+  if (!(n >= 1 && n <= SLOT_N)) return null;
+  try { var raw = Store.get(slotKey(n)); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
 }
+function slotCount() { var c = 0; for (var i = 1; i <= SLOT_N; i++) if (readSlot(i)) c++; return c; }
+function lastSlot() { var n = parseInt(Store.get(LAST_KEY), 10); return readSlot(n) ? n : 0; }
+function migrateOldSave() {
+  var old = Store.get(OLD_KEY);
+  if (!old) return;
+  try {
+    var d = JSON.parse(old);
+    if (!Store.get(PREF_KEY) && d) Store.set(PREF_KEY, JSON.stringify({ lang: d.lang || 'tr', snd: d.snd === true ? 2 : (d.snd | 0), zoom: d.zoom || 2 }));
+  } catch (e) { }
+  for (var i = 1; i <= SLOT_N; i++) if (!readSlot(i)) { Store.set(slotKey(i), old); if (!lastSlot()) Store.set(LAST_KEY, String(i)); break; }
+  Store.del(OLD_KEY);
+}
+function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl })); }
 function loadPref() {
   try {
-    var d = JSON.parse(localStorage.getItem(PREF_KEY) || 'null'); if (!d) return;
+    var d = JSON.parse(Store.get(PREF_KEY) || 'null'); if (!d) return;
     if (d.lang) lang = d.lang;
     if (d.snd !== undefined) { volLvl = clamp(d.snd | 0, 0, 2); applyVolume(); }
     if (d.zoom) zoomLvl = d.zoom;
   } catch (e) { }
 }
-function save() {
-  if (wiping) return;                 /* "Yeni Oyun": sayfa kapanırken eski kayıt geri yazılmasın */
-  savePref();
-  var has = false;
-  try { has = !!localStorage.getItem(SAVE_KEY); } catch (e) { }
-  if (!S.started && !has) return;     /* hiç oynanmamış oyun kayıt oluşturmaz */
-  if (S.started) submitScore();
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v: 5, lang: lang, snd: volLvl, zoom: zoomLvl,
-      at: Date.now(), play: Math.round(S.play || 0),
-      cash: S.cash, rep: S.rep, capLvl: S.capLvl, spdLvl: S.spdLvl, priceLvl: S.priceLvl,
-      served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
-      earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
-      areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
-      pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
-      slots: SLOTS.map(function (s) { return s.b; }),
-      decor: DECOR.map(function (d) { return d.got ? 1 : 0; }),
-      proj: [Math.round(project.inv), project.stage, project.done ? 1 : 0],
-      serv: servSave(),
-      day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || ''],
-      stalls: counters.map(function (c) { return [c.key, c.open ? 1 : 0]; }),
-      workers: workers.map(function (w) { return [w.role, w.zone === undefined ? 0 : w.zone]; }),
-      mk: M
-    }));
-  } catch (e) { }
+function buildSave() {
+  return {
+    v: 6, at: Date.now(), play: Math.round(S.play || 0),
+    cash: S.cash, rep: S.rep, capLvl: S.capLvl, spdLvl: S.spdLvl, priceLvl: S.priceLvl,
+    served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
+    earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
+    areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
+    pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
+    slots: SLOTS.map(function (s) { return s.b; }),
+    decor: DECOR.map(function (d) { return d.got ? 1 : 0; }),
+    proj: [Math.round(project.inv), project.stage, project.done ? 1 : 0],
+    serv: servSave(),
+    day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || ''],
+    stalls: counters.map(function (c) { return [c.key, c.open ? 1 : 0]; }),
+    workers: workers.map(function (w) { return [w.role, w.zone === undefined ? 0 : w.zone]; }),
+    mk: M
+  };
 }
-function load() {
+/* yalnız çalışan (başlatılmış) bir oyun, kendi slotuna yazılır */
+function save() {
+  savePref();
+  if (!S.started || !curSlot) return;
+  submitScore();
+  Store.set(slotKey(curSlot), JSON.stringify(buildSave()));
+  Store.set(LAST_KEY, String(curSlot));
+}
+function loadFrom(d) {
+  if (!d) return false;
   try {
-    var raw = localStorage.getItem(SAVE_KEY); if (!raw) return false;
-    var d = JSON.parse(raw);
-    if (d.lang) lang = d.lang;
-    if (d.snd !== undefined) { volLvl = clamp(d.snd === true ? 2 : (d.snd | 0), 0, 2); applyVolume(); }
-    if (d.zoom) zoomLvl = d.zoom;
     S.cash = d.cash || 0; S.rep = d.rep || 0; S.capLvl = d.capLvl || 0; S.spdLvl = d.spdLvl || 0;
     S.priceLvl = d.priceLvl || 0; S.served = d.served || 0; S.lost = d.lost || 0;
     S.caught = d.caught || 0; S.tut = d.tut || 0;
@@ -1780,22 +1828,49 @@ function load() {
     return true;
   } catch (e) { return false; }
 }
-function wipe(toName) {
-  wiping = true;
-  try { localStorage.removeItem(SAVE_KEY); } catch (e) { }
-  try { if (toName) sessionStorage.setItem('bt_new', '1'); } catch (e) { }
-  location.reload();
+/* açılıştaki temiz dünyaya dön (sayfa yenilemeden) */
+function resetWorld() {
+  var k;
+  if (typeof closeBar === 'function') closeBar();
+  workers.length = 0; customers.length = 0; flyers.length = 0; floats.length = 0; puffs.length = 0;
+  event = null; eventT = 0; nextEvent = 80;
+  for (k in S0) S[k] = S0[k];
+  player.x = 4.5; player.y = 3.2; player.vx = 0; player.vy = 0; player.carry.length = 0; player.act = 0;
+  for (k = 0; k < spots.length; k++) { spots[k].stock.length = 0; spots[k].t = 0; }
+  for (k = 0; k < tables.length; k++) { var tb = tables[k]; tb.inn.length = 0; tb.cur = null; tb.t = 0; tb.worker = null; tb.mat.items.length = 0; }
+  smoker.inn.length = 0; smoker.cur = null; smoker.t = 0; smoker.belt = 0; smoker.mat.items.length = 0;
+  counters.length = 0;
+  day.feat = null; day.last = null;
+  M = newMarket();
+  loadFrom(BOOT);
+  if (!M) M = newMarket();
+  lastRepLvl = repLevel(); lvlUpT = 0; ctrlWalk = 0; stallPrompt = false; playLogged = false;
+  netSent.at = 0; netSent.s = -1; netSent.busy = false; netSent.dirty = false;
+  camX = pX(player.x, player.y); camY = pY(player.x, player.y, 0);
 }
-/* --- kayıt özeti / manuel kaydet (pause + kaydet-çık) --- */
-function saveMeta() {
-  try {
-    var raw = localStorage.getItem(SAVE_KEY); if (!raw) return null;
-    var d = JSON.parse(raw);
-    return { at: d.at || 0, cash: d.cash || 0, rep: d.rep || 0, served: d.served || 0, play: d.play || 0,
-      co: d.company || '', earned: d.earned || 0,
-      areas: (d.areas || []).filter(function (a) { return !a[0]; }).length };
-  } catch (e) { return null; }
+/* slotu belleğe yükle (oyunu başlatmaz) */
+function useSlot(n) {
+  resetWorld();
+  var d = readSlot(n);
+  if (d) loadFrom(d);
+  if (!M) M = newMarket();
+  curSlot = n;
+  lastRepLvl = repLevel();
+  camX = pX(player.x, player.y); camY = pY(player.x, player.y, 0);
 }
+function deleteSlot(n) {
+  Store.del(slotKey(n));
+  if (parseInt(Store.get(LAST_KEY), 10) === n) Store.del(LAST_KEY);
+  if (curSlot === n) { resetWorld(); curSlot = 0; }
+}
+/* --- kayıt özeti --- */
+function metaOf(d) {
+  if (!d) return null;
+  return { at: d.at || 0, cash: d.cash || 0, rep: d.rep || 0, served: d.served || 0, play: d.play || 0,
+    co: d.company || '', earned: d.earned || 0, fish: d.caught || 0, day: (d.day && d.day[0]) || 1,
+    areas: (d.areas || []).filter(function (a) { return !a[0]; }).length };
+}
+function saveMeta(n) { return metaOf(readSlot(n === undefined ? (curSlot || lastSlot()) : n)); }
 function clockStr(sec) {
   sec = Math.max(0, Math.round(sec));
   var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60);
@@ -1820,14 +1895,17 @@ function manualSave(msg) {
   sfx.star && sfx.star();
 }
 function refreshSaveInfo() {
-  var m = saveMeta();
-  if (el.setSaveInfo) el.setSaveInfo.textContent = saveSummary(m);
+  var ls = lastSlot(), m = saveMeta(ls || undefined), any = slotCount();
+  if (el.setSaveInfo) el.setSaveInfo.textContent = curSlot ? T('slotN', { n: curSlot }) + ' • ' + saveSummary(saveMeta(curSlot)) : T('noSave');
   if (el.saveInfo) {
-    el.saveInfo.textContent = saveSummary(m);
-    el.saveInfo.classList.toggle('hidden', !m);
+    el.saveInfo.textContent = (ls ? T('slotN', { n: ls }) + ' • ' : '') + saveSummary(m) +
+      (Store.persistent ? '' : '\n' + T('noStorage'));
+    el.saveInfo.classList.toggle('hidden', !m && Store.persistent);
   }
-  if (el.newBtn) el.newBtn.classList.toggle('hidden', !m);
-  if (el.playBtn) el.playBtn.textContent = m ? T('resume') : T('newGame');
+  if (el.newBtn) el.newBtn.classList.toggle('hidden', !any);
+  if (el.loadBtn) el.loadBtn.classList.toggle('hidden', !any);
+  if (el.playBtn) el.playBtn.textContent = ls ? T('resume') : T('newGame');
+  if (el.resetBtn) el.resetBtn.classList.toggle('hidden', !curSlot);
 }
 
 /* --- DURAKLATMA (pause) --- */
@@ -1861,6 +1939,7 @@ function saveAndQuit() {
   document.getElementById('hud').classList.add('hidden');
   document.getElementById('objective').classList.add('hidden');
   el.devbar.classList.add('hidden');
+  el.coach.classList.add('hidden'); el.lvlUp.classList.add('hidden'); lvlUpT = 0;
   if (el.tradeBtn) el.tradeBtn.classList.add('hidden');
   el.startScreen.classList.remove('hidden');
   refreshSaveInfo(); syncPause(); musicPlay();
@@ -5055,7 +5134,8 @@ var el = {};
  'prepDepot', 'prepRows', 'prepGo', 'introScr', 'introCv', 'introSub', 'introNext', 'introSkip', 'introGate',
  'introDots', 'introTap', 'introTag', 'nameScr', 'nameCard', 'nameTitle', 'nameSub', 'nameSign', 'nameIn', 'nameDice', 'nameHint',
  'nameIdeasLbl', 'nameChips', 'nameGo', 'boardScr', 'boardTitle', 'boardSub', 'boardRows', 'boardNote',
- 'boardClose', 'boardBtn', 'storyBtn', 'menuBoard', 'dpSub', 'lvlUp', 'lvlNum', 'lvlTitle', 'lvlList', 'lvlConf', 'coach'].forEach(function (id) {
+ 'boardClose', 'boardBtn', 'storyBtn', 'menuBoard', 'dpSub', 'lvlUp', 'lvlNum', 'lvlTitle', 'lvlList', 'lvlConf', 'coach', 'loadBtn', 'slotScr', 'slotTitle', 'slotSub',
+ 'slotRows', 'slotBack', 'nameBack', 'askScr', 'askMsg', 'askYes', 'askNo'].forEach(function (id) {
   el[id] = document.getElementById(id);
 });
 var toastT = 0;
@@ -5069,6 +5149,8 @@ function applyLang() {
     return '<li>' + T(k) + '</li>';
   }).join('') + '<li style="opacity:.7">' + T('ctrl') + '</li>');
   el.playBtn.textContent = T('play'); el.setBtn.textContent = T('settings');
+  el.loadBtn.textContent = T('loadGame'); el.slotBack.textContent = T('back'); el.nameBack.textContent = T('back');
+  if (!el.slotScr.classList.contains('hidden')) renderSlots();
   el.boardBtn.textContent = T('board'); el.storyBtn.textContent = T('story'); el.menuBoard.textContent = T('boardTitle');
   el.boardTitle.textContent = T('boardTitle'); el.boardSub.textContent = T('boardSub');
   el.boardNote.textContent = T('boardLocal'); el.boardClose.textContent = T('close');
@@ -5080,7 +5162,7 @@ function applyLang() {
   if (!el.nameScr.classList.contains('hidden')) { syncNamePreview(); renderNameChips(); }
   el.setTitle.textContent = T('settings'); el.setLang.textContent = T('langLbl');
   el.setSound.textContent = T('soundLbl'); el.setZoom.textContent = T('zoomLbl');
-  el.setClose.textContent = T('resume'); el.resetBtn.textContent = T('reset');
+  el.setClose.textContent = T('resume'); el.resetBtn.textContent = T('delSlot');
   el.closeMenu.textContent = T('resume'); el.menuSet.textContent = T('settings');
   el.saveBtn.innerHTML = PX(T('saveNow')); el.saveQuitBtn.innerHTML = PX(T('saveQuit'));
   el.menuSave.innerHTML = PX(T('saveNow')); el.newBtn.textContent = T('newGame');
@@ -5778,8 +5860,17 @@ el.setClose.onclick = function () {
 };
 el.saveBtn.onclick = function () { if (!S.started) { toast(T('noRun')); sfx.bad(); return; } manualSave(); };
 el.saveQuitBtn.onclick = function () { if (!S.started) { toast(T('noRun')); sfx.bad(); return; } saveAndQuit(); };
-el.newBtn.onclick = function () { if (confirm(T('newAsk'))) wipe(true); };
-el.resetBtn.onclick = function () { if (confirm(T('resetAsk'))) wipe(); };
+/* ayarlar › bu slotu sil: oyundan çıkar, slotu siler, menüye döner */
+el.resetBtn.onclick = function () {
+  if (!curSlot) return;
+  var n = curSlot;
+  ask(T('delAsk', { n: n, c: S.company || T('slotEmpty2') }), T('delYes'), function () {
+    if (S.started) { S.started = false; document.getElementById('hud').classList.add('hidden'); document.getElementById('objective').classList.add('hidden'); el.devbar.classList.add('hidden'); }
+    el.settingsScreen.classList.add('hidden'); el.menuScreen.classList.add('hidden');
+    deleteSlot(n); el.startScreen.classList.remove('hidden'); refreshSaveInfo(); syncPause(); musicPlay();
+    toast(T('slotDeleted', { n: n }));
+  });
+};
 function syncSettingsUI() {
   Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.s, 10) === volLvl); });
   Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.z, 10) === zoomLvl); });
@@ -5829,11 +5920,18 @@ function start() {
 }
 /* OYNA: kayıt varsa devam; yoksa işletme adı → oyun. Adı olmayan eski kayıt önce ad sorar. */
 el.playBtn.onclick = function () {
-  var m = saveMeta();
-  if (!m) { openNameScreen('new'); sfx.tap(); return; }
+  var ls = lastSlot();
+  if (!ls) { openSlots('new'); return; }
+  if (curSlot !== ls) useSlot(ls);
   if (!S.company) { openNameScreen('legacy'); sfx.tap(); return; }
   start();
 };
+el.newBtn.onclick = function () { openSlots('new'); };
+el.loadBtn.onclick = function () { openSlots('load'); };
+el.slotBack.onclick = closeSlots;
+el.nameBack.onclick = function () { el.nameScr.classList.add('hidden'); el.startScreen.classList.remove('hidden'); refreshSaveInfo(); sfx.tap(); };
+el.askNo.onclick = function () { closeAsk(false); };
+el.askYes.onclick = function () { closeAsk(true); };
 el.storyBtn.onclick = function () { openIntro(null); };
 el.boardBtn.onclick = function () { openBoard('start'); };
 el.menuBoard.onclick = function () { openBoard('menu'); };
@@ -6692,8 +6790,8 @@ var ONLINE = (function () {
 /* kalıcı anonim oyuncu kimliği — "kaç kişi oynadı" sayımı için; Yeni Oyun'da silinmez */
 var PLAYER_ID = (function () {
   var k = 'balikci_pid', v = null;
-  try { v = localStorage.getItem(k); } catch (e) { }
-  if (!v || v.length < 6) { v = 'p' + newRunId(); try { localStorage.setItem(k, v); } catch (e) { } }
+  v = Store.get(k);
+  if (!v || v.length < 6) { v = 'p' + newRunId(); Store.set(k, v); }
   return v;
 })();
 function rpc(name, args) {
@@ -6707,12 +6805,12 @@ var Board = {
   online: !!ONLINE,
   read: function () {
     try {
-      var a = JSON.parse(localStorage.getItem(BOARD_KEY) || '[]');
+      var a = JSON.parse(Store.get(BOARD_KEY) || '[]');
       if (!Array.isArray(a)) return [];
       return a.filter(function (e) { return e && typeof e.id === 'string' && typeof e.n === 'string' && isFinite(e.s); });
     } catch (e) { return []; }
   },
-  write: function (a) { try { localStorage.setItem(BOARD_KEY, JSON.stringify(a)); } catch (e) { } },
+  write: function (a) { Store.set(BOARD_KEY, JSON.stringify(a)); },
   sort: function (a) { return a.sort(function (x, y) { return y.s - x.s || x.at - y.at; }); },
   /* cb(liste, bilgi) — bilgi: {src:'local'|'online'|'offline', me:{rank,...}, stats:{players,plays,runs}} */
   fetch: function (cb) {
@@ -6806,7 +6904,79 @@ function closeBoard() {
 }
 
 /* ---------- İŞLETME ADI EKRANI ---------- */
-var nameMode = 'new';
+var nameMode = 'new', pendingSlot = 0, introSeen = false;
+
+/* ---------- oyun içi onay penceresi (confirm() kısıtlı iframe'de yok sayılıyordu) ---------- */
+var askCb = null;
+function ask(msg, yesLabel, cb) {
+  askCb = cb;
+  el.askMsg.textContent = msg;
+  el.askYes.textContent = yesLabel || T('yes');
+  el.askNo.textContent = T('cancel');
+  el.askScr.classList.remove('hidden');
+  sfx.tap();
+}
+function closeAsk(yes) {
+  el.askScr.classList.add('hidden');
+  var f = askCb; askCb = null;
+  if (yes && f) f();
+}
+
+/* ---------- KAYIT SLOTLARI ekranı ---------- */
+var slotMode = 'new';
+function openSlots(mode) {
+  slotMode = mode || 'new';
+  el.startScreen.classList.add('hidden');
+  renderSlots();
+  el.slotScr.classList.remove('hidden');
+  sfx.tap();
+}
+function closeSlots() {
+  el.slotScr.classList.add('hidden');
+  el.startScreen.classList.remove('hidden');
+  refreshSaveInfo();
+}
+function beginNewInSlot(n) {
+  pendingSlot = n;
+  el.slotScr.classList.add('hidden');
+  if (!introSeen) openIntro(function () { openNameScreen('new'); });
+  else openNameScreen('new');
+}
+function renderSlots() {
+  el.slotTitle.textContent = T(slotMode === 'new' ? 'slotTitleNew' : 'slotTitleLoad');
+  el.slotSub.textContent = T(slotMode === 'new' ? 'slotSubNew' : 'slotSubLoad') + (Store.persistent ? '' : ' ' + T('noStorage'));
+  var h = '';
+  for (var i = 1; i <= SLOT_N; i++) {
+    var d = readSlot(i), m = metaOf(d), btns = '';
+    if (!m) btns = '<button class="sb go2" data-a="new" data-n="' + i + '">' + T('slotNew') + '</button>';
+    else if (slotMode === 'new') btns = '<button class="sb warn" data-a="over" data-n="' + i + '">' + T('slotOver') + '</button>';
+    else btns = '<button class="sb go2" data-a="load" data-n="' + i + '">' + T('slotLoad') + '</button>' +
+      '<button class="sb del" data-a="del" data-n="' + i + '" title="' + T('slotDel') + '">🗑</button>';
+    h += '<div class="slot' + (m ? '' : ' empty') + (i === curSlot && m ? ' cur' : '') + '">' +
+      '<div class="sn">' + i + '</div><div class="si">' +
+      (m ? '<b>' + escH(m.co || T('slotNoName')) + '</b><small>' + T('slotLine', { d: m.day, f: fmtN(m.fish), c: money(m.cash) }) +
+           '</small><small>' + T('slotWhen', { t: agoStr(m.at), p: clockStr(m.play) }) + '</small>'
+         : '<b>' + T('slotEmptyT') + '</b><small>' + T('slotEmptyS') + '</small>') +
+      '</div><div class="sa">' + btns + '</div></div>';
+  }
+  el.slotRows.innerHTML = PX(h);
+  Array.prototype.forEach.call(el.slotRows.querySelectorAll('.sb'), function (b) {
+    b.onclick = function () {
+      var n = parseInt(b.dataset.n, 10), a = b.dataset.a, m = saveMeta(n);
+      if (a === 'new') beginNewInSlot(n);
+      else if (a === 'over') ask(T('overAsk', { n: n, c: (m && m.co) || T('slotNoName') }), T('overYes'), function () { beginNewInSlot(n); });
+      else if (a === 'load') {
+        el.slotScr.classList.add('hidden');
+        useSlot(n);
+        if (!S.company) { openNameScreen('legacy'); return; }
+        start(); toast(T('slotLoaded', { n: n, c: S.company }));
+      } else if (a === 'del') ask(T('delAsk', { n: n, c: (m && m.co) || T('slotNoName') }), T('delYes'), function () {
+        deleteSlot(n); renderSlots(); refreshSaveInfo(); toast(T('slotDeleted', { n: n }));
+        if (!slotCount()) closeSlots();
+      });
+    };
+  });
+}
 function nameIdeas(cur) {
   var a = [cur];
   for (var i = 0; i < 4; i++) a.push(randomCompany(a));
@@ -6830,7 +7000,7 @@ function syncNamePreview() {
 function openNameScreen(mode) {
   nameMode = mode || 'new';
   el.startScreen.classList.add('hidden');
-  el.nameIn.value = S.company || randomCompany();
+  el.nameIn.value = nameMode === 'new' ? randomCompany() : (S.company || randomCompany());
   syncNamePreview(); renderNameChips();
   el.nameScr.classList.remove('hidden');
   el.nameCard.classList.remove('pop'); void el.nameCard.offsetWidth; el.nameCard.classList.add('pop');
@@ -6844,6 +7014,11 @@ function confirmName() {
     return;
   }
   el.nameIn.blur();
+  if (nameMode === 'new') {                         /* seçilen slotta temiz bir oyun */
+    resetWorld();
+    curSlot = pendingSlot || curSlot || 1;
+    S.runId = newRunId();
+  }
   S.company = n;
   if (!S.runId) S.runId = newRunId();
   el.nameScr.classList.add('hidden');
@@ -7218,7 +7393,7 @@ function introAdvance() {
   if (intro.ph === 'hold') { intro.ph = 'out'; intro.out = 0; sfx.drop(); }
 }
 function closeIntro() {
-  intro.on = false;
+  intro.on = false; introSeen = true;
   el.introScr.classList.add('hidden');
   var f = intro.then; intro.then = null;
   if (f) f(); else el.startScreen.classList.remove('hidden');
@@ -7268,8 +7443,12 @@ function updateIntro(dt) {
    BAŞLAT
    ========================================================= */
 resize();
+migrateOldSave();
 loadPref();
-load();
+S0 = JSON.parse(JSON.stringify(S));     /* temiz başlangıç: yeni oyun sayfayı yenilemeden buna döner */
+BOOT = buildSave();
+curSlot = lastSlot();
+if (curSlot) loadFrom(readSlot(curSlot));
 rebuildCounters();
 reassignWorkers();
 if (!M) M = newMarket();
@@ -7285,10 +7464,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(function (
 /* açılış akışı: kayıt yoksa gazete hikâyesi → ana menü. "Yeni Oyun" ile silinip gelindiyse
    hikâye → doğrudan işletme adı (oyuncu zaten yeni oyun dedi). */
 (function bootFlow() {
-  var fresh = false;
-  try { fresh = sessionStorage.getItem('bt_new') === '1'; sessionStorage.removeItem('bt_new'); } catch (e) { }
-  if (fresh) openIntro(function () { openNameScreen('new'); });
-  else if (!saveMeta()) openIntro(null);
+  if (!slotCount()) openIntro(null);              /* ilk açılış: hikâye → ana menü */
 })();
 requestAnimationFrame(frame);
 
@@ -7327,7 +7503,7 @@ window.BT = {
   setVol: function (v) { volLvl = clamp(v | 0, 0, 2); applyVolume(); ensureAudio(); return volLvl; },
   /* duraklatma + kayıt */
   paused: function () { return paused; },
-  saveNow: function () { manualSave(); return saveMeta(); },
+  saveNow: function () { manualSave(); return saveMeta(); }, slot: function () { return curSlot; }, saveSlots: function () { var o = []; for (var i = 1; i <= SLOT_N; i++) o.push(metaOf(readSlot(i))); return o; }, persistent: function () { return Store.persistent; },
   saveQuit: saveAndQuit, saveMeta: saveMeta,
   openSettings: function () { openSettings(false); },
   openMenu: openPauseMenu,

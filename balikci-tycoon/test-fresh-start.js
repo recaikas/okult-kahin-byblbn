@@ -13,11 +13,12 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   p.on('console', m => { if (m.type() === 'error') errs.push('C: ' + m.text()); });
   await p.goto('file://' + __dirname + '/index.html');
   await sleep(1600);
-  const kayit = await p.evaluate(() => !!localStorage.getItem('balikci_tycoon_v3'));
+  const kayit = await p.evaluate(() => BT.saveSlots().some(Boolean));
   /* v0.2 akışı: gazete hikâyesi → ana menü → YENİ OYUN → işletme adı → oyun */
   const introAcik = await p.evaluate(() => !document.getElementById('introScr').classList.contains('hidden'));
   await p.click('#introSkip');
   await p.click('#playBtn');
+  await p.click('#slotRows .sb[data-n="1"]');
   await p.click('#nameGo');
   await sleep(800);
   const sirket = await p.evaluate(() => BT.S.company);

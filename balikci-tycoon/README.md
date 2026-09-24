@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — **v0.3** (Faz 1: hissiyat ve netlik)
+# 🐟 Balıkçı Tycoon — **v0.4** (3 kayıt slotu + kayıt düzeltmeleri)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,27 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v0.4 — 3 kayıt slotu, "Kaydet ve Çık" ve "Yeni Oyun" düzeltmeleri
+
+### Kök nedenler (claude.ai'deki kısıtlı iframe'de yeniden üretildi)
+1. **"Yeni Oyun" hiçbir şey yapmıyordu:** onay için tarayıcının `confirm()` penceresi kullanılıyordu; kısıtlı
+   iframe'de (`allow-modals` yok) tarayıcı bu çağrıyı **sessizce yok sayıyor** → her zaman "hayır".
+   Ayrıca yeni oyun sayfayı yenileyip `sessionStorage` bayrağına güveniyordu; bu da kısıtlı ortamda güvenilir değil.
+2. **"Kaydet ve Çık" kaydı kaybediyordu:** depolamaya izin verilmeyen ortamda kayıt sessizce yazılamıyor,
+   menüye dönünce "Devam Et" kayboluyordu.
+
+### Çözüm
+- **3 kayıt slotu.** Menü: `▶ DEVAM ET` (son slot) · `YENİ OYUN` · `📂 KAYITLI OYUNLAR`. Slot kartında işletme adı, gün, balık, para, son kayıt.
+  Boş slota yeni oyun; dolu slota **"↺ Üzerine yeni oyun"** (onaylı); kayıtlı oyunlarda **▶ Oyna / 🗑 Sil**.
+- **Oyun içi onay penceresi** (`confirm()` yok) — her ortamda çalışır.
+- **Sayfa yenilenmez:** yeni oyun ve slot değiştirme `resetWorld()` ile açılıştaki temiz dünyaya döner.
+- **Depolama yedeği:** tarayıcı izin vermezse kayıt oturum hafızasında tutulur (Kaydet ve Çık → Devam çalışır) ve menüde uyarı çıkar.
+- Eski tek kayıt ilk açılışta otomatik **Slot 1**'e taşınır. Ayarlar › **🗑 Bu slotu sil**; isim ekranında **← Geri**.
+- **Test:** `test-slots.js` aynı senaryoyu 3 ortamda koşar (normal sayfa, `test-sandbox.html` = claude.ai gibi kısıtlı iframe,
+  `test-sandbox-nostore.html` = depolamasız) + eski kayıt göçü.
 
 ---
 
