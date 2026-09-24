@@ -10,7 +10,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   p.on('pageerror', e => errs.push('PE: ' + e.message));
   await p.goto(URL); await sleep(900);
   await p.mouse.click(215, 400); await sleep(400);
-  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo'); await p.click('#nameGo'); await sleep(2500);
+  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(2500);
   R.music = await p.evaluate(() => BT.music());
   ok(R.music.on && R.music.mode === 'game', 'oyunda müzik yok');
   /* müzik kapat / aç ayarı */

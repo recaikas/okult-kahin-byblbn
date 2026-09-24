@@ -26,7 +26,7 @@ const ENVS = [['plain', 'index.html'], ['sandbox', 'test-sandbox.html'], ['nosto
       if (await vis('askScr')) { R['ask' + slot] = await f.textContent('#askMsg'); await f.click('#askYes'); await sleep(250); }
       if (await vis('introScr')) { await f.click('#introSkip'); await sleep(200); }
       if (await vis('heroScr')) { await f.click('#heroGo'); await sleep(150); }
-      await f.fill('#nameIn', co); await f.click('#nameGo'); await sleep(900); await closeStall();
+      await f.fill('#nameIn', co); await f.click('#nameGo'); await f.click('#autoOpts button[data-m="10"]'); await sleep(900); await closeStall();
     };
     R.persistent = await f.evaluate(() => BT.persistent());
     ok(await vis('introScr'), 'ilk açılışta hikâye yok');

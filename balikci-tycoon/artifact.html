@@ -370,6 +370,20 @@
   .hrow button:active{transform:translate(1px,1px)}
   .hrow .swc{display:inline-block;width:40px;height:14px;border:2px solid #0a1a27}
   #heroScr .duo .go{margin-top:8px;flex:1.4}
+  /* ---------- otomatik kayıt ---------- */
+  #autoOpts{display:flex;flex-direction:column;gap:7px;margin-top:6px}
+  #autoOpts button{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 14px;cursor:pointer;
+    font-family:inherit;color:var(--ink);background:linear-gradient(180deg,#23445f,#1a3549);border:2px solid var(--edge);
+    border-top-color:var(--edge2);box-shadow:0 3px 0 rgba(4,12,20,.35)}
+  #autoOpts button b{font-size:20px;color:var(--gold);letter-spacing:1px}
+  #autoOpts button small{font-size:11.5px;color:var(--ink2)}
+  #autoOpts button.on{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,201,74,.35),0 3px 0 rgba(4,12,20,.35)}
+  #autoOpts button:active{transform:translateY(2px)}
+  #autoBadge{position:fixed;right:8px;top:calc(48px + env(safe-area-inset-top,0px));z-index:9;pointer-events:none;
+    background:rgba(10,26,39,.92);border:2px solid var(--green);color:#9df5b0;font-size:11.5px;padding:5px 9px}
+  #autoBadge.hidden{display:none}
+  #autoBadge.go{animation:abIn 2.6s ease forwards}
+  @keyframes abIn{0%{opacity:0;transform:translateY(-6px)}10%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
   /* ---------- kayıt slotları + onay penceresi ---------- */
   .slot{display:flex;align-items:center;gap:9px;background:linear-gradient(180deg,#22425c,#1a3448);
     border:2px solid var(--edge);padding:9px 9px;margin-bottom:6px}
@@ -454,7 +468,7 @@
   <div class="card">
     <h1>BALIKÇI<br>TYCOON</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v0.7</div>
+    <div class="ver">v0.8</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -493,6 +507,8 @@
     <div class="seg" id="zoomSeg">
       <button data-z="1">-</button><button data-z="2" class="on">◻</button><button data-z="3">+</button>
     </div>
+    <span class="lbl" id="setAuto">OTOMATİK KAYIT</span>
+    <div class="seg" id="autoSeg"><button data-m="5">5 dk</button><button data-m="10" class="on">10 dk</button><button data-m="30">30 dk</button></div>
     <span class="lbl" id="setSaveLbl">KAYIT</span>
     <div class="saveinfo" id="setSaveInfo">—</div>
     <button class="alt good" id="saveBtn">💾 KAYDET</button>
@@ -589,6 +605,15 @@
     <button class="alt" id="nameBack">← GERİ</button>
   </div>
 </div>
+
+<div class="overlay hidden" id="autoScr">
+  <div class="card">
+    <h2 id="autoTitle">💾 OTOMATİK KAYIT</h2>
+    <p id="autoSub">—</p>
+    <div id="autoOpts"><button data-m="5"></button><button data-m="10"></button><button data-m="30"></button></div>
+  </div>
+</div>
+<div id="autoBadge" class="hidden">💾</div>
 
 <div class="overlay hidden" id="halScr">
   <div class="card">

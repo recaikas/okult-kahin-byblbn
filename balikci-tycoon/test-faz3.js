@@ -14,8 +14,10 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   const closeStall = () => p.evaluate(() => { const s = document.getElementById('stallScr'); if (!s.classList.contains('hidden')) document.getElementById('stallGo').click(); });
   const wait = ms => p.evaluate(ms => new Promise(r => setTimeout(r, ms)), ms);
   await p.goto(URL); await sleep(900);
-  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo'); await p.click('#nameGo'); await sleep(900); await closeStall();
+  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(900); await closeStall();
   await p.evaluate(() => { BT.S.ctrl = 2; BT.S.cash = 200000; BT.S.rep = 400; BT.areas.forEach(a => a.locked = false); BT.rebuildCounters(); });
+  /* "Açık Tezgâhlar" penceresi bir kare gecikmeyle açılıp oyunu duraklatabiliyor: test boyunca kapat */
+  await p.evaluate(() => { window.__ns = setInterval(() => { const s = document.getElementById('stallScr'); if (!s.classList.contains('hidden')) document.getElementById('stallGo').click(); }, 150); });
   await sleep(400); await closeStall();
   /* 1) köprüden meydana yürü */
   await p.evaluate(() => { BT.player.x = 8.8; BT.player.y = 2.4; });

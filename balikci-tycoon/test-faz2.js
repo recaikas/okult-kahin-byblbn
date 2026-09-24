@@ -21,7 +21,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   await p.click('#heroRows button[data-k="hs"][data-d="1"]'); await p.click('#heroRows button[data-k="hw"][data-d="1"]');
   await p.click('#heroGo'); await sleep(200);
   ok(await p.isVisible('#nameScr'), 'karakterden sonra isim ekranı yok');
-  await p.fill('#nameIn', 'Recai Balıkçılık'); await p.click('#nameGo'); await sleep(900); await closeStall();
+  await p.fill('#nameIn', 'Recai Balıkçılık'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(900); await closeStall();
   R.hero = await p.evaluate(() => BT.S.hero);
   ok(R.hero && R.hero.n === 'Recai', 'karakter kaydedilmedi');
   await p.evaluate(() => { BT.S.ctrl = 2; });

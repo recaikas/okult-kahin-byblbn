@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — **v0.7** (Faz 3: Liman Meydanı)
+# 🐟 Balıkçı Tycoon — **v0.8** (otomatik kayıt + gelişen çevre)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,23 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v0.8 — Otomatik kayıt + gelişen çevre
+
+### 💾 Otomatik kayıt
+- Oyun başlarken (yeni oyunda işletme adından sonra; eski kayıtta ayar yoksa bir kez) sorulur: **5 dk / 10 dk (önerilen) / 30 dk**.
+- Seçilen aralıkta (oynanan süre) kaydeder, sağ üstte kısa **"💾 Otomatik kaydedildi"** rozeti.
+- Ayarlar › **OTOMATİK KAYIT** ile değiştirilir; kayıt bölümünde "sonraki kayıt m:ss" görünür. Seçim slot kaydına yazılır.
+- Eski 6 saniyelik sessiz kayıt kalktı. Güvenlik için sekme kapanınca/arka plana geçince, gün sonunda ve Kaydet/Kaydet-Çık'ta yine kaydedilir.
+
+### 🌿 Gelişen çevre (tezgâh alanı dışı)
+- Meydanı eklerken boşalan çevre sade biçimde geri geldi (~43 nesne): meydanın güneyi (yolun doğusu) ve güney kumsal. Tezgâh bölgelerine, yola ve meydana girmez.
+- Başta **eski/bakımsız**: kuru ağaçlar, sararmış serviler, yırtık ağlar, çürük ters sandallar, kırık kasalar, paslı variller, hurda yığınları; müşteri yolu **toprak, tekerlek izli, çukurlu**.
+- **Çevre kademesi (0–3)** bölgeler, meydan binaları, ofis ve itibar seviyesiyle artar; her nesne kendi eşiğinde bakımlı hâline döner, hurdalar **çiçek tarhı** olur.
+  Yol: toprak → çakıl → arnavut kaldırımı + bordür → yol boyu fenerler. Her kademede kısa bildirim (🌿 / 🪨 / 🌺).
+- **Test:** `test-autosave.js`, `test-env.js`; tüm önceki testler yeşil.
 
 ---
 

@@ -20,7 +20,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await p.click('#playBtn');
   await p.click('#slotRows .sb[data-n="1"]');
   await p.click('#heroGo');
-  await p.click('#nameGo');
+  await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]');
   await sleep(800);
   const sirket = await p.evaluate(() => BT.S.company);
   const bas = await p.evaluate(() => ({
