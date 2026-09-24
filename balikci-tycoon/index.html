@@ -220,6 +220,8 @@
     background:#23445f;border:1px solid #0a1a27;border-bottom-width:3px;color:var(--gold)}
   .coach .keys i:first-child{grid-column:2}
   .coach .keys i:nth-child(2){grid-column:1;grid-row:2}
+  .coach .keys i:nth-child(3){grid-column:2;grid-row:2}
+  .coach .keys i:nth-child(4){grid-column:3;grid-row:2}
   /* seviye atlama şeridi — tıklamayı engellemez, oyun akmaya devam eder */
   #lvlUp{position:fixed;left:50%;top:calc(50px + env(safe-area-inset-top,0px));z-index:9;pointer-events:none;
     transform:translate(-50%,-140%);min-width:230px;max-width:92vw;text-align:center;padding:8px 16px 9px;
@@ -352,6 +354,21 @@
   .card.shake{animation:shake .3s}
   @keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
 
+  /* ---------- karakter oluşturma ---------- */
+  #heroCv{display:block;margin:4px auto 6px;width:160px;height:180px;image-rendering:pixelated;image-rendering:crisp-edges;
+    border:3px solid var(--edge);box-shadow:0 3px 0 rgba(0,0,0,.4)}
+  #heroName{flex:1;min-width:0;background:#0a1a27;border:3px solid var(--edge);color:var(--ink);font-family:inherit;
+    font-size:17px;padding:9px;user-select:text;-webkit-user-select:text;outline:none}
+  #heroName:focus{border-color:var(--gold)}
+  #heroNameDice{min-width:46px;height:auto;font-size:19px}
+  #heroRows{margin-top:8px}
+  .hrow{display:flex;align-items:center;gap:6px;margin-bottom:4px;background:var(--pnl2);border:2px solid var(--edge);padding:4px 6px}
+  .hrow span{flex:1;font-size:12px;color:var(--ink2)}
+  .hrow b{min-width:104px;text-align:center;font-size:12.5px;display:flex;justify-content:center;align-items:center}
+  .hrow button{width:32px;height:28px;background:var(--pnl);border:2px solid var(--edge);color:var(--gold);font-family:inherit;font-size:17px;cursor:pointer;padding:0}
+  .hrow button:active{transform:translate(1px,1px)}
+  .hrow .swc{display:inline-block;width:40px;height:14px;border:2px solid #0a1a27}
+  #heroScr .duo .go{margin-top:8px;flex:1.4}
   /* ---------- kayıt slotları + onay penceresi ---------- */
   .slot{display:flex;align-items:center;gap:9px;background:linear-gradient(180deg,#22425c,#1a3448);
     border:2px solid var(--edge);padding:9px 9px;margin-bottom:6px}
@@ -436,7 +453,7 @@
   <div class="card">
     <h1>BALIKÇI<br>TYCOON</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v0.4</div>
+    <div class="ver">v0.5</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -537,6 +554,19 @@
     <button class="alt good" id="menuSave">💾 KAYDET</button>
     <button class="alt" id="menuBoard">🏆 SKOR TABLOSU</button>
     <button class="alt" id="menuSet">AYARLAR</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="heroScr">
+  <div class="card" id="heroCard">
+    <h2 id="heroTitle">KARAKTERİN</h2>
+    <p id="heroSub">Limanın yeni balıkçısı kim? Görünüşünü seç.</p>
+    <canvas id="heroCv" width="32" height="36"></canvas>
+    <span class="lbl" id="heroNameLbl">ADIN</span>
+    <div class="nrow"><input id="heroName" type="text" maxlength="16" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next"><button class="btn" id="heroNameDice">🎲</button></div>
+    <div id="heroRows"></div>
+    <div class="duo"><button class="alt" id="heroDice">🎲 RASTGELE</button><button class="go" id="heroGo">DEVAM ▶</button></div>
+    <button class="alt" id="heroBack">← GERİ</button>
   </div>
 </div>
 

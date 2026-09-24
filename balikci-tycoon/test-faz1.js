@@ -14,7 +14,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   await p.mouse.click(215, 400); await sleep(1500);                 /* kapı → müzik */
   R.musicIntro = await p.evaluate(() => BT.music());
   ok(R.musicIntro.on && R.musicIntro.step > 2, 'müzik hikâyede çalmıyor');
-  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#nameGo'); await sleep(1600);
+  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo'); await p.click('#nameGo'); await sleep(1600);
   R.musicGame = await p.evaluate(() => BT.music().on);
   ok(!R.musicGame, 'müzik oyunda susmadı');
   /* kontrol eğitimi */

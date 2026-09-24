@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — **v0.4** (3 kayıt slotu + kayıt düzeltmeleri)
+# 🐟 Balıkçı Tycoon — **v0.5** (Faz 2: otomasyon ve kimlik)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,23 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v0.5 — Faz 2: otomasyon ve kimlik
+
+| Geri bildirim | Ne yapıldı |
+|---|---|
+| Karakter oluşturma (#8) | Yeni oyun: slot → (hikâye) → **Karakter** → işletme adı. Ad + saç modeli (kısa, dalgalı, uzun, at kuyruğu, kel), saç rengi, ten, başlık (kasket, yazma, balıkçı beresi), bıyık/sakal, kazak, önlük. Canlı pixel önizleme; oyuncu oyunda bu görünümle çizilir, kayda yazılır. |
+| Tezgâh kasası (#9) | Müşteri parası tezgâhın bakır kasasına düşer. **Oyuncu kasanın yanından geçince para anında hesaba geçer** — merkeze dönmek yok, para taşıma kapasitesini doldurmaz. |
+| Parayı personel taşısın (#6) | **Tahsildar** (eski kasiyer) artık **bölge personeli**: yalnız kendi bölgesinin tezgâh kasalarını boşaltır, parayı **Ana Kasa**'ya yürüyerek götürür. |
+| Kasa kapasitesi | Kasa dolunca o tezgâhta **KASA DOLU** yanıp söner, yeni müşteri gelmez → tahsildar ya da oyuncu boşaltmalı. Kapasite bölge seviyesiyle artar. |
+| Her tezgâhta ayrı çalışan (#2) | Tezgâhtar bir **tezgâha atanır** (en az tezgâhtarı olan), önce kendi tezgâhını besler; personel sekmesinde "Hamsi tezgâhı" gibi görünür. |
+| Personele devret (#2, #6) | Bölgede 4 rolün hepsi varsa (Hamal, Filetocu, Tezgâhtar, Tahsildar) YÜKSELT'te **⚙ DEVRET**: oyuncu o bölgede istasyonlara karışmaz, ekip **%20 hızlı** çalışır, tezgâhta **⚙ OTOMATİK** rozeti; **↩ GERİ AL** ile geri alınır. Eksikse kart eksik rolleri ✓/✗ ile gösterir. |
+
+**Denge:** bölge kadrosu taban 2 (+ bölge seviyesi, + ek tezgâh, + kulübe). Tam otomasyon (4 kişi) Sv3 bölgede ya da kulübeyle.
+**Uyumluluk:** eski kayıtlardaki liman geneli kasiyer, açık bir bölgeye tahsildar olarak yerleşir.
+**Test:** `test-faz2.js` — devredilen bölge, oyuncu dokunmadan 40 sn'de satış yaptı; önceki tüm testler yeşil.
 
 ---
 

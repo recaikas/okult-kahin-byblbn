@@ -38,11 +38,11 @@ var STR = {
     intro2: '🧺 Üstünden geç, sırtla (ağır balık çok yer kaplar)',
     intro3: '🔪 Kesim masası → fileto',
     intro4: '🐟 Tezgâh → müşteri siparişi öder',
-    intro5: '💰 Parayı kasaya götür → liman büyür',
+    intro5: '💰 Tezgâh kasasından geç → para hesabına, liman büyür',
     ctrl: 'W A S D / yön tuşları — veya ekrana bas & sürükle',
     tabs: ['LİMAN', 'PERSONEL', 'ÜRÜNLER', 'YARDIM'],
     /* istasyonlar */
-    stNet: 'AĞ', stCut: 'KESİM', stSmoke: 'FÜMEHANE', stStall: 'TEZGÂH', stSafe: 'KASA',
+    stNet: 'AĞ', stCut: 'KESİM', stSmoke: 'FÜMEHANE', stStall: 'TEZGÂH', stSafe: 'ANA KASA', trayFull: 'KASA DOLU',
     stTake: 'AL', stBuild: 'YAPI YERİ', stProject: 'BÜYÜK PROJE', stDecor: 'SÜS',
     /* yükseltmeler */
     upCap: 'KAPASİTE', upCapE: '+3 taşıma', upSpd: 'HIZ', upSpdE: '+%11 koşu',
@@ -59,6 +59,14 @@ var STR = {
     hired: '{i} {n} işe alındı — {w}',
     coachTouch: 'Ekrana bas ve sürükle — karakterin yürür', coachKeys: 'WASD veya ok tuşlarıyla yürü',
     coachAuto: 'Durman yeter: karakter ağdan kendiliğinden alır, masaya/tezgâha kendiliğinden bırakır',
+    stallOfFish: '{f} tezgâhı', autoBadge: '⚙ OTOMATİK', autoCard: '{n} — Personele Devret', autoCardOn: '{n} — OTOMATİK',
+    autoCardOnD: 'Ekip kendi çalışır (%20 hızlı). Gezip kontrol edebilirsin; kasayı geçerken toplarsın.',
+    autoGive: '⚙ DEVRET', autoBack: '↩ GERİ AL', autoNeed: 'Eksik rol: {n}', autoMissing: 'Eksik personel: {m}',
+    autoOn: '⚙ {n} personele devredildi — artık kendi kendine çalışır', autoOff: '{n} yeniden sende',
+    heroTitle: 'KARAKTERİN', heroSub: 'Limanın yeni balıkçısı kim? Görünüşünü seç.', heroNameLbl: 'ADIN',
+    heroRandom: '🎲 RASTGELE', heroGo: 'DEVAM ▶', hero_hs: 'Saç modeli', hero_hc: 'Saç rengi', hero_sk: 'Ten rengi',
+    hero_hw: 'Başlık', hero_fc: 'Bıyık / sakal', hero_co: 'Kazak', hero_ap: 'Önlük',
+    welcomeHero: 'Hayırlı olsun {h}! {n} kapılarını açtı.',
     featDay: 'Günün müşterisi: {n}', levelUp: '⭐ Yeni seviye: {t}!', lvlN: 'SEVİYE {l}', lvShort: 'SV {l}', lvBonus: 'Satış primi {p}',
     areaOpen: '🔓 {n} açıldı!',
     areaLvUp: '🏗️ {n} → Sv.{l}',
@@ -73,7 +81,7 @@ var STR = {
           'Sandığın üstünden geç, balıkları sırtla',
           'Balıkları kesim masasına bırak',
           'Filetoyu al ve tezgâha taşı',
-          'Tepsideki parayı al, kasaya götür',
+          'Tezgâhın para kasasından geç — para hesabına geçer',
           'Alt bardan bir yükseltme satın al'],
     orderOf: '{n} SİPARİŞİ', waiting: '⏳ {n} müşteri bekliyor',
     idleGoal: 'Stok hazırla — müşteri yolda',
@@ -207,10 +215,10 @@ var STR = {
     intro2: '🧺 Walk over the crate to carry them (big fish weigh more)',
     intro3: '🔪 Cutting table → fillets',
     intro4: '🐟 Stall → customers pay for orders',
-    intro5: '💰 Take the cash to the safe → grow the harbor',
+    intro5: '💰 Walk past the stall cash box → money is banked',
     ctrl: 'W A S D / arrow keys — or touch & drag anywhere',
     tabs: ['HARBOR', 'STAFF', 'GOODS', 'HELP'],
-    stNet: 'NET', stCut: 'CUTTING', stSmoke: 'SMOKEHOUSE', stStall: 'STALL', stSafe: 'SAFE',
+    stNet: 'NET', stCut: 'CUTTING', stSmoke: 'SMOKEHOUSE', stStall: 'STALL', stSafe: 'MAIN SAFE', trayFull: 'CASH FULL',
     stTake: 'TAKE', stBuild: 'BUILD SPOT', stProject: 'BIG PROJECT', stDecor: 'DECOR',
     upCap: 'CAPACITY', upCapE: '+3 carry', upSpd: 'SPEED', upSpdE: '+11% run',
     upPrice: 'HAGGLE', upPriceE: '+10% price',
@@ -224,6 +232,14 @@ var STR = {
     hired: '{i} {n} hired — {w}',
     coachTouch: 'Press and drag anywhere — your character walks', coachKeys: 'Walk with WASD or the arrow keys',
     coachAuto: 'Just stand still: you pick up from the net and drop at tables/stalls automatically',
+    stallOfFish: '{f} stall', autoBadge: '⚙ AUTO', autoCard: '{n} — Hand over to staff', autoCardOn: '{n} — AUTOMATED',
+    autoCardOnD: 'The crew runs it (20% faster). Walk by to inspect; you still collect cash as you pass.',
+    autoGive: '⚙ HAND OVER', autoBack: '↩ TAKE BACK', autoNeed: 'Missing roles: {n}', autoMissing: 'Missing staff: {m}',
+    autoOn: '⚙ {n} handed to staff — it now runs itself', autoOff: '{n} is back in your hands',
+    heroTitle: 'YOUR CHARACTER', heroSub: 'Who is the harbor\'s new fisher? Pick a look.', heroNameLbl: 'YOUR NAME',
+    heroRandom: '🎲 RANDOM', heroGo: 'NEXT ▶', hero_hs: 'Hair style', hero_hc: 'Hair colour', hero_sk: 'Skin tone',
+    hero_hw: 'Headwear', hero_fc: 'Moustache / beard', hero_co: 'Sweater', hero_ap: 'Apron',
+    welcomeHero: 'Good luck {h}! {n} is open for business.',
     featDay: 'Customer of the day: {n}', levelUp: '⭐ New rank: {t}!', lvlN: 'LEVEL {l}', lvShort: 'LV {l}', lvBonus: 'Sales bonus {p}',
     areaOpen: '🔓 {n} unlocked!',
     areaLvUp: '🏗️ {n} → Lv.{l}',
@@ -237,7 +253,7 @@ var STR = {
           'Walk over the crate to pick up the fish',
           'Drop the fish on the cutting table',
           'Grab fillets and carry them to the stall',
-          'Take the cash from the tray to the safe',
+          'Walk past the stall cash box — money is banked',
           'Buy an upgrade from the bottom bar'],
     orderOf: '{n} ORDER', waiting: '⏳ {n} customers waiting',
     idleGoal: 'Stock up — customers on the way',
@@ -784,7 +800,7 @@ function lineOf(f) { for (var i = 0; i < LINES.length; i++) if (LINES[i].f === f
    Hamal/filetocu/tezgâhtar yalnız kendi bölgesinde çalışır; bir bölgenin
    kesim masasına başka bölgenin balığı konulamaz.
    ========================================================= */
-var ZONE_ROLES = ['hamal', 'filetocu', 'tezgahtar'];
+var ZONE_ROLES = ['hamal', 'filetocu', 'tezgahtar', 'kasiyer'];
 function zoneCount() { return spots.length; }
 function zoneOpen(z) { return z >= 0 && z < spots.length && !AREAS[spots[z].z].locked; }
 function zoneName(z) { return zoneOpen(z) || AREAS[z] ? NM(AREAS[z].n) : '?'; }
@@ -908,7 +924,8 @@ var ROLES = {
   hamal:     { id: 'hamal',     n: { tr: 'Hamal', en: 'Porter' },     icon: '🧺', wage: 15, speed: 2.4, cap: 8,  price: 360, zone: true,  d: { tr: 'Ağdan kesime taşır', en: 'Net → cutting table' } },
   filetocu:  { id: 'filetocu',  n: { tr: 'Filetocu', en: 'Filleter' }, icon: '🔪', wage: 19, speed: 2.3, cap: 4,  price: 520, zone: true,  d: { tr: 'Masayı %55 hızlandırır', en: 'Table 55% faster' } },
   tezgahtar: { id: 'tezgahtar', n: { tr: 'Tezgâhtar', en: 'Vendor' },  icon: '🐟', wage: 22, speed: 2.5, cap: 8,  price: 700, zone: true,  d: { tr: 'Siparişi tezgâha taşır', en: 'Goods → stall' } },
-  kasiyer:   { id: 'kasiyer',   n: { tr: 'Kasiyer', en: 'Cashier' },   icon: '💰', wage: 17, speed: 2.6, cap: 10, price: 860, zone: false, d: { tr: 'Parayı kasaya işler', en: 'Cash → safe' } }
+  /* v0.5 — Tahsildar: kendi bölgesinin tezgâh kasalarını boşaltıp parayı Ana Kasa'ya yürüyerek taşır */
+  kasiyer:   { id: 'kasiyer',   n: { tr: 'Tahsildar', en: 'Collector' }, icon: '💰', wage: 17, speed: 2.6, cap: 10, price: 620, zone: true, d: { tr: 'Tezgâh kasası → Ana Kasa', en: 'Stall cash → main safe' } }
 };
 var WNAMES = ['Hasan', 'Kerim', 'Zeynep', 'Mert', 'Deniz', 'Ayla', 'Tarık', 'Elif', 'Cem', 'Nur', 'Osman', 'Sevgi'];
 
@@ -1007,9 +1024,11 @@ function zoneOpenStalls(z) {
   }
   return n;
 }
+/* v0.5: bölge kadrosu 4 rolü kapsar (hamal, filetocu, tezgâhtar, tahsildar).
+   Taban 2, bölge seviyesi ve ek tezgâhlar +1'er; tam otomasyon (4 kişi) Sv3 bölge ya da kulübeyle açılır. */
 function zoneStaffCap(z) {
   if (!zoneOpen(z)) return 0;
-  return Math.max(1, zoneOpenStalls(z)) + (AREAS[z].lvl - 1) + slotEff(z, 'staff');
+  return 2 + Math.max(0, zoneOpenStalls(z) - 1) + (AREAS[z].lvl - 1) + slotEff(z, 'staff');
 }
 function zoneStaff(z) {
   var n = 0;
@@ -1019,16 +1038,15 @@ function zoneStaff(z) {
 }
 function zoneFree(z) { return Math.max(0, zoneStaffCap(z) - zoneStaff(z)); }
 function roleCount(r) { var n = 0; for (var i = 0; i < workers.length; i++) if (workers[i].role === r) n++; return n; }
-function cashierCap() { return 1 + Math.min(2, Math.round(slotEff(null, 'staff'))); }
 /* toplam kadro (yalnız gösterim için) */
 function staffCap() {
-  var n = cashierCap();
+  var n = 0;
   for (var z = 0; z < zoneCount(); z++) n += zoneStaffCap(z);
   return n;
 }
 function hireCost(role, z) {
   var base = ROLES[role].price || 500;
-  var have = role === 'kasiyer' ? roleCount(role) : zoneStaff(z);
+  var have = zoneStaff(z);
   return upCost(Math.round(base * Math.pow(1.85, have) * (1 + (z || 0) * 0.35)));
 }
 function workerSpeedMul() { return 1 + slotEff(null, 'wspeed') + perkSum('wspeed') + servEff('wspeed'); }
@@ -1698,7 +1716,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0     /* skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null     /* skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -1773,6 +1791,7 @@ function buildSave() {
     cash: S.cash, rep: S.rep, capLvl: S.capLvl, spdLvl: S.spdLvl, priceLvl: S.priceLvl,
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
+    auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
     areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
@@ -1802,6 +1821,8 @@ function loadFrom(d) {
     S.play = d.play || 0; S.savedAt = d.at || 0;
     S.ctrl = d.ctrl !== undefined ? d.ctrl : ((d.tut || 0) > 0 || (d.play || 0) > 20 ? 2 : 0);
     S.earned = d.earned || 0; S.company = cleanName(d.company || '') || ''; S.runId = d.runId || '';
+    S.auto = Array.isArray(d.auto) ? d.auto.map(function (v) { return !!v; }) : [];
+    S.hero = cleanHero(d.hero);
     if (d.areas) d.areas.forEach(function (v, i) { if (AREAS[i]) { AREAS[i].locked = !!v[0]; AREAS[i].lvl = v[1] || 1; } });
     if (d.pads) d.pads.forEach(function (v, i) { if (PADS[i]) { PADS[i].paid = v[0]; PADS[i].lvl = v[1]; if (v[2]) PADS[i].price = v[2]; } });
     if (d.slots) d.slots.forEach(function (v, i) { if (SLOTS[i]) SLOTS[i].b = v; });
@@ -2126,6 +2147,21 @@ function iPickMoney(a, c, dt) {
     fly(c.tray.x, c.tray.y, 6, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.26); sfx.pick();
   });
 }
+/* v0.5 — oyuncu tezgâh kasasından geçince para doğrudan hesaba geçer (merkeze dönmek gerekmez) */
+function iCollectTray(a, c, dt) {
+  if (!c.tray.items.length) return false;
+  a.act -= dt; if (a.act > 0) return true;
+  a.act = 0.06;
+  var it = c.tray.items.pop();
+  S.cash += it.v; earn(it.v);
+  fly(c.tray.x, c.tray.y, 6, a.x, a.y, 22, it, 0.22);
+  addFloat(a.x, a.y - 0.9, '+' + money(it.v), '#8ef2a2'); sfx.coin();
+  return true;
+}
+/* tezgâh kasası kapasitesi: dolunca o tezgâha yeni müşteri gelmez */
+function trayValue(c) { var v = 0; for (var i = 0; i < c.tray.items.length; i++) v += c.tray.items[i].v; return v; }
+function trayCap(c) { return 350 + (AREAS[c.z].lvl - 1) * 250 + c.z * 150; }
+function trayFull(c) { return trayValue(c) >= trayCap(c); }
 function iDeposit(a, dt) {
   if (!hasCarry(a, isMoney)) return false;
   a.act -= dt; if (a.act > 0) return true;
@@ -2163,22 +2199,22 @@ function updatePlayer(dt) {
     return;
   }
   for (i = 0; i < spots.length; i++) {
-    var s = spots[i]; if (AREAS[s.z].locked) continue;
+    var s = spots[i]; if (AREAS[s.z].locked || zoneAuto(i)) continue;
     if (dist2(player.x, player.y, s.x, s.y + 0.9) < 1.6) acted = iPickFish(player, s, dt) || acted;
   }
   for (i = 0; i < tables.length; i++) {
-    var tb = tables[i]; if (AREAS[tb.z].locked) continue;
+    var tb = tables[i]; if (AREAS[tb.z].locked || zoneAuto(i)) continue;
     if (dist2(player.x, player.y, tb.x, tb.y) < 1.6) acted = iDropTable(player, tb, dt) || acted;
     if (dist2(player.x, player.y, tb.mat.x, tb.mat.y) < 1.5) acted = iPickMat(player, tb.mat, dt) || acted;
   }
-  if (!AREAS[smoker.z].locked) {
+  if (!AREAS[smoker.z].locked && !zoneAuto(smoker.z)) {
     if (dist2(player.x, player.y, smoker.x, smoker.y) < 1.6) acted = iDropSmoker(player, dt) || acted;
     if (dist2(player.x, player.y, smoker.mat.x, smoker.mat.y) < 1.5) acted = iPickMat(player, smoker.mat, dt) || acted;
   }
   for (i = 0; i < counters.length; i++) {
     var c = counters[i]; if (AREAS[c.z].locked || !c.open) continue;
-    if (dist2(player.x, player.y, c.x, c.y) < 1.8) acted = iDropCounter(player, c, dt) || acted;
-    if (dist2(player.x, player.y, c.tray.x, c.tray.y) < 1.5) acted = iPickMoney(player, c, dt) || acted;
+    if (dist2(player.x, player.y, c.x, c.y) < 1.8 && !(c.fish && zoneAuto(zoneOfFish(c.fish)))) acted = iDropCounter(player, c, dt) || acted;
+    if (dist2(player.x, player.y, c.tray.x, c.tray.y) < 1.5) acted = iCollectTray(player, c, dt) || acted;
   }
   if (dist2(player.x, player.y, safe.x, safe.y) < 1.8) acted = iDeposit(player, dt) || acted;
   if (officeBuilt() && dist2(player.x, player.y, office.x, office.y) < 3.4) acted = iDeliverContract(player, dt) || acted;
@@ -2191,7 +2227,7 @@ function updatePlayer(dt) {
 function hire(role, silent, zone) {
   if (!ROLES[role]) return null;            /* kaldırılmış rol (ör. eski dagitim) yüklenmez */
   var z = zone === undefined ? 0 : zone;
-  if (ROLES[role] && ROLES[role].zone === false) z = -1;         /* kasiyer liman geneli */
+  if (ROLES[role] && ROLES[role].zone === false) z = -1;
   var home = z >= 0 && spots[z] ? spots[z] : spots[0];
   var w = {
     role: role, zone: z, x: home.x + rnd(0.6, 1.6), y: home.y + rnd(0.8, 1.8), z: 0, vx: 0, vy: 0,
@@ -2199,6 +2235,7 @@ function hire(role, silent, zone) {
   };
   workers.push(w);
   if (role === 'filetocu') assignFiletocu(w);
+  if (role === 'tezgahtar') assignVendor(w);
   if (!silent) { toast(T('hiredZ', { i: ROLES[role].icon, n: w.name, z: z >= 0 ? NM(AREAS[z].n) : T('harborWide') })); }
   return w;
 }
@@ -2212,7 +2249,49 @@ function assignFiletocu(w) {
   }
   w.table = null;
 }
-function reassignWorkers() { for (var i = 0; i < workers.length; i++) if (workers[i].role === 'filetocu' && !workers[i].table) assignFiletocu(workers[i]); }
+function reassignWorkers() {
+  for (var i = 0; i < workers.length; i++) {
+    if (workers[i].role === 'filetocu' && !workers[i].table) assignFiletocu(workers[i]);
+    if (workers[i].role === 'tezgahtar') { var c = counterByKey(workers[i].stall); if (!c || AREAS[c.z].locked) assignVendor(workers[i]); }
+  }
+}
+/* v0.5 — her tezgâhın kendi tezgâhtarı: bölgedeki en az tezgâhtarı olan tezgâha atanır */
+function assignVendor(w) {
+  var best = null, bn = 1e9;
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (AREAS[c.z].locked || !c.fish || zoneOfFish(c.fish) !== w.zone) continue;
+    var n = 0;
+    for (var j = 0; j < workers.length; j++) if (workers[j] !== w && workers[j].role === 'tezgahtar' && workers[j].stall === c.key) n++;
+    if (n < bn) { bn = n; best = c; }
+  }
+  w.stall = best ? best.key : null;
+}
+function stallLabel(key) { var c = counterByKey(key); return c && c.fish ? T('stallOfFish', { f: NM(FISH[c.fish].n) }) : ''; }
+
+/* ---------- v0.5 — PERSONELE DEVRET (tam otomasyon) ----------
+   Bir bölgede 4 rolün hepsi (hamal, filetocu, tezgâhtar, tahsildar) varsa bölge personele
+   devredilebilir: oyuncu o bölgede istasyonlara karışmaz (geçerken sadece kasayı toplar),
+   ekip ustabaşı primiyle %20 hızlı çalışır, tezgâhta ⚙ OTOMATİK rozeti görünür. */
+function zoneChain(z) {
+  var o = { ok: true, miss: [] };
+  for (var i = 0; i < ZONE_ROLES.length; i++) {
+    var r = ZONE_ROLES[i], n = 0;
+    for (var j = 0; j < workers.length; j++) if (workers[j].zone === z && workers[j].role === r) n++;
+    o[r] = n;
+    if (!n) { o.ok = false; o.miss.push(NM(ROLES[r].n)); }
+  }
+  return o;
+}
+function zoneAuto(z) { return !!(S.auto && S.auto[z]) && zoneOpen(z) && zoneChain(z).ok; }
+function setZoneAuto(z, on) {
+  if (!S.auto) S.auto = [];
+  if (on && !zoneChain(z).ok) { toast(T('autoMissing', { m: zoneChain(z).miss.join(', ') })); sfx.bad(); return; }
+  S.auto[z] = !!on;
+  toast(T(on ? 'autoOn' : 'autoOff', { n: NM(AREAS[z].n) }));
+  if (on) { sfx.star(); var c = zoneCounter(z); if (c) addPuff(c.x, c.y, '#ffc94a'); } else sfx.tap();
+  save(); renderBar();
+}
 function openTables() { return tables.filter(function (t) { return !AREAS[t.z].locked; }); }
 function openCounters() { return counters.filter(function (c) { return !AREAS[c.z].locked; }); }
 /* v2.1: hamal yalnız kendi bölgesinin ağından alır */
@@ -2250,7 +2329,7 @@ function counterWantingCarry(w) {
     var m = counterWants(c), hit = false;
     for (var j = 0; j < w.carry.length; j++) if (acceptsAt(c, w.carry[j]) && m[itemKey(w.carry[j])] > 0) { hit = true; break; }
     if (!hit) continue;
-    var d = dist2(w.x, w.y, c.x, c.y);
+    var d = dist2(w.x, w.y, c.x, c.y) * (w.stall === c.key ? 0.2 : 1);   /* kendi tezgâhı önce */
     if (d < bd) { bd = d; best = c; }
   } return best;
 }
@@ -2263,7 +2342,7 @@ function nearestCounterWithSpace(w) {
     var ok = false;
     for (var j = 0; j < w.carry.length; j++) if (acceptsAt(c, w.carry[j])) { ok = true; break; }
     if (!ok) continue;                       /* yalnız kendi türünü kabul eden tezgâh */
-    var d = dist2(w.x, w.y, c.x, c.y);
+    var d = dist2(w.x, w.y, c.x, c.y) * (w.stall === c.key ? 0.2 : 1);
     if (d < bd) { bd = d; best = c; }
   } return best;
 }
@@ -2297,6 +2376,7 @@ function trayWithMoney(minN, w) {
   var list = openCounters(), best = null, bd = 1e9;
   for (var i = 0; i < list.length; i++) {
     if (list[i].tray.items.length < (minN || 1)) continue;
+    if (w && w.zone >= 0 && !counterInZone(list[i], w)) continue;
     var d = w ? dist2(w.x, w.y, list[i].tray.x, list[i].tray.y) : 0;
     if (d < bd) { bd = d; best = list[i]; }
   } return best;
@@ -2306,7 +2386,7 @@ function updateWorkers(dt) {
   for (var i = 0; i < workers.length; i++) {
     var w = workers[i], R2 = ROLES[w.role];
     if (!R2) { workers.splice(i--, 1); continue; }
-    var sp = R2.speed * mul;
+    var sp = R2.speed * mul * (w.zone >= 0 && zoneAuto(w.zone) ? 1.2 : 1);
     if (w.role === 'hamal') aiHamal(w, sp, dt);
     else if (w.role === 'tezgahtar') aiTezgahtar(w, sp, dt);
     else if (w.role === 'kasiyer') aiKasiyer(w, sp, dt);
@@ -2382,7 +2462,13 @@ function aiKasiyer(w, sp, dt) {
   if (w.mode === 'drop') { if (goTo(w, safe.x + 0.35, safe.y + 0.35, sp, dt, 0.9)) iDeposit(w, dt); return; }
   if (c) { if (goTo(w, c.tray.x, c.tray.y, sp, dt, 0.8)) iPickMoney(w, c, dt); return; }
   if (hasCarry(w, isMoney)) { w.mode = 'drop'; return; }
-  goTo(w, safe.x + 1.6, safe.y - 0.7, sp, dt, 1.0);
+  var home = zoneCounter(w.zone);                   /* boşta: kendi bölgesinin tezgâh kasası yanında */
+  if (home) goTo(w, home.tray.x - 0.9, home.tray.y + 0.5, sp, dt, 1.0);
+  else goTo(w, safe.x + 1.6, safe.y - 0.7, sp, dt, 1.0);
+}
+function zoneCounter(z) {
+  for (var i = 0; i < counters.length; i++) { var c = counters[i]; if (!AREAS[c.z].locked && c.fish && zoneOfFish(c.fish) === z) return c; }
+  return null;
 }
 function aiFiletocu(w, sp, dt) {
   if (!w.table || AREAS[w.table.z].locked) assignFiletocu(w);
@@ -2523,6 +2609,7 @@ function updateCounter(c, dt) {
   if (c.spawnT <= 0 && freeIdx >= 0) {
     c.spawnT = 5.4 * rnd(0.75, 1.3);
     if (!daySpawnOK()) return;                 /* gün kapanışında yeni müşteri gelmez (§2) */
+    if (trayFull(c)) return;                   /* v0.5: kasa dolu — tahsildar ya da oyuncu boşaltmalı */
     /* v0.1 adalet: stoksuz tezgâha müşteri seyrek gelir, kuyrukta uzadıkça daha da seyrek.
        Umutsuz müşteri doğup boşuna kızmasın. */
     var bekleyen = 0;
@@ -3324,10 +3411,30 @@ function drawPerson(a, o) {
     px(sx - 6, hy - 1, 12, 2, o.sunHat);
     px(sx - 3, hy - 4, 6, 3, o.sunHat);
     px(sx - 3, hy - 2, 6, 1, shade(o.sunHat, -18));
+  } else if (o.beanie) {                              /* balıkçı beresi */
+    px(sx - 4, hy - 3, 8, 4, o.beanie);
+    px(sx - 4, hy, 8, 1, shade(o.beanie, -22));
+    px(sx - 1, hy - 4, 2, 1, shade(o.beanie, 18));
+    px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair);
+  } else if (o.hairStyle === 4) {                     /* kel: yalnız yanlarda saç */
+    px(sx - 3, hy - 1, 6, 1, skin); px(sx - 2, hy - 2, 4, 1, skin);
+    px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair);
   } else {
     px(sx - 4, hy - 2, 8, 3, hair);
     px(sx - 4, hy + 1, 1, 3, hair); px(sx + 3, hy + 1, 1, 3, hair);
+    if (o.hairStyle === 1) {                          /* dalgalı */
+      px(sx - 5, hy - 1, 1, 3, hair); px(sx + 4, hy - 1, 1, 3, hair);
+      px(sx - 3, hy - 3, 2, 1, hair); px(sx + 1, hy - 3, 2, 1, hair);
+    } else if (o.hairStyle === 2) {                   /* uzun */
+      px(sx - 5, hy, 1, 8, hair); px(sx + 4, hy, 1, 8, hair);
+      px(sx - 4, hy + 4, 1, 4, hair); px(sx + 3, hy + 4, 1, 4, hair);
+    } else if (o.hairStyle === 3) {                   /* at kuyruğu */
+      var tx = fx > 0 ? sx - 6 : sx + 4;
+      px(tx, hy, 2, 2, hair); px(tx + (fx > 0 ? 0 : 1), hy + 2, 1, 4, hair);
+    }
   }
+  if (o.cap && o.hairStyle === 2) { px(sx - 5, hy + 1, 1, 7, hair); px(sx + 4, hy + 1, 1, 7, hair); }
+  if (o.cap && o.hairStyle === 3) { var tx2 = fx > 0 ? sx - 6 : sx + 4; px(tx2, hy + 1, 2, 5, hair); }
 
   /* yüz */
   var ey = hy + 3;
@@ -3348,6 +3455,7 @@ function drawPerson(a, o) {
 /* --------- kıyafet tanımları: oyuncu, çalışanlar, müşteriler --------- */
 /* Oyuncu: Karadenizli balıkçı — lacivert yün kazak, muşamba önlük, kasket, lastik çizme */
 function playerOutfit() {
+  if (S.hero) return heroOutfit(S.hero, player.face);
   return {
     coat: '#1f4e6b', coat2: '#2f6b8f', knit: '#8fc0d8',
     apron: '#c9782f', skin: PAL.skin[0], hair: PAL.hair[0],
@@ -4174,12 +4282,14 @@ function drawCounter(c) {
   drawStack(c.x, c.y, c.buffer, 12, 3.2);
   labelAt(c.x, c.y - 1.5, 46, (c.fish ? NM(FISH[c.fish].n) : T('stStall')) + ' ' + c.buffer.length + '/' + counterMax(c),
     '#ffd9a8', '' + c.buffer.length);
+  if (c.fish && zoneAuto(zoneOfFish(c.fish))) labelAt(c.x, c.y - 1.5, 58, T('autoBadge'), '#ffc94a', 'auto');
   /* para tepsisi: bakır sini */
   var tr = c.tray;
   isoQuad(tr.x - 0.62, tr.y - 0.52, 1.24, 1.04, 0.4, '#8a6a20');
   isoQuad(tr.x - 0.48, tr.y - 0.4, 0.96, 0.8, 0.9, PAL.brass);
   drawStack(tr.x, tr.y, tr.items, 2.4, 3.2);
-  if (tr.items.length) labelAt(tr.x, tr.y + 0.95, 10, T('stTake'), '#9df5b0', '$');
+  if (trayFull(c)) labelAt(tr.x, tr.y + 0.95, 10, T('trayFull'), (Math.sin(gameT * 6) > 0 ? '#ff9b8a' : '#ffd0c8'), '!');
+  else if (tr.items.length) labelAt(tr.x, tr.y + 0.95, 10, T('stTake') + ' ' + money(trayValue(c)), '#9df5b0', '$');
 }
 
 function drawSafe() {
@@ -5135,7 +5245,8 @@ var el = {};
  'introDots', 'introTap', 'introTag', 'nameScr', 'nameCard', 'nameTitle', 'nameSub', 'nameSign', 'nameIn', 'nameDice', 'nameHint',
  'nameIdeasLbl', 'nameChips', 'nameGo', 'boardScr', 'boardTitle', 'boardSub', 'boardRows', 'boardNote',
  'boardClose', 'boardBtn', 'storyBtn', 'menuBoard', 'dpSub', 'lvlUp', 'lvlNum', 'lvlTitle', 'lvlList', 'lvlConf', 'coach', 'loadBtn', 'slotScr', 'slotTitle', 'slotSub',
- 'slotRows', 'slotBack', 'nameBack', 'askScr', 'askMsg', 'askYes', 'askNo'].forEach(function (id) {
+ 'slotRows', 'slotBack', 'nameBack', 'askScr', 'askMsg', 'askYes', 'askNo', 'heroScr', 'heroCard', 'heroCv',
+ 'heroName', 'heroNameDice', 'heroRows', 'heroDice', 'heroGo', 'heroBack', 'heroTitle', 'heroSub', 'heroNameLbl'].forEach(function (id) {
   el[id] = document.getElementById(id);
 });
 var toastT = 0;
@@ -5149,6 +5260,9 @@ function applyLang() {
     return '<li>' + T(k) + '</li>';
   }).join('') + '<li style="opacity:.7">' + T('ctrl') + '</li>');
   el.playBtn.textContent = T('play'); el.setBtn.textContent = T('settings');
+  el.heroTitle.textContent = T('heroTitle'); el.heroSub.textContent = T('heroSub'); el.heroNameLbl.textContent = T('heroNameLbl');
+  el.heroDice.textContent = T('heroRandom'); el.heroGo.textContent = T('heroGo'); el.heroBack.textContent = T('back');
+  if (!el.heroScr.classList.contains('hidden')) renderHeroRows();
   el.loadBtn.textContent = T('loadGame'); el.slotBack.textContent = T('back'); el.nameBack.textContent = T('back');
   if (!el.slotScr.classList.contains('hidden')) renderSlots();
   el.boardBtn.textContent = T('board'); el.storyBtn.textContent = T('story'); el.menuBoard.textContent = T('boardTitle');
@@ -5352,12 +5466,16 @@ function barList() {
         pick: free > 0 ? T('choose') : null, blocked: free <= 0, why: T('zoneFull'),
         go: function () { barZone = z2; cfId = null; renderBar(); } });
     })(i);
-    /* --- kasiyer (liman geneli) --- */
-    if (roleCount('kasiyer') < cashierCap()) {
-      out.push({ id: 'kas', ic: ROLES.kasiyer.icon, t: NM(ROLES.kasiyer.n),
-        s: NM(ROLES.kasiyer.d) + ' • ' + T('harborWide'), cost: hireCost('kasiyer', 0),
-        go: function () { hire('kasiyer', false, -1); } });
-    }
+    /* --- v0.5: personele devret (tam otomasyon) --- */
+    for (i = 0; i < zoneCount(); i++) (function (z3) {
+      if (!zoneOpen(z3)) return;
+      var ch = zoneChain(z3), on = zoneAuto(z3);
+      var st = ZONE_ROLES.map(function (r) { return (ch[r] ? '✓' : '✗') + NM(ROLES[r].n); }).join(' ');
+      out.push({ id: 'au' + z3, ic: on ? '⚙️' : '🤝', t: T(on ? 'autoCardOn' : 'autoCard', { n: NM(AREAS[z3].n) }),
+        s: on ? T('autoCardOnD') : st, pick: ch.ok ? T(on ? 'autoBack' : 'autoGive') : null,
+        blocked: !ch.ok, why: T('autoNeed', { n: ch.miss.length }),
+        go: function () { setZoneAuto(z3, !on); } });
+    })(i);
     for (i = 0; i < PADS.length; i++) {
       var p = PADS[i];
       if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
@@ -5774,14 +5892,13 @@ function renderTab() {
     for (i = 0; i < workers.length; i++) {
       var w = workers[i], Rl = ROLES[w.role];
       h += row(Rl.icon, w.name + ' - ' + NM(Rl.n),
-        (w.zone >= 0 ? NM(AREAS[w.zone].n) : T('harborWide')) + ' • ' + NM(Rl.d),
+        (w.zone >= 0 ? NM(AREAS[w.zone].n) : T('harborWide')) + (w.stall ? ' • ' + stallLabel(w.stall) : '') + ' • ' + NM(Rl.d),
         money(Rl.wage) + perMin(), T('carry') + ' ' + carryW(w) + '/' + Rl.cap);
     }
     for (i = 0; i < zoneCount(); i++) {
       if (!zoneOpen(i)) continue;
       h += row('👷', T('zoneStaff', { n: NM(AREAS[i].n) }), T('mZoneStaff'), zoneStaff(i) + '/' + zoneStaffCap(i));
     }
-    h += row('💰', NM(ROLES.kasiyer.n), T('harborWide'), roleCount('kasiyer') + '/' + cashierCap());
     if (workers.length) h += row('💸', T('mTotalWage'), '', money(wageTotal()) + perMin());
   } else if (curTab === 'urunler') {
     for (i = 0; i < LINES.length; i++) {
@@ -5885,7 +6002,7 @@ function frame(ts) {
   var dt = Math.min(0.05, (ts - last) / 1000 || 0);
   last = ts;
   if (intro.on) { updateIntro(dt); return; }
-  if (!S.started) { gameT += dt; updateFx(dt); render(); return; }
+  if (!S.started) { gameT += dt; updateFx(dt); render(); drawHeroPreview(gameT); return; }
   if (paused) { if (!document.hidden) render(); return; }   /* duraklatıldı: dünya tamamen donar */
   gameT += dt; S.play += dt;
   updatePlayer(dt);
@@ -5929,7 +6046,16 @@ el.playBtn.onclick = function () {
 el.newBtn.onclick = function () { openSlots('new'); };
 el.loadBtn.onclick = function () { openSlots('load'); };
 el.slotBack.onclick = closeSlots;
-el.nameBack.onclick = function () { el.nameScr.classList.add('hidden'); el.startScreen.classList.remove('hidden'); refreshSaveInfo(); sfx.tap(); };
+el.nameBack.onclick = function () {
+  el.nameScr.classList.add('hidden');
+  if (nameMode === 'new') openHeroScreen(); else { el.startScreen.classList.remove('hidden'); refreshSaveInfo(); }
+  sfx.tap();
+};
+el.heroGo.onclick = confirmHero;
+el.heroBack.onclick = function () { el.heroScr.classList.add('hidden'); openSlots('new'); };
+el.heroDice.onclick = function () { var nm = el.heroName.value; pendingHero = randomHero(); if (nm) pendingHero.n = nm; renderHeroRows(); sfx.pick(); };
+el.heroNameDice.onclick = function () { el.heroName.value = pick(HERO_NAMES); sfx.pick(); };
+el.heroName.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); confirmHero(); } });
 el.askNo.onclick = function () { closeAsk(false); };
 el.askYes.onclick = function () { closeAsk(true); };
 el.storyBtn.onclick = function () { openIntro(null); };
@@ -6903,6 +7029,108 @@ function closeBoard() {
   syncPause();
 }
 
+/* ---------- v0.5 — KARAKTER OLUŞTURMA ---------- */
+var HERO_OPT = {
+  hs: { tr: ['Kısa', 'Dalgalı', 'Uzun', 'At kuyruğu', 'Kel'], en: ['Short', 'Wavy', 'Long', 'Ponytail', 'Bald'] },
+  hc: ['#1d1713', '#3d2a1a', '#6b3f22', '#a4471f', '#c9a45a', '#9a9a96'],
+  sk: [0, 1, 2, 3],
+  hw: { tr: ['Yok', 'Kasket', 'Yazma', 'Balıkçı beresi'], en: ['None', 'Flat cap', 'Headscarf', 'Fisher beanie'] },
+  fc: { tr: ['Yok', 'Bıyık', 'Sakal'], en: ['None', 'Moustache', 'Beard'] },
+  co: ['#1f4e6b', '#7a2b2b', '#2f5a3a', '#4a5058', '#5a3f7a'],
+  ap: ['#c9782f', '#b3422f', '#4f8f5a', '#3f6fb0', '#d9a441']
+};
+var HERO_ROWS = ['hs', 'hc', 'sk', 'hw', 'fc', 'co', 'ap'];
+var HERO_NAMES = ['Hasan', 'Recai', 'Temel', 'Dursun', 'Ayşe', 'Fadime', 'Zeynep', 'Kemal', 'İdris', 'Hatice', 'Selim', 'Emine', 'Yusuf', 'Rıza', 'Elif', 'Cafer'];
+function heroCount(k) { var v = HERO_OPT[k]; return Array.isArray(v) ? v.length : v.tr.length; }
+function randomHero() {
+  var h = { n: pick(HERO_NAMES) };
+  HERO_ROWS.forEach(function (k) { h[k] = irnd(0, heroCount(k) - 1); });
+  return h;
+}
+function cleanHero(h) {
+  if (!h || typeof h !== 'object') return null;
+  var o = { n: String(h.n == null ? '' : h.n).replace(/<[^>]*>/g, '').replace(/[\u0000-\u001f<>`\\{}\[\]]/g, '').replace(/\s+/g, ' ').trim().slice(0, 16) };
+  HERO_ROWS.forEach(function (k) { var v = parseInt(h[k], 10); o[k] = isNaN(v) ? 0 : clamp(v, 0, heroCount(k) - 1); });
+  return o;
+}
+/* kahramanın kıyafeti: drawPerson'a verilen tanım */
+function heroOutfit(h, face) {
+  h = h || { hs: 0, hc: 0, sk: 0, hw: 1, fc: 1, co: 0, ap: 0 };
+  var coat = HERO_OPT.co[h.co] || '#1f4e6b', o = {
+    coat: coat, coat2: shade(coat, 22), knit: shade(coat, 60),
+    apron: HERO_OPT.ap[h.ap], skin: PAL.skin[h.sk] || PAL.skin[0], hair: HERO_OPT.hc[h.hc],
+    hairStyle: h.hs, boot: '#16222b', bootTop: '#2f4450', pants: '#2b3a45', face: face
+  };
+  if (h.hw === 1) o.cap = '#14364a';
+  else if (h.hw === 2) o.scarf = '#b3422f';
+  else if (h.hw === 3) o.beanie = '#8d3423';
+  if (h.fc === 1) o.must = true; else if (h.fc === 2) o.beard = true;
+  return o;
+}
+var pendingHero = null, heroFace = 1;
+function heroLabel(k, v) {
+  var o = HERO_OPT[k];
+  if (Array.isArray(o)) return k === 'sk' ? '' : '';
+  return (o[lang] || o.tr)[v];
+}
+function openHeroScreen() {
+  pendingHero = pendingHero || randomHero();
+  el.heroName.value = pendingHero.n;
+  renderHeroRows();
+  el.heroScr.classList.remove('hidden');
+  el.heroCard.classList.remove('pop'); void el.heroCard.offsetWidth; el.heroCard.classList.add('pop');
+}
+function renderHeroRows() {
+  var h = '';
+  HERO_ROWS.forEach(function (k) {
+    var v = pendingHero[k], o = HERO_OPT[k], val;
+    if (k === 'sk') val = '<i class="swc" style="background:' + PAL.skin[v] + '"></i>';
+    else if (Array.isArray(o)) val = '<i class="swc" style="background:' + o[v] + '"></i>';
+    else val = escH((o[lang] || o.tr)[v]);
+    h += '<div class="hrow"><span>' + T('hero_' + k) + '</span><button data-k="' + k + '" data-d="-1">‹</button>' +
+      '<b>' + val + '</b><button data-k="' + k + '" data-d="1">›</button></div>';
+  });
+  el.heroRows.innerHTML = h;
+  Array.prototype.forEach.call(el.heroRows.querySelectorAll('button'), function (b) {
+    b.onclick = function () {
+      var k = b.dataset.k, n = heroCount(k);
+      pendingHero[k] = (pendingHero[k] + parseInt(b.dataset.d, 10) + n) % n;
+      renderHeroRows(); sfx.pick();
+    };
+  });
+}
+function confirmHero() {
+  var n = cleanHero({ n: el.heroName.value }).n;
+  if (n.length < 2) {
+    sfx.bad(); el.heroCard.classList.remove('shake'); void el.heroCard.offsetWidth; el.heroCard.classList.add('shake');
+    el.heroName.focus(); return;
+  }
+  pendingHero.n = n;
+  pendingHero = cleanHero(pendingHero);
+  el.heroName.blur();
+  el.heroScr.classList.add('hidden');
+  openNameScreen('new');
+  sfx.tap();
+}
+/* önizleme: iskele tahtası üstünde karakter, arada bir döner */
+function drawHeroPreview(t) {
+  if (el.heroScr.classList.contains('hidden') || !pendingHero) return;
+  var cv = el.heroCv, g = cv.getContext('2d'), old = ctx;
+  if (Math.floor(t / 1.6) % 2 !== (heroFace > 0 ? 0 : 1)) heroFace = -heroFace;
+  ctx = g;
+  try {
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.imageSmoothingEnabled = false;
+    g.fillStyle = '#16293a'; g.fillRect(0, 0, cv.width, cv.height);
+    for (var i = 0; i < 5; i++) { g.fillStyle = i % 2 ? '#7a5130' : '#8a5a33'; g.fillRect(0, 26 + i * 2, cv.width, 2); }
+    g.fillStyle = '#5a3a22'; g.fillRect(0, 26, cv.width, 1);
+    g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), 32);
+    var a = { x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: t * 6, act: 0, carry: [] };
+    drawPerson(a, heroOutfit(pendingHero, heroFace));
+  } catch (e) { }
+  ctx = old;
+}
+
 /* ---------- İŞLETME ADI EKRANI ---------- */
 var nameMode = 'new', pendingSlot = 0, introSeen = false;
 
@@ -6937,10 +7165,10 @@ function closeSlots() {
   refreshSaveInfo();
 }
 function beginNewInSlot(n) {
-  pendingSlot = n;
+  pendingSlot = n; pendingHero = null;
   el.slotScr.classList.add('hidden');
-  if (!introSeen) openIntro(function () { openNameScreen('new'); });
-  else openNameScreen('new');
+  if (!introSeen) openIntro(function () { openHeroScreen(); });
+  else openHeroScreen();
 }
 function renderSlots() {
   el.slotTitle.textContent = T(slotMode === 'new' ? 'slotTitleNew' : 'slotTitleLoad');
@@ -7018,6 +7246,7 @@ function confirmName() {
     resetWorld();
     curSlot = pendingSlot || curSlot || 1;
     S.runId = newRunId();
+    S.hero = cleanHero(pendingHero || randomHero());
   }
   S.company = n;
   if (!S.runId) S.runId = newRunId();
@@ -7025,7 +7254,7 @@ function confirmName() {
   start();
   save();
   sfx.star();
-  toast(T('welcomeCo', { n: n }));
+  toast(S.hero ? T('welcomeHero', { h: S.hero.n, n: n }) : T('welcomeCo', { n: n }));
 }
 
 /* ---------- GİRİŞ HİKÂYESİ: dönen pixel gazete + alt yazı ----------
@@ -7470,7 +7699,9 @@ requestAnimationFrame(frame);
 
 window.BT = {
   cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },
-  S: S, safe: safe, DECOR: DECOR, decorClearance: function () { return decorClearance(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
+  S: S, safe: safe, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
+  trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
+  zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
   customers: customers, FISH: FISH, start: start, hire: hire, toast: toast,
   rebuildCounters: rebuildCounters, buyBuilding: buyBuilding, investProject: investProject,

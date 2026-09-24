@@ -46,7 +46,7 @@ Zaten olanlar (doğrulandı): **#5** kesim tezgâhı bölgeye özel (v2.2) · **
 
 ---
 
-## FAZ 2 — Otomasyon ve kimlik
+## FAZ 2 — Otomasyon ve kimlik  ✅ (v0.5'te yapıldı)
 
 ### #8 Karakter oluşturma
 İsim ekranından önce **Karakter** ekranı: ad, saç modeli (5), saç rengi (6), ten rengi (5), kasket/yazma
