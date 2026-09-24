@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — **v0.2** (hikâye girişi + skor tablosu)
+# 🐟 Balıkçı Tycoon — **v0.3** (Faz 1: hissiyat ve netlik)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,27 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v0.3 — Faz 1: hissiyat ve netlik
+
+Oyuncu geri bildirimleri 3 faza bölündü: ayrıntılar **`FAZ_PLANI.md`** (analiz, fikirler, depo tasarımı).
+
+| Geri bildirim | Ne yapıldı |
+|---|---|
+| Açılış müziği | **"İskele Türküsü"** — kendi bestemiz (re minör, 132 BPM, 16 ölçü). Dosya yok, Web Audio chiptune → telif yok. Hikâye + menüde çalar, oyuna girince susar. |
+| İtibar = seviye | **10 seviye** (Çırak Balıkçı → Karadeniz Efsanesi), eşikler mevcut kilitlere hizalı. HUD'da `SV N`. Seviye başına **+%2 satış primi**. |
+| Level up bildirimi | Oyunu **durdurmayan** üst şerit: seviye + unvan + açılanlar, fanfar, konfeti, 3.6 sn. |
+| Seviye ↔ açılımlar | Reklam Panosu Sv3, Ek Tezgâh Sv4, Ağ Vinci Sv5, VIP Sv5, Çeşme Sv5, Heykel Sv6, Fener Sv7; kilitli kartta `🔒 Seviye N gerekli`. |
+| Yapı alt kategorileri | YAPI: **Dekoratif · Geliştirmeler · Yapı Yükseltmeleri** (bölge seviyeleri buraya taşındı). |
+| Hareket ikonu | Belirgin pixel joystick (halka + altın topuz + yön oku); yürürken ayakta yön oku (klavyede de). |
+| Kontrol eğitimi | İlk açılışta: *sürükle/WASD → yürü*, ardından *durman yeter, karakter kendiliğinden alır/bırakır*. |
+| Süsler tezgâh dışında | 12 süs batı kıyı şeridine, iskele önü suya ve güney kumsala taşındı; en yakın işlevsel nesneye ≥1.5 kare (`decorClearance()`). |
+| Gün sonu müşteri değişimi | Kapanışta kalanlar selamlaşıp ayrılır (kayıp sayılmaz); her gün **"Günün müşterisi"** öne çıkar. |
+
+Zaten var olanlar doğrulandı: kesim tezgâhı bölgeye özel (v2.2), füme yalnız son bölgede.
+**Test:** `test-faz1.js` (müzik, eğitim, seviye, alt sekmeler, süs mesafesi, gün sonu) + önceki tüm testler.
 
 ---
 
