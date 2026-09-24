@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — **v0.5** (Faz 2: otomasyon ve kimlik)
+# 🐟 Balıkçı Tycoon — **v0.6** (oyun içi müzik + çöp kovası)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,18 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v0.6 — Oyun içi müzik + çöp kovası
+
+- **Müzik oyunda da sürer:** menüde tam düzenleme; oyuna girince aynı "İskele Türküsü" arkadan **mırıldanır**
+  (yumuşak sinüs melodi + alçak oktav, seyrek bas, davul yok, düşük ses). Menüye dönünce tekrar tam çalar.
+  Ayarlar › **MÜZİK: ♪ AÇIK / KAPALI** (tercih kaydedilir).
+- **Çöp kovası (her bölgede bir tane):** tezgâh/kuyruk doluyken ya da yanlış ürünle elin dolu kaldığında
+  kovanın önünde kısa bir an **dur** → taşıdığın mallar atılır. Para asla atılmaz. Yanından geçmek ya da
+  tezgâhın önünde durmak kovayı tetiklemez. Tezgâh malını almıyorsa oyun kovayı hatırlatır.
+- **Test:** `test-trash.js` (kova boşaltma, parayı korur, geçerken/tezgâh önünde tetiklenmez, istasyonlara mesafe, müzik kipi ve ayarı).
 
 ---
 

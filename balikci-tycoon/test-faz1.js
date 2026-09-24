@@ -14,9 +14,10 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   await p.mouse.click(215, 400); await sleep(1500);                 /* kapı → müzik */
   R.musicIntro = await p.evaluate(() => BT.music());
   ok(R.musicIntro.on && R.musicIntro.step > 2, 'müzik hikâyede çalmıyor');
-  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo'); await p.click('#nameGo'); await sleep(1600);
-  R.musicGame = await p.evaluate(() => BT.music().on);
-  ok(!R.musicGame, 'müzik oyunda susmadı');
+  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo'); await p.click('#nameGo'); await sleep(400);
+  await sleep(1500);
+  R.musicGame = await p.evaluate(() => BT.music());
+  ok(R.musicGame.on && R.musicGame.mode === 'game' && R.musicGame.vol < 0.3, 'oyunda müzik mırıldanmıyor ' + JSON.stringify(R.musicGame));
   /* kontrol eğitimi */
   R.coach0 = await p.evaluate(() => ({ vis: !document.getElementById('coach').classList.contains('hidden'), t: document.getElementById('coach').textContent, c: BT.S.ctrl }));
   ok(R.coach0.vis && R.coach0.c === 0, 'kontrol eğitimi görünmüyor');

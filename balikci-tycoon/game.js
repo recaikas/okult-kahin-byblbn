@@ -67,6 +67,8 @@ var STR = {
     heroRandom: '🎲 RASTGELE', heroGo: 'DEVAM ▶', hero_hs: 'Saç modeli', hero_hc: 'Saç rengi', hero_sk: 'Ten rengi',
     hero_hw: 'Başlık', hero_fc: 'Bıyık / sakal', hero_co: 'Kazak', hero_ap: 'Önlük',
     welcomeHero: 'Hayırlı olsun {h}! {n} kapılarını açtı.',
+    stBin: 'ÇÖP', trashed: '🗑 {n} ürün çöpe atıldı', trashHint: '🗑 Tezgâh almıyor — fazlayı ÇÖP kovasına atabilirsin (kovanın önünde dur)',
+    musicLbl: 'MÜZİK', musOn: '♪ AÇIK', musOff: 'KAPALI',
     featDay: 'Günün müşterisi: {n}', levelUp: '⭐ Yeni seviye: {t}!', lvlN: 'SEVİYE {l}', lvShort: 'SV {l}', lvBonus: 'Satış primi {p}',
     areaOpen: '🔓 {n} açıldı!',
     areaLvUp: '🏗️ {n} → Sv.{l}',
@@ -240,6 +242,8 @@ var STR = {
     heroRandom: '🎲 RANDOM', heroGo: 'NEXT ▶', hero_hs: 'Hair style', hero_hc: 'Hair colour', hero_sk: 'Skin tone',
     hero_hw: 'Headwear', hero_fc: 'Moustache / beard', hero_co: 'Sweater', hero_ap: 'Apron',
     welcomeHero: 'Good luck {h}! {n} is open for business.',
+    stBin: 'BIN', trashed: '🗑 {n} items thrown away', trashHint: '🗑 The stall won\'t take it — dump extras in the BIN (stand in front of it)',
+    musicLbl: 'MUSIC', musOn: '♪ ON', musOff: 'OFF',
     featDay: 'Customer of the day: {n}', levelUp: '⭐ New rank: {t}!', lvlN: 'LEVEL {l}', lvShort: 'LV {l}', lvBonus: 'Sales bonus {p}',
     areaOpen: '🔓 {n} unlocked!',
     areaLvUp: '🏗️ {n} → Lv.{l}',
@@ -646,11 +650,15 @@ var SONG = {
   /* ölçü başına bas kökü (MIDI) */
   bass: [38, 36, 38, 33,  38, 34, 33, 38,  34, 36, 31, 33,  34, 41, 33, 38]
 };
-var music = { on: false, timer: 0, next: 0, li: 0, lt: 0, bar: 0, step: 0, gain: null, wantOn: false };
+var music = { on: false, timer: 0, next: 0, li: 0, lt: 0, bar: 0, step: 0, gain: null, wantOn: false, mode: 'menu' };
+var musicEnabled = true;                       /* ayarlar › müzik (tercihlere yazılır) */
+var MUSIC_VOL = { menu: 0.55, game: 0.2 };
 function midiF(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+/* iki kip: 'menu' = tam düzenleme (kare dalga melodi, bas, davul);
+   'game' = arkadan mırıldanma (yumuşak sinüs melodi + alçak oktav, seyrek bas, davul yok) */
 function musicTick() {
   if (!music.on || !AC || AC.state !== 'running') return;
-  var e8 = 60 / SONG.bpm / 2, horizon = AC.currentTime + 0.25;
+  var e8 = 60 / SONG.bpm / 2, horizon = AC.currentTime + 0.25, hum = music.mode === 'game';
   if (music.next < AC.currentTime) music.next = AC.currentTime + 0.05;
   while (music.next < horizon) {
     var t = music.next, at = t - AC.currentTime, st = music.step % 8;
@@ -659,31 +667,41 @@ function musicTick() {
       var n = SONG.lead[music.li];
       music.li = (music.li + 1) % SONG.lead.length;
       music.lt = n[1];
-      if (n[0]) tone(midiF(n[0]), e8 * n[1] * 0.92, 'square', 0.16, { at: at, lp: 2300, atk: 0.012, dst: music.gain });
+      if (n[0]) {
+        if (hum) {
+          tone(midiF(n[0]), e8 * n[1] * 0.98, 'sine', 0.3, { at: at, atk: 0.05, dst: music.gain });
+          tone(midiF(n[0] - 12), e8 * n[1] * 0.98, 'triangle', 0.1, { at: at, atk: 0.06, lp: 900, dst: music.gain });
+        } else tone(midiF(n[0]), e8 * n[1] * 0.92, 'square', 0.16, { at: at, lp: 2300, atk: 0.012, dst: music.gain });
+      }
     }
     music.lt--;
-    /* bas: kök · · kök oktav · beşli · */
     var root = SONG.bass[music.bar % SONG.bass.length];
-    var bn = st === 0 || st === 3 ? root : st === 4 ? root + 12 : st === 6 ? root + 7 : 0;
-    if (bn) tone(midiF(bn), e8 * 0.9, 'triangle', 0.34, { at: at, lp: 900, dst: music.gain });
-    /* davul: 1 ve 3'te tok vuruş, ara sekizliklerde hafif zil */
-    if (st === 0 || st === 4) tone(110, 0.12, 'sine', 0.3, { at: at, to: 45, dst: music.gain });
-    if (st % 2 === 1) noise(0.04, 0.035, { f: 7000, type: 'highpass', at: at, dst: music.gain });
-    if (st === 4 && music.bar % 2) noise(0.09, 0.05, { f: 1800, to: 700, q: 0.8, at: at, dst: music.gain });
+    if (hum) {
+      if (st === 0) tone(midiF(root), e8 * 3.6, 'triangle', 0.22, { at: at, lp: 500, atk: 0.04, dst: music.gain });
+    } else {
+      /* bas: kök · · kök oktav · beşli · */
+      var bn = st === 0 || st === 3 ? root : st === 4 ? root + 12 : st === 6 ? root + 7 : 0;
+      if (bn) tone(midiF(bn), e8 * 0.9, 'triangle', 0.34, { at: at, lp: 900, dst: music.gain });
+      /* davul: 1 ve 3'te tok vuruş, ara sekizliklerde hafif zil */
+      if (st === 0 || st === 4) tone(110, 0.12, 'sine', 0.3, { at: at, to: 45, dst: music.gain });
+      if (st % 2 === 1) noise(0.04, 0.035, { f: 7000, type: 'highpass', at: at, dst: music.gain });
+      if (st === 4 && music.bar % 2) noise(0.09, 0.05, { f: 1800, to: 700, q: 0.8, at: at, dst: music.gain });
+    }
     music.next += e8; music.step++;
     if (music.step % 8 === 0) music.bar++;
   }
 }
-function musicPlay() {
+function musicPlay(mode) {
+  music.mode = mode || (S.started ? 'game' : 'menu');
   music.wantOn = true;
-  if (!ensureAudio() || music.on) return;
+  if (!musicEnabled || !ensureAudio()) return;
   try {
-    if (!music.gain) { music.gain = AC.createGain(); music.gain.connect(masterGain); }
-    music.gain.gain.cancelScheduledValues(AC.currentTime);
-    music.gain.gain.setValueAtTime(0.0001, AC.currentTime);
-    music.gain.gain.exponentialRampToValueAtTime(0.55, AC.currentTime + 1.2);
+    if (!music.gain) { music.gain = AC.createGain(); music.gain.gain.value = 0.0001; music.gain.connect(masterGain); }
+    var g = music.gain.gain, now = AC.currentTime;
+    g.cancelScheduledValues(now); g.setValueAtTime(Math.max(0.0001, g.value), now);
+    g.exponentialRampToValueAtTime(MUSIC_VOL[music.mode], now + (music.on ? 1.8 : 1.2));
   } catch (e) { return; }
-  music.on = true; music.li = 0; music.lt = 0; music.bar = 0; music.step = 0; music.next = AC.currentTime + 0.1;
+  if (!music.on) { music.on = true; music.li = 0; music.lt = 0; music.bar = 0; music.step = 0; music.next = AC.currentTime + 0.1; }
   if (!music.timer) music.timer = setInterval(musicTick, 60);
 }
 function musicStop(fade) {
@@ -696,10 +714,14 @@ function musicStop(fade) {
     g.exponentialRampToValueAtTime(0.0001, t + (fade || 0.8));
   } catch (e) { }
 }
-/* tarayıcı sesi ilk dokunuşta açar: menüdeyken müzik o anda başlar */
+function setMusicEnabled(on) {
+  musicEnabled = !!on;
+  if (musicEnabled) musicPlay(); else musicStop(0.5);
+}
+/* tarayıcı sesi ilk dokunuşta açar: müzik o anda başlar (menüde tam, oyunda mırıldanma) */
 ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) {
   window.addEventListener(ev, function () {
-    if (!S.started && !music.on) setTimeout(function () { if (!S.started && !music.on) musicPlay(); }, 60);
+    if (!music.on && musicEnabled && !intro.on) setTimeout(function () { if (!music.on && musicEnabled && !intro.on) musicPlay(); }, 60);
   }, { passive: true });
 });
 
@@ -1696,6 +1718,26 @@ function validateWorld() {
 }
 function counterMax(c) { return 20 + (AREAS[c.z].lvl - 1) * 4 + slotEff(c.z, 'stock'); }
 var safe = { z: 0, x: 1.2, y: 4.9, pop: 0 };
+/* v0.6 — çöp kovaları: elde kalan fazla mal (tezgâh/kuyruk dolu, yanlış tür) atılabilsin.
+   Kovanın önünde kısa bir an durunca taşıdığın mallar boşalır (para asla atılmaz). */
+var BINS = [
+  { z: 0, x: 9.3, y: 0.6, pop: 0 },
+  { z: 1, x: 9.3, y: 6.5, pop: 0 },
+  { z: 2, x: 9.3, y: 14.1, pop: 0 }
+];
+var binT = 0, trashN = 0, stuckT = 0, stuckHintAt = -99;
+var isTrash = function (it) { return it.k !== 'money'; };
+function iTrash(a, bn, dt) {
+  if (!hasCarry(a, isTrash)) return false;
+  a.act -= dt; if (a.act > 0) return true;
+  a.act = 0.07;
+  var it = popCarry(a, isTrash);
+  fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), bn.x, bn.y, 9, it, 0.22);
+  bn.pop = 1; trashN++;
+  sfx.drop(); noise(0.06, 0.06, { f: 900, to: 300 });
+  if (!hasCarry(a, isTrash)) { toast(T('trashed', { n: trashN })); trashN = 0; }
+  return true;
+}
 var office = { z: 2, x: 6.9, y: 16.2, w: 1.8, h: 1.4 };
 function officeBuilt() { return M && M.office; }
 function officeReady() { return !AREAS[office.z].locked; }
@@ -1776,13 +1818,14 @@ function migrateOldSave() {
   for (var i = 1; i <= SLOT_N; i++) if (!readSlot(i)) { Store.set(slotKey(i), old); if (!lastSlot()) Store.set(LAST_KEY, String(i)); break; }
   Store.del(OLD_KEY);
 }
-function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl })); }
+function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0 })); }
 function loadPref() {
   try {
     var d = JSON.parse(Store.get(PREF_KEY) || 'null'); if (!d) return;
     if (d.lang) lang = d.lang;
     if (d.snd !== undefined) { volLvl = clamp(d.snd | 0, 0, 2); applyVolume(); }
     if (d.zoom) zoomLvl = d.zoom;
+    if (d.mus !== undefined) musicEnabled = !!d.mus;
   } catch (e) { }
 }
 function buildSave() {
@@ -1963,7 +2006,7 @@ function saveAndQuit() {
   el.coach.classList.add('hidden'); el.lvlUp.classList.add('hidden'); lvlUpT = 0;
   if (el.tradeBtn) el.tradeBtn.classList.add('hidden');
   el.startScreen.classList.remove('hidden');
-  refreshSaveInfo(); syncPause(); musicPlay();
+  refreshSaveInfo(); syncPause(); musicPlay('menu');
 }
 
 /* =========================================================
@@ -2217,6 +2260,18 @@ function updatePlayer(dt) {
     if (dist2(player.x, player.y, c.tray.x, c.tray.y) < 1.5) acted = iCollectTray(player, c, dt) || acted;
   }
   if (dist2(player.x, player.y, safe.x, safe.y) < 1.8) acted = iDeposit(player, dt) || acted;
+  /* çöp kovası: yanlışlıkla atmamak için önce kısa bir bekleme */
+  var nearBin = null;
+  for (i = 0; i < BINS.length; i++) if (!AREAS[BINS[i].z].locked && dist2(player.x, player.y, BINS[i].x, BINS[i].y) < 0.85) nearBin = BINS[i];
+  if (nearBin && !acted && hasCarry(player, isTrash)) { binT += dt; if (binT > 0.45) acted = iTrash(player, nearBin, dt) || acted; }
+  else binT = 0;
+  /* tezgâhın önünde elindeki malı bırakamıyorsan çöp kovasını hatırlat */
+  var atStall = false;
+  for (i = 0; i < counters.length; i++) if (!AREAS[counters[i].z].locked && dist2(player.x, player.y, counters[i].x, counters[i].y) < 1.8) atStall = true;
+  if (atStall && !acted && hasCarry(player, isGoods)) {
+    stuckT += dt;
+    if (stuckT > 1.4 && gameT - stuckHintAt > 20) { stuckHintAt = gameT; toast(T('trashHint')); }
+  } else stuckT = 0;
   if (officeBuilt() && dist2(player.x, player.y, office.x, office.y) < 3.4) acted = iDeliverContract(player, dt) || acted;
   if (!acted) player.act = 0;
 }
@@ -2553,6 +2608,7 @@ function updateStations(dt) {
   updateCats(dt);                     /* v2.0 — liman kedileri */
   updateAmbient(dt);                  /* v0.1 — hafif liman ortam sesi */
   safe.pop = Math.max(0, safe.pop - dt * 3);
+  for (var bq = 0; bq < BINS.length; bq++) BINS[bq].pop = Math.max(0, BINS[bq].pop - dt * 5);
 }
 
 /* =========================================================
@@ -4292,6 +4348,19 @@ function drawCounter(c) {
   else if (tr.items.length) labelAt(tr.x, tr.y + 0.95, 10, T('stTake') + ' ' + money(trayValue(c)), '#9df5b0', '$');
 }
 
+/* galvaniz çöp kovası: kapak atınca zıplar; elinde mal varken "ÇÖP" etiketi */
+function drawBin(bn) {
+  var pop = bn.pop * 2;
+  shadow(bn.x, bn.y, 0.42);
+  isoBox(bn.x - 0.28, bn.y - 0.28, 0.56, 0.56, 0, 9, '#9aa4ab', '#6c767d', '#818b92');
+  var sx = R(pX(bn.x, bn.y)), sy = R(pY(bn.x, bn.y, 9));
+  px(sx - 5, sy - 1, 10, 1, '#5a646b');                 /* çember */
+  px(sx - 5, sy + 4, 10, 1, '#5a646b');
+  px(sx - 6, sy - 3 - pop, 12, 2, '#6f7a81');           /* kapak */
+  px(sx - 1, sy - 5 - pop, 2, 2, '#4d575e');            /* kulp */
+  if (hasCarry(player, isTrash) && dist2(player.x, player.y, bn.x, bn.y) < 9)
+    labelAt(bn.x, bn.y, 22, T('stBin'), binT > 0 ? '#ffc94a' : '#e8e2d2', '🗑');
+}
 function drawSafe() {
   var pop = safe.pop * 2;
   isoBox(safe.x - 0.5, safe.y - 0.5, 1.0, 1.0, 0, 10 + pop, '#3f8f56', '#22603a', '#2d7546');
@@ -5139,6 +5208,9 @@ function render() {
   for (i = 0; i < DECOR.length; i++) (function (d) {
     if (!d.got || AREAS[d.z].locked) return; push(d.x + d.y, function () { drawDecor(d); });
   })(DECOR[i]);
+  for (i = 0; i < BINS.length; i++) (function (bn) {
+    if (AREAS[bn.z].locked) return; push(bn.x + bn.y, function () { drawBin(bn); });
+  })(BINS[i]);
   for (i = 0; i < PLOTS.length; i++) (function (p) {          /* v0.4 hizmet parselleri */
     if (!plotActive(p)) return;
     if (p.b) push(p.x + p.y, function () { drawServ(p); });
@@ -5235,7 +5307,7 @@ var el = {};
 ['money', 'carry', 'carryIcon', 'rep', 'repfill', 'eventChip', 'eventIcon', 'eventName', 'eventT', 'objective',
  'objLbl', 'objText', 'queueHint', 'toast', 'devbar', 'devpanel', 'dpTitle', 'dpCards', 'dpClose',
  'hMoney', 'hCarry', 'hRep', 'startTag', 'startList', 'playBtn', 'setBtn', 'setTitle', 'setLang',
- 'setSound', 'setZoom', 'setClose', 'resetBtn', 'closeMenu', 'menuSet', 'langLbl', 'tabBody',
+ 'setSound', 'setMusic', 'musOn', 'musOff', 'setZoom', 'setClose', 'resetBtn', 'closeMenu', 'menuSet', 'langLbl', 'tabBody',
  'startScreen', 'settingsScreen', 'menuScreen', 'menuBtn', 'dtArea', 'dtLevel', 'dtBuild', 'dtProj', 'dtServ',
  'pauseBadge', 'pauseTxt', 'saveInfo', 'setSaveInfo', 'saveBtn', 'saveQuitBtn', 'menuSave', 'newBtn', 'setSaveLbl',
  'dayChip', 'dayIcon', 'dayNum', 'dayfill', 'hDay', 'dayBanner', 'dayBannerT', 'dayBannerS',
@@ -5276,6 +5348,7 @@ function applyLang() {
   if (!el.nameScr.classList.contains('hidden')) { syncNamePreview(); renderNameChips(); }
   el.setTitle.textContent = T('settings'); el.setLang.textContent = T('langLbl');
   el.setSound.textContent = T('soundLbl'); el.setZoom.textContent = T('zoomLbl');
+  el.setMusic.textContent = T('musicLbl'); el.musOn.textContent = T('musOn'); el.musOff.textContent = T('musOff');
   el.setClose.textContent = T('resume'); el.resetBtn.textContent = T('delSlot');
   el.closeMenu.textContent = T('resume'); el.menuSet.textContent = T('settings');
   el.saveBtn.innerHTML = PX(T('saveNow')); el.saveQuitBtn.innerHTML = PX(T('saveQuit'));
@@ -5984,11 +6057,15 @@ el.resetBtn.onclick = function () {
   ask(T('delAsk', { n: n, c: S.company || T('slotEmpty2') }), T('delYes'), function () {
     if (S.started) { S.started = false; document.getElementById('hud').classList.add('hidden'); document.getElementById('objective').classList.add('hidden'); el.devbar.classList.add('hidden'); }
     el.settingsScreen.classList.add('hidden'); el.menuScreen.classList.add('hidden');
-    deleteSlot(n); el.startScreen.classList.remove('hidden'); refreshSaveInfo(); syncPause(); musicPlay();
+    deleteSlot(n); el.startScreen.classList.remove('hidden'); refreshSaveInfo(); syncPause(); musicPlay('menu');
     toast(T('slotDeleted', { n: n }));
   });
 };
+Array.prototype.forEach.call(document.querySelectorAll('#musSeg button'), function (b) {
+  b.onclick = function () { setMusicEnabled(b.dataset.m === '1'); syncSettingsUI(); savePref(); sfx.tap(); };
+});
 function syncSettingsUI() {
+  Array.prototype.forEach.call(document.querySelectorAll('#musSeg button'), function (o) { o.classList.toggle('on', (o.dataset.m === '1') === musicEnabled); });
   Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.s, 10) === volLvl); });
   Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.z, 10) === zoomLvl); });
 }
@@ -6032,7 +6109,7 @@ function start() {
   document.getElementById('objective').classList.remove('hidden');
   el.devbar.classList.remove('hidden');
   S.started = true; paused = false; syncPause();
-  ensureAudio(); applyVolume(); musicStop(1.2);
+  ensureAudio(); applyVolume(); musicPlay('game');       /* oyunda müzik arkadan mırıldanır */
   logPlay();
 }
 /* OYNA: kayıt varsa devam; yoksa işletme adı → oyun. Adı olmayan eski kayıt önce ad sorar. */
@@ -7615,7 +7692,7 @@ function introScene(i) {
 function introAdvance() {
   if (!intro.on) return;
   ensureAudio();
-  if (intro.ph === 'gate') { musicPlay(); el.introGate.classList.add('hidden'); el.introScr.classList.remove('gate'); introScene(0); return; }
+  if (intro.ph === 'gate') { musicPlay('menu'); el.introGate.classList.add('hidden'); el.introScr.classList.remove('gate'); introScene(0); return; }
   var full = NM(INTRO[intro.i].sub);
   if (intro.ph === 'in') { intro.t = 0.95; return; }                   /* dönmeyi atla */
   if (intro.typed < full.length) { intro.typed = full.length; el.introSub.textContent = full; el.introNext.classList.remove('hidden'); return; }
@@ -7699,7 +7776,7 @@ requestAnimationFrame(frame);
 
 window.BT = {
   cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },
-  S: S, safe: safe, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
+  S: S, safe: safe, BINS: BINS, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
   zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
@@ -7729,7 +7806,7 @@ window.BT = {
   servRates: function () { return { fish: fishRate, serv: servRate, cap: Math.max(12, fishRate * 0.30) }; },
   servUnlock: servUnlock, servCount: servCount,
   T: T, STR: STR, lang: function () { return lang; },
-  music: function () { return { on: music.on, bar: music.bar, step: music.step }; },
+  music: function () { return { on: music.on, bar: music.bar, step: music.step, mode: music.mode, enabled: musicEnabled, vol: music.gain ? +music.gain.gain.value.toFixed(3) : 0 }; },
   sfx: sfx, audio: function () { return { state: AC && AC.state, vol: masterGain && +masterGain.gain.value.toFixed(3), lvl: volLvl, on: soundOn, ready: audioReady }; },
   setVol: function (v) { volLvl = clamp(v | 0, 0, 2); applyVolume(); ensureAudio(); return volLvl; },
   /* duraklatma + kayıt */
