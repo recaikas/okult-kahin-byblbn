@@ -47,8 +47,11 @@ Gazeteci, Doktor, Ressam, Dalgıç, Muhtar, Otel Aşçıbaşı. Aynı tipin mü�
 
 **Bölüm 1 hedefi:** sol kenarda yanıp sönen **merdiven** simgesi ve yüzde. Tıklayınca hedef ("üç tezgâhı sonuna kadar
 büyüt") ve 10 başlıkta eksikler görünür: bölgeler, bölge seviyeleri, yükseltmeler, yapı noktaları, süsler, çevre,
-füme makineleri, Kapalı Pazar, meydan binaları, müdürler. Sayaç dolunca Bölüm 1 kapanış kartı çıkar (sinematik ara
-sahne için iki seçenek `BOLUM2_TASLAK.md`'de).
+füme makineleri, Kapalı Pazar, meydan binaları, müdürler. Sayaç dolunca **Bölüm 1 kapanışı: gazete manşeti** —
+açılıştaki dönen gazete geri gelir: "LİMANIN YENİ PATRONU", oyuncunun **gerçek limanının** o anki fotoğrafı (sepyadan
+renge döner) ve kendi rakamları; ertesi sabahın gazetesinde ufukta dev trol filoları ve fabrika: *"Artık devler
+liginde hayatta kalmalıyız…"* Ardından Bölüm 1 bitiş kartı. Bölüm 2 planı (şubeler, fabrika/marka, üç dev, pazar
+payı ve borsa savaşları, telefon) `BOLUM2_TASLAK.md`'de.
 
 ---
 

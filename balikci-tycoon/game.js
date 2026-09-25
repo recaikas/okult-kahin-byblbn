@@ -8062,7 +8062,7 @@ var INTRO = [
     sub: { tr: 'Bugün küçük bir tezgâh. Yarın koca bir liman. Ama önce... tabelaya bir isim lazım.',
       en: 'A tiny stall today. A grand harbor tomorrow. But first... the sign needs a name.' } }
 ];
-var intro = { on: false, gate: false, i: 0, t: 0, ph: 'in', out: 0, typed: 0, tick: 0, then: null, cv: null, g: null, pc: null, pg: null };
+var intro = { on: false, gate: false, i: 0, t: 0, ph: 'in', out: 0, typed: 0, tick: 0, then: null, cv: null, g: null, pc: null, pg: null, list: null };
 
 /* 5×7 bitmap yazı tipi — gazete için. Tarayıcı fontu küçük boyda eşiklenince harfler
    bozuluyordu (G→B, Ç→Q); bu yüzden her harf elle çizildi. Türkçe harfler temel harf +
@@ -8305,7 +8305,60 @@ function artHarbor(g, P, t, W, H) {
     g.fillStyle = P.aw2; g.fillRect(sx + 25, sy - 18, 6, 4);
   }
 }
-var ARTS = { pier: artPier, school: artSchool, ad: artAd, dawn: artDawn, harbor: artHarbor };
+/* v1.3 — Bölüm 1 sonu: oyuncunun GERÇEK limanının fotoğrafı (kapanış anında çekilir) */
+var chSnap = null;
+function takeHarborSnap() {
+  try {
+    var ox = camX, oy = camY;
+    camX = pX(8, 8); camY = pY(8, 8, 0) - 10;                  /* üç tezgâh + Kapalı Pazar kadrajda */
+    render();
+    var src = document.getElementById('game'), aw = PAPER_W - 14, ah = 84;
+    var sc = Math.min(src.width / (aw * 2.2), src.height / (ah * 2.2));
+    var cw = Math.round(aw * 2.2 * sc), chh = Math.round(ah * 2.2 * sc);
+    var col = document.createElement('canvas'); col.width = aw; col.height = ah;
+    var cg = col.getContext('2d'); cg.imageSmoothingEnabled = false;
+    cg.drawImage(src, Math.round((src.width - cw) / 2), Math.round(src.height * 0.46 - chh / 2), cw, chh, 0, 0, aw, ah);
+    var sep = document.createElement('canvas'); sep.width = aw; sep.height = ah;
+    var sg = sep.getContext('2d'); sg.drawImage(col, 0, 0);
+    var d = sg.getImageData(0, 0, aw, ah), a = d.data;
+    for (var i = 0; i < a.length; i += 4) {                    /* baskı sepyası */
+      var l = (a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11) / 255;
+      a[i] = 60 + l * 180; a[i + 1] = 48 + l * 170; a[i + 2] = 30 + l * 140;
+    }
+    sg.putImageData(d, 0, 0);
+    chSnap = { col: col, sep: sep };
+    camX = ox; camY = oy;
+  } catch (e) { chSnap = null; }
+}
+function artSnap(g, P, t, W, H) {
+  if (!chSnap) { artHarbor(g, P, t, W, H); return; }
+  g.drawImage(P === PAL_SEPIA ? chSnap.sep : chSnap.col, 0, 0, W, H);
+}
+/* ufukta devler: dev trol gemileri ve balık fabrikası, ışıkları yanar */
+function artGiants(g, P, t, W, H) {
+  var i;
+  g.fillStyle = P.sky2; g.fillRect(0, 0, W, H);
+  g.fillStyle = P.sky; for (i = 0; i < 26; i++) g.fillRect((i * 37) % W, (i * 13) % 34, 1, 1);          /* yıldızlar */
+  g.fillStyle = P.sea2; g.fillRect(0, 50, W, H - 50);
+  g.fillStyle = P.ink;                                                                                   /* fabrika */
+  g.fillRect(8, 26, 40, 24); g.fillRect(14, 12, 5, 14); g.fillRect(26, 16, 5, 10); g.fillRect(48, 34, 22, 16);
+  var glow = 0.5 + 0.5 * Math.sin(t * 2);
+  g.fillStyle = P.sun;
+  for (i = 0; i < 6; i++) if ((i + Math.floor(t * 2)) % 3) g.fillRect(12 + i * 6, 32, 2, 3);
+  g.globalAlpha = 0.4 + glow * 0.4; g.fillRect(15, 8 - Math.floor(t * 3) % 4, 3, 3); g.globalAlpha = 1;
+  for (i = 0; i < 3; i++) {                                                                              /* dev trol gemileri yaklaşır */
+    var sx = W - 20 - i * 48 - Math.min(24, t * 5), sy = 46 + i * 6 + Math.round(Math.sin(t + i) * 1);
+    g.fillStyle = P.ink; g.fillRect(sx, sy, 44, 7); g.fillRect(sx + 4, sy - 8, 22, 8); g.fillRect(sx + 30, sy - 22, 2, 22);
+    g.fillRect(sx + 32, sy - 18, 10, 1); g.fillRect(sx + 8, sy - 14, 6, 6);
+    g.fillStyle = P.aw1; g.fillRect(sx + 2, sy + 2, 40, 1);
+    g.fillStyle = P.sun; g.fillRect(sx + 6, sy - 5, 2, 2); g.fillRect(sx + 12, sy - 5, 2, 2); g.fillRect(sx + 18, sy - 5, 2, 2);
+    if (Math.sin(t * 4 + i) > 0) g.fillRect(sx + 30, sy - 23, 2, 1);
+  }
+  g.fillStyle = P.sea; for (i = 0; i < 12; i++) g.fillRect(Math.round((i * 23 + t * 6) % (W + 10)) - 5, 60 + (i * 7) % 22, 6, 1);
+  g.fillStyle = P.wood; g.fillRect(0, H - 10, 60, 4);                                                   /* bizim iskele, önde küçük */
+  g.fillStyle = P.lite; g.fillRect(40, H - 22, 5, 12); g.fillStyle = P.aw1; g.fillRect(40, H - 24, 5, 2);
+}
+var ARTS = { pier: artPier, school: artSchool, ad: artAd, dawn: artDawn, harbor: artHarbor, snap: artSnap, giants: artGiants };
 
 function drawPaper(g, sc, idx, t) {
   var W = PAPER_W, H = PAPER_H, INK = '#2c231a', i, j;
@@ -8329,7 +8382,7 @@ function drawPaper(g, sc, idx, t) {
   g.save(); g.beginPath(); g.rect(ax, ay, aw, ah); g.clip(); g.translate(ax, ay);
   var art = ARTS[sc.art];
   art(g, PAL_SEPIA, t, aw, ah);
-  if (sc.art === 'harbor') {                                      /* hayal sahnesi renge bürünür */
+  if (sc.art === 'harbor' || sc.art === 'snap') {                /* hayal sahnesi / limanın fotoğrafı renge bürünür */
     var k = clamp((t - 1.2) / 2.2, 0, 1);
     if (k > 0) { g.globalAlpha = k; art(g, PAL_COLOR, t, aw, ah); g.globalAlpha = 1; }
   }
@@ -8360,8 +8413,9 @@ function introResize() {
   intro.cv.style.width = Math.round(STAGE_W * sc) + 'px';
   intro.cv.style.height = Math.round(STAGE_H * sc) + 'px';
 }
-function openIntro(then) {
+function openIntro(then, list) {
   intro.then = then || null;
+  intro.list = list || INTRO;
   intro.cv = el.introCv; intro.g = intro.cv.getContext('2d');
   intro.cv.width = STAGE_W; intro.cv.height = STAGE_H;
   if (!intro.pc) { intro.pc = document.createElement('canvas'); intro.pc.width = PAPER_W; intro.pc.height = PAPER_H; intro.pg = intro.pc.getContext('2d'); }
@@ -8374,7 +8428,7 @@ function openIntro(then) {
   el.introSub.textContent = ''; el.introNext.classList.add('hidden');
   el.introGate.classList.remove('hidden');
   el.introScr.classList.add('gate');
-  el.introDots.innerHTML = INTRO.map(function () { return '<i></i>'; }).join('');
+  el.introDots.innerHTML = intro.list.map(function () { return '<i></i>'; }).join('');
   syncIntroDots();
 }
 function syncIntroDots() {
@@ -8390,7 +8444,7 @@ function introAdvance() {
   if (!intro.on) return;
   ensureAudio();
   if (intro.ph === 'gate') { musicPlay('menu'); el.introGate.classList.add('hidden'); el.introScr.classList.remove('gate'); introScene(0); return; }
-  var full = NM(INTRO[intro.i].sub);
+  var full = NM(intro.list[intro.i].sub);
   if (intro.ph === 'in') { intro.t = 0.95; return; }                   /* dönmeyi atla */
   if (intro.typed < full.length) { intro.typed = full.length; el.introSub.textContent = full; el.introNext.classList.remove('hidden'); return; }
   if (intro.ph === 'hold') { intro.ph = 'out'; intro.out = 0; sfx.drop(); }
@@ -8402,7 +8456,7 @@ function closeIntro() {
   if (f) f(); else el.startScreen.classList.remove('hidden');
 }
 function updateIntro(dt) {
-  var g = intro.g, sc = INTRO[intro.i];
+  var g = intro.g, sc = intro.list[intro.i];
   intro.t += dt;
   g.imageSmoothingEnabled = false;
   g.clearRect(0, 0, STAGE_W, STAGE_H);
@@ -8417,7 +8471,7 @@ function updateIntro(dt) {
     intro.out += dt;
     var o = clamp(intro.out / 0.38, 0, 1);
     rot = -o * 0.5; ox = -o * o * 260; s = 1 - o * 0.15;
-    if (o >= 1) { if (intro.i + 1 < INTRO.length) introScene(intro.i + 1); else { closeIntro(); return; } }
+    if (o >= 1) { if (intro.i + 1 < intro.list.length) introScene(intro.i + 1); else { closeIntro(); return; } }
   }
   /* alt yazı: daktilo */
   if (intro.ph === 'hold') {
@@ -9049,15 +9103,38 @@ function openChapter() {
   el.chScr.classList.remove('hidden'); syncPause(); sfx.tap();
 }
 /* Bölüm 1 kapanışı — şimdilik sade kart; sinematik ara sahne oyuncuyla birlikte tasarlanacak */
+function chapterPaper() {
+  var hero = (S.hero && S.hero.n) || (lang === 'tr' ? 'GENÇ BALIKÇI' : 'THE YOUNG FISHER'), co = S.company || '';
+  var staff = workers.length, met = (S.met || []).length;
+  function both(tr, en) { return { tr: tr, en: en }; }
+  return [
+    { art: 'snap', date: both(day.n + '. GÜN', 'DAY ' + day.n),
+      hl: both('LİMANIN YENİ PATRONU - ' + hero, 'THE HARBOR HAS A NEW BOSS - ' + hero),
+      cap: both('▲ ' + (co.length > 22 ? co.slice(0, 21) + '.' : co), '▲ ' + (co.length > 22 ? co.slice(0, 21) + '.' : co)),
+      sub: both('Bir sandık ve bir ağla başlayan ' + hero + ', bugün ' + co + ' ile limanın en bilinen adı. ' + fmtN(S.caught) + ' balık, ' + day.n + ' gün, ' + staff + ' çalışan, ' + met + ' özel müşteri. Artık basit bir balıkçı değil, tezgâhları olan bir balıkçı iş insanı.',
+        'It started with one crate and one net. Today ' + hero + ' and ' + co + ' are the best-known names in the harbor: ' + fmtN(S.caught) + ' fish, ' + day.n + ' days, ' + staff + ' staff, ' + met + ' special customers. No longer a simple fisher - a fish tycoon.') },
+    { art: 'giants', date: both('ERTESİ SABAH', 'NEXT MORNING'),
+      hl: both('KARADENİZİN DEVLERİ TEDİRGİN', 'THE BLACK SEA GIANTS ARE WATCHING'),
+      cap: both('▲ Ufukta dev trol filoları', '▲ Giant trawler fleets on the horizon'),
+      sub: both('Poyraz Holding trol filosunu limana yolluyor, Kuzey Buz soğuk zincirini, Altın Olta lüks restoranlarını getiriyor. Bu başarı gözlerinden kaçmadı... Artık devler liginde hayatta kalmalıyız.',
+        'Poyraz Holding is sending its trawler fleet, Kuzey Buz its cold chain, Altın Olta its luxury restaurants. Your success did not go unnoticed... Now we must survive in the league of giants.') }
+  ];
+}
 function openChapterEnd() {
   if (S.ch1) return;
-  S.ch1 = true;
+  S.ch1 = true; save();
+  takeHarborSnap();
+  openIntro(function () { showChapterCard(); }, chapterPaper());
+  el.introGate.classList.add('hidden'); el.introScr.classList.remove('gate');
+  musicPlay('menu'); introScene(0);
+}
+function showChapterCard() {
   el.chEndK.textContent = T('chEndK'); el.chEndT.textContent = T('chEndT');
   el.chEndP.textContent = T('chEndP', { n: (S.hero && S.hero.n) || '', c: S.company || '' });
   el.chEndG.textContent = T('chEndG');
   el.chEndGo.textContent = T('resume');
   el.chEnd.classList.remove('hidden'); syncPause();
-  sfx.levelUp(); save();
+  sfx.levelUp(); musicPlay('game');
 }
 el.chBtn.onclick = openChapter;
 el.chClose.onclick = function () { el.chScr.classList.add('hidden'); syncPause(); };

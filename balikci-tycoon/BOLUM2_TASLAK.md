@@ -1,78 +1,106 @@
-# Balıkçı Tycoon — Telefon, Bölüm 1 ara sahnesi ve Bölüm 2 taslağı
+# Balıkçı Tycoon — Bölüm 2 "Devler Ligi" taslağı
 
-Bu belge karar için hazırlandı; henüz koda dönüşmedi. Onaylanan maddeler sırayla uygulanır.
+**Alınan kararlar (oyuncu/yapımcı ile):**
+- Bölüm 1 kapanışı: **gazete manşeti** ✅ (v1.3'te yapıldı). Açılıştaki dönen gazete geri gelir: "LİMANIN YENİ PATRONU",
+  oyuncunun gerçek limanının fotoğrafı ve rakamları; ertesi sabahın gazetesinde ufukta dev trol filoları.
+- **Telefon Bölüm 2'ye kaldı**: Bölüm 2'nin açılış yeniliği olacak.
+- Bölüm 2'nin yönü: **şubeler → sabit gelir → ilçe ilçe, şehir şehir büyüme**, fabrika ve marka, dev rakipler,
+  **pazar payı ve borsa savaşları**. Kapsamlı olacak.
 
 ---
 
-## 1. Telefon sistemi — "Kıyı Telefonu"
+## Bölüm 2'nin omurgası
 
-**Amaç:** oyuncuyu haritada bir binaya yürütmeden, oyunu durdurmadan küçük kararlar verdirmek. Ticaret Merkezi ve
-Balık Hali'nin yerini almaz; onlar **büyük işler**, telefon **küçük ve sık işler** için.
+Bölüm 1'de tek bir limanı elle büyüttün. Bölüm 2'de oyun **yukarıdan bakan bir işletme oyununa** genişler: ilk liman
+müdürlerle kendi döner ve sabit gelir getirir. Sen bir **Türkiye haritası** üzerinde şube açar, fabrikaya ve markaya
+yatırım yapar, üç devle pazar payı ve borsada savaşırsın.
 
-**Nasıl açılır:** Seviye 4'te (Tezgâh Ustası) kısa bir sahne olur: kurye bir paket getirir, içinden eski tip kapaklı
-bir cep telefonu çıkar. HUD'da ☰'nin yanına küçük bir telefon simgesi gelir. Arama gelince titrer ve hafifçe çalar.
-Oyun durmaz, telefon ekranın altında yarım panel olarak açılır.
+**Bitiş hedefi:** üç devden birini borsada **satın almak** (devralma) ya da Karadeniz pazarının **%40**'ına ulaşmak.
 
-| Uygulama | Ne yapar | Dengesi |
+---
+
+## 1. Şubeler — ilçe ilçe, şehir şehir
+
+- **Harita:** Karadeniz kıyısından başlayan pixel Türkiye haritası. İlk halka ilçeler (Akçaabat, Sürmene, Ünye…),
+  sonra şehirler (Samsun, Sinop, İstanbul Karaköy, İzmir, Antalya).
+- **Şube tipleri** (her biri farklı yatırım ve gelir):
+  | Tip | Maliyet | Gelir | Not |
+  |---|---|---|---|
+  | Tezgâh | düşük | küçük, sabit | Hızlı açılır, ilçelere uygun |
+  | Balık lokantası | orta | orta | Özel müşteriler buraya da gelir |
+  | Hal kulübesi | orta | toptan satış | Fiyat dalgalanmasından etkilenir |
+  | Büyük mağaza | yüksek | yüksek | Şehirlerde, marka gerektirir |
+- **Sabit gelir:** her şube dakikada gelir üretir. Gelir; şube müdürüne, yerel talebe ve rakip varlığına bağlıdır.
+- **Şube müdürü:** Bölüm 1'deki müdür sistemi büyür. Müdürler terfi eder; iyi müdür başka şubeye tayin edilebilir.
+  Rakipler iyi müdürlere teklif yapar, sadakat ve prim sistemi gelir.
+- **İstersen içeri gir:** her şubeyi Bölüm 1'deki gibi oynanabilir küçük bir sahne olarak ziyaret edebilirsin (isteğe
+  bağlı). Girip elle çalışırsan o gün geliri artar.
+
+## 2. Fabrika ve marka
+
+- **İşleme tesisi:** konserve, füme paket, dondurulmuş fileto hatları. Hammaddeyi şubeler ve filo sağlar.
+- **Marka:** isim zaten var (işletme adın). Logo ve ambalaj rengi seçilir; marka bilinirliği reklamla büyür.
+- **Market rafları:** zincir marketlere raf anlaşması (kontrat), raf payı pazar payına eklenir.
+- **Kalite ve itibar:** kalite puanı düşerse iade ve haber skandalı çıkar.
+
+## 3. Üç dev rakip
+
+| Dev | Güçlü yanı | Hamleleri |
 |---|---|---|
-| 📞 **Sipariş Hattı** | Lokantalar ve oteller arar: "Kemal Lokanta: 8 levrek füme, 4 dakika içinde, +%40". Kabul et / reddet. Kabul edilen sipariş depoya "hazırlanacak" olarak düşer; Sevkiyatçı ya da oyuncu teslim eder. | Kısa süreli, küçük miktarlı. Reddetmenin cezası yok, kaçırırsan o müşterinin güveni biraz düşer. Özel müşteriler de buradan arayabilir (Kemal, Fatoş…). |
-| 📦 **Toptan Sipariş** | Balık Hali'ne yürümeden sandık alımı. Kamyon 1–2 dakika sonra depoya bırakır. | Halden %10 pahalı + nakliye ücreti; hal fiyatı o gün neyse. |
-| 📣 **Reklam** | Kampanya açılır; süreli etki verir, bitince bekleme süresi başlar. | Tabloda |
-| 💬 **Mesajlar** | Hikâye ve ipuçları: Mahmut "martım hasta, bugün gelemiyorum", müdürlerden haftalık rapor, rakiplerden laf sokma (Bölüm 2'ye köprü). | Oyunu etkilemez, dünyayı canlandırır. |
-| 🤝 **Kontrat Hattı** | Ticaret Merkezi kurulduysa kontrat tekliflerini uzaktan görme ve kabul etme. | Yalnız Ticaret Merkezi kuruluysa açılır. |
+| **Poyraz Holding** | Endüstriyel trol filosu | Fiyat kırar, balık fiyatını düşürür, küçük şubelerin yanına ucuz tezgâh açar |
+| **Kuzey Buz** | Soğuk zincir ve lojistik | Kontrat ve market raflarında yarışır, depo kiralarını yükseltir |
+| **Altın Olta** | Lüks restoran zinciri | VIP ve özel müşterileri çeker, iyi müdürlere teklif yapar |
+
+Her devin haritada renkli bölgeleri ve bir pazar payı çubuğu var. Hamleleri gazetede ve telefonda haber olur.
+
+## 4. Pazar payı savaşları
+
+- Her ilçe ve şehrin bir **pazar payı pastası** var (sen + üç dev + yerel esnaf).
+- Payı artıran yollar: şube açmak, reklam, fiyat kampanyası, kalite, özel müşteriler, ihaleler.
+- **Fiyat savaşı:** bir bölgede fiyat kırarsan pay kazanırsın ama kâr düşer; dev karşılık verir.
+- **İhaleler:** otel zincirleri, okullar, hastaneler, ordu. Kapalı zarf teklif; kazanan payı ve itibarı alır.
+
+## 5. Borsa savaşları
+
+- Bölüm 1'deki Ticaret Ofisi/Holding altyapısı genişler: **halka arz** (kendi şirketini borsaya aç).
+- Devlerin hisseleri işlem görür. Hisse toplayıp yönetim kurulunda koltuk alabilirsin, sonunda **devralma teklifi**
+  yaparsın.
+- Devler de sana karşı hisse toplar: **düşmanca devralma** riski. Savunma için hisse geri alımı, dost yatırımcı,
+  temettü dengesi.
+- Haberler hisse fiyatlarını oynatır (fırtına, skandal, rekor av).
+
+## 6. Telefon — "Kıyı Telefonu" (Bölüm 2'nin açılış yeniliği)
+
+Oyun durmadan küçük işler için. Ticaret Merkezi ve Balık Hali büyük işler için kalır.
+
+| Uygulama | Ne yapar |
+|---|---|
+| 📞 Sipariş Hattı | Lokanta ve oteller arar: "8 levrek füme, 4 dk, +%40". Kabul / red. |
+| 📦 Toptan Sipariş | Halden uzaktan sandık alımı, kamyonla depoya teslim (biraz pahalı) |
+| 📣 Reklam | Gazete, afiş, radyo, "günün balığı", sosyal medya kampanyaları (süre + bekleme) |
+| 💬 Mesajlar | Özel müşteriler, müdür raporları, rakiplerden laf sokma, hikâye |
+| 🤝 Kontrat Hattı | Ticaret Merkezi tekliflerini uzaktan kabul |
+| 📈 Borsa | Hisse al/sat, devralma teklifleri, uyarılar |
+| 🗺️ Şubeler | Şubelerin geliri, müdürü ve sorunları |
 
 **Reklam kampanyaları**
 
 | Kampanya | Maliyet | Süre | Etki | Bekleme |
 |---|---|---|---|---|
 | Gazete ilanı | $400 | 1 gün | Müşteri akışı +%15 | 1 gün |
-| Mahalle afişi | $900 | 2 gün | Seçtiğin bir tezgâha +%30 müşteri | 2 gün |
-| Radyo reklamı | $2.500 | 1 gün | Akış +%30, turist ve toptancı oranı artar | 3 gün |
-| "Günün balığı" | $1.200 | 1 gün | Seçtiğin türe talep ×2, o türün fiyatı +%10 | 2 gün |
-| Sosyal medya (Selfi Selin ile tanıştıysan) | $4.000 | 2 gün | VIP ve şef oranı artar, itibar +%20 | 4 gün |
+| Mahalle afişi | $900 | 2 gün | Seçilen tezgâh/şubeye +%30 müşteri | 2 gün |
+| Radyo reklamı | $2.500 | 1 gün | Akış +%30, turist ve toptancı artar | 3 gün |
+| "Günün balığı" | $1.200 | 1 gün | Seçilen türe talep ×2, fiyat +%10 | 2 gün |
+| Sosyal medya (Selfi Selin ile tanıştıysan) | $4.000 | 2 gün | VIP/şef artar, itibar +%20 | 4 gün |
+| TV reklamı (Bölüm 2) | $15.000 | 3 gün | Tüm şubelerde marka bilinirliği ve pazar payı artar | 7 gün |
 
----
+## 7. Bölüm 2 akışı (önerilen sıra)
 
-## 2. Bölüm 1 ara sahnesi — iki seçenek
-
-**A) "Gazete manşeti" (açılışla aynı dilde, kitap ayracı gibi)**
-Oyunun açılışındaki dönen gazete geri gelir. Manşet: **"LİMANIN YENİ PATRONU: {karakter}"**. Fotoğraf karesi,
-oyuncunun o anki gerçek limanından alınmış pixel bir görüntüdür (üç tezgâh, müdürler, Kapalı Pazar). Alt başlıklarda
-oyuncunun kendi rakamları yazar: tutulan balık, gün sayısı, çalışan sayısı, en çok satan balık, tanışılan özel müşteri
-sayısı. Gazete ters döner; arka sayfada küçük bir haber: *"Karadeniz'in devleri tedirgin: Poyraz Holding yeni trol
-filosunu limana getiriyor."* Son satır: **"Artık devler liginde hayatta kalmalıyız…" — BÖLÜM 1 SONU**.
-*Artısı:* mevcut gazete motorunu kullanır, hızlı ve sağlam olur; oyunun başıyla sonunu birbirine bağlar.
-
-**B) "Liman turu" (oyun içi sinematik)**
-Arayüz kaybolur, ekrana sinema şeritleri iner, gün batımı rengi çöker. Kamera ilk küçük ağdan başlar, sırayla üç
-tezgâhın üzerinden geçer; her müdür el sallar, müşteriler alkışlar, direklerde bayraklar dalgalanır, havai fişek
-patlar. Sonra karakter iskelenin ucuna yürüyüp denize bakar. Ufukta devasa endüstriyel trol gemilerinin ve bir balık
-fabrikasının siluetleri belirir, ışıkları yanar. Alt şeritte yazılar daktilo gibi akar. Son kart:
-**"BÖLÜM 1 SONU — Devler Ligi yakında"**.
-*Artısı:* daha destansı, oyuncunun kurduğu limanı kendi gözüyle görmesi; yapımı daha uzun sürer.
-
-**İkisini birleştirmek de mümkün:** önce B (liman turu), sonra A (ertesi sabah gazete).
-
----
-
-## 3. Bölüm 2 — "Devler Ligi" fikirleri
-
-**Ana fikir:** artık rakip yok diye rahat değilsin. Limana büyük şirketler gelir; pazar payı için yarışırsın.
-Bölüm 2'nin sonu: **devlerden birini satın almak** ya da pazarın %40'ına sahip olmak.
-
-1. **Üç rakip dev** (her biri farklı oynar)
-   - **Poyraz Holding:** endüstriyel trol filosu. Ucuz ve bol balık getirir, fiyatları düşürür.
-   - **Kuzey Buz:** soğuk zincir devi. Depo ve kontrat pazarında seninle yarışır.
-   - **Altın Olta:** lüks restoran zinciri. VIP'leri ve özel müşterileri kendine çeker.
-   - Hepsinin pazar payı çubuğu olur, haberlerde hamleleri yazar.
-2. **Filo ve açık deniz:** tekne satın alırsın, kaptan tutarsın, küçük bir deniz haritasında sefere çıkarsın.
-   Hava durumu, yakıt ve sürüler önemli olur. Nadir türler (kalkan, lüfer, kılıç) buradan gelir.
-3. **Şube açma:** ikinci bir limana (Karaköy, İzmir, Sinop) şube açılır. Birinci liman müdürlerle otomatik gelir
-   getirir; asıl oyun yeni limanda sıfırdan ama daha büyük ölçekte başlar.
-4. **Markalaşma ve fabrika:** konserve/işleme tesisi kurulur, kendi markan olur, ambalaj seçersin, market raflarına
-   girersin.
-5. **İhale savaşları:** otel zincirleri, okullar ve hastaneler ihaleye çıkar; rakiplerle teklif yarışına girilir.
-6. **Sürdürülebilirlik:** av kotası olur, balık stokları aşırı avda azalır, kaçak avcılar çıkar. "Yeşil itibar"
-   bazı müşterileri ve ihaleleri açar.
-7. **Personel savaşı:** rakipler iyi müdürlerini daha yüksek maaşla ayartmaya çalışır; sadakat ve prim sistemi gelir.
-8. **Telefon büyür:** Bölüm 2'de banka/kredi, hisse ve devralma teklifleri telefondan gelir.
+1. **Açılış:** gazete kapanışının devamı; kurye telefonu getirir, ilk arama Poyraz Holding'den: "Limanını satın alalım."
+   Reddedersin, savaş başlar.
+2. **İlk şube:** komşu ilçeye tezgâh; harita ve sabit gelir öğretilir.
+3. **Fabrika:** ilk konserve hattı, marka kurulumu.
+4. **İlk dev hamlesi:** Poyraz fiyat kırar; fiyat savaşı ve reklam öğretilir.
+5. **Şehir:** Samsun ya da Karaköy'de büyük mağaza.
+6. **Borsa:** halka arz, ilk hisse savaşı.
+7. **Final:** bir devi devral ya da %40 pazar payı. Bölüm 2 kapanışı yine gazete manşetiyle: "KARADENİZ'İN YENİ DEVİ".
