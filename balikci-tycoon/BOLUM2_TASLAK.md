@@ -6,35 +6,74 @@
 - **Telefon Bölüm 2'ye kaldı**: Bölüm 2'nin açılış yeniliği olacak.
 - Bölüm 2'nin yönü: **şubeler → sabit gelir → ilçe ilçe, şehir şehir büyüme**, fabrika ve marka, dev rakipler,
   **pazar payı ve borsa savaşları**. Kapsamlı olacak.
+- **Oyun yapısı: şehir haritası içinde, Coffee Inc tarzı işletme oyunu.** Coffee Inc'in *mekaniklerini* referans
+  alıyoruz (haritada yer seçip dükkân açma, ürün/fiyat, departmanlar, rakipler aynı haritada, borsa ve devralma).
+  Görseller, isimler ve metinler tamamen bizim: pixel art, Karadeniz teması, balık ürünleri.
 
 ---
 
 ## Bölüm 2'nin omurgası
 
-Bölüm 1'de tek bir limanı elle büyüttün. Bölüm 2'de oyun **yukarıdan bakan bir işletme oyununa** genişler: ilk liman
-müdürlerle kendi döner ve sabit gelir getirir. Sen bir **Türkiye haritası** üzerinde şube açar, fabrikaya ve markaya
-yatırım yapar, üç devle pazar payı ve borsada savaşırsın.
+Bölüm 1'de tek bir limanı elle büyüttün. Bölüm 2'de kamera yükselir ve oyun **izometrik pixel bir şehir haritasına**
+geçer. İlk liman haritanın kıyısında bir bina olarak durur: müdürlerle kendi döner ve sabit gelir getirir
+(içine girip Bölüm 1 sahnesini oynamaya devam edebilirsin). Sen şehirde yer kiralayıp şube açar, ürün ve fiyat
+belirler, merkezde departmanlarını büyütür, üç devle mahalle mahalle pazar payı ve borsada savaşırsın.
 
-**Bitiş hedefi:** üç devden birini borsada **satın almak** (devralma) ya da Karadeniz pazarının **%40**'ına ulaşmak.
+**Bitiş hedefi:** üç devden birini borsada **satın almak** (devralma) ya da şehir pazarının **%40**'ına ulaşmak.
 
 ---
 
-## 1. Şubeler — ilçe ilçe, şehir şehir
+## 1. Şehir haritası (Coffee Inc tarzı)
 
-- **Harita:** Karadeniz kıyısından başlayan pixel Türkiye haritası. İlk halka ilçeler (Akçaabat, Sürmene, Ünye…),
-  sonra şehirler (Samsun, Sinop, İstanbul Karaköy, İzmir, Antalya).
-- **Şube tipleri** (her biri farklı yatırım ve gelir):
-  | Tip | Maliyet | Gelir | Not |
-  |---|---|---|---|
-  | Tezgâh | düşük | küçük, sabit | Hızlı açılır, ilçelere uygun |
-  | Balık lokantası | orta | orta | Özel müşteriler buraya da gelir |
-  | Hal kulübesi | orta | toptan satış | Fiyat dalgalanmasından etkilenir |
-  | Büyük mağaza | yüksek | yüksek | Şehirlerde, marka gerektirir |
-- **Sabit gelir:** her şube dakikada gelir üretir. Gelir; şube müdürüne, yerel talebe ve rakip varlığına bağlıdır.
-- **Şube müdürü:** Bölüm 1'deki müdür sistemi büyür. Müdürler terfi eder; iyi müdür başka şubeye tayin edilebilir.
-  Rakipler iyi müdürlere teklif yapar, sadakat ve prim sistemi gelir.
-- **İstersen içeri gir:** her şubeyi Bölüm 1'deki gibi oynanabilir küçük bir sahne olarak ziyaret edebilirsin (isteğe
-  bağlı). Girip elle çalışırsan o gün geliri artar.
+**Ekran:** yakınlaştırılıp kaydırılabilen izometrik pixel şehir. Sokaklar, mahalleler, kiralık dükkânlar (tabelalı
+boş vitrinler), rakiplerin renkli şubeleri, gündüz/gece. Alt çubukta: Şubeler • Ürünler • Departmanlar • Pazarlama •
+Rakipler • Borsa • Telefon.
+
+**Mahalleler** (her birinin kendi müşteri profili var):
+
+| Mahalle | Kalabalık | Fiyat hassasiyeti | Ne ister |
+|---|---|---|---|
+| Sahil / İskele | yüksek | orta | Taze fileto, hamsi, balık-ekmek |
+| Eski Çarşı | çok yüksek | yüksek | Ucuz ve hızlı, tezgâh |
+| Üniversite | yüksek | çok yüksek | Balık dürüm, paket ürün |
+| Marina / Turistik | orta | düşük | Füme, levrek, somon, lokanta |
+| Villalar | düşük | çok düşük | Premium, orkinos, eve teslim |
+| Sanayi / Liman arkası | orta | orta | Toptan, konserve, kasa satış |
+
+**Dükkân açma (Coffee Inc'teki "konum seçme" hissi):**
+- Haritada boş vitrine dokun: yaya trafiği, kira, mahallenin talebi ve yakındaki rakipler görünür.
+- Şube tipini seç, dükkânı döşe (tezgâh, buzdolabı, füme makinesi, oturma yeri) ve personel ile müdür ata.
+- Aynı mahalledeki iki şube birbirinin müşterisini böler (yamyamlık). Doğru yer seçimi asıl oyun.
+
+| Şube tipi | Maliyet | Gelir | Not |
+|---|---|---|---|
+| Tezgâh | düşük | küçük, sabit | Çarşı ve sahilde hızlı kurulur |
+| Balık-ekmek büfesi | düşük–orta | hızlı satış | Üniversite, sahil |
+| Balık lokantası | orta | orta | Özel müşteriler buraya da gelir |
+| Toptan deposu | orta | kasa satış | Sanayi; kontratlar ve marketler |
+| Büyük mağaza / şarküteri | yüksek | yüksek | Marina ve villalar; marka gerektirir |
+
+- **Ürün ve fiyat (menü):** her şubede hangi ürünlerin satılacağı ve fiyatı ayarlanır (fileto, füme, dürüm,
+  konserve, lakerda…). Fiyat mahallenin hassasiyetine göre müşteri sayısını değiştirir.
+- **Sabit gelir:** her şube dakikada gelir üretir. Gelir; menüye, fiyata, müdüre, mahalle talebine ve rakip
+  varlığına bağlıdır. Haritada şubelerin üstünde küçük gelir balonları çıkar.
+- **Şube müdürü:** Bölüm 1'deki müdür sistemi büyür. Müdürler terfi eder, başka şubeye tayin edilebilir. Rakipler
+  iyi müdürlere teklif yapar; sadakat ve prim sistemi gelir.
+- **İçeri gir:** her şube isteğe bağlı olarak Bölüm 1 tarzı küçük bir sahnede oynanabilir. Elle çalışırsan o gün
+  geliri artar.
+
+**Merkez ve departmanlar** (Coffee Inc'teki genel merkez yapısı):
+
+| Departman | Ne açar |
+|---|---|
+| Ar-Ge | Yeni ürünler (balık dürüm, lakerda, konserve, balık burger), kalite |
+| Lojistik | Depo, soğuk zincir, filo; şubelere tedarik hızı ve maliyeti |
+| Pazarlama | Reklam kampanyaları, marka bilinirliği |
+| İnsan Kaynakları | Müdür havuzu, eğitim, maaş/sadakat |
+| Finans | Kredi, halka arz, hisse işlemleri |
+
+**Şehirden şehre:** ilk şehir Trabzon (kıyı). Belli bir büyüklüğe ulaşınca yeni şehir haritaları açılır: Samsun →
+İstanbul (Karaköy) → İzmir → Antalya. Her şehrin kendi mahalleleri ve rakip ağırlığı var.
 
 ## 2. Fabrika ve marka
 
@@ -55,7 +94,8 @@ Her devin haritada renkli bölgeleri ve bir pazar payı çubuğu var. Hamleleri 
 
 ## 4. Pazar payı savaşları
 
-- Her ilçe ve şehrin bir **pazar payı pastası** var (sen + üç dev + yerel esnaf).
+- Her mahallenin ve şehrin bir **pazar payı pastası** var (sen + üç dev + yerel esnaf). Harita "pazar payı"
+  görünümünde mahalleler renklenir (Coffee Inc'teki gibi kimin nerede güçlü olduğu bir bakışta görülür).
 - Payı artıran yollar: şube açmak, reklam, fiyat kampanyası, kalite, özel müşteriler, ihaleler.
 - **Fiyat savaşı:** bir bölgede fiyat kırarsan pay kazanırsın ama kâr düşer; dev karşılık verir.
 - **İhaleler:** otel zincirleri, okullar, hastaneler, ordu. Kapalı zarf teklif; kazanan payı ve itibarı alır.
@@ -98,7 +138,8 @@ Oyun durmadan küçük işler için. Ticaret Merkezi ve Balık Hali büyük işl
 
 1. **Açılış:** gazete kapanışının devamı; kurye telefonu getirir, ilk arama Poyraz Holding'den: "Limanını satın alalım."
    Reddedersin, savaş başlar.
-2. **İlk şube:** komşu ilçeye tezgâh; harita ve sabit gelir öğretilir.
+2. **Şehir haritasına geçiş:** kamera limandan yükselir, Trabzon haritası açılır. İlk şube: Eski Çarşı'ya tezgâh;
+   yer seçme, menü ve sabit gelir öğretilir.
 3. **Fabrika:** ilk konserve hattı, marka kurulumu.
 4. **İlk dev hamlesi:** Poyraz fiyat kırar; fiyat savaşı ve reklam öğretilir.
 5. **Şehir:** Samsun ya da Karaköy'de büyük mağaza.
