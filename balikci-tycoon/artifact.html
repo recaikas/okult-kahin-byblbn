@@ -42,7 +42,7 @@
     box-shadow:inset -2px -2px 0 rgba(0,0,0,.3),inset 2px 2px 0 rgba(255,255,255,.06)}
   .btn:active{transform:translate(1px,1px)}
   /* v1.0: dar telefonlarda (≤420px) üst şerit taşmasın, ☰ ekranda kalsın */
-  @media (max-width:420px){
+  @media (max-width:540px){
     .hud{gap:3px;padding-left:4px;padding-right:4px}
     .chip{padding:2px 4px;gap:3px;font-size:11px;min-width:0}
     .chip small{font-size:7px;letter-spacing:0}
@@ -440,6 +440,26 @@
   .brow.me{border-color:var(--gold)}
   .bsep{text-align:center;color:var(--ink2);font-size:11px;letter-spacing:3px;margin:2px 0 6px}
   #boardRows{max-height:52vh;overflow-y:auto}
+  /* v1.3 — Bölüm hedefi: kenarda küçük merdiven, yanıp söner */
+  #chBtn{position:fixed;left:6px;top:calc(128px + env(safe-area-inset-top,0px));z-index:6;pointer-events:auto;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 4px 3px;background:rgba(10,26,39,.9);
+    border:2px solid var(--edge);color:var(--gold);font-family:inherit;box-shadow:0 2px 0 rgba(0,0,0,.4)}
+  #chBtn b{font-size:9px;font-weight:400;letter-spacing:0}
+  #chBtn .lad{display:block;width:16px;height:20px;
+    background:linear-gradient(90deg,#c9a15e 0 3px,transparent 3px 13px,#c9a15e 13px 16px),
+      repeating-linear-gradient(180deg,transparent 0 3px,#e8c070 3px 5px,transparent 5px 7px);image-rendering:pixelated}
+  #chBtn.blink{animation:chb 1s steps(2) infinite}
+  @keyframes chb{50%{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,201,74,.5),0 2px 0 rgba(0,0,0,.4)}}
+  .chbar{position:relative;height:18px;background:#0a1a27;border:3px solid var(--edge);margin:6px 0 8px}
+  .chbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c9a15e,#ffc94a)}
+  .chbar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;text-shadow:1px 1px 0 #000}
+  #chRows .row .vl{min-width:44px}
+  #chRows .row.ok{border-left-color:var(--green)}
+  .card.chend{text-align:center;background:linear-gradient(180deg,#2a1e0e,#140e06);border-color:#7a5406}
+  .chend small{display:block;font-size:12px;letter-spacing:3px;color:#ffd98a;margin-top:6px}
+  .chend h1{margin:8px 0 10px}
+  .chend p{color:var(--ink)}
+  .chgiant{font-size:16px !important;color:var(--gold) !important;letter-spacing:1px;margin-top:10px}
   .bnote{font-size:10.5px;color:var(--ink2);text-align:center;margin-top:8px;opacity:.8}
 </style>
 
@@ -487,7 +507,7 @@
   <div class="card">
     <h1>BALIKÇI<br>TYCOON</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v1.2</div>
+    <div class="ver">v1.3</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -657,6 +677,26 @@
   <div class="card ask">
     <p id="askMsg">—</p>
     <div class="duo"><button class="alt" id="askNo">VAZGEÇ</button><button class="alt danger2" id="askYes">EVET</button></div>
+  </div>
+</div>
+
+<button id="chBtn" class="hidden" aria-label="Bölüm hedefi"><span class="lad"></span><b id="chPct">0%</b></button>
+<div class="overlay hidden" id="chScr">
+  <div class="card">
+    <h2 id="chTitle">🪜 BÖLÜM 1</h2>
+    <p id="chSub">—</p>
+    <div class="chbar"><i id="chFill"></i><span id="chNum">0/0</span></div>
+    <div id="chRows"></div>
+    <button class="go" id="chClose">DEVAM ET</button>
+  </div>
+</div>
+<div class="overlay hidden" id="chEnd">
+  <div class="card chend">
+    <small id="chEndK">BÖLÜM 1 TAMAMLANDI</small>
+    <h1 id="chEndT">BALIKÇI İŞ İNSANI</h1>
+    <p id="chEndP">—</p>
+    <p class="chgiant" id="chEndG">—</p>
+    <button class="go" id="chEndGo">DEVAM ET ▶</button>
   </div>
 </div>
 

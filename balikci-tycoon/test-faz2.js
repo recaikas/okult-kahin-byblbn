@@ -63,8 +63,11 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   ok(/Eksik rol/.test(R.autoCardBlocked), 'devret kartı eksik rolleri göstermiyor');
   await p.evaluate(() => { BT.hire('hamal', true, 0); BT.hire('filetocu', true, 0); BT.hire('tezgahtar', true, 0); });
   await p.click('.dtab[data-t="level"]'); await sleep(200); await p.click('.dtab[data-t="level"]'); await sleep(300);
-  const btn = await p.evaluateHandle(() => [...document.querySelectorAll('#dpCards .dcard')].find(d => /Devret/.test(d.textContent)).querySelector('.buy'));
-  await btn.click(); await sleep(300);
+  /* v1.3: 4 rol tamamlanınca önce müdür seçilir; müdür gelince bölge tam otomatiğe geçer */
+  R.mgrCard = await p.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].map(d => d.textContent).find(t => /Müdür gerekli/.test(t)) || '');
+  ok(!!R.mgrCard, 'müdür kartı çıkmadı');
+  await p.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].find(d => /Müdür gerekli/.test(d.textContent)).querySelector('.buy').click()); await sleep(300);
+  for (let k = 0; k < 2; k++) { await p.evaluate(() => document.querySelectorAll('#dpCards .dcard .buy')[1].click()); await sleep(250); }
   R.auto = await p.evaluate(() => ({ on: BT.zoneAuto(0), saved: BT.S.auto }));
   ok(R.auto.on, 'devret açılmadı');
   await p.click('.dtab[data-t="level"]'); await sleep(200);

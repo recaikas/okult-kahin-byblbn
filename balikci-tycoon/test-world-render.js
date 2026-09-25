@@ -30,7 +30,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     out[vp.width + 'x' + vp.height] = res;
     await p.close();
   }
-  const ok = Object.values(out).every(r => r.landPct > 3 && r.woodPct > 2 && r.personPx > 5);
+  /* v1.3: ufuk dünyaya bağlandı — geniş ekranda üstü gökyüzü + kasaba kaplar, kum oranı biraz düşer */
+  const ok = Object.values(out).every(r => r.landPct > 2 && r.woodPct > 2 && r.personPx > 5);
   console.log(JSON.stringify({ out, WORLD_OK: ok, errs: [...new Set(errs)] }, null, 1));
   process.exit(ok && !errs.length ? 0 : 1);
 })();

@@ -12,7 +12,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   p.on('pageerror', e => errs.push('PE: ' + e.message));
   await p.goto(URL); await sleep(900);
   await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(500);
-  R.pool = await p.evaluate(() => ({ n: BT.SPECIALS.length, first: BT.SPECIALS.slice(0, 2).map(s => s.n) }));
+  R.pool = await p.evaluate(() => ({ n: BT.SPECIALS.length, first: BT.SPECIALS.slice(0, 2).map(s => s.n.tr) }));
   ok(R.pool.n === 50 && R.pool.first.join() === 'Caner,Pelin', 'havuz yanlış');
   /* v1.1: specials.js — her karakter hatasız çizilir, özellikler okunur, id'ler benzersiz */
   R.data = await p.evaluate(() => {

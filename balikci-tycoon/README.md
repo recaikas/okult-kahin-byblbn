@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — **v1.2** (satın alınan çevre yatırımları)
+# 🐟 Balıkçı Tycoon — **v1.3** (müdürler, füme makinesi, Bölüm 1 hedefi)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karakterler, `config.js` online skor).
@@ -9,6 +9,46 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.3 — Müdürler, füme makinesi, ayrı ağlar, Bölüm 1 hedefi
+
+**Hata düzeltmeleri**
+- **Arka plan perspektifi:** kasaba/tepe manzarası ekrana sabitti. Harita büyüyünce oyun alanı ufkun üstüne taşıyor,
+  aşağı inince kasaba iskelenin yanında görünüyordu. Ufuk artık haritanın kuzey köşesine bağlı: üstte pastel
+  gökyüzü, altta uzakta koyulaşan deniz. Aşağı inince uzak kıyı doğal olarak kadrajdan çıkar.
+- **Panel renkleri:** YÜKSELT/YAPI paneli açıkken para yetince kartlar yeşillenmiyordu (ama alınabiliyordu). Panel
+  artık para/seviye değişince kendini yeniler, kaydırma yeri korunur.
+- **Dar ekran:** ☰ düğmesi 430 px genişlikte de kesiliyordu; sıkı üst şerit artık 540 px'e kadar devrede.
+- **Füme tıkanması:** Fümehane açılınca bütün tezgâhlar füme istiyor, oysa füme yalnız Fümehane fırınında yapıldığı için
+  1. ve 2. tezgâh tıkanıyordu. Artık bir tezgâh ancak füme kaynağı varsa füme sipariş alır.
+
+**Füme Makinesi** (YÜKSELT, Fümehane açıldıktan sonra): Balıkçı İskelesi $3.200, Balık Pazarı $4.800. Tezgâhın
+yanına kurulur, tezgâhtaki filetoyu yerinde tüter (füme siparişi bekleyen varsa ya da stok bolsa 2'lik küçük stok).
+O bölgenin müşterileri de füme ister (2.4× değer). Ateş penceresi yanar, bacadan duman çıkar.
+
+**Orta bölge (Balık Pazarı):** palamut ve orkinos artık **kendi ağlarından** gelir (tezgâhları açılınca batı kıyısında
+belirir). Kesim masasında türler **ayrı yığınlarda** durur; her yığının kendi sınırı var, biri dolunca masa diğer
+türleri kesmeye devam eder. Hamal, yığını dolu türün ağına gitmez.
+
+**Bölge Müdürü:** bölgenin 4 personeli tamamlanınca YÜKSELT'te "Müdür gerekli" kartı çıkar. 3 aday arasından
+seçilir; her adayın iki buff'ı var (satış fiyatı +%12, personel %20 hızlı, müşteri sabrı +%35, müşteri akışı +%12,
+bölge maaşları −%30, satış başına +1 itibar). Masa + işe alım ücreti + maaş. Müdür gelince bölge **tam otomatiğe**
+geçer. Müdür tezgâhın yanındaki masasında durur.
+
+**Özel müşteriler:** her birinin **kendi hafif sesi** var (öpücük, gitar, martı, papağan, miyav, deklanşör, robot…).
+İsimlerin İngilizcesi eklendi (Tek Göz Recep → One-Eyed Renny, Tuz Baba → Salt Daddy, Kaya Conson → Rocky Johnsun…).
+Yeni takvim: tanıdıklar **14 günde bir** yeniden uğrar, günün öbür yeri hep yeni bir yüze ayrılır (50 kişinin hepsi
+yaklaşık 36. günde tanışılmış olur).
+
+**12 yeni sokak müşterisi** (kendi kıyafetleriyle): Öğrenci, Emekli Amca, Pazar Teyzesi, Komşu Balıkçı, Koşucu, Zabıta,
+Gazeteci, Doktor, Ressam, Dalgıç, Muhtar, Otel Aşçıbaşı. Aynı tipin müşterileri artık saç modeli ve boyla ayrışır.
+
+**Bölüm 1 hedefi:** sol kenarda yanıp sönen **merdiven** simgesi ve yüzde. Tıklayınca hedef ("üç tezgâhı sonuna kadar
+büyüt") ve 10 başlıkta eksikler görünür: bölgeler, bölge seviyeleri, yükseltmeler, yapı noktaları, süsler, çevre,
+füme makineleri, Kapalı Pazar, meydan binaları, müdürler. Sayaç dolunca Bölüm 1 kapanış kartı çıkar (sinematik ara
+sahne için iki seçenek `BOLUM2_TASLAK.md`'de).
 
 ---
 
