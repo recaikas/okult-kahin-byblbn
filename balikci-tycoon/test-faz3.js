@@ -1,6 +1,6 @@
 /* Faz 3 kabul testi: Liman Meydanı (köprü + yürünebilirlik), Personel Kulübesi seviyesi,
    Depo (oyuncu rafa koyar, Depo Hamalı fazlayı taşır/tezgâhı besler), Sevkiyatçı (kontrat),
-   Toptancı Hali (al/sat), çalışan rotası (bölge ↔ meydan), kayıt + eski kulübe göçü. */
+   Balık Hali (al/sat), çalışan rotası (bölge ↔ meydan), kayıt + eski kulübe göçü. */
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
@@ -36,7 +36,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
       await sleep(150);
     }
   };
-  await buy('Personel'); await buy('^Depo'); await buy('Toptancı');
+  await buy('Personel'); await buy('^Depo'); await buy('Balık Hali');
   R.built = await p.evaluate(() => ({ hut: BT.HUT.lvl, dep: BT.DEPOT.lvl, hal: BT.WHALL.built, cap: BT.zoneStaffCap(0) }));
   ok(R.built.hut === 1 && R.built.dep === 1 && R.built.hal && R.built.cap === cap0 + 1, 'meydan binaları kurulmadı ' + JSON.stringify(R.built));
   await p.click('.dtab[data-t="build"]'); await sleep(200);
@@ -88,7 +88,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
     return { left: M.active.length, gain: Math.round(BT.S.cash - cash0), secs: Math.round((Date.now() - t0) / 1000) };
   });
   ok(R.ship2.left === 0, 'sevkiyatçı kontratı teslim etmedi ' + JSON.stringify(R.ship2));
-  /* 7) Toptancı Hali: sat / al */
+  /* 7) Balık Hali: sat / al */
   R.hal = await p.evaluate(async () => {
     BT.DEPOT.shelf['fileto|hamsi'] = 10;
     BT.openHal(); await new Promise(r => setTimeout(r, 200));

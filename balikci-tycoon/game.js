@@ -26,7 +26,7 @@ var STR = {
     boardEmpty: 'Henüz kimse yok — ilk sen ol!', boardYou: 'SEN', boardDay: '{d}. gün',
     boardLocal: 'Bu tablo bu cihazdaki oyunları gösteriyor.', close: 'KAPAT',
     boardLoading: 'Tablo yükleniyor…', boardOffline: 'Bağlantı yok — bu cihazdaki oyunlar gösteriliyor.',
-    boardStats: '👥 {p} oyuncu • 🎮 {g} oyun',
+    boardStats: '👥 {p} oyuncu • 🎮 {g} oyun • ⏱ {h} saat',
     nameTitle: 'İŞLETMENİN ADI', nameSub: 'Tabelaya ne yazalım? Bu isim skor tablosunda görünecek.',
     nameIdeas: 'ÖNERİLER', nameGo: 'İŞE BAŞLA ▶', nameShort: 'En az 2 harf yaz.', nameDice: 'Rastgele isim',
     welcomeCo: 'Hayırlı olsun! {n} kapılarını açtı.', tapStart: '▶ BAŞLAMAK İÇİN DOKUN', skip: 'ATLA ▶▶',
@@ -73,14 +73,14 @@ var STR = {
     autoLbl: 'OTOMATİK KAYIT', autoSaved: '💾 Otomatik kaydedildi • {t}', autoSet: '💾 Otomatik kayıt: {m} dakikada bir',
     autoNext: 'Otomatik kayıt: {m} dk • sonraki {t}',
     musicLbl: 'MÜZİK', musOn: '♪ AÇIK', musOff: 'KAPALI',
-    meydan: 'LİMAN MEYDANI', hutName: 'Personel Kulübesi', depotName: 'Depo', whall: 'Toptancı Hali', buildAt: 'YAPI › Meydan',
+    meydan: 'LİMAN MEYDANI', hutName: 'Personel Kulübesi', depotName: 'Depo', whall: 'Balık Hali', buildAt: 'YAPI › Meydan',
     hutD: 'Her bölgede +1 personel yeri / seviye (şu an +{n})', depotD: 'Fazla fileto/fümeyi türüne göre raflarda saklar; kendi personeli var',
     depotD2: 'Raf {a}/{b} → {n} • depo personeli +1', whallD: 'Depodaki malı günün fiyatıyla sat, toptan al (Depo gerekir)',
     officeInMeydan: 'Ticaret Merkezi artık meydanda — PROJE sekmesinden kurulur', goProj: 'PROJE ›', upgrade: 'YÜKSELT', build: 'KUR',
     needDepot: '🔒 Önce Depo kur', depotStaffFull: 'Depo kadrosu dolu — depoyu yükselt', depotFull: 'Depo dolu',
     hutBuilt: '🏚️ Personel Kulübesi kuruldu: her bölgede +1 personel yeri', hutUp: '🏚️ Kulübe Sv {l}: her bölgede +{l} personel yeri',
     depotBuilt: '📦 Depo kuruldu — fazla ürün artık çöpe/mezata değil rafa', depotUp: '📦 Depo Sv {l}: kapasite {c}',
-    whallBuilt: '🏪 Toptancı Hali açıldı', hutBtn: 'PERSONEL', halBtn: 'TOPTANCI HALİ', hutWelcome: '👷 Kulübeye hoş geldin — personelini buradan yönet',
+    whallBuilt: '🏪 Balık Hali açıldı', hutBtn: 'PERSONEL', halBtn: 'BALIK HALİ', hutWelcome: '👷 Kulübeye hoş geldin — personelini buradan yönet',
     halSub: '{d}. günün fiyatları • Depo {a}/{b}', halRow: 'Depoda {n} • Sat {s} • Al {b}', halSell5: 'SAT 5', halSellAll: 'HEPSİ', halBuy5: 'AL 5',
     halEmpty: 'Henüz ürün yok', halSold: '{n} ürün satıldı: +{v}', halBought: '{n} ürün alındı: {v}', kFume: 'füme', kFileto: 'fileto',
     envUp1: '🌿 Liman canlanıyor: yol çakıl oldu, ağaçlar yeşeriyor', envUp2: '🪨 Yol arnavut kaldırımı oldu, sahil toparlandı',
@@ -213,7 +213,7 @@ var STR = {
     newLine: '🎉 Yeni hat açıldı: {n}!', lineLocked: 'Kilitli — {s} gerekli',
     lineOpen: 'Açık', stallOf2: 'Tezgâh: {s}', noStall: 'Tezgâh kurulmadı',
     stB0: 'İskele Tezgâhı', stB1: 'Pazar Tezgâhı', stB2: 'Fümehane Tezgâhı',
-    stSS3: 'Pazar Ek Tezgâhı (yapı)', stSS6: 'Fümehane Ek Tezgâhı (yapı)', stHAL: 'Kapalı Balık Hali'
+    stSS3: 'Pazar Ek Tezgâhı (yapı)', stSS6: 'Fümehane Ek Tezgâhı (yapı)', stHAL: 'Kapalı Pazar'
   },
   en: {
     money: 'CASH', carry: 'CARRY', rep: 'REP', goal: 'GOAL', menu: 'HARBOR',
@@ -222,7 +222,7 @@ var STR = {
     boardEmpty: 'Nobody here yet — be the first!', boardYou: 'YOU', boardDay: 'Day {d}',
     boardLocal: 'This table shows games played on this device.', close: 'CLOSE',
     boardLoading: 'Loading leaderboard…', boardOffline: 'Offline — showing games on this device.',
-    boardStats: '👥 {p} players • 🎮 {g} games',
+    boardStats: '👥 {p} players • 🎮 {g} games • ⏱ {h} hours',
     nameTitle: 'NAME YOUR BUSINESS', nameSub: 'What goes on the sign? This name appears on the leaderboard.',
     nameIdeas: 'IDEAS', nameGo: 'OPEN FOR BUSINESS ▶', nameShort: 'Type at least 2 letters.', nameDice: 'Random name',
     welcomeCo: '{n} is open for business!', tapStart: '▶ TAP TO BEGIN', skip: 'SKIP ▶▶',
@@ -265,14 +265,14 @@ var STR = {
     autoLbl: 'AUTOSAVE', autoSaved: '💾 Autosaved • {t}', autoSet: '💾 Autosave every {m} minutes',
     autoNext: 'Autosave: every {m} min • next in {t}',
     musicLbl: 'MUSIC', musOn: '♪ ON', musOff: 'OFF',
-    meydan: 'HARBOR SQUARE', hutName: 'Staff Hut', depotName: 'Depot', whall: 'Wholesale Market', buildAt: 'BUILD › Square',
+    meydan: 'HARBOR SQUARE', hutName: 'Staff Hut', depotName: 'Depot', whall: 'Fish Hall', buildAt: 'BUILD › Square',
     hutD: '+1 staff slot in every zone per level (now +{n})', depotD: 'Stores surplus fillet/smoked fish on shelves by type; has its own staff',
     depotD2: 'Shelves {a}/{b} → {n} • +1 depot staff', whallD: 'Sell depot stock at today\'s price, buy wholesale (needs Depot)',
     officeInMeydan: 'The Trade Center is now on the square — build it from PROJECT', goProj: 'PROJECT ›', upgrade: 'UPGRADE', build: 'BUILD',
     needDepot: '🔒 Build the Depot first', depotStaffFull: 'Depot crew full — upgrade the depot', depotFull: 'Depot full',
     hutBuilt: '🏚️ Staff Hut built: +1 staff slot in every zone', hutUp: '🏚️ Hut Lv {l}: +{l} staff slots in every zone',
     depotBuilt: '📦 Depot built — surplus goes to shelves, not the bin/auction', depotUp: '📦 Depot Lv {l}: capacity {c}',
-    whallBuilt: '🏪 Wholesale Market open', hutBtn: 'STAFF', halBtn: 'WHOLESALE', hutWelcome: '👷 Welcome to the hut — manage your staff here',
+    whallBuilt: '🏪 Fish Hall open', hutBtn: 'STAFF', halBtn: 'FISH HALL', hutWelcome: '👷 Welcome to the hut — manage your staff here',
     halSub: 'Day {d} prices • Depot {a}/{b}', halRow: 'In depot {n} • Sell {s} • Buy {b}', halSell5: 'SELL 5', halSellAll: 'ALL', halBuy5: 'BUY 5',
     halEmpty: 'No goods yet', halSold: '{n} sold: +{v}', halBought: '{n} bought: {v}', kFume: 'smoked', kFileto: 'fillet',
     envUp1: '🌿 The harbor comes alive: gravel road, trees turning green', envUp2: '🪨 The road is cobbled now, the shore tidied up',
@@ -397,7 +397,7 @@ var STR = {
     newLine: '🎉 New line unlocked: {n}!', lineLocked: 'Locked — needs {s}',
     lineOpen: 'Open', stallOf2: 'Stall: {s}', noStall: 'Stall not built',
     stB0: 'Pier Stall', stB1: 'Market Stall', stB2: 'Smokehouse Stall',
-    stSS3: 'Market Extra Stall (build)', stSS6: 'Smokehouse Extra Stall (build)', stHAL: 'Covered Fish Hall'
+    stSS3: 'Market Extra Stall (build)', stSS6: 'Smokehouse Extra Stall (build)', stHAL: 'Covered Market'
   }
 };
 function T(k, p) {
@@ -847,7 +847,7 @@ var LINES = [
   { f: 'palamut', stall: 'ss3', src: 1, w: 0.8 },   /* Pazar yapı noktası tezgâhı */
   { f: 'levrek',  stall: 'b2',  src: 2, w: 0.8 },   /* Fümehane tezgâhı */
   { f: 'somon',   stall: 'ss6', src: 2, w: 0.6 },   /* Fümehane yapı noktası tezgâhı */
-  { f: 'ton',     stall: 'hal', src: 1, w: 0.45 }   /* Kapalı Balık Hali — prestij hattı */
+  { f: 'ton',     stall: 'hal', src: 1, w: 0.45 }   /* Kapalı Pazar — prestij hattı */
 ];
 function lineOf(f) { for (var i = 0; i < LINES.length; i++) if (LINES[i].f === f) return LINES[i]; return null; }
 /* =========================================================
@@ -1113,7 +1113,7 @@ function workerSpeedMul() { return 1 + slotEff(null, 'wspeed') + perkSum('wspeed
 /* ---------------- büyük proje (GDD §23) ---------------- */
 var project = {
   id: 'hal', z: 1, x: 7.0, y: 8.6, w: 2.6, h: 2.2,
-  n: { tr: 'Kapalı Balık Hali', en: 'Covered Fish Hall' },
+  n: { tr: 'Kapalı Pazar', en: 'Covered Market' },
   total: 26000, inv: 0, stage: 0, done: false,
   stages: [0.10, 0.30, 0.60, 0.80, 1.0]
 };
@@ -1198,7 +1198,7 @@ var SERV = [
       { c: 28000, inc: 96,  ivl: 30, mod: { upcost: 0.08 }, d: { tr: 'Servis geliri +%20 • −%8', en: 'Service income +20% • −8%' }, v: { tr: 'Vinçli bakım alanı, parça rafları', en: 'Crane bay, parts racks' } },
       { c: 70000, inc: 185, ivl: 26, mod: { upcost: 0.10 }, d: { tr: 'Özel bakım kontratları • −%10', en: 'Premium maintenance • −10%' }, v: { tr: 'İki gözlü profesyonel tesis', en: 'Two-bay professional facility' } }
     ] },
-  { id: 'hal', icon: '🏪', n: { tr: 'Balık Hali', en: 'Fish Hall' }, acc: '#d8b45a',
+  { id: 'hal', icon: '🏪', n: { tr: 'Toptancı Hanı', en: 'Wholesale Inn' }, acc: '#d8b45a',
     r: { tr: 'Tezgâhların üstüne toptan satış katmanı ekler', en: 'Adds a wholesale layer above the stalls' },
     lv: [
       { c: 3200,   inc: 0,   ivl: 0,  mod: { queue: 1 }, d: { tr: 'Müşteri kapasitesi +1', en: 'Customer capacity +1' }, v: { tr: 'Açık masa ve tente grubu', en: 'Open tables and awnings' } },
@@ -4036,6 +4036,56 @@ function drawRoadLamps(push) {
   for (var y = 3.5; y < 22; y += 4.5) (function (ly) { push(14.75 + ly, function () { drawLamp(14.75, ly); }); })(y);
 }
 
+/* v1.0 — kilitli bölgeler eski püskü eşya ve malzemeyle dolu; bölge açılınca temizlenir.
+   Konumlar bölgeye göre sabit tohumla üretilir (her açılışta aynı). */
+var _junk = {};
+var JUNK_T = ['kasa', 'tahta', 'varil', 'ag', 'lastik', 'sandal', 'halat', 'capa', 'araba', 'kasa', 'tahta', 'varil'];
+function areaJunk(ai) {
+  if (_junk[ai]) return _junk[ai];
+  var a = AREAS[ai], r = seedRnd(7919 * (ai + 3)), out = [], tries = 0;
+  while (out.length < 13 && tries++ < 200) {
+    var x = a.x0 + 0.9 + r() * (a.x1 - a.x0 - 1.8), y = a.y0 + 0.9 + r() * (a.y1 - a.y0 - 1.8);
+    var near = false;
+    for (var q = 0; q < out.length; q++) if (Math.hypot(out[q].x - x, out[q].y - y) < 1.25) near = true;
+    if (near) continue;
+    out.push({ x: x, y: y, t: JUNK_T[Math.floor(r() * JUNK_T.length)], v: r() });
+  }
+  return (_junk[ai] = out);
+}
+function clearJunk(ai) { areaJunk(ai).forEach(function (j) { addPuff(j.x, j.y, '#b8a57e'); }); }
+function drawJunk(j) {
+  var sx = R(pX(j.x, j.y)), sy = R(pY(j.x, j.y, 0)), t = j.t, flip = j.v > 0.5 ? 1 : -1;
+  shadow(j.x, j.y, 0.45);
+  if (t === 'kasa') {                                   /* üst üste kırık kasalar */
+    px(sx - 7, sy - 6, 8, 6, '#8a7050'); px(sx - 7, sy - 6, 8, 1, '#a88a60'); px(sx - 4, sy - 5, 1, 5, '#6b5640');
+    px(sx + 1, sy - 5, 6, 5, '#7a6244'); px(sx + 1, sy - 5, 6, 1, '#957856');
+    px(sx - 5 + flip, sy - 11, 7, 5, '#958062'); px(sx - 5 + flip, sy - 11, 7, 1, '#b39a74'); px(sx - 1 + flip, sy - 10, 2, 2, '#4a3a28');
+  } else if (t === 'tahta') {                           /* tahta yığını */
+    for (var k = 0; k < 4; k++) { px(sx - 9 + k, sy - 2 - k * 2, 16, 2, k % 2 ? '#8a6a44' : '#a07c52'); px(sx - 9 + k, sy - 2 - k * 2, 16, 1, '#b8946a'); }
+    px(sx + 5, sy - 9, 2, 8, '#6b5640');
+  } else if (t === 'varil') {                           /* paslı variller */
+    px(sx - 7, sy - 9, 7, 9, '#7a4a2a'); px(sx - 7, sy - 9, 7, 2, '#9a5a2e'); px(sx - 7, sy - 5, 7, 1, '#5a3218');
+    px(sx + 1, sy - 4, 8, 4, '#6f4424'); px(sx + 1, sy - 4, 8, 1, '#8a5530'); px(sx + 8, sy - 4, 1, 4, '#4a2a14');
+  } else if (t === 'ag') {                              /* dolaşmış ağ yığını */
+    px(sx - 7, sy - 4, 14, 4, '#9a8e70'); px(sx - 5, sy - 7, 10, 3, '#a89c7c'); px(sx - 2, sy - 9, 5, 2, '#b3a786');
+    ctx.globalAlpha = 0.6; for (var n = 0; n < 5; n++) px(sx - 6 + n * 3, sy - 8 + (n % 2), 1, 7, '#6f6650'); ctx.globalAlpha = 1;
+    px(sx + 3, sy - 5, 2, 2, PAL.madder);
+  } else if (t === 'lastik') {                          /* eski lastik yığını */
+    for (var l = 0; l < 3; l++) { px(sx - 6, sy - 3 - l * 3, 12, 3, '#2b2b2b'); px(sx - 4, sy - 2 - l * 3, 8, 1, '#4a4a4a'); }
+  } else if (t === 'sandal') {                          /* çürük ters sandal */
+    px(sx - 11, sy - 3, 22, 3, '#6f6a60'); px(sx - 10, sy - 5, 20, 2, '#85806f'); px(sx - 4, sy - 5, 3, 2, '#3f3a32'); px(sx + 5, sy - 4, 2, 1, '#3f3a32');
+  } else if (t === 'halat') {                           /* halat kangalı */
+    px(sx - 5, sy - 3, 10, 3, '#b39a64'); px(sx - 4, sy - 5, 8, 2, '#c4ab74'); px(sx - 2, sy - 4, 4, 1, '#8a744a');
+    px(sx + 5, sy - 2, 5, 1, '#b39a64');
+  } else if (t === 'capa') {                            /* paslı çapa */
+    px(sx - 1, sy - 12, 2, 11, '#6a4a34'); px(sx - 3, sy - 12, 6, 1, '#6a4a34');
+    px(sx - 6, sy - 3, 12, 2, '#6a4a34'); px(sx - 7, sy - 5, 2, 2, '#6a4a34'); px(sx + 5, sy - 5, 2, 2, '#6a4a34');
+  } else {                                              /* kırık el arabası */
+    px(sx - 7, sy - 6, 12, 4, '#8a6a44'); px(sx - 7, sy - 6, 12, 1, '#a88a60');
+    px(sx - 5, sy - 2, 3, 3, '#3a3a3a'); px(sx + 5, sy - 8, 5, 1, '#6b5640'); px(sx + 2, sy - 1, 2, 1, '#6b5640');
+  }
+}
+
 /* --- liman kedisi: uyur, esner, yürür (Anadolu klasiği) --- */
 var cats = [
   { x: 8.4, y: 4.4,  dir: 1,  t: 0, st: 'sit',   col: '#d8b06a' },   /* sarman */
@@ -5429,6 +5479,10 @@ function render() {
   var list = [], i;
   function push(d, fn) { list.push({ d: d, f: fn }); }
 
+  for (i = 0; i < AREAS.length; i++) (function (ar, ai) {
+    if (!ar.locked) return;
+    areaJunk(ai).forEach(function (j) { push(j.x + j.y, function () { drawJunk(j); }); });
+  })(AREAS[i], i);
   for (i = 0; i < AREAS.length; i++) (function (ar) {
     if (ar.locked) return;
     if (ar.lvl >= 2) push(ar.x0 + ar.y1 - 0.2, function () { drawSign(ar); });
@@ -5744,7 +5798,7 @@ function barList() {
       var blk = S.rep < a.rep;
       out.push({ id: 'a' + i, ic: '🔓', t: NM(a.n), s: T('areaGives') + (a.rep ? ' • Sv ' + levelForRep(a.rep) : ''),
         cost: upCost(a.cost), blocked: blk, why: T('needRep', { n: a.rep, c: S.rep, l: levelForRep(a.rep) }),
-        go: function (k) { return function () { AREAS[k].locked = false; rebuildCounters(); reassignWorkers(); clampCam(); sfx.build(); toast(T('areaOpen', { n: NM(AREAS[k].n) })); }; }(i) });
+        go: function (k) { return function () { clearJunk(k); AREAS[k].locked = false; rebuildCounters(); reassignWorkers(); clampCam(); sfx.build(); toast(T('areaOpen', { n: NM(AREAS[k].n) })); }; }(i) });
       break;
     }
     if (!out.length) out.push({ empty: T('emptyArea') });
@@ -6169,6 +6223,7 @@ function row(ic, title, sub, val, val2) {
     (sub ? '<small>' + sub + '</small>' : '') + '</div><div class="vl">' + (val || '') +
     (val2 ? '<small>' + val2 + '</small>' : '') + '</div></div>';
 }
+function lockTag() { return '<span style="color:var(--ink2)">' + T('locked') + '</span>'; }   /* v1.0: kilitli değer yeşil (para gibi) görünmesin */
 function renderTab() {
   var h = '', i;
   if (curTab === 'liman') {
@@ -6179,7 +6234,7 @@ function renderTab() {
       var a = AREAS[i];
       h += row(a.locked ? '🔒' : '🏝️', NM(a.n),
         a.locked ? (money(a.cost) + ' + ' + a.rep + '*') : (T('level') + a.lvl + '/' + MAXLV),
-        a.locked ? T('locked') : (a.lvl < MAXLV ? money(a.up[a.lvl]) : T('done')));
+        a.locked ? lockTag() : (a.lvl < MAXLV ? money(a.up[a.lvl]) : T('done')));
     }
     h += row('🏛️', NM(project.n), T('stage') + ' ' + project.stage + '/5',
       project.done ? T('done') : pct(Math.round(projPct() * 100)), project.done ? '' : money(project.total - project.inv));
@@ -6201,7 +6256,7 @@ function renderTab() {
           slv2 < 5 ? money(upCost(sCost(sd2.lv[slv2].c))) : T('maxLv'));
       } else {
         var wy = servLockReason(sd2);
-        h += row('🔒', NM(sd2.n), wy || NM(sd2.r), T('locked'), wy ? '' : money(upCost(sCost(sd2.lv[0].c))));
+        h += row('🔒', NM(sd2.n), wy || NM(sd2.r), lockTag(), wy ? '' : money(upCost(sCost(sd2.lv[0].c))));
       }
     }
   } else if (curTab === 'personel') {
@@ -7322,7 +7377,7 @@ var Board = {
   submit: function (e) {
     var a = Board.read(), f = null;
     for (var i = 0; i < a.length; i++) if (a[i].id === e.id) { f = a[i]; break; }
-    if (f) { f.n = e.n; f.s = Math.max(f.s, e.s); f.m = Math.max(f.m || 0, e.m); f.d = Math.max(f.d || 1, e.d); f.at = e.at; }
+    if (f) { f.n = e.n; f.h = e.h; f.s = Math.max(f.s, e.s); f.m = Math.max(f.m || 0, e.m); f.d = Math.max(f.d || 1, e.d); f.p = Math.max(f.p || 0, e.p || 0); f.at = e.at; }
     else a.push(e);
     a = Board.sort(a);
     if (a.length > BOARD_MAX) a = a.slice(0, BOARD_MAX);
@@ -7334,7 +7389,7 @@ var Board = {
 var netSent = { at: 0, s: -1, busy: false, dirty: false };
 function submitScore(force) {
   if (!S.company || !S.runId) return;
-  var e = { id: S.runId, n: S.company, s: S.caught, m: Math.round(S.earned), d: day.n, at: Date.now() };
+  var e = { id: S.runId, n: S.company, h: (S.hero && S.hero.n) || '', s: S.caught, m: Math.round(S.earned), d: day.n, p: Math.round(S.play || 0), at: Date.now() };
   Board.submit(e);
   if (!ONLINE) return;
   var now = Date.now();
@@ -7343,7 +7398,7 @@ function submitScore(force) {
   if (!force && e.s === netSent.s && !netSent.dirty) return;
   netSent.busy = true; netSent.dirty = false;
   rpc('bt_submit', { p_run: e.id, p_player: PLAYER_ID, p_company: e.n, p_fish: e.s, p_money: e.m,
-    p_day: e.d, p_play: Math.round(S.play || 0) }).then(function (r) {
+    p_day: e.d, p_play: e.p, p_hero: e.h }).then(function (r) {
     netSent.busy = false;
     if (r === 'ok') { netSent.at = Date.now(); netSent.s = e.s; }
     else if (r === 'too_fast') netSent.dirty = true;
@@ -7364,7 +7419,8 @@ function boardRow(e, i, mine) {
   var medal = i < 3 ? ' m' + (i + 1) : '';
   return '<div class="brow' + medal + (mine ? ' me' : '') + '"><span class="rk">' + (i + 1) + '</span>' +
     '<span class="bn">' + escH(e.n) + (mine ? ' <em>' + T('boardYou') + '</em>' : '') +
-    '<small>' + T('boardDay', { d: e.d || 1 }) + ' • ' + money(e.m || 0) + '</small></span>' +
+    '<small>' + (e.h ? escH(e.h) + ' • ' : '') + T('boardDay', { d: e.d || 1 }) + ' • ' + money(e.m || 0) +
+    (e.p ? ' • ⏱ ' + clockStr(e.p) : '') + '</small></span>' +
     '<span class="bs">' + T('fishN', { n: fmtN(e.s) }) + '</span></div>';
 }
 var boardReq = 0;
@@ -7381,7 +7437,7 @@ function renderBoard() {
     } else if (me >= BOARD_SHOW) h += '<div class="bsep">• • •</div>' + boardRow(list[me], me, true);
     el.boardRows.innerHTML = h;
     el.boardNote.textContent = info.src === 'online'
-      ? T('boardStats', { p: fmtN(info.stats && info.stats.players), g: fmtN(info.stats && info.stats.plays) })
+      ? T('boardStats', { p: fmtN(info.stats && info.stats.players), g: fmtN(info.stats && info.stats.plays), h: (info.stats && info.stats.hours) || 0 })
       : T(info.src === 'offline' ? 'boardOffline' : 'boardLocal');
   });
 }
@@ -8043,7 +8099,7 @@ function updateIntro(dt) {
    v0.7 — FAZ 3: LİMAN MEYDANI
    Yönetim binaları tezgâh bölgelerinin DIŞINDA: müşteri yolunun doğusunda ayrı bir meydan.
    1. bölgeye ahşap yaya köprüsüyle bağlanır (köprü kuyrukların kuzeyinden geçer, müşteriyle kesişmez).
-   İçinde: Personel Kulübesi (seviyeli) • Depo (kendi personeliyle) • Ticaret Merkezi • Toptancı Hali
+   İçinde: Personel Kulübesi (seviyeli) • Depo (kendi personeliyle) • Ticaret Merkezi • Balık Hali
    ========================================================= */
 /* MEYDAN ve BRIDGE yukarıda (dünya verisiyle) tanımlı: manzara üretimi açılışta onları kullanır */
 var HUT = { x: 16.2, y: 0.7, w: 1.5, h: 1.2, lvl: 0, door: { x: 16.2, y: 1.8 } };
@@ -8217,7 +8273,7 @@ function aiSevkiyat(w, sp, dt) {
   idleAtDepot(w, sp, dt);
 }
 
-/* ---------- Toptancı Hali: depodaki malı günlük fiyatla sat / toptan al ---------- */
+/* ---------- Balık Hali (meydan): depodaki malı günlük fiyatla sat / toptan al ---------- */
 function halProducts() {
   var out = [];
   for (var i = 0; i < LINES.length; i++) {
@@ -8345,6 +8401,9 @@ function plotOutline(o, label, col) {
   ctx.lineTo(R(pX(x + o.w, y + o.h)), R(pY(x + o.w, y + o.h, 0))); ctx.lineTo(R(pX(x, y + o.h)), R(pY(x, y + o.h, 0)));
   ctx.closePath(); ctx.stroke(); ctx.restore();
   if (dist2(player.x, player.y, o.x, o.y) < 30) uiLabel(o.x, o.y, 14, label, '#ffc94a', 0.85);
+  /* kurulmamış parselde eski püskü malzeme: bina kurulunca kalkar */
+  drawJunk({ x: o.x - 0.35, y: o.y - 0.1, t: 'tahta', v: 0.2 });
+  drawJunk({ x: o.x + 0.45, y: o.y + 0.25, t: o.w > 2 ? 'varil' : 'kasa', v: 0.7 });
 }
 function drawHut() {
   var o = HUT;

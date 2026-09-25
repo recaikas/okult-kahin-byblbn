@@ -41,6 +41,16 @@
     display:flex;align-items:center;justify-content:center;
     box-shadow:inset -2px -2px 0 rgba(0,0,0,.3),inset 2px 2px 0 rgba(255,255,255,.06)}
   .btn:active{transform:translate(1px,1px)}
+  /* v1.0: dar telefonlarda (≤420px) üst şerit taşmasın, ☰ ekranda kalsın */
+  @media (max-width:420px){
+    .hud{gap:3px;padding-left:4px;padding-right:4px}
+    .chip{padding:2px 4px;gap:3px;font-size:11px;min-width:0}
+    .chip small{font-size:7px;letter-spacing:0}
+    .chip .bar{width:16px}
+    #dayChip .bar{display:none}
+    .hud .btn{min-width:32px;height:32px}
+    body #objective{white-space:normal;max-width:94vw;font-size:11px}
+  }
 
   #objective{position:fixed;left:50%;transform:translateX(-50%);
     top:calc(46px + env(safe-area-inset-top,0px));z-index:5;pointer-events:none;
@@ -424,7 +434,7 @@
   .brow.m2 .rk{background:#c9d3dc;color:#1f2a33;border-color:#5d6a75}
   .brow.m3 .rk{background:#c98a4f;color:#2e1706;border-color:#6b3f18}
   .brow .bn{flex:1;min-width:0;font-size:13px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .brow .bn small{display:block;font-size:10px;color:var(--ink2)}
+  .brow .bn small{display:block;font-size:10px;color:var(--ink2);white-space:normal}
   .brow .bn em{font-style:normal;font-size:9.5px;background:var(--gold);color:#3a2401;padding:1px 4px;margin-left:2px}
   .brow .bs{font-size:13px;color:var(--green);white-space:nowrap}
   .brow.me{border-color:var(--gold)}
@@ -477,7 +487,7 @@
   <div class="card">
     <h1>BALIKÇI<br>TYCOON</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v0.9</div>
+    <div class="ver">v1.0</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -626,7 +636,7 @@
 
 <div class="overlay hidden" id="halScr">
   <div class="card">
-    <h2 id="halTitle">TOPTANCI HALİ</h2>
+    <h2 id="halTitle">BALIK HALİ</h2>
     <p id="halSub">—</p>
     <div id="halRows"></div>
     <button class="go" id="halClose">KAPAT</button>

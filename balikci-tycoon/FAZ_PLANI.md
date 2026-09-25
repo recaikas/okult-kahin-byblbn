@@ -72,7 +72,7 @@ Zaten olanlar (doğrulandı): **#5** kesim tezgâhı bölgeye özel (v2.2) · **
 
 ## FAZ 3 — Liman Meydanı (yeni bölge) + Depo  ✅ (v0.7'de yapıldı)
 
-Haritanın doğusuna, müşteri yolunun karşısına, yürünerek gidilen **Liman Meydanı** eklendi (1. bölgeye yaya köprüsüyle bağlı). Balık Hali adı, mevcut "Kapalı Balık Hali" projesiyle karışmasın diye **Toptancı Hali** oldu; Ana Kasa şimdilik 1. bölgede kaldı (tahsildar yolu kısa olsun).
+Haritanın doğusuna, müşteri yolunun karşısına, yürünerek gidilen **Liman Meydanı** eklendi (1. bölgeye yaya köprüsüyle bağlı). Meydandaki bina **Balık Hali**; isim karışmasın diye eski büyük proje **Kapalı Pazar**, BİNA sekmesindeki hizmet binası **Toptancı Hanı** oldu. Ana Kasa şimdilik 1. bölgede kaldı (tahsildar yolu kısa olsun).
 
 ### #11 Personel Kulübesi (seviyeli, meydanda)
 - Seviye 1–5. Her seviye **toplam personel sınırı** +3 (Sv1: 4 kişi … Sv5: 16 kişi) ve işe alım indirimi.

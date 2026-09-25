@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — **v0.9** (özel isimli müşteriler)
+# 🐟 Balıkçı Tycoon — **v1.0** (cila + canlı site + oyuncu takibi)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js`.
@@ -9,6 +9,42 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.0 — Cila, yeni isimler, canlı site ve oyuncu takibi
+
+### İsimler netleşti
+| Yer | Eski ad | Yeni ad |
+|---|---|---|
+| Liman Meydanı'ndaki toptan alış-satış binası | Toptancı Hali | **Balık Hali** |
+| PROJE sekmesindeki büyük kapalı çarşı projesi | Kapalı Balık Hali | **Kapalı Pazar** |
+| BİNA sekmesindeki hizmet binası | Balık Hali | **Toptancı Hanı** |
+
+### Açılacak bölgeler eski püskü eşyayla dolu
+Kilitli bölgelerde (Balık Pazarı, Fümehane) çürük kasalar, kırık tahtalar, paslı varil, yırtık ağ, eski lastik,
+ters dönmüş sandal, halat yığını, paslı çapa ve tekerleği kırık el arabası durur (her bölgede sabit tohumla 13 parça).
+Bölgeyi satın alınca hepsi toz bulutuyla temizlenir. Meydandaki henüz yapılmamış parsellerde de küçük bir hurda yığını
+"burası boş, yapılabilir" hissi verir.
+
+### Hata avı ve cila
+- **Dar telefonlarda üst şerit taşıyordu:** 360 px genişlikte ☰ menü düğmesi ekranın dışına düşüyor, GÜN kutusu
+  kesiliyordu. ≤420 px için sıkı yerleşim eklendi; ☰ artık her ekranda görünür.
+- **Hedef bandı kesiliyordu** ("Sandığın üstünden geç, balıkla…") → dar ekranda iki satıra kırılır.
+- **Skor tablosu satırları** uzun olunca kesiliyordu → alt satır kırılır, süre görünür.
+- 7 günlük otomatik dayanıklılık testi (tüm bölgeler açık, tam otomasyon, pazar günü, özel müşteriler, günün
+  ortasında dil değişimi): hiç hata yok; para/itibar/konumlarda NaN veya eksi değer yok.
+
+### Oyuncu takibi (kim, hangi isimle, ne kadar oynadı)
+Skor tablosu artık her satırda **işletme adı + karakter adı + gün + para + ⏱ oyun süresi** gösterir; altta
+`👥 oyuncu • 🎮 oyun • ⏱ toplam saat`. Sahibi olarak Supabase *SQL Editor*'de şunu çalıştır:
+
+```sql
+select * from bt_oyuncular;   -- oyuncu, karakter, işletme, oyun sayısı, toplam saat, en iyi balık, en uzun gün, açılış, son görülme
+```
+
+Bu görünüm **yalnız proje sahibine** açıktır (anon anahtarla `permission denied`). Kişisel veri tutulmaz: rastgele
+cihaz kimliği + oyuncunun kendi yazdığı karakter/işletme adı.
 
 ---
 
@@ -67,7 +103,7 @@ Yönetim binaları **tezgâh bölgelerinin dışında**: müşteri yolunun doğu
 | · Depo Hamalı | Tezgâhı dolu ürünün fazlasını hasırdan depoya taşır; stoğu azalan tezgâhı depodan besler (taşıyabildiği kadar yükler). |
 | · Sevkiyatçı | Kabul edilen kontratın ürününü depodan alıp **Ticaret Merkezi**'ne teslim eder. |
 | 🏛️ **Ticaret Merkezi** | Eski Ticaret Ofisi meydana taşındı; yürüyerek gidilir (kuruluş yine PROJE sekmesinden). |
-| 🏪 **Toptancı Hali** | Depodaki malı **günün fiyatıyla** sat (%85 ± dalgalanma) ya da toptan al (%130 ± dalgalanma). Fiyatlar her gün değişir (▲▼). Kapısında düğme. |
+| 🏪 **Balık Hali** | Depodaki malı **günün fiyatıyla** sat (%85 ± dalgalanma) ya da toptan al (%130 ± dalgalanma). Fiyatlar her gün değişir (▲▼). Kapısında düğme. |
 
 Eski parsel binası "Depo Kulübesi" isim karışmasın diye **Soğuk Sandık** oldu (etkisi aynı).
 **Test:** `test-faz3.js` — köprüden yürüme, bina kurma, depoya koyma, 3. bölgeden köprüyle tezgâh besleme (12 sn),
@@ -156,9 +192,14 @@ Oyun, `config.js` doluysa skorları **Supabase**'e gönderir; boşsa (veya bağl
    (anon anahtarın tarayıcıda görünmesi normaldir: tablolara doğrudan yazma kapalı, yalnız doğrulayan fonksiyonlar açık)
 4. GitHub › *Settings › Pages › Source: GitHub Actions* — `main`'e her push'ta
    `.github/workflows/balikci-pages.yml` oyunu **https://recaikas.github.io/okult-kahin-byblbn/** adresine yayınlar
+5. `config.js` değişikliğini `main`'e gönder; site 1–2 dk içinde güncellenir. Linki paylaş, oyuncular oynadıkça
+   `select * from bt_oyuncular;` ile kimin ne kadar oynadığını gör.
 
-**Tutulanlar:** skor (`bt_scores`: işletme adı, balık, para, gün, oyun süresi) ve her oyun açılışı (`bt_plays`: anonim oyuncu kimliği, dil).
-Tabloda `👥 N oyuncu • 🎮 M oyun` görünür. Ayrıntı için `schema.sql` sonundaki hazır sorgular (günlük oyuncu sayısı, uygunsuz isim silme).
+> Şema dosyası tekrar çalıştırılabilir (idempotent): eski sürümü kurduysan v1.0'ı aynen yapıştırıp **Run** de,
+> `hero` sütunu ve `bt_oyuncular` görünümü eklenir, mevcut skorlar korunur.
+
+**Tutulanlar:** skor (`bt_scores`: işletme adı, karakter adı, balık, para, gün, oyun süresi) ve her oyun açılışı (`bt_plays`: anonim oyuncu kimliği, dil).
+Tabloda `👥 N oyuncu • 🎮 M oyun • ⏱ S saat` görünür. Ayrıntı için `schema.sql` sonundaki hazır sorgular (günlük oyuncu sayısı, uygunsuz isim silme).
 
 **Hile/spam koruması (sunucuda):** isim 2–24 karakter + HTML temizliği • skor oyun süresine göre makul olmalı • skor geriye gitmez •
 başkasının kaydına yazılamaz • 8 sn'den sık gönderim ve saatte 20'den fazla yeni kayıt reddedilir. Anon anahtarla tablolara doğrudan
@@ -510,7 +551,7 @@ Kilitli balık türlerinin müşteri siparişlerine sızması engellendi. Çekir
 | 3 | Palamut *(yeni)* | Pazar Ek Tezgâhı | 2. ağ | yapı noktasına "Ek Tezgâh" |
 | 4 | Levrek | Fümehane Tezgâhı | 3. ağ | Fümehane bölgesi |
 | 5 | Somon | Fümehane Ek Tezgâhı | 3. ağ | yapı noktasına "Ek Tezgâh" |
-| 6 | Orkinos | Kapalı Balık Hali | 2. ağ | büyük proje tamamlanınca |
+| 6 | Orkinos | Kapalı Pazar | 2. ağ | büyük proje tamamlanınca |
 
 **Kurallar**
 - Bir tür ancak **üretim noktası açık + işleme hattı var + kendi tezgâhı kurulu** ise satılabilir (`canProduce && canProcess && canSell`). Biri eksikse o tür ne üretilir, ne sipariş edilir, ne de müşterisi doğar.
@@ -573,7 +614,7 @@ Kapanış tohumu (`seed`) save'de tutulur → **kapat-aç ile farklı sonuç ür
 
 **Etkileşim önceliği (spec §8):** para taşırken kasa her şeyin önüne geçer → kasa çevresinde yanlış tetikleme yok.
 
-**Alt geliştirme barı:** `ALAN` (yeni bölge) • `YÜKSELTME` (bölge seviyesi + kapasite/hız/pazarlık + çırak tut) • `YAPI` (yapı noktaları + süsler) • `PROJE` (Kapalı Balık Hali'ne aşamalı yatırım).
+**Alt geliştirme barı:** `ALAN` (yeni bölge) • `YÜKSELTME` (bölge seviyesi + kapasite/hız/pazarlık + çırak tut) • `YAPI` (yapı noktaları + süsler) • `PROJE` (Kapalı Pazar'ne aşamalı yatırım).
 
 ---
 
@@ -584,7 +625,7 @@ Kapanış tohumu (`seed`) save'de tutulur → **kapat-aç ile farklı sonuç ür
 | **AREA** | 3 bölge: Balıkçı İskelesi / Balık Pazarı ($1.300 + 10⭐) / Fümehane ($4.600 + 30⭐). Kilitli alan haritada halat çit + tabela ile önceden görünür. |
 | **Bölge seviyesi** | Her bölge Lv.1→3. Her seviyede **görünür** değişim: yıpranmış tahta → düzgün zemin + tabela → taş zemin + sokak lambaları. Ayrıca ağ hızı, tezgâh kapasitesi, kuyruk sırası ve yeni yapı noktası açılır. |
 | **Yapı noktaları** | 7 sabit slot (3'ü Lv.3'te açılır), 6 yapı: Personel Kulübesi, Çay Ocağı, Ek Tezgâh (yeni satış noktası!), Reklam Panosu, Depo Kulübesi, Ağ Vinci. Slot başına uyumlu kategoriler; değiştirince %60 iade. |
-| **Büyük Proje** | **Kapalı Balık Hali** — $26.000, 5 aşama (temel → kolon → duvar/çatı → donatım → açılış). Parça parça yatırım: +$1.000 / +$10.000 / %25 / MAKS. Her eşikte şantiye modeli büyür; bitince yeni tezgâh + %25 müşteri akışı. |
+| **Büyük Proje** | **Kapalı Pazar** — $26.000, 5 aşama (temel → kolon → duvar/çatı → donatım → açılış). Parça parça yatırım: +$1.000 / +$10.000 / %25 / MAKS. Her eşikte şantiye modeli büyür; bitince yeni tezgâh + %25 müşteri akışı. |
 | **Kozmetik** | 8 satın alınabilir süs: Türk bayrağı, balıkçı teknesi, bank, simit arabası, sokak lambası, begonvil, çay masası, balık heykeli. (Her biri +%2 müşteri sabrı.) |
 | **Liman Planı** | `☰` menüsünde bölgeler / proje / yapı slotları / personel limiti tek ekranda. |
 
