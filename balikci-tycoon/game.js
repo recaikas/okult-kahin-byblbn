@@ -451,7 +451,11 @@ var camOX = 0, camOY = 0, uiQ = [];
 function uiX(x, y, dx) { return (pX(x, y) + camOX + (dx || 0)) * PXS; }
 function uiY(x, y, z, dy) { return (pY(x, y, z) + camOY + (dy || 0)) * PXS; }
 function uiLabel(x, y, z, s, col, a, dx, dy) { uiQ.push({ t: 1, x: x, y: y, z: z, s: s, c: col, a: a === undefined ? 1 : a, dx: dx, dy: dy }); }
-function uiBadge(x, y, z, s, col) { uiQ.push({ t: 2, x: x, y: y, z: z, s: s, c: col || '#ffc94a', a: 1 }); }
+/* v1.3: tam otomatik bölgede istasyon etiketleri/stok rozetleri yalnız oyuncu yakındayken (kalabalık olmasın) */
+var uiQuiet = false;
+function quietZone(z, x, y) { return z >= 0 && zoneAuto(z) && dist2(player.x, player.y, x, y) > 16; }
+function quietDraw(z, x, y, fn) { uiQuiet = quietZone(z, x, y); try { fn(); } finally { uiQuiet = false; } }
+function uiBadge(x, y, z, s, col) { if (uiQuiet) return; uiQ.push({ t: 2, x: x, y: y, z: z, s: s, c: col || '#ffc94a', a: 1 }); }
 /* Etiket bütçesi: kalabalık limanda ekranı yazı kaplamasın.
    Ad etiketleri (t=1) yalnız oyuncuya en yakın LABEL_BUDGET tanesi çizilir;
    rozetler (t=2) ve serbest yazılar (t=3) sınırlanmaz. */
@@ -3165,6 +3169,8 @@ function updateCoach(dt) {
 }
 function updateTutorial() {
   if (S.tut >= TUTOK.length) return;
+  /* v1.3: eğitimin çok ötesine geçmiş oyuncuda (sv 3+, otomatik bölge ya da bölüm sonu) yarım kalan eğitim hedefi kapanır */
+  if (repLevel() >= 3 || S.ch1 || zoneAuto(0)) { S.tut = TUTOK.length; return; }
   if (TUTOK[S.tut]()) {
     S.tut++;
     if (S.tut < TUTOK.length) sfx.star();
@@ -3266,6 +3272,7 @@ function panel(x, y, w, h, bg, edge) {
 /* Yakınken tam ad, orta mesafede kısa rozet, uzakta hiçbir şey.
    Amaç: kalabalık sahnede dünya yazılarının binaları kapatmaması. */
 function labelAt(x, y, z, s, col, short) {
+  if (uiQuiet) return;
   var d = dist2(player.x, player.y, x, y);
   if (d < 2.2) { if (short) uiBadge(x, y, z, short, col); return; }
   if (d < 16) { uiLabel(x, y, z, s, col, 1); return; }
@@ -5507,7 +5514,7 @@ function drawOffice() {
   if (M && M.active.length) uiBadge(o.x, o.y + o.h / 2 + 0.2, 10, M.active.length + '/' + maxActive(), '#9df5b0');
 }
 
-/* ---------- v2.0: KAPALI BALIK HALİ — kagir hal binası ---------- */
+/* ---------- v2.0: KAPALI PAZAR (eski adıyla Kapalı Balık Hali) — kagir hal binası ---------- */
 function drawProject() {
   var p = project, st = p.stage;
   var x = p.x - p.w / 2, y = p.y - p.h / 2;
@@ -5556,7 +5563,7 @@ function drawProject() {
     var lx = R(pX(p.x, p.y + p.h / 2)), ly = R(pY(p.x, p.y + p.h / 2, 28));
     px(lx - 22, ly - 11, 44, 10, PAL.pnl);
     px(lx - 21, ly - 10, 42, 8, PAL.indigo);
-    if (dist2(player.x, player.y, p.x, p.y) < 70) uiText(p.x, p.y + p.h / 2, 32, lang === 'tr' ? 'BALIK HALİ' : 'FISH HALL', PAL.gold, 8);
+    if (dist2(player.x, player.y, p.x, p.y) < 70) uiText(p.x, p.y + p.h / 2, 32, NM(project.n).toLocaleUpperCase(lang === 'tr' ? 'tr-TR' : 'en-US'), PAL.gold, 8);
     px(lx - 23, ly + 1, 2, 9, PAL.iron); px(lx + 21, ly + 1, 2, 9, PAL.iron);
     for (var l = 0; l < 6; l++) px(lx - 18 + l * 7, ly - 13, 2, 2, (l + Math.floor(gameT * 2)) % 3 ? '#ffd98f' : '#f0ece0');
   }
@@ -5788,20 +5795,20 @@ function render() {
   if (!AREAS[project.z].locked) push(project.x + project.y, drawProject);
   if (!AREAS[office.z].locked) push(office.x + office.y, drawOffice);
   for (i = 0; i < spots.length; i++) (function (s) {
-    if (AREAS[s.z].locked) return; push(s.x + s.y, function () { drawSpot(s); });
+    if (AREAS[s.z].locked) return; push(s.x + s.y, function () { quietDraw(s.z, s.x, s.y, function () { drawSpot(s); }); });
   })(spots[i]);
   for (i = 0; i < XNETS.length; i++) (function (s) {
-    if (!xnetOn(s)) return; push(s.x + s.y, function () { drawSpot(s); });
+    if (!xnetOn(s)) return; push(s.x + s.y, function () { quietDraw(s.z, s.x, s.y, function () { drawSpot(s); }); });
   })(XNETS[i]);
   for (i = 0; i < tables.length; i++) (function (t) {
-    if (AREAS[t.z].locked) return; push(t.x + t.y, function () { drawTable(t); });
+    if (AREAS[t.z].locked) return; push(t.x + t.y, function () { quietDraw(t.z, t.x, t.y, function () { drawTable(t); }); });
   })(tables[i]);
-  if (!AREAS[smoker.z].locked) push(smoker.x + smoker.y, drawSmoker);
+  if (!AREAS[smoker.z].locked) push(smoker.x + smoker.y, function () { quietDraw(smoker.z, smoker.x, smoker.y, drawSmoker); });
   for (i = 0; i < 3; i++) (function (z) {
     var mp = mgr(z) && zoneOpen(z) ? mgrPos(z) : null; if (mp) push(mp.x + mp.y, function () { drawMgrDesk(z); });
   })(i);
   for (i = 0; i < counters.length; i++) (function (c) {
-    if (AREAS[c.z].locked) return; push(c.x + c.y, function () { drawCounter(c); });
+    if (AREAS[c.z].locked) return; push(c.x + c.y, function () { quietDraw(c.z, c.x, c.y, function () { drawCounter(c); }); });
   })(counters[i]);
   push(safe.x + safe.y, drawSafe);
 
@@ -5824,8 +5831,7 @@ function render() {
   for (i = 0; i < workers.length; i++) (function (w) {
     var col = w.role === 'hamal' ? '#4f7fae' : w.role === 'filetocu' ? '#5f8f6a' : w.role === 'tezgahtar' ? '#b8624a' : '#7a6ba8';
     push(w.x + w.y + 0.15, function () {
-      drawPerson(w, workerOutfit(w));
-      drawRoleTag(w);
+      quietDraw(w.zone, w.x, w.y, function () { drawPerson(w, workerOutfit(w)); drawRoleTag(w); });
     });
   })(workers[i]);
   push(player.x + player.y + 0.25, function () {
@@ -9065,7 +9071,7 @@ function chapterGroups() {
   function add(ic, key, done, tot) { g.push({ ic: ic, t: T(key), d: Math.min(done, tot), n: tot }); }
   add('🔓', 'chAreas', (AREAS[1].locked ? 0 : 1) + (AREAS[2].locked ? 0 : 1), 2);
   n = 0; for (i = 0; i < AREAS.length; i++) n += AREAS[i].lvl - 1; add('🏗️', 'chLevels', n, AREAS.length * (MAXLV - 1));
-  n = 0; t = 0; for (i = 0; i < PADS.length; i++) if (PADS[i].max) { n += PADS[i].lvl || 0; t += PADS[i].max; } add('⬆️', 'chPads', n, t);
+  n = 0; t = 0; for (i = 0; i < PADS.length; i++) if (PADS[i].max && PADS[i].kind !== 'decor') { n += PADS[i].lvl || 0; t += PADS[i].max; } add('⬆️', 'chPads', n, t);   /* süs noktaları Süsler satırında sayılır */
   n = 0; for (i = 0; i < SLOTS.length; i++) if (SLOTS[i].b) n++; add('🔨', 'chSlots', n, SLOTS.length);
   n = 0; for (i = 0; i < DECOR.length; i++) if (DECOR[i].got) n++; add('🌺', 'chDecor', n, DECOR.length);
   add('🌿', 'chEnv', envStage(), ENV_UPS.length);
@@ -9123,6 +9129,7 @@ function chapterPaper() {
 function openChapterEnd() {
   if (S.ch1) return;
   S.ch1 = true; save();
+  closeBar();                                                   /* açık panel sahnenin arkasında kalmasın */
   takeHarborSnap();
   openIntro(function () { showChapterCard(); }, chapterPaper());
   el.introGate.classList.add('hidden'); el.introScr.classList.remove('gate');

@@ -12,6 +12,29 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v1.3.1 — Bölüm 1 baştan sona oynandı (bot) ve bulunan hatalar düzeltildi
+
+`test-playthrough.js` Bölüm 1'i baştan sona oynar: yeni oyun → ilk dakikalar gerçek klavyeyle (ağ → kesim →
+tezgâh → kasa → Ana Kasa) → bütün alımlar arayüzden tıklanarak (bölgeler, seviyeler, yükseltmeler, yapı noktaları,
+süsler, çevre, füme makineleri, meydan, Kapalı Pazar, 12 personel, 3 müdür) → günler gerçekten oynanır (gün sonu,
+Balık Pazarı günü, tezgâh ekranları) → ortada kaydet/yenile/yükle → sayaç 59/59 → gazete kapanışı → bölüm kartı.
+Konsol hatası: 0.
+
+**Düzeltilen hatalar**
+- Bölüm sayacında "Yükseltmeler" satırı süsleri de sayıyordu (0/32) → yalnız sepet/ayakkabı/pazarlık (0/20).
+- Kapalı Pazar binasının üstünde hâlâ eski ad **"BALIK HALİ"** yazıyordu → "KAPALI PAZAR".
+- Bölüm sonu gazetesi açılırken alt panel açıksa sahnenin arkasında açık kalıyordu → sahne başlarken kapanır.
+- Uzun işletme adlarında gazete resim altı taşıyordu → kısaltılır.
+- Eğitimin çok ötesine geçmiş oyuncuda (seviye 3+, tam otomatik bölge ya da bölüm sonu) yarım kalan eğitim hedefi
+  ("Sandığın üstünden geç…") ekranda kalabiliyordu → kendiliğinden kapanır.
+- Tam gelişmiş limanda stok rozetleri ve istasyon etiketleri üst üste biniyordu → tam otomatik bölgelerde yalnız
+  oyuncu yakındayken gösterilir.
+
+**Yeni test:** `test-chapter.js` — son müdürü arayüzden alır, sayacın dolmasını, gazetenin iki sayfasını (gerçek
+dokunuşla), bölüm kartını, bölüm sonrası oyunun sürmesini ve kayıttan dönünce bölümün yeniden tetiklenmediğini doğrular.
+
+---
+
 ## v1.3 — Müdürler, füme makinesi, ayrı ağlar, Bölüm 1 hedefi
 
 **Hata düzeltmeleri**
