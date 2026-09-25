@@ -49,6 +49,10 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
     return { shelf: BT.DEPOT.shelf['fileto|hamsi'] || 0, carry: P.carry.length };
   });
   ok(R.dep.shelf === 5 && R.dep.carry === 0, 'oyuncu depoya koyamadı ' + JSON.stringify(R.dep));
+  /* Depo adımları (4–6) müşteriden bağımsız ölçülsün: rastgele büyük sipariş (ör. 12'lik kaptan)
+     tezgâh stoğunu eritip "fazla" tanımını bozuyordu → bu adımlarda yeni müşteri gelmez, bekleyenler ayrılır. */
+  await p.evaluate(() => { window.__nc = setInterval(() => { BT.counters.forEach(c => { c.spawnT = 999; });
+    BT.customers.forEach(cu => { if (cu.state !== 'leave') { cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; if (cu.c) { const i = cu.c.slots.indexOf(cu); if (i >= 0) cu.c.slots[i] = null; } } }); }, 200); });
   /* 4) Depo Hamalı: tezgâh boşsa depodan besler — 3. bölgeden yola çıkıp köprüyü kullanarak */
   R.refill = await p.evaluate(async () => {
     BT.player.x = 4.5; BT.player.y = 3.2;
@@ -88,6 +92,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
     return { left: M.active.length, gain: Math.round(BT.S.cash - cash0), secs: Math.round((Date.now() - t0) / 1000) };
   });
   ok(R.ship2.left === 0, 'sevkiyatçı kontratı teslim etmedi ' + JSON.stringify(R.ship2));
+  await p.evaluate(() => clearInterval(window.__nc));
   /* 7) Balık Hali: sat / al */
   R.hal = await p.evaluate(async () => {
     BT.DEPOT.shelf['fileto|hamsi'] = 10;

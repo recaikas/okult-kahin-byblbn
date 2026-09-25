@@ -93,7 +93,7 @@ var STR = {
     built: '🔨 {n} kuruldu',
     projStage: '🏛️ {n}: %{p} — yeni aşama!',
     projDone: '🎉 {n} tamamlandı!',
-    decorBought: '✨ {n} yerleştirildi',
+    decorBought: '✨ {n} yerleştirildi', envFlow: '+%{p} müşteri akışı', envRow: 'Çevre yatırımı', envNext: 'Sıradaki: {n} (Sv {l})', envCust: 'müşteri',
     tutDone: 'Eğitim tamam! Limanı büyüt 🎉',
     capUp: '🧺 Taşıma kapasitesi: {n}', spdUp: '👟 Hız +%11', priceUp: '💰 Fiyat +%10',
     /* tutorial */
@@ -286,7 +286,7 @@ var STR = {
     built: '🔨 {n} built',
     projStage: '🏛️ {n}: {p}% — new stage!',
     projDone: '🎉 {n} completed!',
-    decorBought: '✨ {n} placed',
+    decorBought: '✨ {n} placed', envFlow: '+{p}% customer flow', envRow: 'Surroundings', envNext: 'Next: {n} (Lv {l})', envCust: 'customers',
     tutDone: 'Tutorial done! Grow the harbor 🎉',
     capUp: '🧺 Carry capacity: {n}', spdUp: '👟 Speed +11%', priceUp: '💰 Price +10%',
     tut: ['Wait by the net — fish are coming',
@@ -1015,15 +1015,15 @@ var REP_LEVELS = [
   { need: 10,  t: { tr: 'Tayfa', en: 'Deckhand' },
     un: [{ tr: 'Balık Pazarı bölgesi', en: 'Fish Market area' }, { tr: 'Esnaf müşteriler', en: 'Merchant customers' }] },
   { need: 30,  t: { tr: 'İskele Esnafı', en: 'Pier Trader' },
-    un: [{ tr: 'Fümehane bölgesi', en: 'Smokehouse area' }, { tr: 'Şef ve Kaptan müşteriler', en: 'Chef & Captain customers' }, { tr: 'Reklam Panosu', en: 'Billboard' }] },
+    un: [{ tr: 'Fümehane bölgesi', en: 'Smokehouse area' }, { tr: 'Şef ve Kaptan müşteriler', en: 'Chef & Captain customers' }, { tr: 'Reklam Panosu', en: 'Billboard' }, { tr: 'Çakıl Yol (satın alınır)', en: 'Gravel Road (buyable)' }] },
   { need: 40,  t: { tr: 'Tezgâh Ustası', en: 'Stall Master' },
     un: [{ tr: 'Ticaret Ofisi', en: 'Trade Office' }, { tr: 'Ek Tezgâh', en: 'Extra Stall' }] },
   { need: 60,  t: { tr: 'Pazar Ustası', en: 'Market Master' },
-    un: [{ tr: 'VIP müşteriler', en: 'VIP customers' }, { tr: 'Ağ Vinci', en: 'Net Crane' }, { tr: 'Osmanlı Çeşmesi', en: 'Ottoman Fountain' }] },
+    un: [{ tr: 'VIP müşteriler', en: 'VIP customers' }, { tr: 'Ağ Vinci', en: 'Net Crane' }, { tr: 'Osmanlı Çeşmesi', en: 'Ottoman Fountain' }, { tr: 'Arnavut Kaldırımı (satın alınır)', en: 'Cobblestone Road (buyable)' }] },
   { need: 90,  t: { tr: 'Kaptan', en: 'Captain' },
     un: [{ tr: 'Holding lisansı', en: 'Holding license' }, { tr: 'Balık Heykeli', en: 'Fish Statue' }] },
   { need: 130, t: { tr: 'Reis', en: 'Skipper' }, un: [{ tr: 'Mendirek Feneri', en: 'Breakwater Lighthouse' }] },
-  { need: 180, t: { tr: 'Liman İşletmecisi', en: 'Harbor Operator' }, un: [] },
+  { need: 180, t: { tr: 'Liman İşletmecisi', en: 'Harbor Operator' }, un: [{ tr: 'Fenerli Bordür ve Çiçeklik (satın alınır)', en: 'Lamps & Flowerbeds (buyable)' }] },
   { need: 250, t: { tr: 'Liman Ağası', en: 'Harbor Lord' }, un: [] },
   { need: 350, t: { tr: 'Karadeniz Efsanesi', en: 'Black Sea Legend' }, un: [] }
 ];
@@ -1810,7 +1810,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: []     /* skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0     /* skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -1887,7 +1887,7 @@ function buildSave() {
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
     auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
-    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0], autoMin: S.autoMin || 0, met: S.met || [],
+    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0], autoMin: S.autoMin || 0, met: S.met || [], env: S.env | 0,
     areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
@@ -1921,6 +1921,7 @@ function loadFrom(d) {
     S.hero = cleanHero(d.hero);
     S.autoMin = AUTO_OPTS.indexOf(d.autoMin) >= 0 ? d.autoMin : 0;
     S.met = Array.isArray(d.met) ? d.met.filter(function (q) { return typeof q === 'string'; }) : [];
+    S.env = typeof d.env === 'number' ? clamp(d.env | 0, 0, ENV_UPS.length) : -1;   /* -1: eski kayıt → mevcut görünüm korunur */
     if (d.areas) d.areas.forEach(function (v, i) { if (AREAS[i]) { AREAS[i].locked = !!v[0]; AREAS[i].lvl = v[1] || 1; } });
     if (d.pads) d.pads.forEach(function (v, i) { if (PADS[i]) { PADS[i].paid = v[0]; PADS[i].lvl = v[1]; if (v[2]) PADS[i].price = v[2]; } });
     if (d.slots) d.slots.forEach(function (v, i) { if (SLOTS[i]) SLOTS[i].b = v; });
@@ -2729,7 +2730,7 @@ function patienceMul() { return 1 + decorCount() * 0.02; }
 
 function updateCounter(c, dt) {
   if (!c.open) return;                       /* v2.1: kapalı tezgâha müşteri gelmez */
-  var custMul = (event ? event.custMul : 1) * areaFlow(c.z) * dayCustMul();
+  var custMul = (event ? event.custMul : 1) * areaFlow(c.z) * dayCustMul() * (1 + envFlow());   /* v1.2: çevre yatırımı */
   c.spawnT -= dt * custMul;
   var qmax = queueMax(c.z), freeIdx = -1, i;
   for (i = 0; i < qmax; i++) if (!c.slots[i]) { freeIdx = i; break; }
@@ -4039,8 +4040,30 @@ function drawWorn(d, sx, sy, z, sw) {
   }
   return false;                                         /* kaya: hep aynı */
 }
-/* çevre kademesi 0–3: bölgeler, meydan binaları, ofis ve itibar seviyesi puan verir */
+/* v1.2: çevre kademesi 0–3 artık SATIN ALINIR (YAPI › Dekoratif): para + itibar seviyesi şartı.
+   İtibar kendiliğinden yol yenilemez. Her kademe müşteri akışını artırır. */
+var ENV_UPS = [
+  { lv: 3, cost: 1800, icon: '🪨', flow: 0.08,
+    n: { tr: 'Çakıl Yol', en: 'Gravel Road' },
+    d: { tr: 'Çukurlar dolar, yola çakıl serilir, ağaçlar budanır', en: 'Potholes filled, gravel laid, trees trimmed' } },
+  { lv: 5, cost: 6000, icon: '🧱', flow: 0.08,
+    n: { tr: 'Arnavut Kaldırımı', en: 'Cobblestone Road' },
+    d: { tr: 'Yol taş döşenir, sahil toparlanır', en: 'The road is cobbled, the shore tidied up' } },
+  { lv: 8, cost: 16000, icon: '🏮', flow: 0.09,
+    n: { tr: 'Fenerli Bordür ve Çiçeklik', en: 'Lamps, Curbs & Flowerbeds' },
+    d: { tr: 'Bordür, sokak fenerleri, çiçekler açar', en: 'Curbs, street lamps and blooming flowers' } }
+];
+function envFlow() { var f = 0; for (var i = 0; i < envStage(); i++) f += ENV_UPS[i].flow; return f; }
+function buyEnv() {
+  var k = envStage(); if (k >= ENV_UPS.length) return;
+  S.env = k + 1; sfx.build();
+}
 function envStage() {
+  if (S.env === undefined || S.env < 0) S.env = legacyEnvStage();
+  return clamp(S.env | 0, 0, ENV_UPS.length);
+}
+/* eski kayıtlar (v1.1 ve öncesi): o zamanki otomatik kademe korunur, geri gitmez */
+function legacyEnvStage() {
   var pts = 0, i;
   for (i = 1; i < AREAS.length; i++) if (!AREAS[i].locked) pts++;
   if (HUT.lvl) pts++;
@@ -5920,6 +5943,12 @@ function barList() {
           go: function (b2) { return function () { slotBuild(barSlot, b2); }; }(bd.id) });
       }
     } else if (buildSub === 'decor') {
+      var ek = envStage();
+      if (ek < ENV_UPS.length) (function (eu) {       /* v1.2: sıradaki çevre yatırımı en başta */
+        out.push({ id: 'env' + ek, ic: eu.icon, t: NM(eu.n) + '  ' + (ek + 1) + '/' + ENV_UPS.length,
+          s: NM(eu.d) + ' • ' + T('envFlow', { p: Math.round(eu.flow * 100) }), cost: eu.cost,
+          blocked: lvNow < eu.lv, why: T('needLv', { l: eu.lv }), go: buyEnv });
+      })(ENV_UPS[ek]);
       for (i = 0; i < DECOR.length; i++) {
         var dc = DECOR[i];
         if (dc.got || AREAS[dc.z].locked) continue;
@@ -6286,6 +6315,8 @@ function renderTab() {
         a.locked ? (money(a.cost) + ' + ' + a.rep + '*') : (T('level') + a.lvl + '/' + MAXLV),
         a.locked ? lockTag() : (a.lvl < MAXLV ? money(a.up[a.lvl]) : T('done')));
     }
+    h += row('🌿', T('envRow'), envStage() < ENV_UPS.length ? T('envNext', { n: NM(ENV_UPS[envStage()].n), l: ENV_UPS[envStage()].lv }) : T('done'),
+      envStage() + '/' + ENV_UPS.length, '+' + Math.round(envFlow() * 100) + '% ' + T('envCust'));
     h += row('🏛️', NM(project.n), T('stage') + ' ' + project.stage + '/5',
       project.done ? T('done') : pct(Math.round(projPct() * 100)), project.done ? '' : money(project.total - project.inv));
     var used = SLOTS.filter(function (s) { return s.b && slotActive(s); }).length;
@@ -8699,7 +8730,7 @@ requestAnimationFrame(frame);
 
 window.BT = {
   cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },
-  envStage: function () { return envStage(); }, scenery: scenery, SPECIALS: SPECIALS,
+  envStage: function () { return envStage(); }, buildSave: buildSave, envFlow: envFlow, legacyEnvStage: legacyEnvStage, ENV_UPS: ENV_UPS, scenery: scenery, SPECIALS: SPECIALS,
   /* test/önizleme: bir kıyafeti verilen tuvale çiz */
   drawOutfitOn: function (cv, o, t) { var old = ctx, g = cv.getContext('2d'); ctx = g; try { g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), cv.height - 4); drawPerson({ x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: t || 0, act: 0, carry: [] }, o); } catch (e) { } ctx = old; },
   specOutfit: function (id, face) { return specOutfit(specById(id), face || 1); },

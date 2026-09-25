@@ -1,4 +1,4 @@
-# 🐟 Balıkçı Tycoon — **v1.1** (50 özel müşteri + düzenlenebilir karakter dosyası)
+# 🐟 Balıkçı Tycoon — **v1.2** (satın alınan çevre yatırımları)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karakterler, `config.js` online skor).
@@ -9,6 +9,25 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.2 — Çevre yatırımları: yol artık itibarla kendiliğinden yenilenmez
+
+Eskiden yol ve çevre, itibar seviyesi ve açılan binalarla **kendiliğinden** güzelleşiyordu (ör. seviye 9'da yol
+birden yenileniyordu). Artık her kademe **YAPI › Dekoratif** sekmesinin başında bir kart olarak çıkar ve iki şartla alınır:
+para + itibar seviyesi. Her kademe **müşteri geliş hızını** artırır.
+
+| Kademe | Şart | Fiyat | Görünüm | Müşteri akışı |
+|---|---|---|---|---|
+| 1. Çakıl Yol | Seviye 3 | $1.800 | Çukurlar dolar, çakıl yol, ağaçlar yeşerir | +%8 |
+| 2. Arnavut Kaldırımı | Seviye 5 | $6.000 | Taş yol, sahil toparlanır | +%8 (toplam +%16) |
+| 3. Fenerli Bordür ve Çiçeklik | Seviye 8 | $16.000 | Bordür, sokak fenerleri, çiçekler | +%9 (toplam +%25) |
+
+- Seviye yetmezse kart kilitli görünür ("🔒 Seviye 3 gerekli"), para yetmezse alınmaz.
+- Seviye atlama şeridinde yeni açılan kademe yazar (ör. "Çakıl Yol (satın alınır)").
+- Menü › LİMAN'da "Çevre yatırımı 1/3 • +%8 müşteri" satırı ve sıradaki kademe görünür.
+- Eski kayıtlar görünümünü kaybetmez: kayıtta bu alan yoksa o anki kademe korunur.
 
 ---
 
@@ -109,7 +128,7 @@ Fatoş (Ev aşçısı — renkli eşarp) · Burak (Bankacı — hafif sakal, cek
 - Ayarlar › **OTOMATİK KAYIT** ile değiştirilir; kayıt bölümünde "sonraki kayıt m:ss" görünür. Seçim slot kaydına yazılır.
 - Eski 6 saniyelik sessiz kayıt kalktı. Güvenlik için sekme kapanınca/arka plana geçince, gün sonunda ve Kaydet/Kaydet-Çık'ta yine kaydedilir.
 
-### 🌿 Gelişen çevre (tezgâh alanı dışı)
+### 🌿 Gelişen çevre (tezgâh alanı dışı) — *v1.2'den itibaren kademeler satın alınır, yukarıdaki v1.2 bölümüne bakın*
 - Meydanı eklerken boşalan çevre sade biçimde geri geldi (~43 nesne): meydanın güneyi (yolun doğusu) ve güney kumsal. Tezgâh bölgelerine, yola ve meydana girmez.
 - Başta **eski/bakımsız**: kuru ağaçlar, sararmış serviler, yırtık ağlar, çürük ters sandallar, kırık kasalar, paslı variller, hurda yığınları; müşteri yolu **toprak, tekerlek izli, çukurlu**.
 - **Çevre kademesi (0–3)** bölgeler, meydan binaları, ofis ve itibar seviyesiyle artar; her nesne kendi eşiğinde bakımlı hâline döner, hurdalar **çiçek tarhı** olur.
