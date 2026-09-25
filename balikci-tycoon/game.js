@@ -93,7 +93,7 @@ var STR = {
     built: '🔨 {n} kuruldu',
     projStage: '🏛️ {n}: %{p} — yeni aşama!',
     projDone: '🎉 {n} tamamlandı!',
-    decorBought: '✨ {n} yerleştirildi', chTitle: '🪜 BÖLÜM 1 — İskeleden İşletmeye',
+    decorBought: '✨ {n} yerleştirildi', yardName: 'HİZMET SAHASI', chTitle: '🪜 BÖLÜM 1 — İskeleden İşletmeye',
     chGoal: 'Amacın: üç tezgâhı da sonuna kadar büyütmek. Bölgeleri aç ve yükselt, alınabilecek her şeyi al, her bölgeye bir müdür koy. Sayaç dolunca Bölüm 1 biter.',
     chAreas: 'Bölgeleri aç (Balık Pazarı, Fümehane)', chLevels: 'Bölge seviyeleri', chPads: 'Yükseltmeler (sepet, ayakkabı, fiyat)', chSlots: 'Yapı noktaları',
     chDecor: 'Süsler', chEnv: 'Çevre yatırımları', chFume: 'Füme makineleri', chProj: 'Kapalı Pazar', chMeydan: 'Meydan binaları (kulübe, depo, hal)', chMgr: 'Bölge müdürleri',
@@ -292,7 +292,7 @@ var STR = {
     built: '🔨 {n} built',
     projStage: '🏛️ {n}: {p}% — new stage!',
     projDone: '🎉 {n} completed!',
-    decorBought: '✨ {n} placed', chTitle: '🪜 CHAPTER 1 — From Pier to Business',
+    decorBought: '✨ {n} placed', yardName: 'SERVICE YARD', chTitle: '🪜 CHAPTER 1 — From Pier to Business',
     chGoal: 'Your goal: grow all three stalls to the max. Open and upgrade the zones, buy everything on offer and put a manager in every zone. When the counter is full, Chapter 1 ends.',
     chAreas: 'Open the zones (Fish Market, Smokehouse)', chLevels: 'Zone levels', chPads: 'Upgrades (basket, boots, price)', chSlots: 'Build spots',
     chDecor: 'Decorations', chEnv: 'Surroundings', chFume: 'Smoker boxes', chProj: 'Covered Market', chMeydan: 'Square buildings (hut, depot, hall)', chMgr: 'Zone managers',
@@ -919,7 +919,7 @@ function hireMgr(z, c) {
   var cc = zoneCounter(z); if (cc) addPuff(cc.x, cc.y, '#ffc94a');
 }
 function mgrWages() { var w = 0; for (var z = 0; z < 3; z++) if (mgr(z) && zoneOpen(z)) w += mgr(z).wage; return w; }
-function mgrPos(z) { var c = zoneCounter(z) || counters[z]; return c ? { x: c.x - 1.55, y: c.y + 1.75 } : null; }
+function mgrPos(z) { return MGR_DESKS[z] || null; }
 function drawMgrDesk(z) {
   var m = mgr(z), p = mgrPos(z); if (!m || !p) return;
   isoBox(p.x - 0.5, p.y - 0.3, 1.0, 0.6, 0, 9, '#8a5a33', '#5a3a1e', '#6f4526');
@@ -1144,15 +1144,29 @@ var BUILDINGS = [
 ];
 function bdef(id) { for (var i = 0; i < BUILDINGS.length; i++) if (BUILDINGS[i].id === id) return BUILDINGS[i]; return null; }
 var SLOTS = [
-  { id: 's1', z: 0, x: 7.6, y: 1.2,  req: 1, cats: ['personel', 'lojistik'], b: null },
-  { id: 's2', z: 0, x: 4.2, y: 5.2,  req: 3, cats: ['personel', 'lojistik'], b: null },
-  { id: 's3', z: 1, x: 8.6, y: 7.6,  req: 1, cats: ['ticaret', 'lojistik'],  b: null },
-  { id: 's4', z: 1, x: 2.6, y: 11.0, req: 1, cats: ['personel', 'lojistik'], b: null },
-  { id: 's5', z: 1, x: 4.8, y: 9.2,  req: 3, cats: ['ticaret', 'personel'],  b: null },
-  { id: 's6', z: 2, x: 8.6, y: 13.2, req: 1, cats: ['ticaret', 'lojistik'],  b: null },
-  { id: 's7', z: 2, x: 6.0, y: 14.8, req: 3, cats: ['personel', 'lojistik'], b: null }
+  { id: 's1', z: 0, x: 3.75, y: 0.7,  req: 1, cats: ['personel', 'lojistik'], b: null },
+  { id: 's2', z: 0, x: 0.87, y: 3.09,  req: 3, cats: ['personel', 'lojistik'], b: null },
+  { id: 's3', z: 1, x: 5.05, y: 7.11,  req: 1, cats: ['ticaret', 'lojistik'],  b: null },
+  { id: 's4', z: 1, x: 7.53, y: 11.28, req: 1, cats: ['personel', 'lojistik'], b: null },
+  { id: 's5', z: 1, x: 4.48, y: 10.84,  req: 3, cats: ['ticaret', 'personel'],  b: null },
+  { id: 's6', z: 2, x: 7.2, y: 16.42, req: 1, cats: ['ticaret', 'lojistik'],  b: null },
+  { id: 's7', z: 2, x: 0.68, y: 16.82, req: 3, cats: ['personel', 'lojistik'], b: null }
 ];
 function slotActive(s) { return !AREAS[s.z].locked && AREAS[s.z].lvl >= s.req; }
+/* =========================================================
+   v1.3.2 — YERLEŞİM: her nesnenin kendi yeri var, hiçbir şey üst üste gelmez.
+   Tezgâh birimi: tezgâh + yola bakan tarafta (doğu) para tepsisi ve füme makinesi.
+   Müdür masası, bölge tabelası, lambalar, çöp kovaları bölge başına sabit konumda.
+   layoutRects() her şeyin kapladığı alanı verir (test-layout.js bununla çakışma arar).
+   ========================================================= */
+var CTR_HW = 0.58, CTR_HH = 1.05;                 /* tezgâh gövdesi yarı genişlik/yükseklik */
+function trayPos(c) {
+  if (c.key === 'hal') return { x: project.x + project.w / 2 - 0.45, y: project.y + project.h / 2 + 0.45 };
+  return { x: c.x + 0.98, y: c.y + 0.55 };
+}
+function fumePos(c) { return { x: c.x + 0.95, y: c.y - 0.6 }; }
+var MGR_DESKS = [{ x: 3.8, y: 5.4 }, { x: 3.17, y: 11.67 }, { x: 9.65, y: 13.88 }];
+var AREA_LAMPS = [[{ x: 6.4, y: 0.23 }, { x: 0.3, y: 4.2 }], [{ x: 7.05, y: 6.25 }, { x: 6.52, y: 11.32 }], [{ x: 4.86, y: 12.25 }, { x: 0.21, y: 12.87 }]];
 function slotEff(z, eff) {
   var v = 0;
   for (var i = 0; i < SLOTS.length; i++) {
@@ -1205,7 +1219,7 @@ function workerSpeedMul() { return 1 + slotEff(null, 'wspeed') + perkSum('wspeed
 
 /* ---------------- büyük proje (GDD §23) ---------------- */
 var project = {
-  id: 'hal', z: 1, x: 7.0, y: 8.6, w: 2.6, h: 2.2,
+  id: 'hal', z: 1, x: 9.1, y: 7.05, w: 2.0, h: 2.0,        /* v1.3.2: bölgenin arka-yol köşesi; önünde tezgâh kalmaz */
   n: { tr: 'Kapalı Pazar', en: 'Covered Market' },
   total: 26000, inv: 0, stage: 0, done: false,
   stages: [0.10, 0.30, 0.60, 0.80, 1.0]
@@ -1257,16 +1271,16 @@ function sCost(v) { return Math.max(1, Math.round(v * SERVSCALE)); }
 
 /* Hizmet parselleri (§32) — yürüme koridoru ve kasa güvenli alanı dışında sabit. */
 var PLOTS = [
-  { id: 'p1', z: 0, x: 7.5, y: 4.4,  n: { tr: 'İskele Doğu', en: 'Pier East' },    allow: ['buzhane', 'tamirhane'], b: null },
-  { id: 'p2', z: 0, x: 3.4, y: 3.3,  n: { tr: 'İskele Orta', en: 'Pier Mid' },     allow: ['buzhane', 'tamirhane'], b: null },
-  { id: 'p3', z: 1, x: 1.7, y: 8.9,  n: { tr: 'Pazar Batı', en: 'Market West' },   allow: ['hal', 'restoran'], b: null },
-  { id: 'p4', z: 1, x: 6.5, y: 11.2, n: { tr: 'Pazar Güney', en: 'Market South' }, allow: ['hal', 'restoran', 'nakliye'], b: null },
-  { id: 'p5', z: 2, x: 1.7, y: 14.9, n: { tr: 'Depo Batı', en: 'Depot West' },     allow: ['nakliye', 'buzhane', 'yakit'], b: null },
-  { id: 'p6', z: 2, x: 6.3, y: 12.6, n: { tr: 'Rıhtım Kuzey', en: 'Quay North' },  allow: ['yakit', 'nakliye', 'tersane'], b: null },
-  { id: 'p7', z: 2, x: 8.7, y: 17.0, n: { tr: 'Tersane Ucu', en: 'Yard Point' },   allow: ['tersane', 'yakit', 'tamirhane'], b: null },
+  { id: 'p1', z: 0, x: 16.8, y: 10.0, n: { tr: 'Saha 1 · İskele', en: 'Yard 1 · Pier' },    allow: ['buzhane', 'tamirhane'], b: null },
+  { id: 'p2', z: 0, x: 16.8, y: 13.8, n: { tr: 'Saha 2 · İskele', en: 'Yard 2 · Pier' },     allow: ['buzhane', 'tamirhane'], b: null },
+  { id: 'p3', z: 1, x: 16.8, y: 17.6, n: { tr: 'Saha 3 · Pazar', en: 'Yard 3 · Market' },   allow: ['hal', 'restoran'], b: null },
+  { id: 'p4', z: 1, x: 22.7, y: 12.0, n: { tr: 'Saha 4 · Pazar', en: 'Yard 4 · Market' }, allow: ['hal', 'restoran', 'nakliye'], b: null },
+  { id: 'p5', z: 2, x: 22.7, y: 19.6, n: { tr: 'Saha 6 · Fümehane', en: 'Yard 6 · Smokehouse' },     allow: ['nakliye', 'buzhane', 'yakit'], b: null },
+  { id: 'p6', z: 2, x: 28.6, y: 14.0, n: { tr: 'Saha 7 · Fümehane', en: 'Yard 7 · Smokehouse' },  allow: ['yakit', 'nakliye', 'tersane'], b: null },
+  { id: 'p7', z: 2, x: 28.6, y: 17.8, n: { tr: 'Saha 8 · Fümehane', en: 'Yard 8 · Smokehouse' },   allow: ['tersane', 'yakit', 'tamirhane'], b: null },
   /* v2.0 — kooperatif ve mezat salonu için yeni parseller */
-  { id: 'p8', z: 1, x: 2.0, y: 11.4, n: { tr: 'Pazar Kuzey', en: 'Market North' },  allow: ['koop', 'mezat', 'hal'], b: null },
-  { id: 'p9', z: 2, x: 8.6, y: 12.0, n: { tr: 'Hal Yanı', en: 'Hall Side' },        allow: ['mezat', 'koop', 'nakliye'], b: null }
+  { id: 'p8', z: 1, x: 22.7, y: 15.8, n: { tr: 'Saha 5 · Pazar', en: 'Yard 5 · Market' },  allow: ['koop', 'mezat', 'hal'], b: null },
+  { id: 'p9', z: 2, x: 28.6, y: 21.6, n: { tr: 'Saha 9 · Fümehane', en: 'Yard 9 · Smokehouse' },        allow: ['mezat', 'koop', 'nakliye'], b: null }
 ];
 function plotActive(p) { return !AREAS[p.z].locked; }
 function plotById(id) { for (var i = 0; i < PLOTS.length; i++) if (PLOTS[i].id === id) return PLOTS[i]; return null; }
@@ -1515,7 +1529,7 @@ function servValidate() {
     for (var k = 0; k < counters.length; k++) {
       var c = counters[k];
       if (Math.abs(p.x - c.x) < 1.2 && Math.abs(p.y - c.y) < 1.2) bad.push(p.id + ':queue');
-      if (p.x > 10.0) bad.push(p.id + ':lane');
+      if (p.x > 10.0 && p.x < 14.8) bad.push(p.id + ':lane');
     }
   }
   return bad;
@@ -1701,14 +1715,14 @@ function beginNextDay(skipPrep) {
 /* ---------------- istasyonlar ---------------- */
 var spots = [
   { z: 0, x: 2.3, y: 0.9,  face: 'n', stock: [], t: 0, rate: 1.05 },
-  { z: 1, x: 1.0, y: 7.4,  face: 'w', stock: [], t: 0, rate: 1.25 },
-  { z: 2, x: 1.0, y: 13.2, face: 'w', stock: [], t: 0, rate: 1.5 }
+  { z: 1, x: 1.0, y: 6.05, face: 'w', stock: [], t: 0, rate: 1.25 },
+  { z: 2, x: 1.0, y: 14.63, face: 'w', stock: [], t: 0, rate: 1.5 }
 ];
 /* v1.3 — orta bölgenin EK AĞLARI: palamut ve orkinos kendi ağından gelir (o türün tezgâhı açılınca).
    Ana ağ o zaman yalnız kalan türleri çıkarır; kesim masasında türler ayrı yığınlarda durur. */
 var XNETS = [
-  { z: 1, f: 'palamut', x: 1.0, y: 9.8,  face: 'w', stock: [], t: 0, rate: 1.7, xn: true },
-  { z: 1, f: 'ton',     x: 1.0, y: 11.7, face: 'w', stock: [], t: 0, rate: 2.6, xn: true }
+  { z: 1, f: 'palamut', x: 1.0, y: 8.29, face: 'w', stock: [], t: 0, rate: 1.7, xn: true },
+  { z: 1, f: 'ton',     x: 1.0, y: 10.53, face: 'w', stock: [], t: 0, rate: 2.6, xn: true }
 ];
 function xnetOn(n) { return !AREAS[n.z].locked && canSell(n.f) && canProcess('fileto', n.f); }
 function xnetFor(f) { for (var i = 0; i < XNETS.length; i++) if (XNETS[i].f === f && xnetOn(XNETS[i])) return XNETS[i]; return null; }
@@ -1730,8 +1744,8 @@ function mkTable(z, x, y, mx, my) {
 }
 var tables = [
   mkTable(0, 5.4, 1.4, 6.7, 2.2),
-  mkTable(1, 3.4, 7.6, 4.5, 8.3),
-  mkTable(2, 3.4, 13.0, 4.5, 13.8)
+  mkTable(1, 2.52, 6.62, 3.62, 7.32),
+  mkTable(2, 2.18, 12.66, 3.28, 13.46)
 ];
 var smoker = { z: 2, x: 3.4, y: 15.4, inn: [], cur: null, t: 0, belt: 0, mat: { x: 4.6, y: 16.1, items: [] }, max: 8 };
 var counters = [];
@@ -1744,8 +1758,8 @@ function mkCounter(z, x, y, key) {
 function rebuildCounters() {
   var old = counters.slice(), keep = [], i;
   function get(key, z, x, y) {
-    for (var k = 0; k < old.length; k++) if (old[k].key === key) { old[k].x = x; old[k].y = y; old[k].z = z; return old[k]; }
-    var c = mkCounter(z, x, y, key); c.key = key; return c;
+    for (var k = 0; k < old.length; k++) if (old[k].key === key) { old[k].x = x; old[k].y = y; old[k].z = z; var tp = trayPos(old[k]); old[k].tray.x = tp.x; old[k].tray.y = tp.y; return old[k]; }
+    var c = mkCounter(z, x, y, key); c.key = key; var tp2 = trayPos(c); c.tray.x = tp2.x; c.tray.y = tp2.y; return c;
   }
   counters.length = 0;
   counters.push(get('b0', 0, 8.9, 3.0));
@@ -1755,7 +1769,7 @@ function rebuildCounters() {
     var sl = SLOTS[i];
     if (sl.b === 'tezgah' && slotActive(sl)) counters.push(get('s' + sl.id, sl.z, sl.x + 0.3, sl.y));
   }
-  if (project.done) counters.push(get('hal', 1, project.x + 1.5, project.y + 0.2));
+  if (project.done) counters.push(get('hal', 1, project.x, project.y + 0.2));      /* v1.3.2: Kapalı Pazar'ın tezgâhı binanın içinde */
   /* kaldırılan tezgâhtaki müşteriler dağılsın */
   for (i = 0; i < old.length; i++) {
     if (counters.indexOf(old[i]) >= 0) continue;
@@ -1868,14 +1882,18 @@ function counterMax(c) { return 20 + (AREAS[c.z].lvl - 1) * 4 + slotEff(c.z, 'st
 var safe = { z: 0, x: 1.2, y: 4.9, pop: 0 };
 /* v0.7 — Liman Meydanı alanı + yaya köprüsü (ayrıntılar FAZ 3 bölümünde) */
 var MEYDAN = { x0: 15.0, y0: -0.3, x1: 21.2, y1: 6.8 };
+/* v1.3.2 — Hizmet Sahası: BİNA sekmesinin hizmet binaları (buzhane, restoran, hal…) tezgâh bölgelerinden
+   çıkarıldı; meydanın güneyinde, yolun doğusunda kendi sahasında durur (tezgâh bölgeleri yalnız üretim + satış). */
+var SERVYARD = { x0: 15.3, y0: 8.6, x1: 29.8, y1: 22.9 };   /* 3 sütun × 3, sütunlar 2 karo kaydırmalı: binalar ekranda üst üste binmez */
+var YARDPATH = { x0: 17.9, y0: 6.5, x1: 18.9, y1: 8.9 };          /* meydan ↔ saha patikası */
 var BRIDGE = { x0: 9.3, y0: 1.9, x1: 15.7, y1: 2.9 };
 function inRect(x, y, r, m) { m = m || 0; return x > r.x0 + m && x < r.x1 - m && y > r.y0 + m && y < r.y1 - m; }
 /* v0.6 — çöp kovaları: elde kalan fazla mal (tezgâh/kuyruk dolu, yanlış tür) atılabilsin.
    Kovanın önünde kısa bir an durunca taşıdığın mallar boşalır (para asla atılmaz). */
 var BINS = [
-  { z: 0, x: 9.3, y: 0.6, pop: 0 },
-  { z: 1, x: 9.3, y: 6.5, pop: 0 },
-  { z: 2, x: 9.3, y: 14.1, pop: 0 }
+  { z: 0, x: 3.64, y: 3.88, pop: 0 },
+  { z: 1, x: 7.53, y: 10.05, pop: 0 },
+  { z: 2, x: 8.7, y: 13.78, pop: 0 }
 ];
 var binT = 0, trashN = 0, stuckT = 0, stuckHintAt = -99;
 var isTrash = function (it) { return it.k !== 'money'; };
@@ -2217,7 +2235,7 @@ function fly(x0, y0, z0, x1, y1, z1, it, dur) {
 }
 
 function canStand(x, y) {
-  if (inRect(x, y, BRIDGE, 0.05) || inRect(x, y, MEYDAN, 0.3)) return true;
+  if (inRect(x, y, BRIDGE, 0.05) || inRect(x, y, MEYDAN, 0.3) || inRect(x, y, SERVYARD, 0.3) || inRect(x, y, YARDPATH, 0.02)) return true;
   for (var i = 0; i < AREAS.length; i++) {
     var a = AREAS[i]; if (a.locked) continue;
     if (x > a.x0 + 0.35 && x < a.x1 - 0.35 && y > a.y0 - 0.02 && y < a.y1 + 0.02) return true;
@@ -2953,7 +2971,7 @@ function updateFumeMachines(dt) {
     c.fmT = (c.fmT || 0) + dt;
     if (c.fmT >= FUME_TIME * 1.35) {
       c.fmT = 0; c.buffer[raw] = { k: 'fume', f: c.fish };
-      addPuff(c.x + 0.05, c.y - 1.62, '#d8d2c4');
+      addPuff(fumePos(c).x, fumePos(c).y, '#d8d2c4');
     }
   }
 }
@@ -3182,7 +3200,7 @@ var camShake = 0;
 function clampCam() {
   var maxY = maxOpenY();
   var x0 = pX(0, maxY) - 28, x1 = Math.max(pX(10, 0), pX(MEYDAN.x1, MEYDAN.y0)) + 28;
-  var y0 = pY(0, 0, 0) - 46 - HORIZON_GAP - 34, y1 = Math.max(pY(10, maxY, 0), pY(MEYDAN.x1, MEYDAN.y1, 0)) + 42;
+  var y0 = pY(0, 0, 0) - 46 - HORIZON_GAP - 34, y1 = Math.max(pY(10, maxY, 0), pY(MEYDAN.x1, MEYDAN.y1, 0), pY(SERVYARD.x1, SERVYARD.y1, 0)) + 42;
   var hw = W / 2, ht = H * 0.46, hb = H - H * 0.46;
   if (x1 - x0 < W) camTX = (x0 + x1) / 2; else camTX = clamp(camTX, x0 + hw, x1 - hw);
   if (y1 - y0 < H) camTY = (y0 + y1) / 2; else camTY = clamp(camTY, y0 + ht, y1 - hb);
@@ -4019,7 +4037,10 @@ var scenery = [], grass = [];
   /* kara süsleri: bölgelerin dışında kalan kıyı şeridi */
   function freeLand(fx, fy) {
     if (fx < -0.4 || fy < -0.4 || fx > LANDX - 0.3 || fy > 24.2) return false;
+    if (fx - fy > 21.5) return false;                /* kameranın ulaşamadığı doğu ucu */
     if (fx > MEYDAN.x0 - 0.7 && fx < MEYDAN.x1 + 0.5 && fy > MEYDAN.y0 - 0.6 && fy < MEYDAN.y1 + 0.6) return false;
+    if (fx > SERVYARD.x0 - 0.7 && fx < SERVYARD.x1 + 0.5 && fy > SERVYARD.y0 - 0.6 && fy < SERVYARD.y1 + 0.6) return false;
+    if (inRect(fx, fy, YARDPATH, -0.5)) return false;
     if (fx < 10.2 && fy < 17.8) return false;      /* iskele bölgeleri */
     if (fx > 10.2 && fx < 14.6 && fy > -0.4) return false; /* müşteri yolu */
     return true;
@@ -4029,7 +4050,8 @@ var scenery = [], grass = [];
   /* v0.8 — çevre oyun alanına yakın ve sade: meydanın güneyi (yolun doğusu) + güney kumsal.
      Başta eski/bakımsız görünür; her nesnenin 'up' eşiği var: çevre kademesi (envStage) o eşiğe
      ulaşınca bakımlı hâline döner, hurdalar çiçek tarhına dönüşür → oyuncu değişimi görür. */
-  var bands = [[14.9, 18.6, 7.6, 20.5, 22], [-0.3, 9.9, 18.0, 21.8, 16], [18.6, 22.0, 7.6, 16.0, 5]];
+  /* v1.3.2: meydanın doğusu + bölgelerin güney kumsalı + sahanın güney kıyısı (saha kendi alanında) */
+  var bands = [[21.9, 28.5, -0.2, 7.9, 22], [-0.3, 9.9, 18.0, 21.8, 16], [10.5, 26.0, 23.4, 24.2, 6]];
   for (var bi = 0; bi < bands.length; bi++) {
     var bd = bands[bi], want = bd[4], tries = 0, got = 0;
     while (got < want && tries++ < 400) {
@@ -4471,7 +4493,7 @@ function drawShoal() {
     px(sx, sy, f.s + 2, f.s, 'rgba(10,45,70,.55)');
   }
 }
-var LANDX = 22.5, LANDY = 24.5;     /* v0.7: doğuda Liman Meydanı için kara genişledi */
+var LANDX = 31.0, LANDY = 24.5;     /* v0.7: doğuda Liman Meydanı için kara genişledi */
 function drawLand() {
   quad([[pX(-0.7, -0.7), pY(-0.7, -0.7, 0)], [pX(LANDX, -0.7), pY(LANDX, -0.7, 0)],
         [pX(LANDX, LANDY), pY(LANDX, LANDY, 0)], [pX(-0.7, LANDY), pY(-0.7, LANDY, 0)]], '#cbb98d');
@@ -4630,29 +4652,23 @@ function drawLamp(x, y) {
   ctx.restore();
 }
 /* bölge tabelası: ahşap levha + demir askı + kilim çentiği */
-function drawSign(a) {
-  var locked = a.locked;
-  var x = locked ? (a.x0 + a.x1) / 2 : a.x0 + 0.6, y = locked ? (a.y0 + a.y1) / 2 : a.y1 - 0.35;
-  if (dist2(player.x, player.y, x, y) > 60) return;      /* uzaktaki tabela çizilmez */
-  var sx = R(pX(x, y)), sy = R(pY(x, y, 0));
-  var s = UP(NM(a.n));
-  var fs = locked ? 10 : 8;
+/* v1.3.2: bölge adı ana tezgâhın tentesindeki tahta levhada — ayrı bir yer kaplamaz, hiçbir şeyin önüne düşmez */
+function drawStallSign(c) {
+  var a = AREAS[c.z];
+  if (!a || a.locked || a.lvl < 2 || dist2(player.x, player.y, c.x, c.y) > 60) return;
+  var sx = R(pX(c.x, c.y)), top = 27, sy = R(pY(c.x, c.y, 12)) - top;
+  var s = UP(NM(a.n)), fs = 7;
   uctx.font = uiFont(fs);
-  var w = R((uctx.measureText(s).width + (locked ? 26 : 14)) / PXS);
-  var h = R((fs + 9) / PXS);
-  var top = locked ? 12 : 10;
-  if (locked) { px(sx - 2, sy - top, 2, top, '#6b4a28'); px(sx + 1, sy - top, 2, top, '#6b4a28'); }
-  else px(sx - 1, sy - top, 2, top, '#6b4a28');
-  /* levha */
-  px(sx - w / 2 - 1, sy - top - h - 1, w + 2, h + 2, '#4a3220');
-  px(sx - w / 2, sy - top - h, w, h, '#c9a15e');
-  px(sx - w / 2, sy - top - h, w, 1, '#ddb877');
-  /* kilim çentikleri */
-  for (var i = 0; i < 3; i++) {
-    px(sx - w / 2 + 1 + i * 2, sy - top - h + 1, 1, 1, PAL.madder);
-    px(sx + w / 2 - 2 - i * 2, sy - top - 1, 1, 1, PAL.madder);
+  var w = Math.max(30, R((uctx.measureText(s).width + 12) / PXS)), h = R((fs + 7) / PXS);
+  px(sx - 9, sy, 2, 2, '#4a3220'); px(sx + 7, sy, 2, 2, '#4a3220');          /* askı */
+  px(sx - w / 2 - 1, sy - h - 1, w + 2, h + 2, '#4a3220');
+  px(sx - w / 2, sy - h, w, h, '#c9a15e');
+  px(sx - w / 2, sy - h, w, 1, '#ddb877');
+  for (var i = 0; i < 3; i++) {                                               /* kilim çentikleri */
+    px(sx - w / 2 + 1 + i * 2, sy - h + 1, 1, 1, PAL.madder);
+    px(sx + w / 2 - 2 - i * 2, sy - 1, 1, 1, PAL.madder);
   }
-  uiText(x, y, 0, s, '#3a2401', fs, locked ? 1 : 0.95, 0, -top - h / 2 + fs / (2.6 * PXS), 'rgba(233,213,168,.85)');
+  uiText(c.x, c.y, 12, s, '#3a2401', fs, 0.95, 0, -top - h / 2 + fs / (2.6 * PXS), 'rgba(233,213,168,.85)');
 }
 
 /* =========================================================
@@ -4847,7 +4863,7 @@ function drawSmoker() {
 
 /* --- PAZAR TEZGÂHI: çizgili tente, buz yatağı, fiyat tabelası, terazi --- */
 function drawFumeMachine(c) {
-  var mx = c.x + 0.05, my = c.y - 1.62;
+  var fp = fumePos(c), mx = fp.x, my = fp.y;
   isoBox(mx - 0.35, my - 0.35, 0.7, 0.7, 0, 14, '#8a8478', '#5f5a50', '#736d62');
   var sx = R(pX(mx, my)), sy = R(pY(mx, my, 14));
   px(sx - 1, sy - 8, 3, 8, '#4a4540'); px(sx - 2, sy - 9, 5, 2, '#5f5a50');       /* baca */
@@ -4856,6 +4872,7 @@ function drawFumeMachine(c) {
 }
 function drawCounter(c) {
   if (!c.open) { drawCounterClosed(c); return; }
+  if (c.key === 'hal') { drawHalCounter(c); return; }
   if (c.z !== smoker.z && fumeMachine(c.z) && !AREAS[c.z].locked) drawFumeMachine(c);
   /* gövde: ahşap + önde kilim eteği */
   isoBox(c.x - 0.58, c.y - 1.05, 1.16, 2.1, 0, 12, '#c08a52', '#7d4f2b', '#95602f');
@@ -4888,6 +4905,7 @@ function drawCounter(c) {
   for (var d = 0; d < 7; d++) px(sx - 13 + d * 4, sy - 17 + R(Math.sin(gameT * 1.3 + d) * 0.7), 3, 2, d % 2 ? PAL.madder : '#f4f0e4');
   px(sx - 14, sy - 25, 28, 2, PAL.woodDark);
   px(sx - 14, sy - 25, 2, 25, PAL.woodDark); px(sx + 12, sy - 25, 2, 25, PAL.woodDark);
+  if (/^b\d$/.test(c.key)) drawStallSign(c);
   /* terazi */
   px(sx + 9, sy - 13, 1, 9, PAL.brass);
   px(sx + 6, sy - 14, 7, 1, PAL.brass);
@@ -4904,14 +4922,23 @@ function drawCounter(c) {
     '#ffd9a8', '' + c.buffer.length);
   if (c.fish && zoneAuto(zoneOfFish(c.fish))) labelAt(c.x, c.y - 1.5, 58, T('autoBadge'), '#ffc94a', 'auto');
   /* para tepsisi: bakır sini */
+  drawTray(c);
+}
+function drawTray(c) {
   var tr = c.tray;
-  isoQuad(tr.x - 0.62, tr.y - 0.52, 1.24, 1.04, 0.4, '#8a6a20');
-  isoQuad(tr.x - 0.48, tr.y - 0.4, 0.96, 0.8, 0.9, PAL.brass);
+  isoQuad(tr.x - 0.4, tr.y - 0.34, 0.8, 0.68, 0.4, '#8a6a20');
+  isoQuad(tr.x - 0.3, tr.y - 0.25, 0.6, 0.5, 0.9, PAL.brass);
   drawStack(tr.x, tr.y, tr.items, 2.4, 3.2);
   if (trayFull(c)) labelAt(tr.x, tr.y + 0.95, 10, T('trayFull'), (Math.sin(gameT * 6) > 0 ? '#ff9b8a' : '#ffd0c8'), '!');
   else if (tr.items.length) labelAt(tr.x, tr.y + 0.95, 10, T('stTake') + ' ' + money(trayValue(c)), '#9df5b0', '$');
 }
 
+/* Kapalı Pazar'ın tezgâhı binanın içinde: yalnız ürün yığını, etiket ve para tepsisi çizilir */
+function drawHalCounter(c) {
+  drawStack(c.x, c.y + 0.6, c.buffer, 16, 3.2);
+  labelAt(c.x, c.y - 0.4, 60, (c.fish ? NM(FISH[c.fish].n) : T('stStall')) + ' ' + c.buffer.length + '/' + counterMax(c), '#ffd9a8', '' + c.buffer.length);
+  drawTray(c);
+}
 /* galvaniz çöp kovası: kapak atınca zıplar; elinde mal varken "ÇÖP" etiketi */
 function drawBin(bn) {
   var pop = bn.pop * 2;
@@ -5103,11 +5130,11 @@ function drawSlot(s) {
    Lv5 kemerli cephe + çini kuşak + tabela + bayrak
    ========================================================= */
 var SERV_MAT = [
-  { top: '#c18f56', l: '#6f4526', r: '#8d5f33', roof: 'zinc',  foot: 1.02, h: 17, mat: 'wood'  },
-  { top: '#d2a468', l: '#7a4e2a', r: '#9a6836', roof: 'zinc',  foot: 1.14, h: 22, mat: 'paint' },
-  { top: '#d9cfb4', l: '#948765', r: '#bdae8c', roof: 'tile',  foot: 1.26, h: 29, mat: 'stone' },
-  { top: '#e8dfc8', l: '#a2947a', r: '#cbbc9a', roof: 'tile',  foot: 1.36, h: 37, mat: 'stone' },
-  { top: '#f2ead6', l: '#b0a184', r: '#dccba8', roof: 'tile', foot: 1.46, h: 46, mat: 'kagir' }
+  { top: '#c18f56', l: '#6f4526', r: '#8d5f33', roof: 'zinc',  foot: 0.96, h: 15, mat: 'wood'  },
+  { top: '#d2a468', l: '#7a4e2a', r: '#9a6836', roof: 'zinc',  foot: 1.05, h: 19, mat: 'paint' },
+  { top: '#d9cfb4', l: '#948765', r: '#bdae8c', roof: 'tile',  foot: 1.13, h: 24, mat: 'stone' },
+  { top: '#e8dfc8', l: '#a2947a', r: '#cbbc9a', roof: 'tile',  foot: 1.21, h: 29, mat: 'stone' },
+  { top: '#f2ead6', l: '#b0a184', r: '#dccba8', roof: 'tile', foot: 1.29, h: 35, mat: 'kagir' }
 ];
 /* kiremit çatı (Anadolu alaturka kiremit) */
 function roofTile(sx, sy, w, lv) {
@@ -5551,15 +5578,16 @@ function drawProject() {
     isoQuad(x + 0.1, y + 0.1, p.w - 0.2, p.h - 0.2, 28, 'rgba(200,195,180,.35)');
   }
   if (st >= 3) {                                         /* kagir duvar + kiremit çatı */
+    var bw = R((p.w + p.h) * 12);                        /* ekran genişliği ayak izinden */
     isoBox(x + 0.15, y + 0.15, p.w - 0.3, p.h - 0.3, 0, 26, '#e6dcc4', '#bfae8c', '#d2c1a0');
-    wallStone(cx, cy, 54, 24);
-    roofTile(cx, R(pY(p.x, p.y, 26)), 58, 4);
+    wallStone(cx, cy, bw - 4, 24);
+    roofTile(cx, R(pY(p.x, p.y, 26)), bw, 4);
     /* kemerli hal kapıları */
-    archDoor(cx - 14, cy - 1, 10, 14);
-    archDoor(cx + 14, cy - 1, 10, 14);
+    archDoor(cx - R(bw / 4), cy - 1, 10, 14);
+    archDoor(cx + R(bw / 4), cy - 1, 10, 14);
   }
   if (st >= 4) {                                         /* donatım: tabela + ışık + çini */
-    tileBand(cx, cy - 20, 44);
+    tileBand(cx, cy - 20, R((p.w + p.h) * 12) - 14);
     var lx = R(pX(p.x, p.y + p.h / 2)), ly = R(pY(p.x, p.y + p.h / 2, 28));
     px(lx - 22, ly - 11, 44, 10, PAL.pnl);
     px(lx - 21, ly - 10, 42, 8, PAL.indigo);
@@ -5585,7 +5613,7 @@ function drawProject() {
     px(cx - 14, cy - 45, R(28 * pr), 3, PAL.green);
     uiText(p.x, p.y, 50, pct(Math.round(pr * 100)), PAL.gold, 11);
   }
-  labelAt(p.x, p.y + p.h / 2 + 0.3, st >= 3 ? 46 : 20, UP(NM(p.n)), PAL.gold, '');
+  if (st < 4) labelAt(p.x, p.y + p.h / 2 + 0.3, st >= 3 ? 46 : 20, UP(NM(p.n)), PAL.gold, '');   /* Sv.4+ tabela zaten adı yazıyor */
 }
 
 /* ---------- kozmetik ---------- */
@@ -5729,7 +5757,8 @@ function tutorialTarget() {
 function playerOccluded() {
   var pxp = pX(player.x, player.y), pyp = pY(player.x, player.y, 0), d = player.x + player.y + 0.3, i;
   var occ = [];
-  if (!AREAS[project.z].locked && project.stage >= 2) occ.push({ x: project.x, y: project.y, w: 60, h: 46 });
+  if (!AREAS[project.z].locked && project.stage >= 2) occ.push({ x: project.x, y: project.y, w: 60, h: 62 });
+  for (i = 0; i < PLOTS.length; i++) if (PLOTS[i].b && plotActive(PLOTS[i])) occ.push({ x: PLOTS[i].x, y: PLOTS[i].y, w: 46, h: 72 });
   for (i = 0; i < counters.length; i++) if (!AREAS[counters[i].z].locked) occ.push({ x: counters[i].x, y: counters[i].y, w: 30, h: 30 });
   for (i = 0; i < SLOTS.length; i++) if (SLOTS[i].b && slotActive(SLOTS[i])) occ.push({ x: SLOTS[i].x, y: SLOTS[i].y, w: 26, h: 28 });
   if (!AREAS[smoker.z].locked) occ.push({ x: smoker.x, y: smoker.y, w: 26, h: 26 });
@@ -5759,6 +5788,7 @@ function render() {
   drawRoad();
   for (var a = 0; a < AREAS.length; a++) drawArea(AREAS[a], a);
   drawMeydanGround();
+  drawYardGround();
 
   var list = [], i;
   function push(d, fn) { list.push({ d: d, f: fn }); }
@@ -5769,10 +5799,8 @@ function render() {
   })(AREAS[i], i);
   for (i = 0; i < AREAS.length; i++) (function (ar) {
     if (ar.locked) return;
-    if (ar.lvl >= 2) push(ar.x0 + ar.y1 - 0.2, function () { drawSign(ar); });
     if (ar.lvl >= 3) {
-      push(ar.x0 + 0.5 + ar.y1 - 0.5, function () { drawLamp(ar.x0 + 0.5, ar.y1 - 0.5); });
-      push(ar.x1 - 0.5 + ar.y0 + 0.5, function () { drawLamp(ar.x1 - 0.5, ar.y0 + 0.5); });
+      AREA_LAMPS[AREAS.indexOf(ar)].forEach(function (lp) { push(lp.x + lp.y, function () { drawLamp(lp.x, lp.y); }); });
     }
   })(AREAS[i]);
   for (i = 0; i < scenery.length; i++) (function (d) { push(d.x + d.y - 0.1, function () { drawScenery(d); }); })(scenery[i]);
@@ -8770,6 +8798,20 @@ function meydanCards(out) {
 }
 
 /* ---------- çizim ---------- */
+/* hizmet sahası zemini: sıkıştırılmış toprak + taş bordür, parseller arasında yürüyüş yolu */
+function drawYardGround() {
+  var r = SERVYARD, q = YARDPATH;
+  isoQuad(q.x0, q.y0, q.x1 - q.x0, q.y1 - q.y0, 0, '#b9ad92');
+  isoQuad(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, 0, '#c2b08a');
+  ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = '#a8966f';
+  for (var k = 0; k < 40; k++) { var gx = r.x0 + ((k * 0.618) % 1) * (r.x1 - r.x0), gy = r.y0 + ((k * 0.377) % 1) * (r.y1 - r.y0); px(R(pX(gx, gy)), R(pY(gx, gy, 0)), 2, 1, '#a8966f'); }
+  ctx.restore();
+  ctx.save(); ctx.strokeStyle = '#8a7a5c'; ctx.lineWidth = 2; ctx.beginPath();
+  ctx.moveTo(R(pX(r.x0, r.y0)), R(pY(r.x0, r.y0, 0))); ctx.lineTo(R(pX(r.x1, r.y0)), R(pY(r.x1, r.y0, 0)));
+  ctx.lineTo(R(pX(r.x1, r.y1)), R(pY(r.x1, r.y1, 0))); ctx.lineTo(R(pX(r.x0, r.y1)), R(pY(r.x0, r.y1, 0))); ctx.closePath(); ctx.stroke(); ctx.restore();
+  var gx0 = 19.5, gy0 = r.y1 - 0.3;                 /* saha adı: güney kenarda, önünde/arkasında bina yok */
+  if (dist2(player.x, player.y, gx0, gy0) < 90) uiText(gx0, gy0, 2, T('yardName'), PAL.gold, 7);
+}
 function drawMeydanGround() {
   var r = MEYDAN;
   isoQuad(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, 0, '#b9ad92');
@@ -9147,6 +9189,48 @@ el.chBtn.onclick = openChapter;
 el.chClose.onclick = function () { el.chScr.classList.add('hidden'); syncPause(); };
 el.chEndGo.onclick = function () { el.chEnd.classList.add('hidden'); el.chBtn.classList.add('hidden'); syncPause(); };
 
+/* v1.3.2 — yerleşim denetimi: tam gelişmiş limanda her nesnenin kapladığı alan (en büyük hâliyle).
+   Aynı "own" değerine sahip parçalar birbirine ait (ör. tezgâh + tepsisi) ve çakışma sayılmaz. */
+function layoutRects() {
+  var R = [];
+  function add(id, own, z, x, y, hx, hy) { R.push({ id: id, own: own, z: z, x0: x - hx, y0: y - hy, x1: x + hx, y1: y + hy }); }
+  function unit(key, z, x, y) {
+    add('tezgâh ' + key, key, z, x, y, CTR_HW, CTR_HH);
+    var tp = { x: x + 0.98, y: y + 0.55 }; add('tepsi ' + key, key, z, tp.x, tp.y, 0.4, 0.34);
+    if (z !== smoker.z) add('füme mak. ' + key, key, z, x + 0.95, y - 0.6, 0.35, 0.35);
+  }
+  spots.forEach(function (sp, i) { add('ağ ' + i, 'net' + i, sp.z, sp.x, sp.y + 0.45, 0.65, 0.95); });
+  XNETS.forEach(function (sp) { add('ağ ' + sp.f, 'xn' + sp.f, sp.z, sp.x, sp.y + 0.45, 0.65, 0.95); });
+  tables.forEach(function (t, i) { add('masa ' + i, 'tb' + i, t.z, t.x, t.y, 0.72, 0.52); add('hasır ' + i, 'tb' + i, t.z, t.mat.x, t.mat.y, 0.62, 0.52); });
+  add('füme fırını', 'sm', smoker.z, smoker.x, smoker.y, 0.8, 0.65); add('fırın hasırı', 'sm', smoker.z, smoker.mat.x, smoker.mat.y, 0.62, 0.52);
+  unit('b0', 0, 8.9, 3.0); unit('b1', 1, 8.9, 10.4); unit('b2', 2, 8.9, 15.4);
+  var stallCats = BUILDINGS.filter(function (b) { return b.id === 'tezgah'; }).map(function (b) { return b.cat; });
+  SLOTS.forEach(function (sl) {
+    var canStall = sl.cats.some(function (c) { return stallCats.indexOf(c) >= 0; });
+    if (canStall) unit('ek-' + sl.id, sl.z, sl.x + 0.3, sl.y);
+    add('yapı ' + sl.id, canStall ? 'ek-' + sl.id : 'sl' + sl.id, sl.z, sl.x, sl.y, 0.65, 0.65);
+  });
+  add('Kapalı Pazar', 'proj', project.z, project.x, project.y, project.w / 2, project.h / 2);
+  var htp = trayPos({ key: 'hal' }); add('tepsi Kapalı Pazar', 'proj', project.z, htp.x, htp.y, 0.4, 0.34);
+  PLOTS.forEach(function (q) { add('parsel ' + q.id, 'pl' + q.id, q.z, q.x, q.y, 1.0, 1.0); });
+  MGR_DESKS.forEach(function (d, z) { R.push({ id: 'müdür masası ' + z, own: 'md' + z, z: z, x0: d.x - 0.5, y0: d.y - 1.0, x1: d.x + 0.5, y1: d.y + 0.3 }); });
+  AREA_LAMPS.forEach(function (ls, z) { ls.forEach(function (l, k) { add('lamba ' + z + '-' + k, 'lp' + z + k, z, l.x, l.y, 0.2, 0.2); }); });
+  BINS.forEach(function (b, i) { add('çöp ' + i, 'bin' + i, b.z, b.x, b.y, 0.3, 0.3); });
+  add('Ana Kasa', 'safe', 0, safe.x, safe.y, 0.5, 0.5);
+  DECOR.forEach(function (d) { add('süs ' + d.id, 'dc' + d.id, d.z, d.x, d.y, 0.42, 0.42); });
+  add('başlangıç noktası', 'start', 0, 4.5, 3.2, 0.25, 0.25);
+  return R;
+}
+function layoutClashes(margin) {
+  var R = layoutRects(), out = [], m = margin || 0;
+  for (var i = 0; i < R.length; i++) for (var j = i + 1; j < R.length; j++) {
+    var a = R[i], b = R[j]; if (a.own === b.own) continue;
+    var w = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) + m, h = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) + m;
+    if (w > 0.001 && h > 0.001) out.push(a.id + ' ✕ ' + b.id);
+  }
+  return out;
+}
+
 /* =========================================================
    BAŞLAT
    ========================================================= */
@@ -9193,7 +9277,7 @@ window.BT = {
   setLang: function (l) { setLangTo(l); },
   M: function () { return M; },
   sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
-  pickSpecials: function () { pickSpecials(); }, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
+  pickSpecials: function () { pickSpecials(); }, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
   dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(),
     pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
     y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },

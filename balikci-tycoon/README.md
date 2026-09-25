@@ -12,6 +12,50 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v1.3.2 — Her şeyin bir yeri var: hiçbir şey üst üste gelmez
+
+Sorun: Geliştirme'den eklenen binalar (çay ocağı, ek tezgâh, reklam panosu…), bölge tabelası, müdür masası,
+lambalar, çöp kovaları ve hizmet parselleri serbest noktalara konmuştu. Bazı birleşimlerde birbirinin üstüne
+biniyordu. Örneğin "Balıkçı İskelesi" tabelası iskelenin ortasında kalıyordu.
+
+**Zeminde (ayak izi)**
+- Her nesnenin sabit bir yeri ve bir ayak izi var: ağlar, masa ve hasırlar, tezgâh + para tepsisi + füme makinesi,
+  yapı noktaları, Kapalı Pazar, parseller, müdür masaları, lambalar, çöp kovaları, Ana Kasa, süsler.
+  `layoutClashes()` bunları karşılaştırır; 0.1 karo payla bile hiçbiri başka birine değmez.
+- Tezgâhların para tepsisi ve füme makinesi yol tarafında, tezgâhın yanında. Yerleri tezgâha göre hesaplanır, ek
+  tezgâhlarda da aynıdır.
+- Yerleşim bir çözücüyle (tavlama) bulundu: önce zemin çakışması sıfırlandı, sonra ekranda üst üste binme
+  en aza indirildi.
+
+**Bölge tabelası artık ana tezgâhın tentesinde**
+- "BALIKÇI İSKELESİ", "BALIK PAZARI" ve "FÜMEHANE" levhaları o bölgenin ana tezgâhının tentesine asılı. Ayrı bir yer
+  kaplamaz, hiçbir binanın önüne düşmez.
+
+**Kapalı Pazar**
+- Balık Pazarı bölgesinin arka-yol köşesinde. Önünde tezgâh kalmaz, Balık Pazarı tezgâhının tentesiyle ekranda
+  çakışmaz.
+- Tezgâhı binanın içinde; yalnız ürün yığını ve para tepsisi görünür. Tabelası varken üstteki ikinci ad etiketi
+  kaldırıldı.
+
+**Hizmet Sahası (yeni alan)**
+- 9 hizmet parseli (Buzhane, Toptancı Hanı, Restoran, Tamirhane…) artık bölgelerin içinde değil, meydanın
+  güneyindeki kendi sahasında. Meydandan bir patika iner, ada doğuya doğru genişledi.
+- Parseller 3 sütunda, her sütun bir öncekinden 2 karo aşağıda. En üst seviyede bile hiçbir bina bir başkasının tam
+  önüne ya da arkasına düşmez. Binalar biraz küçültüldü.
+- Parsel adları: Saha 1–9 (İskele / Pazar / Fümehane). Hangi bölgenin açılmasıyla açıldıkları aynı kaldı.
+- Oyuncu bir saha binasının ya da Kapalı Pazar'ın arkasına geçerse silüeti görünür.
+
+**Yeni test:** `test-layout.js` şunları doğrular:
+- zeminde çakışma yok;
+- süs mesafeleri ve parsel doğrulaması geçiyor;
+- saha binaları ekranda ayrı duruyor;
+- her parselin önünde yürünebilir zemin var;
+- Kapalı Pazar tezgâh tentesine binmiyor;
+- bölge tabelası ayrı bir nesne değil;
+- her şey kurulu ve en üst seviyedeyken sahne hatasız çiziliyor.
+
+---
+
 ## v1.3.1 — Bölüm 1 baştan sona oynandı (bot) ve bulunan hatalar düzeltildi
 
 `test-playthrough.js` Bölüm 1'i baştan sona oynar: yeni oyun → ilk dakikalar gerçek klavyeyle (ağ → kesim →
