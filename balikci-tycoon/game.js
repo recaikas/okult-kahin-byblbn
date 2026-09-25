@@ -40,7 +40,7 @@ var STR = {
     intro4: '🐟 Tezgâh → müşteri siparişi öder',
     intro5: '💰 Tezgâh kasasından geç → para hesabına, liman büyür',
     ctrl: 'W A S D / yön tuşları — veya ekrana bas & sürükle',
-    tabs: ['LİMAN', 'PERSONEL', 'ÜRÜNLER', 'YARDIM'],
+    tabs: ['LİMAN', 'PERSONEL', 'ÜRÜNLER', 'ALBÜM', 'YARDIM'],
     /* istasyonlar */
     stNet: 'AĞ', stCut: 'KESİM', stSmoke: 'FÜMEHANE', stStall: 'TEZGÂH', stSafe: 'ANA KASA', trayFull: 'KASA DOLU',
     stTake: 'AL', stBuild: 'YAPI YERİ', stProject: 'BÜYÜK PROJE', stDecor: 'SÜS',
@@ -86,6 +86,7 @@ var STR = {
     envUp1: '🌿 Liman canlanıyor: yol çakıl oldu, ağaçlar yeşeriyor', envUp2: '🪨 Yol arnavut kaldırımı oldu, sahil toparlandı',
     envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
     specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
+    albMet: 'Tanıştığın özel müşteriler', albLeft: 'Henüz tanışmadığın {n} kişi daha var — her gün 2 özel müşteri gelir.', albNone: 'Henüz kimseyle tanışmadın. Her gün 2 özel müşteri gelir.', albFav: 'Sevdiği',
     featDay: 'Günün müşterisi: {n}', levelUp: '⭐ Yeni seviye: {t}!', lvlN: 'SEVİYE {l}', lvShort: 'SV {l}', lvBonus: 'Satış primi {p}',
     areaOpen: '🔓 {n} açıldı!',
     areaLvUp: '🏗️ {n} → Sv.{l}',
@@ -236,7 +237,7 @@ var STR = {
     intro4: '🐟 Stall → customers pay for orders',
     intro5: '💰 Walk past the stall cash box → money is banked',
     ctrl: 'W A S D / arrow keys — or touch & drag anywhere',
-    tabs: ['HARBOR', 'STAFF', 'GOODS', 'HELP'],
+    tabs: ['HARBOR', 'STAFF', 'GOODS', 'ALBUM', 'HELP'],
     stNet: 'NET', stCut: 'CUTTING', stSmoke: 'SMOKEHOUSE', stStall: 'STALL', stSafe: 'MAIN SAFE', trayFull: 'CASH FULL',
     stTake: 'TAKE', stBuild: 'BUILD SPOT', stProject: 'BIG PROJECT', stDecor: 'DECOR',
     upCap: 'CAPACITY', upCapE: '+3 carry', upSpd: 'SPEED', upSpdE: '+11% run',
@@ -278,6 +279,7 @@ var STR = {
     envUp1: '🌿 The harbor comes alive: gravel road, trees turning green', envUp2: '🪨 The road is cobbled now, the shore tidied up',
     envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
     specComing: 'A special customer is coming...', daySpec: 'Special customers',
+    albMet: 'Special customers you\'ve met', albLeft: '{n} more to meet — 2 special customers visit every day.', albNone: 'You haven\'t met anyone yet. 2 special customers visit every day.', albFav: 'Loves',
     featDay: 'Customer of the day: {n}', levelUp: '⭐ New rank: {t}!', lvlN: 'LEVEL {l}', lvShort: 'LV {l}', lvBonus: 'Sales bonus {p}',
     areaOpen: '🔓 {n} unlocked!',
     areaLvUp: '🏗️ {n} → Lv.{l}',
@@ -3465,6 +3467,10 @@ function drawPerson(a, o) {
   }
   y -= hup;                                           /* gövde ve baş boya göre yukarı/aşağı */
 
+  if (o.cape) {                                       /* v1.1: pelerin — gövdenin arkasından taşar */
+    px(sx - 5 + lean, y - 15, 10, 12, o.cape); px(sx - 6 + lean, y - 5, 12, 2, o.cape);
+    px(sx - 5 + lean, y - 15, 10, 1, shade(o.cape, 22));
+  }
   /* --- gövde: yün kazak --- */
   px(sx - 4 + lean, y - 15, 8, 9, coat);
   px(sx - 4 + lean, y - 15, 8, 1, coat2);             /* omuz ışığı */
@@ -3492,6 +3498,17 @@ function drawPerson(a, o) {
     px(bx0 + (fs > 0 ? 1 : 0), y - 12, 2, 1, shade(coat, 18));
     px(sx - 5 + lean, y - 7, 10, 1, shade(coat, -26));      /* kemer çizgisi */
     px(bx0, y - 7, 3, 1, shade(coat, -26));
+  }
+
+  if (o.scales) {                                     /* v1.1: balık pulu desenli elbise */
+    for (var sr = 0; sr < 4; sr++) for (var sc = 0; sc < 4; sc++) px(sx - 4 + lean + sc * 2 + (sr % 2), y - 14 + sr * 2, 1, 1, o.scales);
+  }
+  if (o.tie) { px(sx - 1 + lean, y - 15, 2, 1, shade(o.tie, -20)); px(sx - 1 + lean, y - 14, 2, 5, o.tie); px(sx - 1 + lean, y - 9, 1, 1, o.tie); }
+  if (o.bowtie) { px(sx - 2 + lean, y - 15, 2, 2, o.bowtie); px(sx + 1 + lean, y - 15, 2, 2, o.bowtie); px(sx + lean, y - 15, 1, 1, shade(o.bowtie, 30)); }
+  if (o.chain) {                                      /* altın kolye */
+    var gC = PAL.brass || '#d9a441';
+    px(sx - 3 + lean, y - 15, 1, 1, gC); px(sx - 2 + lean, y - 14, 1, 1, gC); px(sx - 1 + lean, y - 13, 2, 1, gC);
+    px(sx + 1 + lean, y - 14, 1, 1, gC); px(sx + 2 + lean, y - 15, 1, 1, gC); px(sx - 1 + lean, y - 12, 2, 2, '#ffd76a');
   }
 
   /* --- kollar --- */
@@ -3533,6 +3550,13 @@ function drawPerson(a, o) {
   }
   if (o.knife) { var nx = sx + fx * 6; px(nx, y - 10, 1, 4, '#cfd8de'); px(nx, y - 6, 1, 2, '#6f4526'); }
   if (o.tray) { px(sx + fx * 5 - 2, y - 12, 6, 1, '#c9a15e'); px(sx + fx * 5 - 1, y - 13, 4, 1, '#e8ddc8'); }
+  if (o.guitar) {                                     /* v1.1: sırtta gitar */
+    var gx2 = fx > 0 ? sx - 9 : sx + 5;
+    px(gx2, y - 10, 4, 5, o.guitar); px(gx2, y - 12, 3, 2, o.guitar); px(gx2 + 1, y - 9, 2, 2, '#2a1a0a');
+    px(gx2 + (fx > 0 ? 3 : 0), y - 20, 1, 8, '#5a3a1a'); px(gx2 + (fx > 0 ? 3 : 0), y - 21, 1, 1, '#cfd8de');
+  }
+  if (o.mic) { var mx = sx + fx * 5; px(mx, y - 15, 1, 5, '#2a2a2a'); px(mx - (fx > 0 ? 0 : 1), y - 17, 2, 2, '#9aa4ac'); }
+  if (o.phone) { var phx = sx + fx * 6; px(phx, y - 21, 2, 3, '#1a1a1a'); px(phx, y - 21, 1, 1, '#7fd3ff'); px(phx, y - 18, 1, 5, coat2); }
 
   /* --- baş --- */
   var hy = y - 22;
@@ -3552,6 +3576,13 @@ function drawPerson(a, o) {
     px(sx - 3, hy - 4, 6, 4, '#a3231f');
     px(sx - 4, hy - 1, 8, 1, '#8d1c19');
     px(sx + 2, hy - 5, 1, 3, '#1d1713');
+  } else if (o.tophat) {                              /* v1.1: silindir şapka */
+    px(sx - 3, hy - 7, 6, 6, o.tophat); px(sx - 5, hy - 1, 10, 1, o.tophat);
+    px(sx - 3, hy - 3, 6, 1, shade(o.tophat, 40)); px(sx - 3, hy - 7, 6, 1, shade(o.tophat, 25));
+    px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair);
+  } else if (o.turban) {                              /* v1.1: kavuk / sarık */
+    px(sx - 5, hy - 4, 10, 5, o.turban); px(sx - 4, hy - 5, 8, 1, o.turban);
+    px(sx - 5, hy - 2, 10, 1, shade(o.turban, -22)); px(sx - 1, hy - 5, 2, 1, '#3f6a3a');
   } else if (o.cap) {                                 /* kasket */
     px(sx - 4, hy - 2, 8, 3, o.cap);
     px(sx - 4, hy - 3, 6, 1, shade(o.cap, 16));
@@ -3588,11 +3619,17 @@ function drawPerson(a, o) {
     } else if (o.hairStyle === 2) {                   /* uzun */
       px(sx - 5, hy, 1, 8, hair); px(sx + 4, hy, 1, 8, hair);
       px(sx - 4, hy + 4, 1, 4, hair); px(sx + 3, hy + 4, 1, 4, hair);
+    } else if (o.hairStyle === 7) {                   /* v1.1: mohikan / dikleşmiş */
+      px(sx - 1, hy - 5, 3, 3, hair); px(sx - 3, hy - 3, 1, 1, hair); px(sx + 2, hy - 4, 1, 2, hair);
+    } else if (o.hairStyle === 8) {                   /* v1.1: kabarık perçem (rock'n'roll) */
+      px(sx - 4, hy - 4, 8, 2, hair); px(sx + (fx > 0 ? 2 : -5), hy - 5, 3, 2, hair); px(sx + (fx > 0 ? 4 : -5), hy - 3, 1, 2, hair);
+      px(sx - 3, hy - 4, 5, 1, shade(hair, 35));
     } else if (o.hairStyle === 3) {                   /* at kuyruğu */
       var tx = fx > 0 ? sx - 6 : sx + 4;
       px(tx, hy, 2, 2, hair); px(tx + (fx > 0 ? 0 : 1), hy + 2, 1, 4, hair);
     }
   }
+  if (o.headband) { px(sx - 4, hy - 1, 8, 1, o.headband); px(fx > 0 ? sx - 5 : sx + 4, hy, 1, 3, o.headband); }
   if (o.cap && o.hairStyle === 2) { px(sx - 5, hy + 1, 1, 7, hair); px(sx + 4, hy + 1, 1, 7, hair); }
   if (o.cap && o.hairStyle === 3) { var tx2 = fx > 0 ? sx - 6 : sx + 4; px(tx2, hy + 1, 2, 5, hair); }
 
@@ -3604,6 +3641,15 @@ function drawPerson(a, o) {
   if (o.thickMust) { px(sx - 2, ey + 2, 5, 2, hair); px(sx - 3, ey + 3, 1, 1, hair); px(sx + 3, ey + 3, 1, 1, hair); }
   if (o.beard) { px(sx - 3, ey + 2, 6, 3, hair); px(sx - 2, ey + 3, 4, 1, skinS); }
   if (o.glasses) { px(sx - 3, ey, 2, 1, '#cfd8de'); px(sx + 1, ey, 2, 1, '#cfd8de'); px(sx - 1, ey, 2, 1, '#7d868e'); }
+  if (o.shades) { px(sx - 3, ey - 1, 6, 1, '#141414'); px(sx - 3, ey, 2, 1, '#141414'); px(sx + 1, ey, 2, 1, '#141414'); px(sx - 2, ey - 1, 1, 1, '#6f8ea8'); }
+  if (o.eyepatch) { px(sx - 4, ey - 1, 8, 1, '#141414'); px(sx + (fx > 0 ? 1 : -2), ey - 1, 2, 2, '#141414'); }
+  if (o.pipe) { px(sx + (fx > 0 ? 1 : -3), ey + 3, 3, 1, '#5a3a1a'); px(sx + (fx > 0 ? 4 : -4), ey + 1, 1, 3, '#5a3a1a'); }
+  if (o.bird) {                                       /* v1.1: omuzda kuş (martı / papağan) */
+    var bdx = fx > 0 ? sx - 6 : sx + 3;
+    px(bdx, y - 18, 3, 2, o.bird); px(bdx + (fx > 0 ? 2 : 0), y - 20, 2, 2, o.bird);
+    px(bdx + (fx > 0 ? 4 : -1), y - 19, 1, 1, '#f0a030'); px(bdx + (fx > 0 ? 2 : 1), y - 20, 1, 1, '#141414');
+    px(bdx + (fx > 0 ? -1 : 3), y - 17, 1, 1, shade(o.bird, -30));
+  }
   /* ağız: ruh haline göre */
   if (o.mood !== undefined) {
     if (o.mood < 0.28) { px(sx - 1, ey + 3, 3, 1, '#8d3423'); px(sx - 2, ey + 2, 1, 1, '#8d3423'); px(sx + 2, ey + 2, 1, 1, '#8d3423'); }
@@ -3732,7 +3778,11 @@ function drawCustomer(cu) {
     cu.fidget = (cu.fidget || 0) + 0.016 * rate;
     if (Math.sin(cu.fidget * 3) > 0.94) o.face = -cu.face;      /* etrafa bakınma */
   }
+  var spq = cu.spec ? specById(cu.spec) : null, z0 = cu.z;
+  if (spq && spq.moon && cu.state !== 'wait') o.face = -o.face;                 /* v1.1: moonwalk */
+  if (spq && spq.dance && cu.state === 'wait') { cu.z = Math.abs(Math.sin((cu.fidget || 0) * 5)) * 0.18; if (Math.sin((cu.fidget || 0) * 2.5) > 0) o.face = -o.face; }
   drawPerson(cu, o);
+  cu.z = z0;
   if (cu.spec) drawSpecialTag(cu);
   if (cu.state === 'leave') {                                    /* mutlu ayrılış */
     if ((cu.leaveT = (cu.leaveT || 0) + 0.016) < 1.2) drawEmote(cu.x, cu.y, 34, cu.happyLeave === false ? 'angry' : 'love');
@@ -6283,6 +6333,13 @@ function renderTab() {
         open ? money(prodValue('fileto', L.f)) : '—',
         open && canProcess('fume', L.f) ? T('mSmoked') + ' ' + money(prodValue('fume', L.f)) : '');
     }
+  } else if (curTab === 'album') {                 /* v1.1: tanışılan özel müşteriler */
+    var met = SPECIALS.filter(function (q) { return S.met.indexOf(q.id) >= 0; });
+    h += row('⭐', T('albMet'), met.length ? '' : T('albNone'), met.length + '/' + SPECIALS.length);
+    met.forEach(function (q) {
+      h += row('★', escH(q.n) + ' · ' + escH(NM(q.job)), escH(q.trait ? NM(q.trait) : NM(q.hi)), '', T('albFav') + ': ' + NM(FISH[q.fav].n));
+    });
+    if (met.length && met.length < SPECIALS.length) h += '<div class="empty">' + T('albLeft', { n: SPECIALS.length - met.length }) + '</div>';
   } else {
     h += row('🕹️', T('mCtrl'), T('ctrl'), '');
     h += row('🎣', T('mLoop'), T('mLoopE'), '');
@@ -8477,53 +8534,39 @@ function syncMeydanBtn() {
    "Özel bir müşteri geliyor..." bildiriminden sonra gelir; kapanış onun işi bitince devam eder.
    Havuz ilk aşamada 50 kişilik planlanır; şu an tanımlı olanlar aşağıda (yeni kişi = diziye bir satır).
    ========================================================= */
-var SPECIALS = [
-  { id: 'caner', n: 'Caner', fav: 'hamsi', job: { tr: 'Kaliteci', en: 'Quality inspector' },
-    look: { tall: 1, belly: 1, coat: '#5b6d7c', coat2: '#6f8394', hair: '#2e2018', hairStyle: 0, sk: 1, pants: '#33393f' },
-    hi: { tr: 'Önce bir bakayım… tamam, bundan alalım.', en: 'Let me take a look… right, I\'ll have this.' },
-    bye: { tr: 'Kalitesi yerinde. Kedilere de bir parça ayırdım.', en: 'Quality checks out. Saved a bite for the cats.' } },
-  { id: 'pelin', n: 'Pelin', fav: 'levrek', job: { tr: 'Biyolog', en: 'Biologist' },
-    look: { coat: '#3f7f7a', coat2: '#56988f', hair: '#d9772b', hairStyle: 5, sk: 0, pants: '#2b3a45' },
-    hi: { tr: 'Gözleri parlak, solungaçlar kırmızı. Güzel.', en: 'Bright eyes, red gills. Good.' },
-    bye: { tr: 'Net ve temiz. Teşekkürler.', en: 'Clean and precise. Thank you.' } },
-  { id: 'riza', n: 'Rıza', fav: 'hamsi', job: { tr: 'Tesisat ustası', en: 'Plumber' },
-    look: { belly: 1, coat: '#3f5f8f', coat2: '#557aa8', cap: '#2b2b2b', thickMust: true, hair: '#1d1713', hairStyle: 0, sk: 2, pants: '#2e3a4a' },
-    hi: { tr: 'Sabahın köründe iş başı, önce balık!', en: 'Up at dawn — fish comes first!' },
-    bye: { tr: 'Eline sağlık. Musluk bozulursa bana haber ver.', en: 'Cheers. If a tap leaks, you know who to call.' } },
-  { id: 'nermin', n: 'Nermin', fav: 'uskumru', job: { tr: 'Emekli öğretmen', en: 'Retired teacher' },
-    look: { short: 1, belly: 1, coat: '#8a4a6a', coat2: '#a45f82', hair: '#9a9a96', hairStyle: 1, sk: 0, skirt: '#4a3a4a', bigBag: '#6b2f3a' },
-    hi: { tr: 'Evladım, bugün hangisi taze?', en: 'Dear, which one is fresh today?' },
-    bye: { tr: 'Aferin sana. Hep böyle düzenli ol.', en: 'Well done, dear. Keep it this tidy.' } },
-  { id: 'kemal', n: 'Kemal', fav: 'levrek', job: { tr: 'Lokanta işletmecisi', en: 'Restaurant owner' },
-    look: { tall: 1, coat: '#e8e2d2', coat2: '#f4efe4', vest: '#3a2f28', notebook: true, hair: '#2e2018', hairStyle: 0, sk: 1, pants: '#2a2724' },
-    hi: { tr: 'Akşam servisi için not alıyorum…', en: 'Taking notes for tonight\'s service…' },
-    bye: { tr: 'Yarın yine gelirim, masalar dolu.', en: 'Back tomorrow — the tables are full.' } },
-  { id: 'sule', n: 'Şule', fav: 'uskumru', job: { tr: 'Terzi', en: 'Tailor' },
-    look: { coat: '#7a2b4a', coat2: '#94405f', hair: '#3d2a1a', hairStyle: 6, sk: 0, skirt: '#2f3a5a' },
-    hi: { tr: 'Tezgâhın ne kadar derli toplu, beğendim.', en: 'Such a neat stall. I like it.' },
-    bye: { tr: 'Paketi de özenli yapmışsın, sağ ol.', en: 'Wrapped with care, too. Thank you.' } },
-  { id: 'okan', n: 'Okan', fav: 'hamsi', job: { tr: 'Kurye', en: 'Courier' },
-    look: { coat: '#e0a030', coat2: '#f0bd55', bag: true, hair: '#1d1713', hairStyle: 0, sk: 2, pants: '#2b3a45' },
-    hi: { tr: 'Çabuk olursak iyi olur, teslimat bekliyor!', en: 'Quick if we can — a delivery\'s waiting!' },
-    bye: { tr: 'Hızlı servis, tam benlik!', en: 'Fast service, just my style!' } },
-  { id: 'fatos', n: 'Fatoş', fav: 'uskumru', job: { tr: 'Ev aşçısı', en: 'Home cook' },
-    look: { belly: 1, coat: '#c8553d', coat2: '#dc6d55', scarf: '#e0679e', scarfDots: '#ffd76a', apron: '#f0ece0', hair: '#3d2a1a', sk: 1, skirt: '#5a3f7a' },
-    hi: { tr: 'Bu akşam buğulama yapacağım, en tazesinden!', en: 'Steamed fish tonight — the freshest, please!' },
-    bye: { tr: 'Afiyetle yiyelim, sana da bir tabak ayırırım!', en: 'Enjoy! I\'ll save you a plate!' } },
-  { id: 'burak', n: 'Burak', fav: 'levrek', job: { tr: 'Bankacı', en: 'Banker' },
-    look: { coat: '#2f3f5a', coat2: '#43557a', vest: '#e8e2d2', beard: true, hair: '#2e2018', hairStyle: 0, sk: 0, pants: '#252c38' },
-    hi: { tr: 'Hesap kitap tamam, şimdi balık zamanı.', en: 'Books are balanced — fish time.' },
-    bye: { tr: 'Teşekkürler, iyi işler.', en: 'Thanks. Good business to you.' } },
-  { id: 'ayfer', n: 'Ayfer', fav: 'hamsi', job: { tr: 'Eczacı', en: 'Pharmacist' },
-    look: { coat: '#f0ece0', coat2: '#fbf8f0', glasses: true, hair: '#3d2a1a', hairStyle: 1, sk: 0, pants: '#3a4450' },
-    hi: { tr: 'Omega-3 için haftada iki kez balık, reçetem bu.', en: 'Fish twice a week — that\'s my prescription.' },
-    bye: { tr: 'Düzenli beslenmek önemli. Görüşürüz.', en: 'Eat regularly. See you soon.' } }
-];
+/* v1.1: karakterler ayrı, elle düzenlenebilir dosyada: specials.js (window.BT_SPECIALS).
+   Burada yalnız doğrulanır/tamamlanır: eksik alan varsayılanla dolar, hatalı satır atlanır. */
+function specLang(v, d) {
+  if (v === undefined || v === null || v === '') return d;
+  if (typeof v === 'string') return { tr: v, en: v };
+  return { tr: String(v.tr || v.en || ''), en: String(v.en || v.tr || '') };
+}
+function specNum(v, d, lo, hi) { v = +v; return isFinite(v) ? clamp(v, lo, hi) : d; }
+function normSpecials(list) {
+  var out = [], seen = {};
+  (Array.isArray(list) ? list : []).forEach(function (s) {
+    if (!s || typeof s !== 'object' || !s.id || !s.n || seen[s.id]) return;
+    seen[s.id] = 1;
+    var q = Array.isArray(s.qty) && s.qty.length === 2 ? [specNum(s.qty[0], 3, 1, 20) | 0, specNum(s.qty[1], 5, 1, 20) | 0] : [3, 5];
+    if (q[1] < q[0]) q[1] = q[0];
+    out.push({
+      id: String(s.id), n: String(s.n).slice(0, 22), fav: FISH[s.fav] ? s.fav : 'hamsi',
+      job: specLang(s.job, { tr: 'Müşteri', en: 'Customer' }), trait: specLang(s.trait, null),
+      hi: specLang(s.hi, { tr: 'Merhaba!', en: 'Hello!' }), bye: specLang(s.bye, { tr: 'Teşekkürler!', en: 'Thanks!' }),
+      look: s.look && typeof s.look === 'object' ? s.look : {},
+      qty: q, pat: specNum(s.pat, 150, 40, 600), tip: specNum(s.tip, 1.1, 0.5, 3), rep: specNum(s.rep, 3, 0, 20) | 0,
+      fx: typeof s.fx === 'string' ? s.fx.slice(0, 2) : '', fxc: s.fxc || '#ffd76a', moon: !!s.moon, dance: !!s.dance
+    });
+  });
+  return out;
+}
+var SPECIALS = normSpecials(window.BT_SPECIALS);
 var SPEC_NORMALS = 3;              /* 1. özel müşteriden önce gelen normal müşteri sayısı */
 var SPEC2_AT = 42;                 /* 2. özel müşteri: gün bitmeden bu kadar saniye önce bildirimle */
 function specById(id) { for (var i = 0; i < SPECIALS.length; i++) if (SPECIALS[i].id === id) return SPECIALS[i]; return null; }
 /* günün iki özel müşterisini seç (dünküler tekrar gelmesin) */
 function pickSpecials() {
+  if (!SPECIALS.length) { day.spec = []; day.sp = 4; day.normals = 0; day.popT = 0; return; }   /* specials.js yoksa sistem sessizce kapalı */
   var prev = day.spec || [], pool = SPECIALS.filter(function (s) { return prev.indexOf(s.id) < 0; });
   if (pool.length < 2) pool = SPECIALS.slice();
   var a = pick(pool), rest = pool.filter(function (s) { return s !== a; }), b2 = rest.length ? pick(rest) : a;
@@ -8531,7 +8574,7 @@ function pickSpecials() {
 }
 function specType(sp) {
   return { id: 'spec_' + sp.id, n: { tr: sp.n, en: sp.n }, coat: sp.look.coat, coat2: sp.look.coat2,
-    qty: [3, 5], pat: 150, mult: 1.1, rep: 3, lvl: 1, tag: 'any', special: sp.id };
+    qty: sp.qty, pat: sp.pat, mult: sp.tip, rep: sp.rep, lvl: 1, tag: 'any', special: sp.id };
 }
 function specOutfit(sp, face) {
   var o = {}, k;
@@ -8584,7 +8627,7 @@ function specActive(idx) {
 }
 /* gün akışı: normal → 1. özel → normal → (bildirim) 2. özel → kapanış */
 function updateSpecials(dt) {
-  if (!day.spec) pickSpecials();
+  if (!day.spec || day.spec.some(function (id) { return !specById(id); })) pickSpecials();   /* dosyadan silinen kişi kayıtta kaldıysa yeniden seç */
   if (day.phase !== 'play' && day.phase !== 'closing') return;
   /* 1. özel müşteri: birkaç normal müşteriden sonra; hiç gelemediyse gün ortasında zorla */
   if (day.sp === 0 && day.phase === 'play' && (day.normals >= SPEC_NORMALS || day.t > DAY_LEN * 0.55)) {
@@ -8612,6 +8655,10 @@ function specHoldsClose() { return (day.sp === 2 || day.sp === 3) && day.ph < CL
 /* konuşma balonu: gelince selam, mutlu giderken teşekkür */
 function drawSpecialTag(cu) {
   var sp = specById(cu.spec); if (!sp) return;
+  if (sp.fx && cu.state !== 'leave' && !paused) {                                 /* v1.1: karakter işareti uçuşur */
+    cu.fxT = (cu.fxT || 0) + 0.016;
+    if (cu.fxT > 1.3) { cu.fxT = 0; addFloat(cu.x + rnd(-0.3, 0.3), cu.y - 0.6, sp.fx, sp.fxc); }
+  }
   uiLabel(cu.x, cu.y, 44, '★ ' + sp.n + ' · ' + NM(sp.job), '#ffc94a', 0.95);
   if (cu.state === 'wait') cu.sayT = (cu.sayT || 0) + 0.016;
   var line = null;

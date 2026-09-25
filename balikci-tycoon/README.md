@@ -1,7 +1,7 @@
-# 🐟 Balıkçı Tycoon — **v1.0** (cila + canlı site + oyuncu takibi)
+# 🐟 Balıkçı Tycoon — **v1.1** (50 özel müşteri + düzenlenebilir karakter dosyası)
 
 İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
-Tek klasör, bağımlılık yok: `index.html` + `game.js`.
+Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karakterler, `config.js` online skor).
 
 ## Oynamak için
 `index.html` dosyasını tarayıcıda aç (mobil + masaüstü). İstersen: `npx http-server -p 8080 .`
@@ -9,6 +9,34 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js`.
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.1 — 50 özel müşteri, düzenlenebilir karakter dosyası
+
+Özel müşteriler artık ayrı bir dosyada: **`specials.js`**. Kod bilmeden düzenlenir; dosyanın başında her alanın
+açıklaması var. Yeni kişi eklemek = listeye bir blok eklemek. Hatalı ya da eksik satır oyunu bozmaz: eksik alan
+varsayılanla dolar, `id`/`n` olmayan satır atlanır. Dosyadan silinen biri kayıtlı oyunda "bugünün müşterisi" olarak
+kalmışsa oyun yenisini seçer.
+
+**Havuz: 50 kişi.** Ünlü parodilerinin isimleri bilerek değiştirildi; hepsi kurgusal karakterdir.
+
+| Grup | Kişiler |
+|---|---|
+| Mahallenin tanıdıkları (10) | Caner, Pelin, Rıza, Nermin, Kemal, Şule, Okan, Fatoş, Burak, Ayfer |
+| Yerli ünlü parodileri (17) | Tarkut (pop megastarı), Cemal Gırgır (stand-up), Saf Şükrü (bekçi), Barlas Mançı (rock ozanı), İbo Tatlıdil (türkücü), Ayda Pekkaya (diva), Adnan Ilıcak (TV yapımcısı), Nasır Hoca (göl mayalayıcı), Fahri Tezim (teknik direktör), Müslüm Dertli (arabesk), Nazik Mürsel (sanat güneşi), Çüneyt Kırkın (aksiyon yıldızı), Hülya Avcı (talk show), Haluk Lüvent (yardımsever rockçı), ÇZN Berk (sosyal medya aşçısı), Tuz Baba (şov kasabı), Temel (Karadenizli fıkra kahramanı) |
+| Yabancı ünlü parodileri (17) | Gordon Ramsi (öfkeli şef), Elvin Presli, Ferdi Merkür, Bay Fasulye, Şerlok Holmez, Şınap Dok, Kaya Conson, Arnavut Şvarzenkol, Teylan Sivri, Opra Hanım, Mikail Ceksın, Bob Rost, Jami Olivar, Deyvid Atınbara, Çak Norıs, Leydi Gıgı, Ed Şırın |
+| Komik meslekler (6) | Mahmut (martı terbiyecisi), Sabri (profesyonel sıra bekleyici), Bedia Abla (balık pulu falcısı), Tek Göz Recep (emekli korsan), Mırıl Bey (kedi sendikası başkanı), Selfi Selin (fenomen) |
+
+**Her karakterin oyuna etkisi olan özellikleri** (hepsi isteğe bağlı):
+`qty` sipariş adedi · `pat` sabır · `tip` ödeme çarpanı · `rep` itibar · `fx` başının üstünde uçuşan işaret (♪ ♥ ✦ ! ? $ ~) ·
+`moon` geri geri yürür (Mikail Ceksın) · `dance` kuyrukta dans eder. Örnekler: Sabri 420 sn bekler, Opra Hanım 10–14 balık
+ısmarlar, Çak Norıs 2× öder ama 75 sn'den fazla beklemez, Gordon Ramsi "ÇİĞ!" diye bağırır ama beğenirse 1.8× öder.
+
+**Yeni görünüş parçaları:** güneş gözlüğü, göz bandı, pipo, silindir şapka, kavuk, alın bandı, kravat, papyon, pelerin,
+balık pulu desenli elbise, altın kolye, mikrofon, telefon, sırtta gitar, omuzda kuş (martı/papağan), mohikan ve kabarık perçem saç.
+
+**Menü › ALBÜM:** tanıştığın özel müşteriler; meslekleri, huyları ve sevdikleri balıkla (ör. 12/50).
 
 ---
 
