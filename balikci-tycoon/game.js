@@ -1053,6 +1053,7 @@ function sellableFish() {
   return out;
 }
 var FUME_MUL = 2.4, FUME_TIME = 3.2;
+var FUME_P_MACH = 0.16, FUME_CAP_MACH = 0.22, FUME_P_HOME = 0.26, FUME_CAP_HOME = 0.33;   /* v1.3.3 füme talep oranı */
 function prodName(k, f) { return NM(FISH[f].n) + (k === 'fume' ? (lang === 'tr' ? ' Füme' : ' Smoked') : (lang === 'tr' ? ' Fileto' : ' Fillet')); }
 function prodValue(k, f) { return Math.round(FISH[f].val * (k === 'fume' ? FUME_MUL : 1) * (1 + S.priceLvl * 0.1) * (1 + perkSum('value') + servEff('value') + slotEff(null, 'value'))); }
 function itemW(it) { return it.k === 'fish' ? FISH[it.f].w : 1; }
@@ -2882,8 +2883,13 @@ function makeOrderFor(c, type) {
   var f = c.fish;
   if (!canProduce(f) || !canProcess('fileto', f) || !canSell(f)) return null;
   var k = 'fileto';
-  if (stallFume(c) && (type.tag === 'fume' || Math.random() < 0.3)) k = 'fume';
-  if (k === 'fume' && !stallFume(c)) k = 'fileto';
+  if (stallFume(c)) {
+    /* v1.3.3: füme talebi oranlı — makineli tezgâhta ~%20, Fümehane'de ~%30; son siparişlerde pay tavanı aşılırsa
+       (VIP dahil) fileto ister. Böylece füme, fileto siparişlerinin yarısını hiçbir yerde geçmez. */
+    var home = c.z === smoker.z, share = c.oN ? c.fN / c.oN : 0;
+    if ((type.tag === 'fume' || Math.random() < (home ? FUME_P_HOME : FUME_P_MACH)) && share < (home ? FUME_CAP_HOME : FUME_CAP_MACH)) k = 'fume';
+  }
+  c.oN = (c.oN || 0) * 0.96 + 1; c.fN = (c.fN || 0) * 0.96 + (k === 'fume' ? 1 : 0);
   var need = irnd(type.qty[0], type.qty[1]);
   return { k: k, f: f, need: need, got: 0 };
 }
@@ -2944,6 +2950,7 @@ function updateCounter(c, dt) {
     for (var q2 = 0; q2 < c.slots.length; q2++) {
       var cu2 = c.slots[q2];
       if (!cu2 || cu2.state !== 'wait' || cu2.ord.got >= cu2.ord.need) continue;
+      if (specTalking(cu2)) continue;                /* v1.3.3: özel müşteri sözünü bitirmeden sipariş alınmaz */
       var idx = -1;
       for (i = 0; i < c.buffer.length; i++) if (c.buffer[i].k === cu2.ord.k && c.buffer[i].f === cu2.ord.f) { idx = i; break; }
       if (idx < 0) continue;
@@ -3044,13 +3051,16 @@ function updateCustomers(dt) {
     if (cu.state === 'walk') {
       var p = queueSlotPos(cu.c, cu.slot);
       var dx = p.x - cu.x, dy = p.y - cu.y, L = Math.hypot(dx, dy);
+      var wv = cu.spec ? SPEC_WALK : 2.1;             /* v1.3.3: özel müşteri ağır adımlarla gelir */
       if (L < 0.14) cu.state = 'wait';
-      else { cu.x += dx / L * 2.1 * dt; cu.y += dy / L * 2.1 * dt; cu.bob += dt * 8; }
+      else { cu.x += dx / L * wv * dt; cu.y += dy / L * wv * dt; cu.bob += dt * (cu.spec ? 5 : 8); }
     } else if (cu.state === 'wait') {
       var q = queueSlotPos(cu.c, cu.slot);
       cu.x = lerp(cu.x, q.x, 1 - Math.pow(0.001, dt));
       cu.y = lerp(cu.y, q.y, 1 - Math.pow(0.001, dt));
-      cu.pat -= dt; cu.mood = clamp(cu.pat / cu.patMax, 0, 1);
+      if (cu.spec) cu.sayT = (cu.sayT || 0) + dt;
+      if (!specTalking(cu)) cu.pat -= dt;            /* konuşurken sabrı azalmaz */
+      cu.mood = clamp(cu.pat / cu.patMax, 0, 1);
       if (cu.pat <= 0) {
         cu.state = 'leave'; cu.happyLeave = false; cu.leaveT = 0; cu.c.slots[cu.slot] = null; shiftQueue(cu.c);
         S.lost++; noteDayLost();
@@ -3060,8 +3070,9 @@ function updateCustomers(dt) {
         sfx.bad();
       }
     } else {
-      cu.x += ((13.6 + (cu.c.lane || 0) * 1.7) - cu.x) * Math.min(1, dt * 1.6);
-      cu.y += 3.6 * dt; cu.bob += dt * 8;
+      cu.x += ((13.6 + (cu.c.lane || 0) * 1.7) - cu.x) * Math.min(1, dt * (cu.spec ? 0.9 : 1.6));
+      if (cu.spec) cu.byeT = (cu.byeT || 0) + dt;
+      cu.y += (cu.spec ? SPEC_LEAVE : 3.6) * dt; cu.bob += dt * (cu.spec ? 5 : 8);
       if (cu.y > 23) customers.splice(i, 1);
     }
   }
@@ -9085,6 +9096,12 @@ function updateSpecials(dt) {
 }
 /* kapanış 2. özel müşteriyi bekler (en fazla CLOSE_MAX + 30 sn; servis edilemezse gün yine kapanır) */
 function specHoldsClose() { return (day.sp === 2 || day.sp === 3) && day.ph < CLOSE_MAX + 30; }
+/* v1.3.3: özel müşteriler okunabilsin — söz süresi metnin uzunluğuna göre (4–9 sn), yürüyüş normalin ~%60'ı,
+   ayrılış yarı hızda. Selam bitmeden sipariş alınmaz ve bu sürede sabrı azalmaz. */
+var SPEC_WALK = 1.3, SPEC_LEAVE = 1.7;
+function sayDur(txt) { return clamp(2.2 + (txt || '').length * 0.075, 4, 9); }
+function specHiDur(cu) { var sp = specById(cu.spec); return sp ? sayDur(NM(sp.hi)) : 0; }
+function specTalking(cu) { return !!cu.spec && cu.state === 'wait' && (cu.sayT || 0) < specHiDur(cu); }
 /* konuşma balonu: gelince selam, mutlu giderken teşekkür */
 function drawSpecialTag(cu) {
   var sp = specById(cu.spec); if (!sp) return;
@@ -9095,12 +9112,14 @@ function drawSpecialTag(cu) {
   uiLabel(cu.x, cu.y, 44, '★ ' + NM(sp.n) + ' · ' + NM(sp.job), '#ffc94a', 0.95);
   if (cu.state === 'wait' && !cu.sndHi) { cu.sndHi = true; specSfx(sp); }                                  /* v1.3: gelişte kendi sesi */
   if (cu.state === 'leave' && cu.happyLeave !== false && !cu.sndBye) { cu.sndBye = true; specSfx(sp); }
-  if (cu.state === 'wait') cu.sayT = (cu.sayT || 0) + 0.016;
   var line = null;
-  if (cu.state === 'wait' && cu.sayT < 5) line = NM(sp.hi);
-  if (cu.state === 'leave' && cu.happyLeave !== false) { if (!cu.byeT) cu.byeT = 0.001; cu.byeT += 0.016; if (cu.byeT < 3.2) line = NM(sp.bye); }
-  if (cu.state === 'wait' && cu.sayT >= 5) cu.saidHi = true;
+  if (specTalking(cu)) line = NM(sp.hi);
+  if (cu.state === 'leave' && cu.happyLeave !== false && (cu.byeT || 0) < sayDur(NM(sp.bye))) line = NM(sp.bye);
   if (line) uiLabel(cu.x, cu.y, 56, '“' + line + '”', '#f4e9d2', 0.95);
+  if (specTalking(cu)) {                                                           /* söz bitene kadar küçük süre çubuğu */
+    var k = clamp((cu.sayT || 0) / specHiDur(cu), 0, 1), bx = R(pX(cu.x, cu.y)) - 10, by = R(pY(cu.x, cu.y, 0)) - 36;
+    px(bx, by, 20, 2, 'rgba(20,14,8,.6)'); px(bx, by, R(20 * k), 2, '#ffc94a');
+  }
 }
 
 /* =========================================================
@@ -9277,7 +9296,7 @@ window.BT = {
   setLang: function (l) { setLangTo(l); },
   M: function () { return M; },
   sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
-  pickSpecials: function () { pickSpecials(); }, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
+  pickSpecials: function () { pickSpecials(); }, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
   dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(),
     pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
     y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },

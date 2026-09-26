@@ -12,6 +12,31 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v1.3.3 — Özel müşteriler okunabilir, füme talebi dengelendi
+
+**Özel müşteriler ne dediğini okutuyor**
+- Selam cümlesi metnin uzunluğuna göre 4–9 saniye ekranda kalır. Başının üstündeki küçük altın çubuk kalan süreyi
+  gösterir.
+- Cümle bitene kadar sipariş alınmaz; tezgâhta stok hazır olsa bile beklenir. Bu sürede sabrı azalmaz.
+- Normal müşterilerden yavaş yürür: gelirken ~%60 hızda, giderken yarı hızda. Veda cümlesi de uzunluğuna göre
+  ekranda kalır. Arkadaki normal müşteriler bu sırada servis edilmeye devam eder.
+
+**Füme talebi oranlı**
+- Füme makineli tezgâhlar (İskele, Balık Pazarı): siparişlerin ~%18'i füme, tavan %22.
+- Fümehane (füme orada asıl ürün): ~%26, tavan %33.
+- Tavan son siparişlere bakar. VIP de dahil: tavan doluysa VIP fileto ister (yine yüksek ödemeyle).
+  Böylece füme hiçbir tezgâhta fileto siparişlerinin yarısını geçmez.
+- Füme fiyatına (×2.4) dokunulmadı; yalnız ne kadar sık istendiği değişti.
+
+**Yeni test:** `test-okuma-fume.js` şunları doğrular:
+- füme payı üç tezgâhta da tavanın altında, yalnız VIP gelse bile;
+- özel müşteri yavaş geliyor;
+- selam bitene kadar sipariş alınmıyor ve sabrı azalmıyor;
+- söz bitince servis ediliyor;
+- yavaş ayrılıyor.
+
+---
+
 ## v1.3.2 — Her şeyin bir yeri var: hiçbir şey üst üste gelmez
 
 Sorun: Geliştirme'den eklenen binalar (çay ocağı, ek tezgâh, reklam panosu…), bölge tabelası, müdür masası,
