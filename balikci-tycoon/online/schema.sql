@@ -10,6 +10,8 @@
 --    süresine göre makul olması, skorun geriye gitmemesi, kısa aralıkla spam.
 --  • Skor tablosu herkese okunur. Oyun kayıtları (bt_plays) okunamaz; yalnız
 --    toplam sayılar bt_board() ile döner.
+--  • Oyuncu görüşleri (bt_feedback) hiç okunamaz; yalnız bt_feedback() ile yazılır,
+--    sen Supabase panelinden (bt_gorusler görünümü) okursun.
 -- =====================================================================
 
 create table if not exists public.bt_scores (
@@ -147,7 +149,71 @@ grant execute on function public.bt_play(text, text, text) to anon, authenticate
 grant execute on function public.bt_board(text) to anon, authenticated;
 
 -- ---------------------------------------------------------------------
---  Mağaza gizlilik şartı: oyuncu kendi verisini siler (Ayarlar › Skor kaydımı sil)
+--  Oyuncu görüşü (Ayarlar / Duraklatma menüsü › Görüşünü yaz)
+--  • 1–5 yıldız (zorunlu), isteğe bağlı konu (bug / idea / love), en çok 500 karakter metin.
+--  • Herkese açık DEĞİLDİR: anon okuyamaz, tabloya doğrudan yazamaz; yalnız bt_feedback() yazar.
+--  • Sınır: oyuncu başına 60 sn'de 1, 24 saatte 10; tüm oyun için saatte en çok 300 (sahte kimlikle sel önlemi).
+--  • Yıldız puanı yalnız sana bilgi içindir; mağaza değerlendirme penceresi bu puana göre AÇILMAZ.
+-- ---------------------------------------------------------------------
+create table if not exists public.bt_feedback (
+  id         bigint generated always as identity primary key,
+  player_id  text not null     check (char_length(player_id) between 6 and 40),
+  run_id     text              check (run_id is null or char_length(run_id) <= 40),
+  stars      smallint not null check (stars between 1 and 5),
+  cat        text              check (cat is null or cat in ('bug', 'idea', 'love')),
+  body       text not null default '' check (char_length(body) <= 500),
+  lang       text              check (lang is null or char_length(lang) <= 5),
+  ver        text              check (ver is null or char_length(ver) <= 16),
+  day        integer           check (day is null or day >= 1),
+  created_at timestamptz not null default now()
+);
+create index if not exists bt_feedback_player on public.bt_feedback (player_id, created_at desc);
+create index if not exists bt_feedback_time   on public.bt_feedback (created_at desc);
+alter table public.bt_feedback enable row level security;
+-- bt_feedback için hiç politika yok: anon okuyamaz, yazamaz.
+revoke all on public.bt_feedback from anon, authenticated;
+
+create or replace function public.bt_feedback(
+  p_player text, p_run text, p_stars integer, p_cat text, p_text text,
+  p_lang text, p_ver text, p_day integer
+) returns text
+language plpgsql security definer set search_path = public as $$
+declare
+  v_cat  text;
+  v_text text;
+begin
+  if p_player is null or char_length(p_player) not between 6 and 40 then return 'bad_id'; end if;
+  if p_stars is null or p_stars not between 1 and 5 then return 'bad_stars'; end if;
+  v_cat := nullif(btrim(coalesce(p_cat, '')), '');
+  if v_cat is not null and v_cat not in ('bug', 'idea', 'love') then return 'bad_cat'; end if;
+  if char_length(coalesce(p_text, '')) > 500 then return 'too_long'; end if;
+  -- satır sonu kalır; diğer kontrol karakterleri atılır
+  v_text := btrim(regexp_replace(replace(coalesce(p_text, ''), E'\r\n', E'\n'), '[\x01-\x09\x0b-\x1f\x7f]', ' ', 'g'));
+  -- aynı oyuncudan eşzamanlı iki istek sınırı birlikte aşmasın
+  perform pg_advisory_xact_lock(hashtext('bt_feedback:' || p_player));
+  if exists (select 1 from public.bt_feedback
+             where player_id = p_player and created_at > now() - interval '60 seconds') then
+    return 'too_fast';
+  end if;
+  if (select count(*) from public.bt_feedback
+      where player_id = p_player and created_at > now() - interval '1 day') >= 10 then
+    return 'too_many';
+  end if;
+  if (select count(*) from public.bt_feedback where created_at > now() - interval '1 hour') >= 300 then
+    return 'busy';
+  end if;
+  insert into public.bt_feedback (player_id, run_id, stars, cat, body, lang, ver, day)
+  values (p_player, nullif(left(coalesce(p_run, ''), 40), ''), p_stars, v_cat, v_text,
+          nullif(left(coalesce(p_lang, ''), 5), ''), nullif(left(coalesce(p_ver, ''), 16), ''),
+          case when p_day between 1 and 1000000 then p_day end);
+  return 'ok';
+end $$;
+revoke all on function public.bt_feedback(text, text, integer, text, text, text, text, integer) from public;
+grant execute on function public.bt_feedback(text, text, integer, text, text, text, text, integer) to anon, authenticated;
+
+-- ---------------------------------------------------------------------
+--  Mağaza gizlilik şartı: oyuncu kendi verisini siler (Ayarlar › Çevrimiçi verilerimi sil)
+--  Skor satırları, açılış sayımları ve gönderdiği görüşler birlikte silinir.
 --  Anonim oyuncu kimliği herkese açık değildir; yalnız o cihaz bilir. Döner: silinen skor satırı sayısı.
 -- ---------------------------------------------------------------------
 create or replace function public.bt_forget(p_player text)
@@ -159,8 +225,10 @@ begin
   delete from public.bt_scores where player_id = p_player;
   get diagnostics n = row_count;
   delete from public.bt_plays where player_id = p_player;
+  delete from public.bt_feedback where player_id = p_player;
   return n;
 end $$;
+revoke all on function public.bt_forget(text) from public;
 grant execute on function public.bt_forget(text) to anon, authenticated;
 
 -- ---------------------------------------------------------------------
@@ -185,10 +253,32 @@ order by son_gorulme desc;
 revoke all on public.bt_oyuncular from anon, authenticated;
 
 -- ---------------------------------------------------------------------
+--  YÖNETİCİ GÖRÜNÜMÜ (yalnız sen: Supabase panel › Table Editor › bt_gorusler)
+--  Oyuncuların yazdığı görüşler, en yenisi üstte. anon'a açık DEĞİL.
+-- ---------------------------------------------------------------------
+create or replace view public.bt_gorusler with (security_invoker = true) as
+select
+  f.created_at                                             as zaman,
+  f.stars                                                  as yildiz,
+  case f.cat when 'bug' then 'Hata' when 'idea' then 'Öneri' when 'love' then 'Beğendim' else '' end as konu,
+  f.body                                                   as metin,
+  f.lang                                                   as dil,
+  f.ver                                                    as surum,
+  f.day                                                    as gun,
+  f.player_id                                              as oyuncu
+from public.bt_feedback f
+order by f.created_at desc;
+revoke all on public.bt_gorusler from anon, authenticated;
+
+-- ---------------------------------------------------------------------
 --  Senin için hazır sorgular (SQL Editor'da çalıştır):
 --    select * from bt_oyuncular;                          -- kim ne kadar oynadı
 --    select * from bt_board('');                          -- tablo + sayılar
 --    select date(created_at) gun, count(*) oyun, count(distinct player_id) kisi
 --      from bt_plays group by 1 order by 1 desc;          -- günlük oyuncu sayısı
 --    delete from bt_scores where run_id = '...';          -- uygunsuz isim silme
+--    select * from bt_gorusler limit 50;                  -- son görüşler
+--    select stars, count(*) from bt_feedback group by 1 order by 1;          -- yıldız dağılımı
+--    select date(created_at) gun, count(*), round(avg(stars), 2) ort
+--      from bt_feedback group by 1 order by 1 desc;       -- günlük görüş sayısı ve ortalama
 -- ---------------------------------------------------------------------
