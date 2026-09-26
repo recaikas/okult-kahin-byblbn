@@ -1,5 +1,5 @@
 /* =====================================================================
-   BALIKÇI TYCOON — ÖZEL İSİMLİ MÜŞTERİLER  (bu dosyayı serbestçe düzenle)
+   HAMSİ KOYU — ÖZEL İSİMLİ MÜŞTERİLER  (bu dosyayı serbestçe düzenle)
    ---------------------------------------------------------------------
    Her gün havuzdan 2 kişi gelir (dün gelenler ertesi gün tekrar gelmez).
    Yeni kişi eklemek = listeye yeni bir { ... } bloğu eklemek. Silmek = bloğu silmek.

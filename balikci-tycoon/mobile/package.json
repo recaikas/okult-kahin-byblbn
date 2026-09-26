@@ -1,8 +1,9 @@
 {
-  "name": "balikci-tycoon-mobile",
+  "name": "hamsi-koyu-mobile",
   "version": "1.0.0",
   "private": true,
-  "description": "Balıkçı Tycoon — iOS ve Android kabuğu (Capacitor). Oyunun kendisi bir üst klasördedir.",
+  "license": "SEE LICENSE IN ../LICENSE",
+  "description": "Hamsi Koyu — iOS ve Android kabuğu (Capacitor). Oyunun kendisi bir üst klasördedir.",
   "scripts": {
     "build": "node scripts/build-www.js",
     "sync": "npm run build && npx cap sync",

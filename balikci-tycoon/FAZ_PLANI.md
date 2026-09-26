@@ -1,4 +1,4 @@
-# Balıkçı Tycoon — Geri Bildirim Analizi ve 3 Fazlı Çözüm Planı
+# Hamsi Koyu (eski adı Balıkçı Tycoon) — Geri Bildirim Analizi ve 3 Fazlı Çözüm Planı
 
 Kaynak: oyunculardan gelen 16 maddelik "Oyunu Güzelleştirmek İçin Gerekenler" listesi.
 Her madde için: **mevcut durum → sorun → çözüm fikri → oyuncuya etkisi**.

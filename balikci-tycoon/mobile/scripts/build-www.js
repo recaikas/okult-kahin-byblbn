@@ -1,7 +1,7 @@
 /* Oyun dosyalarını (bir üst klasör) Capacitor'ın www/ klasörüne kopyalar. Testler, belgeler ve web'e özel dosyalar gitmez. */
 const fs = require('fs'), path = require('path');
 const SRC = path.resolve(__dirname, '..', '..'), OUT = path.resolve(__dirname, '..', 'www');
-const FILES = ['index.html', 'native.js', 'config.js', 'specials.js', 'game.js', 'privacy.html'];
+const FILES = ['index.html', 'native.js', 'config.js', 'specials.js', 'game.js', 'privacy.html', 'about.html'];
 fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
 for (const f of FILES) { const p = path.join(SRC, f); if (fs.existsSync(p)) fs.copyFileSync(p, path.join(OUT, f)); }
 fs.cpSync(path.join(SRC, 'fonts'), path.join(OUT, 'fonts'), { recursive: true });

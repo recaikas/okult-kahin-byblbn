@@ -1,4 +1,4 @@
-<title>Balıkçı Tycoon</title>
+<title>Hamsi Koyu</title>
 <link href="fonts/fonts.css" rel="stylesheet">
 <style>
   :root{
@@ -418,7 +418,7 @@
   .sb.warn{background:#3d2410;border-color:#7a5406;color:#ffd9a0}
   .sb.del{color:#ff9b8a;border-color:#3a1109;padding:8px 7px}
   .sb:active{transform:translate(1px,1px)}
-  #askScr{z-index:40}
+  #askScr{z-index:40} #askMsg{white-space:pre-line}
   .card.ask p{font-size:14px;color:var(--ink);margin:6px 0 12px;line-height:1.45}
   .danger2{background:linear-gradient(180deg,#b3422f,#8d3423);border-color:#40150d;color:#ffe0d8}
   /* ---------- skor tablosu ---------- */
@@ -461,6 +461,23 @@
   .bnote{font-size:10.5px;color:var(--ink2);text-align:center;margin-top:8px;opacity:.8}
   .privcard{width:min(92vw,560px);max-height:88vh;display:flex;flex-direction:column;gap:8px}
   .privcard iframe{flex:1;min-height:60vh;border:0;border-radius:6px;background:#f6f1e4}
+  /* görüş formu */
+  #fbScr{z-index:30}
+  #toast.fbtop{z-index:45}
+  .fbstars{display:flex;gap:6px;justify-content:center;margin:6px 0 2px}
+  .fbstars button{width:48px;height:46px;padding:7px;cursor:pointer;background:linear-gradient(180deg,#23445f,#1a3549);
+    border:2px solid var(--edge);border-top-color:var(--edge2);color:#3d5a70;box-shadow:0 2px 0 rgba(4,12,20,.3)}
+  .fbstars button svg{display:block;width:100%;height:100%;image-rendering:pixelated}
+  .fbstars button.on{color:var(--gold);border-color:#7a5406;background:linear-gradient(180deg,#2c4a63,#1f3b52)}
+  .fbstars button:active{transform:translate(1px,1px)}
+  #fbCats button{font-size:12.5px;padding:9px 2px}
+  #fbText{display:block;width:100%;margin-top:6px;min-height:92px;resize:none;background:#0a1a27;border:3px solid var(--edge);
+    color:var(--ink);font-family:inherit;font-size:15px;line-height:1.35;padding:8px;outline:none;
+    user-select:text;-webkit-user-select:text;touch-action:pan-y}
+  #fbText:focus{border-color:var(--gold)}
+  .fberr{font-size:12.5px !important;color:#ff9b8a !important;margin:6px 0 0 !important}
+  #fbScr .duo .go{margin-top:8px;flex:1.4}
+  #fbSend:disabled{filter:saturate(.35) brightness(.8)}
 </style>
 <canvas id="game"></canvas>
 <canvas id="ui"></canvas>
@@ -504,9 +521,9 @@
 
 <div class="overlay" id="startScreen">
   <div class="card">
-    <h1>BALIKÇI<br>TYCOON</h1>
+    <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v1.3</div>
+    <div class="ver">v1.7</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -555,8 +572,10 @@
     <button class="alt" id="saveQuitBtn">💾 KAYDET VE ÇIK</button>
     <button class="go" id="setClose">▶ DEVAM ET</button>
     <button class="alt danger" id="resetBtn">KAYDI SIFIRLA</button>
-    <button class="alt" id="forgetBtn">SKOR KAYDIMI SİL</button>
+    <button class="alt" id="fbBtn">GÖRÜŞÜNÜ YAZ</button>
+    <button class="alt" id="forgetBtn">ÇEVRİMİÇİ VERİLERİMİ SİL</button>
     <button class="alt" id="privBtn">GİZLİLİK POLİTİKASI</button>
+    <button class="alt" id="aboutBtn">HAKKINDA &amp; LİSANSLAR</button>
   </div>
 </div>
 
@@ -626,6 +645,7 @@
     <button class="alt good" id="menuSave">💾 KAYDET</button>
     <button class="alt" id="menuBoard">🏆 SKOR TABLOSU</button>
     <button class="alt" id="menuSet">AYARLAR</button>
+    <button class="alt" id="menuFb">GÖRÜŞÜNÜ YAZ</button>
   </div>
 </div>
 
@@ -683,6 +703,23 @@
   </div>
 </div>
 
+<div class="overlay hidden" id="fbScr">
+  <div class="card" id="fbCard">
+    <h2 id="fbTitle">GÖRÜŞÜNÜ YAZ</h2>
+    <p id="fbSub">—</p>
+    <span class="lbl" id="fbStarsLbl">PUANIN</span>
+    <div class="fbstars" id="fbStars"></div>
+    <span class="lbl" id="fbCatLbl">KONU</span>
+    <div class="seg" id="fbCats"><button data-c="bug">HATA</button><button data-c="idea">ÖNERİ</button><button data-c="love">BEĞENDİM</button></div>
+    <span class="lbl" id="fbTextLbl">MESAJIN</span>
+    <textarea id="fbText" maxlength="500" rows="4" autocomplete="off" spellcheck="true"></textarea>
+    <div class="nhint" id="fbCount">0/500</div>
+    <p class="fberr hidden" id="fbErr" role="alert"></p>
+    <div class="duo"><button class="alt" id="fbCancel">VAZGEÇ</button><button class="go" id="fbSend">GÖNDER</button></div>
+    <div class="bnote" id="fbNote"></div>
+  </div>
+</div>
+
 <div class="overlay hidden" id="askScr">
   <div class="card ask">
     <p id="askMsg">—</p>
@@ -724,7 +761,7 @@
   <div id="introLang"><button data-l="tr">TR</button><button data-l="en">EN</button></div>
   <button id="introSkip">ATLA ▶▶</button>
   <canvas id="introCv" width="216" height="272"></canvas>
-  <div id="introGate"><b>BALIKÇI<br>TYCOON</b><small id="introTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</small><span id="introTap">▶ BAŞLAMAK İÇİN DOKUN</span></div>
+  <div id="introGate"><b>HAMSİ<br>KOYU</b><small id="introTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</small><span id="introTap">▶ BAŞLAMAK İÇİN DOKUN</span></div>
   <div id="introDots"></div>
   <div class="isub"><span id="introSub"></span><span id="introNext" class="hidden">▶</span></div>
 </div>

@@ -1,6 +1,6 @@
 {
-  "appId": "io.github.recaikas.balikcitycoon",
-  "appName": "Balıkçı Tycoon",
+  "appId": "io.github.recaikas.hamsikoyu",
+  "appName": "Hamsi Koyu",
   "webDir": "www",
   "backgroundColor": "#1d6c8f",
   "android": { "allowMixedContent": false },

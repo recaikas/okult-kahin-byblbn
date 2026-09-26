@@ -1,0 +1,101 @@
+# Hamsi Koyu Kaynak Görünür Lisansı 1.0 / Hamsi Koyu Source-Available License 1.0
+
+**Telif © 2026 recaikas (GitHub: @recaikas). Tüm hakları saklıdır.**
+**Copyright © 2026 recaikas (GitHub: @recaikas). All rights reserved.**
+
+---
+
+## Türkçe
+
+**1. Kapsam.** Bu lisans, "Hamsi Koyu" oyununun (eski adı "Balıkçı Tycoon") kaynak kodunu, kodla üretilen grafiklerini,
+müziğini ve seslerini, metinlerini, karakterlerini, oyun tasarımını, simgesini ve bu depodaki belgelerini ("Oyun")
+kapsar. Üçüncü kişilere ait bileşenler (ör. Pixelify Sans yazı tipi, Capacitor) kendi lisanslarına tabidir;
+bkz. `THIRD_PARTY_NOTICES.md`.
+
+**2. Verilen izinler.** Aşağıdaki koşullara uyduğunuz sürece ücretsiz olarak şunları yapabilirsiniz:
+- a) Oyunu resmî adreslerinden (resmî web sitesi, App Store, Google Play) indirip oynamak.
+- b) Kaynak kodunu okumak, incelemek ve ondan öğrenmek.
+- c) Oyunu yalnızca kendi cihazınızda, kişisel ve ticari olmayan amaçla çalıştırmak ve değiştirmek
+  (değiştirdiğiniz sürümü başkalarıyla paylaşmamak kaydıyla).
+- d) GitHub Kullanım Koşullarının izin verdiği ölçüde depoyu GitHub üzerinde çatallamak (fork), yalnızca hata
+  bildirmek veya katkı (pull request) önermek amacıyla.
+- e) Oyun hakkında video, canlı yayın, inceleme, ekran görüntüsü ve yazı hazırlamak ve bunları paylaşmak — bu
+  içeriklerden (ör. video platformu gelirlerinden) kazanç elde etmek dahil.
+
+**3. Yasaklar.** Telif sahibinin önceden yazılı izni olmadan:
+- a) Oyunu ya da önemli bir bölümünü, değiştirilmiş ya da değiştirilmemiş hâlde, herhangi bir uygulama mağazasında,
+  web sitesinde, oyun portalında ya da dosya olarak (APK, IPA, ZIP vb.) yayımlayamaz, dağıtamaz, satamaz veya
+  kiralayamazsınız.
+- b) Oyunu ya da ondan türettiğiniz bir çalışmayı reklam, uygulama içi satın alma, abonelik, bağış toplama veya başka
+  herhangi bir ticari amaçla kullanamazsınız.
+- c) "Hamsi Koyu" adını, oyunun simgesini ve görsel kimliğini, kendi ürününüzü tanıtmak ya da Oyun'la bağlantılı
+  olduğunuz izlenimini vermek için kullanamazsınız. (Bu lisans hiçbir marka hakkı vermez.)
+- d) Bu lisansı veya içindeki izinleri başkasına devredemez, alt lisans veremezsiniz.
+- e) Telif ve lisans bildirimlerini kaldıramazsınız.
+
+**4. Katkılar.** Bu depoya bir katkı (pull request, yama, görsel, metin vb.) gönderdiğinizde: katkının size ait
+olduğunu ya da onu bu şekilde sunma hakkınız bulunduğunu beyan etmiş olursunuz ve telif sahibine, katkınızı Oyun'un
+bir parçası olarak kullanmak, değiştirmek, uygulama mağazaları dahil her ortamda yayımlamak ve alt lisans vermek için
+süresiz, dünya çapında, ücretsiz, münhasır olmayan ve geri alınamaz bir izin vermiş olursunuz.
+
+**5. Garanti yoktur.** Oyun "olduğu gibi" sunulur; hiçbir açık veya zımni garanti verilmez. Kanunun izin verdiği
+en geniş ölçüde telif sahibi, Oyun'un kullanımından doğan hiçbir zarardan sorumlu değildir.
+
+**6. İzinlerin sona ermesi.** Bu lisansın herhangi bir koşulunu ihlal ederseniz, size tanınan tüm izinler
+kendiliğinden sona erer. Telif sahibinin 5846 sayılı Fikir ve Sanat Eserleri Kanunu ve diğer mevzuattan doğan hakları
+saklıdır.
+
+**7. Özel izin.** Bu lisansın izin vermediği bir kullanım (ör. okul projesi, sergi, çeviri, farklı bir platforma
+uyarlama) için telif sahibine GitHub üzerinden yazın: https://github.com/recaikas
+
+**8. Uygulanacak hukuk.** Bu lisans Türkiye Cumhuriyeti hukukuna tabidir. Uyuşmazlıklarda telif sahibinin yerleşim yeri
+mahkemeleri ve icra daireleri yetkilidir; tüketici sıfatıyla hareket eden kişilerin kanundan doğan hakları saklıdır. Türkçe ve İngilizce
+metinler arasında çelişki olursa Türkçe metin esas alınır.
+
+---
+
+## English
+
+**1. Scope.** This license covers the source code, code-generated graphics, music and sound, texts, characters, game
+design, icon and the documentation in this repository of the game "Hamsi Koyu" (formerly "Balıkçı Tycoon") (the
+"Game"). Third-party components (e.g. the Pixelify Sans font, Capacitor) are governed by their own licenses; see
+`THIRD_PARTY_NOTICES.md`.
+
+**2. What you may do.** Free of charge, as long as you follow the conditions below, you may:
+- a) Download and play the Game from its official sources (the official website, the App Store, Google Play).
+- b) Read, study and learn from the source code.
+- c) Run and modify the Game on your own devices for personal, non-commercial purposes only (without sharing your
+  modified version with others).
+- d) Fork the repository on GitHub, to the extent the GitHub Terms of Service allow, solely to report issues or
+  propose contributions (pull requests).
+- e) Make and share videos, live streams, reviews, screenshots and articles about the Game — including earning money
+  from that content (e.g. video platform revenue).
+
+**3. What you may not do.** Without the copyright holder's prior written permission, you may not:
+- a) Publish, distribute, sell or rent the Game or any substantial part of it, modified or not, on any app store,
+  website, game portal or as a file (APK, IPA, ZIP, etc.).
+- b) Use the Game or any work derived from it with ads, in-app purchases, subscriptions, fundraising or for any other
+  commercial purpose.
+- c) Use the name "Hamsi Koyu", the Game's icon or visual identity to promote your own product or to suggest a
+  connection with the Game. (This license grants no trademark rights.)
+- d) Transfer or sublicense this license or any permission in it.
+- e) Remove copyright or license notices.
+
+**4. Contributions.** By submitting a contribution (pull request, patch, artwork, text, etc.) to this repository, you
+confirm that it is your own work or that you have the right to submit it this way, and you grant the copyright holder
+a perpetual, worldwide, royalty-free, non-exclusive and irrevocable license to use, modify, publish on any medium
+(including app stores) and sublicense your contribution as part of the Game.
+
+**5. No warranty.** The Game is provided "as is", without any express or implied warranty. To the fullest extent
+permitted by law, the copyright holder is not liable for any damage arising from the use of the Game.
+
+**6. Termination.** If you breach any condition of this license, all permissions granted to you end automatically.
+All other rights of the copyright holder under Turkish Law No. 5846 on Intellectual and Artistic Works and other laws
+are reserved.
+
+**7. Other permissions.** For any use not permitted here (e.g. a school project, an exhibition, a translation, a port
+to another platform), contact the copyright holder on GitHub: https://github.com/recaikas
+
+**8. Governing law.** This license is governed by the laws of the Republic of Türkiye. The courts and enforcement
+offices of the copyright holder's place of residence have jurisdiction, without prejudice to the statutory rights of consumers. If the Turkish and
+English texts conflict, the Turkish text prevails.

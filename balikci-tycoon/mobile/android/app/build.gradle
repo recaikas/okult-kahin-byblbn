@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "io.github.recaikas.balikcitycoon"
+    namespace = "io.github.recaikas.hamsikoyu"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "io.github.recaikas.balikcitycoon"
+        applicationId "io.github.recaikas.hamsikoyu"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

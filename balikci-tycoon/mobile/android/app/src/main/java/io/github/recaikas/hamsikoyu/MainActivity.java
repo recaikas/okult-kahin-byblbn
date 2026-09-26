@@ -1,4 +1,4 @@
-package io.github.recaikas.balikcitycoon;
+package io.github.recaikas.hamsikoyu;
 
 import com.getcapacitor.BridgeActivity;
 

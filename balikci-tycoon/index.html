@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#0d2436">
-<title>Balıkçı Tycoon</title>
+<title>Hamsi Koyu</title>
 <link href="fonts/fonts.css" rel="stylesheet">
 <style>
   :root{
@@ -424,7 +424,7 @@
   .sb.warn{background:#3d2410;border-color:#7a5406;color:#ffd9a0}
   .sb.del{color:#ff9b8a;border-color:#3a1109;padding:8px 7px}
   .sb:active{transform:translate(1px,1px)}
-  #askScr{z-index:40}
+  #askScr{z-index:40} #askMsg{white-space:pre-line}
   .card.ask p{font-size:14px;color:var(--ink);margin:6px 0 12px;line-height:1.45}
   .danger2{background:linear-gradient(180deg,#b3422f,#8d3423);border-color:#40150d;color:#ffe0d8}
   /* ---------- skor tablosu ---------- */
@@ -529,9 +529,9 @@
 
 <div class="overlay" id="startScreen">
   <div class="card">
-    <h1>BALIKÇI<br>TYCOON</h1>
+    <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v1.3</div>
+    <div class="ver">v1.7</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -583,6 +583,7 @@
     <button class="alt" id="fbBtn">GÖRÜŞÜNÜ YAZ</button>
     <button class="alt" id="forgetBtn">ÇEVRİMİÇİ VERİLERİMİ SİL</button>
     <button class="alt" id="privBtn">GİZLİLİK POLİTİKASI</button>
+    <button class="alt" id="aboutBtn">HAKKINDA &amp; LİSANSLAR</button>
   </div>
 </div>
 
@@ -768,7 +769,7 @@
   <div id="introLang"><button data-l="tr">TR</button><button data-l="en">EN</button></div>
   <button id="introSkip">ATLA ▶▶</button>
   <canvas id="introCv" width="216" height="272"></canvas>
-  <div id="introGate"><b>BALIKÇI<br>TYCOON</b><small id="introTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</small><span id="introTap">▶ BAŞLAMAK İÇİN DOKUN</span></div>
+  <div id="introGate"><b>HAMSİ<br>KOYU</b><small id="introTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</small><span id="introTap">▶ BAŞLAMAK İÇİN DOKUN</span></div>
   <div id="introDots"></div>
   <div class="isub"><span id="introSub"></span><span id="introNext" class="hidden">▶</span></div>
 </div>

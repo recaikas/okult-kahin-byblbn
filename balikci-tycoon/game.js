@@ -1,5 +1,5 @@
 /* =========================================================
-   BALIKÇI TYCOON  v0.3  —  pixel art / Türkiye limanı
+   HAMSİ KOYU  —  pixel art / Türkiye limanı
    GDD v0.3: Liman Genişleme + Yatırım (AREA, bölge seviyesi,
    yapı noktaları, büyük proje, kozmetik) + TR/EN
    ========================================================= */
@@ -296,7 +296,7 @@ var STR = {
     chGoal: 'Your goal: grow all three stalls to the max. Open and upgrade the zones, buy everything on offer and put a manager in every zone. When the counter is full, Chapter 1 ends.',
     chAreas: 'Open the zones (Fish Market, Smokehouse)', chLevels: 'Zone levels', chPads: 'Upgrades (basket, boots, price)', chSlots: 'Build spots',
     chDecor: 'Decorations', chEnv: 'Surroundings', chFume: 'Smoker boxes', chProj: 'Covered Market', chMeydan: 'Square buildings (hut, depot, hall)', chMgr: 'Zone managers',
-    chEndK: 'CHAPTER 1 COMPLETE', chEndT: 'FISH TYCOON',
+    chEndK: 'CHAPTER 1 COMPLETE', chEndT: 'HARBOR MOGUL',
     chEndP: 'You started with one crate and one net. Now, with three stalls, managers and a whole crew, {c} is the best-known name in the harbour. {n}, you are no longer a simple fisher.',
     chEndG: 'But this is only the beginning. Now we must survive in the league of giants…', mgrCard: '{n} — Manager needed', mgrCardD: 'All 4 roles filled. Set up a manager\'s desk and pick a manager: the zone goes fully automatic.', mgrPick: '👔 PICK MANAGER', mgrHired: '👔 {m} now runs {n} — zone fully automatic', mgrListT: 'Manager candidates for {n}', mgrCost: 'desk {d} + hiring {f} • wage {w}', mgrBoss: 'Manager', fmT: 'Smoker Box • {n}', fmD: 'Smokes fillets right at the stall; customers here now order smoked fish too (2.4× value)', fmNeed: '🔒 Smokehouse first', fmDone: '🔥 Smoker box installed at {n}', envFlow: '+{p}% customer flow', envRow: 'Surroundings', envNext: 'Next: {n} (Lv {l})', envCust: 'customers',
     tutDone: 'Tutorial done! Grow the harbor 🎉',
@@ -1988,6 +1988,15 @@ var Store = (function () {
     del: function (k) { mem[k] = null; if (ok) { try { localStorage.removeItem(k); } catch (e) { } } if (window.BT_NATIVE) window.BT_NATIVE.del(k); }
   };
 })();
+/* açık rıza sorusu + Hakkında ekranı metinleri */
+Object.assign(STR.tr, {
+  onlineAsk: 'Çevrimiçi skor tablosuna katılmak ister misin?\n\nİşletme adın, karakter adın ve oyun istatistiklerin herkese açık tabloda görünür; görüşlerin yalnız geliştiriciye gider. Veriler Avrupa Birliği\'ndeki (Almanya) Supabase sunucularında tutulur. Ayrıntılar: Ayarlar › Gizlilik. İstediğin an Ayarlar\'dan kapatıp verilerini silebilirsin.',
+  onlineAskYes: 'KATIL', onlineAskNo: 'HAYIR, TEŞEKKÜRLER', aboutBtn: 'HAKKINDA & LİSANSLAR', nameBadT: 'Bu ad kullanılamaz, başka bir ad dene.'
+});
+Object.assign(STR.en, {
+  onlineAsk: 'Join the online leaderboard?\n\nYour business name, character name and game stats appear on a public board; feedback goes only to the developer. Data is stored on Supabase servers in the European Union (Germany). Details: Settings › Privacy. You can turn it off and delete your data in Settings at any time.',
+  onlineAskYes: 'JOIN', onlineAskNo: 'NO, THANKS', aboutBtn: 'ABOUT & LICENSES', nameBadT: 'This name can\'t be used — try another.'
+});
 var SLOT_N = 3, SLOT_PREFIX = 'balikci_slot_', LAST_KEY = 'balikci_last', OLD_KEY = 'balikci_tycoon_v3', PREF_KEY = 'balikci_pref';
 var curSlot = 0, BOOT = null, S0 = null;
 function slotKey(n) { return SLOT_PREFIX + n; }
@@ -2007,8 +2016,9 @@ function migrateOldSave() {
   for (var i = 1; i <= SLOT_N; i++) if (!readSlot(i)) { Store.set(slotKey(i), old); if (!lastSlot()) Store.set(LAST_KEY, String(i)); break; }
   Store.del(OLD_KEY);
 }
-var onlineOK = true;                 /* mağaza gizlilik: oyuncu çevrimiçi skor paylaşımını kapatabilir */
-function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, onl: onlineOK ? 1 : 0 })); }
+var onlineOK = false;                /* KVKK/GDPR: çevrimiçi paylaşım oyuncu açıkça onaylayana kadar kapalı */
+var onlineAsked = false;              /* oyuncuya bir kez soruldu mu (evet ya da hayır) */
+function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, onc: onlineOK ? 1 : 0, ona: onlineAsked ? 1 : 0 })); }
 function loadPref() {
   try {
     var d = JSON.parse(Store.get(PREF_KEY) || 'null'); if (!d) return;
@@ -2016,7 +2026,9 @@ function loadPref() {
     if (d.snd !== undefined) { volLvl = clamp(d.snd | 0, 0, 2); applyVolume(); }
     if (d.zoom) zoomLvl = d.zoom;
     if (d.mus !== undefined) musicEnabled = !!d.mus;
-    if (d.onl !== undefined) onlineOK = !!d.onl;
+    /* eski 'onl' alanı onay sayılmaz (varsayılan açıktı); yalnız açık seçim 'onc' geçerli */
+    if (d.onc !== undefined) onlineOK = !!d.onc;
+    if (d.ona !== undefined) onlineAsked = !!d.ona;
   } catch (e) { }
 }
 function buildSave() {
@@ -6109,7 +6121,7 @@ var el = {};
  'heroName', 'heroNameDice', 'heroRows', 'heroDice', 'heroGo', 'heroBack', 'heroTitle', 'heroSub', 'heroNameLbl',
  'chBtn', 'chPct', 'chScr', 'chTitle', 'chSub', 'chFill', 'chNum', 'chRows', 'chClose', 'chEnd', 'chEndK', 'chEndT', 'chEndP', 'chEndG', 'chEndGo',
  'actBtn', 'halScr', 'halTitle', 'halSub', 'halRows', 'halClose', 'autoScr', 'autoTitle', 'autoSub', 'autoOpts', 'autoBadge',
- 'setAuto', 'specPop', 'specPopT', 'setOnline', 'onlOn', 'onlOff', 'forgetBtn', 'privBtn', 'privScr', 'privFrame', 'privClose'].forEach(function (id) {
+ 'setAuto', 'specPop', 'specPopT', 'setOnline', 'onlOn', 'onlOff', 'forgetBtn', 'privBtn', 'aboutBtn', 'privScr', 'privFrame', 'privClose'].forEach(function (id) {
   el[id] = document.getElementById(id);
 });
 var toastT = 0;
@@ -6142,7 +6154,7 @@ function applyLang() {
   el.setTitle.textContent = T('settings'); el.setLang.textContent = T('langLbl');
   el.setSound.textContent = T('soundLbl'); el.setZoom.textContent = T('zoomLbl');
   el.setOnline.textContent = T('onlineLbl'); el.onlOn.textContent = T('onlOn'); el.onlOff.textContent = T('onlOff');
-  el.forgetBtn.textContent = T('forgetBtn'); el.privBtn.textContent = T('privBtn'); el.privClose.textContent = T('privClose');
+  el.forgetBtn.textContent = T('forgetBtn'); el.privBtn.textContent = T('privBtn'); el.aboutBtn.textContent = T('aboutBtn'); el.privClose.textContent = T('privClose');
   el.setAuto.textContent = T('autoLbl'); el.setMusic.textContent = T('musicLbl'); el.musOn.textContent = T('musOn'); el.musOff.textContent = T('musOff');
   el.setClose.textContent = T('resume'); el.resetBtn.textContent = T('delSlot');
   el.closeMenu.textContent = T('resume'); el.menuSet.textContent = T('settings');
@@ -6924,7 +6936,7 @@ el.resetBtn.onclick = function () {
 };
 /* mağaza gizlilik şartları: çevrimiçi paylaşımı kapat / skor kaydımı sil / gizlilik politikası */
 Array.prototype.forEach.call(document.querySelectorAll('#onlineSeg button'), function (b) {
-  b.onclick = function () { onlineOK = b.dataset.o === '1'; savePref(); syncSettingsUI(); sfx.tap(); toast(T(onlineOK ? 'onlineOnT' : 'onlineOffT')); };
+  b.onclick = function () { onlineOK = b.dataset.o === '1'; onlineAsked = true; savePref(); syncSettingsUI(); sfx.tap(); toast(T(onlineOK ? 'onlineOnT' : 'onlineOffT')); };
 });
 function forgetMe(done, tries) {
   /* yolda bir skor gönderimi varsa bitmesini bekle: silmeden sonra eski kimlikle satır kalmasın */
@@ -6943,8 +6955,16 @@ function forgetMe(done, tries) {
   rpc('bt_forget', { p_player: old }).then(function () { local(); toast(T('forgetDone')); },
     function () { toast(T('forgetFail')); sfx.bad(); });
 }
+/* açık rıza: çevrimiçi özellik ilk kez gerektiğinde bir kez sor; "hayır" da hatırlanır, Ayarlar'dan değişir */
+function askOnline(then) {
+  if (!ONLINE || onlineAsked || onlineOK) { if (then) then(); return; }
+  ask(T('onlineAsk'), T('onlineAskYes'), function () { onlineOK = true; onlineAsked = true; savePref(); syncSettingsUI(); if (S.started) submitScore(true); if (then) then(); },
+    function () { onlineAsked = true; savePref(); syncSettingsUI(); if (then) then(); });
+  el.askNo.textContent = T('onlineAskNo');
+}
 el.forgetBtn.onclick = function () { ask(T('forgetAsk'), T('forgetYes'), function () { forgetMe(); }); };
 el.privBtn.onclick = function () { el.privFrame.src = 'privacy.html#' + lang; el.privScr.classList.remove('hidden'); syncPause(); sfx.tap(); };
+el.aboutBtn.onclick = function () { el.privFrame.src = 'about.html#' + (lang === 'en' ? 'en' : 'tr'); el.privScr.classList.remove('hidden'); syncPause(); sfx.tap(); };
 el.privClose.onclick = function () { el.privScr.classList.add('hidden'); el.privFrame.src = 'about:blank'; syncPause(); };
 Array.prototype.forEach.call(document.querySelectorAll('#musSeg button'), function (b) {
   b.onclick = function () { setMusicEnabled(b.dataset.m === '1'); syncSettingsUI(); savePref(); sfx.tap(); };
@@ -7904,6 +7924,21 @@ function cleanName(s) {
   return String(s == null ? '' : s).replace(/<[^>]*>/g, '').replace(/[\u0000-\u001f\u007f<>`\\{}\[\]]/g, '')
     .replace(/\s+/g, ' ').trim().slice(0, 24);
 }
+/* herkese açık skor tablosu = kullanıcı içeriği (mağaza kuralı): kaba/nefret içerikli adları engelle.
+   Uzun kökler harf dizisinin herhangi bir yerinde, kısa olanlar yalnız tam kelime olarak aranır (klasik, müsik geçer). */
+var BAD_ROOT = ['orospu', 'amina', 'aminak', 'amcik', 'sikis', 'siktir', 'sikerim', 'sikeyim', 'sikik', 'sikim', 'gotveren', 'pezevenk',
+  'kahpe', 'kaltak', 'yavsak', 'serefsiz', 'fuck', 'shit', 'bitch', 'nigger', 'nigga', 'faggot', 'whore', 'pussy', 'asshole', 'hitler', 'nazi'];
+var BAD_WORD = ['amk', 'aq', 'sik', 'sikt', 'got', 'oc', 'ibne', 'pust', 'yarak', 'yarrak', 'cunt', 'dick', 'cock', 'fag', 'slut', 'isis'];
+function nameNorm(s) {
+  return String(s || '').toLocaleLowerCase('tr').replace(/[çğıöşü0134578@$!|]/g, function (c) { return { 'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u', '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '@': 'a', '$': 's', '!': 'i', '|': 'i' }[c]; })
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+function nameBad(s) {
+  var n = nameNorm(s), glued = n.replace(/[^a-z]/g, '').replace(/(.)\1+/g, '$1'), words = n.split(/[^a-z]+/);
+  for (var i = 0; i < BAD_ROOT.length; i++) if (glued.indexOf(BAD_ROOT[i].replace(/(.)\1+/g, '$1')) >= 0) return true;
+  for (i = 0; i < words.length; i++) if (words[i] && BAD_WORD.indexOf(words[i].replace(/(.)\1+/g, '$1')) >= 0) return true;
+  return false;
+}
 /* Türkçe -ın/-in/-un/-ün eki (ünlü uyumu): Hasan'ın, Ayşe'nin, Dursun'un, Şükrü'nün */
 function trGen(w) {
   var V = 'aeıioöuü', low = w.toLocaleLowerCase('tr'), v = 'e', i;
@@ -7999,7 +8034,7 @@ function submitScore(force) {
   if (!S.company || !S.runId) return;
   var e = { id: S.runId, n: S.company, h: (S.hero && S.hero.n) || '', s: S.caught, m: Math.round(S.earned), d: day.n, p: Math.round(S.play || 0), at: Date.now() };
   Board.submit(e);
-  if (!netOn()) return;
+  if (!netOn() || nameBad(e.n) || nameBad(e.h)) return;   /* uygunsuz ad herkese açık tabloya gitmez */
   var now = Date.now();
   if (netSent.busy) { netSent.dirty = true; return; }
   if (!force && now - netSent.at < 30000) return;
@@ -8051,6 +8086,7 @@ function renderBoard() {
 }
 function openBoard(from) {
   if (S.started) submitScore();
+  askOnline(function () { if (!el.boardScr.classList.contains('hidden')) renderBoard(); });
   el.boardScr.dataset.from = from || 'start';
   el.startScreen.classList.add('hidden');
   el.menuScreen.classList.add('hidden');
@@ -8172,9 +8208,9 @@ function drawHeroPreview(t) {
 var nameMode = 'new', pendingSlot = 0, introSeen = false;
 
 /* ---------- oyun içi onay penceresi (confirm() kısıtlı iframe'de yok sayılıyordu) ---------- */
-var askCb = null;
-function ask(msg, yesLabel, cb) {
-  askCb = cb;
+var askCb = null, askNoCb = null;
+function ask(msg, yesLabel, cb, noCb) {
+  askCb = cb; askNoCb = noCb || null;
   el.askMsg.textContent = msg;
   el.askYes.textContent = yesLabel || T('yes');
   el.askNo.textContent = T('cancel');
@@ -8183,8 +8219,8 @@ function ask(msg, yesLabel, cb) {
 }
 function closeAsk(yes) {
   el.askScr.classList.add('hidden');
-  var f = askCb; askCb = null;
-  if (yes && f) f();
+  var f = askCb, g = askNoCb; askCb = null; askNoCb = null;
+  if (yes && f) f(); else if (!yes && g) g();
 }
 
 /* ---------- KAYIT SLOTLARI ekranı ---------- */
@@ -8257,8 +8293,8 @@ function renderNameChips() {
 function syncNamePreview() {
   var n = cleanName(el.nameIn.value);
   el.nameSign.textContent = n || '· · ·';
-  var ok = n.length >= 2;
-  el.nameHint.textContent = ok ? (n.length + '/24') : T('nameShort');
+  var bad = nameBad(n), ok = n.length >= 2 && !bad;
+  el.nameHint.textContent = bad ? T('nameBadT') : ok ? (n.length + '/24') : T('nameShort');
   el.nameHint.classList.toggle('bad', !ok);
   el.nameGo.classList.toggle('dim', !ok);
 }
@@ -8272,8 +8308,8 @@ function openNameScreen(mode) {
 }
 function confirmName() {
   var n = cleanName(el.nameIn.value);
-  if (n.length < 2) {
-    sfx.bad();
+  if (n.length < 2 || nameBad(n)) {
+    syncNamePreview(); sfx.bad();
     el.nameCard.classList.remove('shake'); void el.nameCard.offsetWidth; el.nameCard.classList.add('shake');
     el.nameIn.focus();
     return;
@@ -10054,6 +10090,7 @@ function fbSend() {
   var it = { p_player: PLAYER_ID, p_run: S.runId || '', p_stars: fb.stars, p_cat: fb.cat || null, p_text: text,
     p_lang: lang, p_ver: FB_VER, p_day: day.n || 1, at: Date.now() };
   function queued() { fbQueue(it); fbClose(); fbToast(T('fbQueued')); sfx.buy(); if (netOn()) fbSchedule(FB_GAP - (Date.now() - fb.lastSent)); }
+  if (ONLINE && !onlineOK && !onlineAsked) { askOnline(function () { if (onlineOK) fbSend(); else queued(); }); return; }   /* form açık kalır, rıza sorusu üstte */
   if (!netOn() || Date.now() - fb.lastSent < FB_GAP) { queued(); return; }
   fb.busy = true; fbRender();
   rpc('bt_feedback', fbArgs(it)).then(function (r) {
@@ -10138,7 +10175,7 @@ window.BT = {
   setLang: function (l) { setLangTo(l); },
   M: function () { return M; },
   sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
-  back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
+  nameBad: nameBad, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
   dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(),
     pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
     y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },

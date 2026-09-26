@@ -1,4 +1,4 @@
-# Balıkçı Tycoon — Bölüm 2 "Devler Ligi" taslağı
+# Hamsi Koyu (eski adı Balıkçı Tycoon) — Bölüm 2 "Devler Ligi" taslağı
 
 **Alınan kararlar (oyuncu/yapımcı ile):**
 - Bölüm 1 kapanışı: **gazete manşeti** ✅ (v1.3'te yapıldı). Açılıştaki dönen gazete geri gelir: "LİMANIN YENİ PATRONU",

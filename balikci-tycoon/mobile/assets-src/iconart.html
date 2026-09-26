@@ -1,7 +1,7 @@
 <!doctype html><html><head><meta charset="utf-8"><link href="../../fonts/fonts.css" rel="stylesheet"></head><body style="margin:0;background:#000">
 <canvas id="c"></canvas>
 <script>
-/* Balıkçı Tycoon simge/açılış çizimi — 32×32 mantıksal piksel, tam sayı ölçekle büyütülür (keskin pixel art). */
+/* Hamsi Koyu simge/açılış çizimi — 32×32 mantıksal piksel, tam sayı ölçekle büyütülür (keskin pixel art). */
 function px(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); }
 function drawBg(g) {
   px(g, 0, 0, 32, 32, '#1d6c8f');
@@ -39,8 +39,11 @@ window.render = function (mode, size) {
     drawBg(t); drawFish(t);
     const s = Math.floor(size * 0.28 / 32), ox = Math.round(size / 2 - 16 * s), oy = Math.round(size / 2 - 22 * s);
     g.drawImage(tmp, 0, 0, 32, 32, ox, oy, 32 * s, 32 * s);
-    g.fillStyle = '#ffc94a'; g.textAlign = 'center'; g.font = 'bold ' + Math.round(size * 0.055) + 'px "Pixelify Sans"';
-    g.fillText('BALIKÇI TYCOON', size / 2, oy + 32 * s + size * 0.09);
+    const title = 'HAMSİ KOYU'; let fs = Math.round(size * 0.055);
+    g.fillStyle = '#ffc94a'; g.textAlign = 'center'; g.font = 'bold ' + fs + 'px "Pixelify Sans"';
+    /* genişliğe sığdır: yazı en fazla tuvalin %86'sı kadar olsun, taşarsa küçült */
+    while (fs > 8 && g.measureText(title).width > size * 0.86) { fs--; g.font = 'bold ' + fs + 'px "Pixelify Sans"'; }
+    g.fillText(title, size / 2, oy + 32 * s + size * 0.09);
     return c.toDataURL('image/png');
   }
   if (mode === 'fg') { /* uyarlanır simge: ön plan güvenli alan içinde (orta %66) */

@@ -1,5 +1,5 @@
 /* =====================================================================
-   BALIKÇI TYCOON — yerel uygulama köprüsü (iOS / Android, Capacitor)
+   HAMSİ KOYU — yerel uygulama köprüsü (iOS / Android, Capacitor)
    Web'de hiçbir şey yapmaz; oyun dosyalarını sırayla yükler.
    Uygulamada:
      • Kayıtlar telefonun kalıcı depolamasına (Preferences) yansıtılır. iOS/Android WebView'in localStorage'ı

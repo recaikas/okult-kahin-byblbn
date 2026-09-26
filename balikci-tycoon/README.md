@@ -1,7 +1,12 @@
-# 🐟 Balıkçı Tycoon — **v1.3** (müdürler, füme makinesi, Bölüm 1 hedefi)
+# 🐟 Hamsi Koyu — **v1.7** (eski adı Balıkçı Tycoon)
 
-İzometrik **pixel-art** balıkçı tycoon oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
+İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
+Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
 Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karakterler, `config.js` online skor).
+
+> **Lisans:** Kaynak kodu görünürdür ama açık kaynak değildir. Oynamak, incelemek, video/yayın yapmak serbest;
+> oyunu başka yerde yeniden yayımlamak ve ticari kullanım yasaktır. Bkz. [LICENSE](LICENSE),
+> [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Hukuki ve resmî işler rehberi: [HUKUK.md](HUKUK.md).
 
 ## Oynamak için
 `index.html` dosyasını tarayıcıda aç (mobil + masaüstü). İstersen: `npx http-server -p 8080 .`
@@ -9,6 +14,59 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.7 — Hamsi Koyu: yeni ad, hukuki koruma, görüş formu, başarımlar
+
+**Yeni ad: Hamsi Koyu.** "Tycoon" adı başka oyunların markalarına fazla yakındı. Değişen yerler: oyun içi başlık, açılış,
+gizlilik ve Hakkında sayfaları, mağaza metinleri, uygulama adı, uygulama kimliği `io.github.recaikas.hamsikoyu`,
+simge ve açılış ekranı. Kayıt anahtarları (`balikci_*`) ve klasör adı bilerek aynı kaldı; eski kayıtlar açılır.
+Bölüm 1 sonu unvanı İngilizcede "HARBOR MOGUL" oldu. Resmî marka araştırması hâlâ yapılmalı (HUKUK.md §3).
+
+**Telif ve lisans**
+- `LICENSE`: "Hamsi Koyu Kaynak Görünür Lisansı" (TR/EN). Oynamak, okumak, video/yayın yapmak serbest. Yeniden
+  yayımlamak, reklamlı ya da reklamsız klon ve ticari kullanım yasak. Türk hukuku (FSEK 5846) geçerli.
+- `THIRD_PARTY_NOTICES.md`: Pixelify Sans (OFL), Capacitor (MIT), Apache Cordova ve AndroidX (Apache 2.0).
+- **Ayarlar › Hakkında & Lisanslar** (`about.html`): © satırı, "ücretsiz, reklamsız", bileşenler ve tam lisans
+  metinleri. İnternetsiz açılır.
+- `HUKUK.md`: telif kanıtı, marka, lisans, kopyalanırsa ne yapılır (DMCA, Apple/Google şikâyet formları), mağaza
+  yükümlülükleri, vergi, KVKK/GDPR, yaş derecelendirmesi. Öncelikli kontrol listesi ve maliyetler.
+
+**KVKK / GDPR**
+- Çevrimiçi skor tablosu **varsayılan kapalı**. Skor tablosu ya da görüş formu ilk kullanıldığında açık rıza sorulur:
+  ne herkese açık, veriler nerede (AB, Almanya). "Hayır" hatırlanır; Ayarlar'dan her an değiştirilir. Eski sürümün
+  varsayılan "açık" ayarı onay sayılmaz.
+- `privacy.html`: veri sorumlusu, hukuki sebepler, yurt dışı aktarım, saklama süresi, haklar ve şikâyet yolu.
+- Herkese açık tabloya kaba ya da nefret içerikli ad gitmez: oyunda `nameBad`, sunucuda `bt_bad_name`. "Klasik",
+  "Kayarak", "Scunthorpe" gibi masum adlar takılmaz.
+- `bt_cleanup()`: açılış sayımlarını ve görüşleri 24 ay sonra siler; ayda bir çalıştırılır ya da pg_cron'a bağlanır.
+
+**Görüş formu + mağaza değerlendirmesi** (ajan çalışması)
+- Duraklatma menüsü ya da Ayarlar › **Görüşünü yaz**: 1-5 yıldız, konu (Hata / Öneri / Beğendim), 500 karakter.
+- İnternet yoksa görüş cihazda bekler (en çok 20).
+- Mağazanın kendi değerlendirme penceresi en çok 60 günde bir, yalnız tarafsız anlarda açılır: bölüm sonu ya da iyi
+  geçen gün. İlk oturumda, aksilikten sonra ya da kötü günde açılmaz. Görüşte verilen puan karara girmez.
+
+**Tutunma** (ajan çalışması)
+- **Çevrimdışı kazanç:** yalnız müdürü olan otomatik bölgeler çalışır. Kazanç brütün en çok %30'u, maaş düşülür.
+  İlk 2 saat tam hız, sonra %40 hızla 8 saate kadar. 5 dakikadan kısa aralar sayılmaz.
+- **26 başarım**, menüde "Başarımlar" sekmesi.
+
+**İnceleme bulguları düzeltildi**
+- Kaldırılan hizmet binalarının iadesi gerçekten ödenen tutar üzerinden hesaplanıyor; eski önbellek yüzünden yanlış
+  indirimli fiyat kullanılmıyor.
+- "Çevrimiçi verilerimi sil" yoldaki gönderimi bekliyor, yeni kimlik üretiyor, paylaşımı kapatıyor ve silinen veriyi
+  geri göndermiyor.
+- Geri tuşu önce onay sorusunu, görüş formunu, bölüm kartını kapatıyor; alttaki ekran açık kalıyor.
+- Yerel depo geri yüklemesinde tek bir anahtar hatası tüm kaydı düşürmüyor.
+- Özel müşteri, boş yer yokken sipariş üretmiyor.
+
+**Gelir kararı:** ücretsiz, reklamsız, satın almasız, izleme yok. Giderler: Apple 99 $/yıl, Google 25 $ bir kez,
+Supabase ücretsiz katman (7 gün hareketsiz kalırsa uyur). Ayrıntı: MAGAZA.md.
+
+**Testler:** `test-gizlilik.js` (rıza, "hayır"ın hatırlanması, Hakkında sayfası, ad filtresi), `test-geribildirim.js`,
+`test-basarim.js`, `test-hizmet.js` (iade), `test-native.js` (geri tuşu sırası) ve diğer tüm testler geçiyor.
 
 ---
 
@@ -37,7 +95,7 @@ gerçek ünlülerin adı, sözü ya da görünüşü kullanılmaz.
 - **Escape ile geri tuşu aynı mantıkta:** artık açık alt paneli de kapatıyor.
 - **`mobile/`:** Capacitor projesi.
   - iOS ve Android kabukları, dikey ekran kilidi, iOS ilk sürümde yalnız iPhone.
-  - Uygulama kimliği `io.github.recaikas.balikcitycoon`.
+  - Uygulama kimliği `io.github.recaikas.balikcitycoon` (v1.7'de `io.github.recaikas.hamsikoyu` oldu).
   - Pixel art simge ve açılış ekranı; kaynak `mobile/assets-src/iconart.html`, tüm boyutlar üretildi.
   - Derleme komutları: `npm run sync | android | ios`.
 

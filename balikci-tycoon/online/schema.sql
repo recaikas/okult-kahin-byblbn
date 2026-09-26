@@ -51,6 +51,17 @@ grant select (run_id, company, hero, fish, money, day, play_sec, updated_at) on 
 -- ---------------------------------------------------------------------
 --  Skor gönder (oyun her ~30 sn'de, gün sonunda ve kaydet-çık'ta çağırır)
 -- ---------------------------------------------------------------------
+-- herkese açık tabloda kaba/nefret içerikli ad olmasın (istemcideki nameBad ile aynı liste; istemci atlatılırsa diye)
+create or replace function public.bt_bad_name(p text) returns boolean
+language sql immutable as $$
+  with n as (select translate(lower(coalesce(p, '')), 'çğıöşüâîû0134578@$!|', 'cgiosuaiuoieastbasii') as t)
+  select regexp_replace(regexp_replace(t, '[^a-z]', '', 'g'), '(.)\1+', '\1', 'g')
+           ~ '(orospu|amina|amcik|sikis|siktir|sikerim|sikeyim|sikik|sikim|gotveren|pezevenk|kahpe|kaltak|yavsak|serefsiz|fuck|shit|bitch|niger|niga|fagot|whore|pusy|ashole|hitler|nazi)'
+      or regexp_replace(t, '(.)\1+', '\1', 'g')
+           ~ '(^|[^a-z])(amk|aq|sik|sikt|got|oc|ibne|pust|yarak|cunt|dick|cock|fag|slut|isis)([^a-z]|$)'
+  from n
+$$;
+
 drop function if exists public.bt_submit(text, text, text, integer, bigint, integer, integer);
 create or replace function public.bt_submit(
   p_run text, p_player text, p_company text,
@@ -69,6 +80,7 @@ begin
   v_name := btrim(regexp_replace(regexp_replace(regexp_replace(coalesce(p_company, ''), '<[^>]*>', '', 'g'), '[<>`\\{}\[\][:cntrl:]]', '', 'g'), '\s+', ' ', 'g'));
   if char_length(v_name) not between 2 and 24 then return 'bad_name'; end if;
   v_hero := left(btrim(regexp_replace(regexp_replace(coalesce(p_hero, ''), '<[^>]*>', '', 'g'), '[<>`\\{}\[\][:cntrl:]]', '', 'g')), 16);
+  if public.bt_bad_name(v_name) or public.bt_bad_name(v_hero) then return 'bad_name'; end if;
   if p_fish < 0 or p_money < 0 or p_day < 1 or p_play < 0 then return 'bad_value'; end if;
   -- makullük: en hızlı düzende bile saniyede ~6 balığı geçmek mümkün değil
   if p_fish > p_play * 12 + 60 then return 'implausible'; end if;
@@ -269,6 +281,22 @@ select
 from public.bt_feedback f
 order by f.created_at desc;
 revoke all on public.bt_gorusler from anon, authenticated;
+
+-- ---------------------------------------------------------------------
+--  KVKK saklama süresi (gizlilik politikası: açılış sayımları ve görüşler en çok 24 ay).
+--  Ayda bir SQL Editor'da çalıştır:  select bt_cleanup();
+--  Otomatik yapmak için (Supabase › Database › Extensions › pg_cron açıkken):
+--    select cron.schedule('bt-cleanup', '17 3 1 * *', 'select public.bt_cleanup()');
+-- ---------------------------------------------------------------------
+create or replace function public.bt_cleanup() returns integer
+language plpgsql security definer set search_path = public as $$
+declare n1 integer; n2 integer;
+begin
+  delete from public.bt_plays where created_at < now() - interval '24 months'; get diagnostics n1 = row_count;
+  delete from public.bt_feedback where created_at < now() - interval '24 months'; get diagnostics n2 = row_count;
+  return n1 + n2;
+end $$;
+revoke all on function public.bt_cleanup() from public, anon, authenticated;
 
 -- ---------------------------------------------------------------------
 --  Senin için hazır sorgular (SQL Editor'da çalıştır):

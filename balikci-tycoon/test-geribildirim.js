@@ -84,7 +84,11 @@ const vis = (p, id) => p.evaluate(i => !document.getElementById(i).classList.con
   await p.click('#fbCats button[data-c="idea"]');
   /* 4 yıldız + ÖNERİ + metin → gönder */
   const exp = await p.evaluate(() => ({ pid: BT.pid(), run: BT.S.runId, day: BT.day.n }));
-  await p.click('#fbSend'); await sleep(500);
+  await p.click('#fbSend'); await sleep(300);
+  /* KVKK açık rıza: ilk gönderimde bir kez sorulur, form altta açık kalır; onayla → görüş hemen gider */
+  const cq = await p.evaluate(() => ({ ask: !document.getElementById('askScr').classList.contains('hidden'), msg: document.getElementById('askMsg').textContent, form: BT.fbIsOpen() }));
+  ok(cq.ask && cq.form && /Avrupa Birliği/.test(cq.msg) && fbCalls().length === 0, 'görüşte rıza sorulmadı ' + JSON.stringify(cq));
+  await p.click('#askYes'); await sleep(500);
   const sent = fbCalls()[0];
   const want = { p_player: exp.pid, p_run: exp.run, p_stars: 4, p_cat: 'idea', p_text: 'Harika oyun! wasd', p_lang: 'tr', p_day: exp.day };
   ok(sent && Object.keys(want).every(k => sent.body[k] === want[k]) && typeof sent.body.p_ver === 'string' && sent.body.p_ver.length > 0 &&
