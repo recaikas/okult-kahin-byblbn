@@ -2189,6 +2189,7 @@ function refreshSaveInfo() {
 var paused = false;
 function anyOverlay() {
   if (hiddenPause) return true;                 /* sekme arkada: oyun donar */
+  if (fbOpen()) return true;                    /* görüş formu */
   return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') || !el.privScr.classList.contains('hidden') ||
     !el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden') ||
     !el.stallScr.classList.contains('hidden') || !el.boardScr.classList.contains('hidden') || !el.halScr.classList.contains('hidden') ||
@@ -6110,6 +6111,7 @@ function toast(msg) { el.toast.textContent = msg; el.toast.classList.add('on'); 
 
 function applyLang() {
   document.documentElement.lang = lang;
+  fbApplyLang();                                /* görüş formu etiketleri */
   el.hMoney.textContent = T('money'); el.hCarry.textContent = T('carry'); el.hRep.textContent = T('rep'); el.hRep.dataset.l = '';
   el.startTag.textContent = T('tag');
   el.startList.innerHTML = PX(['intro1', 'intro2', 'intro3', 'intro4', 'intro5'].map(function (k) {
@@ -7083,6 +7085,7 @@ window.addEventListener('resize', introResize);
 /* Escape (klavye) ve Android geri tuşu aynı mantık: en üstteki paneli kapat, yoksa duraklatma menüsü.
    true → işlendi; false → oyun başlamamış (ana ekran): uygulama arka plana alınabilir. */
 function backAction() {
+  if (fbOpen()) { fbClose(); return true; }     /* görüş formu en üstte */
   if (!el.privScr.classList.contains('hidden')) { el.privClose.click(); return true; }
   if (!el.settingsScreen.classList.contains('hidden')) { el.setClose.click(); return true; }
   if (!S.started) return false;
@@ -9485,6 +9488,212 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(function (
 })();
 requestAnimationFrame(frame);
 
+/* =========================================================
+   GÖRÜŞ FORMU + MAĞAZA DEĞERLENDİRMESİ
+   Amaç: oyuncular oynasın ve fikrini söylesin (para değil).
+   1) Görüşünü yaz: duraklatma menüsünden ve Ayarlar'dan açılır; 1–5 yıldız (zorunlu), isteğe bağlı konu
+      (Hata / Öneri / Beğendim), en çok 500 karakter metin. Açıkken oyun durur.
+      • netOn() → bt_feedback RPC'si (online/schema.sql). Sunucuya ulaşılamazsa, paylaşım kapalıysa ya da
+        çevrimiçi tablo kurulu değilse görüş cihazdaki gelen kutusuna (en çok 20) yazılır; bir sonraki
+        açılışta (ve paylaşım yeniden açılınca) netOn() ise sırayla gönderilir (sunucu sınırı: 60 sn'de 1).
+      • Görüş hiçbir ödüle bağlı DEĞİLDİR (mağazalar teşvikli yorumu yasaklar).
+   2) Mağaza değerlendirmesi (yalnız uygulamada; web'de hiçbir şey yapmaz):
+      resmi uygulama içi değerlendirme penceresi (SKStoreReviewController / Play In-App Review),
+      native.js › BT_NATIVE.review() üzerinden.
+      • YALNIZ tarafsız tetikleyiciler: Bölüm 1 kapanış kartı kapatılınca, ya da en az 3 oyun günü bitmişken
+        iyi geçen bir günün (gelir var, kaçan müşteri sunulandan az) özeti kapatılınca. Görüş formundaki yıldız puanı bu karara HİÇ
+        girmez ("review gating" yasak: mutlu oyuncuyu mağazaya, mutsuzu forma yönlendirmek). Görüş
+        formundan asla çağrılmaz; form açıkken de sorulmaz.
+      • 60 gerçek günde en çok bir kez (zaman damgası saklanır), ilk oturumda asla, bir aksilikten
+        (hata sesi) hemen sonra asla.
+   ========================================================= */
+Object.assign(STR.tr, {
+  fbBtn: '⭐ GÖRÜŞÜNÜ YAZ', fbTitle: 'GÖRÜŞÜNÜ YAZ', fbSub: 'Oyunu nasıl buldun? Her görüş tek tek okunur.',
+  fbStarsLbl: 'PUANIN', fbStarN: '{n} yıldız', fbCatLbl: 'KONU (İSTEĞE BAĞLI)',
+  fbCat_bug: 'HATA', fbCat_idea: 'ÖNERİ', fbCat_love: 'BEĞENDİM',
+  fbTextLbl: 'MESAJIN (İSTEĞE BAĞLI)', fbPh: 'Ne hoşuna gitti, ne eksik, nerede takıldın?',
+  fbSend: 'GÖNDER', fbSending: 'GÖNDERİLİYOR…', fbCancel: 'VAZGEÇ',
+  fbNote: 'Görüşün herkese açık değildir; yalnız oyunun geliştiricisi okur. Ayarlar › Çevrimiçi verilerimi sil ile silinir.',
+  fbNeedStars: 'Önce 1–5 arası bir puan seç', fbTooLong: 'Mesaj en çok {n} karakter olabilir',
+  fbThanks: 'Teşekkürler! Görüşün bize ulaştı', fbQueued: 'Teşekkürler! Görüşün kaydedildi, çevrimiçi olunca gönderilecek',
+  fbTooMany: 'Bugün yeterince görüş gönderdin, yarın yine yaz', fbBad: 'Görüş gönderilemedi, metni kontrol edip tekrar dene',
+  forgetBtn: 'ÇEVRİMİÇİ VERİLERİMİ SİL',
+  forgetAsk: 'Bu cihazın çevrimiçi verileri (skor tablosu kayıtları ve gönderdiğin görüşler; sunucu ve cihaz) silinsin mi? Oyun kayıtların etkilenmez.',
+  forgetDone: 'Çevrimiçi verilerin silindi, yeni anonim kimlik oluşturuldu'
+});
+Object.assign(STR.en, {
+  fbBtn: '⭐ SEND FEEDBACK', fbTitle: 'SEND FEEDBACK', fbSub: 'How do you like the game? Every message is read.',
+  fbStarsLbl: 'YOUR RATING', fbStarN: '{n} stars', fbCatLbl: 'TOPIC (OPTIONAL)',
+  fbCat_bug: 'BUG', fbCat_idea: 'IDEA', fbCat_love: 'LOVE IT',
+  fbTextLbl: 'YOUR MESSAGE (OPTIONAL)', fbPh: 'What did you like, what is missing, where did you get stuck?',
+  fbSend: 'SEND', fbSending: 'SENDING…', fbCancel: 'CANCEL',
+  fbNote: 'Your feedback is not public; only the game\'s developer reads it. Settings › Delete my online data removes it.',
+  fbNeedStars: 'Pick a rating from 1 to 5 first', fbTooLong: 'The message can be at most {n} characters',
+  fbThanks: 'Thank you! Your feedback reached us', fbQueued: 'Thank you! Your feedback is saved and will be sent when online',
+  fbTooMany: 'You have sent plenty of feedback today, write again tomorrow', fbBad: 'Feedback could not be sent, check the text and try again',
+  forgetBtn: 'DELETE MY ONLINE DATA',
+  forgetAsk: 'Delete this device\'s online data (leaderboard entries and the feedback you sent; server and device)? Your game saves are not affected.',
+  forgetDone: 'Online data deleted, new anonymous ID created'
+});
+var FB_OUTBOX = 'balikci_feedback_outbox', FB_MAX = 20, FB_LEN = 500, FB_GAP = 61000, FB_CATS = ['bug', 'idea', 'love'];
+var FB_VER = '1.7';                                    /* görüşle birlikte giden oyun sürümü */
+var fbScr = document.getElementById('fbScr'), fbCard = document.getElementById('fbCard'), fbText = document.getElementById('fbText'),
+  fbCount = document.getElementById('fbCount'), fbErrEl = document.getElementById('fbErr'), fbSendBtn = document.getElementById('fbSend');
+var fb = { stars: 0, cat: '', busy: false, lastSent: 0, flushBusy: false, stop: false, timer: 0, toastTm: 0 };
+function fbOpen() { return !!fbScr && !fbScr.classList.contains('hidden'); }
+/* 9×9 pixel yıldız (tek SVG yolu, keskin kenar) */
+var FB_STAR = (function () {
+  var rows = ['....#....', '....#....', '...###...', '#########', '.#######.', '..#####..', '..##.##..', '.##...##.', '.#.....#.'], d = '';
+  rows.forEach(function (r, y) { for (var x = 0; x < r.length; x++) if (r[x] === '#') d += 'M' + x + ' ' + y + 'h1v1h-1z'; });
+  return '<svg viewBox="0 0 9 9" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="' + d + '"/></svg>';
+})();
+function fbApplyLang() {
+  if (!fbScr) return;
+  var q = function (id) { return document.getElementById(id); };
+  q('fbTitle').textContent = T('fbTitle'); q('fbSub').textContent = T('fbSub');
+  q('fbStarsLbl').textContent = T('fbStarsLbl'); q('fbCatLbl').textContent = T('fbCatLbl'); q('fbTextLbl').textContent = T('fbTextLbl');
+  q('fbCancel').textContent = T('fbCancel'); q('fbNote').textContent = T('fbNote');
+  fbSendBtn.textContent = T(fb.busy ? 'fbSending' : 'fbSend'); fbText.placeholder = T('fbPh');
+  Array.prototype.forEach.call(document.querySelectorAll('#fbCats button'), function (b) { b.textContent = T('fbCat_' + b.dataset.c); });
+  Array.prototype.forEach.call(document.querySelectorAll('#fbStars button'), function (b) { b.setAttribute('aria-label', T('fbStarN', { n: b.dataset.v })); });
+  q('menuFb').innerHTML = PX(T('fbBtn')); q('fbBtn').innerHTML = PX(T('fbBtn'));
+  el.forgetBtn.textContent = T('forgetBtn');           /* "Skor kaydımı sil" artık görüşleri de siler */
+}
+function fbRender() {
+  Array.prototype.forEach.call(document.querySelectorAll('#fbStars button'), function (b) { b.classList.toggle('on', +b.dataset.v <= fb.stars); });
+  Array.prototype.forEach.call(document.querySelectorAll('#fbCats button'), function (b) { b.classList.toggle('on', b.dataset.c === fb.cat); });
+  var n = fbText.value.length;
+  fbCount.textContent = n + '/' + FB_LEN; fbCount.classList.toggle('bad', n > FB_LEN);
+  fbSendBtn.disabled = fb.busy; fbSendBtn.textContent = T(fb.busy ? 'fbSending' : 'fbSend');
+}
+function fbErr(msg) {
+  fbErrEl.textContent = msg || ''; fbErrEl.classList.toggle('hidden', !msg);
+  if (msg) { fbCard.classList.remove('shake'); void fbCard.offsetWidth; fbCard.classList.add('shake'); }
+}
+function fbShow() {
+  fb.stars = 0; fb.cat = ''; fbText.value = ''; fbErr('');        /* gönderim sürüyorsa "busy" kalır: çift gönderim olmasın */
+  fbApplyLang(); fbRender();
+  fbScr.classList.remove('hidden'); syncPause(); sfx.tap();
+}
+function fbClose() { fbScr.classList.add('hidden'); if (document.activeElement === fbText) fbText.blur(); syncPause(); }
+/* toast normalde katmanların (z 10) altında kalır ve duraklatmada sönmez: görüş mesajı üstte, kendi süresiyle */
+function fbToast(msg) {
+  toast(msg); el.toast.classList.add('fbtop');
+  clearTimeout(fb.toastTm);
+  fb.toastTm = setTimeout(function () { if (el.toast.textContent === msg) el.toast.classList.remove('on'); el.toast.classList.remove('fbtop'); }, 3000);
+}
+function fbArgs(it) {
+  return { p_player: it.p_player, p_run: it.p_run, p_stars: it.p_stars, p_cat: it.p_cat, p_text: it.p_text,
+    p_lang: it.p_lang, p_ver: it.p_ver, p_day: it.p_day };
+}
+/* cihazdaki gelen kutusu (gönderilemeyen görüşler) */
+function fbBox() {
+  try {
+    var a = JSON.parse(Store.get(FB_OUTBOX) || '[]');
+    return Array.isArray(a) ? a.filter(function (x) { return x && typeof x.p_player === 'string' && x.p_stars >= 1 && x.p_stars <= 5; }) : [];
+  } catch (e) { return []; }
+}
+function fbBoxSet(a) { if (a.length) Store.set(FB_OUTBOX, JSON.stringify(a)); else Store.del(FB_OUTBOX); }
+function fbQueue(it) { var a = fbBox(); a.push(it); while (a.length > FB_MAX) a.shift(); fbBoxSet(a); }
+function fbDrop(it) {
+  var a = fbBox();
+  for (var i = 0; i < a.length; i++) if (a[i].at === it.at && a[i].p_text === it.p_text) { a.splice(i, 1); break; }
+  fbBoxSet(a);
+}
+function fbSchedule(ms) { clearTimeout(fb.timer); fb.timer = setTimeout(function () { fbFlush(); }, Math.max(50, ms)); }
+/* gelen kutusunu sırayla boşalt (sunucu 60 sn'de 1 görüş kabul eder) */
+function fbFlush(force) {
+  if (!netOn() || fb.flushBusy || fb.stop) return;
+  var a = fbBox(); if (!a.length) return;
+  var it = a[0];
+  if (it.p_player !== PLAYER_ID) { fbDrop(it); fbFlush(force); return; }   /* "verilerimi sil" sonrası eski kimliğin görüşü gitmez */
+  var wait = FB_GAP - (Date.now() - fb.lastSent);
+  if (wait > 0 && !force) { fbSchedule(wait); return; }
+  fb.flushBusy = true;
+  rpc('bt_feedback', fbArgs(it)).then(function (r) {
+    fb.flushBusy = false;
+    if (r === 'ok') { fbDrop(it); fb.lastSent = Date.now(); if (fbBox().length) fbSchedule(FB_GAP); }
+    else if (r === 'too_fast') { fb.lastSent = Date.now(); fbSchedule(FB_GAP); }
+    else if (r === 'too_many' || r === 'busy') fb.stop = true;                /* bu oturumda bırak, sonraki açılışta dener */
+    else { fbDrop(it); if (fbBox().length) fbSchedule(FB_GAP); }             /* sunucu geçersiz saydı: tekrar denemenin anlamı yok */
+  }, function () { fb.flushBusy = false; });                                /* çevrimdışı: kutuda kalır */
+}
+function fbSend() {
+  if (fb.busy) return;
+  var text = fbText.value.replace(/\r\n?/g, '\n').trim();
+  if (!(fb.stars >= 1 && fb.stars <= 5)) { fbErr(T('fbNeedStars')); sfx.tap(); return; }
+  if (text.length > FB_LEN) { fbErr(T('fbTooLong', { n: FB_LEN })); sfx.tap(); return; }
+  fbErr('');
+  var it = { p_player: PLAYER_ID, p_run: S.runId || '', p_stars: fb.stars, p_cat: fb.cat || null, p_text: text,
+    p_lang: lang, p_ver: FB_VER, p_day: day.n || 1, at: Date.now() };
+  function queued() { fbQueue(it); fbClose(); fbToast(T('fbQueued')); sfx.buy(); if (netOn()) fbSchedule(FB_GAP - (Date.now() - fb.lastSent)); }
+  if (!netOn() || Date.now() - fb.lastSent < FB_GAP) { queued(); return; }
+  fb.busy = true; fbRender();
+  rpc('bt_feedback', fbArgs(it)).then(function (r) {
+    fb.busy = false; fbRender();
+    if (r === 'ok') { fb.lastSent = Date.now(); fbClose(); fbToast(T('fbThanks')); sfx.buy(); }
+    else if (r === 'too_fast') { fb.lastSent = Date.now(); queued(); }
+    else if (r === 'too_many' || r === 'busy') fbErr(T('fbTooMany'));
+    else fbErr(T('fbBad'));
+  }, function () { fb.busy = false; fbRender(); queued(); });
+}
+if (fbScr) {
+  document.getElementById('fbStars').innerHTML = [1, 2, 3, 4, 5].map(function (v) { return '<button type="button" data-v="' + v + '">' + FB_STAR + '</button>'; }).join('');
+  Array.prototype.forEach.call(document.querySelectorAll('#fbStars button'), function (b) {
+    b.onclick = function () { fb.stars = +b.dataset.v; if (fbErrEl.textContent === T('fbNeedStars')) fbErr(''); fbRender(); sfx.tap(); };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#fbCats button'), function (b) {
+    b.onclick = function () { fb.cat = fb.cat === b.dataset.c ? '' : b.dataset.c; fbRender(); sfx.tap(); };   /* ikinci dokunuş seçimi kaldırır */
+  });
+  fbText.addEventListener('input', fbRender);
+  fbSendBtn.onclick = fbSend;
+  document.getElementById('fbCancel').onclick = function () { fbClose(); sfx.tap(); };
+  document.getElementById('menuFb').onclick = function () { fbShow(); };
+  document.getElementById('fbBtn').onclick = function () { fbShow(); };
+  /* paylaşım yeniden açılınca bekleyen görüşleri gönder */
+  Array.prototype.forEach.call(document.querySelectorAll('#onlineSeg button'), function (b) {
+    b.addEventListener('click', function () { if (netOn()) fbFlush(); });
+  });
+  fbApplyLang();
+}
+
+/* ---------- mağaza değerlendirme penceresi (yalnız uygulama) ---------- */
+var RV_KEY = 'balikci_review_at', RV_SESS = 'balikci_sessions', RV_GAP = 60 * 24 * 3600 * 1000, RV_CALM = 20000, RV_DELAY = 1200;
+var rvSession = (function () { var n = (parseInt(Store.get(RV_SESS), 10) || 0) + 1; Store.set(RV_SESS, String(n)); return n; })();
+var rv = { badAt: 0, asked: 0, pending: false };
+(function () {                                           /* aksilik = hata sesi (kayıp müşteri, yetersiz para, ...) */
+  var bad = sfx.bad;
+  sfx.bad = function () { rv.badAt = Date.now(); return bad.apply(this, arguments); };
+})();
+function rvBlock() {
+  var N = window.BT_NATIVE;
+  if (!N || typeof N.review !== 'function') return 'web';
+  if (rvSession < 2) return 'first';
+  var last = parseInt(Store.get(RV_KEY), 10) || 0;
+  if (last && Date.now() - last < RV_GAP) return 'recent';
+  if (Date.now() - rv.badAt < RV_CALM) return 'fail';
+  if (fbOpen()) return 'feedback';
+  return '';
+}
+/* tarafsız tetikleyiciden çağrılır; oyun devam ettikten kısa süre sonra, araya bir pencere girmediyse sorar */
+function maybeAskReview() {
+  if (rv.pending || rvBlock()) return false;
+  rv.pending = true;
+  setTimeout(function () {
+    rv.pending = false;
+    if (rvBlock() || anyOverlay() || !S.started) return;
+    Store.set(RV_KEY, String(Date.now())); rv.asked++;
+    try { window.BT_NATIVE.review(); } catch (e) { }
+  }, RV_DELAY);
+  return true;
+}
+el.chEndGo.addEventListener('click', function () { maybeAskReview(); });            /* Bölüm 1 bitti */
+el.dayGo.addEventListener('click', function () {                                      /* ≥3 gün, gün iyi kapandı */
+  var L = day.last;
+  if (L && L.n >= 3 && L.inc > 0 && L.served >= L.lost) maybeAskReview();
+});
+if (netOn()) fbFlush();                                  /* açılışta bekleyen görüşleri gönder */
+
 window.BT = {
   cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },
   envStage: function () { return envStage(); }, buildSave: buildSave, loadFrom: loadFrom, DEPOT_LV: DEPOT_LV, counterMax: counterMax, queueMax: queueMax, upCost: upCost, envFlow: envFlow, legacyEnvStage: legacyEnvStage, ENV_UPS: ENV_UPS, scenery: scenery, SPECIALS: SPECIALS,
@@ -9559,6 +9768,13 @@ window.BT = {
     el.settingsScreen.classList.add('hidden'); el.menuScreen.classList.add('hidden'); syncPause();
   }
 };
+
+/* görüş formu + mağaza değerlendirmesi — test kancaları */
+Object.assign(window.BT, {
+  fbShow: function () { fbShow(); }, fbIsOpen: fbOpen, fbOutbox: fbBox, fbFlush: function (force) { fbFlush(force); },
+  rvState: function () { return { session: rvSession, why: rvBlock(), asked: rv.asked, at: parseInt(Store.get(RV_KEY), 10) || 0 }; },
+  askReview: function () { return maybeAskReview(); }
+});
 
 
 /* =========================================================

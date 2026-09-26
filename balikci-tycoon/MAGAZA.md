@@ -18,6 +18,8 @@ ilk aşama **teknik + hukuki hazırlık**.
 | Pixel art uygulama simgesi + açılış ekranı (tüm boyutlar üretildi) | ✅ v1.6 |
 | Gizlilik politikası (`privacy.html`, TR/EN) + oyun içinden açılıyor | ✅ v1.6 — **iletişim e-postasını doldur** |
 | Çevrimiçi skor paylaşımını kapatma + "Skor kaydımı sil" (sunucu + cihaz) | ✅ v1.6 — **schema.sql'i Supabase'de yeniden çalıştır** |
+| Oyun içi görüş formu (yıldız + konu + metin; çevrimdışıyken cihazda bekler) | ✅ — **schema.sql'i Supabase'de yeniden çalıştır** (`bt_feedback`) |
+| Mağazanın kendi değerlendirme penceresi (`@capacitor-community/in-app-review`), yalnız tarafsız anlarda, 60 günde en çok 1 | ✅ — `npm install` + `npm run sync` |
 | Ödüllü reklam (AdMob) + reklam izni (GDPR/UMP, iOS ATT) | ⏳ sonraki aşama |
 | Tutunma sistemleri: çevrimdışı kazanç, başarımlar, günlük görevler, prestij | ⏳ sonraki aşama |
 | Mağaza ekran görüntüleri ve tanıtım görseli | ⏳ yayından önce |
@@ -67,7 +69,7 @@ npm run ios         # Xcode'da açar (yalnız macOS) → Product › Archive →
 - [ ] GitHub Pages'i aç (Settings › Pages › Source: GitHub Actions). Gizlilik politikası adresi:
       **https://recaikas.github.io/okult-kahin-byblbn/privacy.html** (iki mağaza da bu adresi ister).
 - [ ] Çevrimiçi skor tablosu kullanılacaksa: `config.js`'e Supabase adresi/anahtarı + `online/schema.sql`'i
-      Supabase SQL Editor'da yeniden çalıştır (yeni `bt_forget` fonksiyonu için).
+      Supabase SQL Editor'da yeniden çalıştır (yeni `bt_forget` ve `bt_feedback` fonksiyonları için).
 - [ ] Gerçek cihaz testi: kayıt → uygulamayı kapat/aç → devam; geri tuşu; arka plana alıp dönme; sesler; performans.
 - [ ] Ekran görüntüleri (aşağıda).
 
@@ -115,14 +117,22 @@ npm run ios         # Xcode'da açar (yalnız macOS) → Product › Archive →
 
 Oyun hesap istemez; kişisel bilgi toplamaz. Veri yalnızca **isteğe bağlı çevrimiçi skor tablosu** açıkken gider:
 oyuncunun seçtiği işletme adı ve karakter adı, oyun istatistikleri, rastgele anonim oyuncu kimliği, dil ve açılış
-zamanı. Satılmaz, reklamda kullanılmaz, üçüncü kişiyle paylaşılmaz; oyun içinden silinebilir.
+zamanı. Oyuncu **Görüşünü yaz** formundan gönderirse ayrıca: 1–5 yıldız, konu, serbest metin (≤500), dil, oyun sürümü
+ve oyun günü (herkese açık değil). Satılmaz, reklamda kullanılmaz, üçüncü kişiyle paylaşılmaz; Ayarlar › **Çevrimiçi
+verilerimi sil** skor kayıtlarını ve görüşleri birlikte siler.
 
 - **Google Play › Veri güvenliği:** toplanan veri türleri — "Uygulama etkinliği › Diğer kullanıcı içeriği"
-  (işletme/karakter adı, oyun istatistikleri) ve "Cihaz veya diğer kimlikler" (anonim oyuncu kimliği). Amaç: uygulama
-  işlevselliği. Aktarımda şifreli (HTTPS): **evet**. Silme isteği: **evet** (oyun içinden). Toplama isteğe bağlı mı:
+  (işletme/karakter adı, oyun istatistikleri), "Uygulama etkinliği › Diğer kullanıcı içeriği" ayrıca görüş metni ve
+  yıldız puanı için, ve "Cihaz veya diğer kimlikler" (anonim oyuncu kimliği). Amaç: uygulama işlevselliği; görüş için
+  ek olarak "Analiz" (geliştirme). Aktarımda şifreli (HTTPS): **evet**. Silme isteği: **evet** (oyun içinden). Toplama isteğe bağlı mı:
   **evet** (kapatılabilir). Paylaşım: **yok**.
-- **App Store › Uygulama Gizliliği:** "Kullanıcı İçeriği › Oyun İçeriği" ve "Tanımlayıcılar › Kullanıcı Kimliği";
-  **kimliğe bağlı değil**, **izleme için kullanılmıyor**. Amaç: Uygulama İşlevselliği.
+- **App Store › Uygulama Gizliliği:** "Kullanıcı İçeriği › Oyun İçeriği", "Kullanıcı İçeriği › Diğer Kullanıcı
+  İçeriği" (görüş metni + yıldız) ve "Tanımlayıcılar › Kullanıcı Kimliği"; **kimliğe bağlı değil**, **izleme için
+  kullanılmıyor**. Amaç: Uygulama İşlevselliği (görüş için ayrıca Analiz).
+- **Değerlendirme penceresi kuralları:** mağazanın kendi penceresi kullanılır (Apple SKStoreReviewController / Google
+  Play In-App Review); ödül karşılığı istenmez, görüş formundaki puana göre gösterilmez ("review gating" yasak),
+  yalnız Bölüm 1 sonu ya da ≥3 gün oynanıp iyi kapanan bir günün ardından sorulur, ilk oturumda ve bir aksilikten hemen
+  sonra sorulmaz.
 - **Reklam eklendiğinde** (AdMob) bu beyanlar ve `privacy.html` güncellenmeli: reklam kimliği, kaba konum, cihaz
   bilgileri, AB/İngiltere için izin ekranı (UMP), iOS'ta ATT izni.
 

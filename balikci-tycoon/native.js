@@ -6,6 +6,7 @@
        yer darlığında silinse bile açılışta oradan geri yüklenir, sonra oyun başlar.
      • Android geri tuşu: açık paneli kapatır → duraklatma menüsü → (ana ekranda) uygulamayı arka plana alır.
      • Uygulama arka plana geçince kayıt alınır; durum çubuğu oyun sırasında gizlenir.
+     • BT_NATIVE.review(): mağazanın uygulama içi değerlendirme penceresi (InAppReview eklentisi).
    ===================================================================== */
 (function () {
   var FILES = ['config.js', 'specials.js', 'game.js'], PREFIX = 'balikci_';
@@ -25,6 +26,14 @@
     platform: C.getPlatform ? C.getPlatform() : 'native',
     set: function (k, v) { if (Pref && k.indexOf(PREFIX) === 0) Pref.set({ key: k, value: String(v) }).catch(function () { }); },
     del: function (k) { if (Pref && k.indexOf(PREFIX) === 0) Pref.remove({ key: k }).catch(function () { }); },
+    /* mağazanın kendi değerlendirme penceresi (@capacitor-community/in-app-review: iOS SKStoreReviewController,
+       Android Play In-App Review). Pencerenin gerçekten görünüp görünmediğini mağaza belirler; sonuç bize gelmez.
+       Ne zaman sorulacağına game.js karar verir (yalnız tarafsız anlar, 60 günde en çok bir kez). */
+    review: function () {
+      var R = P.InAppReview;
+      if (!R || !R.requestReview) return Promise.resolve(false);
+      try { return R.requestReview().then(function () { return true; }, function () { return false; }); } catch (e) { return Promise.resolve(false); }
+    },
     ready: function () {
       if (Bar && Bar.hide) Bar.hide().catch(function () { });
       if (App && App.addListener) {
