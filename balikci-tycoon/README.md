@@ -12,6 +12,39 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v1.5 — Her binanın kendi mimarisi
+
+Sorun: Hizmet binaları tek bir şablonun (kutu gövde + kiremit çatı + cumba + bayrak) renk ve isim değişimiydi. Birkaç
+yapı da birbirinin kopyasıydı: Soğuk Sandık ile meydandaki Depo, Kapalı Pazar ile Ticaret Ofisi.
+
+**Hizmet binaları** — her birinin kendi silueti, malzemesi ve 5 seviyelik büyüme hikâyesi var:
+
+| Bina | Sv.1 → Sv.5 |
+|---|---|
+| 🧊 Buzhane | Saman çatılı ahşap buz kulübesi → yalıtım panelli beyaz soğuk depo → tuğla kaide + dönen çatı soğutucusu → şerit perdeli rampa → saçak buzları, çatı tabelası, frigorifik kamyon. Hep alçak ve düz çatılı. |
+| 🍽️ Restoran | Turkuaz balık-ekmek büfesi + şemsiye → badanalı lokanta, kiremit çatı, çizgili tente → camlı cephe, ahşap teras, ışık zinciri → teras çatılı ikinci kat → balık tabelası, saksılar. Bacasından duman çıkar. |
+| 📋 Nakliye Ofisi | Turuncu ofis konteyneri → mavi konteyner + merdiven → üstte yeşil konteyner, yükleme sundurması, forklift → kapıda kamyon → sarı portal vinç (arabası gider gelir). |
+| 🤝 Kooperatif | Taş temel üstünde göz dolması ahşap, pul kaplı kırma çatı (Karadeniz evi) → çardak altında çay masası → taş zemin kat + taşan ahşap üst kat → ahşap balkon, saksılar → çatı penceresinde birlik amblemi, fenerler. |
+| 🔔 Mezat Salonu | Branda gölgelik, sandıklı mezat masası, direkte çan → ahşap direkli çinko çatı → taş sütunlu revak, arduvaz çatı, ahşap çan kulesi → arka duvar → kemerler, taş çan kulesi, saat, sancak. Mezat kapanışta çan sallanır. |
+
+**Diğer yapılar**
+- **Soğuk Sandık** (Yapı): artık küçük bir depo binası değil; palet üstünde mavi gövdeli, beyaz kapaklı buz sandığı,
+  kapağın arasından balık kuyruğu görünür.
+- **Balık Hali** (Meydan): taş sütun + kiremit yerine çelik direkli, **kemerli (tonoz) çinko çatılı** hal; alında
+  camlı kemer, HAL levhası, kantar ve kasalar.
+- **Kapalı Pazar**: Ticaret Ofisi'nin konak tarzından ayrıldı. Revaklı taş gövde (önde 4, yanda 3 kemer), kurşun
+  kaplı beşik çatı, mahyada camlı fener.
+- **Personel Kulübesi**: kapı önünde sıra, çamaşır ipinde önlükler, üst seviyede baret askısı.
+
+**Yeni test:** `test-binalar.js`
+- Her seviyede beş binanın ekrandaki piksellerini okur; boş parselin zeminini çıkarıp yalnız binanın renk dağılımını
+  karşılaştırır.
+- Hiçbir iki bina birbirine benzememeli: şu an en az %54 fark var.
+- Her bina Sv.1'den Sv.5'e gözle görülür şekilde değişmeli.
+- Her binanın ayrı bir çizim fonksiyonu olmalı.
+
+---
+
 ## v1.4 — Hizmet binaları 9 → 5: her bina görünür, ayrı bir iş yapar
 
 **Neden:** Dokuz binanın bir kısmı ya çalışmıyordu (Yakıt İstasyonu ve Tersane'nin tekne etkileri oyunda yok, yalnız
