@@ -147,6 +147,23 @@ grant execute on function public.bt_play(text, text, text) to anon, authenticate
 grant execute on function public.bt_board(text) to anon, authenticated;
 
 -- ---------------------------------------------------------------------
+--  Mağaza gizlilik şartı: oyuncu kendi verisini siler (Ayarlar › Skor kaydımı sil)
+--  Anonim oyuncu kimliği herkese açık değildir; yalnız o cihaz bilir. Döner: silinen skor satırı sayısı.
+-- ---------------------------------------------------------------------
+create or replace function public.bt_forget(p_player text)
+returns integer
+language plpgsql security definer set search_path = public as $$
+declare n integer;
+begin
+  if p_player is null or char_length(p_player) not between 6 and 40 then return 0; end if;
+  delete from public.bt_scores where player_id = p_player;
+  get diagnostics n = row_count;
+  delete from public.bt_plays where player_id = p_player;
+  return n;
+end $$;
+grant execute on function public.bt_forget(text) to anon, authenticated;
+
+-- ---------------------------------------------------------------------
 --  YÖNETİCİ GÖRÜNÜMÜ (yalnız sen: Supabase panel › Table Editor › bt_oyuncular)
 --  Kim, hangi isimle, kaç kez, toplam kaç saat oynadı, en son ne zaman?
 --  anon'a açık DEĞİL — herkese açık sitede görünmez.

@@ -12,6 +12,65 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v1.6 — Mağaza hazırlığı (App Store + Google Play): teknik ve hukuki temel
+
+Hedef: oyunu iOS ve Android uygulaması olarak mağazalara çıkarmak. Tüm yol haritası, kalanlar ve mağaza metinleri
+**[MAGAZA.md](MAGAZA.md)**'de.
+
+**Özgün karakterler (hukuki).** 33 ünlü parodisi özel müşteri özgün karakterlere dönüştü: Kıvanç Parıltı, Öfkeli Ömer,
+Dansçı Deniz, Cömert Cemile, Robotik Rüştü, Pullu Pınar… Meslekler, huylar, sesler ve oyun etkileri aynı kaldı (sabır,
+bahşiş, sipariş, dans, geri geri yürüme). Değişenler:
+- gerçek kişilerin adları ve lakapları,
+- imza sözleri ve şarkı sözlerinden alıntılar,
+- tanınır görünüşleri.
+
+Halk kahramanları (Temel, Nasır Hoca) ve telifi dolmuş klasik (Şerlok) kaldı. `specials.js` başına kural eklendi:
+gerçek ünlülerin adı, sözü ya da görünüşü kullanılmaz.
+
+**Uygulama altyapısı (teknik)**
+- **Yazı tipi gömülü:** Pixelify Sans (`fonts/`, OFL lisansı). Oyun hiçbir dış adrese istek atmadan, internetsiz açılır.
+- **`native.js` yükleyici:** Web'de yalnız oyun dosyalarını sırayla yükler. Uygulamada:
+  - kayıtları telefonun kalıcı deposuna (Capacitor Preferences) yansıtır; WebView `localStorage`'ı silinse bile
+    açılışta geri yükler;
+  - Android geri tuşu açık paneli kapatır, sonra duraklatma menüsünü açar; ana ekranda uygulamayı arka plana alır;
+  - uygulama arka plana geçince kayıt alınır, durum çubuğu gizlenir.
+- **Escape ile geri tuşu aynı mantıkta:** artık açık alt paneli de kapatıyor.
+- **`mobile/`:** Capacitor projesi.
+  - iOS ve Android kabukları, dikey ekran kilidi, iOS ilk sürümde yalnız iPhone.
+  - Uygulama kimliği `io.github.recaikas.balikcitycoon`.
+  - Pixel art simge ve açılış ekranı; kaynak `mobile/assets-src/iconart.html`, tüm boyutlar üretildi.
+  - Derleme komutları: `npm run sync | android | ios`.
+
+**Gizlilik (mağaza şartı)**
+- `privacy.html` (TR/EN): ne toplandığı, neden, nasıl silineceği. Oyun içinde Ayarlar › Gizlilik Politikası'ndan
+  açılır; web adresi `https://recaikas.github.io/okult-kahin-byblbn/privacy.html`.
+- Ayarlar › **Çevrimiçi skor tablosu: Açık/Kapalı.** Kapalıyken sunucuya hiçbir istek gitmez.
+- Ayarlar › **Skor kaydımı sil:**
+  - sunucudaki kayıtları (`bt_forget`, `online/schema.sql`) ve cihaz listesini siler,
+  - yeni anonim kimlik üretir,
+  - oyun kayıtlarına dokunmaz.
+- GitHub Pages yayını yeni dosyaları (`native.js`, `fonts/`, `privacy.html`) da kopyalıyor.
+
+**Yeni testler**
+- `test-native.js` (sahte Capacitor):
+  - kayıt kalıcı depoya yansıyor ve silinmiş `localStorage`'a geri geliyor;
+  - geri tuşu sırası doğru;
+  - `pause` olayında kayıt alınıyor;
+  - web yüklemesinde dış istek yok.
+- `test-gizlilik.js` (sahte Supabase):
+  - paylaşım kapalıyken istek gitmiyor;
+  - silme doğru kimlikle çalışıyor ve kimlik yenileniyor;
+  - gizlilik penceresi açılıyor, oyun duruyor, Escape ile kapanıyor.
+
+**Kalan (MAGAZA.md):**
+- `privacy.html`'deki iletişim e-postası;
+- Supabase'de `schema.sql`'in yeniden çalıştırılması;
+- gerçek cihaz testi;
+- ekran görüntüleri;
+- ödüllü reklam aşaması.
+
+---
+
 ## v1.5 — Her binanın kendi mimarisi
 
 Sorun: Hizmet binaları tek bir şablonun (kutu gövde + kiremit çatı + cumba + bayrak) renk ve isim değişimiydi. Birkaç

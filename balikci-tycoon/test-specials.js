@@ -24,7 +24,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
       badFav: BT.SPECIALS.filter(s => !['hamsi','uskumru','palamut','levrek','somon','ton'].includes(s.fav)).length };
   });
   ok(!R.data.drawErr && R.data.ids === 50 && !R.data.noTrait.length && !R.data.badFav, 'karakter verisi hatalı ' + JSON.stringify(R.data));
-  ok(R.data.sabri === 420 && R.data.opra.join() === '10,14' && R.data.cak === 2 && R.data.mikail === true && /RAW/.test(R.data.en), 'özellikler okunmadı ' + JSON.stringify(R.data));
+  ok(R.data.sabri === 420 && R.data.opra.join() === '10,14' && R.data.cak === 2 && R.data.mikail === true && /shouted/i.test(R.data.en), 'özellikler okunmadı ' + JSON.stringify(R.data));
   /* stok bol: herkes hızla servis edilsin */
   const feed = () => p.evaluate(() => { BT.S.ctrl = 2; const c = BT.counters[0]; while (c.buffer.length < 18) c.buffer.push({ k: 'fileto', f: 'hamsi' }); });
   await feed();

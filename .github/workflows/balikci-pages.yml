@@ -26,7 +26,8 @@ jobs:
       - name: Oyun dosyalarını topla
         run: |
           mkdir -p _site
-          cp balikci-tycoon/index.html balikci-tycoon/game.js balikci-tycoon/config.js balikci-tycoon/specials.js _site/
+          cp balikci-tycoon/index.html balikci-tycoon/native.js balikci-tycoon/game.js balikci-tycoon/config.js balikci-tycoon/specials.js balikci-tycoon/privacy.html _site/
+          cp -r balikci-tycoon/fonts _site/fonts
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

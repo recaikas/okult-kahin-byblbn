@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#0d2436">
 <title>Balıkçı Tycoon</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="fonts/fonts.css" rel="stylesheet">
 <style>
   :root{
     --ink:#f4e9d2; --ink2:#a9c0cf;
@@ -467,6 +465,8 @@
   .chend p{color:var(--ink)}
   .chgiant{font-size:16px !important;color:var(--gold) !important;letter-spacing:1px;margin-top:10px}
   .bnote{font-size:10.5px;color:var(--ink2);text-align:center;margin-top:8px;opacity:.8}
+  .privcard{width:min(92vw,560px);max-height:88vh;display:flex;flex-direction:column;gap:8px}
+  .privcard iframe{flex:1;min-height:60vh;border:0;border-radius:6px;background:#f6f1e4}
 </style>
 </head>
 <body>
@@ -555,12 +555,23 @@
     </div>
     <span class="lbl" id="setAuto">OTOMATİK KAYIT</span>
     <div class="seg" id="autoSeg"><button data-m="5">5 dk</button><button data-m="10" class="on">10 dk</button><button data-m="30">30 dk</button></div>
+    <span class="lbl" id="setOnline">ÇEVRİMİÇİ SKOR TABLOSU</span>
+    <div class="seg" id="onlineSeg"><button data-o="1" id="onlOn" class="on">AÇIK</button><button data-o="0" id="onlOff">KAPALI</button></div>
     <span class="lbl" id="setSaveLbl">KAYIT</span>
     <div class="saveinfo" id="setSaveInfo">—</div>
     <button class="alt good" id="saveBtn">💾 KAYDET</button>
     <button class="alt" id="saveQuitBtn">💾 KAYDET VE ÇIK</button>
     <button class="go" id="setClose">▶ DEVAM ET</button>
     <button class="alt danger" id="resetBtn">KAYDI SIFIRLA</button>
+    <button class="alt" id="forgetBtn">SKOR KAYDIMI SİL</button>
+    <button class="alt" id="privBtn">GİZLİLİK POLİTİKASI</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="privScr">
+  <div class="card privcard">
+    <iframe id="privFrame" title="privacy" src="about:blank"></iframe>
+    <button class="go" id="privClose">▶ KAPAT</button>
   </div>
 </div>
 
@@ -726,8 +737,6 @@
   <div class="isub"><span id="introSub"></span><span id="introNext" class="hidden">▶</span></div>
 </div>
 
-<script src="config.js"></script>
-<script src="specials.js"></script>
-<script src="game.js"></script>
+<script src="native.js"></script>   <!-- config.js, specials.js, game.js dosyalarını sırayla yükler (uygulamada önce kayıtları geri yükler) -->
 </body>
 </html>

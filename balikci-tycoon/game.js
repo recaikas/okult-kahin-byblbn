@@ -93,7 +93,7 @@ var STR = {
     built: '🔨 {n} kuruldu',
     projStage: '🏛️ {n}: %{p} — yeni aşama!',
     projDone: '🎉 {n} tamamlandı!',
-    decorBought: '✨ {n} yerleştirildi', yardName: 'HİZMET SAHASI', servRefund: 'Hizmet binaları yenilendi: kaldırılan binaların parası iade edildi (+{n})', restoIdle: 'fazla mal yok', chTitle: '🪜 BÖLÜM 1 — İskeleden İşletmeye',
+    decorBought: '✨ {n} yerleştirildi', yardName: 'HİZMET SAHASI', onlineLbl: 'ÇEVRİMİÇİ SKOR TABLOSU', onlOn: 'AÇIK', onlOff: 'KAPALI', onlineOnT: 'Skorun herkese açık tabloya gönderilecek', onlineOffT: 'Çevrimiçi paylaşım kapalı — tablo yalnız bu cihazda', forgetBtn: 'SKOR KAYDIMI SİL', privBtn: 'GİZLİLİK POLİTİKASI', privClose: '▶ KAPAT', forgetAsk: 'Bu cihazın skor tablosundaki tüm kayıtları (sunucu ve cihaz) silinsin mi? Oyun kayıtların etkilenmez.', forgetYes: 'SİL', forgetDone: 'Skor kayıtların silindi, yeni anonim kimlik oluşturuldu', forgetFail: 'Sunucuya ulaşılamadı — internet bağlantını kontrol edip tekrar dene', servRefund: 'Hizmet binaları yenilendi: kaldırılan binaların parası iade edildi (+{n})', restoIdle: 'fazla mal yok', chTitle: '🪜 BÖLÜM 1 — İskeleden İşletmeye',
     chGoal: 'Amacın: üç tezgâhı da sonuna kadar büyütmek. Bölgeleri aç ve yükselt, alınabilecek her şeyi al, her bölgeye bir müdür koy. Sayaç dolunca Bölüm 1 biter.',
     chAreas: 'Bölgeleri aç (Balık Pazarı, Fümehane)', chLevels: 'Bölge seviyeleri', chPads: 'Yükseltmeler (sepet, ayakkabı, fiyat)', chSlots: 'Yapı noktaları',
     chDecor: 'Süsler', chEnv: 'Çevre yatırımları', chFume: 'Füme makineleri', chProj: 'Kapalı Pazar', chMeydan: 'Meydan binaları (kulübe, depo, hal)', chMgr: 'Bölge müdürleri',
@@ -292,7 +292,7 @@ var STR = {
     built: '🔨 {n} built',
     projStage: '🏛️ {n}: {p}% — new stage!',
     projDone: '🎉 {n} completed!',
-    decorBought: '✨ {n} placed', yardName: 'SERVICE YARD', servRefund: 'Service buildings revised: removed buildings refunded (+{n})', restoIdle: 'no surplus', chTitle: '🪜 CHAPTER 1 — From Pier to Business',
+    decorBought: '✨ {n} placed', yardName: 'SERVICE YARD', onlineLbl: 'ONLINE LEADERBOARD', onlOn: 'ON', onlOff: 'OFF', onlineOnT: 'Your score will be sent to the public leaderboard', onlineOffT: 'Online sharing off — leaderboard on this device only', forgetBtn: 'DELETE MY LEADERBOARD DATA', privBtn: 'PRIVACY POLICY', privClose: '▶ CLOSE', forgetAsk: 'Delete all of this device\'s leaderboard entries (server and device)? Your game saves are not affected.', forgetYes: 'DELETE', forgetDone: 'Leaderboard data deleted, new anonymous ID created', forgetFail: 'Could not reach the server — check your connection and try again', servRefund: 'Service buildings revised: removed buildings refunded (+{n})', restoIdle: 'no surplus', chTitle: '🪜 CHAPTER 1 — From Pier to Business',
     chGoal: 'Your goal: grow all three stalls to the max. Open and upgrade the zones, buy everything on offer and put a manager in every zone. When the counter is full, Chapter 1 ends.',
     chAreas: 'Open the zones (Fish Market, Smokehouse)', chLevels: 'Zone levels', chPads: 'Upgrades (basket, boots, price)', chSlots: 'Build spots',
     chDecor: 'Decorations', chEnv: 'Surroundings', chFume: 'Smoker boxes', chProj: 'Covered Market', chMeydan: 'Square buildings (hut, depot, hall)', chMgr: 'Zone managers',
@@ -1983,8 +1983,8 @@ var Store = (function () {
       if (ok) { try { return localStorage.getItem(k); } catch (e) { } }
       return null;
     },
-    set: function (k, v) { mem[k] = String(v); if (ok) { try { localStorage.setItem(k, String(v)); } catch (e) { } } },
-    del: function (k) { mem[k] = null; if (ok) { try { localStorage.removeItem(k); } catch (e) { } } }
+    set: function (k, v) { mem[k] = String(v); if (ok) { try { localStorage.setItem(k, String(v)); } catch (e) { } } if (window.BT_NATIVE) window.BT_NATIVE.set(k, v); },
+    del: function (k) { mem[k] = null; if (ok) { try { localStorage.removeItem(k); } catch (e) { } } if (window.BT_NATIVE) window.BT_NATIVE.del(k); }
   };
 })();
 var SLOT_N = 3, SLOT_PREFIX = 'balikci_slot_', LAST_KEY = 'balikci_last', OLD_KEY = 'balikci_tycoon_v3', PREF_KEY = 'balikci_pref';
@@ -2006,7 +2006,8 @@ function migrateOldSave() {
   for (var i = 1; i <= SLOT_N; i++) if (!readSlot(i)) { Store.set(slotKey(i), old); if (!lastSlot()) Store.set(LAST_KEY, String(i)); break; }
   Store.del(OLD_KEY);
 }
-function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0 })); }
+var onlineOK = true;                 /* mağaza gizlilik: oyuncu çevrimiçi skor paylaşımını kapatabilir */
+function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, onl: onlineOK ? 1 : 0 })); }
 function loadPref() {
   try {
     var d = JSON.parse(Store.get(PREF_KEY) || 'null'); if (!d) return;
@@ -2014,6 +2015,7 @@ function loadPref() {
     if (d.snd !== undefined) { volLvl = clamp(d.snd | 0, 0, 2); applyVolume(); }
     if (d.zoom) zoomLvl = d.zoom;
     if (d.mus !== undefined) musicEnabled = !!d.mus;
+    if (d.onl !== undefined) onlineOK = !!d.onl;
   } catch (e) { }
 }
 function buildSave() {
@@ -2187,7 +2189,7 @@ function refreshSaveInfo() {
 var paused = false;
 function anyOverlay() {
   if (hiddenPause) return true;                 /* sekme arkada: oyun donar */
-  return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') ||
+  return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') || !el.privScr.classList.contains('hidden') ||
     !el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden') ||
     !el.stallScr.classList.contains('hidden') || !el.boardScr.classList.contains('hidden') || !el.halScr.classList.contains('hidden') ||
     !el.chScr.classList.contains('hidden') || !el.chEnd.classList.contains('hidden');
@@ -6100,7 +6102,7 @@ var el = {};
  'heroName', 'heroNameDice', 'heroRows', 'heroDice', 'heroGo', 'heroBack', 'heroTitle', 'heroSub', 'heroNameLbl',
  'chBtn', 'chPct', 'chScr', 'chTitle', 'chSub', 'chFill', 'chNum', 'chRows', 'chClose', 'chEnd', 'chEndK', 'chEndT', 'chEndP', 'chEndG', 'chEndGo',
  'actBtn', 'halScr', 'halTitle', 'halSub', 'halRows', 'halClose', 'autoScr', 'autoTitle', 'autoSub', 'autoOpts', 'autoBadge',
- 'setAuto', 'specPop', 'specPopT'].forEach(function (id) {
+ 'setAuto', 'specPop', 'specPopT', 'setOnline', 'onlOn', 'onlOff', 'forgetBtn', 'privBtn', 'privScr', 'privFrame', 'privClose'].forEach(function (id) {
   el[id] = document.getElementById(id);
 });
 var toastT = 0;
@@ -6131,6 +6133,8 @@ function applyLang() {
   if (!el.nameScr.classList.contains('hidden')) { syncNamePreview(); renderNameChips(); }
   el.setTitle.textContent = T('settings'); el.setLang.textContent = T('langLbl');
   el.setSound.textContent = T('soundLbl'); el.setZoom.textContent = T('zoomLbl');
+  el.setOnline.textContent = T('onlineLbl'); el.onlOn.textContent = T('onlOn'); el.onlOff.textContent = T('onlOff');
+  el.forgetBtn.textContent = T('forgetBtn'); el.privBtn.textContent = T('privBtn'); el.privClose.textContent = T('privClose');
   el.setAuto.textContent = T('autoLbl'); el.setMusic.textContent = T('musicLbl'); el.musOn.textContent = T('musOn'); el.musOff.textContent = T('musOff');
   el.setClose.textContent = T('resume'); el.resetBtn.textContent = T('delSlot');
   el.closeMenu.textContent = T('resume'); el.menuSet.textContent = T('settings');
@@ -6909,6 +6913,24 @@ el.resetBtn.onclick = function () {
     toast(T('slotDeleted', { n: n }));
   });
 };
+/* mağaza gizlilik şartları: çevrimiçi paylaşımı kapat / skor kaydımı sil / gizlilik politikası */
+Array.prototype.forEach.call(document.querySelectorAll('#onlineSeg button'), function (b) {
+  b.onclick = function () { onlineOK = b.dataset.o === '1'; savePref(); syncSettingsUI(); sfx.tap(); toast(T(onlineOK ? 'onlineOnT' : 'onlineOffT')); };
+});
+function forgetMe(done) {
+  var old = PLAYER_ID;
+  function local() {
+    Store.del(BOARD_KEY);
+    PLAYER_ID = 'p' + newRunId(); Store.set('balikci_pid', PLAYER_ID); playLogged = false;
+    if (done) done();
+  }
+  if (!ONLINE) { local(); toast(T('forgetDone')); return; }
+  rpc('bt_forget', { p_player: old }).then(function () { local(); toast(T('forgetDone')); },
+    function () { toast(T('forgetFail')); sfx.bad(); });
+}
+el.forgetBtn.onclick = function () { ask(T('forgetAsk'), T('forgetYes'), function () { forgetMe(); }); };
+el.privBtn.onclick = function () { el.privFrame.src = 'privacy.html#' + lang; el.privScr.classList.remove('hidden'); syncPause(); sfx.tap(); };
+el.privClose.onclick = function () { el.privScr.classList.add('hidden'); el.privFrame.src = 'about:blank'; syncPause(); };
 Array.prototype.forEach.call(document.querySelectorAll('#musSeg button'), function (b) {
   b.onclick = function () { setMusicEnabled(b.dataset.m === '1'); syncSettingsUI(); savePref(); sfx.tap(); };
 });
@@ -6921,6 +6943,7 @@ Array.prototype.forEach.call(document.querySelectorAll('#autoOpts button'), func
 function syncSettingsUI() {
   Array.prototype.forEach.call(document.querySelectorAll('#autoSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.m, 10) === S.autoMin); o.textContent = T('autoMinN', { m: o.dataset.m }); });
   Array.prototype.forEach.call(document.querySelectorAll('#musSeg button'), function (o) { o.classList.toggle('on', (o.dataset.m === '1') === musicEnabled); });
+  Array.prototype.forEach.call(document.querySelectorAll('#onlineSeg button'), function (o) { o.classList.toggle('on', (o.dataset.o === '1') === onlineOK); });
   Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.s, 10) === volLvl); });
   Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.z, 10) === zoomLvl); });
 }
@@ -7057,18 +7080,25 @@ window.addEventListener('keydown', function (e) {
 });
 window.addEventListener('resize', introResize);
 /* ESC: oyunu duraklat / devam ettir */
+/* Escape (klavye) ve Android geri tuşu aynı mantık: en üstteki paneli kapat, yoksa duraklatma menüsü.
+   true → işlendi; false → oyun başlamamış (ana ekran): uygulama arka plana alınabilir. */
+function backAction() {
+  if (!el.privScr.classList.contains('hidden')) { el.privClose.click(); return true; }
+  if (!el.settingsScreen.classList.contains('hidden')) { el.setClose.click(); return true; }
+  if (!S.started) return false;
+  if (!document.getElementById('officeScr').classList.contains('hidden')) return true;
+  if (!el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden')) return true;  /* gün kartı kendi butonuyla kapanır */
+  if (!el.stallScr.classList.contains('hidden')) { closeStallScreen(); return true; }
+  if (!el.boardScr.classList.contains('hidden')) { closeBoard(); return true; }
+  if (!el.halScr.classList.contains('hidden')) { closeHal(); return true; }
+  if (!el.menuScreen.classList.contains('hidden')) { el.closeMenu.click(); return true; }
+  if (barTab) { closeBar(); return true; }
+  openPauseMenu(); return true;
+}
 window.addEventListener('keydown', function (e) {
   if (e.key !== 'Escape' && e.key !== 'Esc') return;
-  if (!S.started) return;
-  if (!document.getElementById('officeScr').classList.contains('hidden')) return;
-  if (!el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden')) return;  /* gün kartı kendi butonuyla kapanır */
-  if (!el.stallScr.classList.contains('hidden')) { closeStallScreen(); return; }
-  e.preventDefault();
-  if (!el.boardScr.classList.contains('hidden')) { closeBoard(); return; }
-  if (!el.halScr.classList.contains('hidden')) { closeHal(); return; }
-  if (!el.settingsScreen.classList.contains('hidden')) { el.setClose.click(); return; }
-  if (!el.menuScreen.classList.contains('hidden')) { el.closeMenu.click(); return; }
-  openPauseMenu();
+  if (!S.started && el.settingsScreen.classList.contains('hidden')) return;
+  e.preventDefault(); backAction();
 });
 window.addEventListener('beforeunload', save);
 var hiddenPause = false;
@@ -7893,12 +7923,13 @@ var ONLINE = (function () {
   return c && /^https?:\/\//.test(c.url || '') && c.key ? { url: c.url.replace(/\/+$/, ''), key: c.key } : null;
 })();
 /* kalıcı anonim oyuncu kimliği — "kaç kişi oynadı" sayımı için; Yeni Oyun'da silinmez */
-var PLAYER_ID = (function () {
+var PLAYER_ID = (function () {                      /* Ayarlar › Skor kaydımı sil → yenilenir */
   var k = 'balikci_pid', v = null;
   v = Store.get(k);
   if (!v || v.length < 6) { v = 'p' + newRunId(); Store.set(k, v); }
   return v;
 })();
+function netOn() { return !!ONLINE && onlineOK; }
 function rpc(name, args) {
   return fetch(ONLINE.url + '/rest/v1/rpc/' + name, {
     method: 'POST',
@@ -7920,7 +7951,7 @@ var Board = {
   /* cb(liste, bilgi) — bilgi: {src:'local'|'online'|'offline', me:{rank,...}, stats:{players,plays,runs}} */
   fetch: function (cb) {
     var local = Board.sort(Board.read());
-    if (!ONLINE) { cb(local, { src: 'local' }); return; }
+    if (!netOn()) { cb(local, { src: 'local' }); return; }
     rpc('bt_board', { p_run: S.runId || '' }).then(function (d) {
       cb(d.top || [], { src: 'online', me: d.me, stats: d.stats });
     }, function () { cb(local, { src: 'offline' }); });
@@ -7942,7 +7973,7 @@ function submitScore(force) {
   if (!S.company || !S.runId) return;
   var e = { id: S.runId, n: S.company, h: (S.hero && S.hero.n) || '', s: S.caught, m: Math.round(S.earned), d: day.n, p: Math.round(S.play || 0), at: Date.now() };
   Board.submit(e);
-  if (!ONLINE) return;
+  if (!netOn()) return;
   var now = Date.now();
   if (netSent.busy) { netSent.dirty = true; return; }
   if (!force && now - netSent.at < 30000) return;
@@ -7958,7 +7989,7 @@ function submitScore(force) {
 /* her oturum açılışında bir kez: oyuncu + oyun sayacı */
 var playLogged = false;
 function logPlay() {
-  if (!ONLINE || playLogged) return;
+  if (!netOn() || playLogged) return;
   playLogged = true;
   rpc('bt_play', { p_player: PLAYER_ID, p_run: S.runId || '', p_lang: lang }).then(function () { }, function () { });
 }
@@ -9471,7 +9502,7 @@ window.BT = {
   setLang: function (l) { setLangTo(l); },
   M: function () { return M; },
   sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
-  pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
+  back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
   dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(),
     pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
     y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },

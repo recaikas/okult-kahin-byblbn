@@ -1,0 +1,8 @@
+{
+  "appId": "io.github.recaikas.balikcitycoon",
+  "appName": "Balıkçı Tycoon",
+  "webDir": "www",
+  "backgroundColor": "#1d6c8f",
+  "android": { "allowMixedContent": false },
+  "ios": { "contentInset": "never" }
+}
