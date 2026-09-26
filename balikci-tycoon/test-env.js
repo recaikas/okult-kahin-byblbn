@@ -25,7 +25,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   R.noAuto = await p.evaluate(() => BT.envStage());
   ok(R.noAuto === 0, 'itibarla yol kendiliğinden yenilendi ' + R.noAuto);
   /* YAPI › Dekoratif: seviye yetmezse kilitli, parası yetmezse alınmaz, ikisi de varsa alınır */
-  await p.evaluate(() => { BT.S.rep = 0; BT.S.cash = 50000; });
+  await p.evaluate(() => { BT.achMute(true); BT.S.rep = 0; BT.S.cash = 50000; });   /* başarım ödülleri para kontrolünü bozmasın */
   await p.click('.dtab[data-t="build"]'); await sleep(250); await p.click('#dpSub button[data-s="decor"]'); await sleep(250);
   R.locked = await p.evaluate(() => { const c = document.querySelector('#dpCards .dcard'); return { t: c.querySelector('b').textContent, btn: c.querySelector('.buy').textContent }; });
   ok(/Çakıl Yol/.test(R.locked.t) && /Seviye 3/.test(R.locked.btn), 'çakıl yol kartı kilitli değil ' + JSON.stringify(R.locked));

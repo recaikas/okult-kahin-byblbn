@@ -50,7 +50,9 @@
   if (!Pref) { load(0); return; }
   Pref.keys().then(function (r) {
     var ks = (r && r.keys || []).filter(function (k) { return k.indexOf(PREFIX) === 0; });
-    return Promise.all(ks.map(function (k) { return Pref.get({ key: k }).then(function (v) { return [k, v && v.value]; }); }));
+    return Promise.all(ks.map(function (k) {                         /* tek anahtar okunamazsa diğerleri yine gelsin */
+      return Pref.get({ key: k }).then(function (v) { return [k, v && v.value]; }, function () { return [k, null]; });
+    }));
   }).then(function (pairs) {
     pairs.forEach(function (kv) {
       try { if (kv[1] != null && localStorage.getItem(kv[0]) == null) localStorage.setItem(kv[0], kv[1]); } catch (e) { }

@@ -52,6 +52,21 @@ const MOCK = seed => {
   const menuAfter = await p.evaluate(() => !document.getElementById('menuScreen').classList.contains('hidden'));
   ok(barOpen && !barAfter && menuOpen && !menuAfter, 'geri tuşu sırası yanlış ' + JSON.stringify({ barOpen, barAfter, menuOpen, menuAfter }));
   ok(await p.evaluate(() => window.__min) === 1, 'oyun içinde geri tuşu uygulamayı kapattı');
+  /* inceleme bulgusu: onay sorusu ve bölüm kartı geri tuşuyla kapanır, altındaki ekran açık kalır */
+  await p.evaluate(() => { document.getElementById('menuBtn').click(); }); await sleep(150);
+  await p.click('#menuSet'); await sleep(150); await p.click('#resetBtn'); await sleep(150);
+  const askA = await p.evaluate(() => !document.getElementById('askScr').classList.contains('hidden'));
+  await p.evaluate(() => window.__h.backButton()); await sleep(150);
+  const askB = await p.evaluate(() => ({ ask: !document.getElementById('askScr').classList.contains('hidden'), set: !document.getElementById('settingsScreen').classList.contains('hidden') }));
+  ok(askA && !askB.ask && askB.set, 'geri tuşu onay sorusunu kapatmadı ' + JSON.stringify({ askA, askB }));
+  await p.evaluate(() => window.__h.backButton()); await sleep(150);
+  await p.evaluate(() => window.__h.backButton()); await sleep(150);   /* ayarlar → menü → oyun */
+  await p.evaluate(() => document.getElementById('chBtn').classList.remove('hidden'));
+  await p.evaluate(() => document.getElementById('chBtn').click()); await sleep(200);
+  const chA = await p.evaluate(() => !document.getElementById('chScr').classList.contains('hidden'));
+  await p.evaluate(() => window.__h.backButton()); await sleep(150);
+  const chB = await p.evaluate(() => ({ ch: !document.getElementById('chScr').classList.contains('hidden'), menu: !document.getElementById('menuScreen').classList.contains('hidden') }));
+  ok(chA && !chB.ch && !chB.menu, 'geri tuşu bölüm kartını kapatmadı ' + JSON.stringify({ chA, chB }));
   await p.evaluate(() => { BT.S.cash = 9876; window.__h.pause(); }); await sleep(300);
   ok(await p.evaluate(() => JSON.parse(window.__pref.balikci_slot_1).cash) === 9876, '"pause" olayında kayıt alınmadı');
   const pref = await p.evaluate(() => window.__pref);

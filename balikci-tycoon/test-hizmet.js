@@ -17,6 +17,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   await p.click('#heroGo'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(500);
 
   const A = await p.evaluate(() => {
+    BT.achMute(true);   /* başarım ödülleri para kontrolünü bozmasın */
     const S = BT.S; S.ctrl = 2; S.tut = 99; S.rep = 260;
     BT.areas.forEach(a => { a.locked = false; a.lvl = 3; }); BT.rebuildCounters();
     window.__ns = setInterval(() => { const s = document.getElementById('stallScr'); if (s && !s.classList.contains('hidden')) document.getElementById('stallGo').click(); }, 150);
@@ -67,6 +68,16 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   ok(G.out.koop && G.out.koop[0] === 3 && G.out.mezat && G.out.mezat[0] === 2 && G.out.buzhane && G.out.buzhane[0] === 2, 'birleşme seviyeleri yanlış ' + JSON.stringify(G));
   ok(G.refund === 80000, 'iade 80.000 değil ' + JSON.stringify(G));
   ok(G.plotsOK, 'göçte parsel ataması bozuk ' + JSON.stringify(G));
+  /* inceleme bulgusu: birleşilen binaya parsel kalmazsa iade yalnız fiilen ödenen tutar olmalı (Fümehane kilitli → 4 parsel) */
+  const G2 = await p.evaluate(async () => {
+    const d = BT.buildSave();
+    d.areas = d.areas.map((a, i) => i === 2 ? [1, 1] : a);
+    d.serv = [['buzhane', 1, 'p1'], ['tamirhane', 5, 'p2'], ['restoran', 1, 'p3'], ['nakliye', 1, 'p4'], ['mezat', 1, 'p8']];
+    d.cash = 1000; BT.loadFrom(d);
+    await new Promise(r => setTimeout(r, 1700));
+    return { refund: BT.S.cash - 1000, koop: !!BT.serv().koop, n: Object.keys(BT.serv()).length };
+  });
+  ok(!G2.koop && G2.n === 4 && G2.refund === 1500 + 4200 + 11000 + 28000 + 70000, 'parselsiz birleşmede iade yanlış ' + JSON.stringify(G2));
   ok(errs.length === 0, 'sayfa hatası: ' + errs.join(' | '));
   console.log(JSON.stringify({ A, R, G }));
   console.log(fail.length ? 'HATALAR:\n - ' + fail.join('\n - ') : 'TAMAM: hizmet binaları testi geçti');

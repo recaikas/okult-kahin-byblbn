@@ -1441,42 +1441,41 @@ function servSave() {
   }
   return out;
 }
-function servSpent(costs, lv) { var t = 0; for (var i = 0; i < lv && i < costs.length; i++) t += costs[i]; return t; }
+/* oyuncunun bir binaya lv seviyeye kadar ödediği (indirimli) tutar */
+function servSpent(costs, lv) { var t = 0; for (var i = 0; i < lv && i < costs.length; i++) t += upCost(sCost(costs[i])); return t; }
+function servCosts(d) { return d.lv.map(function (q) { return q.c; }); }
 var servRefund = 0;
 function servLoad(arr) {
-  servState = {}; servRefund = 0;
+  servState = {}; servRefund = 0; _seT = -1;
   for (var i = 0; i < PLOTS.length; i++) PLOTS[i].b = null;
   if (!arr || !arr.length) return;
-  /* v1.4 göç: kaldırılan bina → birleştiği binanın seviyesi en az onunki kadar olur; kalan harcama iade edilir */
-  var lvIn = {}, plIn = {}, gone = [];
+  /* v1.4 göç: kaldırılan bina → birleştiği binanın seviyesi en az onunki kadar olur.
+     paid[bina] = oyuncunun o binaya fiilen koyduğu toplam (kendi seviyeleri + ona katılan eski bina).
+     İade = paid − yeni seviyenin değeri (kurulabildiyse) ya da paid'in tamamı (parsel yoksa); asla ödenenden fazla değil. */
+  var lvIn = {}, plIn = {}, paid = {}, gone = [];
   for (var g = 0; g < arr.length; g++) {
     var rg = arr[g]; if (!rg) continue;
     var lg = clamp(parseInt(rg[1], 10) || 1, 1, 5);
-    if (SERV_GONE.hasOwnProperty(rg[0])) gone.push([rg[0], lg]); else if (sdef(rg[0])) { lvIn[rg[0]] = Math.max(lvIn[rg[0]] || 0, lg); plIn[rg[0]] = rg[2]; }
+    if (SERV_GONE.hasOwnProperty(rg[0])) gone.push([rg[0], lg]);
+    else if (sdef(rg[0]) && lg > (lvIn[rg[0]] || 0)) { lvIn[rg[0]] = lg; plIn[rg[0]] = rg[2]; }
   }
+  for (var k0 in lvIn) paid[k0] = servSpent(servCosts(sdef(k0)), lvIn[k0]);
   for (g = 0; g < gone.length; g++) {
-    var gid = gone[g][0], glv = gone[g][1], into = SERV_GONE[gid], spent = servSpent(SERV_GONE_COST[gid], glv), cover = 0;
-    if (into) {
-      var had = lvIn[into] || 0, nl = Math.max(had, glv);
-      cover = servSpent(sdef(into).lv.map(function (q) { return q.c; }), nl) - servSpent(sdef(into).lv.map(function (q) { return q.c; }), had);
-      lvIn[into] = nl;
-    }
-    servRefund += Math.max(0, spent - cover);
+    var gid = gone[g][0], glv = gone[g][1], into = SERV_GONE[gid], spent = servSpent(SERV_GONE_COST[gid], glv);
+    if (into) { lvIn[into] = Math.max(lvIn[into] || 0, glv); paid[into] = (paid[into] || 0) + spent; }
+    else servRefund += spent;                                   /* birleşeceği bina yok (yakıt, tersane) → tamamı iade */
   }
-  arr = [];
-  for (var key in lvIn) arr.push([key, lvIn[key], plIn[key] || null]);
-  for (var j = 0; j < arr.length; j++) {
-    var r = arr[j]; if (!r) continue;
-    var d = sdef(r[0]); if (!d) continue;                       /* bilinmeyen bina → atla */
-    var lv = clamp(parseInt(r[1], 10) || 1, 1, 5);
-    var p = plotById(r[2]);
+  for (var key in lvIn) {
+    var d = sdef(key), lv = clamp(lvIn[key], 1, 5);
+    var p = plotById(plIn[key]);
     if (!p || p.b || !plotActive(p) || p.allow.indexOf(d.id) < 0) {   /* geçersiz/kilitli parsel → uygun boşa taşı */
       var alt = servFreePlots(d.id);
       p = alt.length ? alt[0] : null;
     }
-    if (!p) { servRefund += servSpent(d.lv.map(function (q) { return q.c; }), lv); continue; }   /* yer yoksa parası iade */
+    if (!p) { servRefund += paid[key] || 0; continue; }         /* yer yoksa ödenen her şey iade */
     p.b = d.id;
     servState[d.id] = { lvl: lv, plot: p.id, cons: 0, nextT: d.lv[lv - 1].ivl || 0, flash: 0 };
+    servRefund += Math.max(0, (paid[key] || 0) - servSpent(servCosts(d), lv));
   }
   _seT = -1;
 }
@@ -2193,6 +2192,7 @@ function refreshSaveInfo() {
 var paused = false;
 function anyOverlay() {
   if (hiddenPause) return true;                 /* sekme arkada: oyun donar */
+  if (!el.askScr.classList.contains('hidden')) return true;   /* onay sorusu */
   if (fbOpen()) return true;                    /* görüş formu */
   if (retCardOpen()) return true;               /* "Sen yokken…" kartı */
   return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') || !el.privScr.classList.contains('hidden') ||
@@ -6926,11 +6926,17 @@ el.resetBtn.onclick = function () {
 Array.prototype.forEach.call(document.querySelectorAll('#onlineSeg button'), function (b) {
   b.onclick = function () { onlineOK = b.dataset.o === '1'; savePref(); syncSettingsUI(); sfx.tap(); toast(T(onlineOK ? 'onlineOnT' : 'onlineOffT')); };
 });
-function forgetMe(done) {
+function forgetMe(done, tries) {
+  /* yolda bir skor gönderimi varsa bitmesini bekle: silmeden sonra eski kimlikle satır kalmasın */
+  if (ONLINE && netSent.busy && (tries || 0) < 25) { setTimeout(function () { forgetMe(done, (tries || 0) + 1); }, 200); return; }
   var old = PLAYER_ID;
   function local() {
     Store.del(BOARD_KEY);
     PLAYER_ID = 'p' + newRunId(); Store.set('balikci_pid', PLAYER_ID); playLogged = false;
+    /* silinen veri bir sonraki otomatik gönderimde geri gelmesin: bu oyuna yeni kimlik + paylaşım kapalı */
+    if (S.runId) S.runId = newRunId();
+    netSent.at = 0; netSent.s = -1; netSent.busy = false; netSent.dirty = false;
+    onlineOK = false; savePref(); syncSettingsUI();
     if (done) done();
   }
   if (!ONLINE) { local(); toast(T('forgetDone')); return; }
@@ -7093,12 +7099,21 @@ window.addEventListener('resize', introResize);
 /* Escape (klavye) ve Android geri tuşu aynı mantık: en üstteki paneli kapat, yoksa duraklatma menüsü.
    true → işlendi; false → oyun başlamamış (ana ekran): uygulama arka plana alınabilir. */
 function backAction() {
+  if (!el.askScr.classList.contains('hidden')) { closeAsk(false); return true; }   /* onay sorusu: "hayır" */
   if (fbOpen()) { fbClose(); return true; }     /* görüş formu en üstte */
   if (retBack()) return true;                                  /* "Sen yokken…" kartı: topla ve kapat */
   if (!el.privScr.classList.contains('hidden')) { el.privClose.click(); return true; }
   if (!el.settingsScreen.classList.contains('hidden')) { el.setClose.click(); return true; }
-  if (!S.started) return false;
-  if (!document.getElementById('officeScr').classList.contains('hidden')) return true;
+  if (!S.started) {                              /* oyun öncesi ekranlar: bir önceki ekrana dön; ana ekranda false */
+    if (!el.heroScr.classList.contains('hidden')) { el.heroBack.click(); return true; }
+    if (!document.getElementById('nameScr').classList.contains('hidden')) { el.nameBack.click(); return true; }
+    if (!el.slotScr.classList.contains('hidden')) { el.slotBack.click(); return true; }
+    return false;
+  }
+  if (!el.chEnd.classList.contains('hidden')) { el.chEndGo.click(); return true; }
+  if (!el.chScr.classList.contains('hidden')) { el.chClose.click(); return true; }
+  if (!el.autoScr.classList.contains('hidden')) return true;      /* otomatik kayıt seçimi zorunlu */
+  if (!document.getElementById('officeScr').classList.contains('hidden')) { document.getElementById('ofClose').click(); return true; }
   if (!el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden')) return true;  /* gün kartı kendi butonuyla kapanır */
   if (!el.stallScr.classList.contains('hidden')) { closeStallScreen(); return true; }
   if (!el.boardScr.classList.contains('hidden')) { closeBoard(); return true; }
@@ -7109,8 +7124,7 @@ function backAction() {
 }
 window.addEventListener('keydown', function (e) {
   if (e.key !== 'Escape' && e.key !== 'Esc') return;
-  if (!S.started && el.settingsScreen.classList.contains('hidden')) return;
-  e.preventDefault(); backAction();
+  if (backAction()) e.preventDefault();
 });
 window.addEventListener('beforeunload', save);
 var hiddenPause = false;
@@ -9272,12 +9286,12 @@ function mkCustomer(c, type, slot, ord, spec) {
 function spawnSpecial(idx) {
   var sp = specById(day.spec && day.spec[idx]); if (!sp) return false;
   var c = specStall(sp); if (!c) return false;
-  var type = specType(sp), ord = makeOrderFor(c, type);
-  if (!ord || !canProduce(ord.f) || !canProcess(ord.k, ord.f) || !canSell(ord.f)) return false;
-  var slot = -1, qmax = queueMax(c.z), j;
+  var slot = -1, qmax = queueMax(c.z), j;                  /* önce yer: kuyruk doluyken hayali sipariş füme payını bozmasın */
   for (j = 0; j < qmax; j++) if (!c.slots[j]) { slot = j; break; }
   if (slot < 0) for (j = qmax; j < c.slots.length; j++) if (!c.slots[j]) { slot = j; break; }
   if (slot < 0) return false;
+  var type = specType(sp), ord = makeOrderFor(c, type);
+  if (!ord || !canProduce(ord.f) || !canProcess(ord.k, ord.f) || !canSell(ord.f)) return false;
   mkCustomer(c, type, slot, ord, sp);
   if (S.met.indexOf(sp.id) < 0) S.met.push(sp.id);
   return true;
@@ -9610,7 +9624,9 @@ function achRewardText(r) {
 }
 var achQ = [], achBusyT = 0, achHideTo = 0;
 /* aç: ödülü ver, cihaz listesine yaz, bildirimi kuyruğa koy. Zaten açıksa hiçbir şey yapmaz. */
+var achMuted = false;                                         /* yalnız testler: tam tutar kontrol eden eski testlerde ödül karışmasın */
 function achUnlock(id) {
+  if (achMuted) return false;
   var a = achById(id);
   if (!a || achHas(id)) return false;
   if (!S.ach) S.ach = {};
@@ -9930,7 +9946,7 @@ Object.assign(STR.tr, {
   fbTooMany: 'Bugün yeterince görüş gönderdin, yarın yine yaz', fbBad: 'Görüş gönderilemedi, metni kontrol edip tekrar dene',
   forgetBtn: 'ÇEVRİMİÇİ VERİLERİMİ SİL',
   forgetAsk: 'Bu cihazın çevrimiçi verileri (skor tablosu kayıtları ve gönderdiğin görüşler; sunucu ve cihaz) silinsin mi? Oyun kayıtların etkilenmez.',
-  forgetDone: 'Çevrimiçi verilerin silindi, yeni anonim kimlik oluşturuldu'
+  forgetDone: 'Çevrimiçi verilerin silindi; paylaşım kapatıldı (Ayarlar\'dan yeniden açabilirsin)'
 });
 Object.assign(STR.en, {
   fbBtn: '⭐ SEND FEEDBACK', fbTitle: 'SEND FEEDBACK', fbSub: 'How do you like the game? Every message is read.',
@@ -9944,7 +9960,7 @@ Object.assign(STR.en, {
   fbTooMany: 'You have sent plenty of feedback today, write again tomorrow', fbBad: 'Feedback could not be sent, check the text and try again',
   forgetBtn: 'DELETE MY ONLINE DATA',
   forgetAsk: 'Delete this device\'s online data (leaderboard entries and the feedback you sent; server and device)? Your game saves are not affected.',
-  forgetDone: 'Online data deleted, new anonymous ID created'
+  forgetDone: 'Online data deleted; sharing turned off (you can turn it back on in Settings)'
 });
 var FB_OUTBOX = 'balikci_feedback_outbox', FB_MAX = 20, FB_LEN = 500, FB_GAP = 61000, FB_CATS = ['bug', 'idea', 'love'];
 var FB_VER = '1.7';                                    /* görüşle birlikte giden oyun sürümü */
@@ -10181,7 +10197,7 @@ window.BT = {
 };
 /* test kancaları: uzakta kazanç + başarımlar */
 Object.assign(window.BT, {
-  ACH: ACH, ach: function () { return Object.keys(S.ach || {}); }, achAll: achGlobal, achUnlock: achUnlock, achCheck: achCheck,
+  ACH: ACH, achMute: function (v) { achMuted = !!v; }, ach: function () { return Object.keys(S.ach || {}); }, achAll: achGlobal, achUnlock: achUnlock, achCheck: achCheck,
   achQueue: function () { return achQ.slice(); }, achTabHTML: achTabHTML,
   ret: function () { return { rate: RET.rate.slice(), acc: RET.acc.slice(), win: RET.win, dayInc: RET.dayInc, bestMkt: RET.bestMkt, loadedT: RET.loadedT, card: retCardOpen(), cardV: RET.cardV, cardSec: RET.cardSec }; },
   retSet: function (rates, dayInc) { if (rates) RET.rate = rates.slice(0, 3); if (dayInc !== undefined) RET.dayInc = dayInc; },

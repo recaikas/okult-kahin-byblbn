@@ -43,6 +43,10 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   const after = await p.evaluate(() => ({ pid: BT.pid(), board: localStorage.getItem('balikci_board_v2'), stored: localStorage.getItem('balikci_pid') }));
   ok(f && f.body.p_player === pid0, 'bt_forget eski kimlikle çağrılmadı ' + JSON.stringify(f));
   ok(after.pid !== pid0 && after.stored === after.pid && !after.board, 'yerel temizlik/yeni kimlik yok ' + JSON.stringify(after));
+  /* inceleme bulgusu: silinen veri bir sonraki gönderimde geri gelmemeli (paylaşım kapanır, bu oyun yeni kimlik alır) */
+  const nF = calls.length;
+  const af = await p.evaluate(() => { BT.S.caught = 500; BT.submitScore(true); return { onl: BT.onlineOK(), run: BT.S.runId }; }); await sleep(400);
+  ok(af.onl === false && calls.length === nF, 'silmeden sonra skor yeniden gönderildi ' + JSON.stringify({ af, yeni: calls.slice(nF).map(c => c.name) }));
   /* 3) gizlilik politikası */
   await p.click('#privBtn'); await sleep(700);
   const pv = await p.evaluate(() => ({ open: !document.getElementById('privScr').classList.contains('hidden'), paused: BT.paused(),

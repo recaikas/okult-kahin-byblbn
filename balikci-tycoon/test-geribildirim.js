@@ -146,6 +146,8 @@ const vis = (p, id) => p.evaluate(i => !document.getElementById(i).classList.con
   await p.click('#askYes'); await sleep(500);
   const fg = calls.find(c => c.name === 'bt_forget');
   ok(fg && fg.body.p_player === pid0 && await p.evaluate(() => BT.pid()) !== pid0, 'bt_forget çalışmadı ' + JSON.stringify(fg));
+  ok(await p.evaluate(() => BT.onlineOK()) === false, 'silme sonrası paylaşım kapanmadı');
+  await p.click('#onlineSeg button[data-o="1"]'); await sleep(100);
   await p.evaluate(() => BT.fbFlush(true)); await sleep(400);
   ok(fbCalls().length === fb0 && await p.evaluate(() => BT.fbOutbox().length) === 0, 'eski kimliğin görüşü gönderildi / kutuda kaldı');
   /* gelen kutusu en çok 20 (en eskisi düşer) */
