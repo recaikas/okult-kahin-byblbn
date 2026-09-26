@@ -75,6 +75,12 @@ Rakipler • Borsa • Telefon.
 **Şehirden şehre:** ilk şehir Trabzon (kıyı). Belli bir büyüklüğe ulaşınca yeni şehir haritaları açılır: Samsun →
 İstanbul (Karaköy) → İzmir → Antalya. Her şehrin kendi mahalleleri ve rakip ağırlığı var.
 
+## 1b. Filo (Bölüm 1'den ertelenen binalar)
+
+v1.4'te Bölüm 1'den çıkarılan iki hizmet binası burada gerçek işleriyle döner:
+- **Yakıt İstasyonu:** filonun sefer maliyetini düşürür, dış teknelere yakıt satar.
+- **Tersane:** tekne alma ve yükseltme, filo yuvası, amiral gemisi. Lojistik departmanıyla birlikte açılır.
+
 ## 2. Fabrika ve marka
 
 - **İşleme tesisi:** konserve, füme paket, dondurulmuş fileto hatları. Hammaddeyi şubeler ve filo sağlar.

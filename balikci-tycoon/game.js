@@ -93,7 +93,7 @@ var STR = {
     built: '🔨 {n} kuruldu',
     projStage: '🏛️ {n}: %{p} — yeni aşama!',
     projDone: '🎉 {n} tamamlandı!',
-    decorBought: '✨ {n} yerleştirildi', yardName: 'HİZMET SAHASI', chTitle: '🪜 BÖLÜM 1 — İskeleden İşletmeye',
+    decorBought: '✨ {n} yerleştirildi', yardName: 'HİZMET SAHASI', servRefund: 'Hizmet binaları yenilendi: kaldırılan binaların parası iade edildi (+{n})', restoIdle: 'fazla mal yok', chTitle: '🪜 BÖLÜM 1 — İskeleden İşletmeye',
     chGoal: 'Amacın: üç tezgâhı da sonuna kadar büyütmek. Bölgeleri aç ve yükselt, alınabilecek her şeyi al, her bölgeye bir müdür koy. Sayaç dolunca Bölüm 1 biter.',
     chAreas: 'Bölgeleri aç (Balık Pazarı, Fümehane)', chLevels: 'Bölge seviyeleri', chPads: 'Yükseltmeler (sepet, ayakkabı, fiyat)', chSlots: 'Yapı noktaları',
     chDecor: 'Süsler', chEnv: 'Çevre yatırımları', chFume: 'Füme makineleri', chProj: 'Kapalı Pazar', chMeydan: 'Meydan binaları (kulübe, depo, hal)', chMgr: 'Bölge müdürleri',
@@ -292,7 +292,7 @@ var STR = {
     built: '🔨 {n} built',
     projStage: '🏛️ {n}: {p}% — new stage!',
     projDone: '🎉 {n} completed!',
-    decorBought: '✨ {n} placed', yardName: 'SERVICE YARD', chTitle: '🪜 CHAPTER 1 — From Pier to Business',
+    decorBought: '✨ {n} placed', yardName: 'SERVICE YARD', servRefund: 'Service buildings revised: removed buildings refunded (+{n})', restoIdle: 'no surplus', chTitle: '🪜 CHAPTER 1 — From Pier to Business',
     chGoal: 'Your goal: grow all three stalls to the max. Open and upgrade the zones, buy everything on offer and put a manager in every zone. When the counter is full, Chapter 1 ends.',
     chAreas: 'Open the zones (Fish Market, Smokehouse)', chLevels: 'Zone levels', chPads: 'Upgrades (basket, boots, price)', chSlots: 'Build spots',
     chDecor: 'Decorations', chEnv: 'Surroundings', chFume: 'Smoker boxes', chProj: 'Covered Market', chMeydan: 'Square buildings (hut, depot, hall)', chMgr: 'Zone managers',
@@ -1271,58 +1271,41 @@ var SERVSCALE = 1.0;                       /* §38.1 tek global denge katsayıs�
 function sCost(v) { return Math.max(1, Math.round(v * SERVSCALE)); }
 
 /* Hizmet parselleri (§32) — yürüme koridoru ve kasa güvenli alanı dışında sabit. */
-var PLOTS = [
-  { id: 'p1', z: 0, x: 16.8, y: 10.0, n: { tr: 'Saha 1 · İskele', en: 'Yard 1 · Pier' },    allow: ['buzhane', 'tamirhane'], b: null },
-  { id: 'p2', z: 0, x: 16.8, y: 13.8, n: { tr: 'Saha 2 · İskele', en: 'Yard 2 · Pier' },     allow: ['buzhane', 'tamirhane'], b: null },
-  { id: 'p3', z: 1, x: 16.8, y: 17.6, n: { tr: 'Saha 3 · Pazar', en: 'Yard 3 · Market' },   allow: ['hal', 'restoran'], b: null },
-  { id: 'p4', z: 1, x: 22.7, y: 12.0, n: { tr: 'Saha 4 · Pazar', en: 'Yard 4 · Market' }, allow: ['hal', 'restoran', 'nakliye'], b: null },
-  { id: 'p5', z: 2, x: 22.7, y: 19.6, n: { tr: 'Saha 6 · Fümehane', en: 'Yard 6 · Smokehouse' },     allow: ['nakliye', 'buzhane', 'yakit'], b: null },
-  { id: 'p6', z: 2, x: 28.6, y: 14.0, n: { tr: 'Saha 7 · Fümehane', en: 'Yard 7 · Smokehouse' },  allow: ['yakit', 'nakliye', 'tersane'], b: null },
-  { id: 'p7', z: 2, x: 28.6, y: 17.8, n: { tr: 'Saha 8 · Fümehane', en: 'Yard 8 · Smokehouse' },   allow: ['tersane', 'yakit', 'tamirhane'], b: null },
-  /* v2.0 — kooperatif ve mezat salonu için yeni parseller */
-  { id: 'p8', z: 1, x: 22.7, y: 15.8, n: { tr: 'Saha 5 · Pazar', en: 'Yard 5 · Market' },  allow: ['koop', 'mezat', 'hal'], b: null },
-  { id: 'p9', z: 2, x: 28.6, y: 21.6, n: { tr: 'Saha 9 · Fümehane', en: 'Yard 9 · Smokehouse' },        allow: ['mezat', 'koop', 'nakliye'], b: null }
+var PLOTS = [                                   /* v1.4: 5 parsel, her biri 5 binanın hepsini alır; bölge açıldıkça açılır */
+  { id: 'p1', z: 0, x: 16.8, y: 10.0, n: { tr: 'Saha 1 · İskele', en: 'Yard 1 · Pier' },         allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p2', z: 0, x: 22.7, y: 12.0, n: { tr: 'Saha 2 · İskele', en: 'Yard 2 · Pier' },         allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p3', z: 1, x: 16.8, y: 13.8, n: { tr: 'Saha 3 · Pazar', en: 'Yard 3 · Market' },        allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p4', z: 1, x: 22.7, y: 15.8, n: { tr: 'Saha 4 · Pazar', en: 'Yard 4 · Market' },        allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p5', z: 2, x: 16.8, y: 17.6, n: { tr: 'Saha 5 · Fümehane', en: 'Yard 5 · Smokehouse' }, allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null }
 ];
 function plotActive(p) { return !AREAS[p.z].locked; }
 function plotById(id) { for (var i = 0; i < PLOTS.length; i++) if (PLOTS[i].id === id) return PLOTS[i]; return null; }
 
 /* Bina kataloğu (§35). inc = servis geliri/olay, ivl = olay aralığı (sn). */
+/* v1.4 — hizmet binaları 9 → 5: her bina görünür, ayrı bir iş yapar. Yakıt İstasyonu ve Tersane (tekne sistemi
+   yokken yalnız pasif para veriyordu) Bölüm 2'ye kaldı; Tamirhane Kooperatif'e, Toptancı Hanı Mezat Salonu'na katıldı.
+   Eski kayıtta kaldırılan bina varsa harcanan para iade edilir (servLoad). */
+var SERV_GONE = { tamirhane: 'koop', hal: 'mezat', yakit: null, tersane: null };
+var SERV_GONE_COST = { tamirhane: [1500, 4200, 11000, 28000, 70000], hal: [3200, 8500, 21000, 54000, 135000],
+  yakit: [10000, 28000, 72000, 180000, 440000], tersane: [18000, 52000, 140000, 350000, 820000] };
 var SERV = [
   { id: 'buzhane', icon: '🧊', n: { tr: 'Buzhane', en: 'Ice House' }, acc: '#7fb7d4',
-    r: { tr: 'Tezgâh arkası stok ve toplu sipariş altyapısı', en: 'Back stock for stalls and bulk orders' },
+    r: { tr: 'Ağlarda ve tezgâhlarda daha çok mal soğuk durur', en: 'Nets and stalls hold more goods on ice' },
     lv: [
-      { c: 900,   inc: 0,   ivl: 0,  mod: { stock: 2 },                d: { tr: '+2 arka stok / tür', en: '+2 back stock / type' },  v: { tr: 'Küçük ahşap buz kulübesi', en: 'Small wooden ice hut' } },
-      { c: 2600,  inc: 0,   ivl: 0,  mod: { stock: 4 },                d: { tr: '+4 arka stok / tür', en: '+4 back stock / type' },  v: { tr: 'Yalıtımlı kulübe, metal kapı', en: 'Insulated hut, metal door' } },
-      { c: 6800,  inc: 0,   ivl: 0,  mod: { stock: 6, buffer: 1 },     d: { tr: '+6 stok • toplu sipariş tamponu', en: '+6 stock • bulk order buffer' }, v: { tr: 'Tuğla soğuk depo, yükleme kapısı', en: 'Brick cold store, loading door' } },
-      { c: 17000, inc: 0,   ivl: 0,  mod: { stock: 9, wspeed: 0.10 },  d: { tr: '+9 stok • çırak %10 hızlı', en: '+9 stock • workers 10% faster' }, v: { tr: 'Büyük depo, dış ünite ve raflar', en: 'Large depot, outdoor unit, racks' } },
-      { c: 42000, inc: 0,   ivl: 0,  mod: { stock: 12, wspeed: 0.10, ctrslot: 1 }, d: { tr: '+12 stok • +1 kontrat kapasitesi', en: '+12 stock • +1 contract slot' }, v: { tr: 'Soğuk lojistik merkezi', en: 'Cold logistics centre' } }
-    ] },
-  { id: 'tamirhane', icon: '🛠️', n: { tr: 'Tamirhane', en: 'Repair Shop' }, acc: '#c98a3c',
-    r: { tr: 'Liman ekipmanı servisi; yükseltme maliyetini düşürür', en: 'Harbor equipment service; cuts upgrade costs' },
-    lv: [
-      { c: 1500,  inc: 14,  ivl: 46, mod: { upcost: 0.02 }, d: { tr: 'Servis geliri • yükseltme −%2', en: 'Service income • upgrades −2%' }, v: { tr: 'Açık tezgâh ve alet sandığı', en: 'Open bench and tool chest' } },
-      { c: 4200,  inc: 26,  ivl: 38, mod: { upcost: 0.04 }, d: { tr: 'Servis sıklığı +%20 • −%4', en: 'Service rate +20% • −4%' }, v: { tr: 'Ahşap atölye ve küçük vinç', en: 'Wooden workshop, small crane' } },
-      { c: 11000, inc: 52,  ivl: 34, mod: { upcost: 0.06 }, d: { tr: 'Tekne servis kontratları • −%6', en: 'Boat service contracts • −6%' }, v: { tr: 'Kapalı servis binası, büyük kapı', en: 'Closed service hall, big door' } },
-      { c: 28000, inc: 96,  ivl: 30, mod: { upcost: 0.08 }, d: { tr: 'Servis geliri +%20 • −%8', en: 'Service income +20% • −8%' }, v: { tr: 'Vinçli bakım alanı, parça rafları', en: 'Crane bay, parts racks' } },
-      { c: 70000, inc: 185, ivl: 26, mod: { upcost: 0.10 }, d: { tr: 'Özel bakım kontratları • −%10', en: 'Premium maintenance • −10%' }, v: { tr: 'İki gözlü profesyonel tesis', en: 'Two-bay professional facility' } }
-    ] },
-  { id: 'hal', icon: '🏪', n: { tr: 'Toptancı Hanı', en: 'Wholesale Inn' }, acc: '#d8b45a',
-    r: { tr: 'Tezgâhların üstüne toptan satış katmanı ekler', en: 'Adds a wholesale layer above the stalls' },
-    lv: [
-      { c: 3200,   inc: 0,   ivl: 0,  mod: { queue: 1 }, d: { tr: 'Müşteri kapasitesi +1', en: 'Customer capacity +1' }, v: { tr: 'Açık masa ve tente grubu', en: 'Open tables and awnings' } },
-      { c: 8500,   inc: 0,   ivl: 0,  mod: { queue: 2 }, d: { tr: 'Müşteri kapasitesi +2', en: 'Customer capacity +2' }, v: { tr: 'Kapalı pazar çatısı, tezgâh sırası', en: 'Covered market roof, stall row' } },
-      { c: 21000,  inc: 0,   ivl: 0,  mod: { queue: 2 }, unl: 'toptanci', d: { tr: 'Toptancı müşteri tipi açılır', en: 'Wholesaler customer unlocked' }, v: { tr: 'Taş hal binası, yükleme kapısı', en: 'Stone hall, loading gate' } },
-      { c: 54000,  inc: 0,   ivl: 0,  mod: { queue: 3, wholesale: 0.10 }, unl: 'toptanci', d: { tr: 'Toptan ödülü +%10 • kapasite +3', en: 'Wholesale reward +10% • capacity +3' }, v: { tr: 'Büyümüş hal, ikinci giriş', en: 'Expanded hall, second entrance' } },
-      { c: 135000, inc: 0,   ivl: 0,  mod: { queue: 3, wholesale: 0.10, ctrslot: 1 }, unl: 'toptanci', d: { tr: 'Büyük alıcılar • +1 kontrat slotu', en: 'Major buyers • +1 contract slot' }, v: { tr: 'Bölgesel balık ticaret merkezi', en: 'Regional fish trade centre' } }
+      { c: 900,   inc: 0, ivl: 0, mod: { stock: 2 },                          d: { tr: 'Ağ stoğu +2', en: 'Net stock +2' },  v: { tr: 'Küçük ahşap buz kulübesi', en: 'Small wooden ice hut' } },
+      { c: 2600,  inc: 0, ivl: 0, mod: { stock: 4, ctrcap: 2 },               d: { tr: 'Ağ stoğu +4 • tezgâh +2', en: 'Net stock +4 • stalls +2' },  v: { tr: 'Yalıtımlı kulübe, metal kapı', en: 'Insulated hut, metal door' } },
+      { c: 6800,  inc: 0, ivl: 0, mod: { stock: 6, ctrcap: 4 },               d: { tr: 'Ağ stoğu +6 • tezgâh +4', en: 'Net stock +6 • stalls +4' }, v: { tr: 'Tuğla soğuk depo, yükleme kapısı', en: 'Brick cold store, loading door' } },
+      { c: 17000, inc: 0, ivl: 0, mod: { stock: 9, ctrcap: 6, wspeed: 0.10 }, d: { tr: 'Stok +9 • tezgâh +6 • çırak %10 hızlı', en: 'Stock +9 • stalls +6 • workers 10% faster' }, v: { tr: 'Büyük depo, dış ünite ve raflar', en: 'Large depot, outdoor unit, racks' } },
+      { c: 42000, inc: 0, ivl: 0, mod: { stock: 12, ctrcap: 8, wspeed: 0.15 }, d: { tr: 'Stok +12 • tezgâh +8 • çırak %15 hızlı', en: 'Stock +12 • stalls +8 • workers 15% faster' }, v: { tr: 'Soğuk lojistik merkezi', en: 'Cold logistics centre' } }
     ] },
   { id: 'restoran', icon: '🍽️', n: { tr: 'Restoran', en: 'Restaurant' }, acc: '#d1584a',
-    r: { tr: 'Ziyaretçiyi gelire çevirir; balık stoğunu tüketmez', en: 'Turns visitors into income; never eats fish stock' },
+    r: { tr: 'Depoda ya da dolu tezgâhta biriken fazla balığı pişirip satar', en: 'Cooks and sells surplus fish from the depot or full stalls' },
     lv: [
-      { c: 4200,   inc: 30,  ivl: 40, mod: {}, d: { tr: 'Periyodik restoran geliri', en: 'Periodic restaurant income' }, v: { tr: 'Küçük balık büfesi, 2 masa', en: 'Small fish buffet, 2 tables' } },
-      { c: 11000,  inc: 52,  ivl: 32, mod: {}, d: { tr: 'Ziyaretçi sıklığı +%25', en: 'Visitor rate +25%' }, v: { tr: 'Kapalı lokanta ve oturma alanı', en: 'Indoor eatery and seating' } },
-      { c: 30000,  inc: 96,  ivl: 30, mod: { custval: 0.03 }, unl: 'turist', d: { tr: 'Turist tipi • müşteri geliri +%3', en: 'Tourist type • customer income +3%' }, v: { tr: 'Sahil restoranı, camlı teras', en: 'Seaside restaurant, glass terrace' } },
-      { c: 78000,  inc: 175, ivl: 26, mod: { custval: 0.03 }, unl: 'turist', d: { tr: 'Servis geliri +%25', en: 'Service income +25%' }, v: { tr: 'Büyük restoran, geniş teras', en: 'Large restaurant, wide terrace' } },
-      { c: 190000, inc: 320, ivl: 22, mod: { custval: 0.08 }, unl: 'turist', d: { tr: 'Prestij ziyaretçi • müşteri +%8', en: 'Prestige visitors • customers +8%' }, v: { tr: 'Prestijli deniz ürünleri kompleksi', en: 'Prestige seafood complex' } }
+      { c: 4200,   ivl: 40, cook: 2, cmul: 1.00, mod: {},               d: { tr: '40 sn\'de 2 fazla ürün pişirir', en: 'Cooks 2 surplus goods / 40s' }, v: { tr: 'Küçük balık büfesi, 2 masa', en: 'Small fish buffet, 2 tables' } },
+      { c: 11000,  ivl: 34, cook: 3, cmul: 1.05, mod: {},               d: { tr: '34 sn\'de 3 ürün • fiyat %105', en: '3 goods / 34s • 105% price' }, v: { tr: 'Kapalı lokanta ve oturma alanı', en: 'Indoor eatery and seating' } },
+      { c: 30000,  ivl: 30, cook: 4, cmul: 1.10, mod: { custval: 0.03 }, unl: 'turist', d: { tr: '4 ürün • Turist müşteri açılır', en: '4 goods • Tourist customers' }, v: { tr: 'Sahil restoranı, camlı teras', en: 'Seaside restaurant, glass terrace' } },
+      { c: 78000,  ivl: 26, cook: 5, cmul: 1.15, mod: { custval: 0.04 }, unl: 'turist', d: { tr: '5 ürün • müşteri geliri +%4', en: '5 goods • customer income +4%' }, v: { tr: 'Büyük restoran, geniş teras', en: 'Large restaurant, wide terrace' } },
+      { c: 190000, ivl: 22, cook: 6, cmul: 1.25, mod: { custval: 0.08 }, unl: 'turist', d: { tr: '6 ürün • fiyat %125 • müşteri +%8', en: '6 goods • 125% price • customers +8%' }, v: { tr: 'Prestijli deniz ürünleri kompleksi', en: 'Prestige seafood complex' } }
     ] },
   { id: 'nakliye', icon: '📋', n: { tr: 'Nakliye Ofisi', en: 'Shipping Office' }, acc: '#6f8fae',
     r: { tr: 'Kontrat ve şirket işlerinin fiziksel merkezi', en: 'Physical hub for contracts and company deals' },
@@ -1333,42 +1316,25 @@ var SERV = [
       { c: 145000, inc: 150, ivl: 32, mod: { ctrslot: 2, offer: 0.15, ctrrew: 0.08 }, unl: 'ctr', d: { tr: '+1 aktif slot • ödül +%8', en: '+1 active slot • reward +8%' }, v: { tr: 'Büyük depo-ofis, araç rampası', en: 'Depot office, truck ramp' } },
       { c: 360000, inc: 285, ivl: 26, mod: { ctrslot: 3, offer: 0.20, ctrrew: 0.15 }, unl: 'ctr', d: { tr: 'Stratejik kontratlar • ödül +%15', en: 'Strategic contracts • reward +15%' }, v: { tr: 'Bölgesel liman lojistik merkezi', en: 'Regional port logistics centre' } }
     ] },
-  { id: 'yakit', icon: '⛽', n: { tr: 'Yakıt İstasyonu', en: 'Fuel Station' }, acc: '#9aa2aa',
-    r: { tr: 'Dış teknelere hizmet verir; sefer maliyetini düşürür', en: 'Serves visiting boats; cuts voyage costs' }, dormant: 'boat',
-    lv: [
-      { c: 10000,  inc: 34,  ivl: 52, mod: { voyage: 0.02 }, d: { tr: 'Servis teknesi geliri • sefer −%2', en: 'Boat service income • voyage −2%' }, v: { tr: 'Variller ve küçük pompa', en: 'Barrels and a small pump' } },
-      { c: 28000,  inc: 64,  ivl: 44, mod: { voyage: 0.04 }, d: { tr: 'Servis geliri +%20 • −%4', en: 'Service income +20% • −4%' }, v: { tr: 'Sundurmalı yakıt iskelesi', en: 'Covered fuelling jetty' } },
-      { c: 72000,  inc: 120, ivl: 38, mod: { voyage: 0.06 }, d: { tr: 'Ticari tekne müşterileri • −%6', en: 'Commercial boat clients • −6%' }, v: { tr: 'Tanklar ve güvenli pompa adası', en: 'Tanks and safe pump island' } },
-      { c: 180000, inc: 230, ivl: 30, mod: { voyage: 0.08 }, d: { tr: 'Servis sıklığı +%30 • −%8', en: 'Service rate +30% • −8%' }, v: { tr: 'Büyük tanklar, ikinci pompa', en: 'Large tanks, second pump' } },
-      { c: 440000, inc: 430, ivl: 24, mod: { voyage: 0.10 }, d: { tr: 'Filo hizmet kontratları • −%10', en: 'Fleet service contracts • −10%' }, v: { tr: 'Liman yakıt terminali', en: 'Port fuel terminal' } }
-    ] },
-  { id: 'tersane', icon: '🚢', n: { tr: 'Tersane', en: 'Shipyard' }, acc: '#8d5f33', need: 4,
-    r: { tr: 'İleri oyun yatırımı; filo ve büyük servis işleri', en: 'Late-game investment; fleet and major service jobs' }, dormant: 'boat',
-    lv: [
-      { c: 18000,  inc: 52,  ivl: 50, mod: { boatup: 0.00 }, d: { tr: 'Temel servis işi • tekne seçeneği', en: 'Basic service jobs • boat option' }, v: { tr: 'Açık kızak, iskele ve kereste', en: 'Open slipway, timber' } },
-      { c: 52000,  inc: 98,  ivl: 42, mod: { boatup: 0.05 }, d: { tr: 'Tekne yükseltmesi −%5', en: 'Boat upgrades −5%' }, v: { tr: 'Küçük atölyeli kızak', en: 'Slipway with workshop' } },
-      { c: 140000, inc: 190, ivl: 36, mod: { boatup: 0.05, ctrrew: 0.05 }, d: { tr: 'Büyük servis kontratları', en: 'Major service contracts' }, v: { tr: 'Kapalı atölye, vinç, büyük kızak', en: 'Closed shed, crane, big slipway' } },
-      { c: 350000, inc: 360, ivl: 30, mod: { boatup: 0.08, ctrrew: 0.08, fleet: 1 }, d: { tr: '+1 filo slotu • upgrade −%8', en: '+1 fleet slot • upgrades −8%' }, v: { tr: 'Geniş bakım havuzu, iki vinç', en: 'Wide dock, twin cranes' } },
-      { c: 820000, inc: 680, ivl: 24, mod: { boatup: 0.10, ctrrew: 0.12, fleet: 2 }, d: { tr: 'Amiral gemisi sınıfı • prestij servisi', en: 'Flagship class • prestige service' }, v: { tr: 'Tam teşekküllü tersane kompleksi', en: 'Full shipyard complex' } }
-    ] },
-  /* v2.0 — gerçek Türk balıkçı barınağının iki temel kurumu */
+  /* Kooperatif = eski Kooperatif + Tamirhane: ortak ev hem giderleri hem yükseltme bakımını düşürür */
   { id: 'koop', icon: '🤝', n: { tr: 'Su Ürünleri Kooperatifi', en: 'Fishery Cooperative' }, acc: '#3f8f6a',
-    r: { tr: 'Balıkçının ortak evi: giderleri düşürür, itibarı büyütür', en: "The fishers' common house: lower costs, higher standing" },
+    r: { tr: 'Balıkçının ortak evi: maaş ve yükseltme giderini düşürür, itibarı büyütür', en: "The fishers' common house: lower wages and upgrade costs, higher standing" },
     lv: [
-      { c: 5000,   inc: 0,   ivl: 0,  mod: { wage: 0.06 }, d: { tr: 'Maaş gideri −%6', en: 'Wage cost −6%' }, v: { tr: 'Tek odalı kooperatif bürosu', en: 'One-room co-op office' } },
-      { c: 14000,  inc: 24,  ivl: 46, mod: { wage: 0.12 }, d: { tr: 'Maaş −%12 • aidat geliri', en: 'Wages −12% • dues income' }, v: { tr: 'Ahşap büro, ilan panosu, çay ocağı', en: 'Wooden office, notice board, tea stove' } },
-      { c: 38000,  inc: 46,  ivl: 40, mod: { wage: 0.18, value: 0.05 }, d: { tr: 'Taban fiyat: ürün değeri +%5', en: 'Price floor: goods value +5%' }, v: { tr: 'Kagir kooperatif binası, bayrak direği', en: 'Stone co-op building, flagpole' } },
-      { c: 95000,  inc: 88,  ivl: 34, mod: { wage: 0.22, value: 0.08, rep: 0.25 }, d: { tr: 'Değer +%8 • itibar kazancı +%25', en: 'Value +8% • reputation gain +25%' }, v: { tr: 'İki katlı büro, toplantı salonu', en: 'Two-storey office, meeting hall' } },
-      { c: 240000, inc: 165, ivl: 28, mod: { wage: 0.28, value: 0.12, rep: 0.5, ctrslot: 1 }, d: { tr: 'Bölge birliği: +1 kontrat, itibar +%50', en: 'Regional union: +1 contract, rep +50%' }, v: { tr: 'Birlik merkezi, kemerli cephe, çini kuşak', en: 'Union HQ, arched facade, tile band' } }
+      { c: 5000,   inc: 0,   ivl: 0,  mod: { wage: 0.06, upcost: 0.02 }, d: { tr: 'Maaş −%6 • yükseltme −%2', en: 'Wages −6% • upgrades −2%' }, v: { tr: 'Tek odalı kooperatif bürosu', en: 'One-room co-op office' } },
+      { c: 14000,  inc: 24,  ivl: 46, mod: { wage: 0.12, upcost: 0.04 }, d: { tr: 'Maaş −%12 • yükseltme −%4 • aidat', en: 'Wages −12% • upgrades −4% • dues' }, v: { tr: 'Ahşap büro, ilan panosu, çay ocağı', en: 'Wooden office, notice board, tea stove' } },
+      { c: 38000,  inc: 46,  ivl: 40, mod: { wage: 0.18, upcost: 0.06, value: 0.05 }, d: { tr: 'Taban fiyat: ürün değeri +%5 • yükseltme −%6', en: 'Price floor: value +5% • upgrades −6%' }, v: { tr: 'Kagir kooperatif binası, bayrak direği', en: 'Stone co-op building, flagpole' } },
+      { c: 95000,  inc: 88,  ivl: 34, mod: { wage: 0.22, upcost: 0.08, value: 0.08, rep: 0.25 }, d: { tr: 'Değer +%8 • itibar +%25 • yükseltme −%8', en: 'Value +8% • rep +25% • upgrades −8%' }, v: { tr: 'İki katlı büro, toplantı salonu', en: 'Two-storey office, meeting hall' } },
+      { c: 240000, inc: 165, ivl: 28, mod: { wage: 0.28, upcost: 0.10, value: 0.12, rep: 0.5, ctrslot: 1 }, d: { tr: 'Bölge birliği: +1 kontrat, itibar +%50, yükseltme −%10', en: 'Regional union: +1 contract, rep +50%, upgrades −10%' }, v: { tr: 'Birlik merkezi, kemerli cephe, çini kuşak', en: 'Union HQ, arched facade, tile band' } }
     ] },
+  /* Mezat Salonu = eski Mezat + Toptancı Hanı: toptan alıcılar ve gün sonu açık artırma aynı çatı altında */
   { id: 'mezat', icon: '🔔', n: { tr: 'Mezat Salonu', en: 'Auction Hall' }, acc: '#c9952f',
-    r: { tr: 'Kabzımal mezatı: gün sonunda tezgâha gitmemiş ürün açık artırmayla satılır', en: 'Broker auction: goods that never reached a stall are sold at day close' },
+    r: { tr: 'Kabzımal mezatı ve toptan alıcılar: gün sonu satılmamış mal açık artırmada, kuyruk uzar', en: 'Broker auction and wholesale buyers: unsold goods auctioned at day close, longer queues' },
     lv: [
-      { c: 7000,   inc: 0,   ivl: 0,  mod: { auction: 0.55, auctionN: 6 },  d: { tr: 'Gün sonu 6 ürün mezata çıkar (%55 fiyat)', en: '6 goods auctioned at day close (55% price)' }, v: { tr: 'Üstü açık mezat masası ve çan', en: 'Open auction table and bell' } },
-      { c: 19000,  inc: 0,   ivl: 0,  mod: { auction: 0.70, auctionN: 10 }, d: { tr: '10 ürün • %70 fiyat', en: '10 goods • 70% price' }, v: { tr: 'Sundurmalı mezat yeri, sıralar', en: 'Covered auction floor, benches' } },
-      { c: 48000,  inc: 0,   ivl: 0,  mod: { auction: 0.85, auctionN: 16 }, d: { tr: '16 ürün • %85 fiyat', en: '16 goods • 85% price' }, v: { tr: 'Kagir salon, kürsü, asılı çan', en: 'Stone hall, rostrum, hanging bell' } },
-      { c: 120000, inc: 0,   ivl: 0,  mod: { auction: 1.00, auctionN: 24 }, d: { tr: '24 ürün • tam fiyat', en: '24 goods • full price' }, v: { tr: 'Geniş salon, tabela, ikinci kapı', en: 'Wide hall, signboard, second door' } },
-      { c: 300000, inc: 0,   ivl: 0,  mod: { auction: 1.20, auctionN: 36 }, d: { tr: '36 ürün • %120 fiyat (rekabetli mezat)', en: '36 goods • 120% price (competitive bidding)' }, v: { tr: 'Bölgesel mezat merkezi, kemerli giriş', en: 'Regional auction centre, arched entry' } }
+      { c: 7000,   inc: 0, ivl: 0, mod: { auction: 0.55, auctionN: 6, queue: 1 },  d: { tr: 'Gün sonu 6 ürün mezatta (%55) • kuyruk +1', en: '6 goods auctioned (55%) • queue +1' }, v: { tr: 'Üstü açık mezat masası ve çan', en: 'Open auction table and bell' } },
+      { c: 19000,  inc: 0, ivl: 0, mod: { auction: 0.70, auctionN: 10, queue: 1 }, d: { tr: '10 ürün • %70 fiyat', en: '10 goods • 70% price' }, v: { tr: 'Sundurmalı mezat yeri, sıralar', en: 'Covered auction floor, benches' } },
+      { c: 48000,  inc: 0, ivl: 0, mod: { auction: 0.85, auctionN: 16, queue: 2 }, unl: 'toptanci', d: { tr: '16 ürün • %85 • Toptancı müşteri açılır', en: '16 goods • 85% • Wholesaler customers' }, v: { tr: 'Kagir salon, kürsü, asılı çan', en: 'Stone hall, rostrum, hanging bell' } },
+      { c: 120000, inc: 0, ivl: 0, mod: { auction: 1.00, auctionN: 24, queue: 2, wholesale: 0.10 }, unl: 'toptanci', d: { tr: '24 ürün • tam fiyat • toptan ödül +%10', en: '24 goods • full price • wholesale +10%' }, v: { tr: 'Geniş salon, tabela, ikinci kapı', en: 'Wide hall, signboard, second door' } },
+      { c: 300000, inc: 0, ivl: 0, mod: { auction: 1.20, auctionN: 36, queue: 3, wholesale: 0.15 }, unl: 'toptanci', d: { tr: '36 ürün • %120 • toptan +%15 • kuyruk +3', en: '36 goods • 120% • wholesale +15% • queue +3' }, v: { tr: 'Bölgesel mezat merkezi, kemerli giriş', en: 'Regional auction centre, arched entry' } }
     ] }
 ];
 function sdef(id) { for (var i = 0; i < SERV.length; i++) if (SERV[i].id === id) return SERV[i]; return null; }
@@ -1405,8 +1371,6 @@ function servUnlock(tag) {
   }
   return false;
 }
-/* Tekne sistemi henüz yok → voyage/boatup/fleet bonusları dormant (§35.6, §42.7) */
-function servDormant(key) { return key === 'voyage' || key === 'boatup' || key === 'fleet'; }
 
 /* Bir bina şu an kurulabilir mi + neden değil (§37 tek satır kilit sebebi) */
 function servLockReason(d) {
@@ -1477,10 +1441,30 @@ function servSave() {
   }
   return out;
 }
+function servSpent(costs, lv) { var t = 0; for (var i = 0; i < lv && i < costs.length; i++) t += costs[i]; return t; }
+var servRefund = 0;
 function servLoad(arr) {
-  servState = {};
+  servState = {}; servRefund = 0;
   for (var i = 0; i < PLOTS.length; i++) PLOTS[i].b = null;
   if (!arr || !arr.length) return;
+  /* v1.4 göç: kaldırılan bina → birleştiği binanın seviyesi en az onunki kadar olur; kalan harcama iade edilir */
+  var lvIn = {}, plIn = {}, gone = [];
+  for (var g = 0; g < arr.length; g++) {
+    var rg = arr[g]; if (!rg) continue;
+    var lg = clamp(parseInt(rg[1], 10) || 1, 1, 5);
+    if (SERV_GONE.hasOwnProperty(rg[0])) gone.push([rg[0], lg]); else if (sdef(rg[0])) { lvIn[rg[0]] = Math.max(lvIn[rg[0]] || 0, lg); plIn[rg[0]] = rg[2]; }
+  }
+  for (g = 0; g < gone.length; g++) {
+    var gid = gone[g][0], glv = gone[g][1], into = SERV_GONE[gid], spent = servSpent(SERV_GONE_COST[gid], glv), cover = 0;
+    if (into) {
+      var had = lvIn[into] || 0, nl = Math.max(had, glv);
+      cover = servSpent(sdef(into).lv.map(function (q) { return q.c; }), nl) - servSpent(sdef(into).lv.map(function (q) { return q.c; }), had);
+      lvIn[into] = nl;
+    }
+    servRefund += Math.max(0, spent - cover);
+  }
+  arr = [];
+  for (var key in lvIn) arr.push([key, lvIn[key], plIn[key] || null]);
   for (var j = 0; j < arr.length; j++) {
     var r = arr[j]; if (!r) continue;
     var d = sdef(r[0]); if (!d) continue;                       /* bilinmeyen bina → atla */
@@ -1490,7 +1474,7 @@ function servLoad(arr) {
       var alt = servFreePlots(d.id);
       p = alt.length ? alt[0] : null;
     }
-    if (!p) continue;                                            /* yer yoksa bina kurulmamış sayılır */
+    if (!p) { servRefund += servSpent(d.lv.map(function (q) { return q.c; }), lv); continue; }   /* yer yoksa parası iade */
     p.b = d.id;
     servState[d.id] = { lvl: lv, plot: p.id, cons: 0, nextT: d.lv[lv - 1].ivl || 0, flash: 0 };
   }
@@ -1549,6 +1533,7 @@ function servTick(dt) {
     if (st.cons > 0) st.cons = Math.max(0, st.cons - dt);
     if (st.flash > 0) st.flash = Math.max(0, st.flash - dt);
     var L = d.lv[st.lvl - 1];
+    if (L.cook) { st.nextT -= dt; if (st.nextT <= 0) { st.nextT = L.ivl * rnd(0.85, 1.15); restoCook(d, st, L); } continue; }
     if (!L.inc || !L.ivl) continue;
     st.nextT -= dt;
     if (st.nextT > 0) continue;
@@ -1559,6 +1544,38 @@ function servTick(dt) {
     var p = plotById(st.plot);
     if (p) { addFloat(p.x, p.y - 0.4, '+' + money(pay), '#9df5b0'); st.flash = 0.8; }
   }
+}
+
+/* v1.4 — Restoran pasif para basmaz: yalnız FAZLA malı pişirip satar. Fazla = depo %60'tan doluysa en kalabalık
+   raf, ya da tezgâh tamponu %75'ten doluysa o tezgâh. Fazla yoksa boş bekler (oyuncu bunu görür). */
+function restoSurplus() {
+  var out = [], k;
+  if (DEPOT.lvl && depotCount() > depotCap() * 0.6) {
+    var keys = Object.keys(DEPOT.shelf).sort(function (a, b) { return DEPOT.shelf[b] - DEPOT.shelf[a]; });
+    if (keys.length) out.push({ depot: keys[0] });
+  }
+  for (k = 0; k < counters.length; k++) {
+    var c = counters[k];
+    if (!AREAS[c.z].locked && c.buffer.length > counterMax(c) * 0.75) out.push({ c: c });
+  }
+  return out;
+}
+function restoCook(d, st, L) {
+  var got = 0, gain = 0, src = restoSurplus(), guard = 0;
+  while (got < L.cook && src.length && guard++ < 40) {
+    var s0 = src[0], it = null;
+    if (s0.depot) { if (depotCount() > depotCap() * 0.6) it = depotTake(s0.depot); }
+    else if (s0.c.buffer.length > counterMax(s0.c) * 0.75) it = s0.c.buffer.pop();
+    if (!it) { src.shift(); continue; }
+    gain += prodValue(it.k, it.f); got++;
+  }
+  st.cooked = got;
+  var p = plotById(st.plot);
+  if (!got) { if (p) addFloat(p.x, p.y - 0.4, T('restoIdle'), '#c9bfae'); return 0; }
+  var pay = Math.round(gain * L.cmul);
+  S.cash += pay; earn(pay); noteDayIncome(pay);
+  if (p) { addFloat(p.x, p.y - 0.4, '🍽 ' + got + ' → +' + money(pay), '#9df5b0'); st.flash = 0.8; }
+  return pay;
 }
 
 /* =========================================================
@@ -1879,13 +1896,13 @@ function validateWorld() {
   }
   return ch;
 }
-function counterMax(c) { return 20 + (AREAS[c.z].lvl - 1) * 4 + slotEff(c.z, 'stock'); }
+function counterMax(c) { return 20 + (AREAS[c.z].lvl - 1) * 4 + slotEff(c.z, 'stock') + servEff('ctrcap'); }
 var safe = { z: 0, x: 1.2, y: 4.9, pop: 0 };
 /* v0.7 — Liman Meydanı alanı + yaya köprüsü (ayrıntılar FAZ 3 bölümünde) */
 var MEYDAN = { x0: 15.0, y0: -0.3, x1: 21.2, y1: 6.8 };
 /* v1.3.2 — Hizmet Sahası: BİNA sekmesinin hizmet binaları (buzhane, restoran, hal…) tezgâh bölgelerinden
    çıkarıldı; meydanın güneyinde, yolun doğusunda kendi sahasında durur (tezgâh bölgeleri yalnız üretim + satış). */
-var SERVYARD = { x0: 15.3, y0: 8.6, x1: 29.8, y1: 22.9 };   /* 3 sütun × 3, sütunlar 2 karo kaydırmalı: binalar ekranda üst üste binmez */
+var SERVYARD = { x0: 15.3, y0: 8.6, x1: 24.2, y1: 20.0 };   /* v1.4: 5 parsel, 2 kaydırmalı sütun: binalar ekranda üst üste binmez */
 var YARDPATH = { x0: 17.9, y0: 6.5, x1: 18.9, y1: 8.9 };          /* meydan ↔ saha patikası */
 var BRIDGE = { x0: 9.3, y0: 1.9, x1: 15.7, y1: 2.9 };
 function inRect(x, y, r, m) { m = m || 0; return x > r.x0 + m && x < r.x1 - m && y > r.y0 + m && y < r.y1 - m; }
@@ -2062,6 +2079,7 @@ function loadFrom(d) {
     if (d.decor) d.decor.forEach(function (v, i) { if (DECOR[i]) DECOR[i].got = !!v; });
     if (d.proj) { project.inv = d.proj[0] || 0; project.stage = d.proj[1] || 0; project.done = !!d.proj[2]; }
     servLoad(d.serv);   /* v0.4 §41 — yoksa hiçbir bina kurulmaz, para kesilmez */
+    if (servRefund > 0) { S.cash += servRefund; var rf = servRefund; servRefund = 0; setTimeout(function () { toast(T('servRefund', { n: money(rf) })); save(); }, 1200); }
     rebuildCounters();  /* hedef stoklar yüklenmeden önce tezgâhlar var olmalı */
     loadDay(d);         /* v1.2 §9 — gün, depo ve hedef stoklar korunur */
     if (d.workers) d.workers.forEach(function (r) {
@@ -4062,7 +4080,7 @@ var scenery = [], grass = [];
      Başta eski/bakımsız görünür; her nesnenin 'up' eşiği var: çevre kademesi (envStage) o eşiğe
      ulaşınca bakımlı hâline döner, hurdalar çiçek tarhına dönüşür → oyuncu değişimi görür. */
   /* v1.3.2: meydanın doğusu + bölgelerin güney kumsalı + sahanın güney kıyısı (saha kendi alanında) */
-  var bands = [[21.9, 28.5, -0.2, 7.9, 22], [-0.3, 9.9, 18.0, 21.8, 16], [10.5, 26.0, 23.4, 24.2, 6]];
+  var bands = [[21.9, 25.6, -0.2, 7.9, 12], [-0.3, 9.9, 18.0, 21.8, 16], [14.8, 25.6, 20.0, 24.2, 14]];
   for (var bi = 0; bi < bands.length; bi++) {
     var bd = bands[bi], want = bd[4], tries = 0, got = 0;
     while (got < want && tries++ < 400) {
@@ -4504,7 +4522,7 @@ function drawShoal() {
     px(sx, sy, f.s + 2, f.s, 'rgba(10,45,70,.55)');
   }
 }
-var LANDX = 31.0, LANDY = 24.5;     /* v0.7: doğuda Liman Meydanı için kara genişledi */
+var LANDX = 26.0, LANDY = 24.5;     /* v0.7: doğuda Liman Meydanı için kara genişledi */
 function drawLand() {
   quad([[pX(-0.7, -0.7), pY(-0.7, -0.7, 0)], [pX(LANDX, -0.7), pY(LANDX, -0.7, 0)],
         [pX(LANDX, LANDY), pY(LANDX, LANDY, 0)], [pX(-0.7, LANDY), pY(-0.7, LANDY, 0)]], '#cbb98d');
@@ -5335,31 +5353,6 @@ function servProps(id, sx, sy, lv, fw, hh) {
       px(sx + 12, sy - 17 + (phase2(gameT, 6) ? 1 : 0), 2, 1, '#cfe6f2'); }
     if (lv >= 4) { px(sx + 13, sy - 7, 7, 6, PAL.zinc); px(sx + 13, sy - 8, 7, 1, '#c9d0d6');
       px(sx + 14, sy - 1, 2, 2, PAL.iron); px(sx + 18, sy - 1, 1, 2, PAL.iron); }
-  } else if (id === 'tamirhane') {
-    px(sx - 20, sy - 8, 11, 3, PAL.wood);                /* çalışma tezgâhı */
-    px(sx - 19, sy - 11, 3, 3, '#c98a3c');
-    px(sx - 15, sy - 10, 1, 2, PAL.ironLite); px(sx - 13, sy - 11, 1, 3, PAL.ironLite);
-    if (lv >= 2) {                                        /* el vinci */
-      px(sx - 16, sy - 28, 2, 18, PAL.brass);
-      px(sx - 22, sy - 29, 13, 2, PAL.brass);
-      px(sx - 15, sy - 27, 1, 9, PAL.ironLite);
-      px(sx - 17, sy - 18, 5, 3, PAL.wood);
-    }
-    if (lv >= 4) { px(sx + 14, sy - 15, 6, 15, PAL.iron);  /* yedek parça rafı */
-      for (i = 0; i < 3; i++) px(sx + 14, sy - 13 + i * 4, 6, 1, PAL.ironLite); }
-    if (lv >= 5) { px(sx + 8, sy - 6, 12, 5, '#3b4a55'); px(sx + 9, sy - 7, 10, 1, '#5a6f7d'); }
-  } else if (id === 'hal') {
-    for (i = 0; i < Math.min(3, lv); i++) {               /* hal tezgâhları */
-      var tx = sx - 22 + i * 15;
-      px(tx, sy - 9, 13, 3, PAL.wood);
-      px(tx + 1, sy - 6, 2, 6, PAL.woodDark); px(tx + 10, sy - 6, 2, 6, PAL.woodDark);
-      for (var q = 0; q < 4; q++) px(tx + q * 3, sy - 13, 3, 4, q % 2 ? PAL.madder : '#f2ede0');
-      px(tx + 3, sy - 11, 4, 2, '#cfe6f2');              /* buz */
-      px(tx + 4, sy - 10, 2, 1, '#8fa9bd');              /* balık */
-    }
-    if (lv >= 3) { px(sx + 12, sy - 22, 9, 16, '#9d8f74'); px(sx + 13, sy - 12, 7, 10, '#4a5258');
-      for (i = 0; i < 4; i++) px(sx + 13, sy - 11 + i * 3, 7, 1, '#68737a'); }
-    if (lv >= 5) { px(sx - 26, sy - 5, 8, 5, PAL.wood); px(sx - 25, sy - 6, 6, 1, PAL.saffron); }
   } else if (id === 'restoran') {
     for (i = 0; i < Math.min(3, lv); i++) {               /* masa + hasır sandalye */
       var mx = sx - 24 + i * 13, my = sy - 1 + (i % 2) * 4;
@@ -5382,39 +5375,6 @@ function servProps(id, sx, sy, lv, fw, hh) {
       px(sx - 26, sy - 6, 4, 3, PAL.zinc); }
     px(sx - 10, sy - R(hh * 0.85), 20, 8, PAL.pnl);       /* pano */
     px(sx - 8, sy - R(hh * 0.85) + 2, 16, 4, '#9aa8b4');
-  } else if (id === 'yakit') {
-    for (i = 0; i < Math.min(4, lv + 1); i++) {           /* variller */
-      px(sx - 21 + i * 6, sy - 10, 5, 9, i % 2 ? '#c94a1a' : '#d8a52c');
-      px(sx - 21 + i * 6, sy - 10, 5, 1, '#f0ece0');
-      px(sx - 21 + i * 6, sy - 6, 5, 1, shade(i % 2 ? '#c94a1a' : '#d8a52c', -24));
-    }
-    px(sx + 11, sy - 15, 6, 14, '#d1584a');               /* pompa */
-    px(sx + 12, sy - 13, 4, 5, '#f0ece0');
-    px(sx + 13, sy - 12 + (phase2(gameT, 2) ? 0 : 1), 2, 1, '#2e2119');
-    px(sx + 17, sy - 9, 3, 1, '#3c4650');
-    if (lv >= 3) { px(sx + 19, sy - 26, 13, 24, '#c2c8ce'); px(sx + 19, sy - 26, 13, 3, '#e2e8ee');
-      px(sx + 21, sy - 15, 9, 2, '#8b949c'); px(sx + 21, sy - 22, 4, 2, PAL.madder); }
-    if (lv >= 5) { px(sx - 33, sy - 30, 12, 28, '#c2c8ce'); px(sx - 33, sy - 30, 12, 3, '#e2e8ee');
-      px(sx - 31, sy - 20, 8, 2, '#8b949c'); }
-  } else if (id === 'tersane') {
-    for (i = 0; i < 6; i++) px(sx - 26 + i * 4, sy + 1 + i, 24, 2, '#7a5e3a');   /* kızak */
-    px(sx - 28, sy - 9, 7, 10, PAL.wood);                 /* kereste yığını */
-    px(sx - 28, sy - 9, 7, 1, PAL.woodLite);
-    px(sx - 28, sy - 6, 7, 1, PAL.woodDark);
-    if (lv >= 2) {                                         /* vinç */
-      px(sx + 15, sy - 32, 2, 31, PAL.brass);
-      px(sx + 6, sy - 34, 20, 2, PAL.brass);
-      px(sx + 22, sy - 32, 1, 9, PAL.ironLite);
-      px(sx + 20, sy - 23, 5, 3, PAL.wood);
-    }
-    if (lv >= 3) {                                         /* tekne iskeleti */
-      px(sx - 22, sy - 14, 18, 10, '#a9743f');
-      px(sx - 22, sy - 14, 18, 1, '#c9975f');
-      for (i = 0; i < 5; i++) px(sx - 20 + i * 4, sy - 13, 1, 8, '#7a5230');
-      px(sx - 14, sy - 22, 1, 9, '#8d5f33');
-    }
-    if (lv >= 4) { px(sx - 36, sy - 28, 2, 27, PAL.brass); px(sx - 42, sy - 30, 15, 2, PAL.brass); }
-    if (lv >= 5) { px(sx + 2, sy - hh - 20, 18, 8, PAL.indigo); px(sx + 4, sy - hh - 18, 14, 4, '#7fb7d4'); }
   }
 }
 
@@ -5435,21 +5395,11 @@ function servIdle(d, sx, sy, lv) {
   var t = gameT;
   if (d.id === 'buzhane') {
     if (lv >= 3) { var f = Math.floor(t * 6) % 2; px(sx + 9, sy - 16, 4, 4, '#5d666e'); px(sx + 10, sy - 15 + f, 2, 1, '#cfe6f2'); }
-  } else if (d.id === 'tamirhane') {
-    var sp = Math.sin(t * 7) * 2;
-    px(sx - 12, sy - 12 + sp, 2, 2, '#ffd76a');
   } else if (d.id === 'restoran') {
     for (var i = 0; i < 3; i++) {
       var yy = sy - 22 - lv * 3 - ((t * 9 + i * 7) % 14);
       ctx.globalAlpha = 0.35; px(sx + 7 + Math.sin(t * 2 + i) * 1.5, yy, 2, 2, '#e8ddc8'); ctx.globalAlpha = 1;
     }
-  } else if (d.id === 'yakit' && lv >= 2) {
-    if (Math.floor(t * 2) % 2) px(sx + 11, sy - 18, 2, 2, '#d1584a');
-  } else if (d.id === 'tersane' && lv >= 3) {
-    var hk = Math.sin(t * 1.4) * 5;
-    px(sx + 12, sy - 34 + hk, 1, 6, '#8a8f95');
-  } else if (d.id === 'hal' && lv >= 4) {
-    if (Math.floor(t * 1.5) % 2) px(sx - 14, sy - 26, 2, 2, '#ffd76a');
   } else if (d.id === 'nakliye' && lv >= 3) {
     var bl = Math.floor(t * 2.5) % 2;
     px(sx + 10, sy - 22, 2, 2, bl ? '#5fd37a' : '#2a6a3c');
@@ -6287,7 +6237,7 @@ function barList() {
         } else {
           var nx = d.lv[lv];
           out.push({ id: 'sv' + d.id, ic: d.icon, t: NM(d.n) + '  Lv.' + lv + '→' + (lv + 1),
-            s: NM(nx.d) + ' • ' + T('nextLook') + ': ' + NM(nx.v) + (d.dormant ? ' • ' + T('dormantB') : ''),
+            s: NM(nx.d) + ' • ' + T('nextLook') + ': ' + NM(nx.v),
             cost: upCost(sCost(nx.c)),
             go: function () { servUp(d.id); servSel = d.id; } });
         }
@@ -8820,7 +8770,7 @@ function drawYardGround() {
   ctx.save(); ctx.strokeStyle = '#8a7a5c'; ctx.lineWidth = 2; ctx.beginPath();
   ctx.moveTo(R(pX(r.x0, r.y0)), R(pY(r.x0, r.y0, 0))); ctx.lineTo(R(pX(r.x1, r.y0)), R(pY(r.x1, r.y0, 0)));
   ctx.lineTo(R(pX(r.x1, r.y1)), R(pY(r.x1, r.y1, 0))); ctx.lineTo(R(pX(r.x0, r.y1)), R(pY(r.x0, r.y1, 0))); ctx.closePath(); ctx.stroke(); ctx.restore();
-  var gx0 = 19.5, gy0 = r.y1 - 0.3;                 /* saha adı: güney kenarda, önünde/arkasında bina yok */
+  var gx0 = 20.0, gy0 = r.y1 - 0.3;                 /* saha adı: güney kenarda, önünde/arkasında bina yok */
   if (dist2(player.x, player.y, gx0, gy0) < 90) uiText(gx0, gy0, 2, T('yardName'), PAL.gold, 7);
 }
 function drawMeydanGround() {
@@ -9281,7 +9231,7 @@ requestAnimationFrame(frame);
 
 window.BT = {
   cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },
-  envStage: function () { return envStage(); }, buildSave: buildSave, envFlow: envFlow, legacyEnvStage: legacyEnvStage, ENV_UPS: ENV_UPS, scenery: scenery, SPECIALS: SPECIALS,
+  envStage: function () { return envStage(); }, buildSave: buildSave, loadFrom: loadFrom, DEPOT_LV: DEPOT_LV, counterMax: counterMax, queueMax: queueMax, upCost: upCost, envFlow: envFlow, legacyEnvStage: legacyEnvStage, ENV_UPS: ENV_UPS, scenery: scenery, SPECIALS: SPECIALS,
   /* test/önizleme: bir kıyafeti verilen tuvale çiz */
   drawOutfitOn: function (cv, o, t) { var old = ctx, g = cv.getContext('2d'); ctx = g; try { g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), cv.height - 4); drawPerson({ x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: t || 0, act: 0, carry: [] }, o); } catch (e) { } ctx = old; },
   specOutfit: function (id, face) { return specOutfit(specById(id), face || 1); },

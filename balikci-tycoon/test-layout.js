@@ -57,9 +57,9 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
     window.__ns = setInterval(() => { const s = document.getElementById('stallScr'); if (!s.classList.contains('hidden')) document.getElementById('stallGo').click(); }, 300);
   });
   await sleep(1500);
-  const r2 = await p.evaluate(() => ({ clash: BT.layoutClashes(0.1), built: BT.PLOTS.filter(q => q.b).length }));
+  const r2 = await p.evaluate(() => ({ clash: BT.layoutClashes(0.1), built: BT.PLOTS.filter(q => q.b).length, n: BT.PLOTS.length }));
   ok(r2.clash.length === 0, 'her şey kuruluyken çakışma: ' + r2.clash.join(', '));
-  ok(r2.built === 9, 'dokuz parsel kurulmadı: ' + r2.built);
+  ok(r2.built === r2.n && r2.n === 5, 'parsellerin hepsi kurulmadı: ' + r2.built + '/' + r2.n);
   for (const [x, y, n] of [[4.5, 2.5, 'z0'], [6, 9, 'z1'], [5, 15, 'z2'], [19, 12, 'saha1'], [26, 19, 'saha2']]) {
     await p.evaluate(q => { BT.player.x = q[0]; BT.player.y = q[1]; }, [x, y]); await sleep(900);
     await p.screenshot({ path: SC + 'layout-' + n + '.png' });

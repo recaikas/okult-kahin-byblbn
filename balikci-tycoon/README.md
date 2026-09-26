@@ -12,6 +12,37 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v1.4 — Hizmet binaları 9 → 5: her bina görünür, ayrı bir iş yapar
+
+**Neden:** Dokuz binanın bir kısmı ya çalışmıyordu (Yakıt İstasyonu ve Tersane'nin tekne etkileri oyunda yok, yalnız
+pasif para veriyorlardı), ya da başka bir şeyin kopyasıydı (Buzhane = Soğuk Sandık = Depo; Toptancı Hanı'nın adı
+Balık Hali ve Kapalı Pazar'la karışıyordu).
+
+| Bina | Ne yapar |
+|---|---|
+| 🧊 **Buzhane** | Ağ stoğu + **tezgâh kapasitesi** (Sv.5'te +8), üst seviyede çırak hızı. Bozuk "toplu sipariş tamponu" kalktı. |
+| 🍽️ **Restoran** | Pasif para basmaz. Depo %60'tan ya da tezgâh %75'ten doluysa fazla malı pişirip satar (Sv.1: 40 sn'de 2 ürün → Sv.5: 22 sn'de 6 ürün, %125 fiyat). Fazla yoksa "fazla mal yok" der. Sv.3'te Turist müşteri açar. |
+| 📋 **Nakliye Ofisi** | Değişmedi: kontrat yuvası, teklif ve ödül. |
+| 🤝 **Su Ürünleri Kooperatifi** | Eski Kooperatif + **Tamirhane**: maaş −, **yükseltmeler −%2…−%10**, ürün değeri +, itibar +. |
+| 🔔 **Mezat Salonu** | Eski Mezat + **Toptancı Hanı**: gün sonu açık artırma + **kuyruk +1…+3**, Sv.3'te Toptancı müşteri, toptan ödül +. |
+
+- **Bölüm 2'ye kaldı:** Yakıt İstasyonu ve Tersane, filo sistemiyle birlikte dönecek (BOLUM2_TASLAK.md).
+- **Hizmet Sahası 5 parsel:** 2 kaydırmalı sütun. Her parsel beş binanın hepsini alır; bölge açıldıkça açılır
+  (İskele 2, Pazar 2, Fümehane 1). Ada küçüldü, saha ferahladı.
+- **Eski kayıtlar:**
+  - Kaldırılan bina, birleştiği binaya seviye olarak geçer: Tamirhane Sv.3 → Kooperatif en az Sv.3; Toptancı Hanı
+    Sv.2 → Mezat en az Sv.2.
+  - Birleşmenin karşılamadığı harcama ve Yakıt İstasyonu ile Tersane'nin tüm parası **iade edilir**. Oyuncuya
+    bildirim çıkar.
+
+**Yeni test:** `test-hizmet.js` şunları doğrular:
+- katalogda 5 bina var;
+- Buzhane, Kooperatif ve Mezat'ın etkileri gerçekten uygulanıyor;
+- Restoran fazla yokken para basmıyor, fazla varken pişirip satıyor;
+- eski kayıt taşınınca seviyeler doğru ve iade tam 80.000 (Yakıt Sv.1 + Tersane Sv.2).
+
+---
+
 ## v1.3.3 — Özel müşteriler okunabilir, füme talebi dengelendi
 
 **Özel müşteriler ne dediğini okutuyor**
