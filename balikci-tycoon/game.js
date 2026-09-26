@@ -1,0 +1,10258 @@
+/* =========================================================
+   HAMSİ KOYU  —  pixel art / Türkiye limanı
+   GDD v0.3: Liman Genişleme + Yatırım (AREA, bölge seviyesi,
+   yapı noktaları, büyük proje, kozmetik) + TR/EN
+   ========================================================= */
+(function () {
+'use strict';
+
+/* ---------------- matematik ---------------- */
+var TAU = Math.PI * 2;
+function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function irnd(a, b) { return Math.floor(rnd(a, b + 1)); }
+function dist2(ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return dx * dx + dy * dy; }
+function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+function R(v) { return Math.round(v); }
+
+/* ---------------- dil ---------------- */
+var lang = 'tr';
+var STR = {
+  tr: {
+    money: 'PARA', carry: 'TAŞIMA', rep: 'İTİBAR', goal: 'HEDEF', menu: 'LİMAN',
+    play: 'OYNA', settings: 'AYARLAR', ok: 'TAMAM', cont: 'DEVAM', reset: 'KAYDI SIFIRLA',
+    story: '📰 HİKÂYE', board: '🏆 SKOR', boardTitle: '🏆 SKOR TABLOSU', boardSub: 'Sıralama: tutulan toplam balık',
+    boardEmpty: 'Henüz kimse yok — ilk sen ol!', boardYou: 'SEN', boardDay: '{d}. gün',
+    boardLocal: 'Bu tablo bu cihazdaki oyunları gösteriyor.', close: 'KAPAT',
+    boardLoading: 'Tablo yükleniyor…', boardOffline: 'Bağlantı yok — bu cihazdaki oyunlar gösteriliyor.',
+    boardStats: '👥 {p} oyuncu • 🎮 {g} oyun • ⏱ {h} saat',
+    nameTitle: 'İŞLETMENİN ADI', nameSub: 'Tabelaya ne yazalım? Bu isim skor tablosunda görünecek.',
+    nameIdeas: 'ÖNERİLER', nameGo: 'İŞE BAŞLA ▶', nameShort: 'En az 2 harf yaz.', nameDice: 'Rastgele isim',
+    welcomeCo: 'Hayırlı olsun! {n} kapılarını açtı.', tapStart: '▶ BAŞLAMAK İÇİN DOKUN', skip: 'ATLA ▶▶',
+    dayScore: 'Skor (toplam balık)', dayRank: '{s} • {r}. sıra', fishN: '{n} balık',
+    tag: 'KÜÇÜK İSKELEDEN BÜYÜK LİMANA',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM',
+    resetAsk: 'Tüm ilerleme silinsin mi?',
+    intro1: '🎣 Ağın yanında bekle, balık birikir',
+    intro2: '🧺 Üstünden geç, sırtla (ağır balık çok yer kaplar)',
+    intro3: '🔪 Kesim masası → fileto',
+    intro4: '🐟 Tezgâh → müşteri siparişi öder',
+    intro5: '💰 Tezgâh kasasından geç → para hesabına, liman büyür',
+    ctrl: 'W A S D / yön tuşları — veya ekrana bas & sürükle',
+    tabs: ['LİMAN', 'PERSONEL', 'ÜRÜNLER', 'ALBÜM', 'YARDIM'],
+    /* istasyonlar */
+    stNet: 'AĞ', stCut: 'KESİM', stSmoke: 'FÜMEHANE', stStall: 'TEZGÂH', stSafe: 'ANA KASA', trayFull: 'KASA DOLU',
+    stTake: 'AL', stBuild: 'YAPI YERİ', stProject: 'BÜYÜK PROJE', stDecor: 'SÜS',
+    /* yükseltmeler */
+    upCap: 'KAPASİTE', upCapE: '+3 taşıma', upSpd: 'HIZ', upSpdE: '+%11 koşu',
+    upPrice: 'PAZARLIK', upPriceE: '+%10 fiyat',
+    upArea: 'BÖLGE SEVİYESİ', hire: 'İŞE AL', level: 'Sv.',
+    needRep: '🔒 Sv {l} • ⭐{c}/{n}', needLv: '🔒 Seviye {l} gerekli', needStaff: 'Personel kulübesi gerekli',
+    openArea: 'AÇ', locked: 'KİLİTLİ',
+    /* olaylar */
+    evShoal: 'BALIK SÜRÜSÜ', evShip: 'VAPUR GELDİ', evStorm: 'LODOS',
+    evShoalM: 'Sürü geldi! Ağlar iki kat hızlı 🐟',
+    evShipM: 'Vapur yanaştı! Müşteri akını 🚢',
+    evStormM: 'Lodos bastırdı, müşteri azaldı 🌊',
+    /* olaylar/uyarılar */
+    hired: '{i} {n} işe alındı — {w}',
+    coachTouch: 'Ekrana bas ve sürükle — karakterin yürür', coachKeys: 'WASD veya ok tuşlarıyla yürü',
+    coachAuto: 'Durman yeter: karakter ağdan kendiliğinden alır, masaya/tezgâha kendiliğinden bırakır',
+    stallOfFish: '{f} tezgâhı', autoBadge: '⚙ OTOMATİK', autoCard: '{n} — Personele Devret', autoCardOn: '{n} — OTOMATİK',
+    autoCardOnD: 'Ekip kendi çalışır (%20 hızlı). Gezip kontrol edebilirsin; kasayı geçerken toplarsın.',
+    autoGive: '⚙ DEVRET', autoBack: '↩ GERİ AL', autoNeed: 'Eksik rol: {n}', autoMissing: 'Eksik personel: {m}',
+    autoOn: '⚙ {n} personele devredildi — artık kendi kendine çalışır', autoOff: '{n} yeniden sende',
+    heroTitle: 'KARAKTERİN', heroSub: 'Limanın yeni balıkçısı kim? Görünüşünü seç.', heroNameLbl: 'ADIN',
+    heroRandom: '🎲 RASTGELE', heroGo: 'DEVAM ▶', hero_hs: 'Saç modeli', hero_hc: 'Saç rengi', hero_sk: 'Ten rengi',
+    hero_hw: 'Başlık', hero_fc: 'Bıyık / sakal', hero_co: 'Kazak', hero_ap: 'Önlük',
+    welcomeHero: 'Hayırlı olsun {h}! {n} kapılarını açtı.',
+    stBin: 'ÇÖP', trashed: '🗑 {n} ürün çöpe atıldı', trashHint: '🗑 Tezgâh almıyor — fazlayı ÇÖP kovasına atabilirsin (kovanın önünde dur)',
+    autoTitle: '💾 OTOMATİK KAYIT', autoSub: 'Oyun kaç dakikada bir kendiliğinden kaydedilsin? Sonra Ayarlar\'dan değiştirebilirsin.',
+    autoMinN: '{m} dk', auto5: 'Sık kayıt — en güvenlisi', auto10: 'Önerilen', auto30: 'Seyrek kayıt',
+    autoLbl: 'OTOMATİK KAYIT', autoSaved: '💾 Otomatik kaydedildi • {t}', autoSet: '💾 Otomatik kayıt: {m} dakikada bir',
+    autoNext: 'Otomatik kayıt: {m} dk • sonraki {t}',
+    musicLbl: 'MÜZİK', musOn: '♪ AÇIK', musOff: 'KAPALI',
+    meydan: 'LİMAN MEYDANI', hutName: 'Personel Kulübesi', depotName: 'Depo', whall: 'Balık Hali', buildAt: 'YAPI › Meydan',
+    hutD: 'Her bölgede +1 personel yeri / seviye (şu an +{n})', depotD: 'Fazla fileto/fümeyi türüne göre raflarda saklar; kendi personeli var',
+    depotD2: 'Raf {a}/{b} → {n} • depo personeli +1', whallD: 'Depodaki malı günün fiyatıyla sat, toptan al (Depo gerekir)',
+    officeInMeydan: 'Ticaret Merkezi artık meydanda — PROJE sekmesinden kurulur', goProj: 'PROJE ›', upgrade: 'YÜKSELT', build: 'KUR',
+    needDepot: '🔒 Önce Depo kur', depotStaffFull: 'Depo kadrosu dolu — depoyu yükselt', depotFull: 'Depo dolu',
+    hutBuilt: '🏚️ Personel Kulübesi kuruldu: her bölgede +1 personel yeri', hutUp: '🏚️ Kulübe Sv {l}: her bölgede +{l} personel yeri',
+    depotBuilt: '📦 Depo kuruldu — fazla ürün artık çöpe/mezata değil rafa', depotUp: '📦 Depo Sv {l}: kapasite {c}',
+    whallBuilt: '🏪 Balık Hali açıldı', hutBtn: 'PERSONEL', halBtn: 'BALIK HALİ', hutWelcome: '👷 Kulübeye hoş geldin — personelini buradan yönet',
+    halSub: '{d}. günün fiyatları • Depo {a}/{b}', halRow: 'Depoda {n} • Sat {s} • Al {b}', halSell5: 'SAT 5', halSellAll: 'HEPSİ', halBuy5: 'AL 5',
+    halEmpty: 'Henüz ürün yok', halSold: '{n} ürün satıldı: +{v}', halBought: '{n} ürün alındı: {v}', kFume: 'füme', kFileto: 'fileto',
+    envUp1: '🌿 Liman canlanıyor: yol çakıl oldu, ağaçlar yeşeriyor', envUp2: '🪨 Yol arnavut kaldırımı oldu, sahil toparlandı',
+    envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
+    specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
+    albMet: 'Tanıştığın özel müşteriler', albLeft: 'Henüz tanışmadığın {n} kişi daha var — her gün 2 özel müşteri gelir.', albNone: 'Henüz kimseyle tanışmadın. Her gün 2 özel müşteri gelir.', albFav: 'Sevdiği',
+    featDay: 'Günün müşterisi: {n}', levelUp: '⭐ Yeni seviye: {t}!', lvlN: 'SEVİYE {l}', lvShort: 'SV {l}', lvBonus: 'Satış primi {p}',
+    areaOpen: '🔓 {n} açıldı!',
+    areaLvUp: '🏗️ {n} → Sv.{l}',
+    built: '🔨 {n} kuruldu',
+    projStage: '🏛️ {n}: %{p} — yeni aşama!',
+    projDone: '🎉 {n} tamamlandı!',
+    decorBought: '✨ {n} yerleştirildi', yardName: 'HİZMET SAHASI', onlineLbl: 'ÇEVRİMİÇİ SKOR TABLOSU', onlOn: 'AÇIK', onlOff: 'KAPALI', onlineOnT: 'Skorun herkese açık tabloya gönderilecek', onlineOffT: 'Çevrimiçi paylaşım kapalı — tablo yalnız bu cihazda', forgetBtn: 'SKOR KAYDIMI SİL', privBtn: 'GİZLİLİK POLİTİKASI', privClose: '▶ KAPAT', forgetAsk: 'Bu cihazın skor tablosundaki tüm kayıtları (sunucu ve cihaz) silinsin mi? Oyun kayıtların etkilenmez.', forgetYes: 'SİL', forgetDone: 'Skor kayıtların silindi, yeni anonim kimlik oluşturuldu', forgetFail: 'Sunucuya ulaşılamadı — internet bağlantını kontrol edip tekrar dene', servRefund: 'Hizmet binaları yenilendi: kaldırılan binaların parası iade edildi (+{n})', restoIdle: 'fazla mal yok', chTitle: '🪜 BÖLÜM 1 — İskeleden İşletmeye',
+    chGoal: 'Amacın: üç tezgâhı da sonuna kadar büyütmek. Bölgeleri aç ve yükselt, alınabilecek her şeyi al, her bölgeye bir müdür koy. Sayaç dolunca Bölüm 1 biter.',
+    chAreas: 'Bölgeleri aç (Balık Pazarı, Fümehane)', chLevels: 'Bölge seviyeleri', chPads: 'Yükseltmeler (sepet, ayakkabı, fiyat)', chSlots: 'Yapı noktaları',
+    chDecor: 'Süsler', chEnv: 'Çevre yatırımları', chFume: 'Füme makineleri', chProj: 'Kapalı Pazar', chMeydan: 'Meydan binaları (kulübe, depo, hal)', chMgr: 'Bölge müdürleri',
+    chEndK: 'BÖLÜM 1 TAMAMLANDI', chEndT: 'BALIKÇI İŞ İNSANI',
+    chEndP: 'Bir sandık ve bir ağla başladın. Şimdi üç tezgâhı, müdürleri ve çalışanlarıyla {c} limanın en bilinen adı. {n}, artık basit bir balıkçı değilsin.',
+    chEndG: 'Ama bu daha başlangıç. Artık devler liginde hayatta kalmalıyız…', mgrCard: '{n} — Müdür gerekli', mgrCardD: '4 personel tamam. Müdür masası kur, müdürünü seç: bölge tam otomatiğe geçer.', mgrPick: '👔 MÜDÜR SEÇ', mgrHired: '👔 {m}, {n} müdürü oldu — bölge tam otomatik', mgrListT: '{n} için müdür adayları', mgrCost: 'masa {d} + işe alım {f} • maaş {w}', mgrBoss: 'Müdür', fmT: 'Füme Makinesi • {n}', fmD: 'Tezgâhtaki filetoyu yerinde tüter; bu bölgenin müşterileri artık füme de ister (2.4× değer)', fmNeed: '🔒 Önce Fümehane', fmDone: '🔥 {n} tezgâhına füme makinesi kuruldu', envFlow: '+%{p} müşteri akışı', envRow: 'Çevre yatırımı', envNext: 'Sıradaki: {n} (Sv {l})', envCust: 'müşteri',
+    tutDone: 'Eğitim tamam! Limanı büyüt 🎉',
+    capUp: '🧺 Taşıma kapasitesi: {n}', spdUp: '👟 Hız +%11', priceUp: '💰 Fiyat +%10',
+    /* tutorial */
+    tut: ['Ağın yanında bekle — balık birikiyor',
+          'Sandığın üstünden geç, balıkları sırtla',
+          'Balıkları kesim masasına bırak',
+          'Filetoyu al ve tezgâha taşı',
+          'Tezgâhın para kasasından geç — para hesabına geçer',
+          'Alt bardan bir yükseltme satın al'],
+    orderOf: '{n} SİPARİŞİ', waiting: '⏳ {n} müşteri bekliyor',
+    idleGoal: 'Stok hazırla — müşteri yolda',
+    /* menü */
+    mArea: 'Bölgeler', mProject: 'Büyük proje', mSlots: 'Yapı noktaları',
+    mWage: 'Maaş gideri', mOrders: 'Tamamlanan sipariş', mLost: 'Kaçan müşteri',
+    mCaught: 'Tutulan balık', mNext: 'Sonraki', mMax: 'En üst seviye',
+    mNoStaff: 'Henüz çalışanın yok. Alt bardaki YÜKSELT sekmesinden bölge personeli al.',
+    mStaffCap: 'Personel limiti', mTotalWage: 'Toplam maaş',
+    mWeight: 'ağırlık', mCut: 'kesim', mYield: 'fileto', mSmoked: 'füme',
+    mLoop: 'Döngü', mLoopE: 'Ağ → kesim → tezgâh → kasa',
+    mSmokeE: 'Fileto → fümehane → 2.4× değer',
+    mRepE: 'Sipariş tamamla; VIP/Şef kaçarsa itibar düşer',
+    mInvestE: 'Yapı noktası, bölge seviyesi ve büyük projeye para yatır',
+    mCtrl: 'Kontrol',
+    /* alt panel */
+    sheetBuild: 'YAPI NOKTASI', sheetBuildSub: 'Bu noktaya ne kuracaksın?',
+    sheetProject: 'BÜYÜK PROJE', invest: 'YATIR', maxInvest: 'MAKS.', pct25: '%25',
+    stage: 'Aşama', done: 'TAMAM', owned: 'KURULU', replace: 'DEĞİŞTİR', free: 'ücretsiz',
+    /* duraklatma + kayıt */
+    paused: 'DURAKLATILDI', play: 'OYNA', resume: '▶ DEVAM ET', newGame: 'YENİ OYUN',
+    saved: 'Oyun kaydedildi • {t}', savedQuit: 'Kaydedildi, ana menüye dönüldü',
+    noSave: 'Kayıt yok — yeni oyun başlar', never: 'hiç',
+    saveLine: 'Son kayıt {t}\nPara {c} • İtibar {r}* • {s} sipariş • {p} oynandı',
+    saveNow: '💾 KAYDET', saveQuit: '💾 KAYDET VE ÇIK', setSave: 'KAYIT',
+    /* v1.2 — gün / depo / balık pazarı */
+    dayLbl: 'GÜN', dayN: 'GÜN {d}', mktDayLbl: 'BALIK PAZARI',
+    dayClose: 'GÜN {d} KAPANDI', mktClose: 'BALIK PAZARI {d} BİTTİ',
+    dayInc: 'Günlük gelir', dayServed: 'Müşteri', dayFish: 'Satılan balık',
+    dayLost: 'Kaçan müşteri', dayTop: 'En çok satan', dayOut: 'Stok dışı süre', dayAuction: 'Mezat satışı',
+    goNextDay: 'YENİ GÜN ▶', goPrep: 'PAZARA HAZIRLAN ▶',
+    mktTomorrow: 'YARIN BALIK PAZARI', mktExpect: 'Beklenen yoğunluk: Yüksek — tezgâhları doldur',
+    mktDayTitle: '🐟 BALIK PAZARI GÜNÜ',
+    prepSub: 'Bugün müşteri akışı iki katına çıkacak. Tezgâh stoklarını kontrol et.',
+    goMarket: 'PAZARI AÇ ▶',
+    prepStock: 'Tezgâh stoğu {a} / {b} — {n} açık tezgâh', nowStock: 'stok {n}',
+    noStall: 'Açık tezgâh yok', active: 'AKTİF', none: 'YOK',
+    /* v2.1 — bölge personeli + tezgâh açma */
+    hiredZ: '{i} {n} işe alındı — {z}', harborWide: 'liman geneli',
+    zoneStaff: '{n} personeli', zoneStaffD: 'Kadro {a}/{b} — rol seç',
+    zoneFull: 'Bu bölgenin kadrosu dolu', zoneOf: '{n} bölgesi',
+    stallSwitch: 'AÇIK TEZGÂHLAR', stallSwitchD: '{a}/{b} tezgâh açık — aç/kapat',
+    stallManage: 'AÇ / KAPAT', stallTitle: 'AÇIK TEZGÂHLAR',
+    newStallLbl: 'YENİ', newStallHint: 'Yeni tezgâh hazır — alt bardaki YÜKSELT › AÇIK TEZGÂHLAR',
+    howToOpen: 'YÜKSELT › AÇIK TEZGÂHLAR', stallNewN: '{n} yeni tezgâh kararını bekliyor',
+    stallSub: 'Yetişemediğin tezgâhı kapat: kapalı tezgâha müşteri gelmez, ağ o türü üretmez.',
+    swOn: 'AÇIK', swOff: 'KAPALI', swFixed: 'SABİT', stallClosed: 'KAPALI',
+    dayStalls: 'AÇIK TEZGÂHLAR', stallNew: 'Yeni tezgâh kuruldu — açmak ister misin?',
+    tableFor: 'Kesim: {n}', tableAny: 'Kesim',
+    mZoneStaff: 'Bölge kadrosu',
+    noRun: 'Önce oyunu başlat',
+    newAsk: 'Mevcut kayıt silinip yeni oyun başlasın mı?',
+    loadGame: '📂 KAYITLI OYUNLAR', slotN: 'Slot {n}', slotTitleNew: 'YENİ OYUN — SLOT SEÇ', slotTitleLoad: 'KAYITLI OYUNLAR',
+    slotSubNew: 'Yeni oyunu hangi slota kuralım?', slotSubLoad: 'Devam etmek istediğin oyunu seç.',
+    slotNew: '＋ YENİ OYUN', slotOver: '↺ ÜZERİNE YENİ OYUN', slotLoad: '▶ OYNA', slotDel: 'Sil',
+    slotEmptyT: 'BOŞ SLOT', slotEmptyS: 'Burada yeni bir işletme kurabilirsin', slotNoName: 'İsimsiz işletme',
+    slotLine: '{d}. gün • {f} balık • {c}', slotWhen: 'Son kayıt {t} • {p} oynandı',
+    overAsk: 'Slot {n}\'deki "{c}" silinip yerine yeni oyun kurulacak. Emin misin?', overYes: 'SİL VE BAŞLA',
+    delAsk: 'Slot {n}\'deki "{c}" kalıcı olarak silinsin mi?', delYes: 'SİL', slotEmpty2: 'bu oyun',
+    slotDeleted: 'Slot {n} silindi', slotLoaded: 'Slot {n} yüklendi: {c}', yes: 'EVET', cancel: 'VAZGEÇ',
+    noStorage: '⚠ Bu tarayıcı kalıcı kayda izin vermiyor: kayıtlar sayfa kapanınca silinir.', delSlot: '🗑 BU SLOTU SİL',
+    remaining: 'kalan', total: 'toplam',
+    noMoney: 'Para yetmiyor',
+    barArea: 'ALAN', barLevel: 'YÜKSELT', barBuild: 'YAPI', barProj: 'PROJE', barServ: 'BİNA',
+    tArea: 'YENİ ALAN AÇ', tLevel: 'YÜKSELTMELER', tBuild: 'YAPI', tProj: 'BÜYÜK PROJE',
+    bsub_decor: '🌺 Dekor', bsub_dev: '🔨 Geliştirme', bsub_up: '🏗️ Yükseltme', bsub_meydan: '🏛️ Meydan',
+    emptyDecor: 'Bu bölgelerdeki tüm süsler alındı', emptyUp: 'Açık bölgelerin hepsi en üst seviyede',
+    tServ: 'LİMAN HİZMET BİNALARI',
+    /* v0.4 — hizmet binaları */
+    servBuilt: '{n} kuruldu', servUp: '{n} → Lv.{l}', servMoved: '{n} taşındı',
+    needServ: 'Önce {n} hizmet binası kur', needArea: '{n} bölgesi kapalı', noPlot: 'Uygun boş parsel yok',
+    move: 'BAŞKA PARSELE TAŞI', moveHere: 'BURAYA TAŞI', buildHere: 'İNŞA ET',
+    maxLv: 'Son seviye', nextLook: 'Sonraki görünüm', dormantB: 'Tekne sistemi gelince aktif',
+    servEmpty: 'Hizmet binası için önce bölge aç', pickPlot: 'Parsel seç',
+    plotOf: '{n} bölgesi', servInc: 'servis geliri',
+    buy: 'SATIN AL', confirm: 'ONAYLA?', choose: 'SEÇ', back: '← GERİ',
+    emptyArea: 'Açılacak yeni alan yok', emptyLevel: 'Şimdilik yükseltme yok',
+    emptyBuild: 'Yapı noktası yok', emptyProj: 'Proje bu bölge açılınca gelir',
+    slotEmpty: 'Boş yapı yeri', slotOf: '{n} bölgesi',
+    areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs',
+    lvEffect: 'Ağ +%18, tezgâh +4 stok, yeni yapı yeri',
+    staffFull: 'Personel limiti dolu ({n})',
+    tut6: 'Alt bardan bir yükseltme satın al',
+    nextStage: 'Sonraki aşama',
+    /* borsa / kontrat / holding */
+    office: 'TİCARET OFİSİ', officeD: 'Şirketler, kontratlar ve borsa açılır',
+    trade: 'TİCARET', license: 'HOLDİNG LİSANSI', licenseD: '%30 üstü kontrol ve devralma açılır',
+    mktClosed: 'Pazar {d} kapandı • Liman 12: {i} (%{c})',
+    corpRaise: '{n}: sermaye artırımı', corpBuy: '{n}: geri alım', corpSplit: '{n}: hisse bölünmesi',
+    divPaid: 'Temettü: +{v}', privOffer: 'Yeni işletme satışta!', boardReady: '{n}: yönetim kurulu kararı',
+    ctrFull: 'Aktif kontrat limiti ({n})', ctrAccepted: '{n} kontratı kabul edildi',
+    ctrFailed: '{n}: kontrat süresi doldu', ctrDone: '{n} teslim edildi: {v}',
+    noShares: 'Serbest hisse yok', need51: 'Holding lisansı gerekli', orderTooBig: 'Emir çok büyük (böl)',
+    sellLock: 'Aynı pazar gününde satılamaz', sold: 'Satış: +{v}',
+    threshold: '{n}: %{p} ortaklık!', subsidiary: '{n} bağlı ortaklık oldu', privBought: '{n} satın alındı',
+    tabMarket: 'PİYASA', tabCo: 'ŞİRKET', tabCtr: 'KONTRAT', tabPort: 'PORTFÖY', tabNews: 'HABER', tabHold: 'HOLDİNG',
+    idx: 'Liman 12', day: 'Pazar Günü', health: 'Sağlık', growth: 'Büyüme', risk: 'Risk',
+    rel: 'İlişki', own: 'Pay', free: 'Serbest', price: 'Fiyat', buyB: 'AL', sellB: 'SAT',
+    accept: 'KABUL ET', commission: 'komisyon', takeover: 'DEVRAL', boardT: 'YÖNETİM KURULU',
+    stStrong: 'Güçlü', stOk: 'Dengeli', stPress: 'Baskı Altında', stRestr: 'Yeniden Yapılanma',
+    cyExpand: 'Genişleme', cyNormal: 'Normal', cySlow: 'Yavaşlama', cyRecover: 'Toparlanma',
+    relLv: ['Tanımsız Tedarikçi', 'Kayıtlı Tedarikçi', 'Tercihli Tedarikçi', 'Ana Tedarikçi', 'Stratejik Ortak', 'Amiral Ortak'],
+    bCap: 'Kapasite Yatırımı', bGrow: 'Agresif Büyüme', bCost: 'Maliyet Düşürme', bPort: 'Liman Projesi', bDebt: 'Borcu Azalt',
+    noContract: 'Şimdilik kontrat yok', noNews: 'Henüz haber yok', empty: 'Boş',
+    deliverAt: 'Ürünleri Ticaret Ofisi\'ne bırak', activeCtr: 'Aktif kontrat',
+    holdingV: 'Holding değeri', portV: 'Portföy', subsV: 'Bağlı ortaklık', harborV: 'Liman varlığı',
+    privInc: 'İşletme geliri', perks: 'Aktif perkler', buyPriv: 'SATIN AL', offerLeft: '{n} gün kaldı',
+    tutMarket: 'Ticaret Ofisi kuruldu! İlk kontratını al.',
+    privIncome: 'İşletme geliri: +{v}', creditGift: 'Eğitim kredisi: 10 {n} hissesi',
+    newLine: '🎉 Yeni hat açıldı: {n}!', lineLocked: 'Kilitli — {s} gerekli',
+    lineOpen: 'Açık', stallOf2: 'Tezgâh: {s}', noStall: 'Tezgâh kurulmadı',
+    stB0: 'İskele Tezgâhı', stB1: 'Pazar Tezgâhı', stB2: 'Fümehane Tezgâhı',
+    stSS3: 'Pazar Ek Tezgâhı (yapı)', stSS6: 'Fümehane Ek Tezgâhı (yapı)', stHAL: 'Kapalı Pazar'
+  },
+  en: {
+    money: 'CASH', carry: 'CARRY', rep: 'REP', goal: 'GOAL', menu: 'HARBOR',
+    play: 'PLAY', settings: 'SETTINGS', ok: 'OK', cont: 'CONTINUE', reset: 'RESET SAVE',
+    story: '📰 STORY', board: '🏆 SCORES', boardTitle: '🏆 LEADERBOARD', boardSub: 'Ranked by total fish caught',
+    boardEmpty: 'Nobody here yet — be the first!', boardYou: 'YOU', boardDay: 'Day {d}',
+    boardLocal: 'This table shows games played on this device.', close: 'CLOSE',
+    boardLoading: 'Loading leaderboard…', boardOffline: 'Offline — showing games on this device.',
+    boardStats: '👥 {p} players • 🎮 {g} games • ⏱ {h} hours',
+    nameTitle: 'NAME YOUR BUSINESS', nameSub: 'What goes on the sign? This name appears on the leaderboard.',
+    nameIdeas: 'IDEAS', nameGo: 'OPEN FOR BUSINESS ▶', nameShort: 'Type at least 2 letters.', nameDice: 'Random name',
+    welcomeCo: '{n} is open for business!', tapStart: '▶ TAP TO BEGIN', skip: 'SKIP ▶▶',
+    dayScore: 'Score (total fish)', dayRank: '{s} • #{r}', fishN: '{n} fish',
+    tag: 'FROM A TINY PIER TO A GRAND HARBOR',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM',
+    resetAsk: 'Erase all progress?',
+    intro1: '🎣 Wait by the net, fish pile up',
+    intro2: '🧺 Walk over the crate to carry them (big fish weigh more)',
+    intro3: '🔪 Cutting table → fillets',
+    intro4: '🐟 Stall → customers pay for orders',
+    intro5: '💰 Walk past the stall cash box → money is banked',
+    ctrl: 'W A S D / arrow keys — or touch & drag anywhere',
+    tabs: ['HARBOR', 'STAFF', 'GOODS', 'ALBUM', 'HELP'],
+    stNet: 'NET', stCut: 'CUTTING', stSmoke: 'SMOKEHOUSE', stStall: 'STALL', stSafe: 'MAIN SAFE', trayFull: 'CASH FULL',
+    stTake: 'TAKE', stBuild: 'BUILD SPOT', stProject: 'BIG PROJECT', stDecor: 'DECOR',
+    upCap: 'CAPACITY', upCapE: '+3 carry', upSpd: 'SPEED', upSpdE: '+11% run',
+    upPrice: 'HAGGLE', upPriceE: '+10% price',
+    upArea: 'AREA LEVEL', hire: 'HIRE', level: 'Lv.',
+    needRep: '🔒 Lv {l} • ⭐{c}/{n}', needLv: '🔒 Needs level {l}', needStaff: 'Needs a staff hut',
+    openArea: 'OPEN', locked: 'LOCKED',
+    evShoal: 'FISH SHOAL', evShip: 'FERRY ARRIVED', evStorm: 'SOUTH WIND',
+    evShoalM: 'A shoal arrived! Nets twice as fast 🐟',
+    evShipM: 'The ferry docked! Customer rush 🚢',
+    evStormM: 'Rough sea, fewer customers 🌊',
+    hired: '{i} {n} hired — {w}',
+    coachTouch: 'Press and drag anywhere — your character walks', coachKeys: 'Walk with WASD or the arrow keys',
+    coachAuto: 'Just stand still: you pick up from the net and drop at tables/stalls automatically',
+    stallOfFish: '{f} stall', autoBadge: '⚙ AUTO', autoCard: '{n} — Hand over to staff', autoCardOn: '{n} — AUTOMATED',
+    autoCardOnD: 'The crew runs it (20% faster). Walk by to inspect; you still collect cash as you pass.',
+    autoGive: '⚙ HAND OVER', autoBack: '↩ TAKE BACK', autoNeed: 'Missing roles: {n}', autoMissing: 'Missing staff: {m}',
+    autoOn: '⚙ {n} handed to staff — it now runs itself', autoOff: '{n} is back in your hands',
+    heroTitle: 'YOUR CHARACTER', heroSub: 'Who is the harbor\'s new fisher? Pick a look.', heroNameLbl: 'YOUR NAME',
+    heroRandom: '🎲 RANDOM', heroGo: 'NEXT ▶', hero_hs: 'Hair style', hero_hc: 'Hair colour', hero_sk: 'Skin tone',
+    hero_hw: 'Headwear', hero_fc: 'Moustache / beard', hero_co: 'Sweater', hero_ap: 'Apron',
+    welcomeHero: 'Good luck {h}! {n} is open for business.',
+    stBin: 'BIN', trashed: '🗑 {n} items thrown away', trashHint: '🗑 The stall won\'t take it — dump extras in the BIN (stand in front of it)',
+    autoTitle: '💾 AUTOSAVE', autoSub: 'How often should the game save itself? You can change it later in Settings.',
+    autoMinN: '{m} min', auto5: 'Frequent — safest', auto10: 'Recommended', auto30: 'Occasional',
+    autoLbl: 'AUTOSAVE', autoSaved: '💾 Autosaved • {t}', autoSet: '💾 Autosave every {m} minutes',
+    autoNext: 'Autosave: every {m} min • next in {t}',
+    musicLbl: 'MUSIC', musOn: '♪ ON', musOff: 'OFF',
+    meydan: 'HARBOR SQUARE', hutName: 'Staff Hut', depotName: 'Depot', whall: 'Fish Hall', buildAt: 'BUILD › Square',
+    hutD: '+1 staff slot in every zone per level (now +{n})', depotD: 'Stores surplus fillet/smoked fish on shelves by type; has its own staff',
+    depotD2: 'Shelves {a}/{b} → {n} • +1 depot staff', whallD: 'Sell depot stock at today\'s price, buy wholesale (needs Depot)',
+    officeInMeydan: 'The Trade Center is now on the square — build it from PROJECT', goProj: 'PROJECT ›', upgrade: 'UPGRADE', build: 'BUILD',
+    needDepot: '🔒 Build the Depot first', depotStaffFull: 'Depot crew full — upgrade the depot', depotFull: 'Depot full',
+    hutBuilt: '🏚️ Staff Hut built: +1 staff slot in every zone', hutUp: '🏚️ Hut Lv {l}: +{l} staff slots in every zone',
+    depotBuilt: '📦 Depot built — surplus goes to shelves, not the bin/auction', depotUp: '📦 Depot Lv {l}: capacity {c}',
+    whallBuilt: '🏪 Fish Hall open', hutBtn: 'STAFF', halBtn: 'FISH HALL', hutWelcome: '👷 Welcome to the hut — manage your staff here',
+    halSub: 'Day {d} prices • Depot {a}/{b}', halRow: 'In depot {n} • Sell {s} • Buy {b}', halSell5: 'SELL 5', halSellAll: 'ALL', halBuy5: 'BUY 5',
+    halEmpty: 'No goods yet', halSold: '{n} sold: +{v}', halBought: '{n} bought: {v}', kFume: 'smoked', kFileto: 'fillet',
+    envUp1: '🌿 The harbor comes alive: gravel road, trees turning green', envUp2: '🪨 The road is cobbled now, the shore tidied up',
+    envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
+    specComing: 'A special customer is coming...', daySpec: 'Special customers',
+    albMet: 'Special customers you\'ve met', albLeft: '{n} more to meet — 2 special customers visit every day.', albNone: 'You haven\'t met anyone yet. 2 special customers visit every day.', albFav: 'Loves',
+    featDay: 'Customer of the day: {n}', levelUp: '⭐ New rank: {t}!', lvlN: 'LEVEL {l}', lvShort: 'LV {l}', lvBonus: 'Sales bonus {p}',
+    areaOpen: '🔓 {n} unlocked!',
+    areaLvUp: '🏗️ {n} → Lv.{l}',
+    built: '🔨 {n} built',
+    projStage: '🏛️ {n}: {p}% — new stage!',
+    projDone: '🎉 {n} completed!',
+    decorBought: '✨ {n} placed', yardName: 'SERVICE YARD', onlineLbl: 'ONLINE LEADERBOARD', onlOn: 'ON', onlOff: 'OFF', onlineOnT: 'Your score will be sent to the public leaderboard', onlineOffT: 'Online sharing off — leaderboard on this device only', forgetBtn: 'DELETE MY LEADERBOARD DATA', privBtn: 'PRIVACY POLICY', privClose: '▶ CLOSE', forgetAsk: 'Delete all of this device\'s leaderboard entries (server and device)? Your game saves are not affected.', forgetYes: 'DELETE', forgetDone: 'Leaderboard data deleted, new anonymous ID created', forgetFail: 'Could not reach the server — check your connection and try again', servRefund: 'Service buildings revised: removed buildings refunded (+{n})', restoIdle: 'no surplus', chTitle: '🪜 CHAPTER 1 — From Pier to Business',
+    chGoal: 'Your goal: grow all three stalls to the max. Open and upgrade the zones, buy everything on offer and put a manager in every zone. When the counter is full, Chapter 1 ends.',
+    chAreas: 'Open the zones (Fish Market, Smokehouse)', chLevels: 'Zone levels', chPads: 'Upgrades (basket, boots, price)', chSlots: 'Build spots',
+    chDecor: 'Decorations', chEnv: 'Surroundings', chFume: 'Smoker boxes', chProj: 'Covered Market', chMeydan: 'Square buildings (hut, depot, hall)', chMgr: 'Zone managers',
+    chEndK: 'CHAPTER 1 COMPLETE', chEndT: 'HARBOR MOGUL',
+    chEndP: 'You started with one crate and one net. Now, with three stalls, managers and a whole crew, {c} is the best-known name in the harbour. {n}, you are no longer a simple fisher.',
+    chEndG: 'But this is only the beginning. Now we must survive in the league of giants…', mgrCard: '{n} — Manager needed', mgrCardD: 'All 4 roles filled. Set up a manager\'s desk and pick a manager: the zone goes fully automatic.', mgrPick: '👔 PICK MANAGER', mgrHired: '👔 {m} now runs {n} — zone fully automatic', mgrListT: 'Manager candidates for {n}', mgrCost: 'desk {d} + hiring {f} • wage {w}', mgrBoss: 'Manager', fmT: 'Smoker Box • {n}', fmD: 'Smokes fillets right at the stall; customers here now order smoked fish too (2.4× value)', fmNeed: '🔒 Smokehouse first', fmDone: '🔥 Smoker box installed at {n}', envFlow: '+{p}% customer flow', envRow: 'Surroundings', envNext: 'Next: {n} (Lv {l})', envCust: 'customers',
+    tutDone: 'Tutorial done! Grow the harbor 🎉',
+    capUp: '🧺 Carry capacity: {n}', spdUp: '👟 Speed +11%', priceUp: '💰 Price +10%',
+    tut: ['Wait by the net — fish are coming',
+          'Walk over the crate to pick up the fish',
+          'Drop the fish on the cutting table',
+          'Grab fillets and carry them to the stall',
+          'Walk past the stall cash box — money is banked',
+          'Buy an upgrade from the bottom bar'],
+    orderOf: '{n} ORDER', waiting: '⏳ {n} customers waiting',
+    idleGoal: 'Stock up — customers on the way',
+    mArea: 'Areas', mProject: 'Big project', mSlots: 'Build spots',
+    mWage: 'Wages', mOrders: 'Orders served', mLost: 'Customers lost',
+    mCaught: 'Fish caught', mNext: 'Next', mMax: 'Max rank',
+    mNoStaff: 'No staff yet. Hire zone crew from the UPGRADE tab in the bottom bar.',
+    mStaffCap: 'Staff limit', mTotalWage: 'Total wages',
+    mWeight: 'weight', mCut: 'cut', mYield: 'fillets', mSmoked: 'smoked',
+    mLoop: 'Loop', mLoopE: 'Net → cutting → stall → safe',
+    mSmokeE: 'Fillet → smokehouse → 2.4× value',
+    mRepE: 'Finish orders; losing a Chef/VIP costs rep',
+    mInvestE: 'Invest in build spots, area levels and the big project',
+    mCtrl: 'Controls',
+    sheetBuild: 'BUILD SPOT', sheetBuildSub: 'What will you build here?',
+    sheetProject: 'BIG PROJECT', invest: 'INVEST', maxInvest: 'MAX', pct25: '25%',
+    stage: 'Stage', done: 'DONE', owned: 'BUILT', replace: 'REPLACE', free: 'free',
+    paused: 'PAUSED', play: 'PLAY', resume: '▶ CONTINUE', newGame: 'NEW GAME',
+    saved: 'Game saved • {t}', savedQuit: 'Saved — back to main menu',
+    noSave: 'No save yet — a new game will start', never: 'never',
+    saveLine: 'Last save {t}\nCash {c} • Rep {r}* • {s} orders • {p} played',
+    saveNow: '💾 SAVE', saveQuit: '💾 SAVE & QUIT', setSave: 'SAVE',
+    dayLbl: 'DAY', dayN: 'DAY {d}', mktDayLbl: 'FISH MARKET',
+    dayClose: 'DAY {d} CLOSED', mktClose: 'FISH MARKET {d} ENDED',
+    dayInc: 'Daily income', dayServed: 'Customers', dayFish: 'Fish sold',
+    dayLost: 'Lost customers', dayTop: 'Top seller', dayOut: 'Stock-out time', dayAuction: 'Auction sale',
+    goNextDay: 'NEW DAY ▶', goPrep: 'PREPARE FOR MARKET ▶',
+    mktTomorrow: 'FISH MARKET TOMORROW', mktExpect: 'Expected demand: High — stock your stalls',
+    mktDayTitle: '🐟 FISH MARKET DAY',
+    prepSub: 'Customer flow doubles today. Check your stall stock before opening.',
+    goMarket: 'OPEN THE MARKET ▶',
+    prepStock: 'Stall stock {a} / {b} — {n} open stalls', nowStock: 'stock {n}',
+    noStall: 'No open stall', active: 'ACTIVE', none: 'NONE',
+    hiredZ: '{i} {n} hired — {z}', harborWide: 'harbor-wide',
+    zoneStaff: '{n} staff', zoneStaffD: 'Crew {a}/{b} — pick a role',
+    zoneFull: "This zone's crew is full", zoneOf: '{n} zone',
+    stallSwitch: 'OPEN STALLS', stallSwitchD: '{a}/{b} stalls open — switch on/off',
+    stallManage: 'ON / OFF', stallTitle: 'OPEN STALLS',
+    newStallLbl: 'NEW', newStallHint: 'New stall ready — bottom bar UPGRADE › OPEN STALLS',
+    howToOpen: 'UPGRADE › OPEN STALLS', stallNewN: '{n} new stall awaiting your call',
+    stallSub: "Switch off a stall you can't keep up with: no customers arrive and its net stops.",
+    swOn: 'ON', swOff: 'OFF', swFixed: 'FIXED', stallClosed: 'CLOSED',
+    dayStalls: 'OPEN STALLS', stallNew: 'A new stall is built — switch it on?',
+    tableFor: 'Cutting: {n}', tableAny: 'Cutting',
+    mZoneStaff: 'Zone crew',
+    noRun: 'Start the game first',
+    newAsk: 'Delete the current save and start a new game?',
+    loadGame: '📂 SAVED GAMES', slotN: 'Slot {n}', slotTitleNew: 'NEW GAME — PICK A SLOT', slotTitleLoad: 'SAVED GAMES',
+    slotSubNew: 'Which slot should the new game use?', slotSubLoad: 'Pick the game you want to continue.',
+    slotNew: '＋ NEW GAME', slotOver: '↺ NEW GAME HERE', slotLoad: '▶ PLAY', slotDel: 'Delete',
+    slotEmptyT: 'EMPTY SLOT', slotEmptyS: 'Start a new business here', slotNoName: 'Unnamed business',
+    slotLine: 'Day {d} • {f} fish • {c}', slotWhen: 'Saved {t} • {p} played',
+    overAsk: '"{c}" in slot {n} will be deleted and replaced by a new game. Sure?', overYes: 'DELETE & START',
+    delAsk: 'Permanently delete "{c}" in slot {n}?', delYes: 'DELETE', slotEmpty2: 'this game',
+    slotDeleted: 'Slot {n} deleted', slotLoaded: 'Slot {n} loaded: {c}', yes: 'YES', cancel: 'CANCEL',
+    noStorage: '⚠ This browser blocks permanent saves: saves are lost when the page closes.', delSlot: '🗑 DELETE THIS SLOT',
+    remaining: 'left', total: 'total',
+    noMoney: 'Not enough cash',
+    barArea: 'AREA', barLevel: 'UPGRADE', barBuild: 'BUILD', barProj: 'PROJECT', barServ: 'SERVICE',
+    tArea: 'UNLOCK NEW AREA', tLevel: 'UPGRADES', tBuild: 'BUILD', tProj: 'BIG PROJECT',
+    bsub_decor: '🌺 Decor', bsub_dev: '🔨 Improve', bsub_up: '🏗️ Upgrade', bsub_meydan: '🏛️ Square',
+    emptyDecor: 'All decor in open areas is owned', emptyUp: 'All open areas are max level',
+    tServ: 'HARBOR SERVICE BUILDINGS',
+    servBuilt: '{n} built', servUp: '{n} → Lv.{l}', servMoved: '{n} relocated',
+    needServ: 'Build {n} service buildings first', needArea: '{n} area is locked', noPlot: 'No free plot available',
+    move: 'MOVE TO ANOTHER PLOT', moveHere: 'MOVE HERE', buildHere: 'BUILD',
+    maxLv: 'Max level', nextLook: 'Next look', dormantB: 'Activates with the boat system',
+    servEmpty: 'Unlock an area to place service buildings', pickPlot: 'Pick a plot',
+    plotOf: '{n} area', servInc: 'service income',
+    buy: 'BUY', confirm: 'CONFIRM?', choose: 'PICK', back: '← BACK',
+    emptyArea: 'No new area to unlock', emptyLevel: 'No upgrade available yet',
+    emptyBuild: 'No build spot yet', emptyProj: 'Unlocks with that area',
+    slotEmpty: 'Empty build spot', slotOf: '{n} area',
+    areaGives: 'New net, cutting table and stall', decorGroup: 'Decor',
+    lvEffect: 'Nets +18%, stall +4 stock, new build spot',
+    staffFull: 'Staff limit reached ({n})',
+    tut6: 'Buy an upgrade from the bottom bar',
+    nextStage: 'Next stage',
+    office: 'TRADE OFFICE', officeD: 'Unlocks companies, contracts and the market',
+    trade: 'TRADE', license: 'HOLDING LICENSE', licenseD: 'Unlocks control above 30% and takeovers',
+    mktClosed: 'Day {d} closed • Port 12: {i} ({c}%)',
+    corpRaise: '{n}: capital raise', corpBuy: '{n}: buyback', corpSplit: '{n}: share split',
+    divPaid: 'Dividend: +{v}', privOffer: 'A business is up for sale!', boardReady: '{n}: board decision',
+    ctrFull: 'Active contract limit ({n})', ctrAccepted: '{n} contract accepted',
+    ctrFailed: '{n}: contract expired', ctrDone: '{n} delivered: {v}',
+    noShares: 'No free shares', need51: 'Holding license required', orderTooBig: 'Order too big (split it)',
+    sellLock: 'Cannot sell on the same market day', sold: 'Sold: +{v}',
+    threshold: '{n}: {p}% stake!', subsidiary: '{n} is now a subsidiary', privBought: '{n} acquired',
+    tabMarket: 'MARKET', tabCo: 'COMPANY', tabCtr: 'CONTRACT', tabPort: 'PORTFOLIO', tabNews: 'NEWS', tabHold: 'HOLDING',
+    idx: 'Port 12', day: 'Market Day', health: 'Health', growth: 'Growth', risk: 'Risk',
+    rel: 'Relation', own: 'Stake', free: 'Float', price: 'Price', buyB: 'BUY', sellB: 'SELL',
+    accept: 'ACCEPT', commission: 'fee', takeover: 'TAKEOVER', boardT: 'BOARD',
+    stStrong: 'Strong', stOk: 'Stable', stPress: 'Under Pressure', stRestr: 'Restructuring',
+    cyExpand: 'Expansion', cyNormal: 'Normal', cySlow: 'Slowdown', cyRecover: 'Recovery',
+    relLv: ['Unrated Supplier', 'Registered Supplier', 'Preferred Supplier', 'Key Supplier', 'Strategic Partner', 'Flagship Partner'],
+    bCap: 'Capacity Investment', bGrow: 'Aggressive Growth', bCost: 'Cost Cutting', bPort: 'Port Project', bDebt: 'Reduce Debt',
+    noContract: 'No contracts yet', noNews: 'No news yet', empty: 'Empty',
+    deliverAt: 'Drop goods at the Trade Office', activeCtr: 'Active contracts',
+    holdingV: 'Holding value', portV: 'Portfolio', subsV: 'Subsidiaries', harborV: 'Harbor assets',
+    privInc: 'Business income', perks: 'Active perks', buyPriv: 'BUY', offerLeft: '{n} days left',
+    tutMarket: 'Trade Office built! Take your first contract.',
+    privIncome: 'Business income: +{v}', creditGift: 'Training credit: 10 {n} shares',
+    newLine: '🎉 New line unlocked: {n}!', lineLocked: 'Locked — needs {s}',
+    lineOpen: 'Open', stallOf2: 'Stall: {s}', noStall: 'Stall not built',
+    stB0: 'Pier Stall', stB1: 'Market Stall', stB2: 'Smokehouse Stall',
+    stSS3: 'Market Extra Stall (build)', stSS6: 'Smokehouse Extra Stall (build)', stHAL: 'Covered Market'
+  }
+};
+function T(k, p) {
+  var s = (STR[lang] && STR[lang][k] !== undefined) ? STR[lang][k] : STR.tr[k];
+  if (s === undefined) return k;
+  if (p && typeof s === 'string') for (var i in p) s = s.replace('{' + i + '}', p[i]);
+  return s;
+}
+function NM(o) { return (o && o[lang]) || (o && o.tr) || ''; }
+function UP(s) {
+  s = String(s);
+  if (lang !== 'tr') return s.toUpperCase();
+  return s.replace(/i/g, 'İ').replace(/ı/g, 'I').toUpperCase();
+}
+
+/* ---------------- canvas / pixel ---------------- */
+var cvs = document.getElementById('game');
+var ctx = cvs.getContext('2d');
+var ucv = document.getElementById('ui');
+var uctx = ucv.getContext('2d');
+var VW = 0, VH = 0, PXS = 3, zoomLvl = 2, DPR2 = 1;
+var W = 0, H = 0;                 /* sanal (pixel) tuval boyutu */
+function resize() {
+  VW = cvs.clientWidth || window.innerWidth;
+  VH = cvs.clientHeight || window.innerHeight;
+  var base = clamp(Math.round(VW / 330), 2, 4);
+  PXS = clamp(base + (zoomLvl - 2), 1, 6);
+  W = Math.ceil(VW / PXS); H = Math.ceil(VH / PXS);
+  cvs.width = W; cvs.height = H;
+  ctx.imageSmoothingEnabled = false;
+  DPR2 = Math.min(2, window.devicePixelRatio || 1);
+  ucv.width = Math.round(VW * DPR2); ucv.height = Math.round(VH * DPR2);
+}
+
+/* ---- dünya yazıları: tam çözünürlüklü üst katman ---- */
+var camOX = 0, camOY = 0, uiQ = [];
+function uiX(x, y, dx) { return (pX(x, y) + camOX + (dx || 0)) * PXS; }
+function uiY(x, y, z, dy) { return (pY(x, y, z) + camOY + (dy || 0)) * PXS; }
+function uiLabel(x, y, z, s, col, a, dx, dy) { uiQ.push({ t: 1, x: x, y: y, z: z, s: s, c: col, a: a === undefined ? 1 : a, dx: dx, dy: dy }); }
+/* v1.3: tam otomatik bölgede istasyon etiketleri/stok rozetleri yalnız oyuncu yakındayken (kalabalık olmasın) */
+var uiQuiet = false;
+function quietZone(z, x, y) { return z >= 0 && zoneAuto(z) && dist2(player.x, player.y, x, y) > 16; }
+function quietDraw(z, x, y, fn) { uiQuiet = quietZone(z, x, y); try { fn(); } finally { uiQuiet = false; } }
+function uiBadge(x, y, z, s, col) { if (uiQuiet) return; uiQ.push({ t: 2, x: x, y: y, z: z, s: s, c: col || '#ffc94a', a: 1 }); }
+/* Etiket bütçesi: kalabalık limanda ekranı yazı kaplamasın.
+   Ad etiketleri (t=1) yalnız oyuncuya en yakın LABEL_BUDGET tanesi çizilir;
+   rozetler (t=2) ve serbest yazılar (t=3) sınırlanmaz. */
+var LABEL_BUDGET = 6, BADGE_BUDGET = 14;
+function trimLabels() {
+  var lab = [], bad = [], rest = [], i;
+  for (i = 0; i < uiQ.length; i++) {
+    var q = uiQ[i];
+    q._d = dist2(player.x, player.y, q.x, q.y);
+    if (q.t === 1) lab.push(q); else if (q.t === 2) bad.push(q); else rest.push(q);
+  }
+  function near(a, b) { return a._d - b._d; }
+  lab.sort(near); bad.sort(near);
+  uiQ = rest.concat(bad.slice(0, BADGE_BUDGET)).concat(lab.slice(0, LABEL_BUDGET));
+}
+function uiText(x, y, z, s, col, size, a, dx, dy, outline) { uiQ.push({ t: 3, x: x, y: y, z: z, s: s, c: col, sz: size || 12, a: a === undefined ? 1 : a, dx: dx, dy: dy, o: outline }); }
+function uiFont(px) { return 'bold ' + px + 'px "Pixelify Sans",ui-monospace,monospace'; }
+/* pixel joystick: koyu taban halkası + altın topuz + yön oku */
+function drawJoystick(jx, jy, dx, dy, a) {
+  var r = 17, i, k = Math.hypot(dx, dy);
+  ctx.save(); ctx.globalAlpha = 0.34 * a;
+  for (i = -r; i <= r; i++) { var w = R(Math.sqrt(r * r - i * i)); px(jx - w, jy + i, w * 2, 1, '#0a1a27'); }
+  ctx.globalAlpha = 0.75 * a;
+  for (i = 0; i < 40; i++) { var t = i / 40 * Math.PI * 2; px(jx + R(Math.cos(t) * r), jy + R(Math.sin(t) * r), 1, 1, '#f4e9d2'); }
+  if (k > 0.2) {                                       /* yön oku halkanın kenarında */
+    var ux = dx / k, uy = dy / k, ax = jx + ux * (r + 4), ay = jy + uy * (r + 4);
+    for (i = 0; i < 4; i++) {
+      var bx = ax - ux * i, by = ay - uy * i;
+      px(bx - uy * i, by + ux * i, 1, 1, '#ffc94a'); px(bx + uy * i, by - ux * i, 1, 1, '#ffc94a');
+    }
+  }
+  var kx = jx + R(dx * 11), ky = jy + R(dy * 11);
+  ctx.globalAlpha = a;
+  for (i = -6; i <= 6; i++) { var w2 = R(Math.sqrt(36 - i * i)); px(kx - w2, ky + i, w2 * 2, 1, '#c98f1c'); }
+  for (i = -5; i <= 4; i++) { var w3 = R(Math.sqrt(25 - (i + 0.5) * (i + 0.5))); px(kx - w3, ky + i, w3 * 2, 1, '#ffc94a'); }
+  px(kx - 3, ky - 4, 2, 2, '#fff4c8');
+  ctx.restore();
+}
+function renderUI() {
+  trimLabels();
+  uctx.setTransform(DPR2, 0, 0, DPR2, 0, 0);
+  uctx.clearRect(0, 0, VW, VH);
+  uctx.textAlign = 'center'; uctx.textBaseline = 'alphabetic';
+  var taken = [];
+  function hits(r) {
+    for (var k = 0; k < taken.length; k++) {
+      var o = taken[k];
+      if (r.x < o.x + o.w && r.x + r.w > o.x && r.y < o.y + o.h && r.y + r.h > o.y) return true;
+    }
+    return false;
+  }
+  for (var i = 0; i < uiQ.length; i++) {
+    var q = uiQ[i];
+    var cx = Math.round(uiX(q.x, q.y, q.dx)), cy = Math.round(uiY(q.x, q.y, q.z, q.dy));
+    if (cx < -160 || cx > VW + 160 || cy < -60 || cy > VH + 60) continue;
+    uctx.globalAlpha = q.a;
+    if (q.t === 1 || q.t === 2) {
+      var fs = q.t === 1 ? 10 : 9.5;
+      uctx.font = uiFont(fs);
+      var w = Math.round(uctx.measureText(q.s).width) + 9, h = fs + 6;
+      var rect = { x: cx - w / 2, y: cy - h, w: w, h: h };
+      if (VW && w < VW - 8) { rect.x = clamp(rect.x, 4, VW - w - 4); cx = rect.x + w / 2; }   /* v0.9: ekrandan taşmasın */
+      for (var tr = 0; tr < 5 && hits(rect); tr++) rect.y -= h + 2;
+      if (hits(rect)) continue;                       /* yer yoksa hiç çizme */
+      taken.push(rect);
+      cy = rect.y + h;
+      uctx.fillStyle = '#0a1a27'; uctx.fillRect(rect.x, rect.y, w, h);
+      uctx.fillStyle = q.t === 1 ? 'rgba(20,41,60,.92)' : 'rgba(29,58,82,.92)';
+      uctx.fillRect(rect.x + 2, rect.y + 2, w - 4, h - 4);
+      /* kilim çentiği: üst kenarda iki altın nokta */
+      uctx.fillStyle = q.t === 1 ? '#c9a15e' : '#7a9ab0';
+      uctx.fillRect(rect.x + 2, rect.y + 2, 2, 1); uctx.fillRect(rect.x + w - 4, rect.y + 2, 2, 1);
+      uctx.fillStyle = q.c || '#f4e9d2';
+      uctx.fillText(q.s, cx, cy - 5);
+    } else {
+      uctx.font = uiFont(q.sz);
+      uctx.lineWidth = 3; uctx.strokeStyle = q.o || 'rgba(10,26,39,.92)'; uctx.lineJoin = 'round';
+      uctx.strokeText(q.s, cx, cy);
+      uctx.fillStyle = q.c || '#f4e9d2';
+      uctx.fillText(q.s, cx, cy);
+    }
+  }
+  uctx.globalAlpha = 1;
+  uiQ.length = 0;
+}
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', function () { setTimeout(resize, 150); });
+
+/* izometrik */
+var TW = 24, TH = 12;
+function pX(x, y) { return (x - y) * (TW / 2); }
+function pY(x, y, z) { return (x + y) * (TH / 2) - (z || 0); }
+
+/* ---------------- girdi ---------------- */
+var keys = {};
+/* v0.3 — hareket göstergesi + kontrol eğitimi */
+var moveDir = { on: false, x: 0, y: 0 }, ctrlWalk = 0, ctrlT = 0;
+var inputMode = (window.matchMedia && matchMedia('(pointer: coarse)').matches) ? 'touch' : 'key';
+function typing(e) { var tg = e.target && e.target.tagName; return tg === 'INPUT' || tg === 'TEXTAREA'; }
+window.addEventListener('keydown', function (e) {
+  if (typing(e)) return;
+  keys[e.key.toLowerCase()] = true;
+  if (/^(w|a|s|d|arrow)/.test(e.key.toLowerCase()) && inputMode !== 'key') { inputMode = 'key'; if (el.coach) el.coach.dataset.k = ''; }
+  if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].indexOf(e.key.toLowerCase()) >= 0) e.preventDefault();
+});
+window.addEventListener('keyup', function (e) { keys[e.key.toLowerCase()] = false; });
+var stick = { active: false, id: -1, bx: 0, by: 0, dx: 0, dy: 0 };
+cvs.addEventListener('pointerdown', function (e) {
+  cvs.setPointerCapture(e.pointerId);
+  if (inputMode !== 'touch') { inputMode = 'touch'; if (el.coach) el.coach.dataset.k = ''; }
+  stick.active = true; stick.id = e.pointerId; stick.bx = e.clientX; stick.by = e.clientY; stick.dx = 0; stick.dy = 0;
+});
+cvs.addEventListener('pointermove', function (e) {
+  if (!stick.active || e.pointerId !== stick.id) return;
+  var dx = e.clientX - stick.bx, dy = e.clientY - stick.by, L = Math.hypot(dx, dy), Rr = 60;
+  if (L > Rr) { stick.bx += dx * (1 - Rr / L); stick.by += dy * (1 - Rr / L); dx = e.clientX - stick.bx; dy = e.clientY - stick.by; L = Rr; }
+  stick.dx = L > 6 ? dx / Rr : 0; stick.dy = L > 6 ? dy / Rr : 0;
+});
+function stickEnd(e) { if (!e || e.pointerId === stick.id) { stick.active = false; stick.id = -1; stick.dx = 0; stick.dy = 0; } }
+cvs.addEventListener('pointerup', stickEnd);
+cvs.addEventListener('pointercancel', stickEnd);
+cvs.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+/* ---------------- ses ---------------- */
+/* =========================================================
+   SES MOTORU v2 — 0.1 sürümü
+   • Tek master gain + 3 kademeli ses seviyesi (kapalı / kısık / açık)
+   • Her kullanıcı dokunuşunda AudioContext açılır ve resume edilir
+     (iOS/Safari ve mobil Chrome'un otomatik oynatma kilidi için)
+   • Zarf (attack/decay) ile tık sesi yok, kare dalga yumuşatılmış
+   ========================================================= */
+var AC = null, masterGain = null, soundOn = true, volLvl = 2;   /* 0 kapalı, 1 kısık, 2 açık */
+var VOLS = [0, 0.22, 0.5];
+var audioReady = false;
+
+function ensureAudio() {
+  try {
+    if (!AC) {
+      var Ctor = window.AudioContext || window.webkitAudioContext;
+      if (!Ctor) return false;
+      AC = new Ctor();
+      masterGain = AC.createGain();
+      masterGain.gain.value = VOLS[volLvl] || 0;
+      masterGain.connect(AC.destination);
+    }
+    if (AC.state === 'suspended' && AC.resume) AC.resume();
+    audioReady = AC.state === 'running';
+    return audioReady;
+  } catch (e) { return false; }
+}
+function applyVolume() {
+  soundOn = volLvl > 0;
+  if (masterGain && AC) {
+    try { masterGain.gain.setTargetAtTime(VOLS[volLvl] || 0, AC.currentTime, 0.02); }
+    catch (e) { masterGain.gain.value = VOLS[volLvl] || 0; }
+  }
+}
+/* her dokunuş/tuş sesi açma şansı verir — mobilde kritik */
+['pointerdown', 'touchstart', 'keydown', 'mousedown'].forEach(function (ev) {
+  window.addEventListener(ev, function () { ensureAudio(); }, { passive: true });
+});
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden) ensureAudio();
+});
+
+/* --- temel ton: zarflı osilatör --- */
+function tone(f, d, type, v, o) {
+  if (!soundOn || !ensureAudio()) return;
+  o = o || {};
+  try {
+    var t0 = AC.currentTime + (o.at || 0);
+    var osc = AC.createOscillator(), g = AC.createGain();
+    osc.type = type || 'square';
+    osc.frequency.setValueAtTime(f, t0);
+    if (o.to) osc.frequency.exponentialRampToValueAtTime(Math.max(1, o.to), t0 + d);
+    var peak = Math.max(0.0001, v === undefined ? 0.5 : v);
+    var atk = o.atk === undefined ? 0.008 : o.atk;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(peak, t0 + atk);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+    var node = osc;
+    if (o.lp) {                                   /* alçak geçiren: sert kareyi yumuşatır */
+      var bq = AC.createBiquadFilter();
+      bq.type = 'lowpass'; bq.frequency.value = o.lp;
+      node.connect(bq); node = bq;
+    }
+    node.connect(g); g.connect(o.dst || masterGain);
+    osc.start(t0); osc.stop(t0 + d + 0.02);
+  } catch (e) { }
+}
+/* --- gürültü: su sıçraması, satır darbesi, kepenk --- */
+var _noiseBuf = null;
+function noiseBuffer() {
+  if (_noiseBuf) return _noiseBuf;
+  var n = Math.floor(AC.sampleRate * 0.5);
+  _noiseBuf = AC.createBuffer(1, n, AC.sampleRate);
+  var ch = _noiseBuf.getChannelData(0);
+  for (var i = 0; i < n; i++) ch[i] = Math.random() * 2 - 1;
+  return _noiseBuf;
+}
+function noise(d, v, o) {
+  if (!soundOn || !ensureAudio()) return;
+  o = o || {};
+  try {
+    var t0 = AC.currentTime + (o.at || 0);
+    var src = AC.createBufferSource(); src.buffer = noiseBuffer();
+    var bq = AC.createBiquadFilter();
+    bq.type = o.type || 'lowpass';
+    bq.frequency.setValueAtTime(o.f || 1200, t0);
+    if (o.to) bq.frequency.exponentialRampToValueAtTime(Math.max(40, o.to), t0 + d);
+    bq.Q.value = o.q || 1;
+    var g = AC.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0001, v), t0 + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+    src.connect(bq); bq.connect(g); g.connect(o.dst || masterGain);
+    src.start(t0); src.stop(t0 + d + 0.02);
+  } catch (e) { }
+}
+function melody(notes, type, v, lp) {
+  for (var i = 0; i < notes.length; i++)
+    tone(notes[i][0], notes[i][1], type || 'square', v === undefined ? 0.4 : v, { at: notes[i][2], lp: lp || 2400 });
+}
+
+/* =========================================================
+   MÜZİK — "İskele Türküsü" (v0.3)
+   Kendi bestemiz; dosya yok, Web Audio ile çalınır → telif sorunu yok.
+   Re minör, 132 BPM, 16 ölçü (A · A' · B · B'), Karadeniz havası:
+   kare dalga melodi, üçgen bas (sallanan "yürüyen" figür), hafif davul.
+   Hikâye + ana menüde çalar; oyuna girince yumuşakça susar.
+   ========================================================= */
+var SONG = {
+  bpm: 132,
+  /* [midi, sekizlik sayısı] — 0 = sus */
+  lead: [
+    [69,2],[74,2],[72,1],[69,1],[67,2],  [65,2],[67,1],[69,1],[67,2],[64,2],
+    [62,2],[65,2],[69,2],[74,2],         [72,3],[70,1],[69,4],
+    [69,2],[74,2],[72,1],[69,1],[67,2],  [65,2],[67,1],[69,1],[70,2],[69,2],
+    [67,2],[65,1],[64,1],[62,2],[64,2],  [62,6],[0,2],
+    [74,1],[74,1],[76,1],[77,1],[76,2],[74,2],  [72,1],[72,1],[74,1],[76,1],[74,2],[72,2],
+    [70,1],[70,1],[72,1],[74,1],[72,2],[70,2],  [69,2],[67,2],[69,4],
+    [74,1],[74,1],[76,1],[77,1],[79,2],[77,2],  [76,1],[74,1],[72,1],[70,1],[69,2],[67,2],
+    [65,2],[67,2],[69,2],[64,2],                 [62,6],[0,2]
+  ],
+  /* ölçü başına bas kökü (MIDI) */
+  bass: [38, 36, 38, 33,  38, 34, 33, 38,  34, 36, 31, 33,  34, 41, 33, 38]
+};
+var music = { on: false, timer: 0, next: 0, li: 0, lt: 0, bar: 0, step: 0, gain: null, wantOn: false, mode: 'menu' };
+var musicEnabled = true;                       /* ayarlar › müzik (tercihlere yazılır) */
+var MUSIC_VOL = { menu: 0.55, game: 0.2 };
+function midiF(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+/* iki kip: 'menu' = tam düzenleme (kare dalga melodi, bas, davul);
+   'game' = arkadan mırıldanma (yumuşak sinüs melodi + alçak oktav, seyrek bas, davul yok) */
+function musicTick() {
+  if (!music.on || !AC || AC.state !== 'running') return;
+  var e8 = 60 / SONG.bpm / 2, horizon = AC.currentTime + 0.25, hum = music.mode === 'game';
+  if (music.next < AC.currentTime) music.next = AC.currentTime + 0.05;
+  while (music.next < horizon) {
+    var t = music.next, at = t - AC.currentTime, st = music.step % 8;
+    /* melodi */
+    if (music.lt <= 0) {
+      var n = SONG.lead[music.li];
+      music.li = (music.li + 1) % SONG.lead.length;
+      music.lt = n[1];
+      if (n[0]) {
+        if (hum) {
+          tone(midiF(n[0]), e8 * n[1] * 0.98, 'sine', 0.3, { at: at, atk: 0.05, dst: music.gain });
+          tone(midiF(n[0] - 12), e8 * n[1] * 0.98, 'triangle', 0.1, { at: at, atk: 0.06, lp: 900, dst: music.gain });
+        } else tone(midiF(n[0]), e8 * n[1] * 0.92, 'square', 0.16, { at: at, lp: 2300, atk: 0.012, dst: music.gain });
+      }
+    }
+    music.lt--;
+    var root = SONG.bass[music.bar % SONG.bass.length];
+    if (hum) {
+      if (st === 0) tone(midiF(root), e8 * 3.6, 'triangle', 0.22, { at: at, lp: 500, atk: 0.04, dst: music.gain });
+    } else {
+      /* bas: kök · · kök oktav · beşli · */
+      var bn = st === 0 || st === 3 ? root : st === 4 ? root + 12 : st === 6 ? root + 7 : 0;
+      if (bn) tone(midiF(bn), e8 * 0.9, 'triangle', 0.34, { at: at, lp: 900, dst: music.gain });
+      /* davul: 1 ve 3'te tok vuruş, ara sekizliklerde hafif zil */
+      if (st === 0 || st === 4) tone(110, 0.12, 'sine', 0.3, { at: at, to: 45, dst: music.gain });
+      if (st % 2 === 1) noise(0.04, 0.035, { f: 7000, type: 'highpass', at: at, dst: music.gain });
+      if (st === 4 && music.bar % 2) noise(0.09, 0.05, { f: 1800, to: 700, q: 0.8, at: at, dst: music.gain });
+    }
+    music.next += e8; music.step++;
+    if (music.step % 8 === 0) music.bar++;
+  }
+}
+function musicPlay(mode) {
+  music.mode = mode || (S.started ? 'game' : 'menu');
+  music.wantOn = true;
+  if (!musicEnabled || !ensureAudio()) return;
+  try {
+    if (!music.gain) { music.gain = AC.createGain(); music.gain.gain.value = 0.0001; music.gain.connect(masterGain); }
+    var g = music.gain.gain, now = AC.currentTime;
+    g.cancelScheduledValues(now); g.setValueAtTime(Math.max(0.0001, g.value), now);
+    g.exponentialRampToValueAtTime(MUSIC_VOL[music.mode], now + (music.on ? 1.8 : 1.2));
+  } catch (e) { return; }
+  if (!music.on) { music.on = true; music.li = 0; music.lt = 0; music.bar = 0; music.step = 0; music.next = AC.currentTime + 0.1; }
+  if (!music.timer) music.timer = setInterval(musicTick, 60);
+}
+function musicStop(fade) {
+  music.wantOn = false;
+  if (!music.on) return;
+  music.on = false;
+  try {
+    var g = music.gain.gain, t = AC.currentTime;
+    g.cancelScheduledValues(t); g.setValueAtTime(Math.max(0.0001, g.value), t);
+    g.exponentialRampToValueAtTime(0.0001, t + (fade || 0.8));
+  } catch (e) { }
+}
+function setMusicEnabled(on) {
+  musicEnabled = !!on;
+  if (musicEnabled) musicPlay(); else musicStop(0.5);
+}
+/* tarayıcı sesi ilk dokunuşta açar: müzik o anda başlar (menüde tam, oyunda mırıldanma) */
+['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) {
+  window.addEventListener(ev, function () {
+    if (!music.on && musicEnabled && !intro.on) setTimeout(function () { if (!music.on && musicEnabled && !intro.on) musicPlay(); }, 60);
+  }, { passive: true });
+});
+
+var sfx = {
+  /* ürün alma: kısa, yumuşak blip */
+  pick: function () { tone(640 + Math.random() * 90, 0.07, 'triangle', 0.34, { lp: 2600, to: 880 }); },
+  /* bırakma: alçak tok ses */
+  drop: function () { tone(210, 0.09, 'sine', 0.42, { to: 140 }); noise(0.05, 0.10, { f: 700, to: 200 }); },
+  /* ağdan balık: su sıçraması */
+  splash: function () { noise(0.22, 0.16, { f: 2400, to: 300, q: 0.7 }); tone(420, 0.10, 'sine', 0.18, { to: 260 }); },
+  /* satır darbesi */
+  chop: function () { noise(0.07, 0.15, { f: 3000, to: 900, q: 1.4 }); tone(180, 0.05, 'square', 0.16, { lp: 900 }); },
+  /* para: iki notalık parlak arpej */
+  coin: function () { melody([[880, 0.07, 0], [1320, 0.11, 0.055]], 'triangle', 0.42, 3200); },
+  /* satın alma: yükselen üçlü */
+  buy: function () { melody([[523, 0.08, 0], [659, 0.08, 0.06], [784, 0.14, 0.12]], 'triangle', 0.36, 3000); },
+  /* inşaat: tok vuruş + yükseliş */
+  build: function () {
+    noise(0.16, 0.18, { f: 900, to: 160, q: 0.8 });
+    melody([[196, 0.12, 0.02], [262, 0.12, 0.11], [392, 0.2, 0.2]], 'triangle', 0.34, 2000);
+  },
+  /* hata / kayıp müşteri: inen sert ton */
+  bad: function () { tone(220, 0.26, 'sawtooth', 0.26, { to: 90, lp: 1100 }); },
+  /* itibar / başarı fanfarı */
+  /* seviye atlama: kısa, parlak fanfar (star'dan uzun ama oyunu bölmez) */
+  levelUp: function () {
+    melody([[523, 0.09, 0], [659, 0.09, 0.08], [784, 0.09, 0.16], [1047, 0.12, 0.24], [784, 0.08, 0.38], [1047, 0.34, 0.46]], 'square', 0.28, 2600);
+    melody([[262, 0.2, 0], [330, 0.2, 0.24], [392, 0.5, 0.46]], 'triangle', 0.3, 1400);
+    noise(0.3, 0.06, { f: 6000, to: 2000, type: 'highpass', at: 0.46 });
+  },
+  star: function () { melody([[659, 0.08, 0], [784, 0.08, 0.07], [988, 0.08, 0.14], [1319, 0.22, 0.21]], 'triangle', 0.4, 3600); },
+  /* müşteri geldi: nazik iki nota */
+  cust: function () { melody([[523, 0.06, 0], [698, 0.09, 0.05]], 'sine', 0.2, 2400); },
+  /* arayüz dokunuşu */
+  tap: function () { tone(880, 0.035, 'triangle', 0.2, { lp: 3000 }); },
+  /* anahtar aç/kapa */
+  sw: function (on) {
+    if (on) melody([[600, 0.05, 0], [900, 0.07, 0.04]], 'triangle', 0.3, 2800);
+    else melody([[700, 0.05, 0], [420, 0.08, 0.04]], 'triangle', 0.28, 2000);
+  },
+  /* gün başlangıcı: sabah motifi */
+  dayIn: function () { melody([[392, 0.14, 0], [523, 0.14, 0.12], [659, 0.26, 0.24]], 'sine', 0.3, 2600); },
+  /* gün sonu: akşam motifi */
+  dayOut: function () { melody([[523, 0.16, 0], [440, 0.16, 0.14], [349, 0.3, 0.28]], 'sine', 0.3, 2200); },
+  /* mezat çanı */
+  bell: function () {
+    tone(1568, 0.6, 'sine', 0.26, { atk: 0.002, lp: 5000 });
+    tone(2093, 0.45, 'sine', 0.12, { atk: 0.002, at: 0.01 });
+  },
+  /* balık pazarı günü açılışı */
+  market: function () { melody([[523, 0.1, 0], [659, 0.1, 0.09], [784, 0.1, 0.18], [1047, 0.3, 0.27]], 'square', 0.26, 2600); }
+};
+/* --- çok hafif liman ortam sesi: dalga soluğu (yalnız tam seste) --- */
+var ambT = 0;
+function updateAmbient(dt) {
+  if (volLvl < 2 || !soundOn || !audioReady) return;
+  ambT -= dt;
+  if (ambT > 0) return;
+  ambT = rnd(5.5, 9.5);
+  noise(2.2, 0.030, { f: 520, to: 180, q: 0.5 });          /* kıyıya vuran dalga */
+  if (Math.random() < 0.28) {                                /* uzakta martı */
+    var f0 = rnd(900, 1150);
+    tone(f0, 0.10, 'triangle', 0.045, { to: f0 * 1.5, lp: 2600 });
+    tone(f0 * 1.4, 0.09, 'triangle', 0.035, { at: 0.13, to: f0, lp: 2600 });
+  }
+}
+
+/* =========================================================
+   İÇERİK
+   ========================================================= */
+var FISH = {
+  hamsi:   { id: 'hamsi', ic: '🐟',   n: { tr: 'Hamsi', en: 'Anchovy' },   r: { tr: 'Yaygın', en: 'Common' }, w: 1, cut: 0.42, out: 1, val: 6,  col: '#8fa9bd', bel: '#d7e4ee', meat: '#dfe9f0' },
+  uskumru: { id: 'uskumru', ic: '🐠', n: { tr: 'Uskumru', en: 'Mackerel' }, r: { tr: 'Yaygın', en: 'Common' }, w: 1, cut: 0.62, out: 1, val: 12, col: '#5f8f8a', bel: '#cfe6df', meat: '#bfe0d6' },
+  palamut: { id: 'palamut', ic: '🐡', n: { tr: 'Palamut', en: 'Bonito' },   r: { tr: 'Orta', en: 'Uncommon' }, w: 1, cut: 0.72, out: 2, val: 18, col: '#6f8fa8', bel: '#dbe9f2', meat: '#d2856b' },
+  levrek:  { id: 'levrek', ic: '🎣',  n: { tr: 'Levrek', en: 'Sea Bass' },  r: { tr: 'Orta', en: 'Uncommon' }, w: 1, cut: 0.85, out: 2, val: 24, col: '#a8b6c2', bel: '#eef5f9', meat: '#eaf2f7' },
+  somon:   { id: 'somon', ic: '🍣',   n: { tr: 'Somon', en: 'Salmon' },     r: { tr: 'Orta', en: 'Uncommon' }, w: 2, cut: 1.10, out: 3, val: 34, col: '#d98455', bel: '#f7c9a4', meat: '#f08a3c' },
+  ton:     { id: 'ton', ic: '🐋',     n: { tr: 'Orkinos', en: 'Tuna' },     r: { tr: 'Nadir', en: 'Rare' },    w: 3, cut: 1.70, out: 5, val: 46, col: '#3f6a8c', bel: '#9fc0d8', meat: '#b8453f' }
+};
+var FISH_ORDER = ['hamsi', 'uskumru', 'palamut', 'levrek', 'somon', 'ton'];
+
+/* =========================================================
+   BALIK HATTI  (balık ↔ tezgâh ↔ üretim noktası 1:1 eşleme)
+   Sıra doğrudan ilerleme sırasıdır; tek tablodan değiştirilir.
+   ========================================================= */
+var LINES = [
+  { f: 'hamsi',   stall: 'b0',  src: 0, w: 1.0 },   /* Balıkçı İskelesi tezgâhı — başlangıç */
+  { f: 'uskumru', stall: 'b1',  src: 1, w: 1.0 },   /* Balık Pazarı tezgâhı */
+  { f: 'palamut', stall: 'ss3', src: 1, w: 0.8 },   /* Pazar yapı noktası tezgâhı */
+  { f: 'levrek',  stall: 'b2',  src: 2, w: 0.8 },   /* Fümehane tezgâhı */
+  { f: 'somon',   stall: 'ss6', src: 2, w: 0.6 },   /* Fümehane yapı noktası tezgâhı */
+  { f: 'ton',     stall: 'hal', src: 1, w: 0.45 }   /* Kapalı Pazar — prestij hattı */
+];
+function lineOf(f) { for (var i = 0; i < LINES.length; i++) if (LINES[i].f === f) return LINES[i]; return null; }
+/* =========================================================
+   BÖLGE (ZONE) — v2.1
+   Bir bölge = bir ağ + o ağın kesim masası + o ağdan çıkan türlerin tezgâhları.
+   Bölge indeksi = ağ indeksi = kesim masası indeksi = AREA indeksi.
+   Hamal/filetocu/tezgâhtar yalnız kendi bölgesinde çalışır; bir bölgenin
+   kesim masasına başka bölgenin balığı konulamaz.
+   ========================================================= */
+var ZONE_ROLES = ['hamal', 'filetocu', 'tezgahtar', 'kasiyer'];
+/* =========================================================
+   v1.3 — BÖLGE MÜDÜRÜ: 4 personel tamamlanınca müdür masası kurulur, 3 adaydan biri seçilir.
+   Her adayın iki buff'ı var; müdür gelince bölge tam otomatiğe geçer.
+   ========================================================= */
+var MGR_BUFFS = {
+  value:  { t: { tr: 'Satış fiyatı +%12', en: 'Sale price +12%' }, v: 0.12 },
+  wspeed: { t: { tr: 'Personel %20 hızlı', en: 'Staff 20% faster' }, v: 0.20 },
+  pat:    { t: { tr: 'Müşteri sabrı +%35', en: 'Customer patience +35%' }, v: 0.35 },
+  flow:   { t: { tr: 'Müşteri akışı +%12', en: 'Customer flow +12%' }, v: 0.12 },
+  wage:   { t: { tr: 'Bölge maaşları -%30', en: 'Zone wages -30%' }, v: 0.30 },
+  rep:    { t: { tr: 'Satış başına +1 itibar', en: '+1 reputation per sale' }, v: 1 }
+};
+var MGR_NAMES = ['Sadık Bey', 'Nevin Hanım', 'Ertuğrul Bey', 'Filiz Hanım', 'Cengiz Bey', 'Gülten Hanım', 'Levent Bey', 'Sibel Hanım', 'Orhan Bey', 'Meral Hanım', 'Kadir Bey', 'Aysel Hanım'];
+var MGR_DESK = [{ cost: 6000, wage: 35 }, { cost: 9000, wage: 45 }, { cost: 12000, wage: 55 }];
+function mgr(z) { return (z >= 0 && S.mgr && S.mgr[z]) || null; }
+function mgrEff(z, k) {
+  var m = mgr(z); if (!m || !MGR_BUFFS[k]) return 0;
+  return (m.a === k ? MGR_BUFFS[k].v : 0) + (m.b === k ? MGR_BUFFS[k].v : 0);
+}
+function mgrCands(z) {
+  if (!S.mgrCand) S.mgrCand = [];
+  if (!S.mgrCand[z]) {
+    var keys = Object.keys(MGR_BUFFS), names = MGR_NAMES.slice(), out = [];
+    for (var i = 0; i < 3; i++) {
+      var a = pick(keys), b = pick(keys.filter(function (k) { return k !== a; }));
+      var nm = names.splice(Math.floor(Math.random() * names.length), 1)[0];
+      out.push({ n: nm, a: a, b: b, fee: 1500 + irnd(0, 8) * 250, look: irnd(0, 3) });
+    }
+    S.mgrCand[z] = out;
+  }
+  return S.mgrCand[z];
+}
+function mgrText(m) { return NM(MGR_BUFFS[m.a].t) + ' • ' + NM(MGR_BUFFS[m.b].t); }
+function hireMgr(z, c) {
+  if (!S.mgr) S.mgr = [];
+  S.mgr[z] = { n: c.n, a: c.a, b: c.b, wage: MGR_DESK[z].wage, look: c.look };
+  S.mgrCand[z] = null;
+  if (!S.auto) S.auto = [];
+  S.auto[z] = true;
+  sfx.star(); toast(T('mgrHired', { m: c.n, n: NM(AREAS[z].n) }));
+  var cc = zoneCounter(z); if (cc) addPuff(cc.x, cc.y, '#ffc94a');
+}
+function mgrWages() { var w = 0; for (var z = 0; z < 3; z++) if (mgr(z) && zoneOpen(z)) w += mgr(z).wage; return w; }
+function mgrPos(z) { return MGR_DESKS[z] || null; }
+function drawMgrDesk(z) {
+  var m = mgr(z), p = mgrPos(z); if (!m || !p) return;
+  isoBox(p.x - 0.5, p.y - 0.3, 1.0, 0.6, 0, 9, '#8a5a33', '#5a3a1e', '#6f4526');
+  var sx = R(pX(p.x, p.y)), sy = R(pY(p.x, p.y, 9));
+  px(sx - 5, sy - 2, 5, 3, '#f4efe4'); px(sx + 1, sy - 3, 4, 2, '#c9a15e');          /* evrak + isimlik */
+  var looks = [['#2a2f3a', '#3a4150', '#8d2a2a'], ['#3a2a4a', '#524064', '#d9a441'], ['#1f3a3a', '#2f5252', '#3f6fb0']][m.look % 3];
+  var o = { coat: looks[0], coat2: looks[1], tie: looks[2], glasses: m.look !== 1, skin: PAL.skin[(m.look + z) % 4],
+    hair: PAL.hair[(m.look + 1) % PAL.hair.length], hairStyle: m.n.indexOf('Hanım') >= 0 ? 6 : 0, face: Math.sin(gameT * 0.4 + z) > 0 ? 1 : -1, pants: '#1c1f26' };
+  drawPerson({ x: p.x - 0.35, y: p.y - 0.75, z: 0, vx: 0, vy: 0, bob: gameT * 2 + z, act: 0, carry: [] }, o);
+  if (dist2(player.x, player.y, p.x, p.y) < 7) uiLabel(p.x, p.y, 30, '👔 ' + m.n + ' · ' + T('mgrBoss'), '#ffe6bf', 0.95);
+}
+function zoneCount() { return spots.length; }
+function zoneOpen(z) { return z >= 0 && z < spots.length && !AREAS[spots[z].z].locked; }
+function zoneName(z) { return zoneOpen(z) || AREAS[z] ? NM(AREAS[z].n) : '?'; }
+function zoneOfFish(f) { var l = lineOf(f); return l ? l.src : -1; }
+function zoneFish(z) {
+  var out = [];
+  for (var i = 0; i < LINES.length; i++) if (LINES[i].src === z) out.push(LINES[i].f);
+  return out;
+}
+function zoneSpot(z) { return spots[z] || null; }
+function zoneTable(z) { return tables[z] || null; }
+function tableZone(tb) { return tables.indexOf(tb); }
+/* Kesim masası yalnız kendi bölgesinin balığını kabul eder (§ karmaşa önlenir) */
+function tableAccepts(tb, it) {
+  if (!it || it.k !== 'fish') return false;
+  return zoneOfFish(it.f) === tableZone(tb);
+}
+function tableFishNames(tb) {
+  var z = tableZone(tb), fs = zoneFish(z), out = [];
+  for (var i = 0; i < fs.length; i++) if (canProduce(fs[i])) out.push(NM(FISH[fs[i]].n));
+  return out;
+}
+function stallName(k) { return T('st' + k.toUpperCase()); }
+function lineByStall(k) { for (var i = 0; i < LINES.length; i++) if (LINES[i].stall === k) return LINES[i]; return null; }
+/* Tezgâh yalnız oyuncu açtıysa çalışır: kurulu ama kapalı tezgâha müşteri gelmez. */
+function stallOf(f) {
+  var l = lineOf(f); if (!l) return null;
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (c.key === l.stall && !AREAS[c.z].locked && c.open) return c;
+  }
+  return null;
+}
+/* kurulu ama henüz açılmamış tezgâh (satın alma listesi için) */
+function stallBuilt(f) {
+  var l = lineOf(f); if (!l) return null;
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (c.key === l.stall && !AREAS[c.z].locked) return c;
+  }
+  return null;
+}
+/* v2.3 — İlk tezgâh (hamsi) her zaman açık; ikinciden itibaren oyuncu
+   ücretsiz bir aç/kapat anahtarıyla hangi hattın çalışacağını seçer.
+   Kapalı hat: müşteri gelmez, ağ o türü üretmez, çalışan oraya taşımaz. */
+var FIRST_STALL = 'b0';
+function isFirstStall(c) { return c && c.key === FIRST_STALL; }
+/* İlk tezgâh HER ZAMAN açık olmalı: kapalıysa hamsi satılamaz, ağ balık üretmez
+   ve oyun hiç başlamaz. Bu yüzden yalnız kayıt yüklenirken değil, tezgâhlar her
+   yeniden kurulduğunda çağrılır; ayrıca hiçbir tezgâh açık değilse ilkini açar. */
+function openStarterStall() {
+  var i, ilk = null, acikVar = false;
+  for (i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (AREAS[c.z].locked) continue;
+    if (isFirstStall(c)) { c.open = true; acikVar = true; }
+    if (c.open) acikVar = true;
+    if (!ilk && c.fish) ilk = c;
+  }
+  if (!acikVar && ilk) ilk.open = true;      /* güvenlik ağı: en az bir tezgâh açık kalsın */
+}
+/* anahtarı gösterilecek tezgâhlar: kurulu, bölgesi açık, ağı ve kesimi hazır */
+function switchableStalls() {
+  var out = [];
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (AREAS[c.z].locked || !c.fish || isFirstStall(c)) continue;
+    if (!canProduce(c.fish) || !canProcess('fileto', c.fish)) continue;
+    out.push(c);
+  }
+  return out;
+}
+function setStall(c, on) {
+  if (!c || isFirstStall(c)) return false;
+  if (c.open === !!on) return false;
+  c.open = !!on;
+  if (c.open) { c.spawnT = 4; addPuff(c.x, c.y, '#5fd37a'); }
+  else {                                    /* kapatınca bekleyen müşteriler dağılır */
+    for (var j = customers.length - 1; j >= 0; j--)
+      if (customers[j].c === c && customers[j].state !== 'leave') { customers[j].state = 'leave'; customers[j].happyLeave = true; customers[j].leaveT = 0; }
+    for (var k = 0; k < c.slots.length; k++) c.slots[k] = null;
+  }
+  rebuildCounters(); reassignWorkers(); save();
+  return true;
+}
+function toggleStall(c) { return setStall(c, !c.open); }
+/* yeni kurulan bir tezgâh hakkında oyuncu henüz karar vermedi mi */
+function undecidedStalls() {
+  var out = [], list = switchableStalls();
+  for (var i = 0; i < list.length; i++) if (!list[i].open && !list[i].seen) out.push(list[i]);
+  return out;
+}
+function markStallsSeen() {
+  var list = switchableStalls();
+  for (var i = 0; i < list.length; i++) list[i].seen = true;
+}
+/* üç koşul (spec): üretim noktası + işleme hattı + satış tezgâhı */
+function canProduce(f) {
+  var l = lineOf(f); if (!l) return false;
+  var sp = spots[l.src];
+  return !!sp && !AREAS[sp.z].locked;
+}
+function canProcess(k, f) {
+  if (!openTables().length) return false;
+  if (k === 'fume') return !AREAS[smoker.z].locked;
+  return true;
+}
+function canSell(f) { return !!stallOf(f); }
+/* v1.3 — FÜME MAKİNESİ: füme yalnız Fümehane bölgesinin fırınında yapılıyordu ama Fümehane açılınca
+   BÜTÜN tezgâhların müşterileri füme istiyordu → 1. ve 2. bölge tezgâhları tıkanıyordu (ürün oraya
+   hiç ulaşamıyor). Artık bir tezgâh ancak füme kaynağı varsa füme sipariş alır: Fümehane bölgesi
+   (büyük fırın) ya da o bölgeye alınmış Füme Makinesi (tezgâhtaki filetoyu yerinde tüter). */
+var FUME_MACH = [{ z: 0, cost: 3200 }, { z: 1, cost: 4800 }];
+function fumeMachine(z) { return !!(S.fumeM && S.fumeM[z]); }
+function stallFume(c) { return !!c && canProcess('fume', c.fish) && (c.z === smoker.z || fumeMachine(c.z)); }
+function fishReady(f) { return canProduce(f) && canProcess('fileto', f) && canSell(f); }
+function sellableFish() {
+  var out = [];
+  for (var i = 0; i < LINES.length; i++) if (fishReady(LINES[i].f)) out.push(LINES[i].f);
+  return out;
+}
+var FUME_MUL = 2.4, FUME_TIME = 3.2;
+var FUME_P_MACH = 0.16, FUME_CAP_MACH = 0.22, FUME_P_HOME = 0.26, FUME_CAP_HOME = 0.33;   /* v1.3.3 füme talep oranı */
+function prodName(k, f) { return NM(FISH[f].n) + (k === 'fume' ? (lang === 'tr' ? ' Füme' : ' Smoked') : (lang === 'tr' ? ' Fileto' : ' Fillet')); }
+function prodValue(k, f) { return Math.round(FISH[f].val * (k === 'fume' ? FUME_MUL : 1) * (1 + S.priceLvl * 0.1) * (1 + perkSum('value') + servEff('value') + slotEff(null, 'value'))); }
+function itemW(it) { return it.k === 'fish' ? FISH[it.f].w : 1; }
+
+var ROLES = {
+  hamal:     { id: 'hamal',     n: { tr: 'Hamal', en: 'Porter' },     icon: '🧺', wage: 15, speed: 2.4, cap: 8,  price: 360, zone: true,  d: { tr: 'Ağdan kesime taşır', en: 'Net → cutting table' } },
+  filetocu:  { id: 'filetocu',  n: { tr: 'Filetocu', en: 'Filleter' }, icon: '🔪', wage: 19, speed: 2.3, cap: 4,  price: 520, zone: true,  d: { tr: 'Masayı %55 hızlandırır', en: 'Table 55% faster' } },
+  tezgahtar: { id: 'tezgahtar', n: { tr: 'Tezgâhtar', en: 'Vendor' },  icon: '🐟', wage: 22, speed: 2.5, cap: 8,  price: 700, zone: true,  d: { tr: 'Siparişi tezgâha taşır', en: 'Goods → stall' } },
+  /* v0.5 — Tahsildar: kendi bölgesinin tezgâh kasalarını boşaltıp parayı Ana Kasa'ya yürüyerek taşır */
+  kasiyer:   { id: 'kasiyer',   n: { tr: 'Tahsildar', en: 'Collector' }, icon: '💰', wage: 17, speed: 2.6, cap: 10, price: 620, zone: true, d: { tr: 'Tezgâh kasası → Ana Kasa', en: 'Stall cash → main safe' } },
+  /* v0.7 — depo personeli (meydanda çalışır, bölge kadrosuna sayılmaz; sınırı depo seviyesi) */
+  depocu:    { id: 'depocu',    n: { tr: 'Depo Hamalı', en: 'Depot Porter' }, icon: '📦', wage: 16, speed: 2.6, cap: 10, price: 900, zone: false, d: { tr: 'Fazlayı depoya, depodan tezgâha', en: 'Surplus → depot → stalls' } },
+  sevkiyat:  { id: 'sevkiyat',  n: { tr: 'Sevkiyatçı', en: 'Dispatcher' },   icon: '🚚', wage: 18, speed: 2.7, cap: 10, price: 1100, zone: false, d: { tr: 'Kontrat malını depodan teslim eder', en: 'Depot → contract delivery' } }
+};
+var WNAMES = ['Hasan', 'Kerim', 'Zeynep', 'Mert', 'Deniz', 'Ayla', 'Tarık', 'Elif', 'Cem', 'Nur', 'Osman', 'Sevgi'];
+
+var CUST = [
+  { id: 'isci',   n: { tr: 'İşçi', en: 'Worker' },    coat: '#3f6fb0', coat2: '#335c93', qty: [2, 4],  pat: 54,  mult: 1.00, rep: 1, lvl: 1, tag: 'cheap' },
+  { id: 'aile',   n: { tr: 'Aile', en: 'Family' },    coat: '#c8553d', coat2: '#a94430', qty: [4, 7],  pat: 80,  mult: 1.05, rep: 1, lvl: 1, tag: 'any' },
+  { id: 'esnaf',  n: { tr: 'Esnaf', en: 'Merchant' }, coat: '#7b5ea7', coat2: '#674d8e', qty: [3, 5],  pat: 50,  mult: 1.35, rep: 2, lvl: 2, tag: 'rich' },
+  { id: 'sef',    n: { tr: 'Şef', en: 'Chef' },       coat: '#f2efe6', coat2: '#dcd8cb', qty: [3, 4],  pat: 32,  mult: 1.80, rep: 2, lvl: 3, tag: 'premium', pen: 1 },
+  { id: 'kaptan', n: { tr: 'Kaptan', en: 'Captain' }, coat: '#1f4e6b', coat2: '#173d55', qty: [8, 14], pat: 120, mult: 1.25, rep: 3, lvl: 3, tag: 'any' },
+  { id: 'vip',    n: { tr: 'VIP', en: 'VIP' },        coat: '#d4a029', coat2: '#b8881c', qty: [2, 3],  pat: 28,  mult: 3.00, rep: 3, lvl: 5, tag: 'fume', pen: 2 },
+  /* v0.4 — hizmet binalarıyla açılan tipler (§35.3, §35.4) */
+  { id: 'toptanci', n: { tr: 'Toptancı', en: 'Wholesaler' }, coat: '#4a7a3a', coat2: '#3a6230', qty: [10, 18], pat: 115, mult: 1.45, rep: 3, lvl: 1, tag: 'any', serv: 'toptanci' },
+  { id: 'turist',   n: { tr: 'Turist', en: 'Tourist' },      coat: '#e0679e', coat2: '#c4507f', qty: [2, 4],   pat: 62,  mult: 1.60, rep: 2, lvl: 1, tag: 'any', serv: 'turist' },
+  /* v1.3 — daha fazla sokak müşterisi (her biri kendi kıyafetiyle, seviye ilerledikçe açılır) */
+  { id: 'ogrenci',  n: { tr: 'Öğrenci', en: 'Student' },           coat: '#5a9a6a', coat2: '#6fb07f', qty: [1, 3],  pat: 45,  mult: 0.95, rep: 1, lvl: 1, tag: 'cheap' },
+  { id: 'emekli',   n: { tr: 'Emekli Amca', en: 'Retiree' },       coat: '#8a7a5a', coat2: '#a4946f', qty: [2, 3],  pat: 140, mult: 1.00, rep: 1, lvl: 1, tag: 'cheap' },
+  { id: 'teyze',    n: { tr: 'Pazar Teyzesi', en: 'Market Auntie' }, coat: '#6a3a5a', coat2: '#845070', qty: [3, 6], pat: 95, mult: 1.00, rep: 1, lvl: 1, tag: 'any' },
+  { id: 'komsu',    n: { tr: 'Komşu Balıkçı', en: 'Fellow Fisher' }, coat: '#2f5a6a', coat2: '#437688', qty: [2, 4], pat: 70, mult: 1.10, rep: 1, lvl: 2, tag: 'any' },
+  { id: 'sporcu',   n: { tr: 'Koşucu', en: 'Jogger' },             coat: '#e8762b', coat2: '#f5914a', qty: [1, 2],  pat: 35,  mult: 1.20, rep: 1, lvl: 2, tag: 'any' },
+  { id: 'zabita',   n: { tr: 'Zabıta', en: 'Market Warden' },      coat: '#2a3f6a', coat2: '#3a5586', qty: [2, 4],  pat: 60,  mult: 1.10, rep: 2, lvl: 2, tag: 'any' },
+  { id: 'gazeteci', n: { tr: 'Gazeteci', en: 'Reporter' },         coat: '#7a6a4a', coat2: '#94835e', qty: [1, 3],  pat: 55,  mult: 1.25, rep: 2, lvl: 2, tag: 'any' },
+  { id: 'doktor',   n: { tr: 'Doktor', en: 'Doctor' },             coat: '#eef1f4', coat2: '#ffffff', qty: [2, 3],  pat: 40,  mult: 1.40, rep: 2, lvl: 3, tag: 'rich' },
+  { id: 'ressam',   n: { tr: 'Ressam', en: 'Painter' },            coat: '#b05a8a', coat2: '#c874a2', qty: [1, 3],  pat: 110, mult: 1.30, rep: 2, lvl: 3, tag: 'rich' },
+  { id: 'dalgic',   n: { tr: 'Dalgıç', en: 'Diver' },              coat: '#1a1f26', coat2: '#2a323c', qty: [2, 4],  pat: 65,  mult: 1.20, rep: 2, lvl: 3, tag: 'any' },
+  { id: 'muhtar',   n: { tr: 'Muhtar', en: 'Village Head' },       coat: '#4a3a2a', coat2: '#624f3a', qty: [3, 5],  pat: 90,  mult: 1.35, rep: 3, lvl: 4, tag: 'rich' },
+  { id: 'otelci',   n: { tr: 'Otel Aşçıbaşı', en: 'Hotel Head Chef' }, coat: '#e8e2d2', coat2: '#f4efe4', qty: [6, 10], pat: 80, mult: 1.50, rep: 3, lvl: 4, tag: 'premium' }
+];
+
+var EVENTS = [
+  { id: 'suru', name: 'evShoal', icon: '🐟', dur: 34, fishMul: 2.2, custMul: 1.0, msg: 'evShoalM' },
+  { id: 'gemi', name: 'evShip',  icon: '🚢', dur: 38, fishMul: 1.0, custMul: 2.2, msg: 'evShipM' },
+  { id: 'kar',  name: 'evStorm', icon: '🌊', dur: 30, fishMul: 1.0, custMul: 0.45, msg: 'evStormM' }
+];
+/* v0.3 — itibar = seviye sistemi. Eşikler mevcut kilitlere hizalı (Pazar 10, Fümehane 30,
+   Ofis 40, Lisans 90). Her seviye: satış primi +%2 ve "un" listesindeki açılımlar. */
+var REP_LEVELS = [
+  { need: 0,   t: { tr: 'Çırak Balıkçı', en: 'Apprentice' }, un: [] },
+  { need: 10,  t: { tr: 'Tayfa', en: 'Deckhand' },
+    un: [{ tr: 'Balık Pazarı bölgesi', en: 'Fish Market area' }, { tr: 'Esnaf müşteriler', en: 'Merchant customers' }] },
+  { need: 30,  t: { tr: 'İskele Esnafı', en: 'Pier Trader' },
+    un: [{ tr: 'Fümehane bölgesi', en: 'Smokehouse area' }, { tr: 'Şef ve Kaptan müşteriler', en: 'Chef & Captain customers' }, { tr: 'Reklam Panosu', en: 'Billboard' }, { tr: 'Çakıl Yol (satın alınır)', en: 'Gravel Road (buyable)' }] },
+  { need: 40,  t: { tr: 'Tezgâh Ustası', en: 'Stall Master' },
+    un: [{ tr: 'Ticaret Ofisi', en: 'Trade Office' }, { tr: 'Ek Tezgâh', en: 'Extra Stall' }] },
+  { need: 60,  t: { tr: 'Pazar Ustası', en: 'Market Master' },
+    un: [{ tr: 'VIP müşteriler', en: 'VIP customers' }, { tr: 'Ağ Vinci', en: 'Net Crane' }, { tr: 'Osmanlı Çeşmesi', en: 'Ottoman Fountain' }, { tr: 'Arnavut Kaldırımı (satın alınır)', en: 'Cobblestone Road (buyable)' }] },
+  { need: 90,  t: { tr: 'Kaptan', en: 'Captain' },
+    un: [{ tr: 'Holding lisansı', en: 'Holding license' }, { tr: 'Balık Heykeli', en: 'Fish Statue' }] },
+  { need: 130, t: { tr: 'Reis', en: 'Skipper' }, un: [{ tr: 'Mendirek Feneri', en: 'Breakwater Lighthouse' }] },
+  { need: 180, t: { tr: 'Liman İşletmecisi', en: 'Harbor Operator' }, un: [{ tr: 'Fenerli Bordür ve Çiçeklik (satın alınır)', en: 'Lamps & Flowerbeds (buyable)' }] },
+  { need: 250, t: { tr: 'Liman Ağası', en: 'Harbor Lord' }, un: [] },
+  { need: 350, t: { tr: 'Karadeniz Efsanesi', en: 'Black Sea Legend' }, un: [] }
+];
+function levelForRep(n) { var l = 1; for (var i = 0; i < REP_LEVELS.length; i++) if (n >= REP_LEVELS[i].need) l = i + 1; return l; }
+function repBonus() { return (repLevel() - 1) * 0.02; }        /* seviye başına satış primi */
+
+/* ---------------- AREA (GDD §20-21) ---------------- */
+var AREAS = [
+  { id: 'iskele', n: { tr: 'Balıkçı İskelesi', en: 'Fishing Pier' }, x0: 0, y0: 0,  x1: 10, y1: 6,    locked: false, cost: 0,    rep: 0,  lvl: 1, up: [0, 1100, 3400] },
+  { id: 'pazar',  n: { tr: 'Balık Pazarı', en: 'Fish Market' },      x0: 0, y0: 6,  x1: 10, y1: 12,   locked: true,  cost: 1300, rep: 10, lvl: 1, up: [0, 2400, 6800] },
+  { id: 'fume',   n: { tr: 'Fümehane', en: 'Smokehouse' },           x0: 0, y0: 12, x1: 10, y1: 17.5, locked: true,  cost: 4600, rep: 30, lvl: 1, up: [0, 4200, 11000] }
+];
+var MAXLV = 3;
+function areaOf(i) { return AREAS[i]; }
+function areaNetMul(z) { return 1 + (AREAS[z].lvl - 1) * 0.18 + (slotEff(z, 'netrate') || 0) + perkSum('netrate') + perkSum('rate'); }
+function areaStock(z) { return 12 + (AREAS[z].lvl - 1) * 3 + (slotEff(z, 'stock') || 0) + Math.round(perkSum('stock') * 0.5) + servEff('stock'); }
+function areaFlow(z) { return 1 + (slotEff(z, 'flow') || 0) + (project.done ? 0.25 : 0) + perkSum('flow') + mgrEff(z, 'flow'); }
+function queueMax(z) { return Math.min(7, (AREAS[z].lvl >= 3 ? 5 : 4) + servEff('queue')); }
+
+/* ---------------- yapı noktaları (GDD §22) ---------------- */
+var BUILDINGS = [
+  { id: 'cay',    cat: 'personel', n: { tr: 'Çay Ocağı', en: 'Tea Stove' },        icon: '🫖', cost: 900,  eff: 'wspeed',  val: 0.12, d: { tr: 'Çıraklar %12 hızlı', en: 'Workers 12% faster' } },
+  { id: 'tezgah', cat: 'ticaret',  n: { tr: 'Ek Tezgâh', en: 'Extra Stall' },      icon: '🐟', cost: 2200, lv: 4, eff: 'counter', val: 1,    d: { tr: 'Yeni satış noktası', en: 'New sales point' } },
+  { id: 'pano',   cat: 'ticaret',  n: { tr: 'Reklam Panosu', en: 'Billboard' },    icon: '📣', cost: 1400, lv: 3, eff: 'flow',    val: 0.3,  d: { tr: 'Müşteri akışı +%30', en: 'Customer flow +30%' } },
+  { id: 'depo',   cat: 'lojistik', n: { tr: 'Soğuk Sandık', en: 'Cold Chest' },   icon: '📦', cost: 1700, eff: 'stock',   val: 6,    d: { tr: 'Bölge stoğu +6', en: 'Local stock +6' } },
+  { id: 'vinc',   cat: 'lojistik', n: { tr: 'Ağ Vinci', en: 'Net Crane' },         icon: '🏗️', cost: 2600, lv: 5, eff: 'netrate', val: 0.25, d: { tr: 'Bölge ağı %25 hızlı', en: 'Nets here 25% faster' } }
+];
+function bdef(id) { for (var i = 0; i < BUILDINGS.length; i++) if (BUILDINGS[i].id === id) return BUILDINGS[i]; return null; }
+var SLOTS = [
+  { id: 's1', z: 0, x: 3.75, y: 0.7,  req: 1, cats: ['personel', 'lojistik'], b: null },
+  { id: 's2', z: 0, x: 0.87, y: 3.09,  req: 3, cats: ['personel', 'lojistik'], b: null },
+  { id: 's3', z: 1, x: 5.05, y: 7.11,  req: 1, cats: ['ticaret', 'lojistik'],  b: null },
+  { id: 's4', z: 1, x: 7.53, y: 11.28, req: 1, cats: ['personel', 'lojistik'], b: null },
+  { id: 's5', z: 1, x: 4.48, y: 10.84,  req: 3, cats: ['ticaret', 'personel'],  b: null },
+  { id: 's6', z: 2, x: 7.2, y: 16.42, req: 1, cats: ['ticaret', 'lojistik'],  b: null },
+  { id: 's7', z: 2, x: 0.68, y: 16.82, req: 3, cats: ['personel', 'lojistik'], b: null }
+];
+function slotActive(s) { return !AREAS[s.z].locked && AREAS[s.z].lvl >= s.req; }
+/* =========================================================
+   v1.3.2 — YERLEŞİM: her nesnenin kendi yeri var, hiçbir şey üst üste gelmez.
+   Tezgâh birimi: tezgâh + yola bakan tarafta (doğu) para tepsisi ve füme makinesi.
+   Müdür masası, bölge tabelası, lambalar, çöp kovaları bölge başına sabit konumda.
+   layoutRects() her şeyin kapladığı alanı verir (test-layout.js bununla çakışma arar).
+   ========================================================= */
+var CTR_HW = 0.58, CTR_HH = 1.05;                 /* tezgâh gövdesi yarı genişlik/yükseklik */
+function trayPos(c) {
+  if (c.key === 'hal') return { x: project.x + project.w / 2 - 0.45, y: project.y + project.h / 2 + 0.45 };
+  return { x: c.x + 0.98, y: c.y + 0.55 };
+}
+function fumePos(c) { return { x: c.x + 0.95, y: c.y - 0.6 }; }
+var MGR_DESKS = [{ x: 3.8, y: 5.4 }, { x: 3.17, y: 11.67 }, { x: 9.65, y: 13.88 }];
+var AREA_LAMPS = [[{ x: 6.4, y: 0.23 }, { x: 0.3, y: 4.2 }], [{ x: 7.05, y: 6.25 }, { x: 6.52, y: 11.32 }], [{ x: 4.86, y: 12.25 }, { x: 0.21, y: 12.87 }]];
+function slotEff(z, eff) {
+  var v = 0;
+  for (var i = 0; i < SLOTS.length; i++) {
+    var s = SLOTS[i];
+    if (!s.b || !slotActive(s)) continue;
+    if (z !== undefined && z !== null && s.z !== z) continue;
+    var d = bdef(s.b);
+    if (d && d.eff === eff) v += d.val;
+  }
+  return v;
+}
+/* v2.1 — personel artık bölge bazlı: her açık bölge kendi kadrosunu taşır.
+   Taban 1 kişi, bölge seviyesi başına +1, o bölgedeki Personel Kulübesi +1. */
+/* Bölgede açık olan her tezgâh bir personel hakkı verir: bir bölgeden kaç hat
+   geçiyorsa o kadar kişi alınabilir. Üstüne bölge seviyesi ve Personel Kulübesi. */
+function zoneOpenStalls(z) {
+  var n = 0;
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (c.open && c.fish && !AREAS[c.z].locked && zoneOfFish(c.fish) === z) n++;
+  }
+  return n;
+}
+/* v0.5: bölge kadrosu 4 rolü kapsar (hamal, filetocu, tezgâhtar, tahsildar).
+   Taban 2, bölge seviyesi ve ek tezgâhlar +1'er; tam otomasyon (4 kişi) Sv3 bölge ya da kulübeyle açılır. */
+function zoneStaffCap(z) {
+  if (!zoneOpen(z)) return 0;
+  return 2 + Math.max(0, zoneOpenStalls(z) - 1) + (AREAS[z].lvl - 1) + slotEff(z, 'staff') + hutBonus();
+}
+function zoneStaff(z) {
+  var n = 0;
+  for (var i = 0; i < workers.length; i++)
+    if (workers[i].zone === z && ZONE_ROLES.indexOf(workers[i].role) >= 0) n++;
+  return n;
+}
+function zoneFree(z) { return Math.max(0, zoneStaffCap(z) - zoneStaff(z)); }
+function roleCount(r) { var n = 0; for (var i = 0; i < workers.length; i++) if (workers[i].role === r) n++; return n; }
+/* toplam kadro (yalnız gösterim için) */
+function staffCap() {
+  var n = 0;
+  for (var z = 0; z < zoneCount(); z++) n += zoneStaffCap(z);
+  return n;
+}
+function hireCost(role, z) {
+  var base = ROLES[role].price || 500;
+  var have = DEPOT_ROLES.indexOf(role) >= 0 ? depotStaff() : zoneStaff(z);
+  return upCost(Math.round(base * Math.pow(1.85, have) * (1 + (z || 0) * 0.35)));
+}
+function workerSpeedMul() { return 1 + slotEff(null, 'wspeed') + perkSum('wspeed') + servEff('wspeed'); }
+
+/* ---------------- büyük proje (GDD §23) ---------------- */
+var project = {
+  id: 'hal', z: 1, x: 9.1, y: 7.05, w: 2.0, h: 2.0,        /* v1.3.2: bölgenin arka-yol köşesi; önünde tezgâh kalmaz */
+  n: { tr: 'Kapalı Pazar', en: 'Covered Market' },
+  total: 26000, inv: 0, stage: 0, done: false,
+  stages: [0.10, 0.30, 0.60, 0.80, 1.0]
+};
+function projPct() { return clamp(project.inv / project.total, 0, 1); }
+function projStageOf(p) { var st = 0; for (var i = 0; i < project.stages.length; i++) if (p >= project.stages[i] - 0.0001) st = i + 1; return st; }
+
+/* ---------------- kozmetik (GDD §24) ---------------- */
+/* v0.3 — süsler tezgâh bölgelerinden çıkarıldı: batı kıyı şeridi (x<0), iskele önü su ve güney
+   kumsal. decorClearance() fonksiyonel nesnelere en az 1.2 kare mesafeyi doğrular. */
+var DECOR = [
+  { id: 'bayrak', z: 0, x: -0.35, y: 0.3,  cost: 600,  n: { tr: 'Bayrak Direği', en: 'Flag Pole' },   icon: '🇹🇷', got: false },
+  { id: 'tekne',  z: 0, x: 4.2, y: -1.25, cost: 1300, n: { tr: 'Balıkçı Teknesi', en: 'Fishing Boat' }, icon: '⛵', got: false },
+  { id: 'bank',   z: 0, x: -0.35, y: 3.4,  cost: 400,  n: { tr: 'Bank', en: 'Bench' },                icon: '🪑', got: false },
+  { id: 'simit',  z: 1, x: -0.35, y: 9.2,  cost: 900,  n: { tr: 'Simit Arabası', en: 'Simit Cart' },  icon: '🥯', got: false },
+  { id: 'lamba',  z: 1, x: -0.35, y: 11.6, cost: 700,  n: { tr: 'Sokak Lambası', en: 'Street Lamp' }, icon: '💡', got: false },
+  { id: 'cicek',  z: 1, x: -0.35, y: 6.5,  cost: 500,  n: { tr: 'Begonvil', en: 'Bougainvillea' },    icon: '🌺', got: false },
+  { id: 'caymasa', z: 2, x: 1.6, y: 18.6, cost: 800, n: { tr: 'Çay Masası', en: 'Tea Table' },      icon: '☕', got: false },
+  { id: 'heykel', z: 2, x: 5.2, y: 18.9, cost: 2600, n: { tr: 'Balık Heykeli', en: 'Fish Statue' }, icon: '🗿', lv: 6, got: false },
+  /* v2.0 — Anadolu kıyı kültürü */
+  { id: 'nazar',  z: 0, x: 7.4, y: -0.4,  cost: 450,  n: { tr: 'Nazar Boncuğu', en: 'Evil Eye Charm' }, icon: '🧿', got: false },
+  { id: 'cesme',  z: 1, x: -0.45, y: 7.9, cost: 1500, n: { tr: 'Osmanlı Çeşmesi', en: 'Ottoman Fountain' }, icon: '⛲', lv: 5, got: false },
+  { id: 'kilim',  z: 1, x: -0.35, y: 10.4,  cost: 800,  n: { tr: 'Kilim Sergisi', en: 'Kilim Display' }, icon: '🧶', got: false },
+  { id: 'fener',  z: 2, x: 8.6, y: 19.3, cost: 5200, n: { tr: 'Mendirek Feneri', en: 'Breakwater Lighthouse' }, icon: '🗼', lv: 7, got: false }
+];
+function decorClearance() {
+  var pts = [], i, out = [];
+  spots.forEach(function (o) { pts.push(['ağ', o.x, o.y]); });
+  tables.forEach(function (o) { pts.push(['kesim', o.x, o.y]); pts.push(['hasır', o.mat.x, o.mat.y]); });
+  counters.forEach(function (o) { pts.push(['tezgâh ' + o.key, o.x, o.y]); pts.push(['kuyruk ' + o.key, 10.8, o.y]); });
+  SLOTS.forEach(function (o) { pts.push(['parsel ' + o.id, o.x, o.y]); });
+  PLOTS.forEach(function (o) { pts.push(['bina ' + o.id, o.x, o.y]); });
+  pts.push(['kasa', safe.x, safe.y], ['füme', smoker.x, smoker.y], ['ofis', office.x, office.y], ['hal', project.x + 1.3, project.y + 1.1]);
+  for (i = 0; i < DECOR.length; i++) {
+    var d = DECOR[i], best = 99, who = '';
+    for (var k = 0; k < pts.length; k++) { var dd = Math.hypot(pts[k][1] - d.x, pts[k][2] - d.y); if (dd < best) { best = dd; who = pts[k][0]; } }
+    out.push({ id: d.id, min: Math.round(best * 100) / 100, near: who, ok: best >= 1.2 });
+  }
+  return out;
+}
+function decorCount() { var n = 0; for (var i = 0; i < DECOR.length; i++) if (DECOR[i].got) n++; return n; }
+
+/* =========================================================
+   v0.4 — LİMAN HİZMET BİNALARI & GÖRSEL EVRİM (GDD v0.4 §31-44)
+   Ana balık döngüsüne dokunmaz: kapasite / gelir / konfor katmanı.
+   ========================================================= */
+var SERVSCALE = 1.0;                       /* §38.1 tek global denge katsayısı */
+function sCost(v) { return Math.max(1, Math.round(v * SERVSCALE)); }
+
+/* Hizmet parselleri (§32) — yürüme koridoru ve kasa güvenli alanı dışında sabit. */
+var PLOTS = [                                   /* v1.4: 5 parsel, her biri 5 binanın hepsini alır; bölge açıldıkça açılır */
+  { id: 'p1', z: 0, x: 16.8, y: 10.0, n: { tr: 'Saha 1 · İskele', en: 'Yard 1 · Pier' },         allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p2', z: 0, x: 22.7, y: 12.0, n: { tr: 'Saha 2 · İskele', en: 'Yard 2 · Pier' },         allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p3', z: 1, x: 16.8, y: 13.8, n: { tr: 'Saha 3 · Pazar', en: 'Yard 3 · Market' },        allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p4', z: 1, x: 22.7, y: 15.8, n: { tr: 'Saha 4 · Pazar', en: 'Yard 4 · Market' },        allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p5', z: 2, x: 16.8, y: 17.6, n: { tr: 'Saha 5 · Fümehane', en: 'Yard 5 · Smokehouse' }, allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null }
+];
+function plotActive(p) { return !AREAS[p.z].locked; }
+function plotById(id) { for (var i = 0; i < PLOTS.length; i++) if (PLOTS[i].id === id) return PLOTS[i]; return null; }
+
+/* Bina kataloğu (§35). inc = servis geliri/olay, ivl = olay aralığı (sn). */
+/* v1.4 — hizmet binaları 9 → 5: her bina görünür, ayrı bir iş yapar. Yakıt İstasyonu ve Tersane (tekne sistemi
+   yokken yalnız pasif para veriyordu) Bölüm 2'ye kaldı; Tamirhane Kooperatif'e, Toptancı Hanı Mezat Salonu'na katıldı.
+   Eski kayıtta kaldırılan bina varsa harcanan para iade edilir (servLoad). */
+var SERV_GONE = { tamirhane: 'koop', hal: 'mezat', yakit: null, tersane: null };
+var SERV_GONE_COST = { tamirhane: [1500, 4200, 11000, 28000, 70000], hal: [3200, 8500, 21000, 54000, 135000],
+  yakit: [10000, 28000, 72000, 180000, 440000], tersane: [18000, 52000, 140000, 350000, 820000] };
+var SERV = [
+  { id: 'buzhane', icon: '🧊', n: { tr: 'Buzhane', en: 'Ice House' }, acc: '#7fb7d4',
+    r: { tr: 'Ağlarda ve tezgâhlarda daha çok mal soğuk durur', en: 'Nets and stalls hold more goods on ice' },
+    lv: [
+      { c: 900,   inc: 0, ivl: 0, mod: { stock: 2 },                          d: { tr: 'Ağ stoğu +2', en: 'Net stock +2' },  v: { tr: 'Küçük ahşap buz kulübesi', en: 'Small wooden ice hut' } },
+      { c: 2600,  inc: 0, ivl: 0, mod: { stock: 4, ctrcap: 2 },               d: { tr: 'Ağ stoğu +4 • tezgâh +2', en: 'Net stock +4 • stalls +2' },  v: { tr: 'Yalıtımlı kulübe, metal kapı', en: 'Insulated hut, metal door' } },
+      { c: 6800,  inc: 0, ivl: 0, mod: { stock: 6, ctrcap: 4 },               d: { tr: 'Ağ stoğu +6 • tezgâh +4', en: 'Net stock +6 • stalls +4' }, v: { tr: 'Tuğla soğuk depo, yükleme kapısı', en: 'Brick cold store, loading door' } },
+      { c: 17000, inc: 0, ivl: 0, mod: { stock: 9, ctrcap: 6, wspeed: 0.10 }, d: { tr: 'Stok +9 • tezgâh +6 • çırak %10 hızlı', en: 'Stock +9 • stalls +6 • workers 10% faster' }, v: { tr: 'Büyük depo, dış ünite ve raflar', en: 'Large depot, outdoor unit, racks' } },
+      { c: 42000, inc: 0, ivl: 0, mod: { stock: 12, ctrcap: 8, wspeed: 0.15 }, d: { tr: 'Stok +12 • tezgâh +8 • çırak %15 hızlı', en: 'Stock +12 • stalls +8 • workers 15% faster' }, v: { tr: 'Soğuk lojistik merkezi', en: 'Cold logistics centre' } }
+    ] },
+  { id: 'restoran', icon: '🍽️', n: { tr: 'Restoran', en: 'Restaurant' }, acc: '#d1584a',
+    r: { tr: 'Depoda ya da dolu tezgâhta biriken fazla balığı pişirip satar', en: 'Cooks and sells surplus fish from the depot or full stalls' },
+    lv: [
+      { c: 4200,   ivl: 40, cook: 2, cmul: 1.00, mod: {},               d: { tr: '40 sn\'de 2 fazla ürün pişirir', en: 'Cooks 2 surplus goods / 40s' }, v: { tr: 'Küçük balık büfesi, 2 masa', en: 'Small fish buffet, 2 tables' } },
+      { c: 11000,  ivl: 34, cook: 3, cmul: 1.05, mod: {},               d: { tr: '34 sn\'de 3 ürün • fiyat %105', en: '3 goods / 34s • 105% price' }, v: { tr: 'Kapalı lokanta ve oturma alanı', en: 'Indoor eatery and seating' } },
+      { c: 30000,  ivl: 30, cook: 4, cmul: 1.10, mod: { custval: 0.03 }, unl: 'turist', d: { tr: '4 ürün • Turist müşteri açılır', en: '4 goods • Tourist customers' }, v: { tr: 'Sahil restoranı, camlı teras', en: 'Seaside restaurant, glass terrace' } },
+      { c: 78000,  ivl: 26, cook: 5, cmul: 1.15, mod: { custval: 0.04 }, unl: 'turist', d: { tr: '5 ürün • müşteri geliri +%4', en: '5 goods • customer income +4%' }, v: { tr: 'Büyük restoran, geniş teras', en: 'Large restaurant, wide terrace' } },
+      { c: 190000, ivl: 22, cook: 6, cmul: 1.25, mod: { custval: 0.08 }, unl: 'turist', d: { tr: '6 ürün • fiyat %125 • müşteri +%8', en: '6 goods • 125% price • customers +8%' }, v: { tr: 'Prestijli deniz ürünleri kompleksi', en: 'Prestige seafood complex' } }
+    ] },
+  { id: 'nakliye', icon: '📋', n: { tr: 'Nakliye Ofisi', en: 'Shipping Office' }, acc: '#6f8fae',
+    r: { tr: 'Kontrat ve şirket işlerinin fiziksel merkezi', en: 'Physical hub for contracts and company deals' },
+    lv: [
+      { c: 8000,   inc: 22,  ivl: 50, mod: { ctrslot: 1 }, d: { tr: '+1 lojistik kontrat slotu', en: '+1 logistics contract slot' }, v: { tr: 'Ofis konteyneri ve pano', en: 'Office container and board' } },
+      { c: 22000,  inc: 40,  ivl: 44, mod: { ctrslot: 1, offer: 0.10 }, d: { tr: 'Teklif yenileme −%10', en: 'Offer refresh −10%' }, v: { tr: 'Ofis + küçük depo eki', en: 'Office with depot annex' } },
+      { c: 58000,  inc: 78,  ivl: 38, mod: { ctrslot: 1, offer: 0.10 }, unl: 'ctr', d: { tr: 'Şirket kontratları kilidi', en: 'Company contracts unlocked' }, v: { tr: 'Lojistik merkezi, yükleme alanı', en: 'Logistics hub, loading yard' } },
+      { c: 145000, inc: 150, ivl: 32, mod: { ctrslot: 2, offer: 0.15, ctrrew: 0.08 }, unl: 'ctr', d: { tr: '+1 aktif slot • ödül +%8', en: '+1 active slot • reward +8%' }, v: { tr: 'Büyük depo-ofis, araç rampası', en: 'Depot office, truck ramp' } },
+      { c: 360000, inc: 285, ivl: 26, mod: { ctrslot: 3, offer: 0.20, ctrrew: 0.15 }, unl: 'ctr', d: { tr: 'Stratejik kontratlar • ödül +%15', en: 'Strategic contracts • reward +15%' }, v: { tr: 'Bölgesel liman lojistik merkezi', en: 'Regional port logistics centre' } }
+    ] },
+  /* Kooperatif = eski Kooperatif + Tamirhane: ortak ev hem giderleri hem yükseltme bakımını düşürür */
+  { id: 'koop', icon: '🤝', n: { tr: 'Su Ürünleri Kooperatifi', en: 'Fishery Cooperative' }, acc: '#3f8f6a',
+    r: { tr: 'Balıkçının ortak evi: maaş ve yükseltme giderini düşürür, itibarı büyütür', en: "The fishers' common house: lower wages and upgrade costs, higher standing" },
+    lv: [
+      { c: 5000,   inc: 0,   ivl: 0,  mod: { wage: 0.06, upcost: 0.02 }, d: { tr: 'Maaş −%6 • yükseltme −%2', en: 'Wages −6% • upgrades −2%' }, v: { tr: 'Tek odalı kooperatif bürosu', en: 'One-room co-op office' } },
+      { c: 14000,  inc: 24,  ivl: 46, mod: { wage: 0.12, upcost: 0.04 }, d: { tr: 'Maaş −%12 • yükseltme −%4 • aidat', en: 'Wages −12% • upgrades −4% • dues' }, v: { tr: 'Ahşap büro, ilan panosu, çay ocağı', en: 'Wooden office, notice board, tea stove' } },
+      { c: 38000,  inc: 46,  ivl: 40, mod: { wage: 0.18, upcost: 0.06, value: 0.05 }, d: { tr: 'Taban fiyat: ürün değeri +%5 • yükseltme −%6', en: 'Price floor: value +5% • upgrades −6%' }, v: { tr: 'Kagir kooperatif binası, bayrak direği', en: 'Stone co-op building, flagpole' } },
+      { c: 95000,  inc: 88,  ivl: 34, mod: { wage: 0.22, upcost: 0.08, value: 0.08, rep: 0.25 }, d: { tr: 'Değer +%8 • itibar +%25 • yükseltme −%8', en: 'Value +8% • rep +25% • upgrades −8%' }, v: { tr: 'İki katlı büro, toplantı salonu', en: 'Two-storey office, meeting hall' } },
+      { c: 240000, inc: 165, ivl: 28, mod: { wage: 0.28, upcost: 0.10, value: 0.12, rep: 0.5, ctrslot: 1 }, d: { tr: 'Bölge birliği: +1 kontrat, itibar +%50, yükseltme −%10', en: 'Regional union: +1 contract, rep +50%, upgrades −10%' }, v: { tr: 'Birlik merkezi, kemerli cephe, çini kuşak', en: 'Union HQ, arched facade, tile band' } }
+    ] },
+  /* Mezat Salonu = eski Mezat + Toptancı Hanı: toptan alıcılar ve gün sonu açık artırma aynı çatı altında */
+  { id: 'mezat', icon: '🔔', n: { tr: 'Mezat Salonu', en: 'Auction Hall' }, acc: '#c9952f',
+    r: { tr: 'Kabzımal mezatı ve toptan alıcılar: gün sonu satılmamış mal açık artırmada, kuyruk uzar', en: 'Broker auction and wholesale buyers: unsold goods auctioned at day close, longer queues' },
+    lv: [
+      { c: 7000,   inc: 0, ivl: 0, mod: { auction: 0.55, auctionN: 6, queue: 1 },  d: { tr: 'Gün sonu 6 ürün mezatta (%55) • kuyruk +1', en: '6 goods auctioned (55%) • queue +1' }, v: { tr: 'Üstü açık mezat masası ve çan', en: 'Open auction table and bell' } },
+      { c: 19000,  inc: 0, ivl: 0, mod: { auction: 0.70, auctionN: 10, queue: 1 }, d: { tr: '10 ürün • %70 fiyat', en: '10 goods • 70% price' }, v: { tr: 'Sundurmalı mezat yeri, sıralar', en: 'Covered auction floor, benches' } },
+      { c: 48000,  inc: 0, ivl: 0, mod: { auction: 0.85, auctionN: 16, queue: 2 }, unl: 'toptanci', d: { tr: '16 ürün • %85 • Toptancı müşteri açılır', en: '16 goods • 85% • Wholesaler customers' }, v: { tr: 'Kagir salon, kürsü, asılı çan', en: 'Stone hall, rostrum, hanging bell' } },
+      { c: 120000, inc: 0, ivl: 0, mod: { auction: 1.00, auctionN: 24, queue: 2, wholesale: 0.10 }, unl: 'toptanci', d: { tr: '24 ürün • tam fiyat • toptan ödül +%10', en: '24 goods • full price • wholesale +10%' }, v: { tr: 'Geniş salon, tabela, ikinci kapı', en: 'Wide hall, signboard, second door' } },
+      { c: 300000, inc: 0, ivl: 0, mod: { auction: 1.20, auctionN: 36, queue: 3, wholesale: 0.15 }, unl: 'toptanci', d: { tr: '36 ürün • %120 • toptan +%15 • kuyruk +3', en: '36 goods • 120% • wholesale +15% • queue +3' }, v: { tr: 'Bölgesel mezat merkezi, kemerli giriş', en: 'Regional auction centre, arched entry' } }
+    ] }
+];
+function sdef(id) { for (var i = 0; i < SERV.length; i++) if (SERV[i].id === id) return SERV[i]; return null; }
+
+/* Bina durumu (§40 ServiceBuildingState) — kurulmamış binalar listede yok. */
+var servState = {};
+function sState(id) { return servState[id] || null; }
+function sBuilt(id) { var s = servState[id]; return !!(s && s.lvl > 0); }
+function sLvl(id) { var s = servState[id]; return s ? s.lvl : 0; }
+function sMaxLv() { return 5; }
+function servCount() { var n = 0; for (var k in servState) if (servState[k] && servState[k].lvl > 0) n++; return n; }
+
+/* Toplam etki: kurulu her binanın mevcut seviyesindeki mod'ları toplar (§34 toplamsal). */
+var _seCache = null, _seT = -1;
+function servMods() {
+  if (_seT === gameT && _seCache) return _seCache;
+  var out = {};
+  for (var i = 0; i < SERV.length; i++) {
+    var d = SERV[i], st = servState[d.id];
+    if (!st || st.lvl < 1) continue;
+    var m = d.lv[st.lvl - 1].mod || {};
+    for (var k in m) out[k] = (out[k] || 0) + m[k];
+  }
+  _seCache = out; _seT = gameT;
+  return out;
+}
+function servEff(key) { return servMods()[key] || 0; }
+/* Bir kilit açık mı (toptanci / turist / ctr) */
+function servUnlock(tag) {
+  for (var i = 0; i < SERV.length; i++) {
+    var d = SERV[i], st = servState[d.id];
+    if (!st || st.lvl < 1) continue;
+    if (d.lv[st.lvl - 1].unl === tag) return true;
+  }
+  return false;
+}
+
+/* Bir bina şu an kurulabilir mi + neden değil (§37 tek satır kilit sebebi) */
+function servLockReason(d) {
+  if (sBuilt(d.id)) return null;
+  var ok = false;
+  for (var i = 0; i < PLOTS.length; i++) {
+    var p = PLOTS[i];
+    if (p.b || !plotActive(p)) continue;
+    if (p.allow.indexOf(d.id) >= 0) { ok = true; break; }
+  }
+  if (d.need && servCount() < d.need) return T('needServ', { n: d.need });
+  if (!ok) {
+    var z = -1;
+    for (var j = 0; j < PLOTS.length; j++) if (PLOTS[j].allow.indexOf(d.id) >= 0) { z = PLOTS[j].z; break; }
+    for (var j2 = 0; j2 < PLOTS.length; j2++) {
+      var q = PLOTS[j2];
+      if (q.allow.indexOf(d.id) >= 0 && AREAS[q.z].locked) { z = q.z; break; }
+    }
+    if (z >= 0 && AREAS[z].locked) return T('needArea', { n: NM(AREAS[z].n) });
+    return T('noPlot');
+  }
+  return null;
+}
+function servFreePlots(id) {
+  var out = [];
+  for (var i = 0; i < PLOTS.length; i++) {
+    var p = PLOTS[i];
+    if (p.b || !plotActive(p)) continue;
+    if (p.allow.indexOf(id) >= 0) out.push(p);
+  }
+  return out;
+}
+function servBuild(id, plot) {
+  var d = sdef(id); if (!d || sBuilt(id) || !plot || plot.b) return false;
+  plot.b = id;
+  servState[id] = { lvl: 1, plot: plot.id, cons: 2.2, fresh: 1, nextT: d.lv[0].ivl || 0, flash: 0 };
+  _seT = -1; rebuildCounters(); reassignWorkers();
+  sfx.build(); addPuff(plot.x, plot.y, '#ffc94a');
+  toast(T('servBuilt', { n: NM(d.n) }));
+  return true;
+}
+function servUp(id) {
+  var d = sdef(id), st = servState[id];
+  if (!d || !st || st.lvl >= 5) return false;
+  st.lvl++; st.cons = 1.3; st.fresh = 0; st.flash = 1.8;
+  st.nextT = d.lv[st.lvl - 1].ivl || 0;
+  _seT = -1; rebuildCounters(); reassignWorkers();
+  var p = plotById(st.plot);
+  if (p) addPuff(p.x, p.y, '#ffc94a');
+  sfx.build(); toast(T('servUp', { n: NM(d.n), l: st.lvl }));
+  return true;
+}
+/* §32.1 — ücretsiz taşıma, seviye korunur */
+function servMove(id, plot) {
+  var st = servState[id]; if (!st || !plot || plot.b) return false;
+  var old = plotById(st.plot); if (old) old.b = null;
+  plot.b = id; st.plot = plot.id; st.cons = 0;
+  sfx.build(); addPuff(plot.x, plot.y, '#9df5b0');
+  toast(T('servMoved', { n: NM(sdef(id).n) }));
+  return true;
+}
+/* §41 — kayıt: hiçbir bina otomatik satın alınmaz, para kesilmez */
+function servSave() {
+  var out = [];
+  for (var i = 0; i < SERV.length; i++) {
+    var st = servState[SERV[i].id];
+    if (st && st.lvl > 0) out.push([SERV[i].id, st.lvl, st.plot]);
+  }
+  return out;
+}
+/* oyuncunun bir binaya lv seviyeye kadar ödediği (indirimli) tutar */
+function servSpent(costs, lv) { var t = 0; for (var i = 0; i < lv && i < costs.length; i++) t += upCost(sCost(costs[i])); return t; }
+function servCosts(d) { return d.lv.map(function (q) { return q.c; }); }
+var servRefund = 0;
+function servLoad(arr) {
+  servState = {}; servRefund = 0; _seT = -1;
+  for (var i = 0; i < PLOTS.length; i++) PLOTS[i].b = null;
+  if (!arr || !arr.length) return;
+  /* v1.4 göç: kaldırılan bina → birleştiği binanın seviyesi en az onunki kadar olur.
+     paid[bina] = oyuncunun o binaya fiilen koyduğu toplam (kendi seviyeleri + ona katılan eski bina).
+     İade = paid − yeni seviyenin değeri (kurulabildiyse) ya da paid'in tamamı (parsel yoksa); asla ödenenden fazla değil. */
+  var lvIn = {}, plIn = {}, paid = {}, gone = [];
+  for (var g = 0; g < arr.length; g++) {
+    var rg = arr[g]; if (!rg) continue;
+    var lg = clamp(parseInt(rg[1], 10) || 1, 1, 5);
+    if (SERV_GONE.hasOwnProperty(rg[0])) gone.push([rg[0], lg]);
+    else if (sdef(rg[0]) && lg > (lvIn[rg[0]] || 0)) { lvIn[rg[0]] = lg; plIn[rg[0]] = rg[2]; }
+  }
+  for (var k0 in lvIn) paid[k0] = servSpent(servCosts(sdef(k0)), lvIn[k0]);
+  for (g = 0; g < gone.length; g++) {
+    var gid = gone[g][0], glv = gone[g][1], into = SERV_GONE[gid], spent = servSpent(SERV_GONE_COST[gid], glv);
+    if (into) { lvIn[into] = Math.max(lvIn[into] || 0, glv); paid[into] = (paid[into] || 0) + spent; }
+    else servRefund += spent;                                   /* birleşeceği bina yok (yakıt, tersane) → tamamı iade */
+  }
+  for (var key in lvIn) {
+    var d = sdef(key), lv = clamp(lvIn[key], 1, 5);
+    var p = plotById(plIn[key]);
+    if (!p || p.b || !plotActive(p) || p.allow.indexOf(d.id) < 0) {   /* geçersiz/kilitli parsel → uygun boşa taşı */
+      var alt = servFreePlots(d.id);
+      p = alt.length ? alt[0] : null;
+    }
+    if (!p) { servRefund += paid[key] || 0; continue; }         /* yer yoksa ödenen her şey iade */
+    p.b = d.id;
+    servState[d.id] = { lvl: lv, plot: p.id, cons: 0, nextT: d.lv[lv - 1].ivl || 0, flash: 0 };
+    servRefund += Math.max(0, (paid[key] || 0) - servSpent(servCosts(d), lv));
+  }
+  _seT = -1;
+}
+/* v1.2 §9 — gün / depo / hedef stok yüklemesi */
+function loadDay(d) {
+  if (d && d.day) {
+    day.n = Math.max(1, parseInt(d.day[0], 10) || 1);
+    day.t = clamp(parseFloat(d.day[1]) || 0, 0, DAY_LEN - 1);
+    day.market = !!d.day[2] && isMarketDay(day.n);
+    day.feat = custById(d.day[3]) ? d.day[3] : null;
+    var sps = String(d.day[4] || '').split(',').filter(function (q) { return specById(q); });
+    if (sps.length === 2) {
+      day.spec = sps; day.normals = parseInt(d.day[6], 10) || 0;
+      var sp0 = parseInt(d.day[5], 10) || 0;
+      day.sp = sp0 === 2 ? 1 : sp0 === 3 ? 4 : sp0;   /* müşteriler kaydedilmez: yarım kalan adımı güvenle sürdür */
+      day.popT = 0;
+    } else day.spec = null;
+  }
+  day.phase = 'play'; day.ph = 0; day.st = newDayStats(); day.last = null;
+  if (d && d.stalls) {
+    for (var j = 0; j < d.stalls.length; j++) {
+      var c = counterByKey(d.stalls[j][0]);
+      if (c) c.open = !!d.stalls[j][1];
+    }
+  }
+  openStarterStall();
+}
+
+/* §41 doğrulama: parsel kasa güvenli alanını veya kuyruğu işgal etmiyor */
+function servValidate() {
+  var bad = [];
+  for (var i = 0; i < PLOTS.length; i++) {
+    var p = PLOTS[i];
+    if (dist2(p.x, p.y, safe.x, safe.y) < 4.0) bad.push(p.id + ':safe');
+    for (var k = 0; k < counters.length; k++) {
+      var c = counters[k];
+      if (Math.abs(p.x - c.x) < 1.2 && Math.abs(p.y - c.y) < 1.2) bad.push(p.id + ':queue');
+      if (p.x > 10.0 && p.x < 14.8) bad.push(p.id + ':lane');
+    }
+  }
+  return bad;
+}
+
+/* §34 / §38.2 — servis geliri: ana balık gelirinin %30'unu aşamaz */
+var fishRate = 0, servRate = 0;
+function noteFishIncome(v) { fishRate += v; }
+function servTick(dt) {
+  var dec = Math.pow(0.5, dt / 30);                 /* ~30 sn yarı ömür */
+  fishRate *= dec; servRate *= dec;
+  var cap = Math.max(12, fishRate * 0.30);
+  for (var i = 0; i < SERV.length; i++) {
+    var d = SERV[i], st = servState[d.id];
+    if (!st || st.lvl < 1) continue;
+    if (st.cons > 0) st.cons = Math.max(0, st.cons - dt);
+    if (st.flash > 0) st.flash = Math.max(0, st.flash - dt);
+    var L = d.lv[st.lvl - 1];
+    if (L.cook) { st.nextT -= dt; if (st.nextT <= 0) { st.nextT = L.ivl * rnd(0.85, 1.15); restoCook(d, st, L); } continue; }
+    if (!L.inc || !L.ivl) continue;
+    st.nextT -= dt;
+    if (st.nextT > 0) continue;
+    st.nextT = L.ivl * rnd(0.8, 1.25);
+    if (servRate >= cap) continue;                  /* tavan: AFK para makinesi olmaz */
+    var pay = Math.round(L.inc * (1 + repLevel() * 0.02));
+    S.cash += pay; servRate += pay; earn(pay);
+    var p = plotById(st.plot);
+    if (p) { addFloat(p.x, p.y - 0.4, '+' + money(pay), '#9df5b0'); st.flash = 0.8; }
+  }
+}
+
+/* v1.4 — Restoran pasif para basmaz: yalnız FAZLA malı pişirip satar. Fazla = depo %60'tan doluysa en kalabalık
+   raf, ya da tezgâh tamponu %75'ten doluysa o tezgâh. Fazla yoksa boş bekler (oyuncu bunu görür). */
+function restoSurplus() {
+  var out = [], k;
+  if (DEPOT.lvl && depotCount() > depotCap() * 0.6) {
+    var keys = Object.keys(DEPOT.shelf).sort(function (a, b) { return DEPOT.shelf[b] - DEPOT.shelf[a]; });
+    if (keys.length) out.push({ depot: keys[0] });
+  }
+  for (k = 0; k < counters.length; k++) {
+    var c = counters[k];
+    if (!AREAS[c.z].locked && c.buffer.length > counterMax(c) * 0.75) out.push({ c: c });
+  }
+  return out;
+}
+function restoCook(d, st, L) {
+  var got = 0, gain = 0, src = restoSurplus(), guard = 0;
+  while (got < L.cook && src.length && guard++ < 40) {
+    var s0 = src[0], it = null;
+    if (s0.depot) { if (depotCount() > depotCap() * 0.6) it = depotTake(s0.depot); }
+    else if (s0.c.buffer.length > counterMax(s0.c) * 0.75) it = s0.c.buffer.pop();
+    if (!it) { src.shift(); continue; }
+    gain += prodValue(it.k, it.f); got++;
+  }
+  st.cooked = got;
+  var p = plotById(st.plot);
+  if (!got) { if (p) addFloat(p.x, p.y - 0.4, T('restoIdle'), '#c9bfae'); return 0; }
+  var pay = Math.round(gain * L.cmul);
+  S.cash += pay; earn(pay); noteDayIncome(pay);
+  if (p) { addFloat(p.x, p.y - 0.4, '🍽 ' + got + ' → +' + money(pay), '#9df5b0'); st.flash = 0.8; }
+  return pay;
+}
+
+/* =========================================================
+   v1.2 — BİRLEŞİK SİSTEM (GDD v1.1)
+   Merkezi Depo + Otomatik Dağıtım • Balık Pazarı Günü • Sade Gün Geçişi
+   Çekirdek döngü değişmez; bu katman tekrarlı taşımayı yönetim kararına çevirir.
+   ========================================================= */
+
+/* ---------------- Merkezi Depo (§3) ---------------- */
+/* ---------------- Hedef stok + öncelik (§3.2) ---------------- */
+/* ---------------- Sade gün geçişi (§2) ---------------- */
+var DAY_LEN = 300, MARKET_EVERY = 5, CLOSE_MAX = 22;
+var day = {
+  n: 1, t: 0, phase: 'play', ph: 0, market: false,
+  st: null, last: null
+};
+function newDayStats() { return { inc: 0, served: 0, lost: 0, fish: 0, by: {}, out: {}, outAt: {}, spec: [] }; }
+day.st = newDayStats();
+function isMarketDay(n) { return n > 1 && n % MARKET_EVERY === 0; }
+function dayNext() { return isMarketDay(day.n + 1); }
+function dayPlaying() { return day.phase === 'play'; }
+function daySpawnOK() { return day.phase === 'play'; }
+function dayCustMul() { return day.market ? 2.2 : 1; }
+function noteDayIncome(v) { day.st.inc += v; }
+function noteDaySale(cu) {
+  day.st.served++;
+  day.st.fish += cu.ord.need;
+  var key = cu.ord.f;
+  day.st.by[key] = (day.st.by[key] || 0) + cu.ord.need;
+}
+function noteDayLost() { day.st.lost++; }
+/* stok-dışı süre: bekleyen müşteri var ama tezgâhta o ürün yok (§6.1) */
+function noteStockOut(dt) {
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (AREAS[c.z].locked || !c.fish) continue;
+    var waiting = false, j;
+    for (j = 0; j < c.slots.length; j++) if (c.slots[j] && c.slots[j].state === 'wait' && c.slots[j].ord.got < c.slots[j].ord.need) { waiting = true; break; }
+    if (!waiting) continue;
+    var has = false;
+    for (j = 0; j < c.buffer.length; j++) if (c.buffer[j].f === c.fish) { has = true; break; }
+    if (!has) day.st.out[c.fish] = (day.st.out[c.fish] || 0) + dt;
+  }
+}
+function fmtDur(sec) {
+  sec = Math.max(0, Math.round(sec));
+  return Math.floor(sec / 60) + ':' + (sec % 60 < 10 ? '0' : '') + (sec % 60);
+}
+function topSeller() {
+  var best = null, bv = 0;
+  for (var k in day.st.by) if (day.st.by[k] > bv) { bv = day.st.by[k]; best = k; }
+  return best ? { f: best, n: bv } : null;
+}
+function worstOut() {
+  var best = null, bv = 0;
+  for (var k in day.st.out) if (day.st.out[k] > bv) { bv = day.st.out[k]; best = k; }
+  return best && bv > 1 ? { f: best, t: bv } : null;
+}
+/* Pazar geçici ayarlarını temizle (§6: kalıcı hedefi ezmez) */
+function updateDay(dt) {
+  if (day.phase === 'play') {
+    day.t += dt;
+    noteStockOut(dt);
+    if (day.t >= DAY_LEN) { day.phase = 'closing'; day.ph = 0; }
+    return;
+  }
+  if (day.phase === 'closing') {
+    day.ph += dt;
+    /* yeni müşteri gelmez; mevcutlar tamamlansın. v0.9: günün 2. özel müşterisi işini bitirene kadar beklenir */
+    if (specHoldsClose()) return;
+    if (!customers.length || day.ph > CLOSE_MAX) { endDay(); }
+    return;
+  }
+  if (day.phase === 'summary' || day.phase === 'prep') return;   /* kart kapanınca ilerler */
+  if (day.phase === 'intro') {
+    day.ph -= dt;
+    if (day.ph <= 0) { day.phase = 'play'; day.t = 0; }
+  }
+}
+/* Mezat Salonu: gün kapanışında tezgâha gitmemiş işlenmiş ürün (hasır tepsilerde
+   bekleyen fileto/füme) kabzımal mezatında açık artırmayla satılır. */
+function auctionPiles() {
+  var out = [], i;
+  for (i = 0; i < tables.length; i++) if (!AREAS[tables[i].z].locked) out.push(tables[i].mat);
+  if (!AREAS[smoker.z].locked) out.push(smoker.mat);
+  return out;
+}
+function runAuction() {
+  var mul = servEff('auction'), cap = Math.round(servEff('auctionN'));
+  if (!mul || !cap) return null;
+  var piles = auctionPiles(), sold = 0, gain = 0, at = null;
+  for (var p2 = 0; p2 < piles.length && sold < cap; p2++) {
+    var pile = piles[p2];
+    while (sold < cap && pile.items.length) {
+      var it = pile.items.pop();
+      if (!isGoods(it) || !validItem(it)) continue;
+      gain += Math.round(prodValue(it.k, it.f) * mul);
+      sold++; at = pile;
+    }
+  }
+  if (!sold) return null;
+  sfx.bell();
+  S.cash += gain; earn(gain); noteDayIncome(gain); noteFishIncome(gain * 0.5);
+  if (at) addFloat(at.x, at.y - 0.6, '+' + money(gain), '#ffe27a');
+  return { n: sold, v: gain };
+}
+/* v0.3 — gün kapanınca kalan müşteriler selamlaşıp ayrılır (kayıp sayılmaz);
+   yeni gün "günün müşterisi" ile başlar: o gün bir müşteri tipi daha sık gelir. */
+function dismissCustomers() {
+  for (var j = 0; j < customers.length; j++) {
+    var cu = customers[j];
+    if (cu.state === 'leave') continue;
+    cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0;
+  }
+  for (var i = 0; i < counters.length; i++) for (var k = 0; k < counters[i].slots.length; k++) counters[i].slots[k] = null;
+}
+function featPool() {
+  var lvl = repLevel();
+  return CUST.filter(function (t) { return t.lvl <= lvl && (!t.serv || servUnlock(t.serv)); });
+}
+function pickFeatured() {
+  var pool = featPool().filter(function (t) { return t.id !== day.feat; });
+  day.feat = pool.length ? pick(pool).id : null;
+}
+function custById(id) { for (var i = 0; i < CUST.length; i++) if (CUST[i].id === id) return CUST[i]; return null; }
+function endDay() {
+  dismissCustomers();
+  var auc = runAuction();
+  day.last = {
+    n: day.n, market: day.market, inc: day.st.inc, served: day.st.served,
+    lost: day.st.lost, fish: day.st.fish, top: topSeller(), out: worstOut(), spec: (day.st.spec || []).slice(),
+    next: isMarketDay(day.n + 1), auc: auc
+  };
+  if (M && M.office) closeDay();                 /* borsa günü oyun günüyle aynı */
+  day.phase = 'summary';
+  sfx.dayOut();
+  showDayCard();
+  retDayEnd(day.last);                           /* gün geliri ortalaması + gün sonu başarımları */
+  save();
+}
+/* kart kapatılınca: yeni güne geç (pazar günüyse hazırlık ekranı) */
+function beginNextDay(skipPrep) {
+  day.n++;
+  pickFeatured();
+  pickSpecials();
+  day.market = isMarketDay(day.n);
+  day.st = newDayStats();
+  day.t = 0;
+  if (day.market && !skipPrep) { day.phase = 'prep'; showPrepCard(); return; }
+  day.phase = 'intro'; day.ph = 1.7;
+  sfx.dayIn();
+  syncPause();
+  if (undecidedStalls().length) openStallScreen();   /* gün başı: yeni tezgâh kararı */
+}
+
+/* ---------------- istasyonlar ---------------- */
+var spots = [
+  { z: 0, x: 2.3, y: 0.9,  face: 'n', stock: [], t: 0, rate: 1.05 },
+  { z: 1, x: 1.0, y: 6.05, face: 'w', stock: [], t: 0, rate: 1.25 },
+  { z: 2, x: 1.0, y: 14.63, face: 'w', stock: [], t: 0, rate: 1.5 }
+];
+/* v1.3 — orta bölgenin EK AĞLARI: palamut ve orkinos kendi ağından gelir (o türün tezgâhı açılınca).
+   Ana ağ o zaman yalnız kalan türleri çıkarır; kesim masasında türler ayrı yığınlarda durur. */
+var XNETS = [
+  { z: 1, f: 'palamut', x: 1.0, y: 8.29, face: 'w', stock: [], t: 0, rate: 1.7, xn: true },
+  { z: 1, f: 'ton',     x: 1.0, y: 10.53, face: 'w', stock: [], t: 0, rate: 2.6, xn: true }
+];
+function xnetOn(n) { return !AREAS[n.z].locked && canSell(n.f) && canProcess('fileto', n.f); }
+function xnetFor(f) { for (var i = 0; i < XNETS.length; i++) if (XNETS[i].f === f && xnetOn(XNETS[i])) return XNETS[i]; return null; }
+function zoneNets(z) { var o = []; if (spots[z]) o.push(spots[z]); for (var i = 0; i < XNETS.length; i++) if (XNETS[i].z === z && xnetOn(XNETS[i])) o.push(XNETS[i]); return o; }
+/* bu ağda hangi türler üretilebilir: hattı açık (tezgâhı kurulu) olanlar */
+function spotLines(i) {
+  var out = [];
+  for (var k = 0; k < LINES.length; k++) {
+    var l = LINES[k];
+    if (l.src !== i) continue;
+    if (!canSell(l.f)) continue;
+    if (!canProcess('fileto', l.f)) continue;
+    out.push(l);
+  }
+  return out;
+}
+function mkTable(z, x, y, mx, my) {
+  return { z: z, x: x, y: y, inn: [], cur: null, t: 0, worker: null, mat: { x: mx, y: my, items: [] }, max: 10 };
+}
+var tables = [
+  mkTable(0, 5.4, 1.4, 6.7, 2.2),
+  mkTable(1, 2.52, 6.62, 3.62, 7.32),
+  mkTable(2, 2.18, 12.66, 3.28, 13.46)
+];
+var smoker = { z: 2, x: 3.4, y: 15.4, inn: [], cur: null, t: 0, belt: 0, mat: { x: 4.6, y: 16.1, items: [] }, max: 8 };
+var counters = [];
+function mkCounter(z, x, y, key) {
+  return { z: z, x: x, y: y, key: key || null, fish: null, buffer: [],
+    slots: [null, null, null, null, null, null, null], tray: { x: x - 0.6, y: y + 1.3, items: [] },
+    open: false,
+    spawnT: 3 + z * 2, eatT: 0 };
+}
+function rebuildCounters() {
+  var old = counters.slice(), keep = [], i;
+  function get(key, z, x, y) {
+    for (var k = 0; k < old.length; k++) if (old[k].key === key) { old[k].x = x; old[k].y = y; old[k].z = z; var tp = trayPos(old[k]); old[k].tray.x = tp.x; old[k].tray.y = tp.y; return old[k]; }
+    var c = mkCounter(z, x, y, key); c.key = key; var tp2 = trayPos(c); c.tray.x = tp2.x; c.tray.y = tp2.y; return c;
+  }
+  counters.length = 0;
+  counters.push(get('b0', 0, 8.9, 3.0));
+  counters.push(get('b1', 1, 8.9, 10.4));
+  counters.push(get('b2', 2, 8.9, 15.4));
+  for (i = 0; i < SLOTS.length; i++) {
+    var sl = SLOTS[i];
+    if (sl.b === 'tezgah' && slotActive(sl)) counters.push(get('s' + sl.id, sl.z, sl.x + 0.3, sl.y));
+  }
+  if (project.done) counters.push(get('hal', 1, project.x, project.y + 0.2));      /* v1.3.2: Kapalı Pazar'ın tezgâhı binanın içinde */
+  /* kaldırılan tezgâhtaki müşteriler dağılsın */
+  for (i = 0; i < old.length; i++) {
+    if (counters.indexOf(old[i]) >= 0) continue;
+    for (var j = customers.length - 1; j >= 0; j--) if (customers[j].c === old[i]) customers[j].state = 'leave';
+  }
+  /* her tezgâha kendi balığını bağla (1:1) */
+  for (i = 0; i < counters.length; i++) {
+    var ln = lineByStall(counters[i].key);
+    counters[i].fish = ln ? ln.f : null;
+  }
+  openStarterStall();                        /* ilk tezgâh daima açık (yeni oyun dâhil) */
+  if (S.started && undecidedStalls().length) stallPrompt = true;   /* yeni tezgâh: hemen sor */
+  announceLines();
+  validateWorld();
+  /* kuyruk şeritleri */
+  var byY = counters.slice().sort(function (a, b) { return a.y - b.y; });
+  var lanes = [];
+  for (var k2 = 0; k2 < byY.length; k2++) {
+    var c2 = byY[k2], L = 0;
+    while (lanes[L] !== undefined && Math.abs(c2.y - lanes[L]) < 5.2) L++;
+    c2.lane = L; lanes[L] = c2.y;
+  }
+}
+var _lineSeen = null;
+function announceLines() {
+  var now = {};
+  for (var i = 0; i < LINES.length; i++) if (fishReady(LINES[i].f)) now[LINES[i].f] = 1;
+  if (_lineSeen) {
+    for (var f in now) if (!_lineSeen[f]) toast(T('newLine', { n: NM(FISH[f].n) }));
+  }
+  _lineSeen = now;
+}
+/* geçersiz ürünleri güvenle temizle / geçerliye dönüştür (soft-lock yok) */
+function validItem(it) {
+  if (!it) return false;
+  if (it.k === 'money') return true;
+  if (!FISH[it.f] || !lineOf(it.f)) return false;
+  if (it.k === 'fish') return canProduce(it.f);
+  /* ürün: üretilebilir + satılabilir olmalı, füme ise hattı açık olmalı */
+  if (!canProduce(it.f) || !canSell(it.f)) return false;
+  if (it.k === 'fume' && !canProcess('fume', it.f)) return false;
+  return true;
+}
+function fallbackFish() {
+  var s2 = sellableFish();
+  return s2.length ? s2[0] : null;
+}
+function fixList(arr) {
+  var fb = fallbackFish(), changed = 0;
+  for (var i = arr.length - 1; i >= 0; i--) {
+    var it = arr[i];
+    if (validItem(it)) continue;
+    if (it && it.k !== 'money' && fb && canProcess(it.k, fb)) { it.f = fb; changed++; }
+    else if (it && it.k === 'fume' && fb) { it.k = 'fileto'; it.f = fb; changed++; }
+    else { arr.splice(i, 1); changed++; }
+  }
+  return changed;
+}
+function validateWorld() {
+  var i, ch = 0;
+  for (i = 0; i < spots.length; i++) {
+    var allow = {}, sl = spotLines(i);
+    for (var k = 0; k < sl.length; k++) allow[sl[k].f] = 1;
+    for (var j = spots[i].stock.length - 1; j >= 0; j--) {
+      if (!allow[spots[i].stock[j].f]) {
+        if (sl.length) spots[i].stock[j].f = sl[Math.floor(Math.random() * sl.length)].f;
+        else { spots[i].stock.splice(j, 1); }
+        ch++;
+      }
+    }
+  }
+  for (i = 0; i < tables.length; i++) { ch += fixList(tables[i].inn); ch += fixList(tables[i].mat.items); }
+  ch += fixList(smoker.inn); ch += fixList(smoker.mat.items);
+  ch += fixList(player.carry);
+  for (i = 0; i < workers.length; i++) ch += fixList(workers[i].carry);
+  for (i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    ch += fixList(c.buffer);
+    /* tezgâh yalnız kendi balığını tutar: yanlış tür varsa doğru tezgâha taşı ya da düş */
+    for (var b = c.buffer.length - 1; b >= 0; b--) {
+      if (c.fish && c.buffer[b].f !== c.fish) {
+        var tgt = stallOf(c.buffer[b].f);
+        var it2 = c.buffer.splice(b, 1)[0];
+        if (tgt && tgt.buffer.length < counterMax(tgt)) tgt.buffer.push(it2);
+        ch++;
+      }
+    }
+  }
+  /* geçersiz sipariş: geçerli ürünle yeniden oluştur, olmazsa müşteriyi gönder */
+  for (i = customers.length - 1; i >= 0; i--) {
+    var cu = customers[i];
+    if (cu.state === 'leave') continue;
+    var bad = !cu.c || counters.indexOf(cu.c) < 0 || !cu.c.fish ||
+      cu.ord.f !== cu.c.fish || !fishReady(cu.ord.f) ||
+      (cu.ord.k === 'fume' && (!canProcess('fume', cu.ord.f) || !stallFume(cu.c)));
+    if (!bad) continue;
+    var host = cu.c && counters.indexOf(cu.c) >= 0 && cu.c.fish && fishReady(cu.c.fish) ? cu.c : null;
+    if (host) {
+      cu.ord.k = stallFume(host) && cu.type.tag === 'fume' ? 'fume' : 'fileto';
+      cu.ord.f = host.fish; cu.ord.got = Math.min(cu.ord.got, cu.ord.need);
+    } else {
+      if (cu.c && cu.c.slots) for (var q = 0; q < cu.c.slots.length; q++) if (cu.c.slots[q] === cu) cu.c.slots[q] = null;
+      cu.state = 'leave';
+    }
+    ch++;
+  }
+  return ch;
+}
+function counterMax(c) { return 20 + (AREAS[c.z].lvl - 1) * 4 + slotEff(c.z, 'stock') + servEff('ctrcap'); }
+var safe = { z: 0, x: 1.2, y: 4.9, pop: 0 };
+/* v0.7 — Liman Meydanı alanı + yaya köprüsü (ayrıntılar FAZ 3 bölümünde) */
+var MEYDAN = { x0: 15.0, y0: -0.3, x1: 21.2, y1: 6.8 };
+/* v1.3.2 — Hizmet Sahası: BİNA sekmesinin hizmet binaları (buzhane, restoran, hal…) tezgâh bölgelerinden
+   çıkarıldı; meydanın güneyinde, yolun doğusunda kendi sahasında durur (tezgâh bölgeleri yalnız üretim + satış). */
+var SERVYARD = { x0: 15.3, y0: 8.6, x1: 24.2, y1: 20.0 };   /* v1.4: 5 parsel, 2 kaydırmalı sütun: binalar ekranda üst üste binmez */
+var YARDPATH = { x0: 17.9, y0: 6.5, x1: 18.9, y1: 8.9 };          /* meydan ↔ saha patikası */
+var BRIDGE = { x0: 9.3, y0: 1.9, x1: 15.7, y1: 2.9 };
+function inRect(x, y, r, m) { m = m || 0; return x > r.x0 + m && x < r.x1 - m && y > r.y0 + m && y < r.y1 - m; }
+/* v0.6 — çöp kovaları: elde kalan fazla mal (tezgâh/kuyruk dolu, yanlış tür) atılabilsin.
+   Kovanın önünde kısa bir an durunca taşıdığın mallar boşalır (para asla atılmaz). */
+var BINS = [
+  { z: 0, x: 3.64, y: 3.88, pop: 0 },
+  { z: 1, x: 7.53, y: 10.05, pop: 0 },
+  { z: 2, x: 8.7, y: 13.78, pop: 0 }
+];
+var binT = 0, trashN = 0, stuckT = 0, stuckHintAt = -99;
+var isTrash = function (it) { return it.k !== 'money'; };
+function iTrash(a, bn, dt) {
+  if (!hasCarry(a, isTrash)) return false;
+  a.act -= dt; if (a.act > 0) return true;
+  a.act = 0.07;
+  var it = popCarry(a, isTrash);
+  fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), bn.x, bn.y, 9, it, 0.22);
+  bn.pop = 1; trashN++;
+  achTrash(a);
+  sfx.drop(); noise(0.06, 0.06, { f: 900, to: 300 });
+  if (!hasCarry(a, isTrash)) { toast(T('trashed', { n: trashN })); trashN = 0; }
+  return true;
+}
+var office = { z: 2, x: 6.9, y: 16.2, w: 1.8, h: 1.4 };
+function officeBuilt() { return M && M.office; }
+function officeReady() { return !AREAS[office.z].locked; }
+
+/* ---------------- yükseltme alanları ---------------- */
+var PADS = [
+  { id: 'cap', z: 0, x: 1.2, y: 1.4,  kind: 'cap',  icon: '🧺', price: 120,  growth: 1.55, lvl: 0, max: 8, paid: 0 },
+  { id: 'spd', z: 0, x: 1.2, y: 2.9,  kind: 'spd',  icon: '👟', price: 160,  growth: 1.60, lvl: 0, max: 6, paid: 0 },
+  { id: 'al0', z: 0, x: 5.0, y: 4.0,  kind: 'arealv', area: 0, icon: '🏗️', paid: 0 },
+  { id: 'z1',  z: 0, x: 7.0, y: 5.3,  kind: 'area', target: 1, icon: '🔓', paid: 0 },
+  { id: 'al1', z: 1, x: 6.0, y: 11.2, kind: 'arealv', area: 1, icon: '🏗️', paid: 0 },
+  { id: 'z2',  z: 1, x: 8.0, y: 11.4, kind: 'area', target: 2, icon: '🔓', paid: 0 },
+  { id: 'prc', z: 2, x: 6.8, y: 16.6, kind: 'price', icon: '💰', price: 850, growth: 1.8, lvl: 0, max: 6, paid: 0 },
+  { id: 'al2', z: 2, x: 2.0, y: 16.9, kind: 'arealv', area: 2, icon: '🏗️', paid: 0 }
+];
+
+/* ---------------- durum ---------------- */
+var S = {
+  cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
+  served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false     /* skor: kasaya giren toplam gelir + işletme adı */
+};
+/* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
+   İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
+function earn(v) { if (v > 0) S.earned += v; }
+var player = { x: 4.5, y: 3.2, z: 0, vx: 0, vy: 0, bob: 0, face: 1, carry: [], act: 0, isPlayer: true };
+var workers = [], customers = [], flyers = [], floats = [], puffs = [], gulls = [];
+var event = null, eventT = 0, nextEvent = 80;
+var gameT = 0, camX = 0, camY = 0, camTX = 0, camTY = 0;
+
+function capacity() { return 8 + S.capLvl * 3; }
+function speed() { return 3.1 * Math.pow(1.11, S.spdLvl); }
+function carryW(a) { var w = 0; for (var i = 0; i < a.carry.length; i++) w += itemW(a.carry[i]); return w; }
+function repLevel() { return levelForRep(S.rep); }
+function repTitle() { return NM(REP_LEVELS[repLevel() - 1].t); }
+function wageTotal() { var w = 0; for (var i = 0; i < workers.length; i++) w += ROLES[workers[i].role].wage * (1 - mgrEff(workers[i].zone, 'wage')); return (w + mgrWages()) * (1 - Math.min(0.5, servEff('wage'))); }
+function upCost(v) { return Math.max(1, Math.round(v * (1 - Math.min(0.45, perkSum('upcost') + servEff('upcost'))))); }
+function pct(n) { return lang === 'tr' ? '%' + n : n + '%'; }
+function perMin() { return lang === 'tr' ? '/dk' : '/min'; }
+function money(n) { return '$' + Math.round(n).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US'); }
+
+/* ---------------- kayıt (v0.4 — 3 slot) ----------------
+   • Store: localStorage; tarayıcı izin vermezse (gizli pencere, kısıtlı iframe) oturum içi
+     hafızaya düşer → "Kaydet ve Çık" yine çalışır, yalnız sayfa kapanınca kaybolur (uyarı gösterilir).
+   • 3 kayıt slotu. Eski tek kayıt (balikci_tycoon_v3) ilk açılışta boş bir slota taşınır.
+   • Yeni oyun / slot değiştirme sayfayı YENİDEN YÜKLEMEZ: resetWorld() açılış anındaki temiz
+     durumu (BOOT) geri kurar. Kısıtlı iframe'de reload ve confirm() güvenilir değildi. */
+var Store = (function () {
+  var mem = {}, ok = false;
+  try { var t = '__bt_test'; localStorage.setItem(t, '1'); localStorage.removeItem(t); ok = true; } catch (e) { }
+  return {
+    persistent: ok,
+    get: function (k) {
+      if (Object.prototype.hasOwnProperty.call(mem, k)) return mem[k];
+      if (ok) { try { return localStorage.getItem(k); } catch (e) { } }
+      return null;
+    },
+    set: function (k, v) { mem[k] = String(v); if (ok) { try { localStorage.setItem(k, String(v)); } catch (e) { } } if (window.BT_NATIVE) window.BT_NATIVE.set(k, v); },
+    del: function (k) { mem[k] = null; if (ok) { try { localStorage.removeItem(k); } catch (e) { } } if (window.BT_NATIVE) window.BT_NATIVE.del(k); }
+  };
+})();
+/* açık rıza sorusu + Hakkında ekranı metinleri */
+Object.assign(STR.tr, {
+  onlineAsk: 'Çevrimiçi skor tablosuna katılmak ister misin?\n\nİşletme adın, karakter adın ve oyun istatistiklerin herkese açık tabloda görünür; görüşlerin yalnız geliştiriciye gider. Veriler Avrupa Birliği\'ndeki (Almanya) Supabase sunucularında tutulur. Ayrıntılar: Ayarlar › Gizlilik. İstediğin an Ayarlar\'dan kapatıp verilerini silebilirsin.',
+  onlineAskYes: 'KATIL', onlineAskNo: 'HAYIR, TEŞEKKÜRLER', aboutBtn: 'HAKKINDA & LİSANSLAR', nameBadT: 'Bu ad kullanılamaz, başka bir ad dene.'
+});
+Object.assign(STR.en, {
+  onlineAsk: 'Join the online leaderboard?\n\nYour business name, character name and game stats appear on a public board; feedback goes only to the developer. Data is stored on Supabase servers in the European Union (Germany). Details: Settings › Privacy. You can turn it off and delete your data in Settings at any time.',
+  onlineAskYes: 'JOIN', onlineAskNo: 'NO, THANKS', aboutBtn: 'ABOUT & LICENSES', nameBadT: 'This name can\'t be used — try another.'
+});
+var SLOT_N = 3, SLOT_PREFIX = 'balikci_slot_', LAST_KEY = 'balikci_last', OLD_KEY = 'balikci_tycoon_v3', PREF_KEY = 'balikci_pref';
+var curSlot = 0, BOOT = null, S0 = null;
+function slotKey(n) { return SLOT_PREFIX + n; }
+function readSlot(n) {
+  if (!(n >= 1 && n <= SLOT_N)) return null;
+  try { var raw = Store.get(slotKey(n)); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+}
+function slotCount() { var c = 0; for (var i = 1; i <= SLOT_N; i++) if (readSlot(i)) c++; return c; }
+function lastSlot() { var n = parseInt(Store.get(LAST_KEY), 10); return readSlot(n) ? n : 0; }
+function migrateOldSave() {
+  var old = Store.get(OLD_KEY);
+  if (!old) return;
+  try {
+    var d = JSON.parse(old);
+    if (!Store.get(PREF_KEY) && d) Store.set(PREF_KEY, JSON.stringify({ lang: d.lang || 'tr', snd: d.snd === true ? 2 : (d.snd | 0), zoom: d.zoom || 2 }));
+  } catch (e) { }
+  for (var i = 1; i <= SLOT_N; i++) if (!readSlot(i)) { Store.set(slotKey(i), old); if (!lastSlot()) Store.set(LAST_KEY, String(i)); break; }
+  Store.del(OLD_KEY);
+}
+var onlineOK = false;                /* KVKK/GDPR: çevrimiçi paylaşım oyuncu açıkça onaylayana kadar kapalı */
+var onlineAsked = false;              /* oyuncuya bir kez soruldu mu (evet ya da hayır) */
+function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, onc: onlineOK ? 1 : 0, ona: onlineAsked ? 1 : 0 })); }
+function loadPref() {
+  try {
+    var d = JSON.parse(Store.get(PREF_KEY) || 'null'); if (!d) return;
+    if (d.lang) lang = d.lang;
+    if (d.snd !== undefined) { volLvl = clamp(d.snd | 0, 0, 2); applyVolume(); }
+    if (d.zoom) zoomLvl = d.zoom;
+    if (d.mus !== undefined) musicEnabled = !!d.mus;
+    /* eski 'onl' alanı onay sayılmaz (varsayılan açıktı); yalnız açık seçim 'onc' geçerli */
+    if (d.onc !== undefined) onlineOK = !!d.onc;
+    if (d.ona !== undefined) onlineAsked = !!d.ona;
+  } catch (e) { }
+}
+function buildSave() {
+  return {
+    v: 6, at: Date.now(), play: Math.round(S.play || 0),
+    cash: S.cash, rep: S.rep, capLvl: S.capLvl, spdLvl: S.spdLvl, priceLvl: S.priceLvl,
+    served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
+    earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
+    auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
+    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0], autoMin: S.autoMin || 0, met: S.met || [], ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
+    areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
+    pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
+    slots: SLOTS.map(function (s) { return s.b; }),
+    decor: DECOR.map(function (d) { return d.got ? 1 : 0; }),
+    proj: [Math.round(project.inv), project.stage, project.done ? 1 : 0],
+    serv: servSave(),
+    day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || '', (day.spec || []).join(','), day.sp || 0, day.normals || 0],
+    stalls: counters.map(function (c) { return [c.key, c.open ? 1 : 0]; }),
+    workers: workers.map(function (w) { return [w.role, w.zone === undefined ? 0 : w.zone]; }),
+    ret: retSave(),                                   /* uzakta kazanç + başarımlar */
+    mk: M
+  };
+}
+/* yalnız çalışan (başlatılmış) bir oyun, kendi slotuna yazılır */
+function save() {
+  savePref();
+  if (!S.started || !curSlot) return;
+  submitScore();
+  Store.set(slotKey(curSlot), JSON.stringify(buildSave()));
+  Store.set(LAST_KEY, String(curSlot));
+}
+function loadFrom(d) {
+  if (!d) return false;
+  try {
+    S.cash = d.cash || 0; S.rep = d.rep || 0; S.capLvl = d.capLvl || 0; S.spdLvl = d.spdLvl || 0;
+    S.priceLvl = d.priceLvl || 0; S.served = d.served || 0; S.lost = d.lost || 0;
+    S.caught = d.caught || 0; S.tut = d.tut || 0;
+    S.play = d.play || 0; S.savedAt = d.at || 0;
+    S.ctrl = d.ctrl !== undefined ? d.ctrl : ((d.tut || 0) > 0 || (d.play || 0) > 20 ? 2 : 0);
+    S.earned = d.earned || 0; S.company = cleanName(d.company || '') || ''; S.runId = d.runId || '';
+    S.auto = Array.isArray(d.auto) ? d.auto.map(function (v) { return !!v; }) : [];
+    S.hero = cleanHero(d.hero);
+    S.autoMin = AUTO_OPTS.indexOf(d.autoMin) >= 0 ? d.autoMin : 0;
+    S.met = Array.isArray(d.met) ? d.met.filter(function (q) { return typeof q === 'string'; }) : [];
+    S.mgr = Array.isArray(d.mgr) ? d.mgr.map(function (m) { return m && MGR_BUFFS[m.a] && MGR_BUFFS[m.b] ? { n: String(m.n || '').slice(0, 20), a: m.a, b: m.b, wage: +m.wage || 40, look: m.look | 0 } : null; }) : [];
+    S.mgrCand = [];
+    var chv = Array.isArray(d.ch) ? d.ch : [0, 0, 0];
+    S.chSeen = !!chv[0]; S.chSeenPct = chv[1] | 0; S.ch1 = !!chv[2];
+    S.specLast = {};
+    if (d.specLast && typeof d.specLast === 'object') for (var sk in d.specLast) if (typeof d.specLast[sk] === 'number') S.specLast[sk] = d.specLast[sk];
+    S.fumeM = Array.isArray(d.fumeM) ? [0, 1, 2].map(function (z) { return d.fumeM[z] ? 1 : 0; }) : [0, 0, 0];
+    S.env = typeof d.env === 'number' ? clamp(d.env | 0, 0, ENV_UPS.length) : -1;   /* -1: eski kayıt → mevcut görünüm korunur */
+    if (d.areas) d.areas.forEach(function (v, i) { if (AREAS[i]) { AREAS[i].locked = !!v[0]; AREAS[i].lvl = v[1] || 1; } });
+    if (d.pads) d.pads.forEach(function (v, i) { if (PADS[i]) { PADS[i].paid = v[0]; PADS[i].lvl = v[1]; if (v[2]) PADS[i].price = v[2]; } });
+    if (d.slots) d.slots.forEach(function (v, i) { if (SLOTS[i]) SLOTS[i].b = v; });
+    /* v0.7 meydan; eski parsel kulübesi meydandaki kulübeye (Sv1) dönüşür */
+    var md = Array.isArray(d.meydan) ? d.meydan : [0, 0, {}, 0];
+    HUT.lvl = clamp(parseInt(md[0], 10) || 0, 0, HUT_LV.length);
+    DEPOT.lvl = clamp(parseInt(md[1], 10) || 0, 0, DEPOT_LV.length);
+    DEPOT.shelf = {};
+    if (md[2] && typeof md[2] === 'object') for (var sk in md[2]) { var sn = parseInt(md[2][sk], 10); if (sn > 0 && /^(fileto|fume)\|[a-z]+$/.test(sk) && FISH[sk.split('|')[1]]) DEPOT.shelf[sk] = sn; }
+    WHALL.built = !!md[3];
+    SLOTS.forEach(function (sl) { if (sl.b === 'kulube') { sl.b = null; HUT.lvl = Math.max(HUT.lvl, 1); } });
+    if (d.decor) d.decor.forEach(function (v, i) { if (DECOR[i]) DECOR[i].got = !!v; });
+    if (d.proj) { project.inv = d.proj[0] || 0; project.stage = d.proj[1] || 0; project.done = !!d.proj[2]; }
+    servLoad(d.serv);   /* v0.4 §41 — yoksa hiçbir bina kurulmaz, para kesilmez */
+    if (servRefund > 0) { S.cash += servRefund; var rf = servRefund; servRefund = 0; setTimeout(function () { toast(T('servRefund', { n: money(rf) })); save(); }, 1200); }
+    rebuildCounters();  /* hedef stoklar yüklenmeden önce tezgâhlar var olmalı */
+    loadDay(d);         /* v1.2 §9 — gün, depo ve hedef stoklar korunur */
+    if (d.workers) d.workers.forEach(function (r) {
+      /* v2.1: [rol, bölge]; eski kayıtlarda düz rol dizisi vardı. Kaldırılmış roller atlanır,
+         kilitli/dolmuş bölgeye kayıtlı çalışan uygun bir bölgeye kaydırılır. */
+      var role = typeof r === 'string' ? r : (r && r[0]);
+      if (!ROLES[role]) return;
+      var z = typeof r === 'string' ? 0 : parseInt(r[1], 10);
+      if (ROLES[role].zone === false) { hire(role, true, -1); return; }
+      if (isNaN(z) || !zoneOpen(z) || zoneFree(z) <= 0) {
+        z = -1;
+        for (var q = 0; q < zoneCount(); q++) if (zoneOpen(q) && zoneFree(q) > 0) { z = q; break; }
+        if (z < 0) return;                  /* hiç yer yoksa çalışan yüklenmez */
+      }
+      hire(role, true, z);
+    });
+    if (d.mk) M = migrateMarket(d.mk);
+    retLoad(d);                                       /* uzakta kazanç + başarımlar (yoksa boş) */
+    return true;
+  } catch (e) { return false; }
+}
+/* açılıştaki temiz dünyaya dön (sayfa yenilemeden) */
+function resetWorld() {
+  var k;
+  if (typeof closeBar === 'function') closeBar();
+  workers.length = 0; customers.length = 0; flyers.length = 0; floats.length = 0; puffs.length = 0;
+  event = null; eventT = 0; nextEvent = 80;
+  for (k in S0) S[k] = S0[k];
+  player.x = 4.5; player.y = 3.2; player.vx = 0; player.vy = 0; player.carry.length = 0; player.act = 0;
+  for (k = 0; k < spots.length; k++) { spots[k].stock.length = 0; spots[k].t = 0; }
+  for (k = 0; k < XNETS.length; k++) { XNETS[k].stock.length = 0; XNETS[k].t = 0; }
+  for (k = 0; k < tables.length; k++) { var tb = tables[k]; tb.inn.length = 0; tb.cur = null; tb.t = 0; tb.worker = null; tb.mat.items.length = 0; }
+  smoker.inn.length = 0; smoker.cur = null; smoker.t = 0; smoker.belt = 0; smoker.mat.items.length = 0;
+  counters.length = 0;
+  day.feat = null; day.last = null; day.spec = null; day.sp = 0; day.normals = 0;
+  M = newMarket();
+  loadFrom(BOOT);
+  if (!M) M = newMarket();
+  lastRepLvl = repLevel(); lvlUpT = 0; ctrlWalk = 0; stallPrompt = false; playLogged = false; lastEnv = -1;
+  netSent.at = 0; netSent.s = -1; netSent.busy = false; netSent.dirty = false;
+  camX = pX(player.x, player.y); camY = pY(player.x, player.y, 0);
+}
+/* slotu belleğe yükle (oyunu başlatmaz) */
+function useSlot(n) {
+  resetWorld();
+  var d = readSlot(n);
+  if (d) loadFrom(d);
+  if (!M) M = newMarket();
+  curSlot = n;
+  lastRepLvl = repLevel(); lastEnv = -1;
+  camX = pX(player.x, player.y); camY = pY(player.x, player.y, 0);
+}
+function deleteSlot(n) {
+  Store.del(slotKey(n));
+  if (parseInt(Store.get(LAST_KEY), 10) === n) Store.del(LAST_KEY);
+  if (curSlot === n) { resetWorld(); curSlot = 0; }
+}
+/* --- kayıt özeti --- */
+function metaOf(d) {
+  if (!d) return null;
+  return { at: d.at || 0, cash: d.cash || 0, rep: d.rep || 0, served: d.served || 0, play: d.play || 0,
+    co: d.company || '', earned: d.earned || 0, fish: d.caught || 0, day: (d.day && d.day[0]) || 1,
+    areas: (d.areas || []).filter(function (a) { return !a[0]; }).length };
+}
+function saveMeta(n) { return metaOf(readSlot(n === undefined ? (curSlot || lastSlot()) : n)); }
+function clockMS(sec) { sec = Math.max(0, Math.round(sec)); var m = Math.floor(sec / 60), s2 = sec % 60; return m + ':' + (s2 < 10 ? '0' : '') + s2; }
+function clockStr(sec) {
+  sec = Math.max(0, Math.round(sec));
+  var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60);
+  if (h) return lang === 'tr' ? (h + 'sa ' + m + 'dk') : (h + 'h ' + m + 'm');
+  if (m) return lang === 'tr' ? (m + 'dk') : (m + 'm');
+  return lang === 'tr' ? (sec + 'sn') : (sec + 's');
+}
+function agoStr(ts) {
+  if (!ts) return T('never');
+  var d = new Date(ts), p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+  return p2(d.getHours()) + ':' + p2(d.getMinutes()) + ' • ' + p2(d.getDate()) + '.' + p2(d.getMonth() + 1);
+}
+function saveSummary(m) {
+  if (!m) return T('noSave');
+  return (m.co ? '« ' + m.co + ' »\n' : '') + T('saveLine', { t: agoStr(m.at), c: money(m.cash), r: m.rep, s: m.served, p: clockStr(m.play) });
+}
+function manualSave(msg) {
+  save();
+  S.savedAt = Date.now();
+  refreshSaveInfo();
+  toast(msg || T('saved', { t: agoStr(S.savedAt) }));
+  sfx.star && sfx.star();
+}
+function refreshSaveInfo() {
+  var ls = lastSlot(), m = saveMeta(ls || undefined), any = slotCount();
+  if (el.setSaveInfo) el.setSaveInfo.textContent = (curSlot ? T('slotN', { n: curSlot }) + ' • ' + saveSummary(saveMeta(curSlot)) : T('noSave')) +
+    (S.started && S.autoMin ? '\n' + T('autoNext', { m: S.autoMin, t: clockMS(autoLeft()) }) : '');
+  if (el.saveInfo) {
+    el.saveInfo.textContent = (ls ? T('slotN', { n: ls }) + ' • ' : '') + saveSummary(m) +
+      (Store.persistent ? '' : '\n' + T('noStorage'));
+    el.saveInfo.classList.toggle('hidden', !m && Store.persistent);
+  }
+  if (el.newBtn) el.newBtn.classList.toggle('hidden', !any);
+  if (el.loadBtn) el.loadBtn.classList.toggle('hidden', !any);
+  if (el.playBtn) el.playBtn.textContent = ls ? T('resume') : T('newGame');
+  if (el.resetBtn) el.resetBtn.classList.toggle('hidden', !curSlot);
+}
+
+/* --- DURAKLATMA (pause) --- */
+var paused = false;
+function anyOverlay() {
+  if (hiddenPause) return true;                 /* sekme arkada: oyun donar */
+  if (!el.askScr.classList.contains('hidden')) return true;   /* onay sorusu */
+  if (fbOpen()) return true;                    /* görüş formu */
+  if (retCardOpen()) return true;               /* "Sen yokken…" kartı */
+  return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') || !el.privScr.classList.contains('hidden') ||
+    !el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden') ||
+    !el.stallScr.classList.contains('hidden') || !el.boardScr.classList.contains('hidden') || !el.halScr.classList.contains('hidden') ||
+    !el.chScr.classList.contains('hidden') || !el.chEnd.classList.contains('hidden');
+}
+function syncPause() {
+  paused = S.started && anyOverlay();
+  el.pauseBadge.classList.toggle('hidden', !paused);
+  if (paused) el.pauseTxt.textContent = T('paused');
+}
+function openSettings(fromMenu) {
+  el.settingsScreen.classList.remove('hidden');
+  el.settingsScreen.dataset.from = fromMenu ? 'menu' : (S.started ? 'game' : 'start');
+  syncSettingsUI(); refreshSaveInfo(); syncPause();
+}
+function openPauseMenu() {
+  renderTab(); el.menuScreen.classList.remove('hidden'); syncPause();
+}
+function saveAndQuit() {
+  submitScore(true);
+  manualSave(T('savedQuit'));
+  el.settingsScreen.classList.add('hidden');
+  el.menuScreen.classList.add('hidden');
+  closeBar();
+  S.started = false;
+  document.getElementById('hud').classList.add('hidden');
+  document.getElementById('objective').classList.add('hidden');
+  el.devbar.classList.add('hidden');
+  el.coach.classList.add('hidden'); el.lvlUp.classList.add('hidden'); lvlUpT = 0;
+  if (el.tradeBtn) el.tradeBtn.classList.add('hidden');
+  el.startScreen.classList.remove('hidden');
+  refreshSaveInfo(); syncPause(); musicPlay('menu');
+}
+
+/* =========================================================
+   TAŞIMA / ETKİLEŞİM
+   ========================================================= */
+function capOf(a) { return a.isPlayer ? capacity() : ROLES[a.role].cap; }
+function fits(a, it) { return carryW(a) + itemW(it) <= capOf(a); }
+function popCarry(a, test) { for (var i = a.carry.length - 1; i >= 0; i--) if (test(a.carry[i])) return a.carry.splice(i, 1)[0]; return null; }
+function hasCarry(a, test) { for (var i = 0; i < a.carry.length; i++) if (test(a.carry[i])) return true; return false; }
+var isFish = function (it) { return it.k === 'fish'; };
+var isFileto = function (it) { return it.k === 'fileto'; };
+var isGoods = function (it) { return it.k === 'fileto' || it.k === 'fume'; };
+var isMoney = function (it) { return it.k === 'money'; };
+function itemKey(it) { return it.k + '|' + it.f; }
+function carryTopZ(a, i) { return 15 + i * 3.4; }
+
+function addFloat(x, y, txt, col) {
+  for (var i = 0; i < floats.length; i++) {
+    var f = floats[i];
+    if (f.col === col && f.t < 0.4 && f.num && txt.charAt(0) === '+' && dist2(f.x, f.y, x, y) < 1.4) {
+      var add = parseFloat(txt.replace(/[^0-9]/g, '')) || 0;
+      f.num += add; f.txt = '+' + money(f.num); f.t = 0; return;
+    }
+  }
+  var n = txt.charAt(0) === '+' ? (parseFloat(txt.replace(/[^0-9]/g, '')) || 0) : 0;
+  floats.push({ x: x, y: y, t: 0, txt: txt, col: col || '#fff', num: n });
+}
+function addPuff(x, y, col) {
+  for (var i = 0; i < 5; i++) puffs.push({ x: x, y: y, z: rnd(4, 10), vx: rnd(-.5, .5), vy: rnd(-.5, .5), vz: rnd(12, 28), t: 0, col: col || '#fff' });
+}
+function fly(x0, y0, z0, x1, y1, z1, it, dur) {
+  flyers.push({ x0: x0, y0: y0, z0: z0, x1: x1, y1: y1, z1: z1, it: it, t: 0, d: dur || 0.4, h: rnd(18, 30) });
+}
+
+function canStand(x, y) {
+  if (inRect(x, y, BRIDGE, 0.05) || inRect(x, y, MEYDAN, 0.3) || inRect(x, y, SERVYARD, 0.3) || inRect(x, y, YARDPATH, 0.02)) return true;
+  for (var i = 0; i < AREAS.length; i++) {
+    var a = AREAS[i]; if (a.locked) continue;
+    if (x > a.x0 + 0.35 && x < a.x1 - 0.35 && y > a.y0 - 0.02 && y < a.y1 + 0.02) return true;
+  }
+  return false;
+}
+function maxOpenY() { var m = 0; for (var i = 0; i < AREAS.length; i++) if (!AREAS[i].locked) m = Math.max(m, AREAS[i].y1); return m; }
+function moveActor(a, dx, dy, spd, dt) {
+  var L = Math.hypot(dx, dy);
+  if (L < 0.001) { a.vx = 0; a.vy = 0; return false; }
+  dx /= L; dy /= L;
+  var nx = a.x + dx * spd * dt, ny = a.y + dy * spd * dt;
+  if (canStand(nx, a.y)) a.x = nx;
+  if (canStand(a.x, ny)) a.y = ny;
+  a.vx = dx; a.vy = dy; a.face = pX(dx, dy) >= 0 ? 1 : -1; a.bob += dt * 12;
+  return true;
+}
+function goTo(a, tx, ty, spd, dt, stopR) {
+  var wp = routeVia(a, tx, ty);                  /* bölge ↔ meydan: köprüden geç */
+  if (wp) { moveActor(a, wp.x - a.x, wp.y - a.y, spd, dt); return false; }
+  var dx = tx - a.x, dy = ty - a.y, L = Math.hypot(dx, dy);
+  if (L <= (stopR || 0.5)) { a.vx = 0; a.vy = 0; return true; }
+  moveActor(a, dx, dy, spd, dt); return false;
+}
+function actDelay(a) { return a.isPlayer ? 0.075 : 0.1; }
+function tryTake(a, dt, fn) { a.act -= dt; if (a.act > 0) return true; a.act = actDelay(a); fn(); return true; }
+
+/* Bir bölgeden birden çok tür geçiyorsa hamal, tezgâhı en aç olan türü alır;
+   böylece kesim masası tek türle dolup diğer hatları aç bırakmaz. */
+function neediestIndex(s, a) {
+  var best = -1, bs = -1e9;
+  for (var i = s.stock.length - 1; i >= 0; i--) {
+    var it = s.stock[i];
+    if (!fits(a, it)) continue;
+    var c = stallOf(it.f);
+    if (!c) continue;                                   /* tezgâhı kapalı türü alma */
+    var fill = c.buffer.length / Math.max(1, counterMax(c));
+    var waiting = 0;
+    for (var q = 0; q < c.slots.length; q++) if (c.slots[q] && c.slots[q].state === 'wait') waiting++;
+    var sc = waiting * 8 - fill * 10 + (i === s.stock.length - 1 ? 0.5 : 0);
+    if (sc > bs) { bs = sc; best = i; }
+  }
+  if (best < 0) for (var j = s.stock.length - 1; j >= 0; j--) if (fits(a, s.stock[j])) return j;
+  return best;
+}
+function iPickFish(a, s, dt) {
+  if (!s.stock.length) return false;
+  var idx = a.isPlayer ? s.stock.length - 1 : neediestIndex(s, a);
+  if (idx < 0 || !s.stock[idx]) return false;
+  var it = s.stock[idx];
+  if (!fits(a, it)) return false;
+  return tryTake(a, dt, function () {
+    s.stock.splice(idx, 1); a.carry.push(it);
+    fly(s.x, s.y + 0.9, 8, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.26);
+    if (a.isPlayer) sfx.splash(); else sfx.pick();
+  });
+}
+/* v2.1: masa yalnız kendi bölgesinin balığını alır */
+function iDropTable(a, tb, dt) {
+  if (tb.inn.length >= tb.max) return false;
+  var ok = function (it) { return tableAccepts(tb, it); };
+  if (!hasCarry(a, ok)) return false;
+  return tryTake(a, dt, function () {
+    var it = popCarry(a, ok); tb.inn.push(it);
+    fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), tb.x, tb.y, 11, it, 0.26); sfx.drop();
+  });
+}
+function iPickMat(a, mat, dt, filter) {
+  var idx = -1;
+  for (var i = mat.items.length - 1; i >= 0; i--) if (!filter || filter(mat.items[i])) { idx = i; break; }
+  if (idx < 0) return false;
+  var it = mat.items[idx];
+  if (!fits(a, it)) return false;
+  return tryTake(a, dt, function () {
+    mat.items.splice(idx, 1); a.carry.push(it);
+    fly(mat.x, mat.y, 6, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.26); sfx.pick();
+  });
+}
+function iDropSmoker(a, dt) {
+  if (smoker.inn.length >= smoker.max || !hasCarry(a, isFileto)) return false;
+  return tryTake(a, dt, function () {
+    var it = popCarry(a, isFileto); smoker.inn.push(it);
+    fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), smoker.x, smoker.y, 12, it, 0.26); sfx.drop();
+  });
+}
+function counterWants(c) {
+  var m = {}, i, k;
+  for (i = 0; i < c.slots.length; i++) {
+    var cu = c.slots[i];
+    if (cu && cu.state === 'wait') { k = cu.ord.k + '|' + cu.ord.f; m[k] = (m[k] || 0) + (cu.ord.need - cu.ord.got); }
+  }
+  for (i = 0; i < c.buffer.length; i++) { k = itemKey(c.buffer[i]); if (m[k] > 0) m[k]--; }
+  return m;
+}
+function globalWants() {
+  var list = openCounters(), g = {};
+  for (var i = 0; i < list.length; i++) {
+    if (!list[i].open) continue;
+    var m = counterWants(list[i]);
+    for (var k in m) if (m[k] > 0) g[k] = (g[k] || 0) + m[k];
+  }
+  return g;
+}
+/* v2.1: tezgâhtar yalnız kendi bölgesinin tezgâh taleplerini görür */
+function zoneWants(w) {
+  var list = openCounters(), g = {};
+  for (var i = 0; i < list.length; i++) {
+    var c = list[i];
+    if (!c.open || !counterInZone(c, w)) continue;
+    var m = counterWants(c);
+    for (var k in m) if (m[k] > 0) g[k] = (g[k] || 0) + m[k];
+  }
+  return g;
+}
+/* ürün bu çalışanın bölgesinde teslim edilebilir mi */
+function deliverableFor(it, w) {
+  if (!isGoods(it)) return false;
+  if (M && M.office && contractWants(it)) return true;
+  if (w && w.zone >= 0 && zoneOfFish(it.f) !== w.zone) return false;
+  var c = stallOf(it.f);
+  return !!c && c.buffer.length < counterMax(c);
+}
+function acceptsAt(c, it) { return isGoods(it) && !!c.fish && c.open && it.f === c.fish; }
+function iDropCounter(a, c, dt) {
+  if (c.buffer.length >= counterMax(c)) return false;
+  var m = counterWants(c), want = null, any = null, i;
+  for (i = 0; i < a.carry.length; i++) {
+    var it = a.carry[i];
+    if (!acceptsAt(c, it)) continue;          /* tür ↔ tezgâh eşleşmesi zorunlu */
+    if (!any) any = it;
+    if (m[itemKey(it)] > 0) { want = it; break; }
+  }
+  if (!want && !any) return false;
+  if (!want && c.buffer.length >= 7) return false;
+  return tryTake(a, dt, function () {
+    var pickIt = want || any;
+    var got = popCarry(a, function (q) { return q === pickIt; });
+    c.buffer.push(got);
+    fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), c.x, c.y, 13, got, 0.26); sfx.drop();
+  });
+}
+function iPickMoney(a, c, dt) {
+  if (!c.tray.items.length) return false;
+  var it = c.tray.items[c.tray.items.length - 1];
+  if (!fits(a, it)) return false;
+  return tryTake(a, dt, function () {
+    c.tray.items.pop(); a.carry.push(it);
+    fly(c.tray.x, c.tray.y, 6, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.26); sfx.pick();
+  });
+}
+/* v0.5 — oyuncu tezgâh kasasından geçince para doğrudan hesaba geçer (merkeze dönmek gerekmez) */
+function iCollectTray(a, c, dt) {
+  if (!c.tray.items.length) return false;
+  a.act -= dt; if (a.act > 0) return true;
+  a.act = 0.06;
+  var it = c.tray.items.pop();
+  S.cash += it.v; earn(it.v);
+  fly(c.tray.x, c.tray.y, 6, a.x, a.y, 22, it, 0.22);
+  addFloat(a.x, a.y - 0.9, '+' + money(it.v), '#8ef2a2'); sfx.coin();
+  return true;
+}
+/* tezgâh kasası kapasitesi: dolunca o tezgâha yeni müşteri gelmez */
+function trayValue(c) { var v = 0; for (var i = 0; i < c.tray.items.length; i++) v += c.tray.items[i].v; return v; }
+function trayCap(c) { return 350 + (AREAS[c.z].lvl - 1) * 250 + c.z * 150; }
+function trayFull(c) { return trayValue(c) >= trayCap(c); }
+function iDeposit(a, dt) {
+  if (!hasCarry(a, isMoney)) return false;
+  a.act -= dt; if (a.act > 0) return true;
+  a.act = 0.05;
+  var it = popCarry(a, isMoney);
+  S.cash += it.v; earn(it.v); safe.pop = 1;
+  fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), safe.x, safe.y, 13, it, 0.24);
+  addFloat(safe.x, safe.y - 0.4, '+' + money(it.v), '#8ef2a2'); sfx.coin();
+  return true;
+}
+
+/* =========================================================
+   OYUNCU
+   ========================================================= */
+function updatePlayer(dt) {
+  var ix = 0, iy = 0;
+  if (keys['w'] || keys['arrowup']) iy -= 1;
+  if (keys['s'] || keys['arrowdown']) iy += 1;
+  if (keys['a'] || keys['arrowleft']) ix -= 1;
+  if (keys['d'] || keys['arrowright']) ix += 1;
+  if (stick.active) { ix += stick.dx * 1.6; iy += stick.dy * 1.6; }
+  ix = clamp(ix, -1, 1); iy = clamp(iy, -1, 1);
+  var wx = (ix / (TW / 2) + iy / (TH / 2)) * (TW / 4);
+  var wy = (iy / (TH / 2) - ix / (TW / 2)) * (TW / 4);
+  var ox = player.x, oy = player.y;
+  moveActor(player, wx, wy, speed(), dt);
+  var mv = Math.hypot(player.x - ox, player.y - oy);
+  moveDir.on = mv > 0.0005; moveDir.x = wx; moveDir.y = wy;
+  if (S.ctrl === 0) ctrlWalk += mv;
+
+  var acted = false, i;
+  /* §8: para taşıyorken kasa önceliklidir */
+  if (hasCarry(player, isMoney) && dist2(player.x, player.y, safe.x, safe.y) < 3.2) {
+    iDeposit(player, dt);
+    return;
+  }
+  for (i = 0; i < spots.length; i++) {
+    var s = spots[i]; if (AREAS[s.z].locked || zoneAuto(i)) continue;
+    if (dist2(player.x, player.y, s.x, s.y + 0.9) < 1.6) acted = iPickFish(player, s, dt) || acted;
+  }
+  for (i = 0; i < XNETS.length; i++) {
+    var xs = XNETS[i]; if (!xnetOn(xs) || zoneAuto(xs.z)) continue;
+    if (dist2(player.x, player.y, xs.x, xs.y + 0.9) < 1.6) acted = iPickFish(player, xs, dt) || acted;
+  }
+  for (i = 0; i < tables.length; i++) {
+    var tb = tables[i]; if (AREAS[tb.z].locked || zoneAuto(i)) continue;
+    if (dist2(player.x, player.y, tb.x, tb.y) < 1.6) acted = iDropTable(player, tb, dt) || acted;
+    if (dist2(player.x, player.y, tb.mat.x, tb.mat.y) < 1.5) acted = iPickMat(player, tb.mat, dt) || acted;
+  }
+  if (!AREAS[smoker.z].locked && !zoneAuto(smoker.z)) {
+    if (dist2(player.x, player.y, smoker.x, smoker.y) < 1.6) acted = iDropSmoker(player, dt) || acted;
+    if (dist2(player.x, player.y, smoker.mat.x, smoker.mat.y) < 1.5) acted = iPickMat(player, smoker.mat, dt) || acted;
+  }
+  for (i = 0; i < counters.length; i++) {
+    var c = counters[i]; if (AREAS[c.z].locked || !c.open) continue;
+    if (dist2(player.x, player.y, c.x, c.y) < 1.8 && !(c.fish && zoneAuto(zoneOfFish(c.fish)))) acted = iDropCounter(player, c, dt) || acted;
+    if (dist2(player.x, player.y, c.tray.x, c.tray.y) < 1.5) acted = iCollectTray(player, c, dt) || acted;
+  }
+  if (dist2(player.x, player.y, safe.x, safe.y) < 1.8) acted = iDeposit(player, dt) || acted;
+  if (DEPOT.lvl && atDoor(player, DEPOT.door, 1.1)) acted = iDepotIn(player, dt) || acted;
+  /* çöp kovası: yanlışlıkla atmamak için önce kısa bir bekleme */
+  var nearBin = null;
+  for (i = 0; i < BINS.length; i++) if (!AREAS[BINS[i].z].locked && dist2(player.x, player.y, BINS[i].x, BINS[i].y) < 0.85) nearBin = BINS[i];
+  if (nearBin && !acted && hasCarry(player, isTrash)) { binT += dt; if (binT > 0.45) acted = iTrash(player, nearBin, dt) || acted; }
+  else binT = 0;
+  /* tezgâhın önünde elindeki malı bırakamıyorsan çöp kovasını hatırlat */
+  var atStall = false;
+  for (i = 0; i < counters.length; i++) if (!AREAS[counters[i].z].locked && dist2(player.x, player.y, counters[i].x, counters[i].y) < 1.8) atStall = true;
+  if (atStall && !acted && hasCarry(player, isGoods)) {
+    stuckT += dt;
+    if (stuckT > 1.4 && gameT - stuckHintAt > 20) { stuckHintAt = gameT; toast(T('trashHint')); }
+  } else stuckT = 0;
+  if (officeBuilt() && dist2(player.x, player.y, office.x, office.y) < 3.4) acted = iDeliverContract(player, dt) || acted;
+  if (!acted) player.act = 0;
+}
+
+/* =========================================================
+   ÇALIŞANLAR
+   ========================================================= */
+function hire(role, silent, zone) {
+  if (!ROLES[role]) return null;            /* kaldırılmış rol (ör. eski dagitim) yüklenmez */
+  var z = zone === undefined ? 0 : zone;
+  if (ROLES[role] && ROLES[role].zone === false) z = -1;
+  var home = z >= 0 && spots[z] ? spots[z] : spots[0];
+  var w = {
+    role: role, zone: z, x: home.x + rnd(0.6, 1.6), y: home.y + rnd(0.8, 1.8), z: 0, vx: 0, vy: 0,
+    carry: [], act: 0, bob: 0, face: 1, table: null, mode: 'load', name: pick(WNAMES)
+  };
+  workers.push(w);
+  if (role === 'filetocu') assignFiletocu(w);
+  if (role === 'tezgahtar') assignVendor(w);
+  if (!silent) { toast(T('hiredZ', { i: ROLES[role].icon, n: w.name, z: z >= 0 ? NM(AREAS[z].n) : T('harborWide') })); }
+  return w;
+}
+function assignFiletocu(w) {
+  var t = zoneTable(w.zone);                                     /* v2.1: kendi bölgesinin masası */
+  if (t && !AREAS[t.z].locked && (!t.worker || t.worker === w)) { t.worker = w; w.table = t; return; }
+  for (var i = 0; i < tables.length; i++) {
+    if (AREAS[tables[i].z].locked || tables[i].worker) continue;
+    if (i !== w.zone) continue;
+    tables[i].worker = w; w.table = tables[i]; return;
+  }
+  w.table = null;
+}
+function reassignWorkers() {
+  for (var i = 0; i < workers.length; i++) {
+    if (workers[i].role === 'filetocu' && !workers[i].table) assignFiletocu(workers[i]);
+    if (workers[i].role === 'tezgahtar') { var c = counterByKey(workers[i].stall); if (!c || AREAS[c.z].locked) assignVendor(workers[i]); }
+  }
+}
+/* v0.5 — her tezgâhın kendi tezgâhtarı: bölgedeki en az tezgâhtarı olan tezgâha atanır */
+function assignVendor(w) {
+  var best = null, bn = 1e9;
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (AREAS[c.z].locked || !c.fish || zoneOfFish(c.fish) !== w.zone) continue;
+    var n = 0;
+    for (var j = 0; j < workers.length; j++) if (workers[j] !== w && workers[j].role === 'tezgahtar' && workers[j].stall === c.key) n++;
+    if (n < bn) { bn = n; best = c; }
+  }
+  w.stall = best ? best.key : null;
+}
+function stallLabel(key) { var c = counterByKey(key); return c && c.fish ? T('stallOfFish', { f: NM(FISH[c.fish].n) }) : ''; }
+
+/* ---------- v0.5 — PERSONELE DEVRET (tam otomasyon) ----------
+   Bir bölgede 4 rolün hepsi (hamal, filetocu, tezgâhtar, tahsildar) varsa bölge personele
+   devredilebilir: oyuncu o bölgede istasyonlara karışmaz (geçerken sadece kasayı toplar),
+   ekip ustabaşı primiyle %20 hızlı çalışır, tezgâhta ⚙ OTOMATİK rozeti görünür. */
+function zoneChain(z) {
+  var o = { ok: true, miss: [] };
+  for (var i = 0; i < ZONE_ROLES.length; i++) {
+    var r = ZONE_ROLES[i], n = 0;
+    for (var j = 0; j < workers.length; j++) if (workers[j].zone === z && workers[j].role === r) n++;
+    o[r] = n;
+    if (!n) { o.ok = false; o.miss.push(NM(ROLES[r].n)); }
+  }
+  return o;
+}
+function zoneAuto(z) { return !!(S.auto && S.auto[z]) && zoneOpen(z) && zoneChain(z).ok; }
+function setZoneAuto(z, on) {
+  if (!S.auto) S.auto = [];
+  if (on && !zoneChain(z).ok) { toast(T('autoMissing', { m: zoneChain(z).miss.join(', ') })); sfx.bad(); return; }
+  S.auto[z] = !!on;
+  toast(T(on ? 'autoOn' : 'autoOff', { n: NM(AREAS[z].n) }));
+  if (on) { sfx.star(); var c = zoneCounter(z); if (c) addPuff(c.x, c.y, '#ffc94a'); } else sfx.tap();
+  save(); renderBar();
+}
+function openTables() { return tables.filter(function (t) { return !AREAS[t.z].locked; }); }
+function openCounters() { return counters.filter(function (c) { return !AREAS[c.z].locked; }); }
+/* v2.1: hamal yalnız kendi bölgesinin ağından alır */
+function bestSpot(w) {
+  if (w && w.zone >= 0) {
+    var tz = zoneTable(w.zone);
+    var zn = zoneNets(w.zone).filter(function (n) {
+      if (AREAS[n.z].locked) return false;
+      if (!n.f || !tz) return true;                 /* v1.3: yığını dolu ve masada zaten bekleyen tür için ağa gitme */
+      var inq = 0; for (var k = 0; k < tz.inn.length; k++) if (tz.inn[k].f === n.f) inq++;
+      return !(inq >= 3 && pileCount(tz, n.f) > pileCap(tz) - FISH[n.f].out);
+    });
+    if (!zn.length) return null;
+    if (w.net && zn.indexOf(w.net) >= 0 && w.net.stock.length) return w.net;    /* seçtiği ağı boşaltana kadar değiştirmez */
+    var bb = zn[0];
+    for (var q = 1; q < zn.length; q++) if (zn[q].stock.length > bb.stock.length) bb = zn[q];
+    w.net = bb; return bb;
+  }
+  var best = null, bs = -1e9;
+  for (var i = 0; i < spots.length; i++) {
+    var s = spots[i]; if (AREAS[s.z].locked) continue;
+    var sc = s.stock.length * 3 - (w ? Math.sqrt(dist2(w.x, w.y, s.x, s.y)) : 0);
+    if (sc > bs) { bs = sc; best = s; }
+  } return best;
+}
+/* v2.1: yalnız kendi bölgesinin kesim masası */
+function tableWithSpace(w) {
+  if (w && w.zone >= 0) {
+    var t = zoneTable(w.zone);
+    return (t && !AREAS[t.z].locked && t.inn.length < t.max) ? t : null;
+  }
+  var list = openTables().filter(function (t2) { return t2.inn.length < t2.max; }), best = null, bd = 1e9;
+  for (var i = 0; i < list.length; i++) {
+    var d = (w ? dist2(w.x, w.y, list[i].x, list[i].y) : 0) + list[i].inn.length * 2;
+    if (d < bd) { bd = d; best = list[i]; }
+  } return best;
+}
+/* bir tezgâh bu çalışanın bölgesine mi ait */
+function counterInZone(c, w) {
+  if (!w || w.zone < 0 || !c.fish) return true;
+  return zoneOfFish(c.fish) === w.zone;
+}
+function counterWantingCarry(w) {
+  var list = openCounters(), best = null, bd = 1e9;
+  for (var i = 0; i < list.length; i++) {
+    var c = list[i]; if (c.buffer.length >= counterMax(c)) continue;
+    if (!c.open || !counterInZone(c, w)) continue;
+    var m = counterWants(c), hit = false;
+    for (var j = 0; j < w.carry.length; j++) if (acceptsAt(c, w.carry[j]) && m[itemKey(w.carry[j])] > 0) { hit = true; break; }
+    if (!hit) continue;
+    var d = dist2(w.x, w.y, c.x, c.y) * (w.stall === c.key ? 0.2 : 1);   /* kendi tezgâhı önce */
+    if (d < bd) { bd = d; best = c; }
+  } return best;
+}
+function nearestCounterWithSpace(w) {
+  var list = openCounters(), best = null, bd = 1e9;
+  for (var i = 0; i < list.length; i++) {
+    var c = list[i];
+    if (c.buffer.length >= 7) continue;
+    if (!c.open || !counterInZone(c, w)) continue;
+    var ok = false;
+    for (var j = 0; j < w.carry.length; j++) if (acceptsAt(c, w.carry[j])) { ok = true; break; }
+    if (!ok) continue;                       /* yalnız kendi türünü kabul eden tezgâh */
+    var d = dist2(w.x, w.y, c.x, c.y) * (w.stall === c.key ? 0.2 : 1);
+    if (d < bd) { bd = d; best = c; }
+  } return best;
+}
+/* ürün bir yere teslim edilebilir mi (kendi tezgâhı ya da kontrat) */
+function deliverable(it) {
+  if (!isGoods(it)) return false;
+  if (M && M.office && contractWants(it)) return true;
+  var c = stallOf(it.f);
+  return !!c && c.buffer.length < counterMax(c);
+}
+function matWith(filter, w) {
+  var mats, i, j, best = null, bd = 1e9;
+  if (w && w.zone >= 0) {                                   /* v2.1: yalnız kendi bölgesi */
+    mats = [];
+    var mt = zoneTable(w.zone);
+    if (mt && !AREAS[mt.z].locked) mats.push(mt.mat);
+    if (!AREAS[smoker.z].locked && smoker.z === w.zone) mats.push(smoker.mat);
+  } else {
+    mats = openTables().map(function (t) { return t.mat; });
+    if (!AREAS[smoker.z].locked) mats.push(smoker.mat);
+  }
+  for (i = 0; i < mats.length; i++) {
+    var has = false;
+    for (j = 0; j < mats[i].items.length; j++) if (filter(mats[i].items[j])) { has = true; break; }
+    if (!has) continue;
+    var d = w ? dist2(w.x, w.y, mats[i].x, mats[i].y) : 0;
+    if (d < bd) { bd = d; best = mats[i]; }
+  } return best;
+}
+function trayWithMoney(minN, w) {
+  var list = openCounters(), best = null, bd = 1e9;
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].tray.items.length < (minN || 1)) continue;
+    if (w && w.zone >= 0 && !counterInZone(list[i], w)) continue;
+    var d = w ? dist2(w.x, w.y, list[i].tray.x, list[i].tray.y) : 0;
+    if (d < bd) { bd = d; best = list[i]; }
+  } return best;
+}
+function updateWorkers(dt) {
+  var mul = workerSpeedMul();
+  for (var i = 0; i < workers.length; i++) {
+    var w = workers[i], R2 = ROLES[w.role];
+    if (!R2) { workers.splice(i--, 1); continue; }
+    var sp = R2.speed * mul * (w.zone >= 0 && zoneAuto(w.zone) ? 1.2 : 1) * (1 + mgrEff(w.zone, 'wspeed'));
+    if (w.role === 'hamal') aiHamal(w, sp, dt);
+    else if (w.role === 'tezgahtar') aiTezgahtar(w, sp, dt);
+    else if (w.role === 'kasiyer') aiKasiyer(w, sp, dt);
+    else if (w.role === 'depocu') aiDepocu(w, sp, dt);
+    else if (w.role === 'sevkiyat') aiSevkiyat(w, sp, dt);
+    else aiFiletocu(w, sp, dt);
+  }
+}
+function aiHamal(w, sp, dt) {
+  var full = carryW(w) >= ROLES.hamal.cap - 0.5;
+  var s = bestSpot(w);
+  var canLoad = s && s.stock.length && fits(w, s.stock[s.stock.length - 1]);
+  if (w.mode !== 'drop' && (full || !canLoad) && hasCarry(w, isFish)) w.mode = 'drop';
+  if (w.mode === 'drop' && !hasCarry(w, isFish)) w.mode = 'load';
+  if (w.mode === 'drop') {
+    var t = tableWithSpace(w);
+    if (t) { if (goTo(w, t.x - 0.1, t.y - 0.35, sp, dt, 0.9)) iDropTable(w, t, dt); }
+    else if (s) goTo(w, s.x + 1.5, s.y + 1.8, sp, dt, 1.2);
+    return;
+  }
+  if (canLoad) { if (goTo(w, s.x + 0.5, s.y + 1.3, sp, dt, 0.8)) iPickFish(w, s, dt); return; }
+  if (hasCarry(w, isFish)) { w.mode = 'drop'; return; }
+  if (s) goTo(w, s.x + 1.5, s.y + 1.8, sp, dt, 1.2);
+}
+function aiTezgahtar(w, sp, dt) {
+  var full = carryW(w) >= ROLES.tezgahtar.cap - 0.5, i, k;
+  var g = zoneWants(w);
+  for (i = 0; i < w.carry.length; i++) { k = itemKey(w.carry[i]); if (g[k] > 0) g[k]--; }
+  var wantFilter = function (it) { return g[itemKey(it)] > 0; };
+  var m = matWith(wantFilter, w);
+  var zoneDeliver = function (it) { return deliverableFor(it, w); };
+  var stockLow = openCounters().filter(function (q) { return q.open && counterInZone(q, w) && q.buffer.length < 5; }).length > 0;
+  var filt = wantFilter;
+  if (!m && stockLow) { m = matWith(zoneDeliver, w); filt = zoneDeliver; }
+  if (w.mode !== 'drop' && (full || !m) && hasCarry(w, isGoods)) w.mode = 'drop';
+  if (w.mode === 'drop' && !hasCarry(w, isGoods)) w.mode = 'load';
+  if (w.mode === 'drop') {
+    if (officeBuilt() && M.active.length) {
+      var hasCtr = false;
+      for (i = 0; i < w.carry.length; i++) if (isGoods(w.carry[i]) && contractWants(w.carry[i])) { hasCtr = true; break; }
+      if (hasCtr) { if (goTo(w, office.x, office.y + 1.1, sp, dt, 1.0)) iDeliverContract(w, dt); return; }
+    }
+    var c = counterWantingCarry(w) || nearestCounterWithSpace(w);
+    if (c) { w.idleT = 0; if (goTo(w, c.x - 0.5, c.y - 0.6, sp, dt, 1.0)) { if (!iDropCounter(w, c, dt)) w.mode = 'load'; } }
+    else {
+      w.idleT = (w.idleT || 0) + dt;
+      var back = matWith(function () { return true; }, w) || (zoneTable(w.zone) && zoneTable(w.zone).mat) || (openTables()[0] && openTables()[0].mat);
+      if (w.idleT > 8 && back && back.items.length < 18) {
+        if (goTo(w, back.x, back.y, sp, dt, 0.8)) {
+          var gi = popCarry(w, isGoods);
+          if (gi) { back.items.push(gi); fly(w.x, w.y, carryTopZ(w, w.carry.length + 1), back.x, back.y, 6, gi, 0.26); }
+          if (!hasCarry(w, isGoods)) { w.idleT = 0; w.mode = 'load'; }
+        }
+      } else idleAtZone(w, sp, dt);
+    }
+    return;
+  }
+  if (m && !full) {
+    if (goTo(w, m.x, m.y, sp, dt, 0.8)) { if (!iPickMat(w, m, dt, filt)) w.mode = 'drop'; }
+    return;
+  }
+  if (hasCarry(w, isGoods)) { w.mode = 'drop'; return; }
+  idleAtZone(w, sp, dt);
+}
+/* bölgesinde boşta bekleme noktası */
+function idleAtZone(w, sp, dt) {
+  var t = zoneTable(w.zone) || tables[0];
+  goTo(w, t.x + 1.4, t.y + 1.2, sp, dt, 1.1);
+}
+function aiKasiyer(w, sp, dt) {
+  var full = carryW(w) >= ROLES.kasiyer.cap - 0.5;
+  var c = trayWithMoney(1, w);
+  if (w.mode !== 'drop' && (full || !c) && hasCarry(w, isMoney)) w.mode = 'drop';
+  if (w.mode === 'drop' && !hasCarry(w, isMoney)) w.mode = 'load';
+  if (w.mode === 'drop') { if (goTo(w, safe.x + 0.35, safe.y + 0.35, sp, dt, 0.9)) iDeposit(w, dt); return; }
+  if (c) { if (goTo(w, c.tray.x, c.tray.y, sp, dt, 0.8)) iPickMoney(w, c, dt); return; }
+  if (hasCarry(w, isMoney)) { w.mode = 'drop'; return; }
+  var home = zoneCounter(w.zone);                   /* boşta: kendi bölgesinin tezgâh kasası yanında */
+  if (home) goTo(w, home.tray.x - 0.9, home.tray.y + 0.5, sp, dt, 1.0);
+  else goTo(w, safe.x + 1.6, safe.y - 0.7, sp, dt, 1.0);
+}
+function zoneCounter(z) {
+  for (var i = 0; i < counters.length; i++) { var c = counters[i]; if (!AREAS[c.z].locked && c.fish && zoneOfFish(c.fish) === z) return c; }
+  return null;
+}
+function aiFiletocu(w, sp, dt) {
+  if (!w.table || AREAS[w.table.z].locked) assignFiletocu(w);
+  if (!w.table) { idleAtZone(w, sp, dt); return; }
+  goTo(w, w.table.x + 0.8, w.table.y + 0.15, sp, dt, 0.25);
+}
+
+/* =========================================================
+   İSTASYONLAR
+   ========================================================= */
+function tableTypes(t) { return zoneFish(t.z).filter(function (f) { return canSell(f); }).length; }
+function pileCap(t) { var st = slotEff(t.z, 'stock') || 0; return tableTypes(t) > 1 ? 8 + Math.round(st / 2) : 16 + st; }
+function pileCount(t, f) { var n = 0; for (var i = 0; i < t.mat.items.length; i++) if (t.mat.items[i].f === f) n++; return n; }
+function spotPick(i) {
+  var ls = spotLines(i).filter(function (l) { return !xnetFor(l.f); });   /* kendi ağı olan tür ana ağdan çıkmaz */
+  if (!ls.length) return null;
+  var rare = perkSum('rare');
+  if (rare > 0 && Math.random() < rare * 3) {
+    var best = ls[0];
+    for (var q = 1; q < ls.length; q++) if (FISH[ls[q].f].val > FISH[best.f].val) best = ls[q];
+    return best.f;
+  }
+  var tot = 0, k;
+  for (k = 0; k < ls.length; k++) tot += ls[k].w;
+  var r = Math.random() * tot;
+  for (k = 0; k < ls.length; k++) { r -= ls[k].w; if (r <= 0) return ls[k].f; }
+  return ls[0].f;
+}
+function updateStations(dt) {
+  var i, s, t, fishMul = event ? event.fishMul : 1;
+  for (i = 0; i < spots.length; i++) {
+    s = spots[i]; if (AREAS[s.z].locked) continue;
+    if (s.stock.length >= areaStock(s.z)) { s.t = 0; continue; }
+    s.t += dt * fishMul * areaNetMul(s.z);
+    if (s.t >= s.rate) {
+      s.t = 0;
+      var nf = spotPick(i);
+      if (!nf) continue;                      /* açık hat yoksa bu ağ üretmez */
+      var it = { k: 'fish', f: nf };
+      s.stock.push(it); S.caught++;
+      var ox = s.face === 'n' ? s.x + rnd(-1, 1) : s.x - rnd(2, 3.2);
+      var oy = s.face === 'n' ? s.y - rnd(2, 3.2) : s.y + rnd(-1, 1);
+      fly(ox, oy, 2, s.x, s.y + 0.9, 8, it, 0.55);
+    }
+  }
+  for (i = 0; i < XNETS.length; i++) {
+    s = XNETS[i]; if (!xnetOn(s)) continue;
+    if (s.stock.length >= areaStock(s.z)) { s.t = 0; continue; }
+    s.t += dt * fishMul * areaNetMul(s.z);
+    if (s.t >= s.rate) {
+      s.t = 0;
+      var xi = { k: 'fish', f: s.f };
+      s.stock.push(xi); S.caught++;
+      fly(s.x - rnd(2, 3.2), s.y + rnd(-1, 1), 2, s.x, s.y + 0.9, 8, xi, 0.55);
+    }
+  }
+  for (i = 0; i < tables.length; i++) {
+    t = tables[i]; if (AREAS[t.z].locked) continue;
+    if (!t.cur && t.inn.length) {                   /* v1.3: tür başına yığın sınırı — bir tür dolunca diğerleri kesilmeye devam eder */
+      var pc = pileCap(t), pick2 = -1;
+      for (var pj = 0; pj < t.inn.length && pick2 < 0; pj++) if (pileCount(t, t.inn[pj].f) <= pc - FISH[t.inn[pj].f].out) pick2 = pj;
+      if (pick2 >= 0) { t.cur = t.inn.splice(pick2, 1)[0]; t.t = 0; }
+    }
+    if (t.cur) {
+      t.t += dt * (t.worker ? 1.55 : 1) * (1 + perkSum('procspeed') + perkSum('rate'));
+      if (t.t >= FISH[t.cur.f].cut) {
+        var F = FISH[t.cur.f];
+        for (var k = 0; k < F.out; k++) {
+          var fil = { k: 'fileto', f: t.cur.f };
+          t.mat.items.push(fil);
+          fly(t.x, t.y, 13, t.mat.x, t.mat.y, 6, fil, 0.36 + k * 0.05);
+        }
+        addPuff(t.x, t.y, '#ffffff'); t.cur = null; t.t = 0;
+      }
+    }
+  }
+  if (!AREAS[smoker.z].locked) {
+    smoker.belt += dt;
+    if (smoker.belt >= 1.0) {
+      var src = tables[2].mat;
+      if (smoker.inn.length < smoker.max && src.items.length) {
+        smoker.belt = 0;
+        var mv = src.items.pop(); smoker.inn.push(mv);
+        fly(src.x, src.y, 6, smoker.x, smoker.y, 12, mv, 0.5);
+      }
+    }
+    if (!smoker.cur && smoker.inn.length && smoker.mat.items.length < 12) { smoker.cur = smoker.inn.shift(); smoker.t = 0; }
+    if (smoker.cur) {
+      smoker.t += dt;
+      if (smoker.t >= FUME_TIME) {
+        var fm = { k: 'fume', f: smoker.cur.f };
+        smoker.mat.items.push(fm);
+        fly(smoker.x, smoker.y, 14, smoker.mat.x, smoker.mat.y, 6, fm, 0.4);
+        addPuff(smoker.x, smoker.y, '#e8e2d8'); smoker.cur = null; smoker.t = 0;
+      }
+    }
+  }
+  for (i = 0; i < counters.length; i++) if (!AREAS[counters[i].z].locked) updateCounter(counters[i], dt);
+  servTick(dt);                       /* v0.4 — hizmet binası gelir/inşaat döngüsü */
+  updateCats(dt);                     /* v2.0 — liman kedileri */
+  updateAmbient(dt);                  /* v0.1 — hafif liman ortam sesi */
+  safe.pop = Math.max(0, safe.pop - dt * 3);
+  for (var bq = 0; bq < BINS.length; bq++) BINS[bq].pop = Math.max(0, BINS[bq].pop - dt * 5);
+}
+
+/* =========================================================
+   MÜŞTERİ + SİPARİŞ
+   ========================================================= */
+function availableProducts() {
+  var list = [], fs = sellableFish();
+  for (var i = 0; i < fs.length; i++) {
+    list.push({ k: 'fileto', f: fs[i] });
+    if (canProcess('fume', fs[i])) list.push({ k: 'fume', f: fs[i] });
+  }
+  return list;
+}
+function filterByTag(list, tag) {
+  return list.filter(function (p) {
+    var v = FISH[p.f].val;
+    if (tag === 'cheap') return p.k === 'fileto' && v <= 12;
+    if (tag === 'rich') return p.k === 'fileto' && v >= 17;
+    if (tag === 'premium') return p.k === 'fileto' && v >= 27;
+    if (tag === 'fume') return p.k === 'fume';
+    return p.k === 'fileto';
+  });
+}
+/* müşteri tipi bu tezgâhta anlamlı mı (tür kilidi yerine tip kilidi) */
+function custFits(type, c) {
+  if (!c.fish) return false;
+  var v = FISH[c.fish].val;
+  if (type.tag === 'cheap') return v <= 18;
+  if (type.tag === 'rich') return v >= 18;
+  if (type.tag === 'premium') return v >= 24;
+  if (type.tag === 'fume') return stallFume(c);           /* v1.3: füme kaynağı olan tezgâh */
+  return true;
+}
+/* sipariş yalnız bu tezgâhın satabildiği üründen üretilir (§ güvenlik kontrolü) */
+function makeOrderFor(c, type) {
+  if (!c.fish) return null;
+  var f = c.fish;
+  if (!canProduce(f) || !canProcess('fileto', f) || !canSell(f)) return null;
+  var k = 'fileto';
+  if (stallFume(c)) {
+    /* v1.3.3: füme talebi oranlı — makineli tezgâhta ~%20, Fümehane'de ~%30; son siparişlerde pay tavanı aşılırsa
+       (VIP dahil) fileto ister. Böylece füme, fileto siparişlerinin yarısını hiçbir yerde geçmez. */
+    var home = c.z === smoker.z, share = c.oN ? c.fN / c.oN : 0;
+    if ((type.tag === 'fume' || Math.random() < (home ? FUME_P_HOME : FUME_P_MACH)) && share < (home ? FUME_CAP_HOME : FUME_CAP_MACH)) k = 'fume';
+  }
+  c.oN = (c.oN || 0) * 0.96 + 1; c.fN = (c.fN || 0) * 0.96 + (k === 'fume' ? 1 : 0);
+  var need = irnd(type.qty[0], type.qty[1]);
+  return { k: k, f: f, need: need, got: 0 };
+}
+function queueSlotPos(c, i) { return { x: 10.8 + (c.lane || 0) * 1.7, y: c.y + 0.1 + i * 1.0 }; }
+function patienceMul(z) { return (1 + decorCount() * 0.02) * (1 + mgrEff(z, 'pat')); }
+
+function updateCounter(c, dt) {
+  if (!c.open) return;                       /* v2.1: kapalı tezgâha müşteri gelmez */
+  var custMul = (event ? event.custMul : 1) * areaFlow(c.z) * dayCustMul() * (1 + envFlow());   /* v1.2: çevre yatırımı */
+  c.spawnT -= dt * custMul;
+  var qmax = queueMax(c.z), freeIdx = -1, i;
+  for (i = 0; i < qmax; i++) if (!c.slots[i]) { freeIdx = i; break; }
+  if (c.spawnT <= 0 && freeIdx >= 0) {
+    c.spawnT = 5.4 * rnd(0.75, 1.3);
+    if (!daySpawnOK()) return;                 /* gün kapanışında yeni müşteri gelmez (§2) */
+    if (trayFull(c)) return;                   /* v0.5: kasa dolu — tahsildar ya da oyuncu boşaltmalı */
+    /* v0.1 adalet: stoksuz tezgâha müşteri seyrek gelir, kuyrukta uzadıkça daha da seyrek.
+       Umutsuz müşteri doğup boşuna kızmasın. */
+    var bekleyen = 0;
+    for (var bq = 0; bq < c.slots.length; bq++) if (c.slots[bq]) bekleyen++;
+    if (!c.buffer.length) c.spawnT *= 3.2;                  /* stoksuz tezgâh: müşteri seyrekleşir */
+    if (bekleyen >= 2) c.spawnT *= 1 + (bekleyen - 1) * 0.7; /* kuyruk uzadıkça daha da seyrek */
+    /* liman geneli: servis edilemeyen talep birikmişse akış genel olarak yavaşlar */
+    var toplamBekleyen = waitingCount(), acikTezgah = openStallCount();
+    if (acikTezgah && toplamBekleyen > acikTezgah * 2) c.spawnT *= 1 + (toplamBekleyen / (acikTezgah * 2) - 1) * 0.9;
+    /* tezgâh kullanılamıyorsa bu türe müşteri gelmez */
+    if (!c.fish || !fishReady(c.fish)) return;
+    var lvl = repLevel();
+    var pool = CUST.filter(function (t) { return t.lvl <= lvl && (!t.serv || servUnlock(t.serv)) && custFits(t, c); });
+    if (!pool.length) return;
+    var prem = perkSum('premium') + perkSum('vip');
+    if (prem > 0 && Math.random() < prem * 2) {
+      var hi = pool.filter(function (t) { return t.mult >= 1.8; });
+      if (hi.length) pool = hi;
+    }
+    var type = pick(pool);
+    if (day.feat && Math.random() < 0.45) {           /* günün müşterisi daha sık gelir */
+      var ft = pool.filter(function (t) { return t.id === day.feat; });
+      if (ft.length) type = ft[0];
+    }
+    var ord = makeOrderFor(c, type);
+    /* son güvenlik: üretilemeyen/işlenemeyen/satılamayan ürünle müşteri doğmaz */
+    if (ord && (!canProduce(ord.f) || !canProcess(ord.k, ord.f) || !canSell(ord.f))) ord = null;
+    if (ord) {
+      var q = queueSlotPos(c, freeIdx);
+      var cu = {
+        x: q.x + 2.0, y: 20.5 + rnd(0, 2), z: 0, bob: rnd(0, 6), face: -1, type: type, ord: ord,
+        state: 'walk', slot: freeIdx, c: c, pat: type.pat * patienceMul(c.z), patMax: type.pat * patienceMul(c.z),
+        mood: 1, hair: irnd(0, 2), tone: irnd(0, 2)
+      };
+      c.slots[freeIdx] = cu; customers.push(cu);
+      day.normals = (day.normals || 0) + 1;           /* v0.9: özel müşteri zamanlaması için */
+      if (dist2(player.x, player.y, c.x, c.y) < 90) sfx.cust();
+    }
+  }
+  c.eatT -= dt;
+  if (c.eatT <= 0) {
+    for (var q2 = 0; q2 < c.slots.length; q2++) {
+      var cu2 = c.slots[q2];
+      if (!cu2 || cu2.state !== 'wait' || cu2.ord.got >= cu2.ord.need) continue;
+      if (specTalking(cu2)) continue;                /* v1.3.3: özel müşteri sözünü bitirmeden sipariş alınmaz */
+      var idx = -1;
+      for (i = 0; i < c.buffer.length; i++) if (c.buffer[i].k === cu2.ord.k && c.buffer[i].f === cu2.ord.f) { idx = i; break; }
+      if (idx < 0) continue;
+      c.eatT = 0.2;
+      var it = c.buffer.splice(idx, 1)[0];
+      cu2.ord.got++;
+      var fp = queueSlotPos(c, cu2.slot);
+      fly(c.x, c.y, 13, fp.x, fp.y, 17, it, 0.26);
+      if (cu2.ord.got >= cu2.ord.need) finishOrder(c, cu2);
+      break;
+    }
+  }
+}
+/* füme makinesi: bekleyen füme siparişi (ya da 2'lik küçük stok) için tezgâhtaki filetoyu tüter */
+function updateFumeMachines(dt) {
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (!c.open || !c.fish || c.z === smoker.z || !fumeMachine(c.z) || AREAS[c.z].locked) { c.fmOn = false; continue; }
+    var want = 0, have = 0, raw = -1, j;
+    for (j = 0; j < c.slots.length; j++) { var q = c.slots[j]; if (q && q.state === 'wait' && q.ord.k === 'fume') want += q.ord.need - q.ord.got; }
+    for (j = 0; j < c.buffer.length; j++) { if (c.buffer[j].k === 'fume') have++; else if (raw < 0 && c.buffer[j].f === c.fish) raw = j; }
+    var target = Math.max(want, c.buffer.length >= 6 ? 2 : 0);
+    c.fmOn = have < target && raw >= 0;
+    if (!c.fmOn) { c.fmT = 0; continue; }
+    c.fmT = (c.fmT || 0) + dt;
+    if (c.fmT >= FUME_TIME * 1.35) {
+      c.fmT = 0; c.buffer[raw] = { k: 'fume', f: c.fish };
+      addPuff(fumePos(c).x, fumePos(c).y, '#d8d2c4');
+    }
+  }
+}
+function finishOrder(c, cu) {
+  var happy = cu.pat / cu.patMax;
+  var unit = prodValue(cu.ord.k, cu.ord.f);
+  var pay = Math.round(cu.ord.need * unit * cu.type.mult * (happy > 0.5 ? 1.2 : 1) *
+    (1 + perkSum('custval') + servEff('custval') + repBonus() + (cu.type.id === 'toptanci' ? servEff('wholesale') : 0)) * (1 + mgrEff(c.z, 'value')));
+  payout(c, pay, cu.slot);
+  noteFishIncome(pay); noteDayIncome(pay); noteDaySale(cu);
+  retSale(c, cu, pay);                              /* bölge gelir ortalaması + satış başarımları */
+  if (cu.spec && specById(cu.spec)) { (day.st.spec = day.st.spec || []).push(NM(specById(cu.spec).n)); }
+  cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; c.slots[cu.slot] = null; shiftQueue(c);
+  S.served++; S.rep += Math.max(1, Math.round(cu.type.rep * (1 + servEff('rep')))) + mgrEff(c.z, 'rep');
+  var fp = queueSlotPos(c, cu.slot);
+  addFloat(fp.x, fp.y - 0.5, '+' + money(pay), '#ffe27a');
+  addFloat(fp.x + 0.6, fp.y - 1.1, '+' + cu.type.rep + '*', '#ffd76a');
+  sfx.coin(); checkRepLevel();
+}
+var lastRepLvl = 1, lvlUpT = 0;
+function checkRepLevel() {
+  var l = repLevel();
+  if (l <= lastRepLvl) return;
+  var from = lastRepLvl; lastRepLvl = l;
+  showLevelUp(from, l);
+}
+/* seviye atlama: oyunu DURDURMAYAN üst şerit — seviye, unvan, açılanlar, kısa fanfar + konfeti */
+function showLevelUp(from, l) {
+  var un = [], k, q;
+  for (k = from; k < l; k++) for (q = 0; q < REP_LEVELS[k].un.length; q++) un.push(NM(REP_LEVELS[k].un[q]));
+  un.push(T('lvBonus', { p: pct((l - 1) * 2) }));
+  el.lvlNum.textContent = T('lvlN', { l: l });
+  el.lvlTitle.textContent = repTitle();
+  el.lvlList.innerHTML = un.map(function (u) { return '<span>🔓 ' + escH(u) + '</span>'; }).join('');
+  var cf = '';
+  for (k = 0; k < 26; k++) cf += '<i style="left:' + Math.round(Math.random() * 100) + '%;animation-delay:' +
+    (Math.random() * 0.35).toFixed(2) + 's;background:' + pick(['#ffc94a', '#e5533d', '#5fd37a', '#4fb3e8', '#f4e9d2']) +
+    ';--dx:' + Math.round(rnd(-40, 40)) + 'px"></i>';
+  el.lvlConf.innerHTML = cf;
+  el.lvlUp.classList.remove('hidden', 'go'); void el.lvlUp.offsetWidth; el.lvlUp.classList.add('go');
+  lvlUpT = 3.6;
+  sfx.levelUp();
+}
+function updateLevelUp(dt) {
+  if (lvlUpT <= 0) return;
+  lvlUpT -= dt;
+  if (lvlUpT <= 0) el.lvlUp.classList.add('hidden');
+}
+function shiftQueue(c) {
+  var list = [], i;
+  for (i = 0; i < c.slots.length; i++) if (c.slots[i]) list.push(c.slots[i]);
+  for (i = 0; i < c.slots.length; i++) c.slots[i] = list[i] || null;
+  for (i = 0; i < list.length; i++) list[i].slot = i;
+}
+function payout(c, total, slot) {
+  var n = clamp(Math.ceil(total / 22), 1, 8), per = total / n;
+  var src = queueSlotPos(c, slot || 0);
+  for (var i = 0; i < n; i++) {
+    if (c.tray.items.length >= 24) c.tray.items[c.tray.items.length - 1].v += per;
+    else {
+      var it = { k: 'money', v: per };
+      c.tray.items.push(it);
+      fly(src.x, src.y, 13, c.tray.x, c.tray.y, 6, it, 0.45);
+    }
+  }
+}
+function updateCustomers(dt) {
+  for (var i = customers.length - 1; i >= 0; i--) {
+    var cu = customers[i];
+    cu.bob += dt * 4;
+    if (cu.state === 'walk') {
+      var p = queueSlotPos(cu.c, cu.slot);
+      var dx = p.x - cu.x, dy = p.y - cu.y, L = Math.hypot(dx, dy);
+      var wv = cu.spec ? SPEC_WALK : 2.1;             /* v1.3.3: özel müşteri ağır adımlarla gelir */
+      if (L < 0.14) cu.state = 'wait';
+      else { cu.x += dx / L * wv * dt; cu.y += dy / L * wv * dt; cu.bob += dt * (cu.spec ? 5 : 8); }
+    } else if (cu.state === 'wait') {
+      var q = queueSlotPos(cu.c, cu.slot);
+      cu.x = lerp(cu.x, q.x, 1 - Math.pow(0.001, dt));
+      cu.y = lerp(cu.y, q.y, 1 - Math.pow(0.001, dt));
+      if (cu.spec) cu.sayT = (cu.sayT || 0) + dt;
+      if (!specTalking(cu)) cu.pat -= dt;            /* konuşurken sabrı azalmaz */
+      cu.mood = clamp(cu.pat / cu.patMax, 0, 1);
+      if (cu.pat <= 0) {
+        cu.state = 'leave'; cu.happyLeave = false; cu.leaveT = 0; cu.c.slots[cu.slot] = null; shiftQueue(cu.c);
+        S.lost++; noteDayLost();
+        var pen = cu.type.pen || 0;
+        if (pen) { S.rep = Math.max(0, S.rep - pen); addFloat(cu.x, cu.y - 0.6, '-' + pen + '*', '#ff8a7a'); }
+        else addFloat(cu.x, cu.y - 0.6, ':(', '#ff8a7a');
+        sfx.bad();
+      }
+    } else {
+      cu.x += ((13.6 + (cu.c.lane || 0) * 1.7) - cu.x) * Math.min(1, dt * (cu.spec ? 0.9 : 1.6));
+      if (cu.spec) cu.byeT = (cu.byeT || 0) + dt;
+      cu.y += (cu.spec ? SPEC_LEAVE : 3.6) * dt; cu.bob += dt * (cu.spec ? 5 : 8);
+      if (cu.y > 23) customers.splice(i, 1);
+    }
+  }
+}
+
+/* =========================================================
+   YATIRIM: alan / seviye / işe alım / kozmetik
+   ========================================================= */
+for (var _d = 0; _d < DECOR.length; _d++) {
+  PADS.push({ id: 'dec' + _d, z: DECOR[_d].z, x: DECOR[_d].x, y: DECOR[_d].y, kind: 'decor',
+    decor: _d, icon: DECOR[_d].icon, price: DECOR[_d].cost, lvl: 0, max: 1, paid: 0 });
+}
+function padPrice(p) {
+  if (p.kind === 'area') return AREAS[p.target].cost;
+  if (p.kind === 'arealv') { var a = AREAS[p.area]; return a.lvl < MAXLV ? a.up[a.lvl] : 0; }
+  return p.price;
+}
+function padDone(p) {
+  if (p.kind === 'area') return !AREAS[p.target].locked;
+  if (p.kind === 'arealv') return AREAS[p.area].lvl >= MAXLV;
+  if (p.kind === 'decor') return DECOR[p.decor].got;
+  return p.lvl >= p.max;
+}
+function padBlocked(p) {
+  if (p.kind === 'area') return S.rep < AREAS[p.target].rep;
+  if (p.kind === 'hire') return workers.length >= staffCap();
+  return false;
+}
+function padReady(p) { return !AREAS[p.z].locked && !padDone(p); }
+var nearestPad = null;
+/* GDD v0.3.1 §2/§8: makro satın alma zeminden kaldırıldı, alt barda */
+function updatePads() { }
+function applyPad(p) {
+  p.paid = 0; sfx.buy();
+  if (p.kind === 'cap') { S.capLvl++; p.lvl++; toast(T('capUp', { n: capacity() })); }
+  else if (p.kind === 'spd') { S.spdLvl++; p.lvl++; toast(T('spdUp')); }
+  else if (p.kind === 'price') { S.priceLvl++; p.lvl++; toast(T('priceUp')); }
+  else if (p.kind === 'hire') { p.lvl++; hire(p.role); }
+  else if (p.kind === 'area') {
+    AREAS[p.target].locked = false; rebuildCounters(); reassignWorkers();
+    toast(T('areaOpen', { n: NM(AREAS[p.target].n) })); sfx.build();
+    
+  } else if (p.kind === 'arealv') {
+    var a = AREAS[p.area]; a.lvl++; rebuildCounters();
+    toast(T('areaLvUp', { n: NM(a.n), l: a.lvl })); sfx.build(); 
+  } else if (p.kind === 'decor') {
+    DECOR[p.decor].got = true;
+    toast(T('decorBought', { n: NM(DECOR[p.decor].n) })); sfx.build();
+  }
+  if ((p.kind === 'cap' || p.kind === 'spd' || p.kind === 'price' || p.kind === 'hire') && p.lvl < p.max) p.price = Math.round(p.price * p.growth);
+  addPuff(player.x, player.y, '#ffc94a'); addPuff(player.x, player.y, '#ffffff');
+  save();
+}
+
+/* --- yapı noktaları + büyük proje (alt panel) --- */
+function buyBuilding(slot, id) {
+  var d = bdef(id); if (!d) return;
+  var cost = d.cost;
+  if (slot.b === id) return;
+  var refund = slot.b ? Math.round(bdef(slot.b).cost * 0.6) : 0;
+  if (S.cash + refund < cost) { toast(T('noMoney')); sfx.bad(); return; }
+  S.cash += refund - cost;
+  slot.b = id;
+  rebuildCounters(); reassignWorkers();
+  toast(T('built', { n: NM(d.n) })); sfx.build(); 
+  addPuff(slot.x, slot.y, '#ffc94a');
+  save(); renderBar();
+}
+function investProject(amount) {
+  if (project.done) return;
+  var amt = Math.min(amount, S.cash, project.total - project.inv);
+  if (amt <= 0) { toast(T('noMoney')); sfx.bad(); return; }
+  S.cash -= amt; project.inv += amt;
+  var st = projStageOf(projPct());
+  if (st > project.stage) {
+    project.stage = st; sfx.build(); 
+    addPuff(project.x, project.y, '#ffc94a');
+    if (st >= project.stages.length) {
+      project.done = true; rebuildCounters();
+      toast(T('projDone', { n: NM(project.n) }));
+      S.rep += 15; checkRepLevel();
+    } else toast(T('projStage', { n: NM(project.n), p: Math.round(projPct() * 100) }));
+  } else sfx.coin();
+  save(); renderBar();
+}
+
+/* =========================================================
+   OLAYLAR / EĞİTİM / EFEKT
+   ========================================================= */
+function updateEvents(dt) {
+  if (event) { eventT -= dt; if (eventT <= 0) { event = null; nextEvent = rnd(70, 110); } return; }
+  nextEvent -= dt;
+  if (nextEvent <= 0 && S.tut >= 5) { event = pick(EVENTS); eventT = event.dur; toast(T(event.msg)); }
+}
+var TUTOK = [
+  function () { return spots[0].stock.length > 0; },
+  function () { return hasCarry(player, isFish); },
+  function () { return tables[0].inn.length > 0 || tables[0].cur || tables[0].mat.items.length > 0; },
+  function () { return counters.length && counters[0].buffer.length > 0; },
+  function () { return S.cash > 0; },
+  function () {
+    for (var i = 0; i < PADS.length; i++) if (PADS[i].lvl > 0) return true;
+    for (var j = 0; j < AREAS.length; j++) if (!AREAS[j].locked && AREAS[j].lvl > 1) return true;
+    for (var k = 0; k < SLOTS.length; k++) if (SLOTS[k].b) return true;
+    for (var d = 0; d < DECOR.length; d++) if (DECOR[d].got) return true;
+    return project.inv > 0;
+  }
+];
+function updateCoach(dt) {
+  var show = S.started && S.ctrl < 2 && !paused;
+  el.coach.classList.toggle('hidden', !show);
+  if (!show) return;
+  if (S.ctrl === 0 && ctrlWalk > 3) { S.ctrl = 1; ctrlT = 6; sfx.star(); el.coach.dataset.k = ''; }
+  if (S.ctrl === 1) { ctrlT -= dt; if (ctrlT <= 0) { S.ctrl = 2; el.coach.classList.add('hidden'); save(); return; } }
+  var key = S.ctrl + inputMode + lang;
+  if (el.coach.dataset.k === key) return;
+  el.coach.dataset.k = key;
+  el.coach.className = 'coach s' + S.ctrl + ' ' + inputMode;
+  el.coach.innerHTML = S.ctrl === 0
+    ? (inputMode === 'touch' ? '<span class="hand">👆</span>' + T('coachTouch')
+                             : '<span class="keys"><i>W</i><i>A</i><i>S</i><i>D</i></span>' + T('coachKeys'))
+    : '<span class="hand">✋</span>' + T('coachAuto');
+}
+function updateTutorial() {
+  if (S.tut >= TUTOK.length) return;
+  /* v1.3: eğitimin çok ötesine geçmiş oyuncuda (sv 3+, otomatik bölge ya da bölüm sonu) yarım kalan eğitim hedefi kapanır */
+  if (repLevel() >= 3 || S.ch1 || zoneAuto(0)) { S.tut = TUTOK.length; return; }
+  if (TUTOK[S.tut]()) {
+    S.tut++;
+    if (S.tut < TUTOK.length) sfx.star();
+    else { toast(T('tutDone')); save(); }
+  }
+}
+var camShake = 0;
+/* GDD v0.3.1 §4: ölü bölge + yumuşak takip, mikro sarsıntı yok */
+function clampCam() {
+  var maxY = maxOpenY();
+  var x0 = pX(0, maxY) - 28, x1 = Math.max(pX(10, 0), pX(MEYDAN.x1, MEYDAN.y0)) + 28;
+  var y0 = pY(0, 0, 0) - 46 - HORIZON_GAP - 34, y1 = Math.max(pY(10, maxY, 0), pY(MEYDAN.x1, MEYDAN.y1, 0), pY(SERVYARD.x1, SERVYARD.y1, 0)) + 42;
+  var hw = W / 2, ht = H * 0.46, hb = H - H * 0.46;
+  if (x1 - x0 < W) camTX = (x0 + x1) / 2; else camTX = clamp(camTX, x0 + hw, x1 - hw);
+  if (y1 - y0 < H) camTY = (y0 + y1) / 2; else camTY = clamp(camTY, y0 + ht, y1 - hb);
+}
+function projOK() { return isFinite(pX(1, 1)) && isFinite(pY(1, 1, 0)); }
+function updateCamera(dt) {
+  if (!projOK()) { console.error('BT: projeksiyon bozuk (TW/TH gölgelenmiş olabilir)'); return; }
+  var tx = pX(player.x, player.y), ty = pY(player.x, player.y, 0);
+  var dzx = W * 0.12, dzy = H * 0.10;
+  var dx = tx - camTX, dy = ty - camTY;
+  if (dx > dzx) camTX += dx - dzx; else if (dx < -dzx) camTX += dx + dzx;
+  if (dy > dzy) camTY += dy - dzy; else if (dy < -dzy) camTY += dy + dzy;
+  clampCam();
+  var k = 1 - Math.pow(0.10, dt);
+  camX = lerp(camX, camTX, k); camY = lerp(camY, camTY, k);
+  if (!isFinite(camX) || !isFinite(camY)) { camX = pX(player.x, player.y); camY = pY(player.x, player.y, 0); camTX = camX; camTY = camY; }
+}
+function updateFx(dt) {
+  var i;
+  for (i = flyers.length - 1; i >= 0; i--) { flyers[i].t += dt; if (flyers[i].t >= flyers[i].d) flyers.splice(i, 1); }
+  for (i = floats.length - 1; i >= 0; i--) { floats[i].t += dt; if (floats[i].t > 0.85) floats.splice(i, 1); }
+  for (i = puffs.length - 1; i >= 0; i--) {
+    var p = puffs[i]; p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; p.vz -= 55 * dt;
+    if (p.t > 0.65) puffs.splice(i, 1);
+  }
+  camShake = 0;
+  for (i = 0; i < gulls.length; i++) {
+    var g = gulls[i];
+    g.x += g.vx * dt; g.y += g.vy * dt; g.f += dt * 9;
+    if (g.x > 34 || g.y > 30) { g.x = rnd(-22, -6); g.y = rnd(-18, 6); }
+  }
+}
+
+/* =========================================================
+   ÇİZİM — pixel temel
+   ========================================================= */
+var F6 = '6px "Pixelify Sans",monospace', F7 = '7px "Pixelify Sans",monospace',
+    F8 = '8px "Pixelify Sans",monospace', F10 = '10px "Pixelify Sans",monospace';
+function px(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(R(x), R(y), Math.max(1, R(w)), Math.max(1, R(h))); }
+function dot(x, y, c) { ctx.fillStyle = c; ctx.fillRect(R(x), R(y), 1, 1); }
+function quad(pts, c) {
+  ctx.beginPath(); ctx.moveTo(R(pts[0][0]), R(pts[0][1]));
+  for (var i = 1; i < pts.length; i++) ctx.lineTo(R(pts[i][0]), R(pts[i][1]));
+  ctx.closePath(); ctx.fillStyle = c; ctx.fill();
+}
+function isoQuad(x, y, w, h, z, c) {
+  quad([[pX(x, y), pY(x, y, z)], [pX(x + w, y), pY(x + w, y, z)],
+        [pX(x + w, y + h), pY(x + w, y + h, z)], [pX(x, y + h), pY(x, y + h, z)]], c);
+}
+function isoLine(x0, y0, x1, y1, z, c, w) {
+  ctx.strokeStyle = c; ctx.lineWidth = w || 1;
+  ctx.beginPath(); ctx.moveTo(R(pX(x0, y0)), R(pY(x0, y0, z))); ctx.lineTo(R(pX(x1, y1)), R(pY(x1, y1, z))); ctx.stroke();
+}
+/* izometrik kutu: gövde + üst yüz */
+function isoBox(x, y, w, h, z0, z1, top, left, right) {
+  var bx = x + w, by = y + h;
+  quad([[pX(bx, y), pY(bx, y, z1)], [pX(bx, by), pY(bx, by, z1)],
+        [pX(bx, by), pY(bx, by, z0)], [pX(bx, y), pY(bx, y, z0)]], right);
+  quad([[pX(x, by), pY(x, by, z1)], [pX(bx, by), pY(bx, by, z1)],
+        [pX(bx, by), pY(bx, by, z0)], [pX(x, by), pY(x, by, z0)]], left);
+  isoQuad(x, y, w, h, z1, top);
+}
+/* v0.1: iki katmanlı yumuşak gölge — dış halka soluk, iç çekirdek koyu */
+function shadow(x, y, r) {
+  var cx = pX(x, y), cy = pY(x, y, 0);
+  ctx.save();
+  ctx.globalAlpha = 0.09;
+  quad([[cx - r * 8, cy], [cx, cy - r * 4], [cx + r * 8, cy], [cx, cy + r * 4]], '#16323f');
+  ctx.globalAlpha = 0.17;
+  quad([[cx - r * 5.4, cy], [cx, cy - r * 2.7], [cx + r * 5.4, cy], [cx, cy + r * 2.7]], '#14303c');
+  ctx.restore();
+}
+function txt(s, x, y, c, font, align) {
+  ctx.font = font || F7; ctx.textAlign = align || 'center';
+  ctx.fillStyle = c || '#f4e9d2'; ctx.fillText(s, R(x), R(y));
+}
+function txtShadow(s, x, y, c, font, align) {
+  ctx.font = font || F7; ctx.textAlign = align || 'center';
+  ctx.fillStyle = '#0a1a27'; ctx.fillText(s, R(x) + 1, R(y) + 1);
+  ctx.fillStyle = c || '#f4e9d2'; ctx.fillText(s, R(x), R(y));
+}
+function panel(x, y, w, h, bg, edge) {
+  px(x, y, w, h, edge || '#0a1a27');
+  px(x + 1, y + 1, w - 2, h - 2, bg || '#14293c');
+  px(x + 1, y + 1, w - 2, 1, 'rgba(255,255,255,.10)');
+}
+/* Yakınken tam ad, orta mesafede kısa rozet, uzakta hiçbir şey.
+   Amaç: kalabalık sahnede dünya yazılarının binaları kapatmaması. */
+function labelAt(x, y, z, s, col, short) {
+  if (uiQuiet) return;
+  var d = dist2(player.x, player.y, x, y);
+  if (d < 2.2) { if (short) uiBadge(x, y, z, short, col); return; }
+  if (d < 16) { uiLabel(x, y, z, s, col, 1); return; }
+  if (d < 46 && short) uiBadge(x, y, z, short, col);
+}
+
+/* ---------- eşyalar ---------- */
+function drawFishItem(x, y, f) {
+  var F = FISH[f] || FISH.hamsi;
+  /* gövde */
+  px(x - 5, y - 2, 9, 4, F.col);
+  px(x - 5, y - 3, 7, 1, shade(F.col, 16));            /* sırt ışığı */
+  px(x - 4, y + 1, 7, 1, F.bel);                       /* karın */
+  px(x - 4, y - 1, 6, 2, F.bel);
+  /* kuyruk */
+  px(x + 4, y - 3, 3, 3, F.col);
+  px(x + 4, y + 0, 3, 3, F.col);
+  px(x + 5, y - 1, 2, 2, shade(F.col, -18));
+  /* yüzgeç */
+  px(x - 1, y + 2, 3, 1, shade(F.col, -14));
+  px(x - 1, y - 4, 3, 1, shade(F.col, -14));
+  /* göz + solungaç */
+  dot(x - 4, y - 1, '#16222b');
+  px(x - 2, y - 2, 1, 3, shade(F.col, -22));
+}
+function drawFiletoItem(x, y, f) {
+  var F = FISH[f] || FISH.hamsi;
+  /* yağlı kâğıt */
+  px(x - 5, y - 3, 10, 6, '#f3eee2');
+  px(x - 5, y - 3, 10, 1, '#fdfaf2');
+  px(x - 5, y + 2, 10, 1, '#c9c0ae');
+  /* fileto dilimi */
+  px(x - 3, y - 2, 6, 4, F.meat);
+  px(x - 3, y - 2, 6, 1, shade(F.meat, 18));
+  px(x - 2, y, 4, 1, shade(F.meat, -14));
+  /* limon dilimi */
+  px(x + 3, y - 1, 2, 2, '#e8d24a');
+  dot(x + 3, y - 1, '#f6ea90');
+}
+function drawFumeItem(x, y, f) {
+  var F = FISH[f] || FISH.hamsi;
+  /* tütsülenmiş balık, ipe asılı görünüm */
+  px(x - 5, y - 3, 10, 6, '#8a6440');
+  px(x - 5, y - 3, 10, 2, '#b0834f');
+  px(x - 5, y + 2, 10, 1, '#5f4530');
+  px(x - 3, y - 1, 6, 3, '#d9a765');
+  px(x - 2, y - 1, 4, 1, shade(F.meat, 10));
+  px(x - 5, y - 4, 2, 1, PAL.rope);                    /* ip ucu */
+  px(x + 3, y - 4, 2, 1, PAL.rope);
+}
+function drawMoneyItem(x, y) {
+  /* Türk lirası destesi: banknot + bordo bant */
+  px(x - 5, y - 3, 10, 6, '#2f7d4a');
+  px(x - 5, y - 3, 10, 1, '#5fd37a');
+  px(x - 5, y + 2, 10, 1, '#1d5c33');
+  px(x - 5, y - 1, 10, 1, '#276b3f');
+  px(x - 1, y - 2, 3, 4, '#d8e9d8');                   /* filigran */
+  px(x - 1, y - 2, 1, 4, '#9fc9a8');
+  px(x + 3, y - 3, 1, 6, '#a83d2b');                   /* bant */
+}
+function drawItem(it, x, y) {
+  if (!it) return;
+  if (it.k === 'fish') drawFishItem(x, y, it.f);
+  else if (it.k === 'fileto') drawFiletoItem(x, y, it.f);
+  else if (it.k === 'fume') drawFumeItem(x, y, it.f);
+  else drawMoneyItem(x, y);
+}
+function drawCrateIcon(x, y, it) {
+  px(x - 7, y - 7, 14, 8, '#7d5228');
+  px(x - 7, y - 9, 14, 3, '#a9743f');
+  px(x - 7, y - 4, 14, 1, '#5d3c1c');
+  drawItem(it, x, y - 12);
+}
+/* GDD §11 yığın kuralı */
+function drawStack(x, y, items, baseZ, gap) {
+  var n = items.length; if (!n) return;
+  gap = gap || 3.4;
+  var sx = pX(x, y);
+  if (n >= 20) {
+    drawCrateIcon(sx, pY(x, y, baseZ + 6), items[n - 1]);
+    uiBadge(x, y, baseZ + 22, 'x' + n);
+    return;
+  }
+  var show = Math.min(n, 5);
+  for (var i = 0; i < show; i++) drawItem(items[n - show + i], sx, pY(x, y, baseZ + i * gap));
+  if (n > show) uiBadge(x, y, baseZ + show * gap + 7, 'x' + n);
+}
+
+
+/* ---------- insanlar (pixel) ---------- */
+
+/* =========================================================
+   ANADOLU PIXEL ART — STİL REHBERİ (v2.0)
+   ---------------------------------------------------------
+   Tema   : Ege/Karadeniz balıkçı limanı, Anadolu kasabası
+   Palet  : kireç badana + kagir taş + kiremit + kilim renkleri
+   Kural 1: her nesnenin koyu bir taban kenarı (edge) vardır
+   Kural 2: ışık sol-üstten gelir → sol yüz açık, sağ yüz koyu
+   Kural 3: 3 tonlu gölgeleme (light / base / dark), dithering yok
+   Kural 4: animasyonlar 2 veya 4 kare, 6-8 fps hissi
+   Kural 5: motifler kilim geometrisinden (baklava, çengel, göz)
+   ========================================================= */
+var PAL = {
+  /* deniz */
+  seaDeep: '#0d3f55', sea: '#1d6c8f', seaLite: '#2f8aad', foam: '#cfe9f2', seaGlint: '#9fd4e6',
+  /* kara */
+  sand: '#cbb98d', sandLite: '#ded0a8', sandDark: '#a89468', soil: '#8d7350',
+  /* ahşap iskele */
+  wood: '#ab7a48', woodLite: '#c9975f', woodDark: '#6f4526', tar: '#3b2a1c', rope: '#c9b183',
+  /* kagir / badana */
+  lime: '#f1ebda', limeSh: '#d8cfb8', stone: '#cbbc9e', stoneLite: '#ded1b6', stoneDark: '#9a8c72',
+  /* kiremit */
+  tile: '#b5432f', tileLite: '#cb5b40', tileDark: '#7d2c1d', zinc: '#8d959b', zincDark: '#5a6167',
+  /* kilim / motif */
+  madder: '#a83d2b', indigo: '#2a4c7d', saffron: '#d9a441', cream: '#ede4cf',
+  turkuaz: '#1f8fbf', nazar: '#1f6fae', nazarW: '#eef6fa',
+  /* bitki */
+  cypress: '#2f5136', cypressLite: '#436b45', olive: '#6e7a45', leaf: '#4a7a3a',
+  /* metal */
+  iron: '#5d666e', ironLite: '#8b949c', brass: '#c9952f', brassLite: '#e6be59',
+  /* UI */
+  ink: '#f4e9d2', ink2: '#a9c0cf', edge: '#0a1a27', pnl: '#14293c', pnl2: '#1d3a52',
+  gold: '#ffc94a', green: '#5fd37a', red: '#e5533d', warm: '#ffb27a',
+  /* karakter */
+  skin: ['#e8b98a', '#d7a473', '#c08a56', '#a4703f'],
+  skinSh: ['#c99a6d', '#b98a5b', '#a2703f', '#83562c'],
+  hair: ['#1d1713', '#2e2018', '#3d2a1a', '#120f0d']
+};
+/* eski değişken adları korunuyor (geri uyum) */
+var SKIN = PAL.skin, HAIR = PAL.hair;
+
+/* =========================================================
+   PIXEL İKON SETİ — emoji yerine elle çizilmiş 12x12 simgeler
+   Her ikon satır dizisi; karakter = palet anahtarı, '.' = boş.
+   HTML panelleri için data-URL'e çevrilir, dünyada doğrudan çizilir.
+   ========================================================= */
+var IPAL = {
+  '.': null,
+  k: '#0a1a27',  /* kontur */
+  w: '#f1ebda',  /* badana beyaz */
+  c: '#ede4cf',  /* krem */
+  y: '#ffc94a',  /* altın */
+  o: '#c9782f',  /* turuncu-kiremit */
+  r: '#c62828',  /* al */
+  m: '#a83d2b',  /* kök boya */
+  g: '#5fd37a',  /* yeşil */
+  e: '#2f5136',  /* servi yeşili */
+  b: '#2a4c7d',  /* çivit */
+  t: '#1f8fbf',  /* türkuaz */
+  s: '#cbbc9e',  /* taş */
+  d: '#6f4526',  /* koyu ahşap */
+  a: '#ab7a48',  /* ahşap */
+  i: '#8b949c',  /* açık demir */
+  n: '#5d666e',  /* demir */
+  p: '#e8b98a',  /* ten */
+  f: '#cfe6df',  /* balık eti */
+  u: '#d98455',  /* somon */
+  l: '#9fd4e6',  /* buz mavisi */
+  x: '#7a3a2a',  /* koyu kahve */
+  v: '#7b5ea7'   /* mor */
+};
+var ICONS = {
+  /* --- kaynaklar --- */
+  para:   ['....kkkk....','..kkyyyykk..','.kyyyyyyyyk.','kyyokkkkoyyk','kyyokyyykoyk','kyyokyykkoyk','kyyokyyykoyk','kyyokkkkoyyk','.kyyyyyyyyk.','..kkyyyykk..','....kkkk....','............'],
+  kufe:   ['............','..kkkkkkkk..','.kaaaaaaaak.','.kacccccak..','.kaaaaaaaak.','.kadddddak..','.kaaaaaaaak.','.kadddddak..','..kaaaaaak..','...kkkkkk...','............','............'],
+  itibar: ['.....kk.....','....kyyk....','....kyyk....','kkkkyyyykkkk','kyyyyyyyyyyk','.kyyyyyyyyk.','..kyyyyyyk..','..kyykkyyk..','.kyyk..kyyk.','.kk......kk.','............','............'],
+  gun:    ['............','....kkkk....','..kkyyyykk..','.kyyyyyyyyk.','kyyyyyyyyyyk','kyyyyyyyyyyk','.kyyyyyyyyk.','..kkyyyykk..','....kkkk....','kkkkkkkkkkkk','.oooooooooo.','............'],
+  pazar:  ['............','.kkkkkkkkkk.','.krrwwrrwwk.','.kkkkkkkkkk.','..kaaaaaak..','..kacccak...','..kaaaaaak..','..ka...ak...','..ka...ak...','..kkk.kkk...','............','............'],
+  /* --- balıklar --- */
+  hamsi:  ['............','............','.....kkk....','...kkfffk...','.kkffffffkkk','kfffffffffdk','.kkffffffkkk','...kkfffk...','.....kkk....','............','............','............'],
+  uskumru:['............','......kk....','....kkffkk..','..kkffffffk.','.kffffbbfffk','kffffffffdkk','.kffffbbffk.','..kkffffkk..','....kkkk....','............','............','............'],
+  palamut:['............','.....kkk....','...kkfffkk..','..kffffffk..','.kffuuuufffk','kffffffffdkk','.kffuuuuffk.','..kffffffk..','...kkfffkk..','.....kkk....','............','............'],
+  levrek: ['............','....kkkk....','..kkffffkk..','.kffffffffk.','kfffiiiiffdk','kffffffffdkk','kfffiiiiffdk','.kffffffffk.','..kkffffkk..','....kkkk....','............','............'],
+  somon:  ['............','....kkkk....','..kkuuuukk..','.kuuuuuuuuk.','kuuwwuuwwudk','kuuuuuuuudkk','kuuwwuuwwudk','.kuuuuuuuuk.','..kkuuuukk..','....kkkk....','............','............'],
+  ton:    ['...kk.......','..kbbk..kk..','.kbbbbkkbbk.','kbbbbbbbbbbk','kbbwwbbbbbdk','kbbbbbbbbdkk','kbbwwbbbbbdk','kbbbbbbbbbbk','.kbbbbkkbbk.','..kbbk..kk..','...kk.......','............'],
+  /* --- roller --- */
+  hamal:  ['....kkkk....','...kbbbbk...','...kppppk...','..kkbbbbkk..','.kbbbbbbbbk.','.kbbbbbbbbk.','..kaaaaaak..','..kacccak...','..kbbbbbbk..','..kk....kk..','............','............'],
+  filetocu:['....kkkk....','...keeeek...','...kppppk...','..kkeeeekk..','.keewwwweek.','.keewwwweek.','..kwwwwwwk..','..kwwwwwwk..','..keeeeeek..','..kk....kk..','............','............'],
+  tezgahtar:['....kkkk....','...kmmmmk...','...kppppk...','..kkmmmmkk..','.kmmwwwwmmk.','.kmmwwwwmmk.','..kwwwwwwk..','..kffffffk..','..kmmmmmmk..','..kk....kk..','............','............'],
+  kasiyer:['....kkkk....','...kbbbbk...','...kppppk...','..kkbbbbkk..','.kbbyyyybbk.','.kbbyyyybbk.','..kbbbbbbk..','..kbbbbbbk..','..kbbbbbbk..','..kk....kk..','............','............'],
+  /* --- binalar / yapılar --- */
+  depo:   ['............','kkkkkkkkkkkk','knniiiiiinnk','kkkkkkkkkkkk','ksssssssssk.','ks.kkkkk.sk.','ks.knnnk.sk.','ks.knnnk.sk.','ks.knnnk.sk.','kkkkkkkkkkkk','.aa.....aa..','............'],
+  buzhane:['............','...kkkkkk...','..klllllk...','.kllllllllk.','klwwlllwwllk','kllllllllllk','klwwlllwwllk','kllllllllllk','.kllllllllk.','..kkkkkkkk..','............','............'],
+  tamir:  ['............','.....kk.....','....kiik....','...kiiiik...','..kiik.kk...','.kiik.......','kiik.kkkkkk.','kk..kaaaaak.','....kaaaaak.','....kkkkkkk.','............','............'],
+  hal:    ['.....kk.....','...kkrrkk...','..krrwwrrk..','.krrwwrrwwk.','kkkkkkkkkkkk','ksssssssssk.','ks.kkk.kkksk','ks.kdk.kdksk','ks.kdk.kdksk','kkkkkkkkkkkk','............','............'],
+  restoran:['............','..kkkkkkkk..','.krrwwrrwwk.','.kkkkkkkkkk.','.ksssssssk..','.ks.kkk..sk.','.ks.kwk..sk.','.kaaaaaaaak.','.ka.a..a.ak.','.kkkkkkkkkk.','............','............'],
+  nakliye:['............','.kkkkkkkkkk.','.kbbbbbbbbk.','.kbwwwwwwbk.','.kbbbbbbbbk.','.ksssssssk..','.ks.kkkk.sk.','.ks.kaak.sk.','.kkkkkkkkkk.','..nn....nn..','............','............'],
+  yakit:  ['............','...kkkkkk...','..kiiiiiik..','..kirrriik..','..kiiiiiik..','..kiiiiiik..','..kiiiiiik..','.kkiiiiiikk.','.kaaaaaaaak.','.kkkkkkkkkk.','............','............'],
+  tersane:['............','.kk.........','.kik...kk...','.kik..kaak..','.kik.kaaaak.','.kikkaaaaak.','.kikaaaaaak.','.kkkkkkkkkk.','..dddddddd..','.dddddddddd.','............','............'],
+  proje:  ['.....kk.....','....kyyk....','...kkkkkk...','..krrrrrrk..','.kkkkkkkkkk.','.kssssssssk.','.ks.kk.kksk.','.ks.kk.kksk.','.ks.kk.kksk.','.kkkkkkkkkk.','............','............'],
+  alan:   ['............','...kkkkkk...','..ky....yk..','..ky....yk..','.kkkkkkkkkk.','.kyyyyyyyyk.','.kyykkkkyyk.','.kyykyykyyk.','.kyykkkkyyk.','.kkkkkkkkkk.','............','............'],
+  yukselt:['.....kk.....','....kyyk....','...kyyyyk...','..kyyyyyyk..','.kyyyyyyyyk.','kkkkyyyykkkk','...kyyyyk...','...kyyyyk...','...kyyyyk...','...kkkkkk...','............','............'],
+  yapi:   ['........kk..','.......kaak.','......kaak..','.....kaak...','..kkkaak....','.knnkak.....','knnnnk......','knnnk.......','.knk........','..k.........','............','............'],
+  bina:   ['...kk.......','..koook.....','.kooooook...','kkkkkkkkkkkk','ksssssssssk.','ks.kkkk..sk.','ks.kwwk..sk.','ks.kwwk..sk.','kkkkkkkkkkkk','.kk......kk.','............','............'],
+  /* --- durumlar --- */
+  ok:     ['............','..........k.','.........kg.','........kgg.','k.......kgg.','kk.....kgg..','kgk...kgg...','kggk.kgg....','.kggkgg.....','..kggg......','...kg.......','............'],
+  uyari:  ['.....kk.....','....kyyk....','....kyyk....','...kyyyyk...','...kykyyk...','..kyykyyyk..','..kyykyyyk..','.kyyyykyyyk.','.kyyyyyyyyk.','.kyykkkkyyk.','.kkkkkkkkkk.','............'],
+  kilit:  ['............','...kkkkk....','..ki...ik...','..ki...ik...','.kkkkkkkkk..','.kyyyyyyyk..','.kyykkkyyk..','.kyykkkyyk..','.kyyyyyyyk..','.kkkkkkkkk..','............','............'],
+  sure:   ['....kkkk....','..kkiiiikk..','.kiikkkkiik.','kiikk.kkkiik','kiik..k..kik','kiik..k..kik','kiik.....kik','.kiikkkkkik.','..kkiiiikk..','....kkkk....','............','............'],
+  kasa:   ['............','.kkkkkkkkkk.','.knnnnnnnnk.','.kniiiiiink.','.kni.kk.ink.','.kni.ky.ink.','.kni.kk.ink.','.kniiiiiink.','.knnnnnnnnk.','.kkkkkkkkkk.','..k.....k...','............'],
+  ag:     ['............','kkkkkkkkkkk.','k.k.k.k.k.k.','kkkkkkkkkkk.','k.k.k.k.k.k.','kkkkkkkkkkk.','k.k.k.k.k.k.','kkkkkkkkkkk.','..k..k..k...','...k.k.k....','............','............'],
+  kesim:  ['.......kk...','......kik...','.....kik....','....kik.....','...kik......','..kik.......','.kdk........','kdk.........','kk..........','............','............','............'],
+  tezgah: ['............','.kkkkkkkkkk.','.krwrwrwrwk.','.kkkkkkkkkk.','.kaaaaaaaak.','.kffffffffk.','.kaaaaaaaak.','..ka....ak..','..ka....ak..','..kk....kk..','............','............'],
+  /* v2.0 — gerçek liman kurumları */
+  koop:   ['....kkkk....','...kwwwwk...','..kwwwwwwk..','.kkkkkkkkkk.','.kssssssssk.','.ks.kkkk.sk.','.ks.kggk.sk.','.ks.kggk.sk.','.kkkkkkkkkk.','..kk....kk..','............','............'],
+  mezat:  ['.....kk.....','....kyyk....','...kyyyyk...','..kyyyyyyk..','.kyyyyyyyyk.','kyyyyyyyyyyk','.kkkkkkkkkk.','...kyyyyk...','....kkkk....','............','............','............'],
+  kantar: ['.....kk.....','.kkkkikkkkk.','ki..kik..ik.','kii.kik.iik.','.kk.kik.kk..','....kik.....','....kik.....','...kkikk....','..kaaaaak...','..kkkkkkk...','............','............'],
+  cekek:  ['............','.....k......','....kik.....','....kik.....','..kkkikkk...','.kaaaaaaak..','kaaaaaaaaak.','.kkkkkkkkk..','..dddddddd..','.dddddddddd.','............','............'],
+  nazar:  ['............','...kkkkkk...','..kbbbbbbk..','.kbbwwwwbbk.','.kbwwwwwwbk.','.kbwwbbwwbk.','.kbwwbbwwbk.','.kbwwwwwwbk.','..kbbwwbbk..','...kkkkkk...','............','............'],
+  cesme:  ['............','..kkkkkkkk..','.kssssssssk.','.ks.kkkk.sk.','.ks.ktts.sk.','.ks.kttk.sk.','.kssssssssk.','.kstttttssk.','.kssssssssk.','.kkkkkkkkkk.','............','............'],
+  kilim:  ['............','.kkkkkkkkkk.','.kmmmmmmmmk.','.kmywwywymk.','.kmwyyyywmk.','.kmmmmmmmmk.','.kmwyyyywmk.','.kmywwywymk.','.kmmmmmmmmk.','.kkkkkkkkkk.','..k......k..','............'],
+  fener:  ['....kkkk....','...kyyyyk...','...kwwwwk...','..kkkkkkkk..','..kwwrrwwk..','..kwwrrwwk..','..kwwrrwwk..','.kkwwrrwwkk.','.kssssssssk.','.kkkkkkkkkk.','............','............']
+};
+/* 12x12 ikonu belirtilen büyütmeyle canvas'a çizer */
+function drawIcon(name, x, y, sc) {
+  var g = ICONS[name]; if (!g) return;
+  sc = sc || 1;
+  for (var r = 0; r < g.length; r++) {
+    var row = g[r];
+    for (var c = 0; c < row.length; c++) {
+      var col = IPAL[row.charAt(c)];
+      if (col) px(x + c * sc, y + r * sc, sc, sc, col);
+    }
+  }
+}
+/* HTML panelleri için: ikonu data-URL'e çevir (bir kez üretilir, önbelleğe alınır) */
+var _iconURL = {};
+function iconURL(name, sc) {
+  sc = sc || 2;
+  var key = name + '@' + sc;
+  if (_iconURL[key]) return _iconURL[key];
+  var g = ICONS[name];
+  if (!g) return '';
+  var cv = document.createElement('canvas');
+  cv.width = 12 * sc; cv.height = 12 * sc;
+  var c2 = cv.getContext('2d');
+  for (var r = 0; r < g.length; r++) {
+    var row = g[r];
+    for (var c = 0; c < row.length; c++) {
+      var col = IPAL[row.charAt(c)];
+      if (!col) continue;
+      c2.fillStyle = col; c2.fillRect(c * sc, r * sc, sc, sc);
+    }
+  }
+  _iconURL[key] = cv.toDataURL();
+  return _iconURL[key];
+}
+
+/* --- emoji → pixel ikon: panellerin HTML'i basılmadan önce geçirilir --- */
+var EMO_MAP = {
+  '💰': 'para', '🧺': 'kufe', '⭐': 'itibar', '🔪': 'kesim',
+  '🧊': 'buzhane', '🛠️': 'tamir', '🛠': 'tamir', '🏪': 'hal', '🍽️': 'restoran', '🍽': 'restoran',
+  '📋': 'nakliye', '⛽': 'yakit', '🚢': 'tersane', '🏬': 'depo', '🏛️': 'proje', '🏛': 'proje',
+  '🔓': 'alan', '⬆️': 'yukselt', '⬆': 'yukselt', '🔨': 'yapi', '🏭': 'bina', '🔒': 'kilit',
+  '⚠️': 'uyari', '⚠': 'uyari', '🏗️': 'yapi', '🏗': 'yapi', '🏝️': 'alan', '🏝': 'alan',
+  '🧾': 'pazar', '👟': 'yukselt', '📦': 'kufe', '🏆': 'itibar', '🚶': 'hamal',
+  '🏚️': 'bina', '🏚': 'bina', '🫖': 'restoran', '📣': 'hal', '🗿': 'proje', '🕹️': 'yukselt', '🕹': 'yukselt',
+  '🎣': 'levrek', '🍣': 'somon', '🐠': 'uskumru', '🐡': 'palamut', '🐋': 'ton', '🐟': 'hamsi',
+  '🔥': 'kesim', '👷': 'hamal', '💸': 'para', '✔': 'ok', '↔️': 'yapi', '↔': 'yapi', '💾': 'kasa',
+  '🌅': 'gun', '☀️': 'gun', '☀': 'gun', '🌇': 'gun', '🎪': 'pazar', '⏸': 'sure',
+  '🤝': 'koop', '🔔': 'mezat', '🕸️': 'ag', '🕸': 'ag', '⚖️': 'kantar', '⚖': 'kantar', '⛵': 'cekek',
+  '🧿': 'nazar', '⛲': 'cesme', '🧶': 'kilim', '🗼': 'fener'
+};
+var _emoRe = null;
+function PX(html) {
+  if (!_emoRe) {
+    var keys = Object.keys(EMO_MAP).sort(function (a, b) { return b.length - a.length; });
+    _emoRe = new RegExp(keys.map(function (k) { return k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|'), 'g');
+  }
+  return String(html).replace(_emoRe, function (m) { return ICO(EMO_MAP[m]); });
+}
+
+/* HTML'deki .ci ikonlarını pixel çizimlerle boyar */
+function paintIcons() {
+  Array.prototype.forEach.call(document.querySelectorAll('.ci'), function (n) {
+    var u = iconURL(n.dataset.i, 3);
+    if (u) n.style.backgroundImage = 'url(' + u + ')';
+  });
+}
+function setChipIcon(node, name) {
+  if (!node) return;
+  if (node.dataset.i === name) return;
+  node.dataset.i = name;
+  var u = iconURL(name, 3);
+  if (u) node.style.backgroundImage = 'url(' + u + ')';
+}
+/* HTML içine gömülecek <i class="pxi"> etiketi */
+function ICO(name, cls) {
+  var u = iconURL(name, 3);
+  if (!u) return '';
+  return '<i class="pxi ' + (cls || '') + '" style="background-image:url(' + u + ')"></i>';
+}
+
+/* animasyon zamanlaması — tek yerden ayarlanır */
+var ANIM = {
+  walkFps: 7,        /* yürüme döngüsü hızı */
+  idleFps: 1.6,      /* duruş kıpırdanması */
+  workFps: 5,        /* iş yapma */
+  waveFps: 1.1,      /* bayrak / tente */
+  emoteLife: 1.6     /* duygu balonu süresi */
+};
+function phase4(t, fps) { return Math.floor(t * (fps || ANIM.walkFps)) & 3; }
+function phase2(t, fps) { return Math.floor(t * (fps || ANIM.walkFps)) & 1; }
+/* yürüme döngüsü ofsetleri: 4 kare (temas-geçiş-temas-geçiş) */
+var WALK = [
+  { body: 0, fl: 2, bl: -2, fa: -2, ba: 2 },
+  { body: -1, fl: 0, bl: 0, fa: 0, ba: 0 },
+  { body: 0, fl: -2, bl: 2, fa: 2, ba: -2 },
+  { body: -1, fl: 0, bl: 0, fa: 0, ba: 0 }
+];
+
+/* ---------------------------------------------------------
+   KARAKTER ÇİZİMİ v2 — Anadolu balıkçı kasabası tipolojisi
+   Katmanlar: gölge → bacak → çizme → gövde(kazak/önlük) → kol
+              → aksesuar(küfe/tepsi/bıçak) → baş → saç/başlık → yüz
+   4 kareli yürüme döngüsü, iş yapma eğilmesi, taşıma pozu.
+   --------------------------------------------------------- */
+function drawPerson(a, o) {
+  var sx = R(pX(a.x, a.y)), sy = R(pY(a.x, a.y, a.z || 0));
+  var spd = Math.hypot(a.vx || 0, a.vy || 0);
+  var moving = spd > 0.05 || o.walk;
+  var working = (a.act || 0) > 0.05;
+  var fx = o.face > 0 ? 1 : -1;
+  var t = (a.bob || 0);
+  var w = moving ? WALK[phase4(t * 0.16, ANIM.walkFps)] : null;
+  /* duruşta yavaş nefes */
+  var idle = moving ? 0 : (Math.sin(t * 0.9) > 0.6 ? 1 : 0);
+  var body = (w ? w.body : 0) - idle;
+  var lean = working ? fx : 0;                       /* iş yaparken öne eğilme */
+  var y = sy + body;
+
+  shadow(a.x, a.y, 0.62);
+
+  var coat = o.coat || PAL.indigo;
+  var coat2 = o.coat2 || coat;
+  var skin = o.skin || PAL.skin[0];
+  var skinS = PAL.skinSh[PAL.skin.indexOf(skin) < 0 ? 0 : PAL.skin.indexOf(skin)];
+  var hair = o.hair || PAL.hair[0];
+  var pants = o.pants || '#2b3a45';
+  var boot = o.boot || '#1a2830';
+
+  /* --- bacaklar + lastik çizme --- (v0.9: uzun/kısa boy, uzun etek) */
+  var fl = w ? w.fl : 0, bl = w ? w.bl : 0;
+  var hup = o.tall ? 4 : o.short ? -2 : 0;
+  if (o.skirt) {                                      /* uzun etek */
+    px(sx - 4, y - 8 - hup, 8, 7 + hup, o.skirt);
+    px(sx - 5, y - 3, 10, 2, o.skirt); px(sx - 4, y - 8 - hup, 8, 1, shade(o.skirt, 16));
+    px(sx - 3 + (fl > 0 ? 1 : 0), y - 1, 3, 1, boot); px(sx + 1 + (bl > 0 ? 1 : 0), y - 1, 3, 1, boot);
+  } else {
+    px(sx - 3, y - 7 - hup, 3, 5 + hup, pants);
+    px(sx + 1, y - 7 - hup, 3, 5 + hup, pants);
+    px(sx - 3 + (fl > 0 ? 1 : 0), y - 2, 3, 2, boot);
+    px(sx + 1 + (bl > 0 ? 1 : 0), y - 2, 3, 2, boot);
+    if (o.boots !== false) {                          /* çizme ağzı */
+      px(sx - 3, y - 4, 3, 1, o.bootTop || '#2f4450');
+      px(sx + 1, y - 4, 3, 1, o.bootTop || '#2f4450');
+    }
+  }
+  y -= hup;                                           /* gövde ve baş boya göre yukarı/aşağı */
+
+  if (o.cape) {                                       /* v1.1: pelerin — gövdenin arkasından taşar */
+    px(sx - 5 + lean, y - 15, 10, 12, o.cape); px(sx - 6 + lean, y - 5, 12, 2, o.cape);
+    px(sx - 5 + lean, y - 15, 10, 1, shade(o.cape, 22));
+  }
+  /* --- gövde: yün kazak --- */
+  px(sx - 4 + lean, y - 15, 8, 9, coat);
+  px(sx - 4 + lean, y - 15, 8, 1, coat2);             /* omuz ışığı */
+  px(sx + 3 + lean, y - 14, 1, 8, shade(coat, -18));  /* sağ yüz gölge */
+  if (o.knit) {                                       /* kazak deseni: baklava sırası */
+    px(sx - 3 + lean, y - 12, 1, 1, o.knit); px(sx - 1 + lean, y - 12, 1, 1, o.knit);
+    px(sx + 1 + lean, y - 12, 1, 1, o.knit); px(sx - 2 + lean, y - 11, 1, 1, o.knit);
+    px(sx + 0 + lean, y - 11, 1, 1, o.knit); px(sx + 2 + lean, y - 11, 1, 1, o.knit);
+  }
+  if (o.apron) {                                      /* muşamba önlük */
+    px(sx - 3 + lean, y - 11, 6, 6, o.apron);
+    px(sx - 3 + lean, y - 11, 6, 1, shade(o.apron, 18));
+    px(sx - 1 + lean, y - 14, 2, 3, o.apron);
+  }
+  if (o.vest) {                                       /* yelek */
+    px(sx - 4 + lean, y - 15, 2, 8, o.vest);
+    px(sx + 2 + lean, y - 15, 2, 8, o.vest);
+  }
+  if (o.sash) px(sx - 4 + lean, y - 9, 8, 2, o.sash); /* kuşak */
+  if (o.belly) {                                      /* göbek: öne taşan yuvarlak (silüette belirgin) */
+    var fs = fx > 0 ? 1 : -1, bx0 = sx + (fs > 0 ? 4 : -7) + lean;
+    px(sx - 5 + lean, y - 12, 10, 6, coat);                 /* gövde genişler */
+    px(bx0, y - 12, 3, 6, coat);                            /* öne taşan kısım */
+    px(bx0 + (fs > 0 ? 3 : -1), y - 11, 1, 4, coat);
+    px(bx0 + (fs > 0 ? 1 : 0), y - 12, 2, 1, shade(coat, 18));
+    px(sx - 5 + lean, y - 7, 10, 1, shade(coat, -26));      /* kemer çizgisi */
+    px(bx0, y - 7, 3, 1, shade(coat, -26));
+  }
+
+  if (o.scales) {                                     /* v1.1: balık pulu desenli elbise */
+    for (var sr = 0; sr < 4; sr++) for (var sc = 0; sc < 4; sc++) px(sx - 4 + lean + sc * 2 + (sr % 2), y - 14 + sr * 2, 1, 1, o.scales);
+  }
+  if (o.tie) { px(sx - 1 + lean, y - 15, 2, 1, shade(o.tie, -20)); px(sx - 1 + lean, y - 14, 2, 5, o.tie); px(sx - 1 + lean, y - 9, 1, 1, o.tie); }
+  if (o.bowtie) { px(sx - 2 + lean, y - 15, 2, 2, o.bowtie); px(sx + 1 + lean, y - 15, 2, 2, o.bowtie); px(sx + lean, y - 15, 1, 1, shade(o.bowtie, 30)); }
+  if (o.chain) {                                      /* altın kolye */
+    var gC = PAL.brass || '#d9a441';
+    px(sx - 3 + lean, y - 15, 1, 1, gC); px(sx - 2 + lean, y - 14, 1, 1, gC); px(sx - 1 + lean, y - 13, 2, 1, gC);
+    px(sx + 1 + lean, y - 14, 1, 1, gC); px(sx + 2 + lean, y - 15, 1, 1, gC); px(sx - 1 + lean, y - 12, 2, 2, '#ffd76a');
+  }
+
+  /* --- kollar --- */
+  var carrying = a.carry && a.carry.length;
+  var fa = w ? w.fa : 0, ba = w ? w.ba : 0;
+  if (carrying || o.hold) {                           /* taşıma: iki kol önde */
+    px(sx - 6 + lean, y - 13, 2, 5, coat2);
+    px(sx + 4 + lean, y - 13, 2, 5, coat2);
+    px(sx - 6 + lean, y - 9, 2, 1, skin);
+    px(sx + 4 + lean, y - 9, 2, 1, skin);
+  } else if (working) {                               /* iş: kollar aşağı-öne */
+    px(sx - 6 + lean, y - 13, 2, 6, coat2);
+    px(sx + 4 + lean, y - 13, 2, 6, coat2);
+    px(sx + fx * 5 + lean, y - 8, 2, 2, skin);
+  } else {
+    px(sx - 6, y - 14 + fa, 2, 6, coat2);
+    px(sx + 4, y - 14 + ba, 2, 6, coat2);
+    px(sx - 6, y - 8 + fa, 2, 1, skin);
+    px(sx + 4, y - 8 + ba, 2, 1, skin);
+  }
+
+  /* --- sırt küfesi / sepet --- */
+  if (o.kufe) {
+    var kx = fx > 0 ? sx - 8 : sx + 4;
+    px(kx, y - 15, 4, 8, '#9a7340');
+    px(kx, y - 15, 4, 1, '#c9a15e');
+    px(kx, y - 12, 4, 1, '#7a5a30');
+    px(kx, y - 9, 4, 1, '#7a5a30');
+  }
+  if (o.bag) px(fx > 0 ? sx - 7 : sx + 5, y - 13, 2, 5, '#4a3a2a');
+  if (o.bigBag) {                                     /* büyük el çantası */
+    var gx = fx > 0 ? sx - 10 : sx + 5;
+    px(gx, y - 11, 5, 7, o.bigBag); px(gx, y - 11, 5, 1, shade(o.bigBag, 20)); px(gx + 1, y - 13, 3, 2, shade(o.bigBag, -25));
+    px(gx + 2, y - 8, 1, 1, PAL.brass);
+  }
+  if (o.notebook) {                                   /* küçük not defteri */
+    var nbx = sx + fx * 5;
+    px(nbx - 1, y - 11, 3, 4, '#e8ddc8'); px(nbx - 1, y - 11, 3, 1, '#b3422f'); px(nbx, y - 9, 1, 1, '#6f604b');
+  }
+  if (o.knife) { var nx = sx + fx * 6; px(nx, y - 10, 1, 4, '#cfd8de'); px(nx, y - 6, 1, 2, '#6f4526'); }
+  if (o.tray) { px(sx + fx * 5 - 2, y - 12, 6, 1, '#c9a15e'); px(sx + fx * 5 - 1, y - 13, 4, 1, '#e8ddc8'); }
+  if (o.guitar) {                                     /* v1.1: sırtta gitar */
+    var gx2 = fx > 0 ? sx - 9 : sx + 5;
+    px(gx2, y - 10, 4, 5, o.guitar); px(gx2, y - 12, 3, 2, o.guitar); px(gx2 + 1, y - 9, 2, 2, '#2a1a0a');
+    px(gx2 + (fx > 0 ? 3 : 0), y - 20, 1, 8, '#5a3a1a'); px(gx2 + (fx > 0 ? 3 : 0), y - 21, 1, 1, '#cfd8de');
+  }
+  if (o.mic) { var mx = sx + fx * 5; px(mx, y - 15, 1, 5, '#2a2a2a'); px(mx - (fx > 0 ? 0 : 1), y - 17, 2, 2, '#9aa4ac'); }
+  if (o.phone) { var phx = sx + fx * 6; px(phx, y - 21, 2, 3, '#1a1a1a'); px(phx, y - 21, 1, 1, '#7fd3ff'); px(phx, y - 18, 1, 5, coat2); }
+
+  /* --- baş --- */
+  var hy = y - 22;
+  px(sx - 3, hy, 6, 7, skin);
+  px(sx + 2, hy + 1, 1, 5, skinS);                    /* yanak gölgesi */
+  px(sx - 4, hy + 2, 1, 2, skin); px(sx + 3, hy + 2, 1, 2, skin);   /* kulaklar */
+
+  /* saç / başlık */
+  if (o.scarf) {                                      /* başörtüsü */
+    px(sx - 4, hy - 1, 8, 4, o.scarf);
+    px(sx - 4, hy - 1, 8, 1, shade(o.scarf, 20));
+    if (o.scarfDots) { px(sx - 3, hy, 1, 1, o.scarfDots); px(sx, hy + 1, 1, 1, o.scarfDots); px(sx + 2, hy, 1, 1, o.scarfDots); px(sx - 5, hy + 3, 1, 1, o.scarfDots); }
+    px(sx - 5, hy + 1, 1, 5, o.scarf);
+    px(sx + 4, hy + 1, 1, 5, o.scarf);
+    px(sx - 4, hy + 5, 2, 3, shade(o.scarf, -14));
+  } else if (o.fez) {                                 /* fes */
+    px(sx - 3, hy - 4, 6, 4, '#a3231f');
+    px(sx - 4, hy - 1, 8, 1, '#8d1c19');
+    px(sx + 2, hy - 5, 1, 3, '#1d1713');
+  } else if (o.tophat) {                              /* v1.1: silindir şapka */
+    px(sx - 3, hy - 7, 6, 6, o.tophat); px(sx - 5, hy - 1, 10, 1, o.tophat);
+    px(sx - 3, hy - 3, 6, 1, shade(o.tophat, 40)); px(sx - 3, hy - 7, 6, 1, shade(o.tophat, 25));
+    px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair);
+  } else if (o.turban) {                              /* v1.1: kavuk / sarık */
+    px(sx - 5, hy - 4, 10, 5, o.turban); px(sx - 4, hy - 5, 8, 1, o.turban);
+    px(sx - 5, hy - 2, 10, 1, shade(o.turban, -22)); px(sx - 1, hy - 5, 2, 1, '#3f6a3a');
+  } else if (o.cap) {                                 /* kasket */
+    px(sx - 4, hy - 2, 8, 3, o.cap);
+    px(sx - 4, hy - 3, 6, 1, shade(o.cap, 16));
+    px(fx > 0 ? sx + 3 : sx - 6, hy, 3, 1, shade(o.cap, -20));  /* siperlik */
+    px(sx - 4, hy + 1, 1, 1, hair); px(sx + 3, hy + 1, 1, 1, hair);
+  } else if (o.chefHat) {
+    px(sx - 3, hy - 6, 6, 5, '#f7f7f2');
+    px(sx - 4, hy - 2, 8, 2, '#f7f7f2');
+    px(sx - 2, hy - 7, 4, 1, '#f7f7f2');
+  } else if (o.sunHat) {
+    px(sx - 6, hy - 1, 12, 2, o.sunHat);
+    px(sx - 3, hy - 4, 6, 3, o.sunHat);
+    px(sx - 3, hy - 2, 6, 1, shade(o.sunHat, -18));
+  } else if (o.beanie) {                              /* balıkçı beresi */
+    px(sx - 4, hy - 3, 8, 4, o.beanie);
+    px(sx - 4, hy, 8, 1, shade(o.beanie, -22));
+    px(sx - 1, hy - 4, 2, 1, shade(o.beanie, 18));
+    px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair);
+  } else if (o.hairStyle === 4) {                     /* kel: yalnız yanlarda saç */
+    px(sx - 3, hy - 1, 6, 1, skin); px(sx - 2, hy - 2, 4, 1, skin);
+    px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair);
+  } else {
+    px(sx - 4, hy - 2, 8, 3, hair);
+    px(sx - 4, hy + 1, 1, 3, hair); px(sx + 3, hy + 1, 1, 3, hair);
+    if (o.hairStyle === 5) {                          /* gür, kıvırcık (bulut gibi) */
+      px(sx - 5, hy - 3, 10, 3, hair); px(sx - 6, hy - 1, 2, 7, hair); px(sx + 4, hy - 1, 2, 7, hair);
+      px(sx - 4, hy - 4, 2, 1, hair); px(sx, hy - 4, 3, 1, hair); px(sx - 7, hy + 2, 1, 3, hair); px(sx + 6, hy + 2, 1, 3, hair);
+      px(sx - 3, hy - 3, 1, 1, shade(hair, 30)); px(sx + 2, hy - 2, 1, 1, shade(hair, 30)); px(sx - 6, hy + 3, 1, 1, shade(hair, 30));
+    } else if (o.hairStyle === 6) {                   /* topuz */
+      px(sx - 2, hy - 5, 4, 3, hair); px(sx - 1, hy - 6, 2, 1, hair); px(sx - 2, hy - 4, 4, 1, shade(hair, 25));
+    } else if (o.hairStyle === 1) {                   /* dalgalı */
+      px(sx - 5, hy - 1, 1, 3, hair); px(sx + 4, hy - 1, 1, 3, hair);
+      px(sx - 3, hy - 3, 2, 1, hair); px(sx + 1, hy - 3, 2, 1, hair);
+    } else if (o.hairStyle === 2) {                   /* uzun */
+      px(sx - 5, hy, 1, 8, hair); px(sx + 4, hy, 1, 8, hair);
+      px(sx - 4, hy + 4, 1, 4, hair); px(sx + 3, hy + 4, 1, 4, hair);
+    } else if (o.hairStyle === 7) {                   /* v1.1: mohikan / dikleşmiş */
+      px(sx - 1, hy - 5, 3, 3, hair); px(sx - 3, hy - 3, 1, 1, hair); px(sx + 2, hy - 4, 1, 2, hair);
+    } else if (o.hairStyle === 8) {                   /* v1.1: kabarık perçem (rock'n'roll) */
+      px(sx - 4, hy - 4, 8, 2, hair); px(sx + (fx > 0 ? 2 : -5), hy - 5, 3, 2, hair); px(sx + (fx > 0 ? 4 : -5), hy - 3, 1, 2, hair);
+      px(sx - 3, hy - 4, 5, 1, shade(hair, 35));
+    } else if (o.hairStyle === 3) {                   /* at kuyruğu */
+      var tx = fx > 0 ? sx - 6 : sx + 4;
+      px(tx, hy, 2, 2, hair); px(tx + (fx > 0 ? 0 : 1), hy + 2, 1, 4, hair);
+    }
+  }
+  if (o.headband) { px(sx - 4, hy - 1, 8, 1, o.headband); px(fx > 0 ? sx - 5 : sx + 4, hy, 1, 3, o.headband); }
+  if (o.cap && o.hairStyle === 2) { px(sx - 5, hy + 1, 1, 7, hair); px(sx + 4, hy + 1, 1, 7, hair); }
+  if (o.cap && o.hairStyle === 3) { var tx2 = fx > 0 ? sx - 6 : sx + 4; px(tx2, hy + 1, 2, 5, hair); }
+
+  /* yüz */
+  var ey = hy + 3;
+  dot(sx + (fx > 0 ? 1 : -2), ey, PAL.edge);
+  dot(sx + (fx > 0 ? 2 : -1), ey, PAL.edge);
+  if (o.must) px(sx - 1, ey + 2, 3, 1, hair);         /* bıyık */
+  if (o.thickMust) { px(sx - 2, ey + 2, 5, 2, hair); px(sx - 3, ey + 3, 1, 1, hair); px(sx + 3, ey + 3, 1, 1, hair); }
+  if (o.beard) { px(sx - 3, ey + 2, 6, 3, hair); px(sx - 2, ey + 3, 4, 1, skinS); }
+  if (o.glasses) { px(sx - 3, ey, 2, 1, '#cfd8de'); px(sx + 1, ey, 2, 1, '#cfd8de'); px(sx - 1, ey, 2, 1, '#7d868e'); }
+  if (o.shades) { px(sx - 3, ey - 1, 6, 1, '#141414'); px(sx - 3, ey, 2, 1, '#141414'); px(sx + 1, ey, 2, 1, '#141414'); px(sx - 2, ey - 1, 1, 1, '#6f8ea8'); }
+  if (o.eyepatch) { px(sx - 4, ey - 1, 8, 1, '#141414'); px(sx + (fx > 0 ? 1 : -2), ey - 1, 2, 2, '#141414'); }
+  if (o.pipe) { px(sx + (fx > 0 ? 1 : -3), ey + 3, 3, 1, '#5a3a1a'); px(sx + (fx > 0 ? 4 : -4), ey + 1, 1, 3, '#5a3a1a'); }
+  if (o.bird) {                                       /* v1.1: omuzda kuş (martı / papağan) */
+    var bdx = fx > 0 ? sx - 6 : sx + 3;
+    px(bdx, y - 18, 3, 2, o.bird); px(bdx + (fx > 0 ? 2 : 0), y - 20, 2, 2, o.bird);
+    px(bdx + (fx > 0 ? 4 : -1), y - 19, 1, 1, '#f0a030'); px(bdx + (fx > 0 ? 2 : 1), y - 20, 1, 1, '#141414');
+    px(bdx + (fx > 0 ? -1 : 3), y - 17, 1, 1, shade(o.bird, -30));
+  }
+  /* ağız: ruh haline göre */
+  if (o.mood !== undefined) {
+    if (o.mood < 0.28) { px(sx - 1, ey + 3, 3, 1, '#8d3423'); px(sx - 2, ey + 2, 1, 1, '#8d3423'); px(sx + 2, ey + 2, 1, 1, '#8d3423'); }
+    else if (o.mood < 0.55) px(sx - 1, ey + 3, 3, 1, '#7a3a2a');
+    else { px(sx - 1, ey + 3, 3, 1, '#8d5f43'); px(sx - 2, ey + 3, 1, 1, '#8d5f43'); px(sx + 2, ey + 3, 1, 1, '#8d5f43'); }
+  }
+  if (a.carry && a.carry.length) drawStack(a.x, a.y, a.carry, 16 + body, 3.4);
+}
+
+/* --------- kıyafet tanımları: oyuncu, çalışanlar, müşteriler --------- */
+/* Oyuncu: Karadenizli balıkçı — lacivert yün kazak, muşamba önlük, kasket, lastik çizme */
+function playerOutfit() {
+  if (S.hero) return heroOutfit(S.hero, player.face);
+  return {
+    coat: '#1f4e6b', coat2: '#2f6b8f', knit: '#8fc0d8',
+    apron: '#c9782f', skin: PAL.skin[0], hair: PAL.hair[0],
+    cap: '#14364a', must: true, boot: '#16222b', bootTop: '#2f4450',
+    pants: '#2b3a45', face: player.face
+  };
+}
+/* Çalışanlar: rol = kıyafet kimliği */
+var WORK_FIT = {
+  hamal:     { coat: '#4f7fae', coat2: '#6a97c2', knit: '#cfe3f0', cap: '#23384a', kufe: true, must: true, pants: '#2e3f4a' },
+  filetocu:  { coat: '#5f8f6a', coat2: '#79a884', apron: '#eae2cd', knife: true, cap: '#2f4a38', must: true, pants: '#2b3a32' },
+  tezgahtar: { coat: '#b8624a', coat2: '#d07c60', apron: '#f0ece0', cap: '#6f2f22', tray: true, must: true, pants: '#4a2f26' },
+  kasiyer:   { coat: '#2f4a6b', coat2: '#456c94', vest: '#1a2f45', bag: true, glasses: true, pants: '#22303c' },
+  depocu:    { coat: '#8a6a3a', coat2: '#a8844c', apron: '#5a4a32', kufe: true, cap: '#3a2f22', must: true, pants: '#3a3226' },
+  sevkiyat:  { coat: '#3f6a5a', coat2: '#568a76', vest: '#e0a030', bag: true, cap: '#20382f', pants: '#26332e' }
+};
+function workerOutfit(w) {
+  var f = WORK_FIT[w.role] || WORK_FIT.hamal, o = {}, k;
+  for (k in f) o[k] = f[k];
+  o.skin = PAL.skin[(w.tone === undefined ? (w.tone = irnd(0, 3)) : w.tone)];
+  o.hair = PAL.hair[(w.hairI === undefined ? (w.hairI = irnd(0, 3)) : w.hairI)];
+  o.face = w.face;
+  return o;
+}
+/* Müşteriler: Anadolu kasabası tipleri */
+var CUST_FIT = {
+  isci:     { cap: '#2f3d4a', knit: '#9db6c9', must: true, apron: null, pants: '#33424f' },
+  aile:     { scarf: '#c8553d', knit: '#f0d9c8', bag: true, pants: '#5a4038' },
+  esnaf:    { vest: '#4a3a5e', sash: '#d9a441', must: true, cap: '#3a2c48', pants: '#3b3346' },
+  sef:      { chefHat: true, apron: '#f7f7f2', knit: null, must: true, pants: '#3a3a3a' },
+  kaptan:   { cap: '#0f2a3d', beard: true, vest: '#0f2a3d', pants: '#1a2836' },
+  vip:      { vest: '#7a5406', sash: '#ffd76a', glasses: true, cap: null, must: true, pants: '#4a3a10' },
+  toptanci: { apron: '#3a6230', cap: '#2a4a24', must: true, hold: true, pants: '#2e3d28' },
+  turist:   { sunHat: '#f0ece0', bag: true, glasses: true, pants: '#6a4a5e' },
+  ogrenci:  { beanie: '#d9a441', bag: true, pants: '#2f3a5a' },
+  emekli:   { cap: '#5a4a3a', vest: '#5a4a3a', glasses: true, must: true, short: 1, hairStyle: 4, pants: '#3a3226' },
+  teyze:    { scarf: '#e0679e', scarfDots: '#f4e9d2', bigBag: '#6b4a2a', belly: 1, skirt: '#3a2a3a' },
+  komsu:    { beanie: '#8d2a2a', knit: '#cfe3f0', beard: true, apron: '#c9782f', pants: '#2b3a45' },
+  sporcu:   { headband: '#f4f0e6', tall: 1, pants: '#1f2a36', boots: false, boot: '#f4f0e6' },
+  zabita:   { cap: '#1a2a4a', vest: '#d9d040', must: true, pants: '#1a2a4a' },
+  gazeteci: { notebook: true, glasses: true, cap: '#4a4038', vest: '#4a4038', pants: '#3a3226' },
+  doktor:   { glasses: true, tie: '#3f6fb0', bag: true, pants: '#3a4450' },
+  ressam:   { beanie: '#c0282a', beard: true, scarf: null, apron: '#e8dcc0', pants: '#3a2a3a' },
+  dalgic:   { shades: true, tall: 1, pants: '#1a1f26', boot: '#1a1f26' },
+  muhtar:   { cap: '#2a2018', vest: '#2a2018', thickMust: true, belly: 1, sash: '#8a6a3a', pants: '#2a2018' },
+  otelci:   { chefHat: true, apron: '#f7f7f2', notebook: true, must: true, pants: '#2a2724' }
+};
+function custOutfit(cu) {
+  if (cu.spec && specById(cu.spec)) return specOutfit(specById(cu.spec), cu.face);
+  var t = cu.type, f = CUST_FIT[t.id] || {}, o = {}, k;
+  for (k in f) o[k] = f[k];
+  o.coat = t.coat; o.coat2 = t.coat2;
+  o.skin = PAL.skin[cu.tone % PAL.skin.length];
+  o.hair = PAL.hair[cu.hair % PAL.hair.length];
+  o.face = cu.face;
+  if (cu.hair === 1 && o.must === undefined && !o.scarf) o.must = true;
+  /* v1.3: aynı tipin müşterileri birbirinin kopyası olmasın — saç modeli ve boy kişiye göre */
+  if (cu.hs === undefined) { cu.hs = irnd(0, 3); cu.ht = irnd(0, 5); }
+  if (o.hairStyle === undefined) o.hairStyle = [0, 1, 3, 5][cu.hs];
+  if (!o.tall && !o.short) { if (cu.ht === 0) o.tall = 1; else if (cu.ht === 1) o.short = 1; }
+  return o;
+}
+
+/* --------- duygu balonu (pixel, emoji değil) --------- */
+function drawEmote(x, y, z, kind, scale) {
+  var sx = R(pX(x, y)), sy = R(pY(x, y, z));
+  var s = scale || 1;
+  px(sx - 6, sy - 6, 12, 11, PAL.edge);
+  px(sx - 5, sy - 5, 10, 9, PAL.cream);
+  px(sx - 2, sy + 5, 3, 2, PAL.cream);
+  px(sx - 2, sy + 7, 1, 1, PAL.edge);
+  if (kind === 'love') {                              /* kalp */
+    px(sx - 3, sy - 3, 2, 2, PAL.madder); px(sx + 1, sy - 3, 2, 2, PAL.madder);
+    px(sx - 3, sy - 1, 6, 2, PAL.madder); px(sx - 2, sy + 1, 4, 1, PAL.madder);
+    px(sx - 1, sy + 2, 2, 1, PAL.madder);
+  } else if (kind === 'angry') {                      /* öfke çizgileri */
+    px(sx - 3, sy - 3, 2, 1, PAL.red); px(sx + 1, sy - 3, 2, 1, PAL.red);
+    px(sx - 3, sy - 1, 1, 3, PAL.red); px(sx + 2, sy - 1, 1, 3, PAL.red);
+    px(sx - 1, sy, 2, 3, PAL.red);
+  } else if (kind === 'wait') {                       /* kum saati */
+    px(sx - 3, sy - 3, 6, 1, PAL.brass);
+    px(sx - 3, sy + 3, 6, 1, PAL.brass);
+    px(sx - 2, sy - 2, 4, 1, PAL.saffron); px(sx - 1, sy - 1, 2, 1, PAL.saffron);
+    px(sx - 1, sy, 2, 1, PAL.saffron); px(sx - 2, sy + 1, 4, 2, PAL.saffron);
+  } else if (kind === 'coin') {
+    px(sx - 3, sy - 3, 6, 6, PAL.brass);
+    px(sx - 2, sy - 2, 4, 4, PAL.brassLite);
+    px(sx - 1, sy - 1, 1, 3, PAL.brass);
+  } else if (kind === 'que') {                        /* soru / sipariş */
+    px(sx - 2, sy - 4, 4, 1, PAL.indigo); px(sx + 1, sy - 3, 1, 2, PAL.indigo);
+    px(sx - 1, sy - 1, 2, 1, PAL.indigo); px(sx - 1, sy, 1, 1, PAL.indigo);
+    px(sx - 1, sy + 2, 1, 1, PAL.indigo);
+  }
+}
+
+/* --------- rol rozeti: çalışanın başının üstünde küçük pixel simge --------- */
+var ROLE_TAG = {
+  hamal:     { bg: '#4f7fae', d: 'kufe' },
+  filetocu:  { bg: '#5f8f6a', d: 'knife' },
+  tezgahtar: { bg: '#b8624a', d: 'fish' },
+  kasiyer:   { bg: '#2f4a6b', d: 'coin' },
+  depocu:    { bg: '#8a6a3a', d: 'kufe' },
+  sevkiyat:  { bg: '#3f6a5a', d: 'cart' }
+};
+function drawRoleTag(w) {
+  var g = ROLE_TAG[w.role] || ROLE_TAG.hamal;
+  var lift = (w.carry && w.carry.length ? 10 + w.carry.length * 2 : 0);
+  var sx = R(pX(w.x, w.y)), sy = R(pY(w.x, w.y, 34 + lift));
+  px(sx - 5, sy - 5, 10, 8, PAL.edge);
+  px(sx - 4, sy - 4, 8, 6, g.bg);
+  px(sx - 4, sy - 4, 8, 1, shade(g.bg, 22));
+  px(sx - 1, sy + 3, 3, 2, PAL.edge);
+  var cx = sx, cy = sy - 1;
+  if (g.d === 'kufe') { px(cx - 3, cy - 2, 6, 5, '#c9a15e'); px(cx - 3, cy - 2, 6, 1, '#e8ddc8'); px(cx - 3, cy, 6, 1, '#9a7340'); }
+  else if (g.d === 'knife') { px(cx - 1, cy - 3, 1, 5, '#e8eef2'); px(cx - 1, cy + 2, 2, 2, '#6f4526'); px(cx, cy - 3, 1, 4, '#b7c3cc'); }
+  else if (g.d === 'fish') { px(cx - 3, cy - 1, 5, 3, '#cfe6df'); px(cx + 2, cy - 2, 2, 5, '#cfe6df'); dot(cx - 2, cy, PAL.edge); }
+  else if (g.d === 'coin') { px(cx - 2, cy - 2, 5, 5, PAL.brass); px(cx - 1, cy - 1, 3, 3, PAL.brassLite); }
+  else if (g.d === 'cart') { px(cx - 3, cy - 2, 6, 3, '#c9a15e'); px(cx - 2, cy + 1, 2, 2, '#3c4650'); px(cx + 1, cy + 1, 2, 2, '#3c4650'); }
+}
+
+/* --------- MÜŞTERİ: çizim + tepki + kıpırdanma --------- */
+function drawCustomer(cu) {
+  var o = custOutfit(cu);
+  o.mood = cu.state === 'wait' ? cu.mood : 1;
+  o.walk = cu.state !== 'wait';
+  /* beklerken küçük kıpırdanma: sabırsızlaştıkça hızlanır */
+  if (cu.state === 'wait') {
+    var rate = 0.7 + (1 - cu.mood) * 2.4;
+    cu.fidget = (cu.fidget || 0) + 0.016 * rate;
+    if (Math.sin(cu.fidget * 3) > 0.94) o.face = -cu.face;      /* etrafa bakınma */
+  }
+  var spq = cu.spec ? specById(cu.spec) : null, z0 = cu.z;
+  if (spq && spq.moon && cu.state !== 'wait') o.face = -o.face;                 /* v1.1: moonwalk */
+  if (spq && spq.dance && cu.state === 'wait') { cu.z = Math.abs(Math.sin((cu.fidget || 0) * 5)) * 0.18; if (Math.sin((cu.fidget || 0) * 2.5) > 0) o.face = -o.face; }
+  drawPerson(cu, o);
+  cu.z = z0;
+  if (cu.spec) drawSpecialTag(cu);
+  if (cu.state === 'leave') {                                    /* mutlu ayrılış */
+    if ((cu.leaveT = (cu.leaveT || 0) + 0.016) < 1.2) drawEmote(cu.x, cu.y, 34, cu.happyLeave === false ? 'angry' : 'love');
+    return;
+  }
+  if (cu.state !== 'wait') return;
+
+  var sx = R(pX(cu.x, cu.y)), sy = R(pY(cu.x, cu.y, 0));
+  var bx = sx + 14, by = sy - 30;
+  /* sipariş tabelası — kilim çerçeveli */
+  px(bx - 10, by - 9, 20, 17, PAL.edge);
+  px(bx - 9, by - 8, 18, 15, PAL.cream);
+  px(bx - 9, by - 8, 18, 1, PAL.madder);
+  px(bx - 9, by + 6, 18, 1, PAL.madder);
+  for (var m = 0; m < 4; m++) { px(bx - 8 + m * 5, by - 8, 2, 1, PAL.saffron); px(bx - 6 + m * 5, by + 6, 2, 1, PAL.saffron); }
+  px(bx - 3, by + 8, 3, 3, PAL.cream);
+  px(bx - 3, by + 11, 1, 1, PAL.edge);
+  if (cu.ord.k === 'fume') drawFumeItem(bx - 3, by - 1, cu.ord.f); else drawFiletoItem(bx - 3, by - 1, cu.ord.f);
+  uiText(cu.x, cu.y, 0, '×' + (cu.ord.need - cu.ord.got), '#ffe9a8', 10, 1, 19, -25);
+  /* sabır halkası */
+  var w = 18, fw = R(w * cu.mood);
+  px(bx - 9, by - 12, w, 3, PAL.edge);
+  px(bx - 9, by - 12, fw, 3, cu.mood > 0.55 ? PAL.green : (cu.mood > 0.28 ? PAL.gold : PAL.red));
+  if (cu.type.pen) { px(bx - 11, by - 11, 1, 20, PAL.gold); px(bx + 10, by - 11, 1, 20, PAL.gold); }
+  /* tepki balonu: sabırsızlık kademeleri */
+  if (cu.mood < 0.22) drawEmote(cu.x, cu.y, 42, 'angry');
+  else if (cu.mood < 0.45 && phase2(gameT, 1.4)) drawEmote(cu.x, cu.y, 42, 'wait');
+}
+
+/* =========================================================
+   ÇİZİM — deniz, kıyı, bölgeler (Türkiye limanı)
+   ========================================================= */
+var shoal = [], waves = [], boats = [], village = [];
+var _sd = 20260919;
+function srnd() { _sd = (_sd * 1664525 + 1013904223) % 4294967296; return _sd / 4294967296; }
+var scenery = [], grass = [];
+(function initArt() {
+  var i, x, y, g;
+  for (i = 0; i < 420; i++) {
+    g = 0; do { x = rnd(-26, 34); y = rnd(-26, 34); g++; } while (x > -1.4 && y > -1.4 && g < 40);
+    shoal.push({ x: x, y: y, s: srnd() < 0.5 ? 1 : 2, sp: rnd(0.2, 0.5), ph: rnd(0, TAU) });
+  }
+  for (i = 0; i < 90; i++) {
+    g = 0; do { x = rnd(-26, 34); y = rnd(-26, 34); g++; } while (x > -2 && y > -2 && g < 40);
+    waves.push({ x: x, y: y, w: 2 + Math.floor(srnd() * 4), ph: rnd(0, TAU) });
+  }
+  boats.push({ x: -3.2, y: 2.6, r: 1 }, { x: -4.6, y: 8.0, r: 0 }, { x: 6.0, y: -3.6, r: 1 });
+  for (i = 0; i < 26; i++) {
+    village.push({ x: i * 26 + srnd() * 14, w: 10 + srnd() * 12, h: 7 + srnd() * 11,
+      roof: srnd() < 0.75, t: srnd() });
+  }
+  /* kara süsleri: bölgelerin dışında kalan kıyı şeridi */
+  function freeLand(fx, fy) {
+    if (fx < -0.4 || fy < -0.4 || fx > LANDX - 0.3 || fy > 24.2) return false;
+    if (fx - fy > 21.5) return false;                /* kameranın ulaşamadığı doğu ucu */
+    if (fx > MEYDAN.x0 - 0.7 && fx < MEYDAN.x1 + 0.5 && fy > MEYDAN.y0 - 0.6 && fy < MEYDAN.y1 + 0.6) return false;
+    if (fx > SERVYARD.x0 - 0.7 && fx < SERVYARD.x1 + 0.5 && fy > SERVYARD.y0 - 0.6 && fy < SERVYARD.y1 + 0.6) return false;
+    if (inRect(fx, fy, YARDPATH, -0.5)) return false;
+    if (fx < 10.2 && fy < 17.8) return false;      /* iskele bölgeleri */
+    if (fx > 10.2 && fx < 14.6 && fy > -0.4) return false; /* müşteri yolu */
+    return true;
+  }
+  function nearDecor(fx, fy) { for (var q = 0; q < DECOR.length; q++) if (Math.hypot(DECOR[q].x - fx, DECOR[q].y - fy) < 1.3) return true; return false; }
+  function nearOther(fx, fy) { for (var q = 0; q < scenery.length; q++) if (Math.hypot(scenery[q].x - fx, scenery[q].y - fy) < 1.0) return true; return false; }
+  /* v0.8 — çevre oyun alanına yakın ve sade: meydanın güneyi (yolun doğusu) + güney kumsal.
+     Başta eski/bakımsız görünür; her nesnenin 'up' eşiği var: çevre kademesi (envStage) o eşiğe
+     ulaşınca bakımlı hâline döner, hurdalar çiçek tarhına dönüşür → oyuncu değişimi görür. */
+  /* v1.3.2: meydanın doğusu + bölgelerin güney kumsalı + sahanın güney kıyısı (saha kendi alanında) */
+  var bands = [[21.9, 25.6, -0.2, 7.9, 12], [-0.3, 9.9, 18.0, 21.8, 16], [14.8, 25.6, 20.0, 24.2, 14]];
+  for (var bi = 0; bi < bands.length; bi++) {
+    var bd = bands[bi], want = bd[4], tries = 0, got = 0;
+    while (got < want && tries++ < 400) {
+      x = bd[0] + srnd() * (bd[1] - bd[0]); y = bd[2] + srnd() * (bd[3] - bd[2]);
+      if (!freeLand(x, y) || nearDecor(x, y) || nearOther(x, y)) continue;
+      var r = srnd();
+      var t = r < 0.2 ? 'servi' : r < 0.42 ? 'cam' : r < 0.56 ? 'cali' : r < 0.66 ? 'kaya' : r < 0.74 ? 'ag'
+        : r < 0.81 ? 'sandal' : r < 0.87 ? 'sepet' : r < 0.92 ? 'varil' : 'hurda';
+      scenery.push({ x: x, y: y, t: t, s: 0.8 + srnd() * 0.5, up: 1 + Math.floor(srnd() * 3) });
+      got++;
+    }
+  }
+  for (i = 0; i < 420; i++) {
+    x = rnd(-0.6, LANDX - 0.1); y = rnd(-0.6, 24.4);
+    if (inRect(x, y, MEYDAN, -0.3)) continue;
+    if (x < 10.1 && y < 17.6) continue;
+    grass.push({ x: x, y: y, c: srnd() < 0.5 ? '#b9a878' : '#a8b06a' });
+  }
+  for (i = 0; i < 9; i++) gulls.push({ x: rnd(-20, 12), y: rnd(-18, 6), vx: rnd(0.5, 1.1), vy: rnd(0.1, 0.4), f: rnd(0, 6) });
+})();
+
+/* uzak sahil: beyaz evler, kırmızı çatılar, minare, servi (parallax) */
+function drawVillage() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  var off = (camX * 0.22) % 260, base = R(horizonY);
+  if (base < -30) return;                               /* v1.3: ufuk ekranın üstünde kaldıysa uzak kıyı görünmez */
+  /* tepeler */
+  for (var h = 0; h < 3; h++) {
+    var hy = base - 16 + h * 7;
+    ctx.fillStyle = ['#5c6f4a', '#6b7d54', '#7b8b5e'][h];
+    ctx.beginPath(); ctx.moveTo(0, hy + 14);
+    for (var x = 0; x <= W + 8; x += 8) {
+      var yy = hy + Math.sin((x + off * (h + 1) * 0.35) * 0.018 + h) * 5;
+      ctx.lineTo(x, R(yy));
+    }
+    ctx.lineTo(W, hy + 20); ctx.lineTo(0, hy + 20); ctx.closePath(); ctx.fill();
+  }
+  /* evler */
+  for (var i = 0; i < village.length; i++) {
+    var v = village[i];
+    var vx = ((v.x - off) % (26 * 26));
+    if (vx < -30) vx += 26 * 26;
+    if (vx > W + 20) continue;
+    var vy = base + 4 - v.h;
+    px(vx, vy, v.w, v.h, '#efe4cd');
+    px(vx, vy, v.w, 1, '#fffaf0');
+    if (v.roof) { px(vx - 1, vy - 2, v.w + 2, 2, '#b8442e'); }
+    for (var wx = 2; wx < v.w - 2; wx += 4) px(vx + wx, vy + 2, 2, 2, '#6a5a44');
+    if (v.t > 0.9) { /* servi ağacı */
+      px(vx + v.w + 2, vy - 6, 3, v.h + 8, '#2f4a33');
+      px(vx + v.w + 2, vy - 8, 3, 3, '#3b5c3f');
+    }
+  }
+  /* minare + cami kubbesi */
+  var mx = ((160 - off) % (26 * 26)); if (mx < -40) mx += 26 * 26;
+  if (mx < W + 30) {
+    var my = base - 4;
+    px(mx + 16, my - 4, 14, 10, '#efe4cd');
+    ctx.fillStyle = '#9aa7a2';
+    ctx.beginPath(); ctx.arc(R(mx + 23), R(my - 4), 7, Math.PI, 0); ctx.closePath(); ctx.fill();
+    px(mx + 22, my - 14, 1, 3, '#d8cfa8');
+    px(mx + 8, my - 26, 3, 32, '#efe4cd');
+    px(mx + 7, my - 16, 5, 2, '#b8442e');
+    ctx.fillStyle = '#efe4cd';
+    ctx.beginPath(); ctx.moveTo(R(mx + 7), R(my - 26)); ctx.lineTo(R(mx + 9.5), R(my - 33)); ctx.lineTo(R(mx + 12), R(my - 26)); ctx.closePath(); ctx.fill();
+  }
+  px(0, base + 4, W, 3, '#3f7d92');
+}
+/* ---------------------------------------------------------
+   ÇEVRE v2 — Anadolu kıyısı: servi, zeytin, incir, kaya, ağ kurutma,
+   çekek sandalı, hasır sepet, çay bahçesi, kedi, martı.
+   --------------------------------------------------------- */
+function drawScenery(d) {
+  var sx = R(pX(d.x, d.y)), sy = R(pY(d.x, d.y, 0)), z = d.s;
+  var sw = Math.sin(gameT * 0.8 + d.x) * 0.6;          /* rüzgâr */
+  var worn = d.up !== undefined && envStage() < d.up;   /* v0.8: çevre henüz gelişmedi */
+  if (worn && drawWorn(d, sx, sy, z, sw)) return;
+  if (d.t === 'hurda') {                                /* gelişince: çiçek tarhı */
+    px(sx - 7, sy - 3, 14, 3, '#7a5a3a'); px(sx - 7, sy - 3, 14, 1, '#9a7650');
+    var fc = ['#e5533d', '#ffc94a', '#e0679e', '#f4e9d2'];
+    for (var fi = 0; fi < 6; fi++) { px(sx - 6 + fi * 2, sy - 6 + (fi % 2), 1, 3, '#5f8f4a'); px(sx - 6 + fi * 2, sy - 7 + (fi % 2), 2, 2, fc[fi % 4]); }
+    return;
+  }
+  if (d.t === 'servi') {                                /* servi (Akdeniz selvisi) */
+    px(sx - 1, sy - 5, 2, 5, '#6b4a28');
+    px(sx - 3, sy - R(24 * z), 6, R(20 * z), PAL.cypress);
+    px(sx - 3, sy - R(24 * z), 3, R(20 * z), PAL.cypressLite);
+    px(sx - 2 + R(sw), sy - R(27 * z), 4, R(5 * z), PAL.cypressLite);
+    px(sx - 1 + R(sw), sy - R(29 * z), 2, R(3 * z), PAL.cypress);
+  } else if (d.t === 'cam') {                           /* zeytin ağacı */
+    px(sx - 1, sy - 8, 3, 8, '#7a6248');
+    px(sx - 2, sy - 6, 1, 4, '#5f4c37');
+    px(sx - 8, sy - R(15 * z), 16, R(5 * z), '#728555');
+    px(sx - 6, sy - R(19 * z), 12, R(5 * z), '#83975f');
+    px(sx - 4, sy - R(22 * z), 8, R(4 * z), '#94a86c');
+    px(sx - 5, sy - R(17 * z), 2, 1, '#4a5b38'); px(sx + 3, sy - R(20 * z), 2, 1, '#4a5b38');
+  } else if (d.t === 'kaya') {                          /* kıyı kayası */
+    px(sx - 6, sy - 5, 12, 5, '#a8a291');
+    px(sx - 6, sy - 5, 12, 1, '#c2bca8');
+    px(sx - 4, sy - 8, 8, 3, '#b5af9c');
+    px(sx - 2, sy - 9, 4, 1, '#c8c2ae');
+    px(sx + 2, sy - 3, 3, 1, '#8b8676');
+  } else if (d.t === 'cali') {                          /* funda / kekik */
+    px(sx - 4, sy - 4, 9, 4, '#8c9a56');
+    px(sx - 2 + R(sw), sy - 7, 5, 3, '#9aa863');
+    px(sx + 1, sy - 8, 1, 1, '#c9a15e');
+  } else if (d.t === 'ag') {                            /* kurumaya asılı ağ */
+    px(sx - 10, sy - 16, 2, 16, PAL.woodDark);
+    px(sx + 8, sy - 16, 2, 16, PAL.woodDark);
+    px(sx - 10, sy - 17, 20, 2, PAL.woodDark);
+    ctx.globalAlpha = 0.85;
+    for (var r = 0; r < 5; r++) px(sx - 9, sy - 14 + r * 3 + R(Math.sin(gameT * 1.2 + r) * 0.5), 18, 1, '#ded1a8');
+    for (var c = 0; c < 6; c++) px(sx - 9 + c * 3, sy - 14, 1, 14, '#ded1a8');
+    ctx.globalAlpha = 1;
+    px(sx - 4, sy - 5, 2, 2, PAL.madder);               /* şamandıra */
+  } else if (d.t === 'sandal') {                        /* karaya çekilmiş sandal */
+    px(sx - 11, sy - 4, 22, 4, '#8a5a2e');
+    px(sx - 10, sy - 6, 20, 2, '#a8683a');
+    px(sx - 9, sy - 7, 18, 1, '#e8d9b8');
+    px(sx - 4, sy - 9, 8, 2, '#6f4526');
+    px(sx - 13, sy - 2, 4, 2, '#7a5230'); px(sx + 9, sy - 2, 4, 2, '#7a5230');
+  } else if (d.t === 'sepet') {                         /* hasır sepet yığını */
+    px(sx - 5, sy - 6, 10, 6, '#b8924f');
+    px(sx - 5, sy - 6, 10, 1, '#d6b174');
+    px(sx - 5, sy - 3, 10, 1, '#96763f');
+    px(sx - 3, sy - 10, 7, 4, '#c9a15e');
+    px(sx - 3, sy - 10, 7, 1, '#e0bd80');
+  } else {                                              /* varil */
+    px(sx - 4, sy - 10, 9, 10, '#8a5a2e');
+    px(sx - 4, sy - 10, 9, 2, '#a86f3a');
+    px(sx - 4, sy - 6, 9, 1, '#5d3c1c');
+    px(sx - 4, sy - 3, 9, 1, '#5d3c1c');
+  }
+}
+
+/* bakımsız hâller: kuru ağaç, seyrek servi, kuru çalı, yırtık ağ, çürük sandal, kırık kasa, paslı varil, hurda */
+function drawWorn(d, sx, sy, z, sw) {
+  var t = d.t;
+  if (t === 'cam') {                                    /* kuru ağaç: çıplak dallar */
+    px(sx - 1, sy - R(14 * z), 2, R(14 * z), '#6b5640');
+    px(sx - 5, sy - R(12 * z), 5, 1, '#6b5640'); px(sx - 6, sy - R(14 * z), 1, 2, '#6b5640');
+    px(sx + 1, sy - R(10 * z), 5, 1, '#6b5640'); px(sx + 5, sy - R(12 * z), 1, 2, '#6b5640');
+    px(sx - 3, sy - R(17 * z), 1, 3, '#7a6450'); px(sx + 2, sy - R(18 * z), 1, 4, '#7a6450');
+    return true;
+  }
+  if (t === 'servi') {                                  /* seyrek, sararmış servi */
+    px(sx - 1, sy - 5, 2, 5, '#6b4a28');
+    px(sx - 2, sy - R(20 * z), 4, R(16 * z), '#7d8a4a');
+    px(sx - 2, sy - R(20 * z), 2, R(16 * z), '#98a060');
+    px(sx - 1, sy - R(23 * z), 2, R(3 * z), '#8a8f52');
+    return true;
+  }
+  if (t === 'cali') {                                   /* kuru çalı */
+    px(sx - 4, sy - 3, 9, 3, '#a08a5a'); px(sx - 2 + R(sw), sy - 6, 5, 3, '#b39a64');
+    px(sx - 3, sy - 7, 1, 2, '#8a744a'); px(sx + 3, sy - 6, 1, 2, '#8a744a');
+    return true;
+  }
+  if (t === 'ag') {                                     /* yırtık ağ, eğik direk */
+    px(sx - 10, sy - 14, 2, 14, '#5a4632'); px(sx + 8, sy - 11, 2, 11, '#5a4632');
+    px(sx - 10, sy - 15, 12, 1, '#5a4632');
+    ctx.globalAlpha = 0.7;
+    for (var r = 0; r < 3; r++) px(sx - 9, sy - 12 + r * 3, 9 + r * 3, 1, '#b8ab88');
+    for (var c = 0; c < 3; c++) px(sx - 9 + c * 3, sy - 12, 1, 9, '#b8ab88');
+    ctx.globalAlpha = 1;
+    return true;
+  }
+  if (t === 'sandal') {                                 /* çürük, ters dönmüş sandal */
+    px(sx - 11, sy - 3, 22, 3, '#6f6a60'); px(sx - 10, sy - 5, 20, 2, '#85806f');
+    px(sx - 4, sy - 5, 3, 2, '#3f3a32'); px(sx + 4, sy - 4, 2, 1, '#3f3a32');
+    return true;
+  }
+  if (t === 'sepet') {                                  /* kırık kasalar */
+    px(sx - 6, sy - 4, 8, 4, '#8a7050'); px(sx - 6, sy - 4, 8, 1, '#a88a60');
+    px(sx + 1, sy - 3, 6, 3, '#7a6244'); px(sx - 2, sy - 6, 3, 2, '#8a7050');
+    px(sx - 4, sy - 2, 1, 2, '#4a3a28');
+    return true;
+  }
+  if (t === 'varil') {                                  /* devrik, paslı varil */
+    px(sx - 6, sy - 5, 11, 5, '#7a4a2a'); px(sx - 6, sy - 5, 11, 1, '#9a5a2e');
+    px(sx - 3, sy - 5, 1, 5, '#5a3218'); px(sx + 1, sy - 5, 1, 5, '#5a3218');
+    px(sx - 7, sy - 4, 2, 3, '#4a2a14');
+    return true;
+  }
+  if (t === 'hurda') {                                  /* tahta + lastik hurda yığını */
+    px(sx - 8, sy - 3, 16, 2, '#7a6450'); px(sx - 6, sy - 5, 12, 2, '#8a7458');
+    px(sx - 3, sy - 7, 7, 2, '#6b5640');
+    px(sx + 3, sy - 6, 5, 5, '#2b2b2b'); px(sx + 4, sy - 5, 3, 3, '#7a6450');
+    return true;
+  }
+  return false;                                         /* kaya: hep aynı */
+}
+/* v1.2: çevre kademesi 0–3 artık SATIN ALINIR (YAPI › Dekoratif): para + itibar seviyesi şartı.
+   İtibar kendiliğinden yol yenilemez. Her kademe müşteri akışını artırır. */
+var ENV_UPS = [
+  { lv: 3, cost: 1800, icon: '🪨', flow: 0.08,
+    n: { tr: 'Çakıl Yol', en: 'Gravel Road' },
+    d: { tr: 'Çukurlar dolar, yola çakıl serilir, ağaçlar budanır', en: 'Potholes filled, gravel laid, trees trimmed' } },
+  { lv: 5, cost: 6000, icon: '🧱', flow: 0.08,
+    n: { tr: 'Arnavut Kaldırımı', en: 'Cobblestone Road' },
+    d: { tr: 'Yol taş döşenir, sahil toparlanır', en: 'The road is cobbled, the shore tidied up' } },
+  { lv: 8, cost: 16000, icon: '🏮', flow: 0.09,
+    n: { tr: 'Fenerli Bordür ve Çiçeklik', en: 'Lamps, Curbs & Flowerbeds' },
+    d: { tr: 'Bordür, sokak fenerleri, çiçekler açar', en: 'Curbs, street lamps and blooming flowers' } }
+];
+function envFlow() { var f = 0; for (var i = 0; i < envStage(); i++) f += ENV_UPS[i].flow; return f; }
+function buyEnv() {
+  var k = envStage(); if (k >= ENV_UPS.length) return;
+  S.env = k + 1; sfx.build();
+}
+function envStage() {
+  if (S.env === undefined || S.env < 0) S.env = legacyEnvStage();
+  return clamp(S.env | 0, 0, ENV_UPS.length);
+}
+/* eski kayıtlar (v1.1 ve öncesi): o zamanki otomatik kademe korunur, geri gitmez */
+function legacyEnvStage() {
+  var pts = 0, i;
+  for (i = 1; i < AREAS.length; i++) if (!AREAS[i].locked) pts++;
+  if (HUT.lvl) pts++;
+  if (DEPOT.lvl) pts++;
+  if (WHALL.built) pts++;
+  if (M && M.office) pts++;
+  pts += Math.floor(repLevel() / 3);
+  return pts >= 7 ? 3 : pts >= 4 ? 2 : pts >= 2 ? 1 : 0;
+}
+var lastEnv = -1, envT = 0;
+function updateEnv(dt) {
+  envT -= dt; if (envT > 0) return;
+  envT = 1;
+  var e = envStage();
+  if (lastEnv < 0) { lastEnv = e; return; }
+  if (e > lastEnv) { lastEnv = e; toast(T('envUp' + e)); sfx.star(); }
+  else lastEnv = e;
+}
+/* müşteri yolu: toprak (çukurlu) → çakıl → arnavut kaldırımı → bordürlü + fenerli */
+function drawRoad() {
+  var e = envStage(), x0 = 10.2, x1 = 14.6, y0 = -0.5, y1 = 24.3;
+  isoQuad(x0, y0, x1 - x0, y1 - y0, 0, e === 0 ? '#b89d6e' : e === 1 ? '#bfae88' : '#b3aa96');
+  var i, r2 = 0;
+  if (e === 0) {                                        /* tekerlek izleri + çukurlar */
+    ctx.save(); ctx.strokeStyle = 'rgba(122,98,64,.55)'; ctx.lineWidth = 1;
+    [11.4, 13.5].forEach(function (lx2) { ctx.beginPath(); ctx.moveTo(R(pX(lx2, y0)), R(pY(lx2, y0, 0))); ctx.lineTo(R(pX(lx2, y1)), R(pY(lx2, y1, 0))); ctx.stroke(); });
+    ctx.restore();
+    for (i = 0; i < 14; i++) { r2 = (i * 7.31) % 1; var hx = 10.6 + r2 * 3.6, hy = 1 + i * 1.6; px(R(pX(hx, hy)) - 2, R(pY(hx, hy, 0)), 5, 2, '#8f7650'); }
+  } else if (e === 1) {                                 /* çakıl */
+    for (i = 0; i < 120; i++) { r2 = (i * 0.618) % 1; var gx = 10.3 + r2 * 4.2, gy = (i * 0.21) % 24.6 - 0.4; px(R(pX(gx, gy)), R(pY(gx, gy, 0)), 1, 1, i % 2 ? '#9d8e6c' : '#d6c8a4'); }
+  } else {                                              /* arnavut kaldırımı + bordür */
+    ctx.save(); ctx.globalAlpha = 0.5; ctx.strokeStyle = '#8f8778'; ctx.lineWidth = 1;
+    for (var k = y0 + 0.5; k < y1; k += 0.5) { ctx.beginPath(); ctx.moveTo(R(pX(x0, k)), R(pY(x0, k, 0))); ctx.lineTo(R(pX(x1, k)), R(pY(x1, k, 0))); ctx.stroke(); }
+    for (var j = x0 + 0.55; j < x1; j += 0.55) { ctx.beginPath(); ctx.moveTo(R(pX(j, y0)), R(pY(j, y0, 0))); ctx.lineTo(R(pX(j, y1)), R(pY(j, y1, 0))); ctx.stroke(); }
+    ctx.restore();
+    ctx.save(); ctx.strokeStyle = '#d8d2c4'; ctx.lineWidth = 2;
+    [x0, x1].forEach(function (bx) { ctx.beginPath(); ctx.moveTo(R(pX(bx, y0)), R(pY(bx, y0, 1))); ctx.lineTo(R(pX(bx, y1)), R(pY(bx, y1, 1))); ctx.stroke(); });
+    ctx.restore();
+  }
+}
+function drawRoadLamps(push) {
+  if (envStage() < 3) return;
+  for (var y = 3.5; y < 22; y += 4.5) (function (ly) { push(14.75 + ly, function () { drawLamp(14.75, ly); }); })(y);
+}
+
+/* v1.0 — kilitli bölgeler eski püskü eşya ve malzemeyle dolu; bölge açılınca temizlenir.
+   Konumlar bölgeye göre sabit tohumla üretilir (her açılışta aynı). */
+var _junk = {};
+var JUNK_T = ['kasa', 'tahta', 'varil', 'ag', 'lastik', 'sandal', 'halat', 'capa', 'araba', 'kasa', 'tahta', 'varil'];
+function areaJunk(ai) {
+  if (_junk[ai]) return _junk[ai];
+  var a = AREAS[ai], r = seedRnd(7919 * (ai + 3)), out = [], tries = 0;
+  while (out.length < 13 && tries++ < 200) {
+    var x = a.x0 + 0.9 + r() * (a.x1 - a.x0 - 1.8), y = a.y0 + 0.9 + r() * (a.y1 - a.y0 - 1.8);
+    var near = false;
+    for (var q = 0; q < out.length; q++) if (Math.hypot(out[q].x - x, out[q].y - y) < 1.25) near = true;
+    if (near) continue;
+    out.push({ x: x, y: y, t: JUNK_T[Math.floor(r() * JUNK_T.length)], v: r() });
+  }
+  return (_junk[ai] = out);
+}
+function clearJunk(ai) { areaJunk(ai).forEach(function (j) { addPuff(j.x, j.y, '#b8a57e'); }); }
+function drawJunk(j) {
+  var sx = R(pX(j.x, j.y)), sy = R(pY(j.x, j.y, 0)), t = j.t, flip = j.v > 0.5 ? 1 : -1;
+  shadow(j.x, j.y, 0.45);
+  if (t === 'kasa') {                                   /* üst üste kırık kasalar */
+    px(sx - 7, sy - 6, 8, 6, '#8a7050'); px(sx - 7, sy - 6, 8, 1, '#a88a60'); px(sx - 4, sy - 5, 1, 5, '#6b5640');
+    px(sx + 1, sy - 5, 6, 5, '#7a6244'); px(sx + 1, sy - 5, 6, 1, '#957856');
+    px(sx - 5 + flip, sy - 11, 7, 5, '#958062'); px(sx - 5 + flip, sy - 11, 7, 1, '#b39a74'); px(sx - 1 + flip, sy - 10, 2, 2, '#4a3a28');
+  } else if (t === 'tahta') {                           /* tahta yığını */
+    for (var k = 0; k < 4; k++) { px(sx - 9 + k, sy - 2 - k * 2, 16, 2, k % 2 ? '#8a6a44' : '#a07c52'); px(sx - 9 + k, sy - 2 - k * 2, 16, 1, '#b8946a'); }
+    px(sx + 5, sy - 9, 2, 8, '#6b5640');
+  } else if (t === 'varil') {                           /* paslı variller */
+    px(sx - 7, sy - 9, 7, 9, '#7a4a2a'); px(sx - 7, sy - 9, 7, 2, '#9a5a2e'); px(sx - 7, sy - 5, 7, 1, '#5a3218');
+    px(sx + 1, sy - 4, 8, 4, '#6f4424'); px(sx + 1, sy - 4, 8, 1, '#8a5530'); px(sx + 8, sy - 4, 1, 4, '#4a2a14');
+  } else if (t === 'ag') {                              /* dolaşmış ağ yığını */
+    px(sx - 7, sy - 4, 14, 4, '#9a8e70'); px(sx - 5, sy - 7, 10, 3, '#a89c7c'); px(sx - 2, sy - 9, 5, 2, '#b3a786');
+    ctx.globalAlpha = 0.6; for (var n = 0; n < 5; n++) px(sx - 6 + n * 3, sy - 8 + (n % 2), 1, 7, '#6f6650'); ctx.globalAlpha = 1;
+    px(sx + 3, sy - 5, 2, 2, PAL.madder);
+  } else if (t === 'lastik') {                          /* eski lastik yığını */
+    for (var l = 0; l < 3; l++) { px(sx - 6, sy - 3 - l * 3, 12, 3, '#2b2b2b'); px(sx - 4, sy - 2 - l * 3, 8, 1, '#4a4a4a'); }
+  } else if (t === 'sandal') {                          /* çürük ters sandal */
+    px(sx - 11, sy - 3, 22, 3, '#6f6a60'); px(sx - 10, sy - 5, 20, 2, '#85806f'); px(sx - 4, sy - 5, 3, 2, '#3f3a32'); px(sx + 5, sy - 4, 2, 1, '#3f3a32');
+  } else if (t === 'halat') {                           /* halat kangalı */
+    px(sx - 5, sy - 3, 10, 3, '#b39a64'); px(sx - 4, sy - 5, 8, 2, '#c4ab74'); px(sx - 2, sy - 4, 4, 1, '#8a744a');
+    px(sx + 5, sy - 2, 5, 1, '#b39a64');
+  } else if (t === 'capa') {                            /* paslı çapa */
+    px(sx - 1, sy - 12, 2, 11, '#6a4a34'); px(sx - 3, sy - 12, 6, 1, '#6a4a34');
+    px(sx - 6, sy - 3, 12, 2, '#6a4a34'); px(sx - 7, sy - 5, 2, 2, '#6a4a34'); px(sx + 5, sy - 5, 2, 2, '#6a4a34');
+  } else {                                              /* kırık el arabası */
+    px(sx - 7, sy - 6, 12, 4, '#8a6a44'); px(sx - 7, sy - 6, 12, 1, '#a88a60');
+    px(sx - 5, sy - 2, 3, 3, '#3a3a3a'); px(sx + 5, sy - 8, 5, 1, '#6b5640'); px(sx + 2, sy - 1, 2, 1, '#6b5640');
+  }
+}
+
+/* --- liman kedisi: uyur, esner, yürür (Anadolu klasiği) --- */
+var cats = [
+  { x: 8.4, y: 4.4,  dir: 1,  t: 0, st: 'sit',   col: '#d8b06a' },   /* sarman */
+  { x: 2.4, y: 5.4,  dir: -1, t: 2, st: 'sleep', col: '#8b8f96' },   /* tekir */
+  { x: 7.2, y: 11.6, dir: 1,  t: 4, st: 'sit',   col: '#3b332c' }    /* kara kedi */
+];
+function updateCats(dt) {
+  for (var i = 0; i < cats.length; i++) {
+    var c = cats[i];
+    c.t -= dt;
+    if (c.t <= 0) {
+      c.t = rnd(3, 9);
+      c.st = c.st === 'walk' ? (Math.random() < 0.5 ? 'sit' : 'sleep') : 'walk';
+      c.dir = Math.random() < 0.5 ? 1 : -1;
+    }
+    if (c.st === 'walk') {
+      var nx = c.x + c.dir * 0.5 * dt;
+      if (canStand(nx, c.y)) c.x = nx; else c.dir *= -1;
+    }
+  }
+}
+function drawCat(c) {
+  var sx = R(pX(c.x, c.y)), sy = R(pY(c.x, c.y, 0));
+  var d = c.dir > 0 ? 1 : -1;
+  if (c.st === 'sleep') {
+    px(sx - 5, sy - 3, 10, 3, c.col);
+    px(sx - 5, sy - 4, 7, 1, shade(c.col, 18));
+    px(sx + d * 4, sy - 5, 3, 3, c.col);                 /* baş */
+    px(sx + d * 4, sy - 6, 1, 1, c.col); px(sx + d * 6, sy - 6, 1, 1, c.col);
+    if (phase2(gameT, 0.5)) { px(sx - d * 6, sy - 9, 1, 1, PAL.cream); px(sx - d * 7, sy - 11, 1, 1, PAL.cream); }
+    return;
+  }
+  var bob = c.st === 'walk' ? (phase2(gameT, 6) ? 1 : 0) : 0;
+  px(sx - 3, sy - 5 - bob, 7, 4, c.col);                 /* gövde */
+  px(sx - 3, sy - 5 - bob, 7, 1, shade(c.col, 16));
+  px(sx + d * 3, sy - 8 - bob, 3, 3, c.col);             /* baş */
+  px(sx + d * 3, sy - 9 - bob, 1, 1, c.col);             /* kulak */
+  px(sx + d * 5, sy - 9 - bob, 1, 1, c.col);
+  dot(sx + d * 4, sy - 7 - bob, PAL.edge);
+  px(sx - d * 4, sy - 8 - bob + (c.st === 'walk' ? (phase2(gameT, 3) ? -1 : 0) : 0), 1, 4, c.col); /* kuyruk */
+  px(sx - 2, sy - 1 - bob, 1, 1, c.col); px(sx + 1, sy - 1 - bob, 1, 1, c.col);
+}
+
+/* --- martı: kanat çırpma 4 kare --- */
+function drawGull(g) {
+  var sx = R(pX(g.x, g.y)), sy = R(pY(g.x, g.y, 46 + Math.sin(g.f * 0.5) * 3));
+  var ph = Math.floor(g.f * 1.4) & 3;
+  var up = ph === 0 ? -2 : ph === 1 ? 0 : ph === 2 ? 2 : 0;
+  px(sx - 4, sy + up, 4, 1, '#ffffff');
+  px(sx + 1, sy + up, 4, 1, '#ffffff');
+  px(sx - 5, sy + (up > 0 ? up - 1 : up + 1), 2, 1, '#e8e8e8');
+  px(sx + 4, sy + (up > 0 ? up - 1 : up + 1), 2, 1, '#e8e8e8');
+  px(sx - 1, sy, 3, 1, '#f0f0f0');
+  px(sx + 2, sy, 1, 1, '#e0a45a');                        /* gaga */
+}
+
+/* --- deniz: bantlar + parıltı + kıyı köpüğü --- */
+var HORIZON_GAP = 40;
+function drawSea() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  var hz = R(horizonY), i;
+  /* gökyüzü (ufkun üstü): yukarı doğru koyulaşan pastel bantlar */
+  if (hz > 0) {
+    var sky = ['#8cc4d8', '#9ccfdd', '#afd9e2', '#c4e3e6', '#d8ece6'];
+    for (i = 0; i < sky.length; i++) {
+      var s0 = Math.floor(hz * i / sky.length), s1 = Math.floor(hz * (i + 1) / sky.length);
+      px(0, s0, W, s1 - s0, sky[i]);
+    }
+  }
+  /* deniz (ufkun altı): uzakta koyu, yakında açık — bantlar ufuktan ekranın altına */
+  var bands = ['#17607f', '#1a6b8c', '#1d7598', '#2180a4', '#258bb0', '#2995bb', '#2ea0c6'];
+  var top = Math.max(0, hz), span = Math.max(1, H - hz);
+  for (i = 0; i < bands.length; i++) {
+    var y0 = Math.max(top, Math.floor(hz + span * Math.pow(i / bands.length, 1.4)));
+    var y1 = i < bands.length - 1 ? Math.floor(hz + span * Math.pow((i + 1) / bands.length, 1.4)) : H;
+    if (y1 > y0) px(0, y0, W, y1 - y0, bands[i]);
+  }
+  /* güneş parıltısı: yatay kırık çizgiler (yalnız denizde) */
+  for (var g = 0; g < 26; g++) {
+    var gy = top + 6 + ((g * 37) % Math.max(1, Math.floor(H - top - 6)));
+    var gx = ((g * 91) % W) + R(Math.sin(gameT * 0.6 + g) * 4);
+    ctx.globalAlpha = 0.10 + 0.07 * Math.abs(Math.sin(gameT * 0.8 + g));
+    px(gx, gy, 5 + (g % 3) * 3, 1, PAL.seaGlint);
+  }
+  ctx.globalAlpha = 1;
+}
+function drawWaves() {
+  for (var i = 0; i < waves.length; i++) {
+    var w = waves[i];
+    var ph = Math.sin(gameT * 0.9 + w.ph);
+    if (ph < 0.15) continue;
+    var sx = pX(w.x, w.y), sy = pY(w.x, w.y, 0);
+    ctx.globalAlpha = Math.min(1, (ph - 0.15) * 2.2);
+    px(sx, sy, w.w, 1, 'rgba(232,246,252,.75)');
+    if (ph > 0.75) px(sx + 1, sy + 1, Math.max(1, w.w - 2), 1, 'rgba(232,246,252,.35)');
+  }
+  ctx.globalAlpha = 1;
+}
+/* --- tekne: gövde + bayrak + sancak feneri, suda sallanır --- */
+function drawBoat(b) {
+  var rock = Math.sin(gameT * 1.1 + b.x) * 1.3;
+  var sx = R(pX(b.x, b.y)), sy = R(pY(b.x, b.y, 0)) + R(rock);
+  /* su izi */
+  ctx.globalAlpha = 0.3; px(sx - 11, sy + 2, 22, 1, PAL.foam); ctx.globalAlpha = 1;
+  px(sx - 10, sy - 4, 20, 5, '#6f3a20');
+  px(sx - 9, sy - 6, 18, 2, '#a8552c');
+  px(sx - 8, sy - 7, 16, 1, '#e8d9b8');
+  px(sx - 10, sy - 4, 20, 1, '#8d4a28');
+  /* mavi bordür (Ege teknesi) */
+  px(sx - 9, sy - 2, 18, 1, PAL.turkuaz);
+  px(sx - 1, sy - 17, 2, 11, '#5d3c1c');                 /* direk */
+  if (b.r) {
+    px(sx + 1, sy - 17, 8, 9, '#e8e2d0');                /* yelken */
+    px(sx + 1, sy - 17, 8, 1, PAL.madder);
+  } else {
+    px(sx + 1, sy - 16, 6, 4, '#e30a17');                /* bayrak */
+    px(sx + 3, sy - 15, 2, 2, '#ffffff');
+  }
+  px(sx + 8, sy - 6, 1, 2, phase2(gameT, 1) ? '#5fd37a' : '#2a6a3c');  /* sancak feneri */
+}
+
+function drawShoal() {
+  for (var i = 0; i < shoal.length; i++) {
+    var f = shoal[i];
+    f.x += f.sp * 0.004;
+    if (f.x > 34) f.x = -26;
+    if (f.x > -1.4 && f.y > -1.4) continue;
+    var sx = pX(f.x, f.y), sy = pY(f.x, f.y, 0) + Math.sin(gameT * 1.4 + f.ph) * 1.2;
+    px(sx, sy, f.s + 2, f.s, 'rgba(10,45,70,.55)');
+  }
+}
+var LANDX = 26.0, LANDY = 24.5;     /* v0.7: doğuda Liman Meydanı için kara genişledi */
+function drawLand() {
+  quad([[pX(-0.7, -0.7), pY(-0.7, -0.7, 0)], [pX(LANDX, -0.7), pY(LANDX, -0.7, 0)],
+        [pX(LANDX, LANDY), pY(LANDX, LANDY, 0)], [pX(-0.7, LANDY), pY(-0.7, LANDY, 0)]], '#cbb98d');
+  /* kuru ot dokusu */
+  ctx.save(); ctx.globalAlpha = 0.5;
+  for (var i = 0; i < grass.length; i++) px(pX(grass[i].x, grass[i].y), pY(grass[i].x, grass[i].y, 0), 2, 1, grass[i].c);
+  ctx.restore();
+  /* v0.1: ıslak kum bandı — kara/deniz geçişini yumuşatır */
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  ctx.strokeStyle = '#b8a97e'; ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(R(pX(LANDX - 0.15, -0.55)), R(pY(LANDX - 0.15, -0.55, 0)));
+  ctx.lineTo(R(pX(-0.55, -0.55)), R(pY(-0.55, -0.55, 0)));
+  ctx.lineTo(R(pX(-0.55, LANDY - 0.15)), R(pY(-0.55, LANDY - 0.15, 0)));
+  ctx.lineTo(R(pX(LANDX - 0.15, LANDY - 0.15)), R(pY(LANDX - 0.15, LANDY - 0.15, 0)));
+  ctx.stroke();
+  /* köpük: hafifçe nefes alır */
+  ctx.globalAlpha = 0.18 + Math.sin(gameT * 0.7) * 0.06;
+  ctx.strokeStyle = '#e8f6fb'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(R(pX(LANDX + 0.1, -0.82)), R(pY(LANDX + 0.1, -0.82, 0)));
+  ctx.lineTo(R(pX(-0.82, -0.82)), R(pY(-0.82, -0.82, 0)));
+  ctx.lineTo(R(pX(-0.82, LANDY + 0.1)), R(pY(-0.82, LANDY + 0.1, 0)));
+  ctx.lineTo(R(pX(LANDX + 0.1, LANDY + 0.1)), R(pY(LANDX + 0.1, LANDY + 0.1, 0)));
+  ctx.stroke();
+  ctx.restore();
+  /* rıhtım kenarı (tüm çevre) */
+  ctx.strokeStyle = '#bdb49c'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(R(pX(LANDX, -0.7)), R(pY(LANDX, -0.7, 0)));
+  ctx.lineTo(R(pX(-0.7, -0.7)), R(pY(-0.7, -0.7, 0)));
+  ctx.lineTo(R(pX(-0.7, LANDY)), R(pY(-0.7, LANDY, 0)));
+  ctx.lineTo(R(pX(LANDX, LANDY)), R(pY(LANDX, LANDY, 0)));
+  ctx.lineTo(R(pX(LANDX, -0.7)), R(pY(LANDX, -0.7, 0)));
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(R(pX(LANDX + 0.35, -1.05)), R(pY(LANDX + 0.35, -1.05, 0)));
+  ctx.lineTo(R(pX(-1.05, -1.05)), R(pY(-1.05, -1.05, 0)));
+  ctx.lineTo(R(pX(-1.05, LANDY + 0.35)), R(pY(-1.05, LANDY + 0.35, 0)));
+  ctx.lineTo(R(pX(LANDX + 0.35, LANDY + 0.35)), R(pY(LANDX + 0.35, LANDY + 0.35, 0)));
+  ctx.closePath(); ctx.stroke();
+}
+
+/* bölge zemini — seviyeye göre görsel (GDD §21.1) */
+/* ---------------------------------------------------------
+   BÖLGE ZEMİNİ v2 — iskele tahtası → arnavut kaldırımı → mozaik
+   Lv1 ham ahşap iskele, Lv2 boyalı tahta + halat, Lv3 kagir rıhtım
+   --------------------------------------------------------- */
+function drawArea(a, i) {
+  var w = a.x1 - a.x0, h = a.y1 - a.y0;
+  if (a.locked) {
+    ctx.save(); ctx.globalAlpha = 0.40;
+    isoQuad(a.x0, a.y0, w, h, 0, '#8d8156');
+    ctx.restore();
+    /* halat çit + kırmızı-beyaz şerit */
+    ctx.save(); ctx.setLineDash([4, 4]); ctx.lineDashOffset = -gameT * 5;
+    ctx.strokeStyle = 'rgba(232,213,168,.6)'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(R(pX(a.x0, a.y0)), R(pY(a.x0, a.y0, 0)));
+    ctx.lineTo(R(pX(a.x1, a.y0)), R(pY(a.x1, a.y0, 0)));
+    ctx.lineTo(R(pX(a.x1, a.y1)), R(pY(a.x1, a.y1, 0)));
+    ctx.lineTo(R(pX(a.x0, a.y1)), R(pY(a.x0, a.y1, 0)));
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+    var mx = (a.x0 + a.x1) / 2, my = a.y0 + 0.45;
+    if (dist2(player.x, player.y, mx, my) < 24) uiLabel(mx, my, 12, NM(a.n), '#e8d5a8', 0.85);
+    return;
+  }
+  var lv = a.lvl;
+  var base = lv >= 3 ? '#c8c0ac' : (lv === 2 ? '#bf8b51' : PAL.wood);
+  isoQuad(a.x0, a.y0, w, h, 0, base);
+
+  if (lv >= 3) {
+    /* arnavut kaldırımı: kare taşlar + derz */
+    ctx.save(); ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = '#9a9483'; ctx.lineWidth = 1;
+    for (var k = a.y0 + 0.5; k < a.y1; k += 0.5) {
+      ctx.beginPath();
+      ctx.moveTo(R(pX(a.x0, k)), R(pY(a.x0, k, 0))); ctx.lineTo(R(pX(a.x1, k)), R(pY(a.x1, k, 0)));
+      ctx.stroke();
+    }
+    for (var k2 = a.x0 + 0.5; k2 < a.x1; k2 += 0.5) {
+      ctx.beginPath();
+      ctx.moveTo(R(pX(k2, a.y0)), R(pY(k2, a.y0, 0))); ctx.lineTo(R(pX(k2, a.y1)), R(pY(k2, a.y1, 0)));
+      ctx.stroke();
+    }
+    ctx.restore();
+    /* kilim şeridi: bölgenin ortasından geçen mozaik yol */
+    var my2 = (a.y0 + a.y1) / 2;
+    ctx.save(); ctx.globalAlpha = 0.55;
+    isoQuad(a.x0 + 0.4, my2 - 0.35, w - 0.8, 0.7, 0.2, '#b8a98c');
+    ctx.restore();
+    for (var m = 0; m < Math.floor(w); m++) {
+      var mxp = R(pX(a.x0 + 0.9 + m, my2)), myp = R(pY(a.x0 + 0.9 + m, my2, 0.6));
+      px(mxp - 2, myp - 1, 2, 1, PAL.madder); px(mxp - 3, myp, 4, 1, PAL.madder); px(mxp - 2, myp + 1, 2, 1, PAL.madder);
+      px(mxp - 1, myp, 1, 1, PAL.saffron);
+    }
+  } else {
+    /* iskele tahtaları */
+    ctx.save(); ctx.globalAlpha = lv === 2 ? 0.30 : 0.24;
+    ctx.strokeStyle = lv === 2 ? '#8a5a2e' : '#7d5228'; ctx.lineWidth = 1;
+    for (var k3 = a.y0 + 1; k3 < a.y1; k3 += 1) {
+      ctx.beginPath();
+      ctx.moveTo(R(pX(a.x0, k3)), R(pY(a.x0, k3, 0))); ctx.lineTo(R(pX(a.x1, k3)), R(pY(a.x1, k3, 0)));
+      ctx.stroke();
+    }
+    ctx.restore();
+    /* çivi başları */
+    for (var n = 0; n < Math.floor(h); n++) {
+      var nx = R(pX(a.x0 + 0.5, a.y0 + 0.5 + n)), ny = R(pY(a.x0 + 0.5, a.y0 + 0.5 + n, 0));
+      dot(nx, ny, 'rgba(90,60,30,.5)');
+      var nx2 = R(pX(a.x1 - 0.5, a.y0 + 0.5 + n)), ny2 = R(pY(a.x1 - 0.5, a.y0 + 0.5 + n, 0));
+      dot(nx2, ny2, 'rgba(90,60,30,.5)');
+    }
+    if (lv >= 2) {                                    /* boyalı kenar şeridi */
+      ctx.save(); ctx.globalAlpha = 0.32;
+      isoQuad(a.x0 + 0.25, a.y0 + 0.25, w - 0.5, 0.22, 0, PAL.turkuaz);
+      isoQuad(a.x0 + 0.25, a.y1 - 0.45, w - 0.5, 0.22, 0, PAL.turkuaz);
+      ctx.restore();
+    }
+  }
+}
+/* çit babası: Lv1 ahşap kazık, Lv2 halatlı, Lv3 taş korkuluk */
+function fencePost(x, y, lv) {
+  var sx = R(pX(x, y)), sy = R(pY(x, y, 0));
+  if (lv >= 3) {
+    px(sx - 2, sy - 13, 4, 13, '#a8a08c');
+    px(sx - 2, sy - 13, 2, 13, '#c0b8a2');
+    px(sx - 3, sy - 15, 6, 2, '#b3aa93');
+    px(sx - 3, sy - 9, 6, 1, PAL.iron);
+  } else {
+    px(sx - 1, sy - 10, 3, 10, PAL.woodDark);
+    px(sx - 1, sy - 10, 2, 10, PAL.wood);
+    px(sx - 2, sy - 11, 5, 1, PAL.woodLite);
+    if (lv >= 2) px(sx - 3, sy - 7, 7, 1, PAL.rope);
+  }
+}
+/* sokak lambası: dökme demir, sıcak ışık, gece titremesi */
+function drawLamp(x, y) {
+  var sx = R(pX(x, y)), sy = R(pY(x, y, 0));
+  px(sx - 1, sy - 24, 3, 24, '#3c4650');
+  px(sx - 1, sy - 24, 1, 24, '#586773');
+  px(sx - 3, sy - 6, 7, 2, '#2b3a45');              /* kaide */
+  px(sx - 4, sy - 30, 9, 5, '#2b3a45');             /* fener gövdesi */
+  var glow = 0.75 + Math.sin(gameT * 3.1) * 0.12;
+  px(sx - 3, sy - 29, 7, 3, 'rgba(255,217,138,' + glow + ')');
+  px(sx - 3, sy - 31, 7, 1, '#4a5a66');
+  px(sx - 1, sy - 32, 3, 1, '#2b3a45');
+  /* süs kıvrımı */
+  px(sx - 5, sy - 25, 2, 1, '#3c4650'); px(sx + 4, sy - 25, 2, 1, '#3c4650');
+  var p = clamp(day.t / DAY_LEN, 0, 1);
+  var night = p > 0.7 || p < 0.1 || day.phase === 'closing' || day.phase === 'summary';
+  ctx.save(); ctx.globalAlpha = night ? 0.30 : 0.13;
+  quad([[sx - 13, sy], [sx, sy - 8], [sx + 13, sy], [sx, sy + 8]], '#ffd98a');
+  ctx.restore();
+}
+/* bölge tabelası: ahşap levha + demir askı + kilim çentiği */
+/* v1.3.2: bölge adı ana tezgâhın tentesindeki tahta levhada — ayrı bir yer kaplamaz, hiçbir şeyin önüne düşmez */
+function drawStallSign(c) {
+  var a = AREAS[c.z];
+  if (!a || a.locked || a.lvl < 2 || dist2(player.x, player.y, c.x, c.y) > 60) return;
+  var sx = R(pX(c.x, c.y)), top = 27, sy = R(pY(c.x, c.y, 12)) - top;
+  var s = UP(NM(a.n)), fs = 7;
+  uctx.font = uiFont(fs);
+  var w = Math.max(30, R((uctx.measureText(s).width + 12) / PXS)), h = R((fs + 7) / PXS);
+  px(sx - 9, sy, 2, 2, '#4a3220'); px(sx + 7, sy, 2, 2, '#4a3220');          /* askı */
+  px(sx - w / 2 - 1, sy - h - 1, w + 2, h + 2, '#4a3220');
+  px(sx - w / 2, sy - h, w, h, '#c9a15e');
+  px(sx - w / 2, sy - h, w, 1, '#ddb877');
+  for (var i = 0; i < 3; i++) {                                               /* kilim çentikleri */
+    px(sx - w / 2 + 1 + i * 2, sy - h + 1, 1, 1, PAL.madder);
+    px(sx + w / 2 - 2 - i * 2, sy - 1, 1, 1, PAL.madder);
+  }
+  uiText(c.x, c.y, 12, s, '#3a2401', fs, 0.95, 0, -top - h / 2 + fs / (2.6 * PXS), 'rgba(233,213,168,.85)');
+}
+
+/* =========================================================
+   ÇİZİM — istasyonlar / yapılar / proje / süs
+   ========================================================= */
+/* ---------------------------------------------------------
+   İSTASYONLAR v2 — Anadolu balıkçı limanı detaylarıyla
+   Ağ makarası, kesim tezgâhı, fümehane ocağı, pazar tezgâhı.
+   Her istasyonun kendi çalışma animasyonu var.
+   --------------------------------------------------------- */
+
+/* --- AĞ NOKTASI: iskele babası + ağ makarası + ağ tamir sopası --- */
+function drawSpot(s) {
+  var sx = R(pX(s.x, s.y)), sy = R(pY(s.x, s.y, 0));
+  var busy = s.stock.length < areaStock(s.z);
+  var spin = busy ? Math.sin(gameT * 2.2) : 0;
+
+  /* iskele babası (halat bağlama) */
+  px(sx - 4, sy - 15, 8, 15, PAL.woodDark);
+  px(sx - 4, sy - 15, 5, 15, PAL.wood);
+  px(sx - 4, sy - 15, 8, 2, PAL.woodLite);
+  px(sx - 5, sy - 11, 10, 2, PAL.rope);                 /* sarılı halat */
+  px(sx - 5, sy - 8, 10, 1, shade(PAL.rope, -22));
+
+  /* ağ makarası (dönen) */
+  px(sx - 7, sy - 24, 14, 9, PAL.woodDark);
+  px(sx - 6, sy - 23, 12, 7, '#ded1a8');
+  for (var i = -5; i <= 5; i += 2) {
+    var off = R(spin * 1.2);
+    px(sx + i + off, sy - 23, 1, 7, 'rgba(120,110,70,.55)');
+  }
+  px(sx - 8, sy - 21, 2, 3, PAL.iron);                  /* mil */
+  px(sx + 6, sy - 21, 2, 3, PAL.iron);
+  px(sx - 7, sy - 25, 14, 1, PAL.woodLite);
+
+  /* suya uzanan ağ — dalgayla oynar */
+  var ex = s.face === 'n' ? s.x + 0.2 : s.x - 3.0, ey = s.face === 'n' ? s.y - 3.0 : s.y + 0.2;
+  ctx.strokeStyle = 'rgba(236,230,196,.85)'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(sx, sy - 24);
+  ctx.quadraticCurveTo(R((sx + pX(ex, ey)) / 2), R(pY((s.x + ex) / 2, (s.y + ey) / 2, 34 + Math.sin(gameT * 1.1) * 4)),
+    R(pX(ex, ey)), R(pY(ex, ey, 2)));
+  ctx.stroke();
+  /* şamandıralar (mantar) */
+  for (var f = 1; f <= 2; f++) {
+    var tt = f / 3;
+    var mx = s.x + (ex - s.x) * tt, my = s.y + (ey - s.y) * tt;
+    var fz = 20 + Math.sin(gameT * 1.1 + f) * 3;
+    px(R(pX(mx, my)) - 1, R(pY(mx, my, fz)) - 1, 3, 3, f % 2 ? PAL.madder : PAL.cream);
+  }
+  /* ağın deniz üstündeki gölgesi */
+  ctx.save(); ctx.globalAlpha = 0.38;
+  isoQuad(ex - 0.8, ey - 0.8, 1.6, 1.6, 0, '#dff0f8');
+  ctx.restore();
+
+  /* balık sandığı + sepet */
+  isoBox(s.x - 0.62, s.y + 0.42, 1.24, 0.95, 0, 6, '#7a5230', '#4f3220', '#63401f');
+  px(R(pX(s.x, s.y + 0.9)) - 7, R(pY(s.x, s.y + 0.9, 6)) - 1, 14, 1, PAL.woodLite);
+  drawStack(s.x, s.y + 0.9, s.stock, 6, 3.2);
+  /* hasır sepet yanında */
+  var bx = R(pX(s.x + 0.9, s.y + 0.2)), by = R(pY(s.x + 0.9, s.y + 0.2, 0));
+  px(bx - 4, by - 6, 8, 6, '#b8924f');
+  px(bx - 4, by - 6, 8, 1, '#d6b174');
+  px(bx - 4, by - 3, 8, 1, '#96763f');
+  labelAt(s.x, s.y + 1.8, 30, T('stNet') + ' ' + s.stock.length, '#bfe9ff', '' + s.stock.length);
+}
+
+/* --- KAPALI TEZGÂH: kepenk inik, tente toplanmış, KAPALI levhası --- */
+function drawCounterClosed(c) {
+  isoBox(c.x - 0.58, c.y - 1.05, 1.16, 2.1, 0, 12, '#8e7350', '#5a3a20', '#6d472a');
+  var sx = R(pX(c.x, c.y)), sy = R(pY(c.x, c.y, 12));
+  var by = R(pY(c.x, c.y, 0));
+  /* inik kepenk */
+  px(sx - 12, by - 12, 24, 12, '#4a5258');
+  for (var g = 0; g < 4; g++) px(sx - 12, by - 10 + g * 3, 24, 1, '#5f686f');
+  px(sx - 12, by - 12, 24, 1, '#8b949c');
+  px(sx - 2, by - 5, 4, 1, PAL.brass);
+  /* toplanmış tente */
+  px(sx - 13, sy - 14, 26, 3, PAL.woodDark);
+  px(sx - 11, sy - 12, 22, 2, '#9a6c4e');
+  px(sx - 13, sy - 14, 2, 14, PAL.woodDark); px(sx + 11, sy - 14, 2, 14, PAL.woodDark);
+  /* KAPALI levhası */
+  px(sx - 9, sy - 9, 18, 8, '#3a2a1c');
+  px(sx - 8, sy - 8, 16, 6, '#c9a15e');
+  px(sx - 6, sy - 6, 12, 1, '#3a2401');
+  px(sx - 6, sy - 4, 8, 1, '#3a2401');
+  ctx.save(); ctx.globalAlpha = 0.5 + Math.sin(gameT * 2) * 0.15;
+  px(sx - 14, sy - 16, 28, 1, PAL.gold); ctx.restore();
+  if (dist2(player.x, player.y, c.x, c.y) < 26)
+    uiLabel(c.x, c.y - 1.5, 30,
+      (c.fish ? NM(FISH[c.fish].n) : T('stStall')) + ' — ' + T('stallClosed'), '#c9a15e', 1);
+  if (dist2(player.x, player.y, c.x, c.y) < 9)
+    uiLabel(c.x, c.y - 1.5, 44, T('howToOpen'), '#9df5b0', 1);
+}
+
+/* --- KESİM MASASI: mermer tezgâh, zeytin ağacı kütük, satır --- */
+function drawTable(tb) {
+  var sx0 = R(pX(tb.x, tb.y)), sy0 = R(pY(tb.x, tb.y, 0));
+  /* ahşap ayaklar */
+  px(sx0 - 13, sy0 - 6, 2, 6, PAL.woodDark);
+  px(sx0 + 11, sy0 - 6, 2, 6, PAL.woodDark);
+  isoBox(tb.x - 0.72, tb.y - 0.52, 1.44, 1.04, 0, 11, PAL.wood, PAL.woodDark, '#85552f');
+  var sx = R(pX(tb.x, tb.y)), sy = R(pY(tb.x, tb.y, 11));
+  /* mermer üst */
+  px(sx - 14, sy - 4, 28, 5, '#ddd6c4');
+  px(sx - 14, sy - 4, 28, 1, '#f0ebde');
+  px(sx - 10, sy - 2, 5, 1, '#c6bda8'); px(sx + 3, sy - 3, 6, 1, '#c6bda8');
+  /* zeytin kütük */
+  px(sx - 5, sy - 8, 9, 5, '#9a7340');
+  px(sx - 5, sy - 8, 9, 1, '#bb9055');
+  px(sx - 3, sy - 7, 2, 1, '#7a5a30'); px(sx + 1, sy - 6, 2, 1, '#7a5a30');
+  /* satır — çalışırken iner kalkar */
+  var chop = tb.cur ? (phase2(gameT, tb.worker ? 7 : 4.5) ? 1 : 0) : 0;
+  if (tb.cur && chop && !tb._ch) sfx.chop();
+  tb._ch = chop;
+  var cy = sy - 9 - chop * 4;
+  px(sx + 5, cy, 2, 6, '#5a4630');                      /* sap */
+  px(sx + 3, cy - 4, 6, 4, '#e2eaf0');                  /* ağız */
+  px(sx + 3, cy - 4, 6, 1, '#f7fbfd');
+  if (tb.cur) {
+    drawItem(tb.cur, sx - 2, sy - 5);
+    if (chop) { px(sx + 1, sy - 7, 1, 1, PAL.cream); px(sx + 3, sy - 8, 1, 1, PAL.cream); }
+    var pr = clamp(tb.t / FISH[tb.cur.f].cut, 0, 1);
+    px(sx - 9, sy - 18, 18, 3, PAL.edge);
+    px(sx - 9, sy - 18, R(18 * pr), 3, PAL.green);
+  }
+  /* asılı bıçak rafı */
+  px(sx - 13, sy - 14, 8, 1, PAL.iron);
+  px(sx - 12, sy - 13, 1, 4, '#cfd8de'); px(sx - 9, sy - 13, 1, 3, '#cfd8de');
+  drawStack(tb.x - 0.25, tb.y + 0.1, tb.inn, 11, 3.2);
+  var tfn = tableFishNames(tb);
+  labelAt(tb.x, tb.y + 1.15, 24,
+    (tfn.length ? T('tableFor', { n: tfn.join(', ') }) : T('tableAny')) + (tb.worker ? ' ★' : ''),
+    '#ffe6bf', tb.inn.length ? '' + tb.inn.length : '');
+  /* hasır tepsi (fileto) */
+  isoQuad(tb.mat.x - 0.62, tb.mat.y - 0.52, 1.24, 1.04, 0.4, '#b8924f');
+  isoQuad(tb.mat.x - 0.48, tb.mat.y - 0.4, 0.96, 0.8, 0.9, '#efe6d2');
+  if (tableTypes(tb) > 1) {                           /* v1.3: türler ayrı yığınlarda */
+    var fl = zoneFish(tb.z).filter(function (f) { return canSell(f); });
+    for (var pi = 0; pi < fl.length; pi++) {
+      var ofs = (pi - (fl.length - 1) / 2) * 0.34;
+      drawStack(tb.mat.x + ofs, tb.mat.y + ofs * 0.8, tb.mat.items.filter(function (it) { return it.f === fl[pi]; }), 2.4, 3.2);
+    }
+  } else drawStack(tb.mat.x, tb.mat.y, tb.mat.items, 2.4, 3.2);
+}
+
+/* --- FÜMEHANE: kagir ocak, teneke baca, kiremit şapka --- */
+function drawSmoker() {
+  var s = smoker;
+  isoBox(s.x - 0.8, s.y - 0.65, 1.6, 1.3, 0, 14, PAL.stone, PAL.stoneDark, '#a5977c');
+  var sx = R(pX(s.x, s.y)), sy = R(pY(s.x, s.y, 14));
+  /* taş örgü dokusu */
+  for (var r = 0; r < 3; r++) for (var c = 0; c < 3; c++)
+    px(sx - 9 + c * 7 + (r % 2 ? 3 : 0), sy - 2 + r * 4, 6, 3, r % 2 ? '#c2b295' : '#cdbfa2');
+  /* ocak ağzı + ateş */
+  px(sx - 6, sy - 6, 12, 6, '#2e2119');
+  var fl = 0.55 + Math.abs(Math.sin(gameT * 7)) * 0.4;
+  px(sx - 5, sy - 3, 10, 3, 'rgba(255,150,60,' + fl + ')');
+  px(sx - 3, sy - 4, 6, 2, 'rgba(255,214,120,' + fl + ')');
+  /* baca */
+  px(sx - 3, sy - 22, 6, 16, PAL.zinc);
+  px(sx - 3, sy - 22, 3, 16, PAL.ironLite);
+  px(sx - 5, sy - 24, 10, 3, PAL.zincDark);
+  /* kiremit şapka */
+  px(sx - 11, sy - 8, 22, 3, PAL.tile);
+  px(sx - 11, sy - 8, 22, 1, PAL.tileLite);
+  /* asılı füme balıklar */
+  px(sx - 10, sy - 14, 20, 1, '#6f4526');
+  for (var h = 0; h < 4; h++) {
+    var hx = sx - 8 + h * 5, sw = Math.sin(gameT * 1.4 + h) * 0.6;
+    px(hx + R(sw), sy - 13, 1, 3, '#8d6a40');
+    px(hx - 1 + R(sw), sy - 10, 3, 4, '#c9863c');
+    px(hx - 1 + R(sw), sy - 10, 3, 1, '#e0a45a');
+  }
+  if (s.cur) {
+    for (var i = 0; i < 4; i++) {
+      var t = (gameT * 0.45 + i * 0.25) % 1;
+      ctx.globalAlpha = (1 - t) * 0.42;
+      px(sx - 2 + Math.sin(t * 5 + i) * 5, sy - 26 - t * 24, 3 + t * 3, 2 + t * 2, '#e8e2d8');
+    }
+    ctx.globalAlpha = 1;
+    var pr = clamp(s.t / FUME_TIME, 0, 1);
+    px(sx - 9, sy - 30, 18, 3, PAL.edge);
+    px(sx - 9, sy - 30, R(18 * pr), 3, PAL.gold);
+  }
+  drawStack(s.x + 0.4, s.y + 0.3, s.inn, 14, 3.2);
+  labelAt(s.x, s.y + 1.5, 40, T('stSmoke'), '#ffd3a0', s.inn.length ? '' + s.inn.length : '');
+  isoQuad(s.mat.x - 0.62, s.mat.y - 0.52, 1.24, 1.04, 0.4, '#b8924f');
+  isoQuad(s.mat.x - 0.48, s.mat.y - 0.4, 0.96, 0.8, 0.9, '#e6d5b8');
+  drawStack(s.mat.x, s.mat.y, s.mat.items, 2.4, 3.2);
+}
+
+/* --- PAZAR TEZGÂHI: çizgili tente, buz yatağı, fiyat tabelası, terazi --- */
+function drawFumeMachine(c) {
+  var fp = fumePos(c), mx = fp.x, my = fp.y;
+  isoBox(mx - 0.35, my - 0.35, 0.7, 0.7, 0, 14, '#8a8478', '#5f5a50', '#736d62');
+  var sx = R(pX(mx, my)), sy = R(pY(mx, my, 14));
+  px(sx - 1, sy - 8, 3, 8, '#4a4540'); px(sx - 2, sy - 9, 5, 2, '#5f5a50');       /* baca */
+  px(sx - 4, sy + 5, 8, 2, c.fmOn ? '#e8762b' : '#3a3530');                       /* ateş penceresi */
+  if (c.fmOn && Math.sin(gameT * 3 + c.x) > 0.2) { ctx.globalAlpha = 0.5; px(sx - 1 + R(Math.sin(gameT * 2) * 2), sy - 14 - R((gameT * 8) % 6), 3, 3, '#e8e2d6'); ctx.globalAlpha = 1; }
+}
+function drawCounter(c) {
+  if (!c.open) { drawCounterClosed(c); return; }
+  if (c.key === 'hal') { drawHalCounter(c); return; }
+  if (c.z !== smoker.z && fumeMachine(c.z) && !AREAS[c.z].locked) drawFumeMachine(c);
+  /* gövde: ahşap + önde kilim eteği */
+  isoBox(c.x - 0.58, c.y - 1.05, 1.16, 2.1, 0, 12, '#c08a52', '#7d4f2b', '#95602f');
+  var sx = R(pX(c.x, c.y)), sy = R(pY(c.x, c.y, 12));
+  var by = R(pY(c.x, c.y, 0));
+  /* kilim eteği (baklava motifi) */
+  px(sx - 12, by - 9, 24, 8, PAL.madder);
+  px(sx - 12, by - 9, 24, 1, shade(PAL.madder, 20));
+  px(sx - 12, by - 8, 24, 1, PAL.saffron);
+  for (var k = 0; k < 6; k++) {
+    var kx = sx - 11 + k * 4;
+    px(kx + 1, by - 6, 1, 1, PAL.cream);
+    px(kx, by - 5, 3, 1, PAL.cream);
+    px(kx + 1, by - 4, 1, 1, PAL.cream);
+    px(kx + 1, by - 5, 1, 1, PAL.indigo);
+  }
+  px(sx - 12, by - 2, 24, 1, PAL.saffron);
+  /* buz yatağı */
+  px(sx - 12, sy - 4, 24, 4, '#cfe6f2');
+  px(sx - 12, sy - 4, 24, 1, '#eaf6fb');
+  for (var b2 = 0; b2 < 6; b2++) px(sx - 10 + b2 * 4, sy - 3, 2, 2, '#aed6e8');
+  /* tente: kırmızı-beyaz çizgili, hafif sallanır */
+  var sw2 = Math.sin(gameT * ANIM.waveFps) * 0.8;
+  for (var i = 0; i < 7; i++) {
+    var yy = sy - 24 + i;
+    px(sx - 13 + i, yy, 3, 2, i % 2 ? PAL.madder : '#f4f0e4');
+    px(sx + 10 - i, yy, 3, 2, i % 2 ? '#f4f0e4' : PAL.madder);
+  }
+  /* tente saçağı (dalgalı) */
+  for (var d = 0; d < 7; d++) px(sx - 13 + d * 4, sy - 17 + R(Math.sin(gameT * 1.3 + d) * 0.7), 3, 2, d % 2 ? PAL.madder : '#f4f0e4');
+  px(sx - 14, sy - 25, 28, 2, PAL.woodDark);
+  px(sx - 14, sy - 25, 2, 25, PAL.woodDark); px(sx + 12, sy - 25, 2, 25, PAL.woodDark);
+  if (/^b\d$/.test(c.key)) drawStallSign(c);
+  /* terazi */
+  px(sx + 9, sy - 13, 1, 9, PAL.brass);
+  px(sx + 6, sy - 14, 7, 1, PAL.brass);
+  px(sx + 6, sy - 13 + R(sw2), 2, 1, PAL.brassLite);
+  px(sx + 11, sy - 13 - R(sw2), 2, 1, PAL.brassLite);
+  /* fiyat tabelası (tebeşir) */
+  if (c.fish) {
+    px(sx - 13, sy - 12, 9, 7, '#2e2a26');
+    px(sx - 12, sy - 11, 7, 5, '#3a3631');
+    px(sx - 11, sy - 10, 5, 1, '#e8ddc8'); px(sx - 11, sy - 8, 3, 1, '#e8ddc8');
+  }
+  drawStack(c.x, c.y, c.buffer, 12, 3.2);
+  labelAt(c.x, c.y - 1.5, 46, (c.fish ? NM(FISH[c.fish].n) : T('stStall')) + ' ' + c.buffer.length + '/' + counterMax(c),
+    '#ffd9a8', '' + c.buffer.length);
+  if (c.fish && zoneAuto(zoneOfFish(c.fish))) labelAt(c.x, c.y - 1.5, 58, T('autoBadge'), '#ffc94a', 'auto');
+  /* para tepsisi: bakır sini */
+  drawTray(c);
+}
+function drawTray(c) {
+  var tr = c.tray;
+  isoQuad(tr.x - 0.4, tr.y - 0.34, 0.8, 0.68, 0.4, '#8a6a20');
+  isoQuad(tr.x - 0.3, tr.y - 0.25, 0.6, 0.5, 0.9, PAL.brass);
+  drawStack(tr.x, tr.y, tr.items, 2.4, 3.2);
+  if (trayFull(c)) labelAt(tr.x, tr.y + 0.95, 10, T('trayFull'), (Math.sin(gameT * 6) > 0 ? '#ff9b8a' : '#ffd0c8'), '!');
+  else if (tr.items.length) labelAt(tr.x, tr.y + 0.95, 10, T('stTake') + ' ' + money(trayValue(c)), '#9df5b0', '$');
+}
+
+/* Kapalı Pazar'ın tezgâhı binanın içinde: yalnız ürün yığını, etiket ve para tepsisi çizilir */
+function drawHalCounter(c) {
+  drawStack(c.x, c.y + 0.6, c.buffer, 16, 3.2);
+  labelAt(c.x, c.y - 0.4, 60, (c.fish ? NM(FISH[c.fish].n) : T('stStall')) + ' ' + c.buffer.length + '/' + counterMax(c), '#ffd9a8', '' + c.buffer.length);
+  drawTray(c);
+}
+/* galvaniz çöp kovası: kapak atınca zıplar; elinde mal varken "ÇÖP" etiketi */
+function drawBin(bn) {
+  var pop = bn.pop * 2;
+  shadow(bn.x, bn.y, 0.42);
+  isoBox(bn.x - 0.28, bn.y - 0.28, 0.56, 0.56, 0, 9, '#9aa4ab', '#6c767d', '#818b92');
+  var sx = R(pX(bn.x, bn.y)), sy = R(pY(bn.x, bn.y, 9));
+  px(sx - 5, sy - 1, 10, 1, '#5a646b');                 /* çember */
+  px(sx - 5, sy + 4, 10, 1, '#5a646b');
+  px(sx - 6, sy - 3 - pop, 12, 2, '#6f7a81');           /* kapak */
+  px(sx - 1, sy - 5 - pop, 2, 2, '#4d575e');            /* kulp */
+  if (hasCarry(player, isTrash) && dist2(player.x, player.y, bn.x, bn.y) < 9)
+    labelAt(bn.x, bn.y, 22, T('stBin'), binT > 0 ? '#ffc94a' : '#e8e2d2', '🗑');
+}
+function drawSafe() {
+  var pop = safe.pop * 2;
+  isoBox(safe.x - 0.5, safe.y - 0.5, 1.0, 1.0, 0, 10 + pop, '#3f8f56', '#22603a', '#2d7546');
+  var sx = R(pX(safe.x, safe.y)), sy = R(pY(safe.x, safe.y, 10 + pop));
+  px(sx - 5, sy - 2, 10, 2, '#25693c');
+  uiText(safe.x, safe.y, 10 + pop, '₺', '#e9ffe9', 13, 1, 0, 8);
+  labelAt(safe.x, safe.y, 30 + pop, T('stSafe'), '#b7f7c7', '');
+}
+
+/* ---------- yapılar ---------- */
+/* ---------- v2.0: yapı noktası binaları (Anadolu detayı) ---------- */
+function drawBuilding(s) {
+  var id = s.b, sx = R(pX(s.x, s.y)), sy = R(pY(s.x, s.y, 0));
+  if (id === 'kulube') {                                  /* personel kulübesi */
+    shadow(s.x, s.y, 0.8);
+    isoBox(s.x - 0.62, s.y - 0.62, 1.24, 1.24, 0, 13, '#d2a468', '#7a4e2a', '#9a6836');
+    wallWood(sx, sy, 22, 12, '#9a6836');
+    roofTile(sx, sy - 13, 26, 2);
+    px(sx - 3, sy - 11, 7, 11, '#5a4230');
+    px(sx - 1, sy - 6, 1, 2, PAL.brass);
+    windowTR(sx - 10, sy - 10, 5, 5, false);
+    px(sx - 12, sy - 4, 5, 4, PAL.madder);                /* saksı */
+    px(sx - 12, sy - 7, 5, 3, PAL.leaf);
+  } else if (id === 'cay') {                              /* çay ocağı — semaver */
+    shadow(s.x, s.y, 0.6);
+    isoBox(s.x - 0.48, s.y - 0.48, 0.96, 0.96, 0, 8, '#a9743f', '#5d3c1c', '#6f4830');
+    px(sx - 5, sy - 17, 10, 9, PAL.brass);                /* semaver gövdesi */
+    px(sx - 5, sy - 17, 5, 9, PAL.brassLite);
+    px(sx - 6, sy - 19, 12, 2, '#9a7320');
+    px(sx - 2, sy - 21, 4, 2, PAL.brass);
+    px(sx + 5, sy - 14, 2, 3, PAL.brass);                 /* musluk */
+    ctx.globalAlpha = 0.32 + Math.sin(gameT * 3) * 0.1;
+    px(sx - 1, sy - 26, 2, 5, '#ffffff'); ctx.globalAlpha = 1;
+    /* ince belli bardaklar */
+    px(sx - 9, sy - 9, 2, 3, '#d8a45a'); px(sx - 6, sy - 9, 2, 3, '#d8a45a');
+    px(sx - 9, sy - 10, 2, 1, PAL.cream); px(sx - 6, sy - 10, 2, 1, PAL.cream);
+  } else if (id === 'tezgah') {
+    px(sx - 9, sy - 16, 18, 3, PAL.wood);
+  } else if (id === 'pano') {                             /* reklam panosu */
+    px(sx - 2, sy - 13, 2, 13, PAL.woodDark); px(sx + 1, sy - 13, 2, 13, PAL.woodDark);
+    px(sx - 13, sy - 28, 27, 16, PAL.edge);
+    px(sx - 12, sy - 27, 25, 14, '#e8e0cc');
+    px(sx - 12, sy - 27, 25, 4, PAL.madder);
+    px(sx - 12, sy - 16, 25, 3, PAL.madder);
+    for (var i = 0; i < 6; i++) px(sx - 10 + i * 4, sy - 26, 2, 2, PAL.cream);
+    if (dist2(player.x, player.y, s.x, s.y) < 50) uiText(s.x, s.y, 0, lang === 'tr' ? 'TAZE BALIK' : 'FRESH FISH', '#1a4a6b', 7, 1, 0, -19, 'rgba(240,235,220,.9)');
+  } else if (id === 'depo') {                             /* v1.5 Soğuk Sandık: palet üstünde mavi buz sandığı (bina değil) */
+    shadow(s.x, s.y, 0.7);
+    isoBox(s.x - 0.52, s.y - 0.38, 1.04, 0.76, 0, 2, '#b8895a', '#7a4e2a', '#9a6a3d');
+    isoBox(s.x - 0.45, s.y - 0.32, 0.9, 0.64, 2, 11, '#3f86b8', '#255a80', '#2f6f9f');
+    isoBox(s.x - 0.47, s.y - 0.34, 0.94, 0.68, 11, 13, '#f4f8fa', '#cfdde5', '#dde8ee');
+    wallQ(s.x - 0.3, s.y + 0.32, s.x + 0.3, s.y + 0.32, 5, 7, '#f4f8fa');           /* beyaz şerit */
+    wallQ(s.x - 0.08, s.y + 0.32, s.x + 0.08, s.y + 0.32, 9, 11, '#dde3e6');         /* mandal */
+    wallQ(s.x + 0.45, s.y - 0.12, s.x + 0.45, s.y + 0.12, 6, 8, '#cfdde5');          /* yan tutamak */
+    var tsx = R(pX(s.x + 0.2, s.y + 0.32)), tsy = R(pY(s.x + 0.2, s.y + 0.32, 13));  /* kapaktan taşan balık kuyruğu */
+    px(tsx, tsy - 2, 3, 2, '#8fa7b3'); px(tsx + 2, tsy - 4, 2, 2, '#a9bfca');
+    if (Math.random() < 0.02) addPuff(s.x, s.y, '#eef7fb');
+  } else if (id === 'vinc') {                             /* ağ vinci */
+    px(sx - 1, sy - 32, 3, 32, PAL.brass);
+    px(sx - 13, sy - 34, 26, 3, PAL.brass);
+    px(sx + 10, sy - 31, 1, 10, PAL.ironLite);
+    px(sx + 8, sy - 21, 5, 4, PAL.wood);
+    px(sx - 7, sy - 4, 14, 4, '#3c4650');
+    px(sx - 7, sy - 5, 14, 1, '#5a6772');
+  } else if (id === 'agsaha') {                           /* ağ tamir sahası */
+    px(sx - 14, sy - 18, 2, 18, PAL.woodDark);
+    px(sx + 12, sy - 18, 2, 18, PAL.woodDark);
+    px(sx - 14, sy - 19, 28, 2, PAL.woodDark);
+    ctx.globalAlpha = 0.9;
+    for (var r2 = 0; r2 < 6; r2++) px(sx - 13, sy - 16 + r2 * 3 + R(Math.sin(gameT * 1.1 + r2) * 0.6), 26, 1, '#ded1a8');
+    for (var c2 = 0; c2 < 9; c2++) px(sx - 13 + c2 * 3, sy - 16, 1, 16, '#ded1a8');
+    ctx.globalAlpha = 1;
+    px(sx - 8, sy - 6, 3, 3, PAL.madder); px(sx + 4, sy - 9, 3, 3, PAL.cream);
+    px(sx - 3, sy - 4, 7, 4, '#b8924f');                  /* mekik sepeti */
+    px(sx - 3, sy - 5, 7, 1, '#d6b174');
+  } else if (id === 'kantar') {                           /* kantar */
+    shadow(s.x, s.y, 0.7);
+    px(sx - 9, sy - 4, 19, 4, '#8e8878');
+    px(sx - 9, sy - 5, 19, 1, '#aaa494');
+    px(sx - 1, sy - 22, 2, 18, PAL.iron);
+    px(sx - 9, sy - 24, 19, 2, PAL.iron);
+    var tilt = R(Math.sin(gameT * 1.3) * 1);
+    px(sx - 9, sy - 23 + tilt, 5, 1, PAL.brass);
+    px(sx + 5, sy - 23 - tilt, 5, 1, PAL.brass);
+    px(sx - 8, sy - 22 + tilt, 3, 2, PAL.brassLite);
+    px(sx + 6, sy - 22 - tilt, 3, 2, PAL.brassLite);
+    px(sx - 3, sy - 18, 7, 6, '#2e2a26');                 /* gösterge */
+    px(sx - 2, sy - 17, 5, 4, '#cfe6a8');
+  } else if (id === 'cekek') {                            /* çekek yeri */
+    for (var k = 0; k < 7; k++) px(sx - 20 + k * 4, sy + 1 + k, 20, 2, '#7a5e3a');
+    px(sx - 2, sy - 20, 3, 16, PAL.iron);                 /* ırgat */
+    px(sx - 6, sy - 22, 11, 3, PAL.iron);
+    px(sx - 6, sy - 19, 2, 4, PAL.ironLite);
+    /* kızak üstünde sandal */
+    px(sx - 11, sy - 11, 22, 5, '#8a5a2e');
+    px(sx - 10, sy - 13, 20, 2, '#a8683a');
+    px(sx - 9, sy - 14, 18, 1, '#e8d9b8');
+    px(sx - 9, sy - 9, 18, 1, PAL.turkuaz);
+    px(sx - 1, sy - 22, 2, 9, '#5d3c1c');
+  }
+}
+
+
+function drawSlot(s) {
+  if (s.b) { drawBuilding(s); return; }
+  var near = dist2(player.x, player.y, s.x, s.y) < 40;
+  ctx.save(); ctx.globalAlpha = near ? 0.9 : 0.45;
+  ctx.setLineDash([3, 3]); ctx.lineDashOffset = -gameT * 6;
+  ctx.strokeStyle = '#c9a15e'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(R(pX(s.x - 0.6, s.y - 0.5)), R(pY(s.x - 0.6, s.y - 0.5, 0.4)));
+  ctx.lineTo(R(pX(s.x + 0.6, s.y - 0.5)), R(pY(s.x + 0.6, s.y - 0.5, 0.4)));
+  ctx.lineTo(R(pX(s.x + 0.6, s.y + 0.5)), R(pY(s.x + 0.6, s.y + 0.5, 0.4)));
+  ctx.lineTo(R(pX(s.x - 0.6, s.y + 0.5)), R(pY(s.x - 0.6, s.y + 0.5, 0.4)));
+  ctx.closePath(); ctx.stroke(); ctx.restore();
+  if (near) uiText(s.x, s.y, 7, '🔨', '#ffc94a', 13, 0.9);
+}
+
+/* ---------- büyük proje aşamaları ---------- */
+/* =========================================================
+   v0.4 — GÖRSEL EVRİM (§36): her seviyede siluet + malzeme değişir
+   Lv1 geçici/ahşap → Lv3 taş/tuğla/metal → Lv5 ticari kompleks
+   ========================================================= */
+/* =========================================================
+   BİNA GÖRSEL EVRİMİ v2 — ANADOLU LİMAN MİMARİSİ
+   Lv1 ahşap baraka + çinko çatı      (geçici yapı)
+   Lv2 boyalı ahşap + sundurma        (esnaflaşma)
+   Lv3 kagir taş/kerpiç + kiremit     (kalıcı yapı)
+   Lv4 cumbalı ikinci kat + demir korkuluk
+   Lv5 kemerli cephe + çini kuşak + tabela + bayrak
+   ========================================================= */
+var SERV_MAT = [
+  { top: '#c18f56', l: '#6f4526', r: '#8d5f33', roof: 'zinc',  foot: 0.96, h: 15, mat: 'wood'  },
+  { top: '#d2a468', l: '#7a4e2a', r: '#9a6836', roof: 'zinc',  foot: 1.05, h: 19, mat: 'paint' },
+  { top: '#d9cfb4', l: '#948765', r: '#bdae8c', roof: 'tile',  foot: 1.13, h: 24, mat: 'stone' },
+  { top: '#e8dfc8', l: '#a2947a', r: '#cbbc9a', roof: 'tile',  foot: 1.21, h: 29, mat: 'stone' },
+  { top: '#f2ead6', l: '#b0a184', r: '#dccba8', roof: 'tile', foot: 1.29, h: 35, mat: 'kagir' }
+];
+/* kiremit çatı (Anadolu alaturka kiremit) */
+function roofTile(sx, sy, w, lv) {
+  var n = 6 + lv;
+  for (var r = 0; r < n; r++) {
+    var ww = w - r * 3.2;
+    if (ww < 3) break;
+    px(sx - ww / 2, sy - 3 - r * 1.5, ww, 2, r % 2 ? PAL.tile : PAL.tileLite);
+  }
+  px(sx - w / 2 - 2, sy - 2, w + 4, 3, PAL.tileDark);      /* saçak */
+  px(sx - w / 2 - 2, sy - 2, w + 4, 1, PAL.tileLite);
+}
+/* çinko oluklu sac çatı (geçici yapı) */
+function roofZinc(sx, sy, w, lv) {
+  var n = 4 + lv;
+  for (var r = 0; r < n; r++) {
+    var ww = w - r * 3.6;
+    if (ww < 3) break;
+    px(sx - ww / 2, sy - 2 - r * 1.6, ww, 2, r % 2 ? PAL.zinc : PAL.zincDark);
+  }
+  px(sx - w / 2 - 2, sy - 1, w + 4, 2, PAL.zincDark);
+  for (var g = 0; g < 6; g++) px(sx - w / 2 + g * (w / 6), sy - 1, 1, 2, PAL.ironLite);
+}
+/* kagir duvar dokusu: taş örgü sıraları */
+function wallStone(sx, sy, w, h) {
+  for (var r = 0; r * 4 < h; r++)
+    for (var c = 0; c * 7 < w; c++)
+      px(sx - w / 2 + c * 7 + (r % 2 ? 3 : 0), sy - h + r * 4, 6, 3, r % 2 ? '#c4b598' : '#d2c4a6');
+}
+/* ahşap kaplama dokusu: dikey tahtalar */
+function wallWood(sx, sy, w, h, col) {
+  for (var c = 0; c * 4 < w; c++) px(sx - w / 2 + c * 4, sy - h, 1, h, shade(col, -16));
+}
+/* çini kuşak (Kütahya mavisi baklava) */
+function tileBand(sx, sy, w) {
+  px(sx - w / 2, sy, w, 4, PAL.nazarW);
+  for (var i = 0; i * 6 < w; i++) {
+    var bx = sx - w / 2 + i * 6;
+    px(bx + 2, sy + 1, 1, 1, PAL.nazar); px(bx + 1, sy + 2, 3, 1, PAL.nazar); px(bx + 2, sy + 3, 1, 1, PAL.nazar);
+  }
+  px(sx - w / 2, sy, w, 1, PAL.turkuaz);
+  px(sx - w / 2, sy + 3, w, 1, PAL.turkuaz);
+}
+/* ahşap kepenkli pencere */
+function windowTR(x, y, w, h, lit) {
+  px(x, y, w, h, '#25384a');
+  px(x, y, w, 1, '#4a6b84');
+  if (lit) { px(x + 1, y + 1, w - 2, h - 2, '#ffd98f'); px(x + 1, y + 1, w - 2, 1, '#fff0c4'); }
+  px(x - 1, y, 1, h, '#7a4e2a');                     /* kepenk */
+  px(x + w, y, 1, h, '#7a4e2a');
+  px(x, y + Math.floor(h / 2), w, 1, '#4a6b84');     /* kayıt */
+}
+/* kemerli kapı (Lv5) */
+function archDoor(sx, sy, w, h) {
+  px(sx - w / 2, sy - h, w, h, '#3a2a1c');
+  px(sx - w / 2 + 1, sy - h + 2, w - 2, h - 2, '#5a4230');
+  px(sx - w / 2, sy - h - 1, w, 1, PAL.stoneDark);
+  px(sx - w / 2 + 1, sy - h - 2, w - 2, 1, PAL.stoneDark);
+  px(sx - 1, sy - h - 3, 3, 1, PAL.stoneDark);
+  px(sx - 1, sy - Math.floor(h / 2), 1, 2, PAL.brass);
+}
+
+/* =========================================================
+   v1.5 — HER BİNANIN KENDİ MİMARİSİ
+   Hizmet binaları artık ortak bir şablonun (kutu + kiremit + cumba + bayrak) renk değişimi değil. Her birinin
+   kendi silueti, malzemesi ve 5 seviyelik kendi büyüme hikâyesi var:
+   Buzhane = alçak düz çatılı soğuk depo • Restoran = badanalı lokanta + teras • Nakliye = konteyner istifi + vinç
+   Kooperatif = taş temel üstünde göz dolması Karadeniz evi • Mezat = revaklı salon + çan kulesi
+   ========================================================= */
+/* düşey duvar parçası: zemindeki iki nokta arasında, z0..z1 yüksekliğinde (her iki cepheye de uyar) */
+function wallQ(x0, y0, x1, y1, z0, z1, c) {
+  quad([[pX(x0, y0), pY(x0, y0, z0)], [pX(x1, y1), pY(x1, y1, z0)], [pX(x1, y1), pY(x1, y1, z1)], [pX(x0, y0), pY(x0, y0, z1)]], c);
+}
+function vline(x, y, z0, z1, c) { px(pX(x, y), pY(x, y, z1), 1, Math.max(1, z1 - z0), c); }
+function hline(x0, y0, x1, y1, z, c) { isoLine(x0, y0, x1, y1, z, c, 1); }
+/* çatı düzlemi + paralel sıra çizgileri (kiremit, pul, oluk) */
+function roofPlane(pts, c, lc, n) {
+  quad(pts.map(function (q) { return [pX(q[0], q[1]), pY(q[0], q[1], q[2])]; }), c);
+  if (!lc || !n) return;
+  ctx.strokeStyle = lc; ctx.lineWidth = 1;
+  for (var k = 1; k < n; k++) {
+    var t = k / n, a = pts[0], b = pts[1], cc = pts[2], d = pts[3];
+    var p0 = [a[0] + (d[0] - a[0]) * t, a[1] + (d[1] - a[1]) * t, a[2] + (d[2] - a[2]) * t];
+    var p1 = [b[0] + (cc[0] - b[0]) * t, b[1] + (cc[1] - b[1]) * t, b[2] + (cc[2] - b[2]) * t];
+    ctx.beginPath(); ctx.moveTo(R(pX(p0[0], p0[1])), R(pY(p0[0], p0[1], p0[2]))); ctx.lineTo(R(pX(p1[0], p1[1])), R(pY(p1[0], p1[1], p1[2]))); ctx.stroke();
+  }
+}
+/* x boyunca mahyalı beşik çatı: arka düzlem, sağ alın üçgeni, ön düzlem */
+function roofGableX(x0, x1, y0, y1, z, rh, cF, cB, cG, lc, n) {
+  var ym = (y0 + y1) / 2;
+  roofPlane([[x0, y0, z], [x1, y0, z], [x1, ym, z + rh], [x0, ym, z + rh]], cB, null, 0);
+  quad([[pX(x1, y0), pY(x1, y0, z)], [pX(x1, y1), pY(x1, y1, z)], [pX(x1, ym), pY(x1, ym, z + rh)]], cG);
+  roofPlane([[x0, y1, z], [x1, y1, z], [x1, ym, z + rh], [x0, ym, z + rh]], cF, lc, n);
+}
+/* kırma (dört yöne eğimli) çatı: görünen iki düzlem */
+function roofHip(x0, x1, y0, y1, z, rh, cF, cR, lc, n) {
+  var ym = (y0 + y1) / 2, xm = (x0 + x1) / 2, i = Math.min((y1 - y0) / 2, (x1 - x0) / 2);
+  var r0 = Math.min(x0 + i, xm), r1 = Math.max(x1 - i, xm);
+  roofPlane([[x1, y0, z], [x1, y1, z], [r1, ym, z + rh], [r1, ym, z + rh]], cR, lc, n);
+  roofPlane([[x0, y1, z], [x1, y1, z], [r1, ym, z + rh], [r0, ym, z + rh]], cF, lc, n);
+}
+/* ön (y+) cephede pencere/kapı: x0..x1 aralığı, z0..z1 */
+function winF(x0, x1, y, z0, z1, c, fr) { if (fr) wallQ(x0 - 0.03, y, x1 + 0.03, y, z0 - 1, z1 + 1, fr); wallQ(x0, y, x1, y, z0, z1, c); }
+function winR(x, y0, y1, z0, z1, c, fr) { if (fr) wallQ(x, y0 - 0.03, x, y1 + 0.03, z0 - 1, z1 + 1, fr); wallQ(x, y0, x, y1, z0, z1, c); }
+function miniTable(x, y, cloth) {
+  isoBox(x - 0.1, y - 0.1, 0.2, 0.2, 4, 5, cloth || '#ede4cf', '#b9ad92', '#cfc3a6');
+  vline(x, y + 0.02, 0, 4, PAL.woodDark);
+  isoBox(x - 0.22, y - 0.05, 0.07, 0.1, 0, 3, '#b8924f', '#8a6a36', '#a07c42');
+  isoBox(x + 0.15, y - 0.05, 0.07, 0.1, 0, 3, '#b8924f', '#8a6a36', '#a07c42');
+}
+function parasol(x, y, h, c1, c2) {
+  vline(x, y, 0, h, '#e8ddc8');
+  var sx = R(pX(x, y)), sy = R(pY(x, y, h));
+  for (var r = 0; r < 4; r++) { var w = 16 - r * 4; px(sx - w / 2, sy - 1 - r, w, 1, r % 2 ? c2 : c1); }
+  px(sx - 8, sy, 16, 1, shade(c1, -30));
+}
+function iceBlock(x, y, z) { isoBox(x - 0.09, y - 0.09, 0.18, 0.18, z || 0, (z || 0) + 4, '#e6f4fb', '#9ccbe0', '#bfe0ef'); }
+function crate(x, y, z, c) { isoBox(x - 0.1, y - 0.1, 0.2, 0.2, z || 0, (z || 0) + 4, shade(c || '#a9743f', 22), shade(c || '#a9743f', -18), c || '#a9743f'); }
+
+/* ---------- BUZHANE: alçak, düz çatılı, yalıtım panelli soğuk depo ---------- */
+function drawBuzhane(X, Y, lv, sx, sy) {
+  var t = gameT, k;
+  if (lv === 1) {                                                  /* buz kulübesi: ahşap + saman çatı, talaş içinde buz */
+    var a = 0.55, b = 0.5;
+    isoBox(X - a, Y - b, a * 2, b * 2, 0, 12, '#b98a52', '#7a4e2a', '#935f33');
+    for (k = 1; k < 6; k++) { vline(X - a + k * 0.18, Y + b, 0, 12, '#6a4224'); vline(X + a, Y - b + k * 0.17, 0, 12, '#80532c'); }
+    roofGableX(X - a - 0.1, X + a + 0.1, Y - b - 0.12, Y + b + 0.12, 12, 8, '#d8b86a', '#b8984f', '#8d5f33', '#b89a52', 4);
+    winR(X + a, Y - 0.12, Y + 0.22, 0, 9, '#4a3220', '#6a4224');
+    wallQ(X - 0.2, Y + b, X + 0.1, Y + b, 5, 8, '#bfe0ef');         /* kar tanesi levhası */
+    iceBlock(X - 0.35, Y + b + 0.25); iceBlock(X - 0.12, Y + b + 0.3); iceBlock(X - 0.25, Y + b + 0.28, 4);
+    return 26;
+  }
+  var A = [0, 0, 0.72, 0.8, 0.9, 0.9][lv], B = [0, 0, 0.6, 0.66, 0.72, 0.72][lv], H = [0, 0, 16, 18, 20, 20][lv];
+  var x0 = X - A, x1 = X + A, y0 = Y - B, y1 = Y + B;
+  isoBox(x0, y0, A * 2, B * 2, 0, H, '#e7eff2', '#c3d3db', '#d6e3ea');
+  if (lv >= 3) {                                                   /* tuğla kaide */
+    wallQ(x0, y1, x1, y1, 0, 6, '#9a4d34'); wallQ(x1, y0, x1, y1, 0, 6, '#ad5a3e');
+    for (k = 0; k < 3; k++) { hline(x0, y1, x1, y1, 2 + k * 2, '#7d3a26'); hline(x1, y0, x1, y1, 2 + k * 2, '#8a4430'); }
+  }
+  for (k = 1; k < 10; k++) { var fx = x0 + (x1 - x0) * k / 10; vline(fx, y1, lv >= 3 ? 6 : 0, H, '#a8bcc7'); }   /* panel nervürleri */
+  for (k = 1; k < 7; k++) { var fy = y0 + (y1 - y0) * k / 7; vline(x1, fy, lv >= 3 ? 6 : 0, H, '#b6c9d3'); }
+  wallQ(x0, y1, x1, y1, H - 1, H, '#5b7f96'); wallQ(x1, y0, x1, y1, H - 1, H, '#6b90a8');   /* mavi saçak şeridi */
+  /* kalın yalıtımlı kapı (ön cephe) */
+  winF(X - 0.28, X + 0.18, y1, 0, 12, '#d0dde4', '#5b7f96');
+  hline(X - 0.28, y1, X + 0.18, y1, 6, '#9fb4c0'); px(pX(X + 0.1, y1) - 1, pY(X + 0.1, y1, 7), 2, 3, PAL.iron);
+  if (lv >= 4) {                                                   /* yan cephede şerit perdeli yükleme ağzı + rampa */
+    isoBox(x1, Y - 0.5, 0.12, 0.9, 0, 4, '#b9b3a4', '#8e897c', '#a39d8f');
+    winR(x1 + 0.001, Y - 0.35, Y + 0.25, 4, 15, '#8fb3c4', '#3c4650');
+    for (k = 0; k < 5; k++) vline(x1, Y - 0.3 + k * 0.12, 4, 15, 'rgba(230,244,251,.7)');
+  }
+  /* çatı soğutucuları: fan döner */
+  var units = lv >= 4 ? 2 : lv >= 3 ? 1 : 0;
+  if (lv === 2) isoBox(X - 0.1, Y - 0.1, 0.18, 0.18, H, H + 5, '#aab2ba', '#6c767d', '#818b92');
+  for (k = 0; k < units; k++) {
+    var ux = X - 0.5 + k * 0.55, uy = Y - 0.35;
+    isoBox(ux, uy, 0.42, 0.36, H, H + 7, '#aab2ba', '#6c767d', '#818b92');
+    var fcx = R(pX(ux + 0.21, uy + 0.36)), fcy = R(pY(ux + 0.21, uy + 0.36, H + 3.5)), ph = Math.floor(t * 12 + k) % 2;
+    px(fcx - 2, fcy - 2, 4, 4, '#3c4650'); px(fcx - (ph ? 2 : 0), fcy - (ph ? 0 : 2), ph ? 4 : 1, ph ? 1 : 4, '#cfd6db');
+  }
+  /* dondurucu buğusu + buz kalıpları */
+  if (Math.random() < 0.04) addPuff(X - 0.05, y1 + 0.1, '#eef7fb');
+  for (k = 0; k < Math.min(4, lv); k++) iceBlock(x0 + 0.2 + k * 0.22, y1 + 0.2);
+  if (lv >= 5) {
+    for (k = 0; k < 9; k++) { var ix = x0 + 0.1 + k * 0.19, isx = R(pX(ix, y1)), isy = R(pY(ix, y1, H - 1)); px(isx, isy, 1, 2 + (k % 3), '#f4fbff'); }   /* saçak buzları */
+    wallQ(X - 0.5, y1, X + 0.35, y1, H + 1, H + 7, '#2b5f82');   /* çatı tabelası: kar tanesi */
+    var ssx = R(pX(X - 0.08, y1)), ssy = R(pY(X - 0.08, y1, H + 6));
+    px(ssx - 2, ssy + 2, 5, 1, '#ffffff'); px(ssx, ssy, 1, 5, '#ffffff'); px(ssx - 1, ssy + 1, 3, 3, 'rgba(255,255,255,.5)');
+    /* frigorifik kamyon rampada */
+    isoBox(x1 + 0.02, Y + 0.35, 0.3, 0.5, 1, 11, '#f4f6f7', '#c9d0d4', '#dde3e6');
+    wallQ(x1 + 0.32, Y + 0.35, x1 + 0.32, Y + 0.85, 5, 7, '#2b5f82');
+    isoBox(x1 + 0.02, Y + 0.85, 0.3, 0.14, 1, 8, '#2b5f82', '#1d4560', '#23526f');
+    return H + 8;
+  }
+  return H + (units ? 8 : 6);
+}
+
+/* ---------- RESTORAN: badanalı lokanta, çizgili tente, teras ---------- */
+function drawRestoran(X, Y, lv, sx, sy) {
+  var k, t = gameT;
+  var WALL = ['#f1ebda', '#d8cfb8', '#e6dec9'];
+  if (lv === 1) {                                                  /* balık-ekmek büfesi */
+    isoBox(X - 0.45, Y - 0.62, 0.9, 0.55, 0, 13, '#3f8f8a', '#2c6a66', '#357d78');
+    winF(X - 0.3, X + 0.25, Y - 0.07, 6, 11, '#ffe8b0', '#20504c');
+    roofPlane([[X - 0.5, Y - 0.07, 14], [X + 0.5, Y - 0.07, 14], [X + 0.5, Y + 0.18, 10], [X - 0.5, Y + 0.18, 10]], '#c8553d');
+    for (k = 0; k < 5; k++) roofPlane([[X - 0.5 + k * 0.2, Y - 0.07, 14], [X - 0.4 + k * 0.2, Y - 0.07, 14], [X - 0.4 + k * 0.2, Y + 0.18, 10], [X - 0.5 + k * 0.2, Y + 0.18, 10]], '#f4f0e4');
+    isoBox(X - 0.45, Y - 0.62, 0.9, 0.55, 13, 14, '#2c6a66', '#20504c', '#285f5b');
+    miniTable(X - 0.35, Y + 0.55); parasol(X - 0.35, Y + 0.55, 15, '#c8553d', '#f4f0e4');
+    isoBox(X + 0.35, Y + 0.25, 0.08, 0.3, 0, 9, '#2e2a26', '#1e1b18', '#26231f');   /* menü tahtası */
+    return 26;
+  }
+  var bx0 = X - 0.82, bx1 = X + 0.82, by0 = Y - 0.85, by1 = Y + 0.02, H = 17;
+  /* teras güverte */
+  if (lv >= 3) { isoQuad(X - 0.9, by1, 1.8, 0.92, 1, '#b8895a'); for (k = 1; k < 6; k++) hline(X - 0.9, by1 + k * 0.15, X + 0.9, by1 + k * 0.15, 1, '#9a6f45'); }
+  isoBox(bx0, by0, bx1 - bx0, by1 - by0, 0, H, WALL[0], WALL[1], WALL[2]);
+  /* ön cephe: kapı + mavi kepenkli pencereler ya da cam cephe */
+  if (lv >= 3) {
+    winF(bx0 + 0.1, bx1 - 0.1, by1, 3, 12, '#9ed2e6', '#2f5f7a');
+    for (k = 1; k < 6; k++) vline(bx0 + 0.1 + (bx1 - bx0 - 0.2) * k / 6, by1, 3, 12, '#2f5f7a');
+    winF(X - 0.12, X + 0.12, by1 + 0.001, 0, 12, '#6b4a2e', '#3a2a1c');
+  } else {
+    winF(X - 0.12, X + 0.14, by1, 0, 11, '#6b4a2e', '#3a2a1c');
+    winF(bx0 + 0.15, bx0 + 0.45, by1, 5, 10, '#25384a', '#2f7fa6'); winF(bx1 - 0.45, bx1 - 0.15, by1, 5, 10, '#25384a', '#2f7fa6');
+  }
+  winR(bx1, by0 + 0.2, by0 + 0.45, 5, 10, lv >= 3 ? '#ffd98f' : '#25384a', '#2f7fa6');
+  /* çizgili tente (ön cephe boyunca) */
+  for (k = 0; k < 8; k++) {
+    var ax = bx0 + (bx1 - bx0) * k / 8, bx = bx0 + (bx1 - bx0) * (k + 1) / 8;
+    roofPlane([[ax, by1, 14], [bx, by1, 14], [bx, by1 + 0.3, 10], [ax, by1 + 0.3, 10]], k % 2 ? '#f4f0e4' : '#b5432f');
+  }
+  /* çatı: Sv.4+ düz teras çatı + üst kat, aksi hâlde kiremit beşik */
+  if (lv >= 4) {
+    isoBox(bx0, by0, bx1 - bx0, by1 - by0, H, H + 1, '#cfc6ae', WALL[1], WALL[2]);
+    var ux0 = X - 0.55, ux1 = X + 0.55, uy0 = by0, uy1 = Y - 0.35, UH = H + 10;
+    isoBox(ux0, uy0, ux1 - ux0, uy1 - uy0, H + 1, UH, WALL[0], WALL[1], WALL[2]);
+    winF(ux0 + 0.12, ux1 - 0.12, uy1, H + 3, H + 8, '#ffd98f', '#2f7fa6');
+    roofGableX(ux0 - 0.06, ux1 + 0.06, uy0 - 0.06, uy1 + 0.06, UH, 6, PAL.tileLite, PAL.tile, WALL[2], PAL.tileDark, 3);
+    wallQ(bx0 + 0.05, by1, bx1 - 0.05, by1, H + 1, H + 4, 'rgba(47,127,166,.9)');     /* teras korkuluğu */
+    for (k = 0; k < 7; k++) vline(bx0 + 0.1 + k * 0.25, by1, H + 1, H + 4, '#1d4f6b');
+    if (lv >= 5) {                                                 /* balık tabelası */
+      var fsx = R(pX(X - 0.1, uy1)), fsy = R(pY(X - 0.1, uy1, UH + 7));
+      px(fsx - 8, fsy, 14, 6, PAL.saffron); px(fsx - 7, fsy + 1, 12, 4, '#e8a14a'); px(fsx + 6, fsy - 1, 3, 8, PAL.saffron);
+      px(fsx - 5, fsy + 2, 1, 1, '#2e2a26'); px(fsx - 8, fsy + 6, 1, 3, PAL.iron); px(fsx + 4, fsy + 6, 1, 3, PAL.iron);
+    }
+  } else roofGableX(bx0 - 0.08, bx1 + 0.08, by0 - 0.08, by1 + 0.08, H, 8, PAL.tileLite, PAL.tile, WALL[2], PAL.tileDark, 4);
+  /* baca dumanı */
+  var chx = X + 0.45, chy = Y - 0.6, chz = lv >= 4 ? H + 1 : H + 4;
+  isoBox(chx - 0.07, chy - 0.07, 0.14, 0.14, chz - 2, chz + 7, '#c4b598', '#9a8c72', '#b0a286');
+  for (k = 0; k < 3; k++) { var yy = R(pY(chx, chy, chz + 9)) - ((t * 9 + k * 7) % 14); ctx.globalAlpha = 0.35; px(R(pX(chx, chy)) + Math.sin(t * 2 + k) * 1.5, yy, 2, 2, '#e8ddc8'); ctx.globalAlpha = 1; }
+  /* teras: masalar, şemsiyeler, ışık zinciri */
+  var nT = [0, 0, 2, 3, 3, 4][lv], TP = [[X - 0.55, Y + 0.45], [X + 0.1, Y + 0.72], [X + 0.6, Y + 0.4], [X - 0.1, Y + 0.3]];
+  for (k = 0; k < nT; k++) { miniTable(TP[k][0], TP[k][1], k % 2 ? '#ede4cf' : '#e0f0f4'); if (lv >= 4 && k < 2) parasol(TP[k][0], TP[k][1], 15, k ? '#2f7fa6' : '#b5432f', '#f4f0e4'); }
+  if (lv >= 3) {
+    wallQ(X - 0.9, Y + 0.94, X + 0.9, Y + 0.94, 1, 4, '#8a5a33'); wallQ(X + 0.9, by1, X + 0.9, Y + 0.94, 1, 4, '#9a6a3d');
+    vline(X - 0.9, Y + 0.94, 0, 14, PAL.woodDark); vline(X + 0.9, Y + 0.94, 0, 14, PAL.woodDark);
+    for (k = 0; k <= 8; k++) { var lx = X - 0.9 + k * 0.225, lz = 13 - Math.sin(k / 8 * Math.PI) * 3; px(pX(lx, Y + 0.94), pY(lx, Y + 0.94, lz), 1, 1, (k + Math.floor(t * 2)) % 3 ? '#ffd98f' : '#f0ece0'); }
+  }
+  if (lv >= 5) { isoBox(X + 0.72, Y + 0.72, 0.16, 0.16, 0, 4, '#a8563a', '#7a3a26', '#8e4630'); isoBox(X + 0.76, Y + 0.76, 0.08, 0.08, 4, 9, PAL.leaf, PAL.cypress, PAL.cypressLite); }
+  return lv >= 4 ? H + 18 : H + 12;
+}
+
+/* ---------- NAKLİYE OFİSİ: konteyner istifi, forklift, kamyon, portal vinç ---------- */
+function container(x0, y0, lx, ly, z0, h, c, doorsR) {
+  isoBox(x0, y0, lx, ly, z0, z0 + h, shade(c, 18), shade(c, -30), shade(c, -12));
+  var n = Math.round(lx / 0.1), m = Math.round(ly / 0.1), k;
+  for (k = 1; k < n; k++) vline(x0 + lx * k / n, y0 + ly, z0 + 1, z0 + h - 1, shade(c, -48));
+  for (k = 1; k < m; k++) vline(x0 + lx, y0 + ly * k / m, z0 + 1, z0 + h - 1, shade(c, -30));
+  hline(x0, y0 + ly, x0 + lx, y0 + ly, z0 + h - 1, shade(c, 30));
+  if (doorsR) { vline(x0 + lx, y0 + ly / 2, z0 + 1, z0 + h - 1, '#2a2a2a'); vline(x0 + lx, y0 + ly * 0.25, z0 + 2, z0 + h - 2, '#d8d2c4'); vline(x0 + lx, y0 + ly * 0.75, z0 + 2, z0 + h - 2, '#d8d2c4'); }
+}
+function drawNakliye(X, Y, lv, sx, sy) {
+  var k, t = gameT;
+  isoQuad(X - 0.95, Y - 0.95, 1.9, 1.9, 0.5, '#9d968a');           /* beton saha */
+  if (lv >= 2) container(X - 0.9, Y - 0.85, 1.25, 0.5, 0, 13, '#2f6c9c', true);
+  if (lv >= 2) { for (k = 0; k < 5; k++) isoBox(X + 0.35 + k * 0.001, Y - 0.35 - k * 0.07, 0.18, 0.07, 0, 2.5 * (k + 1), '#8b949c', '#5d666e', '#6c767d'); }   /* merdiven */
+  container(X - 0.9, Y - 0.3, 1.25, 0.5, 0, 13, '#c9642e', true);
+  winF(X - 0.7, X - 0.5, Y + 0.2, 0, 10, '#3a3a3a', '#2a2a2a');        /* ofis kapısı */
+  winF(X - 0.35, X - 0.05, Y + 0.2, 5, 10, lv >= 3 ? '#ffd98f' : '#9ed2e6', '#2a2a2a');
+  isoBox(X + 0.35, Y - 0.2, 0.08, 0.18, 7, 11, '#dde3e6', '#aab2ba', '#c3cbd0');   /* klima */
+  if (lv >= 3) {
+    container(X - 0.9, Y - 0.3, 1.25, 0.5, 13, 12, '#4d8747', false);      /* istif */
+    /* yükleme sundurması + forklift */
+    var cx0 = X + 0.45, cx1 = X + 0.95, cy0 = Y - 0.85, cy1 = Y + 0.2;
+    vline(cx1, cy1, 0, 17, PAL.iron); vline(cx1, cy0, 0, 18, PAL.iron); vline(cx0, cy1, 0, 17, PAL.iron);
+    roofPlane([[cx0, cy0, 18], [cx1, cy0, 18], [cx1, cy1, 16], [cx0, cy1, 16]], PAL.zinc, PAL.zincDark, 5);
+    isoBox(X + 0.58, Y - 0.35, 0.22, 0.3, 0, 5, '#e6b93a', '#a8822a', '#c99f33');
+    vline(X + 0.6, Y - 0.05, 5, 11, '#3c4650'); vline(X + 0.77, Y - 0.05, 5, 11, '#3c4650');
+    isoBox(X + 0.6, Y - 0.08, 0.18, 0.04, 0, 1, '#3c4650', '#2a3138', '#333b42');
+    crate(X + 0.7, Y - 0.62, 0, '#a9743f'); crate(X + 0.7, Y - 0.62, 4, '#c9975f');
+  } else { crate(X + 0.6, Y + 0.4, 0); crate(X + 0.82, Y + 0.4, 0); crate(X + 0.7, Y + 0.4, 4); isoQuad(X + 0.5, Y + 0.28, 0.45, 0.25, 0.8, '#8a6a36'); }
+  if (lv >= 4) {                                                   /* kamyon */
+    isoBox(X - 0.75, Y + 0.45, 0.95, 0.35, 1, 11, '#e8e4dc', '#b9b4aa', '#d3cec4');
+    wallQ(X - 0.75, Y + 0.8, X + 0.2, Y + 0.8, 4, 6, PAL.indigo);
+    isoBox(X + 0.22, Y + 0.47, 0.28, 0.31, 1, 9, '#c8553d', '#8e3a2a', '#a94430');
+    winR(X + 0.5, Y + 0.52, Y + 0.72, 5, 8, '#9ed2e6', '#5a2a1e');
+    for (k = 0; k < 3; k++) { var wx = [X - 0.6, X - 0.1, X + 0.35][k]; px(pX(wx, Y + 0.8) - 2, pY(wx, Y + 0.8, 0) - 3, 4, 3, '#1e1e1e'); }
+  }
+  if (lv >= 5) {                                                   /* portal vinç */
+    var gz = 34;
+    vline(X - 0.95, Y - 0.9, 0, gz, '#e6b93a'); vline(X - 0.95, Y + 0.3, 0, gz, '#e6b93a'); vline(X + 0.42, Y - 0.9, 0, gz, '#d2a633'); vline(X + 0.42, Y + 0.3, 0, gz, '#d2a633');
+    isoBox(X - 0.97, Y - 0.92, 1.42, 0.06, gz, gz + 3, '#f0c94a', '#b8922c', '#d2a633');
+    isoBox(X - 0.97, Y + 0.28, 1.42, 0.06, gz, gz + 3, '#f0c94a', '#b8922c', '#d2a633');
+    var hx = X - 0.2 + Math.sin(t * 0.6) * 0.45;
+    isoBox(hx - 0.08, Y - 0.9, 0.16, 1.2, gz + 3, gz + 5, '#3c4650', '#2a3138', '#333b42');
+    vline(hx, Y - 0.3, 27, gz + 3, '#2a2a2a'); px(pX(hx, Y - 0.3) - 1, pY(hx, Y - 0.3, 27), 3, 2, PAL.iron);
+    px(pX(X + 0.42, Y + 0.3), pY(X + 0.42, Y + 0.3, gz + 6), 2, 2, Math.floor(t * 2.5) % 2 ? '#e5533d' : '#6a2a20');
+    return gz + 8;
+  }
+  /* tabela direği */
+  vline(X - 0.9, Y + 0.6, 0, 15, PAL.iron);
+  wallQ(X - 0.98, Y + 0.6, X - 0.5, Y + 0.6, 10, 16, PAL.pnl); wallQ(X - 0.96, Y + 0.6, X - 0.52, Y + 0.6, 11, 15, '#6f8fae');
+  if (lv >= 3) px(pX(X + 0.95, Y - 0.85), pY(X + 0.95, Y - 0.85, 19), 2, 2, Math.floor(t * 2.5) % 2 ? '#5fd37a' : '#2a6a3c');
+  return lv >= 3 ? 30 : 18;
+}
+
+/* ---------- KOOPERATİF: taş temel + göz dolması ahşap, pul kaplı kırma çatı (Karadeniz evi) ---------- */
+function halfTimber(x0, x1, y0, y1, z0, z1) {                     /* ahşap iskelet + beyaz dolgu, çapraz payandalar */
+  isoBox(x0, y0, x1 - x0, y1 - y0, z0, z1, '#efe8d8', '#d9cfb8', '#e6ddc8');
+  var TW = '#5a3a22', k, n = Math.max(2, Math.round((x1 - x0) / 0.3)), m = Math.max(2, Math.round((y1 - y0) / 0.3));
+  hline(x0, y1, x1, y1, z0, TW); hline(x0, y1, x1, y1, z1 - 1, TW); hline(x0, y1, x1, y1, (z0 + z1) / 2, TW);
+  hline(x1, y0, x1, y1, z0, TW); hline(x1, y0, x1, y1, z1 - 1, TW); hline(x1, y0, x1, y1, (z0 + z1) / 2, TW);
+  for (k = 0; k <= n; k++) vline(x0 + (x1 - x0) * k / n, y1, z0, z1, TW);
+  for (k = 0; k <= m; k++) vline(x1, y0 + (y1 - y0) * k / m, z0, z1, TW);
+  ctx.strokeStyle = TW; ctx.lineWidth = 1;
+  for (k = 0; k < n; k++) { var a0 = x0 + (x1 - x0) * k / n, a1 = x0 + (x1 - x0) * (k + 1) / n, zm = (z0 + z1) / 2;
+    ctx.beginPath(); ctx.moveTo(R(pX(a0, y1)), R(pY(a0, y1, z0))); ctx.lineTo(R(pX(a1, y1)), R(pY(a1, y1, zm))); ctx.stroke(); }
+}
+function stoneBase(x0, x1, y0, y1, z0, z1) {
+  isoBox(x0, y0, x1 - x0, y1 - y0, z0, z1, '#a7a295', '#7e7a70', '#8e8a80');
+  for (var r = 0; r * 3 < z1 - z0 - 1; r++) { hline(x0, y1, x1, y1, z0 + 2 + r * 3, '#6c685f'); hline(x1, y0, x1, y1, z0 + 2 + r * 3, '#77736a'); }
+  for (var k = 0; k < 6; k++) { vline(x0 + (x1 - x0) * (k + (k % 2) * 0.5) / 6, y1, z0, z0 + 2, '#6c685f'); }
+}
+function drawKoop(X, Y, lv, sx, sy) {
+  var k, t = gameT, A = lv >= 4 ? 0.78 : 0.6, B = lv >= 4 ? 0.62 : 0.52, x0 = X - A, x1 = X + A, y0 = Y - B, y1 = Y + B;
+  var SH = '#4e3b2c', SH2 = '#654c38', SHL = '#3a2b20';
+  var top;
+  if (lv <= 2) {
+    stoneBase(x0, x1, y0, y1, 0, 4);
+    halfTimber(x0 + 0.03, x1 - 0.03, y0 + 0.03, y1 - 0.03, 4, 17);
+    winF(X - 0.1, X + 0.14, y1 - 0.03, 4, 14, '#5a4230', '#3a2a1c');
+    winR(x1 - 0.03, Y - 0.25, Y + 0.02, 9, 14, '#25384a', '#5a3a22');
+    roofHip(x0 - 0.14, x1 + 0.14, y0 - 0.14, y1 + 0.14, 17, 10, SH2, SH, SHL, 4);
+    top = 27;
+  } else {
+    stoneBase(x0, x1, y0, y1, 0, 13);
+    winF(X - 0.12, X + 0.14, y1, 0, 11, '#5a4230', '#3a2a1c');          /* taş kat kapısı (kemerli) */
+    px(pX(X + 0.01, y1) - 3, pY(X + 0.01, y1, 12), 6, 1, '#6c685f');
+    halfTimber(x0 - 0.05, x1 + 0.05, y0 - 0.05, y1 + 0.05, 13, 26);    /* ahşap üst kat biraz taşar */
+    winF(x0 + 0.15, x0 + 0.42, y1 + 0.05, 17, 23, phase2(gameT, 0.3) ? '#ffd98f' : '#25384a', '#5a3a22');
+    winF(x1 - 0.42, x1 - 0.15, y1 + 0.05, 17, 23, '#ffd98f', '#5a3a22');
+    winR(x1 + 0.05, Y - 0.3, Y + 0.0, 17, 23, '#25384a', '#5a3a22');
+    if (lv >= 4) {                                                 /* ahşap balkon + saksılar */
+      isoBox(x0 + 0.1, y1 + 0.05, x1 - x0 - 0.2, 0.18, 13, 14, '#8a5a33', '#5a3a22', '#6f4526');
+      wallQ(x0 + 0.1, y1 + 0.23, x1 - 0.1, y1 + 0.23, 14, 18, 'rgba(90,58,34,.85)');
+      for (k = 0; k < 8; k++) vline(x0 + 0.12 + k * (x1 - x0 - 0.24) / 7, y1 + 0.23, 14, 18, '#3a2616');
+      for (k = 0; k < 3; k++) { var pxx = x0 + 0.3 + k * 0.45; px(pX(pxx, y1 + 0.23) - 2, pY(pxx, y1 + 0.23, 19), 4, 2, k % 2 ? '#e5533d' : '#f0c94a'); }
+    }
+    roofHip(x0 - 0.18, x1 + 0.18, y0 - 0.18, y1 + 0.18, 26, 12, SH2, SH, SHL, 5);
+    top = 38;
+    if (lv >= 5) {                                                 /* birlik amblemi (çatı penceresi) + fenerler */
+      var dx0 = X - 0.18, dx1 = X + 0.18, dy = y1 + 0.02;
+      wallQ(dx0, dy, dx1, dy, 28, 34, '#efe8d8');
+      quad([[pX(dx0 - 0.03, dy), pY(dx0 - 0.03, dy, 34)], [pX(dx1 + 0.03, dy), pY(dx1 + 0.03, dy, 34)], [pX(X, dy), pY(X, dy, 38)]], SHL);
+      var ex = R(pX(X, dy)), ey = R(pY(X, dy, 32));
+      px(ex - 2, ey - 1, 5, 3, '#3f8f6a'); px(ex - 1, ey, 3, 1, '#ffd98f');
+      for (k = 0; k < 2; k++) { var lx = k ? x1 - 0.1 : x0 + 0.1; vline(lx, y1 + 0.02, 9, 12, PAL.iron); px(pX(lx, y1 + 0.02) - 1, pY(lx, y1 + 0.02, 9), 3, 3, '#ffd98f'); }
+      top = 40;
+    }
+  }
+  /* ilan panosu */
+  vline(x0 - 0.12, y1 + 0.3, 0, 12, PAL.woodDark);
+  wallQ(x0 - 0.25, y1 + 0.3, x0 + 0.12, y1 + 0.3, 7, 14, '#4a3220'); wallQ(x0 - 0.23, y1 + 0.3, x0 + 0.1, y1 + 0.3, 8, 13, '#e8e0cc');
+  for (k = 0; k < 2; k++) hline(x0 - 0.2, y1 + 0.3, x0 + 0.05, y1 + 0.3, 9 + k * 2, '#8b949c');
+  if (lv >= 2) {                                                   /* çardak altında çay masası */
+    var ax0 = x1 + 0.02, ax1 = x1 + 0.3;
+    vline(ax1, y1, 0, 12, PAL.woodDark); vline(ax1, y0 + 0.2, 0, 12, PAL.woodDark);
+    roofPlane([[ax0, y0 + 0.2, 13], [ax1, y0 + 0.2, 12], [ax1, y1, 12], [ax0, y1, 13]], '#6f8a3a', '#557030', 3);
+    miniTable(x1 + 0.2, Y + 0.25, '#e8e0cc');
+  }
+  if (lv >= 3) {                                                   /* bayrak */
+    var fx = x1 + 0.28, fy = y1 + 0.28, fz = lv >= 5 ? 46 : 38;
+    vline(fx, fy, 0, fz, '#d8d2c4');
+    var fsx = R(pX(fx, fy)) + 1, fsy = R(pY(fx, fy, fz)), wv = R(Math.sin(t * 2));
+    px(fsx, fsy, 9, 6, '#e30a17'); px(fsx + 3 + wv, fsy + 2, 2, 2, '#ffffff');
+  }
+  return top;
+}
+
+/* ---------- MEZAT SALONU: gölgelik → sütunlu revak → saatli çan kulesi ---------- */
+function drawMezat(X, Y, lv, sx, sy) {
+  var k, t = gameT, ring = phase2(t, 3) && day.phase === 'closing';
+  var SL = '#56657a', SL2 = '#6d7d93', SLD = '#3c4757';
+  function bell(x, y, z) { var bx = R(pX(x, y)) + (ring ? 1 : 0), by = R(pY(x, y, z)); px(bx - 2, by, 5, 4, PAL.brass); px(bx - 2, by, 5, 1, PAL.brassLite); px(bx, by + 4, 1, 1, PAL.brass); }
+  /* çan kulesi (arka-sol köşe, önce çizilir) */
+  if (lv >= 3) {
+    var tx0 = X - 0.95, ty0 = Y - 0.95, TS = 0.36, TH = lv >= 5 ? 44 : 30;
+    if (lv >= 5) {
+      isoBox(tx0, ty0, TS, TS, 0, TH, '#e2d8c0', '#b3a684', '#cbbf9f');
+      for (k = 0; k < 9; k++) { hline(tx0, ty0 + TS, tx0 + TS, ty0 + TS, 4 + k * 4, '#c4b598'); }
+      winF(tx0 + 0.08, tx0 + TS - 0.08, ty0 + TS, TH - 12, TH - 3, '#2e2a26', null); bell(tx0 + TS / 2, ty0 + TS, TH - 10);
+      var clx = R(pX(tx0 + TS / 2, ty0 + TS)), cly = R(pY(tx0 + TS / 2, ty0 + TS, TH - 17));   /* saat */
+      px(clx - 3, cly - 3, 7, 7, '#f4f0e4'); px(clx - 3, cly - 3, 7, 1, PAL.brass); px(clx, cly - 2, 1, 3, '#2e2a26'); px(clx, cly, 2, 1, '#2e2a26');
+      roofHip(tx0 - 0.04, tx0 + TS + 0.04, ty0 - 0.04, ty0 + TS + 0.04, TH, 12, SL2, SL, SLD, 3);
+    } else {
+      for (k = 0; k < 4; k++) vline(tx0 + (k % 2) * TS, ty0 + (k < 2 ? 0 : TS), 0, TH, PAL.woodDark);
+      hline(tx0, ty0 + TS, tx0 + TS, ty0 + TS, TH - 8, PAL.woodDark); hline(tx0 + TS, ty0, tx0 + TS, ty0 + TS, TH - 8, PAL.woodDark);
+      bell(tx0 + TS / 2, ty0 + TS / 2, TH - 7);
+      if (lv >= 4) roofHip(tx0 - 0.05, tx0 + TS + 0.05, ty0 - 0.05, ty0 + TS + 0.05, TH, 8, SL2, SL, SLD, 2);
+      else isoBox(tx0 - 0.03, ty0 - 0.03, TS + 0.06, TS + 0.06, TH, TH + 1, PAL.wood, PAL.woodDark, PAL.woodDark);
+    }
+  }
+  var x0 = X - 0.62, x1 = X + 0.85, y0 = Y - 0.6, y1 = Y + 0.8;
+  if (lv === 1) {                                                  /* branda gölgelik + mezat masası + direkte çan */
+    x0 = X - 0.6; x1 = X + 0.6; y0 = Y - 0.5; y1 = Y + 0.5;
+    isoBox(X - 0.35, Y - 0.15, 0.7, 0.3, 0, 5, PAL.wood, PAL.woodDark, '#8a5a33');
+    for (k = 0; k < 3; k++) crate(X - 0.2 + k * 0.2, Y, 5, '#a9743f');
+    for (k = 0; k < 4; k++) vline(k % 2 ? x1 : x0, k < 2 ? y0 : y1, 0, 15, PAL.woodDark);
+    for (k = 0; k < 6; k++) { var a0 = x0 + (x1 - x0) * k / 6, a1 = x0 + (x1 - x0) * (k + 1) / 6; roofPlane([[a0, y0, 16], [a1, y0, 16], [a1, y1, 14], [a0, y1, 14]], k % 2 ? '#f4f0e4' : '#2a4c7d'); }
+    vline(X - 0.9, Y + 0.6, 0, 18, PAL.woodDark); hline(X - 0.9, Y + 0.6, X - 0.7, Y + 0.6, 18, PAL.woodDark); bell(X - 0.75, Y + 0.6, 12);
+    return 22;
+  }
+  /* zemin platformu */
+  if (lv >= 3) { isoBox(x0 - 0.05, y0 - 0.05, x1 - x0 + 0.1, y1 - y0 + 0.1, 0, 2, '#c9bfa8', '#9a8c72', '#b0a286'); }
+  var Z0 = lv >= 3 ? 2 : 0, CH = lv >= 3 ? 18 : 15, colC = lv >= 3 ? '#e2d8c0' : PAL.woodDark;
+  /* arka alçak duvar (Sv.4+) */
+  if (lv >= 4) { wallQ(x0, y0, x1, y0, Z0, Z0 + 6, '#cbbf9f'); wallQ(x0, y0, x0, y1, Z0, Z0 + 6, '#b3a684'); }
+  /* içeride: sandık sıraları, kürsü, sıralar */
+  var nC = Math.min(6, lv + 2);
+  for (k = 0; k < nC; k++) crate(x0 + 0.3 + (k % 3) * 0.3, Y - 0.2 + Math.floor(k / 3) * 0.3, Z0, k % 2 ? '#a9743f' : '#8a5a33');
+  isoBox(x1 - 0.45, Y - 0.35, 0.28, 0.3, Z0, Z0 + 8, PAL.wood, PAL.woodDark, '#8a5a33');   /* kürsü */
+  px(pX(x1 - 0.31, Y - 0.05) - 2, pY(x1 - 0.31, Y - 0.05, Z0 + 10), 5, 3, '#2e2a26');
+  if (lv >= 2) for (k = 0; k < 2; k++) isoBox(x0 + 0.25, Y + 0.3 + k * 0.22, 0.8, 0.08, Z0, Z0 + 3, PAL.woodLite, PAL.woodDark, PAL.wood);
+  /* sütunlar (ön ve sağ sıra) + kemerler */
+  var CX = [x0, x0 + (x1 - x0) / 3, x0 + 2 * (x1 - x0) / 3, x1], CY = [y0, (y0 + y1) / 2, y1];
+  function col(cx, cy) { var qx = R(pX(cx, cy)), qy = R(pY(cx, cy, Z0 + CH)); px(qx - 1, qy, 3, CH, colC); if (lv >= 3) { px(qx - 1, qy, 1, CH, '#fff4e0'); px(qx - 2, qy, 5, 2, colC); px(qx - 2, qy + CH - 2, 5, 2, colC); } }
+  for (k = 0; k < CY.length - 1; k++) col(x1, CY[k]);
+  for (k = 0; k < CX.length; k++) col(CX[k], y1);
+  if (lv >= 5) for (k = 0; k < CX.length - 1; k++) {               /* kemerler */
+    var m = (CX[k] + CX[k + 1]) / 2, ax = R(pX(m, y1)), az = R(pY(m, y1, Z0 + CH - 2));
+    px(ax - 6, az, 13, 2, '#e2d8c0'); px(ax - 4, az - 1, 9, 1, '#e2d8c0'); px(ax - 2, az - 2, 5, 1, '#e2d8c0');
+  }
+  if (lv >= 3) { wallQ(x0 - 0.05, y1 + 0.05, x1 + 0.05, y1 + 0.05, Z0 + CH, Z0 + CH + 3, '#cbbf9f'); wallQ(x1 + 0.05, y0 - 0.05, x1 + 0.05, y1 + 0.05, Z0 + CH, Z0 + CH + 3, '#d8cdb4'); }
+  /* çatı: Sv.2 çinko beşik, Sv.3+ arduvaz kırma çatı */
+  if (lv === 2) roofGableX(x0 - 0.1, x1 + 0.1, y0 - 0.1, y1 + 0.1, CH, 7, PAL.zinc, PAL.zincDark, '#6f4526', PAL.zincDark, 6);
+  else roofHip(x0 - 0.12, x1 + 0.12, y0 - 0.12, y1 + 0.12, Z0 + CH + 3, 11, SL2, SL, SLD, 5);
+  if (lv === 2) { vline(X - 0.9, Y + 0.85, 0, 20, PAL.woodDark); hline(X - 0.9, Y + 0.85, X - 0.72, Y + 0.85, 20, PAL.woodDark); bell(X - 0.76, Y + 0.85, 14); }
+  if (lv >= 5) {                                                   /* sancak */
+    var bsx = R(pX(x1 + 0.12, y1 + 0.12)), bsy = R(pY(x1 + 0.12, y1 + 0.12, Z0 + CH + 2));
+    px(bsx, bsy, 1, 14, PAL.iron); px(bsx + 1, bsy + 1, 6, 9, PAL.madder); px(bsx + 2, bsy + 3, 4, 1, PAL.saffron); px(bsx + 3, bsy + 5, 2, 2, PAL.brassLite);
+  }
+  return lv >= 5 ? 58 : lv >= 3 ? Z0 + CH + 14 : 24;
+}
+var SERV_DRAW = { buzhane: drawBuzhane, restoran: drawRestoran, nakliye: drawNakliye, koop: drawKoop, mezat: drawMezat };
+
+function drawServ(p) {
+  var id = p.b, d = sdef(id), st = servState[id];
+  if (!d || !st) return;
+  var lv = st.lvl, M2 = SERV_MAT[lv - 1];
+  var fw = M2.foot, hh = M2.h;
+  var sx = R(pX(p.x, p.y)), sy = R(pY(p.x, p.y, 0));
+  var bw = R(fw * 22);
+
+  /* --- inşaat / yükseltme sekansı --- */
+  if (st.cons > 0 && !st.fresh) {
+    if (Math.random() < 0.3) addPuff(p.x + rnd(-0.5, 0.5), p.y + rnd(-0.5, 0.5), '#d8cfae');
+  }
+  if (st.cons > 0 && st.fresh) {
+    var ph = st.cons;
+    ctx.save(); ctx.setLineDash([2, 2]); ctx.strokeStyle = PAL.gold; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(R(pX(p.x - fw, p.y - fw)), R(pY(p.x - fw, p.y - fw, 0)));
+    ctx.lineTo(R(pX(p.x + fw, p.y - fw)), R(pY(p.x + fw, p.y - fw, 0)));
+    ctx.lineTo(R(pX(p.x + fw, p.y + fw)), R(pY(p.x + fw, p.y + fw, 0)));
+    ctx.lineTo(R(pX(p.x - fw, p.y + fw)), R(pY(p.x - fw, p.y + fw, 0)));
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+    if (ph < 1.6) {
+      for (var c2 = 0; c2 < 4; c2++) {
+        var ox = c2 % 2 ? fw : -fw, oy = c2 < 2 ? -fw : fw;
+        var bx2 = R(pX(p.x + ox * 0.8, p.y + oy * 0.8)), by2 = R(pY(p.x + ox * 0.8, p.y + oy * 0.8, 0));
+        px(bx2 - 1, by2 - hh * 0.7, 2, hh * 0.7, PAL.wood);
+      }
+      px(sx - 12, sy - R(hh * 0.7), 24, 2, PAL.wood);
+      px(sx - 13, sy - R(hh * 0.5), 26, 1, PAL.wood);
+    }
+    if (ph > 0.5 && Math.random() < 0.25) addPuff(p.x + rnd(-0.6, 0.6), p.y + rnd(-0.6, 0.6), '#d8cfae');
+    uiText(p.x, p.y, hh + 12, '⚒', PAL.gold, 13, 0.9);
+    return;
+  }
+
+  shadow(p.x, p.y, 1.15);
+  var top = SERV_DRAW[id] ? SERV_DRAW[id](p.x, p.y, lv, sx, sy) : hh;   /* v1.5: her binanın kendi çizimi */
+  hh = top;
+
+  if (st.flash > 0) {
+    ctx.save(); ctx.globalAlpha = Math.min(0.5, st.flash * 0.35);
+    isoQuad(p.x - 1, p.y - 1, 2, 2, 0.6, '#ffe27a'); ctx.restore();
+  }
+  if (servSel === id || (barTab === 'serv' && servPick === id)) {
+    uiLabel(p.x, p.y, hh + 10, NM(d.n) + ' Lv.' + lv, PAL.gold, 1);
+  } else if (dist2(player.x, player.y, p.x, p.y) < 12) {
+    uiLabel(p.x, p.y, hh + 10, NM(d.n).slice(0, 10) + ' ' + lv, '#e8ddc8', 0.85);
+  }
+}
+
+
+function shade(c, n) {
+  var r = parseInt(c.substr(1, 2), 16), g = parseInt(c.substr(3, 2), 16), b = parseInt(c.substr(5, 2), 16);
+  function q(v) { return Math.max(0, Math.min(255, v + n)).toString(16).padStart(2, '0'); }
+  return '#' + q(r) + q(g) + q(b);
+}
+
+/* boş parsel: yalnız Binalar sekmesinde bina seçiliyken ince çerçeve (§37) */
+function drawPlot(p) {
+  var ghost = barTab === 'serv' && servPick && p.allow.indexOf(servPick) >= 0 && !p.b;
+  var near = dist2(player.x, player.y, p.x, p.y) < 26;
+  if (!ghost && !near) return;
+  ctx.save();
+  ctx.globalAlpha = ghost ? 0.95 : 0.3;
+  ctx.setLineDash([3, 3]); ctx.lineDashOffset = -gameT * 8;
+  ctx.strokeStyle = ghost ? '#5fd37a' : '#c9a15e'; ctx.lineWidth = 1;
+  var w = 0.7;
+  ctx.beginPath();
+  ctx.moveTo(R(pX(p.x - w, p.y - w)), R(pY(p.x - w, p.y - w, 0)));
+  ctx.lineTo(R(pX(p.x + w, p.y - w)), R(pY(p.x + w, p.y - w, 0)));
+  ctx.lineTo(R(pX(p.x + w, p.y + w)), R(pY(p.x + w, p.y + w, 0)));
+  ctx.lineTo(R(pX(p.x - w, p.y + w)), R(pY(p.x - w, p.y + w, 0)));
+  ctx.closePath(); ctx.stroke(); ctx.restore();
+  if (ghost) {
+    ctx.save(); ctx.globalAlpha = 0.16 + Math.sin(gameT * 4) * 0.06;
+    isoQuad(p.x - w, p.y - w, w * 2, w * 2, 0.4, '#5fd37a'); ctx.restore();
+    uiLabel(p.x, p.y, 10, NM(p.n), '#9df5b0', 1);
+  } else if (near) {
+    uiText(p.x, p.y, 6, '🏗️', '#c9a15e', 11, 0.7);
+  }
+}
+
+/* ---------- v1.2: gün ışığı tonu (§2 çok hafif) ---------- */
+/* köşeleri hafif koyultan yumuşak vinyet */
+var _vig = null, _vigW = 0, _vigH = 0;
+function drawVignette() {
+  if (!_vig || _vigW !== W || _vigH !== H) {
+    _vigW = W; _vigH = H;
+    try {
+      var g = ctx.createRadialGradient(W / 2, H * 0.48, Math.min(W, H) * 0.52,
+                                       W / 2, H * 0.48, Math.max(W, H) * 0.78);
+      g.addColorStop(0, 'rgba(8,24,36,0)');
+      g.addColorStop(1, 'rgba(8,24,36,0.24)');
+      _vig = g;
+    } catch (e) { _vig = null; }
+  }
+  if (!_vig) return;
+  ctx.save(); ctx.fillStyle = _vig; ctx.fillRect(0, 0, W, H); ctx.restore();
+}
+function dayTint() {
+  var p = clamp(day.t / DAY_LEN, 0, 1), a = 0, col = '#ffb27a';
+  if (day.phase === 'closing' || day.phase === 'summary') { a = 0.30; col = '#2b3f63'; }
+  else if (p < 0.12) { a = 0.20 * (1 - p / 0.12); col = '#ffb27a'; }
+  else if (p > 0.70) { a = 0.28 * ((p - 0.70) / 0.30); col = '#6a4a7a'; }
+  if (a <= 0.001) return;
+  ctx.save(); ctx.globalAlpha = a; ctx.globalCompositeOperation = 'source-atop';
+  ctx.fillStyle = col; ctx.fillRect(0, 0, VW, VH); ctx.restore();
+}
+
+/* ---------- v2.0: TİCARET OFİSİ — cumbalı konak ---------- */
+function drawOffice() {
+  var o = office, x = o.x - o.w / 2, y = o.y - o.h / 2;
+  var sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0));
+  if (!officeBuilt()) {
+    ctx.save(); ctx.setLineDash([3, 3]); ctx.lineDashOffset = -gameT * 6;
+    ctx.strokeStyle = '#c9a15e'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(R(pX(x, y)), R(pY(x, y, 0))); ctx.lineTo(R(pX(x + o.w, y)), R(pY(x + o.w, y, 0)));
+    ctx.lineTo(R(pX(x + o.w, y + o.h)), R(pY(x + o.w, y + o.h, 0))); ctx.lineTo(R(pX(x, y + o.h)), R(pY(x, y + o.h, 0)));
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+    if (dist2(player.x, player.y, o.x, o.y) < 18) uiLabel(o.x, o.y, 14, T('office'), '#ffc94a', 0.85);
+    return;
+  }
+  shadow(o.x, o.y, 1.3);
+  isoQuad(x - 0.1, y - 0.1, o.w + 0.2, o.h + 0.2, 0.4, '#a8a08c');
+  isoBox(x + 0.06, y + 0.06, o.w - 0.12, o.h - 0.12, 1.6, 28, '#efe6d0', '#b9ac90', '#d5c8ac');
+  wallStone(sx, sy, 40, 26);
+  /* cumba (çıkma kat) */
+  isoBox(x + 0.3, y - 0.18, o.w - 0.6, o.h * 0.5, 28, 40, '#f3ebd8', '#bfb296', '#dccfb2');
+  var cy = sy - 34;
+  px(sx - 13, cy + 6, 26, 1, PAL.woodDark);
+  windowTR(sx - 9, cy, 7, 7, true);
+  windowTR(sx + 2, cy, 7, 7, true);
+  px(sx - 14, cy + 7, 28, 1, PAL.iron);
+  for (var b = 0; b < 9; b++) px(sx - 13 + b * 3, cy + 7, 1, 3, PAL.iron);
+  px(sx - 14, cy + 10, 28, 1, PAL.iron);
+  /* çatı */
+  roofTile(sx, sy - 40, 46, 4);
+  /* kemerli giriş */
+  archDoor(sx, sy - 1, 11, 15);
+  tileBand(sx, sy - 22, 34);
+  /* tabela */
+  px(sx - 17, sy - 14, 34, 8, PAL.pnl);
+  px(sx - 16, sy - 13, 32, 6, PAL.indigo);
+  if (dist2(player.x, player.y, o.x, o.y) < 60) uiText(o.x, o.y, 18, T('office'), PAL.gold, 7);
+  /* bayrak */
+  px(sx + 18, sy - 52, 1, 14, '#d8d2c4');
+  var wv = R(Math.sin(gameT * 2) * 1);
+  px(sx + 19, sy - 52, 9, 6, '#e30a17');
+  px(sx + 22 + wv, sy - 50, 2, 2, '#ffffff');
+  if (M && M.active.length) uiBadge(o.x, o.y + o.h / 2 + 0.2, 10, M.active.length + '/' + maxActive(), '#9df5b0');
+}
+
+/* ---------- v2.0: KAPALI PAZAR (eski adıyla Kapalı Balık Hali) — kagir hal binası ---------- */
+function drawProject() {
+  var p = project, st = p.stage;
+  var x = p.x - p.w / 2, y = p.y - p.h / 2;
+  var cx = R(pX(p.x, p.y)), cy = R(pY(p.x, p.y, 0));
+  if (st === 0) {
+    ctx.save(); ctx.setLineDash([3, 3]);
+    ctx.strokeStyle = PAL.gold; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(R(pX(x, y)), R(pY(x, y, 0))); ctx.lineTo(R(pX(x + p.w, y)), R(pY(x + p.w, y, 0)));
+    ctx.lineTo(R(pX(x + p.w, y + p.h)), R(pY(x + p.w, y + p.h, 0))); ctx.lineTo(R(pX(x, y + p.h)), R(pY(x, y + p.h, 0)));
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+    px(cx - 11, cy - 16, 22, 10, '#4a3220');            /* proje tabelası */
+    px(cx - 10, cy - 15, 20, 8, PAL.saffron);
+    px(cx - 8, cy - 13, 16, 1, '#3a2401'); px(cx - 8, cy - 11, 11, 1, '#3a2401');
+    px(cx - 1, cy - 6, 2, 6, PAL.woodDark);
+    if (dist2(player.x, player.y, p.x, p.y) < 20) labelAt(p.x, p.y + p.h / 2 + 0.3, 20, T('stProject'), PAL.gold, '');
+    return;
+  }
+  isoQuad(x, y, p.w, p.h, 0.6, '#9a927f');
+  if (st >= 1) {                                         /* kazık temel */
+    for (var i = 0; i <= 2; i++) for (var j = 0; j <= 2; j++) {
+      var bx = R(pX(x + i * p.w / 2, y + j * p.h / 2)), by = R(pY(x + i * p.w / 2, y + j * p.h / 2, 0));
+      px(bx - 1, by - 6, 3, 6, '#6b5334');
+      px(bx - 2, by - 7, 5, 1, '#8a6c46');
+    }
+  }
+  if (st >= 2) {                                         /* taşıyıcı kolonlar */
+    var cols = [[x + 0.2, y + 0.2], [x + p.w - 0.2, y + 0.2], [x + 0.2, y + p.h - 0.2], [x + p.w - 0.2, y + p.h - 0.2]];
+    for (var c = 0; c < cols.length; c++) {
+      var sx2 = R(pX(cols[c][0], cols[c][1])), sy2 = R(pY(cols[c][0], cols[c][1], 0));
+      px(sx2 - 2, sy2 - 28, 4, 28, '#c9c3b2');
+      px(sx2 - 2, sy2 - 28, 2, 28, '#ddd8c8');
+    }
+    isoQuad(x + 0.1, y + 0.1, p.w - 0.2, p.h - 0.2, 28, 'rgba(200,195,180,.35)');
+  }
+  if (st >= 3) {                                         /* kagir duvar + kiremit çatı */
+    /* v1.5: çarşı binası — revaklı taş gövde, kurşun kaplı beşik çatı, mahyada camlı fener (Ticaret Ofisi'nin konağından ayrı) */
+    var X0 = x + 0.15, X1 = x + p.w - 0.15, Y0 = y + 0.15, Y1 = y + p.h - 0.15, ym2 = (Y0 + Y1) / 2, ar;
+    isoBox(X0, Y0, X1 - X0, Y1 - Y0, 0, 22, '#e6dcc4', '#bfae8c', '#d2c1a0');
+    for (ar = 0; ar < 4; ar++) {                                        /* ön revak: 4 kemer */
+      var ax0 = X0 + 0.1 + ar * (X1 - X0 - 0.2) / 4, ax1 = ax0 + (X1 - X0 - 0.2) / 4 - 0.08;
+      winF(ax0, ax1, Y1, 0, 12, '#4a3423', '#b3a17f');
+      var akx = R(pX((ax0 + ax1) / 2, Y1)), aky = R(pY((ax0 + ax1) / 2, Y1, 14));
+      px(akx - 3, aky, 6, 1, '#4a3423'); px(akx - 2, aky - 1, 4, 1, '#4a3423');
+    }
+    for (ar = 0; ar < 3; ar++) { var bY0 = Y0 + 0.12 + ar * (Y1 - Y0 - 0.24) / 3; winR(X1, bY0, bY0 + (Y1 - Y0 - 0.24) / 3 - 0.08, 0, 12, '#5a4230', '#c4b598'); }
+    roofGableX(X0 - 0.1, X1 + 0.1, Y0 - 0.1, Y1 + 0.1, 22, 10, '#7d8791', '#5f6973', '#d2c1a0', '#4f5862', 5);
+    isoBox(X0 + 0.3, ym2 - 0.16, X1 - X0 - 0.6, 0.32, 30, 36, '#bcd6e0', '#7fa9bd', '#95bccd');   /* camlı fener */
+    for (ar = 1; ar < 6; ar++) vline(X0 + 0.3 + (X1 - X0 - 0.6) * ar / 6, ym2 + 0.16, 30, 36, '#4f5862');
+    roofGableX(X0 + 0.26, X1 - 0.26, ym2 - 0.22, ym2 + 0.22, 36, 4, '#7d8791', '#5f6973', '#95bccd');
+  }
+  if (st >= 4) {                                         /* donatım: tabela + ışık + çini */
+    tileBand(cx, cy - 20, R((p.w + p.h) * 12) - 14);
+    var lx = R(pX(p.x, p.y + p.h / 2)), ly = R(pY(p.x, p.y + p.h / 2, 28));
+    px(lx - 22, ly - 11, 44, 10, PAL.pnl);
+    px(lx - 21, ly - 10, 42, 8, PAL.indigo);
+    if (dist2(player.x, player.y, p.x, p.y) < 70) uiText(p.x, p.y + p.h / 2, 32, NM(project.n).toLocaleUpperCase(lang === 'tr' ? 'tr-TR' : 'en-US'), PAL.gold, 8);
+    px(lx - 23, ly + 1, 2, 9, PAL.iron); px(lx + 21, ly + 1, 2, 9, PAL.iron);
+    for (var l = 0; l < 6; l++) px(lx - 18 + l * 7, ly - 13, 2, 2, (l + Math.floor(gameT * 2)) % 3 ? '#ffd98f' : '#f0ece0');
+  }
+  if (st >= 5) {                                         /* açılış: bayraklar + kalabalık */
+    for (var f = 0; f < 3; f++) {
+      var fx2 = R(pX(p.x - 0.8 + f * 0.8, p.y - p.h / 2)), fy2 = R(pY(p.x - 0.8 + f * 0.8, p.y - p.h / 2, 34));
+      px(fx2, fy2 - 10, 1, 10, '#6b5334');
+      px(fx2 + 1, fy2 - 10, 6, 4, f % 2 ? '#e30a17' : PAL.saffron);
+      if (f % 2) px(fx2 + 3, fy2 - 9, 2, 2, '#ffffff');
+    }
+  } else {
+    var kx = R(pX(x + p.w, y)), ky = R(pY(x + p.w, y, 0));
+    px(kx - 1, ky - 36, 3, 36, PAL.brass);
+    px(kx - 11, ky - 38, 22, 3, PAL.brass);
+    px(kx + 7, ky - 35, 1, 9, PAL.ironLite);
+    px(kx + 5, ky - 26, 5, 4, PAL.wood);
+    var pr = projPct();
+    px(cx - 15, cy - 46, 30, 5, PAL.edge);
+    px(cx - 14, cy - 45, R(28 * pr), 3, PAL.green);
+    uiText(p.x, p.y, 50, pct(Math.round(pr * 100)), PAL.gold, 11);
+  }
+  if (st < 4) labelAt(p.x, p.y + p.h / 2 + 0.3, st >= 3 ? 46 : 20, UP(NM(p.n)), PAL.gold, '');   /* Sv.4+ tabela zaten adı yazıyor */
+}
+
+/* ---------- kozmetik ---------- */
+function drawDecor(d) {
+  var sx = R(pX(d.x, d.y)), sy = R(pY(d.x, d.y, 0));
+  if (d.id === 'bayrak') {
+    px(sx - 1, sy - 34, 2, 34, '#d8d2c4');
+    var wv = Math.sin(gameT * 2) * 1;
+    px(sx + 1, sy - 34, 14, 9, '#e30a17');
+    px(sx + 5 + wv, sy - 31, 3, 3, '#ffffff');
+    px(sx + 8 + wv, sy - 32, 2, 1, '#ffffff'); px(sx + 8 + wv, sy - 28, 2, 1, '#ffffff');
+    px(sx + 6 + wv, sy - 30, 3, 1, '#e30a17');
+  } else if (d.id === 'tekne') {
+    drawBoat({ x: d.x, y: d.y - 1.6, r: 1 });
+  } else if (d.id === 'bank') {
+    px(sx - 8, sy - 6, 16, 2, '#a9743f'); px(sx - 8, sy - 10, 16, 2, '#a9743f');
+    px(sx - 7, sy - 6, 2, 6, '#6f4526'); px(sx + 5, sy - 6, 2, 6, '#6f4526');
+  } else if (d.id === 'simit') {
+    px(sx - 9, sy - 12, 18, 8, '#c9a15e'); px(sx - 9, sy - 14, 18, 2, '#e30a17');
+    px(sx - 7, sy - 4, 2, 4, '#5d3c1c'); px(sx + 5, sy - 4, 2, 4, '#5d3c1c');
+    for (var i = 0; i < 3; i++) { px(sx - 6 + i * 5, sy - 11, 4, 4, '#c8802f'); px(sx - 5 + i * 5, sy - 10, 2, 2, '#c9a15e'); }
+  } else if (d.id === 'lamba') { drawLamp(d.x, d.y); }
+  else if (d.id === 'cicek') {
+    px(sx - 5, sy - 6, 10, 6, '#b8642e'); px(sx - 5, sy - 7, 10, 2, '#d1793d');
+    for (var f = 0; f < 6; f++) px(sx - 6 + (f * 3) % 12, sy - 14 + (f % 3) * 3, 3, 3, f % 2 ? '#d94a8c' : '#e0679e');
+    px(sx - 2, sy - 10, 2, 5, '#4a7a3a');
+  } else if (d.id === 'caymasa') {
+    px(sx - 7, sy - 8, 14, 2, '#c9a15e'); px(sx - 6, sy - 6, 2, 6, '#8d5f33'); px(sx + 4, sy - 6, 2, 6, '#8d5f33');
+    px(sx - 4, sy - 12, 3, 4, '#e8c9a0'); px(sx + 2, sy - 11, 3, 3, '#e8c9a0');
+    px(sx - 3, sy - 11, 1, 2, '#c94a1a'); px(sx + 3, sy - 10, 1, 1, '#c94a1a');
+  } else if (d.id === 'nazar') {                       /* nazar boncuğu — direğe asılı */
+    px(sx - 1, sy - 22, 2, 22, PAL.woodDark);
+    var sw = R(Math.sin(gameT * 1.6) * 1);
+    px(sx - 4 + sw, sy - 26, 8, 8, PAL.nazar);
+    px(sx - 3 + sw, sy - 25, 6, 6, PAL.nazarW);
+    px(sx - 2 + sw, sy - 24, 4, 4, PAL.turkuaz);
+    px(sx - 1 + sw, sy - 23, 2, 2, PAL.edge);
+    px(sx - 1 + sw, sy - 27, 2, 1, PAL.rope);
+  } else if (d.id === 'cesme') {                       /* Osmanlı çeşmesi */
+    px(sx - 9, sy - 22, 18, 22, PAL.stone);
+    px(sx - 9, sy - 22, 9, 22, PAL.stoneLite);
+    px(sx - 11, sy - 24, 22, 3, PAL.stoneDark);
+    px(sx - 7, sy - 20, 14, 2, PAL.turkuaz);           /* kitabe */
+    px(sx - 5, sy - 17, 10, 8, '#7d6f55');             /* kemer nişi */
+    px(sx - 4, sy - 16, 8, 6, '#5f5443');
+    px(sx - 1, sy - 12, 2, 2, PAL.brass);              /* lüle */
+    var wf = phase2(gameT, 6);
+    px(sx - 1, sy - 10 + (wf ? 0 : 1), 1, 4, '#9fd4e6');
+    px(sx - 6, sy - 5, 12, 4, '#8fb9c9');              /* yalak */
+    px(sx - 6, sy - 5, 12, 1, '#b8dce8');
+  } else if (d.id === 'kilim') {                       /* kilim sergisi */
+    px(sx - 12, sy - 20, 2, 20, PAL.woodDark);
+    px(sx + 10, sy - 20, 2, 20, PAL.woodDark);
+    px(sx - 12, sy - 21, 24, 2, PAL.woodDark);
+    var kw = R(Math.sin(gameT * 1.1) * 0.6);
+    px(sx - 10 + kw, sy - 19, 9, 15, PAL.madder);
+    px(sx - 10 + kw, sy - 19, 9, 1, PAL.saffron);
+    px(sx - 10 + kw, sy - 5, 9, 1, PAL.saffron);
+    for (var q = 0; q < 3; q++) {
+      px(sx - 7 + kw, sy - 16 + q * 4, 3, 1, PAL.cream);
+      px(sx - 6 + kw, sy - 15 + q * 4, 1, 1, PAL.indigo);
+    }
+    px(sx + 1 - kw, sy - 19, 8, 15, PAL.indigo);
+    px(sx + 1 - kw, sy - 19, 8, 1, PAL.cream);
+    for (var q2 = 0; q2 < 3; q2++) px(sx + 3 - kw, sy - 16 + q2 * 4, 4, 1, PAL.saffron);
+  } else if (d.id === 'fener') {                       /* mendirek feneri */
+    px(sx - 8, sy - 6, 16, 6, '#8e8878');              /* kaide */
+    px(sx - 8, sy - 7, 16, 1, '#aaa494');
+    px(sx - 5, sy - 34, 10, 28, PAL.lime);
+    px(sx - 5, sy - 34, 5, 28, '#ffffff');
+    px(sx - 5, sy - 28, 10, 4, PAL.madder);            /* kırmızı kuşak */
+    px(sx - 5, sy - 18, 10, 4, PAL.madder);
+    px(sx - 6, sy - 38, 12, 4, PAL.iron);              /* fener odası */
+    var lit = phase2(gameT, 0.8);
+    px(sx - 4, sy - 37, 8, 2, lit ? '#fff0a8' : '#8a7a3a');
+    px(sx - 2, sy - 40, 4, 2, PAL.iron);
+    if (lit) { ctx.save(); ctx.globalAlpha = 0.22;
+      quad([[sx - 26, sy - 34], [sx + 26, sy - 40], [sx + 26, sy - 30], [sx - 26, sy - 24]], '#fff0a8');
+      ctx.restore(); }
+  } else if (d.id === 'heykel') {
+    px(sx - 7, sy - 6, 14, 6, '#9a927f'); px(sx - 5, sy - 9, 10, 3, '#b3aa93');
+    px(sx - 6, sy - 22, 12, 8, '#7fa9bd'); px(sx - 8, sy - 20, 3, 5, '#6d95a8');
+    px(sx + 5, sy - 24, 4, 4, '#7fa9bd'); dot(sx - 4, sy - 19, '#16222b');
+  }
+}
+
+/* =========================================================
+   ÇİZİM — yükseltme alanları + kartlar
+   ========================================================= */
+function padInfo(p) {
+  if (p.kind === 'cap') return { t: T('upCap'), e: T('upCapE') };
+  if (p.kind === 'spd') return { t: T('upSpd'), e: T('upSpdE') };
+  if (p.kind === 'price') return { t: T('upPrice'), e: T('upPriceE') };
+  if (p.kind === 'area') return { t: UP(NM(AREAS[p.target].n)), e: T('openArea') };
+  if (p.kind === 'arealv') return { t: UP(NM(AREAS[p.area].n)), e: T('upArea') + ' ' + T('level') + AREAS[p.area].lvl + '→' + (AREAS[p.area].lvl + 1) };
+  if (p.kind === 'decor') return { t: UP(NM(DECOR[p.decor].n)), e: T('stDecor') };
+  return { t: UP(NM(ROLES[p.role].n)), e: NM(ROLES[p.role].d) + ' ' + money(ROLES[p.role].wage) + perMin() };
+}
+function drawArrow(tg) {
+  var sx = R(pX(tg.x, tg.y)), sy = R(pY(tg.x, tg.y, 30 + (Math.sin(gameT * 4) > 0 ? 2 : 0)));
+  px(sx - 3, sy - 8, 7, 4, '#ffc94a');
+  px(sx - 2, sy - 4, 5, 2, '#ffc94a');
+  px(sx - 1, sy - 2, 3, 2, '#ffc94a');
+  px(sx, sy, 1, 1, '#ffc94a');
+}
+function drawFlyers() {
+  for (var i = 0; i < flyers.length; i++) {
+    var f = flyers[i], t = clamp(f.t / f.d, 0, 1);
+    var x = lerp(f.x0, f.x1, t), y = lerp(f.y0, f.y1, t);
+    var z = lerp(f.z0, f.z1, t) + Math.sin(t * Math.PI) * f.h;
+    drawItem(f.it, R(pX(x, y)), R(pY(x, y, z)));
+  }
+}
+function drawFloats() {
+  for (var i = 0; i < floats.length; i++) {
+    var f = floats[i], t = f.t / 0.85;
+    uiText(f.x, f.y, 26 + t * 20, f.txt, f.col, 14, 1 - t * t);
+  }
+}
+function drawPuffs() {
+  for (var i = 0; i < puffs.length; i++) {
+    var p = puffs[i];
+    ctx.globalAlpha = clamp(1 - p.t / 0.65, 0, 1) * 0.8;
+    px(pX(p.x, p.y), pY(p.x, p.y, p.z), 2, 2, p.col);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* =========================================================
+   SAHNE
+   ========================================================= */
+function tutorialTarget() {
+  if (S.tut >= TUTOK.length) return null;
+  var t = S.tut;
+  if (t === 0 || t === 1) return { x: spots[0].x, y: spots[0].y + 0.9 };
+  if (t === 2) return { x: tables[0].x, y: tables[0].y };
+  if (t === 3) return hasCarry(player, isGoods) ? { x: counters[0].x, y: counters[0].y } : { x: tables[0].mat.x, y: tables[0].mat.y };
+  if (t === 4) return hasCarry(player, isMoney) ? { x: safe.x, y: safe.y } : { x: counters[0].tray.x, y: counters[0].tray.y };
+  return null;
+}
+function playerOccluded() {
+  var pxp = pX(player.x, player.y), pyp = pY(player.x, player.y, 0), d = player.x + player.y + 0.3, i;
+  var occ = [];
+  if (!AREAS[project.z].locked && project.stage >= 2) occ.push({ x: project.x, y: project.y, w: 60, h: 62 });
+  for (i = 0; i < PLOTS.length; i++) if (PLOTS[i].b && plotActive(PLOTS[i])) occ.push({ x: PLOTS[i].x, y: PLOTS[i].y, w: 46, h: 72 });
+  for (i = 0; i < counters.length; i++) if (!AREAS[counters[i].z].locked) occ.push({ x: counters[i].x, y: counters[i].y, w: 30, h: 30 });
+  for (i = 0; i < SLOTS.length; i++) if (SLOTS[i].b && slotActive(SLOTS[i])) occ.push({ x: SLOTS[i].x, y: SLOTS[i].y, w: 26, h: 28 });
+  if (!AREAS[smoker.z].locked) occ.push({ x: smoker.x, y: smoker.y, w: 26, h: 26 });
+  for (i = 0; i < occ.length; i++) {
+    var o = occ[i];
+    if (o.x + o.y <= d) continue;
+    var ox = pX(o.x, o.y), oy = pY(o.x, o.y, 0);
+    if (Math.abs(ox - pxp) < o.w / 2 && pyp > oy - o.h && pyp < oy + 6) return true;
+  }
+  return false;
+}
+var horizonY = 0;
+function render() {
+  var shk = 0;
+  camOX = R(W / 2 - camX) + shk; camOY = R(H * 0.46 - camY);
+  /* v1.3: ufuk dünyaya bağlı — haritanın en kuzey köşesinin biraz üstünde. Eskiden ekrana sabitti;
+     harita büyüyünce oyun alanı ufkun üstüne taşıyor, kasaba iskelenin yanında görünüyordu. */
+  horizonY = camOY + R(pY(0, 0, 0)) - HORIZON_GAP;
+  drawSea();
+  drawVillage();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.translate(camOX, camOY);
+
+  drawShoal(); drawWaves();
+  for (var b = 0; b < boats.length; b++) drawBoat(boats[b]);
+  drawLand();
+  drawRoad();
+  for (var a = 0; a < AREAS.length; a++) drawArea(AREAS[a], a);
+  drawMeydanGround();
+  drawYardGround();
+
+  var list = [], i;
+  function push(d, fn) { list.push({ d: d, f: fn }); }
+
+  for (i = 0; i < AREAS.length; i++) (function (ar, ai) {
+    if (!ar.locked) return;
+    areaJunk(ai).forEach(function (j) { push(j.x + j.y, function () { drawJunk(j); }); });
+  })(AREAS[i], i);
+  for (i = 0; i < AREAS.length; i++) (function (ar) {
+    if (ar.locked) return;
+    if (ar.lvl >= 3) {
+      AREA_LAMPS[AREAS.indexOf(ar)].forEach(function (lp) { push(lp.x + lp.y, function () { drawLamp(lp.x, lp.y); }); });
+    }
+  })(AREAS[i]);
+  for (i = 0; i < scenery.length; i++) (function (d) { push(d.x + d.y - 0.1, function () { drawScenery(d); }); })(scenery[i]);
+  for (i = 0; i < SLOTS.length; i++) (function (s) {
+    if (!slotActive(s)) return; push(s.x + s.y, function () { drawSlot(s); });
+  })(SLOTS[i]);
+  for (i = 0; i < DECOR.length; i++) (function (d) {
+    if (!d.got || AREAS[d.z].locked) return; push(d.x + d.y, function () { drawDecor(d); });
+  })(DECOR[i]);
+  pushMeydan(push);
+  drawRoadLamps(push);
+  for (i = 0; i < BINS.length; i++) (function (bn) {
+    if (AREAS[bn.z].locked) return; push(bn.x + bn.y, function () { drawBin(bn); });
+  })(BINS[i]);
+  for (i = 0; i < PLOTS.length; i++) (function (p) {          /* v0.4 hizmet parselleri */
+    if (!plotActive(p)) return;
+    if (p.b) push(p.x + p.y, function () { drawServ(p); });
+    else push(p.x + p.y - 0.05, function () { drawPlot(p); });
+  })(PLOTS[i]);
+  if (!AREAS[project.z].locked) push(project.x + project.y, drawProject);
+  if (!AREAS[office.z].locked) push(office.x + office.y, drawOffice);
+  for (i = 0; i < spots.length; i++) (function (s) {
+    if (AREAS[s.z].locked) return; push(s.x + s.y, function () { quietDraw(s.z, s.x, s.y, function () { drawSpot(s); }); });
+  })(spots[i]);
+  for (i = 0; i < XNETS.length; i++) (function (s) {
+    if (!xnetOn(s)) return; push(s.x + s.y, function () { quietDraw(s.z, s.x, s.y, function () { drawSpot(s); }); });
+  })(XNETS[i]);
+  for (i = 0; i < tables.length; i++) (function (t) {
+    if (AREAS[t.z].locked) return; push(t.x + t.y, function () { quietDraw(t.z, t.x, t.y, function () { drawTable(t); }); });
+  })(tables[i]);
+  if (!AREAS[smoker.z].locked) push(smoker.x + smoker.y, function () { quietDraw(smoker.z, smoker.x, smoker.y, drawSmoker); });
+  for (i = 0; i < 3; i++) (function (z) {
+    var mp = mgr(z) && zoneOpen(z) ? mgrPos(z) : null; if (mp) push(mp.x + mp.y, function () { drawMgrDesk(z); });
+  })(i);
+  for (i = 0; i < counters.length; i++) (function (c) {
+    if (AREAS[c.z].locked) return; push(c.x + c.y, function () { quietDraw(c.z, c.x, c.y, function () { drawCounter(c); }); });
+  })(counters[i]);
+  push(safe.x + safe.y, drawSafe);
+
+  var maxY = maxOpenY(), lv = AREAS[0].lvl;
+  for (i = 0; i < maxY; i += 0.75) (function (yy) {
+    var gap = false;
+    for (var k = 0; k < counters.length; k++) {
+      if (AREAS[counters[k].z].locked) continue;
+      if (Math.abs(yy - counters[k].y) < 1.3) gap = true;
+    }
+    var az = yy < 6 ? 0 : (yy < 12 ? 1 : 2);
+    if (!gap) push(9.95 + yy, function () { fencePost(9.95, yy, AREAS[az].lvl); });
+  })(i);
+  for (i = 0; i <= 9.95; i += 0.75) (function (xx) {
+    push(xx + maxY - 0.05, function () { fencePost(xx, maxY - 0.05, lv); });
+  })(i);
+
+  for (i = 0; i < cats.length; i++) (function (ct) { push(ct.x + ct.y + 0.1, function () { drawCat(ct); }); })(cats[i]);
+  for (i = 0; i < customers.length; i++) (function (cu) { push(cu.x + cu.y + 0.2, function () { drawCustomer(cu); }); })(customers[i]);
+  for (i = 0; i < workers.length; i++) (function (w) {
+    var col = w.role === 'hamal' ? '#4f7fae' : w.role === 'filetocu' ? '#5f8f6a' : w.role === 'tezgahtar' ? '#b8624a' : '#7a6ba8';
+    push(w.x + w.y + 0.15, function () {
+      quietDraw(w.zone, w.x, w.y, function () { drawPerson(w, workerOutfit(w)); drawRoleTag(w); });
+    });
+  })(workers[i]);
+  push(player.x + player.y + 0.25, function () {
+    var sx = R(pX(player.x, player.y)), sy = R(pY(player.x, player.y, 0));
+    ctx.save(); ctx.globalAlpha = 0.55 + (Math.sin(gameT * 4) > 0 ? 0.15 : 0);
+    ctx.strokeStyle = '#ffc94a'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(sx - 8, sy); ctx.lineTo(sx, sy - 4); ctx.lineTo(sx + 8, sy); ctx.lineTo(sx, sy + 4);
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+    if (moveDir.on) {                                   /* yürürken yön oku (klavye + dokunmatik) */
+      var mx = pX(moveDir.x, moveDir.y), my = pY(moveDir.x, moveDir.y, 0), ml = Math.hypot(mx, my) || 1;
+      var ux = mx / ml, uy = my / ml, tx = sx + ux * 13, ty = sy + uy * 7;
+      ctx.save(); ctx.globalAlpha = 0.85;
+      for (var q = 0; q < 4; q++) {
+        px(tx - ux * q - uy * q, ty - uy * q + ux * q, 1, 1, '#ffc94a');
+        px(tx - ux * q + uy * q, ty - uy * q - ux * q, 1, 1, '#ffc94a');
+      }
+      ctx.restore();
+    }
+    drawPerson(player, playerOutfit());
+  });
+
+  list.sort(function (a, b) { return a.d - b.d; });
+  for (i = 0; i < list.length; i++) list[i].f();
+
+  if (S.started && playerOccluded()) {
+    ctx.save(); ctx.globalAlpha = 0.45;
+    drawPerson(player, playerOutfit());
+    ctx.restore();
+    var gx = R(pX(player.x, player.y)), gy = R(pY(player.x, player.y, 26));
+    px(gx - 2, gy, 5, 2, '#ffc94a'); px(gx - 1, gy + 2, 3, 2, '#ffc94a'); px(gx, gy + 4, 1, 2, '#ffc94a');
+  }
+  for (i = 0; i < gulls.length; i++) drawGull(gulls[i]);
+  drawFlyers(); drawPuffs(); drawFloats();
+  if (S.started) { var tg = tutorialTarget(); if (tg) drawArrow(tg); }
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  drawVignette();                           /* v0.1 — kenarları yumuşatan vinyet */
+  if (S.started) dayTint();                 /* v1.2 — sabah/gündüz/akşam tonu */
+  ctx.translate(camOX, camOY);
+  renderUI();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (stick.active) drawJoystick(R(stick.bx / PXS), R(stick.by / PXS), stick.dx, stick.dy, 1);
+  else if (S.started && S.ctrl === 0 && inputMode === 'touch' && !paused) {
+    /* eğitim: ekranın altında "burada sürükle" hayalet joystick'i */
+    var gt = (gameT % 2.4) / 2.4, ang = gt * Math.PI * 2;
+    drawJoystick(R(W / 2), R(H * 0.74), Math.cos(ang) * 0.8, Math.sin(ang) * 0.8, 0.55);
+  }
+}
+
+/* =========================================================
+   ARAYÜZ (DOM)
+   ========================================================= */
+var el = {};
+['money', 'carry', 'carryIcon', 'rep', 'repfill', 'eventChip', 'eventIcon', 'eventName', 'eventT', 'objective',
+ 'objLbl', 'objText', 'queueHint', 'toast', 'devbar', 'devpanel', 'dpTitle', 'dpCards', 'dpClose',
+ 'hMoney', 'hCarry', 'hRep', 'startTag', 'startList', 'playBtn', 'setBtn', 'setTitle', 'setLang',
+ 'setSound', 'setMusic', 'musOn', 'musOff', 'setZoom', 'setClose', 'resetBtn', 'closeMenu', 'menuSet', 'langLbl', 'tabBody',
+ 'startScreen', 'settingsScreen', 'menuScreen', 'menuBtn', 'dtArea', 'dtLevel', 'dtBuild', 'dtProj', 'dtServ',
+ 'pauseBadge', 'pauseTxt', 'saveInfo', 'setSaveInfo', 'saveBtn', 'saveQuitBtn', 'menuSave', 'newBtn', 'setSaveLbl',
+ 'dayChip', 'dayIcon', 'dayNum', 'dayfill', 'hDay', 'dayBanner', 'dayBannerT', 'dayBannerS',
+ 'dayScr', 'dayTitle', 'dayRows', 'dayNext', 'dayGo', 'dayStalls',
+ 'stallScr', 'stallTitle', 'stallSub', 'stallRows', 'stallGo', 'prepScr', 'prepTitle', 'prepSub',
+ 'prepDepot', 'prepRows', 'prepGo', 'introScr', 'introCv', 'introSub', 'introNext', 'introSkip', 'introGate',
+ 'introDots', 'introTap', 'introTag', 'nameScr', 'nameCard', 'nameTitle', 'nameSub', 'nameSign', 'nameIn', 'nameDice', 'nameHint',
+ 'nameIdeasLbl', 'nameChips', 'nameGo', 'boardScr', 'boardTitle', 'boardSub', 'boardRows', 'boardNote',
+ 'boardClose', 'boardBtn', 'storyBtn', 'menuBoard', 'dpSub', 'lvlUp', 'lvlNum', 'lvlTitle', 'lvlList', 'lvlConf', 'coach', 'loadBtn', 'slotScr', 'slotTitle', 'slotSub',
+ 'slotRows', 'slotBack', 'nameBack', 'askScr', 'askMsg', 'askYes', 'askNo', 'heroScr', 'heroCard', 'heroCv',
+ 'heroName', 'heroNameDice', 'heroRows', 'heroDice', 'heroGo', 'heroBack', 'heroTitle', 'heroSub', 'heroNameLbl',
+ 'chBtn', 'chPct', 'chScr', 'chTitle', 'chSub', 'chFill', 'chNum', 'chRows', 'chClose', 'chEnd', 'chEndK', 'chEndT', 'chEndP', 'chEndG', 'chEndGo',
+ 'actBtn', 'halScr', 'halTitle', 'halSub', 'halRows', 'halClose', 'autoScr', 'autoTitle', 'autoSub', 'autoOpts', 'autoBadge',
+ 'setAuto', 'specPop', 'specPopT', 'setOnline', 'onlOn', 'onlOff', 'forgetBtn', 'privBtn', 'aboutBtn', 'privScr', 'privFrame', 'privClose'].forEach(function (id) {
+  el[id] = document.getElementById(id);
+});
+var toastT = 0;
+function toast(msg) { el.toast.textContent = msg; el.toast.classList.add('on'); toastT = 2.6; }
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  fbApplyLang();                                /* görüş formu etiketleri */
+  el.hMoney.textContent = T('money'); el.hCarry.textContent = T('carry'); el.hRep.textContent = T('rep'); el.hRep.dataset.l = '';
+  el.startTag.textContent = T('tag');
+  el.startList.innerHTML = PX(['intro1', 'intro2', 'intro3', 'intro4', 'intro5'].map(function (k) {
+    return '<li>' + T(k) + '</li>';
+  }).join('') + '<li style="opacity:.7">' + T('ctrl') + '</li>');
+  el.playBtn.textContent = T('play'); el.setBtn.textContent = T('settings');
+  el.heroTitle.textContent = T('heroTitle'); el.heroSub.textContent = T('heroSub'); el.heroNameLbl.textContent = T('heroNameLbl');
+  el.heroDice.textContent = T('heroRandom'); el.heroGo.textContent = T('heroGo'); el.heroBack.textContent = T('back');
+  if (!el.heroScr.classList.contains('hidden')) renderHeroRows();
+  el.halClose.textContent = T('close'); if (!el.halScr.classList.contains('hidden')) renderHal();
+  el.loadBtn.textContent = T('loadGame'); el.slotBack.textContent = T('back'); el.nameBack.textContent = T('back');
+  if (!el.slotScr.classList.contains('hidden')) renderSlots();
+  el.boardBtn.textContent = T('board'); el.storyBtn.textContent = T('story'); el.menuBoard.textContent = T('boardTitle');
+  el.boardTitle.textContent = T('boardTitle'); el.boardSub.textContent = T('boardSub');
+  el.boardNote.textContent = T('boardLocal'); el.boardClose.textContent = T('close');
+  el.nameTitle.textContent = T('nameTitle'); el.nameSub.textContent = T('nameSub');
+  el.nameIdeasLbl.textContent = T('nameIdeas'); el.nameGo.textContent = T('nameGo'); el.nameDice.title = T('nameDice');
+  el.introSkip.textContent = T('skip'); el.introTap.textContent = T('tapStart'); el.introTag.textContent = T('tag');
+  if (intro.on && intro.ph === 'hold') { intro.typed = 0; el.introSub.textContent = ''; }
+  if (!el.boardScr.classList.contains('hidden')) renderBoard();
+  if (!el.nameScr.classList.contains('hidden')) { syncNamePreview(); renderNameChips(); }
+  el.setTitle.textContent = T('settings'); el.setLang.textContent = T('langLbl');
+  el.setSound.textContent = T('soundLbl'); el.setZoom.textContent = T('zoomLbl');
+  el.setOnline.textContent = T('onlineLbl'); el.onlOn.textContent = T('onlOn'); el.onlOff.textContent = T('onlOff');
+  el.forgetBtn.textContent = T('forgetBtn'); el.privBtn.textContent = T('privBtn'); el.aboutBtn.textContent = T('aboutBtn'); el.privClose.textContent = T('privClose');
+  el.setAuto.textContent = T('autoLbl'); el.setMusic.textContent = T('musicLbl'); el.musOn.textContent = T('musOn'); el.musOff.textContent = T('musOff');
+  el.setClose.textContent = T('resume'); el.resetBtn.textContent = T('delSlot');
+  el.closeMenu.textContent = T('resume'); el.menuSet.textContent = T('settings');
+  el.saveBtn.innerHTML = PX(T('saveNow')); el.saveQuitBtn.innerHTML = PX(T('saveQuit'));
+  el.menuSave.innerHTML = PX(T('saveNow')); el.newBtn.textContent = T('newGame');
+  el.setSaveLbl.textContent = T('setSave'); el.pauseTxt.textContent = T('paused');
+  el.hDay.textContent = T('dayLbl');
+  el.prepTitle.textContent = T('mktDayTitle'); el.prepSub.textContent = T('prepSub');
+  el.stallTitle.textContent = T('stallTitle'); el.stallSub.textContent = T('stallSub');
+  el.stallGo.textContent = T('ok'); el.dayStalls.textContent = T('dayStalls');
+  if (!el.stallScr.classList.contains('hidden')) renderStallScreen();
+  el.prepGo.textContent = T('goMarket');
+  if (!el.dayScr.classList.contains('hidden') && day.last) showDayCard();
+  if (!el.prepScr.classList.contains('hidden')) renderPrep();
+  refreshSaveInfo();
+  el.langLbl.textContent = T('langLbl');
+  el.dtArea.textContent = T('barArea'); el.dtLevel.textContent = T('barLevel');
+  el.dtBuild.textContent = T('barBuild'); el.dtProj.textContent = T('barProj');
+  el.dtServ.textContent = T('barServ');
+  var oft = document.querySelectorAll('#ofTabs .tab');
+  var ofn = ['tabMarket', 'tabCo', 'tabCtr', 'tabPort', 'tabNews', 'tabHold'];
+  for (var q = 0; q < oft.length; q++) oft[q].textContent = T(ofn[q]);
+  document.getElementById('ofTitle').textContent = T('office');
+  document.getElementById('tradeLbl').textContent = T('trade');
+  var tabs = document.querySelectorAll('#menuTabs .tab');
+  for (var i = 0; i < tabs.length; i++) tabs[i].textContent = T('tabs')[i];
+  Array.prototype.forEach.call(document.querySelectorAll('#langSeg button,#langSeg2 button,#introLang button'), function (b) {
+    b.classList.toggle('on', b.dataset.l === lang);
+  });
+  if (!el.menuScreen.classList.contains('hidden')) renderTab();
+  if (barTab) renderBar();
+}
+
+function urgentOrder() {
+  var best = null;
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i]; if (AREAS[c.z].locked) continue;
+    for (var k = 0; k < c.slots.length; k++) {
+      var cu = c.slots[k];
+      if (cu && cu.state === 'wait' && (!best || cu.pat < best.pat)) best = cu;
+    }
+  } return best;
+}
+function waitingCount() {
+  var n = 0;
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i]; if (AREAS[c.z].locked) continue;
+    for (var k = 0; k < c.slots.length; k++) if (c.slots[k] && c.slots[k].state === 'wait') n++;
+  } return n;
+}
+function carryIcon() {
+  var n = { fish: 0, fileto: 0, fume: 0, money: 0 };
+  for (var i = 0; i < player.carry.length; i++) n[player.carry[i].k]++;
+  if (!player.carry.length) return 'kufe';
+  var top = 'fish';
+  for (var k in n) if (n[k] > n[top]) top = k;
+  return top === 'fish' ? 'hamsi' : top === 'fileto' ? 'tezgah' : top === 'fume' ? 'kesim' : 'para';
+}
+function syncHUD(dt) {
+  el.money.textContent = Math.round(S.cash).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US');
+  el.carry.textContent = carryW(player) + '/' + capacity();
+  setChipIcon(el.carryIcon, carryIcon());
+  el.rep.textContent = S.rep;
+  checkRepLevel();
+  var lvl = repLevel();
+  if (el.hRep.dataset.l !== lvl + lang) { el.hRep.dataset.l = lvl + lang; el.hRep.textContent = T('rep') + ' · ' + T('lvShort', { l: lvl }); }
+  var cur = REP_LEVELS[lvl - 1].need, nxt = lvl < REP_LEVELS.length ? REP_LEVELS[lvl].need : cur + 1;
+  el.repfill.style.width = clamp((S.rep - cur) / (nxt - cur) * 100, 0, 100) + '%';
+  if (event) {
+    el.eventChip.classList.remove('hidden');
+    setChipIcon(el.eventIcon, EMO_MAP[event.icon] || 'hamsi');
+    el.eventName.textContent = T(event.name);
+    el.eventT.textContent = Math.ceil(eventT) + 's';
+  } else el.eventChip.classList.add('hidden');
+  if (S.tut < TUTOK.length) {
+    el.objective.classList.remove('hidden');
+    el.objLbl.textContent = T('goal') + ' ' + (S.tut + 1) + '/' + TUTOK.length;
+    el.objText.textContent = T('tut')[S.tut];
+  } else if (undecidedStalls().length) {
+    el.objective.classList.remove('hidden');
+    el.objLbl.textContent = T('newStallLbl');
+    el.objText.textContent = T('newStallHint');
+  } else {
+    var o = urgentOrder();
+    /* §7: görev bandı yalnız gerektiğinde */
+    if (o && o.pat < 26) {
+      el.objective.classList.remove('hidden');
+      el.objLbl.textContent = T('orderOf', { n: UP(NM(o.type.n)) });
+      el.objText.textContent = prodName(o.ord.k, o.ord.f) + ' x' + (o.ord.need - o.ord.got) + ' - ' + Math.ceil(o.pat) + 's';
+    } else el.objective.classList.add('hidden');
+  }
+  /* v1.2 gün çipi */
+  el.dayNum.textContent = day.n + (day.market ? ' 🐟' : '');
+  setChipIcon(el.dayIcon, day.market ? 'pazar' : 'gun');
+  el.dayfill.style.width = clamp(day.t / DAY_LEN * 100, 0, 100) + '%';
+  if (day.phase === 'intro') {
+    el.dayBanner.classList.remove('hidden');
+    el.dayBannerT.textContent = T('dayN', { d: day.n });
+    var fc = day.feat && custById(day.feat);
+    el.dayBannerS.textContent = (day.market ? T('mktDayLbl') + (fc ? ' • ' : '') : '') + (fc ? T('featDay', { n: NM(fc.n) }) : '');
+  } else el.dayBanner.classList.add('hidden');
+  var w = waitingCount();
+  if (w >= 4) { el.queueHint.classList.remove('hidden'); el.queueHint.textContent = T('waiting', { n: w }); }
+  else el.queueHint.classList.add('hidden');
+  if (toastT > 0) { toastT -= dt; if (toastT <= 0) el.toast.classList.remove('on'); }
+  if (cfT > 0) { cfT -= dt; if (cfT <= 0 && cfId) { cfId = null; renderBar(); } }
+  barLiveRefresh(dt);
+  barHot();
+  syncTradeBtn(); syncMeydanBtn();
+  ofRefresh -= dt;
+  if (ofRefresh <= 0) {
+    ofRefresh = 1;
+    if (!document.getElementById('officeScr').classList.contains('hidden')) renderOffice();
+  }
+}
+
+/* ---------- alt panel ---------- */
+/* =========================================================
+   ALT GELİŞTİRME BARI (GDD v0.3.1 §3)
+   ========================================================= */
+var barTab = null, barSlot = null, cfId = null, cfT = 0, buildSub = 'dev';
+var servSel = null, servPick = null;   /* v0.4 — seçili bina / parsel önizlemesi */
+var barZone = null;                    /* v2.1 — personel alınan bölge */
+var barMgr = null;                     /* v1.3 — müdür seçilen bölge */
+var stallPrompt = false;               /* v0.1 — yeni tezgâh bildirimi bekliyor */
+function closeBar() {
+  barTab = null; barSlot = null; cfId = null; servPick = null; barZone = null; barMgr = null;
+  el.devpanel.classList.add('hidden');
+  document.body.classList.remove('panel');
+  Array.prototype.forEach.call(document.querySelectorAll('.dtab'), function (b) { b.classList.remove('on'); });
+}
+function openBar(t) {
+  if (barTab === t) { closeBar(); return; }
+  barTab = t; barSlot = null; cfId = null; servPick = null; barZone = null; barMgr = null;
+  el.devpanel.classList.remove('hidden');
+  document.body.classList.add('panel');
+  Array.prototype.forEach.call(document.querySelectorAll('.dtab'), function (b) {
+    b.classList.toggle('on', b.dataset.t === t);
+  });
+  renderBar();
+}
+function purchase(cost, blocked, fn) {
+  if (blocked) { sfx.bad(); return false; }
+  if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return false; }
+  S.cash -= cost; fn(); save(); renderBar(); return true;
+}
+function areaLevelEffect(a) { return T('lvEffect'); }
+
+function barList() {
+  var out = [], i;
+  if (barTab === 'area') {
+    for (i = 1; i < AREAS.length; i++) {
+      var a = AREAS[i];
+      if (!a.locked || AREAS[i - 1].locked) continue;
+      var blk = S.rep < a.rep;
+      out.push({ id: 'a' + i, ic: '🔓', t: NM(a.n), s: T('areaGives') + (a.rep ? ' • Sv ' + levelForRep(a.rep) : ''),
+        cost: upCost(a.cost), blocked: blk, why: T('needRep', { n: a.rep, c: S.rep, l: levelForRep(a.rep) }),
+        go: function (k) { return function () { clearJunk(k); AREAS[k].locked = false; rebuildCounters(); reassignWorkers(); clampCam(); sfx.build(); toast(T('areaOpen', { n: NM(AREAS[k].n) })); }; }(i) });
+      break;
+    }
+    if (!out.length) out.push({ empty: T('emptyArea') });
+  } else if (barTab === 'level') {
+    if (barMgr !== null) {                                             /* v1.3: müdür adayları */
+      var mz = barMgr;
+      out.push({ id: 'back', ic: '↩', t: T('back'), s: T('mgrListT', { n: NM(AREAS[mz].n) }), back: true });
+      mgrCands(mz).forEach(function (cd, ci) {
+        out.push({ id: 'mc' + mz + ci, ic: '👔', t: cd.n, s: mgrText(cd) + ' • ' + T('mgrCost', { d: money(MGR_DESK[mz].cost), f: money(cd.fee), w: money(MGR_DESK[mz].wage) + perMin() }),
+          cost: upCost(MGR_DESK[mz].cost + cd.fee), go: function () { hireMgr(mz, cd); barMgr = null; } });
+      });
+      return out;
+    }
+    /* --- v2.1: bölge personeli alt listesi --- */
+    if (barZone !== null) {
+      var zn = barZone;
+      out.push({ id: 'back', ic: '↩', t: T('back'), s: NM(AREAS[zn].n) + ' ' + zoneStaff(zn) + '/' + zoneStaffCap(zn), back: true });
+      for (i = 0; i < ZONE_ROLES.length; i++) (function (r) {
+        var full = zoneFree(zn) <= 0;
+        out.push({ id: 'zr' + r + zn, ic: ROLES[r].icon, t: NM(ROLES[r].n),
+          s: NM(ROLES[r].d) + ' • ' + money(ROLES[r].wage) + perMin(),
+          cost: hireCost(r, zn), blocked: full, why: T('zoneFull'),
+          go: function () { hire(r, false, zn); barZone = null; save(); renderBar(); } });
+      })(ZONE_ROLES[i]);
+      return out;
+    }
+    /* --- v2.3: tezgâh aç/kapat ekranına kısayol (ücretsiz, listede ilk sırada) --- */
+    if (switchableStalls().length) {
+      var yeniVar = undecidedStalls().length;
+      out.push({ id: 'stsw', ic: '🐟', t: T('stallSwitch') + (yeniVar ? ' •' : ''),
+        s: yeniVar ? T('stallNewN', { n: yeniVar })
+                   : T('stallSwitchD', { a: openStallCount(), b: switchableStalls().length + 1 }),
+        pick: T('stallManage'), go: function () { openStallScreen(); } });
+    }
+    /* --- v1.3: Füme Makinesi (Fümehane açılınca 1. ve 2. bölgeye) --- */
+    FUME_MACH.forEach(function (fm) {
+      if (AREAS[fm.z].locked || fumeMachine(fm.z)) return;
+      var ok = !AREAS[smoker.z].locked;
+      out.push({ id: 'fm' + fm.z, ic: '🔥', t: T('fmT', { n: NM(AREAS[fm.z].n) }), s: T('fmD'), cost: upCost(fm.cost),
+        blocked: !ok, why: T('fmNeed'),
+        go: function () { S.fumeM[fm.z] = 1; sfx.build(); toast(T('fmDone', { n: NM(AREAS[fm.z].n) })); } });
+    });
+    /* --- v2.1: her açık bölge için personel kartı --- */
+    for (i = 0; i < zoneCount(); i++) (function (z2) {
+      if (!zoneOpen(z2)) return;
+      var free = zoneFree(z2);
+      var zfn = zoneFish(z2).filter(function (q) { return canSell(q); }).map(function (q) { return NM(FISH[q].n); });
+      out.push({ id: 'zs' + z2, ic: '👷', t: T('zoneStaff', { n: NM(AREAS[z2].n) }),
+        s: T('zoneStaffD', { a: zoneStaff(z2), b: zoneStaffCap(z2) }) + (zfn.length ? ' • ' + zfn.join(', ') : ''),
+        pick: free > 0 ? T('choose') : null, blocked: free <= 0, why: T('zoneFull'),
+        go: function () { barZone = z2; cfId = null; renderBar(); } });
+    })(i);
+    /* --- v0.5: personele devret (tam otomasyon) --- */
+    for (i = 0; i < zoneCount(); i++) (function (z3) {
+      if (!zoneOpen(z3)) return;
+      var ch = zoneChain(z3), on = zoneAuto(z3);
+      var st = ZONE_ROLES.map(function (r) { return (ch[r] ? '✓' : '✗') + NM(ROLES[r].n); }).join(' ');
+      if (ch.ok && !on && !mgr(z3)) {                                   /* v1.3: tam otomasyon için müdür gerekir */
+        out.push({ id: 'mg' + z3, ic: '👔', t: T('mgrCard', { n: NM(AREAS[z3].n) }), s: T('mgrCardD'),
+          pick: T('mgrPick'), go: function () { barMgr = z3; cfId = null; renderBar(); } });
+        return;
+      }
+      out.push({ id: 'au' + z3, ic: on ? '⚙️' : '🤝', t: T(on ? 'autoCardOn' : 'autoCard', { n: NM(AREAS[z3].n) }) + (mgr(z3) ? ' • 👔 ' + mgr(z3).n : ''),
+        s: (on ? T('autoCardOnD') : st) + (mgr(z3) ? ' • ' + mgrText(mgr(z3)) : ''), pick: ch.ok ? T(on ? 'autoBack' : 'autoGive') : null,
+        blocked: !ch.ok, why: T('autoNeed', { n: ch.miss.length }),
+        go: function () { setZoneAuto(z3, !on); } });
+    })(i);
+    for (i = 0; i < PADS.length; i++) {
+      var p = PADS[i];
+      if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
+      if (AREAS[p.z].locked || p.lvl >= p.max) continue;
+      var info = padInfo(p), bl = padBlocked(p);
+      out.push({ id: p.id, ic: p.icon, t: info.t + (p.max > 1 ? '  ' + T('level') + p.lvl + '→' + (p.lvl + 1) : ''),
+        s: info.e, cost: upCost(padPrice(p)), blocked: bl, why: T('staffFull', { n: staffCap() }),
+        go: function (pp) { return function () { applyPad(pp); }; }(p) });
+    }
+    if (!out.length) out.push({ empty: T('emptyLevel') });
+  } else if (barTab === 'build') {
+    /* v0.3 — YAPI üç alt kategoride: Dekoratif • Geliştirmeler • Yapı Yükseltmeleri */
+    var lvNow = repLevel();
+    if (barSlot) {
+      out.push({ id: 'back', ic: '↩', t: T('back'), s: '', back: true });
+      var sl = barSlot;
+      for (i = 0; i < BUILDINGS.length; i++) {
+        var bd = BUILDINGS[i];
+        if (sl.cats.indexOf(bd.cat) < 0) continue;
+        var owned = sl.b === bd.id;
+        var refund = sl.b ? Math.round(bdef(sl.b).cost * 0.6) : 0;
+        out.push({ id: 'b' + bd.id, ic: bd.icon, t: NM(bd.n), s: NM(bd.d), cost: upCost(bd.cost), refund: refund,
+          owned: owned, blocked: !owned && bd.lv && lvNow < bd.lv, why: T('needLv', { l: bd.lv }),
+          go: function (b2) { return function () { slotBuild(barSlot, b2); }; }(bd.id) });
+      }
+    } else if (buildSub === 'decor') {
+      var ek = envStage();
+      if (ek < ENV_UPS.length) (function (eu) {       /* v1.2: sıradaki çevre yatırımı en başta */
+        out.push({ id: 'env' + ek, ic: eu.icon, t: NM(eu.n) + '  ' + (ek + 1) + '/' + ENV_UPS.length,
+          s: NM(eu.d) + ' • ' + T('envFlow', { p: Math.round(eu.flow * 100) }), cost: eu.cost,
+          blocked: lvNow < eu.lv, why: T('needLv', { l: eu.lv }), go: buyEnv });
+      })(ENV_UPS[ek]);
+      for (i = 0; i < DECOR.length; i++) {
+        var dc = DECOR[i];
+        if (dc.got || AREAS[dc.z].locked) continue;
+        out.push({ id: 'd' + i, ic: dc.icon, t: NM(dc.n), s: T('decorGroup') + ' • ' + NM(AREAS[dc.z].n), cost: dc.cost,
+          blocked: dc.lv && lvNow < dc.lv, why: T('needLv', { l: dc.lv }),
+          go: function (k) { return function () { DECOR[k].got = true; sfx.build(); toast(T('decorBought', { n: NM(DECOR[k].n) })); }; }(i) });
+      }
+      if (!out.length) out.push({ empty: T('emptyDecor') });
+    } else if (buildSub === 'meydan') {
+      meydanCards(out);
+    } else if (buildSub === 'up') {
+      for (i = 0; i < AREAS.length; i++) {
+        var ar = AREAS[i];
+        if (ar.locked || ar.lvl >= MAXLV) continue;
+        out.push({ id: 'l' + i, ic: '🏗️', t: NM(ar.n) + '  ' + T('level') + ar.lvl + '→' + (ar.lvl + 1),
+          s: areaLevelEffect(ar), cost: upCost(ar.up[ar.lvl]),
+          go: function (k) { return function () { AREAS[k].lvl++; rebuildCounters(); sfx.build(); toast(T('areaLvUp', { n: NM(AREAS[k].n), l: AREAS[k].lvl })); }; }(i) });
+      }
+      if (!out.length) out.push({ empty: T('emptyUp') });
+    } else {
+      for (i = 0; i < SLOTS.length; i++) {
+        var s2 = SLOTS[i];
+        if (!slotActive(s2)) continue;
+        var d2 = s2.b ? bdef(s2.b) : null;
+        out.push({ id: 's' + s2.id, ic: d2 ? d2.icon : '🔨', t: d2 ? NM(d2.n) : T('slotEmpty'),
+          s: T('slotOf', { n: NM(AREAS[s2.z].n) }) + (d2 ? ' • ' + NM(d2.d) : ''),
+          pick: T(d2 ? 'replace' : 'choose'),
+          go: function (sx) { return function () { barSlot = sx; cfId = null; renderBar(); }; }(s2) });
+      }
+      if (!out.length) out.push({ empty: T('emptyBuild') });
+    }
+  } else if (barTab === 'serv') {
+    /* v0.4 §37 — parsel seçimi (inşa veya ücretsiz taşıma) */
+    if (servPick) {
+      var pd = sdef(servPick), moving = sBuilt(servPick), fp = servFreePlots(servPick);
+      out.push({ id: 'back', ic: '↩', t: T('back'), s: NM(pd.n) + ' • ' + T('pickPlot'), back: true });
+      for (i = 0; i < fp.length; i++) (function (pl) {
+        if (moving) {
+          out.push({ id: 'pl' + pl.id, ic: '↔️', t: NM(pl.n), s: T('plotOf', { n: NM(AREAS[pl.z].n) }),
+            pick: T('moveHere'), go: function () { servMove(servPick, pl); servPick = null; save(); renderBar(); } });
+        } else {
+          out.push({ id: 'pl' + pl.id, ic: '🏗️', t: NM(pl.n), s: T('plotOf', { n: NM(AREAS[pl.z].n) }),
+            cost: upCost(sCost(pd.lv[0].c)), buyTxt: T('buildHere'),
+            go: function () { var id0 = servPick; servPick = null; servBuild(id0, pl); servSel = id0; } });
+        }
+      })(fp[i]);
+      if (!fp.length) out.push({ empty: T('noPlot') });
+      return out;
+    }
+    for (i = 0; i < SERV.length; i++) (function (d) {
+      var lv = sLvl(d.id);
+      if (lv > 0) {
+        var cur = d.lv[lv - 1];
+        if (lv >= 5) {
+          out.push({ id: 'sv' + d.id, ic: d.icon, t: NM(d.n) + '  Lv.5', s: NM(cur.d), owned: true });
+        } else {
+          var nx = d.lv[lv];
+          out.push({ id: 'sv' + d.id, ic: d.icon, t: NM(d.n) + '  Lv.' + lv + '→' + (lv + 1),
+            s: NM(nx.d) + ' • ' + T('nextLook') + ': ' + NM(nx.v),
+            cost: upCost(sCost(nx.c)),
+            go: function () { servUp(d.id); servSel = d.id; } });
+        }
+        if (servFreePlots(d.id).length) {
+          out.push({ id: 'mv' + d.id, ic: '↔️', t: T('move'), s: NM(d.n) + ' • ' + T('free'),
+            pick: T('choose'), go: function () { servPick = d.id; cfId = null; renderBar(); } });
+        }
+      } else {
+        var why = servLockReason(d), c0 = d.lv[0];
+        out.push({ id: 'sv' + d.id, ic: d.icon, t: NM(d.n),
+          s: NM(d.r) + ' • ' + NM(c0.d) + (c0.inc ? ' • ' + money(c0.inc) + '/' + Math.round(c0.ivl) + 's ' + T('servInc') : ''),
+          blocked: !!why, why: why || '',
+          pick: why ? null : money(upCost(sCost(c0.c))) + ' →',
+          go: function () { servPick = d.id; cfId = null; renderBar(); } });
+      }
+    })(SERV[i]);
+    if (!out.length) out.push({ empty: T('servEmpty') });
+  }
+  return out;
+}
+function slotBuild(sl, id) {
+  var d = bdef(id), price = upCost(d.cost);
+  if (d.lv && repLevel() < d.lv) { toast(T('needLv', { l: d.lv })); sfx.bad(); return; }
+  var refund = sl.b ? Math.round(upCost(bdef(sl.b).cost) * 0.6) : 0;
+  if (sl.b === id) return;
+  if (S.cash + refund < price) { toast(T('noMoney')); sfx.bad(); return; }
+  S.cash += refund - price;
+  sl.b = id; rebuildCounters(); reassignWorkers();
+  sfx.build(); toast(T('built', { n: NM(d.n) }));
+  addPuff(sl.x, sl.y, '#ffc94a');
+  barSlot = null; save(); renderBar();
+}
+function buildHot(sub) {
+  var i;
+  if (sub === 'up') { for (i = 0; i < AREAS.length; i++) if (!AREAS[i].locked && AREAS[i].lvl < MAXLV && S.cash >= AREAS[i].up[AREAS[i].lvl]) return true; return false; }
+  if (sub === 'dev') { for (i = 0; i < SLOTS.length; i++) if (slotActive(SLOTS[i]) && !SLOTS[i].b && S.cash >= 900) return true; return false; }
+  return false;
+}
+function setBuildSub(sub) { buildSub = sub; barSlot = null; cfId = null; renderBar(); sfx.tap(); }
+/* v1.3: panel açıkken para/seviye değişince kartların rengi güncellensin (eskiden yalnız alımda yenileniyordu) */
+var barCards = [], barSigLast = '', barSigT = 0;
+function barSig() {
+  if (barTab === 'proj') return 'p' + repLevel() + ':' + Math.floor(S.cash / 25);
+  var s = 'l' + repLevel() + ':';
+  for (var i = 0; i < barCards.length; i++) {
+    var c = barCards[i];
+    s += (!c || c.empty || c.back || c.pick || c.owned || c.blocked || c.cost === undefined) ? '-' : (S.cash + (c.refund || 0) >= c.cost ? '1' : '0');
+  }
+  return s;
+}
+function barLiveRefresh(dt) {
+  if (!barTab) return;
+  barSigT -= dt; if (barSigT > 0) return;
+  barSigT = 0.3;
+  var sg = barSig();
+  if (sg !== barSigLast) renderBar();
+}
+function renderBar() {
+  if (!barTab) return;
+  var keepX = el.dpCards.scrollLeft;
+  el.dpTitle.textContent = T(barTab === 'area' ? 'tArea' : barTab === 'level' ? 'tLevel' : barTab === 'build' ? 'tBuild' : barTab === 'serv' ? 'tServ' : 'tProj');
+  el.dpSub.classList.toggle('hidden', barTab !== 'build' || !!barSlot);
+  if (barTab === 'build') Array.prototype.forEach.call(el.dpSub.children, function (b) {
+    b.classList.toggle('on', b.dataset.s === buildSub);
+    b.innerHTML = PX(T('bsub_' + b.dataset.s)) + (buildHot(b.dataset.s) ? ' •' : '');
+  });
+  if (barTab === 'proj') { renderProjPanel(); barCards = []; barSigLast = barSig(); el.dpCards.scrollLeft = keepX; return; }
+  var list = barList(), h = '';
+  barCards = list;
+  for (var i = 0; i < list.length; i++) {
+    var c = list[i];
+    if (c.empty) { h += '<div class="dempty">' + c.empty + '</div>'; continue; }
+    var btn;
+    if (c.back) btn = '<button class="buy" data-i="' + i + '">' + T('back') + '</button>';
+    else if (c.pick) btn = '<button class="buy" data-i="' + i + '">' + c.pick + '</button>';
+    else if (c.owned) btn = '<button class="buy done" data-i="' + i + '">✔ ' + T('owned') + '</button>';
+    else if (c.blocked) btn = '<button class="buy no" data-i="' + i + '">' + c.why + '</button>';
+    else {
+      var aff = S.cash + (c.refund || 0) >= c.cost;
+      var cf = cfId === c.id;
+      btn = '<button class="buy' + (aff ? (cf ? ' cf' : '') : ' no') + '" data-i="' + i + '">' +
+        (cf ? T('confirm') : (c.buyTxt ? c.buyTxt + ' ' + money(c.cost) : money(c.cost))) + '</button>';
+    }
+    h += '<div class="dcard' + (c.pick && !c.owned ? '' : '') + '"><span class="ic">' + c.ic + '</span><b>' +
+      c.t + '</b><small>' + (c.s || '') + (c.refund ? ' (+' + money(c.refund) + ')' : '') + '</small>' + btn + '</div>';
+  }
+  el.dpCards.innerHTML = PX(h);
+  el.dpCards.scrollLeft = keepX;
+  barSigLast = barSig();
+  Array.prototype.forEach.call(el.dpCards.querySelectorAll('.buy'), function (b) {
+    b.onclick = function () {
+      var c = list[parseInt(b.dataset.i, 10)];
+      if (!c) return;
+      if (c.back) { barSlot = null; servPick = null; barZone = null; barMgr = null; cfId = null; renderBar(); return; }
+      if (c.pick) { c.go(); return; }
+      if (c.owned) return;
+      if (c.blocked) { sfx.bad(); toast(c.why); return; }
+      var needCf = c.cost >= 1500 || barTab === 'area' || barTab === 'serv' || (barTab === 'build' && c.id.charAt(0) === 'l');
+      if (needCf && cfId !== c.id) { cfId = c.id; cfT = 3.5; renderBar(); return; }
+      cfId = null;
+      if (c.refund !== undefined) { c.go(); return; }
+      purchase(c.cost, false, c.go);
+    };
+  });
+}
+function renderProjPanel() {
+  var extra = '';
+  if (officeReady() && M && !M.office) {
+    var oc = upCost(ECON.officeCost), okRep = S.rep >= ECON.officeRep;
+    extra += '<div class="dcard"><span class="ic">🏛️</span><b>' + T('office') + '</b><small>' + T('officeD') +
+      (okRep ? '' : ' • ⭐' + ECON.officeRep) + '</small>' +
+      '<button class="buy' + (okRep && S.cash >= oc ? (cfId === 'office' ? ' cf' : '') : ' no') + '" data-x="office">' +
+      (okRep ? (cfId === 'office' ? T('confirm') : money(oc)) : T('needRep', { n: ECON.officeRep, c: S.rep, l: levelForRep(ECON.officeRep) })) + '</button></div>';
+  }
+  if (M && M.office && !M.license) {
+    var lc = upCost(ECON.licenseCost), okR2 = S.rep >= ECON.licenseRep;
+    extra += '<div class="dcard"><span class="ic">📜</span><b>' + T('license') + '</b><small>' + T('licenseD') + '</small>' +
+      '<button class="buy' + (okR2 && S.cash >= lc ? (cfId === 'lic' ? ' cf' : '') : ' no') + '" data-x="lic">' +
+      (okR2 ? (cfId === 'lic' ? T('confirm') : money(lc)) : T('needRep', { n: ECON.licenseRep, c: S.rep, l: levelForRep(ECON.licenseRep) })) + '</button></div>';
+  }
+  if (AREAS[project.z].locked) {
+    el.dpCards.innerHTML = PX(extra || '<div class="dempty">' + T('emptyProj') + '</div>');
+    bindProjExtra(); return;
+  }
+  var pc = projPct();
+  if (project.done) {
+    el.dpCards.innerHTML = PX(extra + '<div class="dcard"><span class="ic">🏛️</span><b>' + NM(project.n) +
+      '</b><small>' + T('done') + ' ✔</small></div>');
+    bindProjExtra(); return;
+  }
+  var nextTh = project.stages[Math.min(project.stage, project.stages.length - 1)] * project.total;
+  el.dpCards.innerHTML = PX(extra + '<div class="dcard dwide"><b>' + NM(project.n) + '  ' + T('stage') + ' ' + project.stage + '/5</b>' +
+    '<div class="dbar"><i style="width:' + Math.round(pc * 100) + '%"></i></div>' +
+    '<small>' + money(project.inv) + ' / ' + money(project.total) + ' — ' + T('nextStage') + ': ' + money(Math.max(0, nextTh - project.inv)) + '</small>' +
+    '<div class="dinv"><button data-a="1000">+' + money(1000) + '</button><button data-a="10000">+' + money(10000) +
+    '</button><button data-a="q">' + T('pct25') + '</button><button data-a="max">' + T('maxInvest') + '</button></div></div>');
+  Array.prototype.forEach.call(el.dpCards.querySelectorAll('.dinv button'), function (b) {
+    b.onclick = function () {
+      var a = b.dataset.a;
+      investProject(a === 'max' ? S.cash : a === 'q' ? S.cash * 0.25 : parseInt(a, 10));
+    };
+  });
+  bindProjExtra();
+}
+function bindProjExtra() {
+  Array.prototype.forEach.call(el.dpCards.querySelectorAll('.buy[data-x]'), function (b) {
+    b.onclick = function () {
+      var x = b.dataset.x;
+      if (x === 'office') {
+        if (S.rep < ECON.officeRep) { sfx.bad(); return; }
+        if (cfId !== 'office') { cfId = 'office'; cfT = 3.5; renderBar(); return; }
+        cfId = null;
+        purchase(upCost(ECON.officeCost), false, function () {
+          M.office = true; M.day = 1; M.t = 0; genOffers();
+          if (M.credit > 0) {
+            var tc = cst('atlas');
+            tc.free -= M.credit; tc.own += M.credit; M.credit = 0;
+            notify(T('creditGift', { n: NM(cdef('atlas').n) }), 'mid');
+          }
+          notify(T('tutMarket'), 'high'); sfx.build();
+        });
+      } else if (x === 'lic') {
+        if (S.rep < ECON.licenseRep) { sfx.bad(); return; }
+        if (cfId !== 'lic') { cfId = 'lic'; cfT = 3.5; renderBar(); return; }
+        cfId = null;
+        purchase(upCost(ECON.licenseCost), false, function () { M.license = true; sfx.build(); notify(T('license'), 'high'); });
+      }
+    };
+  });
+}
+function barHot() {
+  var hot = { area: false, level: false, build: false, proj: false, serv: false }, i;
+  for (i = 1; i < AREAS.length; i++) if (AREAS[i].locked && !AREAS[i - 1].locked && S.rep >= AREAS[i].rep && S.cash >= AREAS[i].cost) hot.area = true;
+  if (buildHot('up') || buildHot('dev')) hot.build = true;
+  for (i = 0; i < PADS.length; i++) {
+    var p = PADS[i];
+    if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
+    if (!AREAS[p.z].locked && p.lvl < p.max && !padBlocked(p) && S.cash >= padPrice(p)) hot.level = true;
+  }
+  if (undecidedStalls().length) hot.level = true;
+  for (i = 0; i < zoneCount(); i++) if (zoneOpen(i) && zoneFree(i) > 0 && S.cash >= hireCost('hamal', i)) hot.level = true;
+  if (!AREAS[project.z].locked && !project.done && S.cash >= 1000) hot.proj = true;
+  if (M && officeReady() && !M.office && S.rep >= ECON.officeRep && S.cash >= upCost(ECON.officeCost)) hot.proj = true;
+  if (M && M.office && !M.license && S.rep >= ECON.licenseRep && S.cash >= upCost(ECON.licenseCost)) hot.proj = true;
+  for (i = 0; i < SERV.length; i++) {
+    var sd = SERV[i], slv = sLvl(sd.id);
+    if (slv === 0) { if (!servLockReason(sd) && S.cash >= upCost(sCost(sd.lv[0].c))) hot.serv = true; }
+    else if (slv < 5 && S.cash >= upCost(sCost(sd.lv[slv].c))) hot.serv = true;
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.dtab'), function (b) {
+    b.classList.toggle('hot', !!hot[b.dataset.t] && barTab !== b.dataset.t);
+  });
+}
+Array.prototype.forEach.call(document.querySelectorAll('.dtab'), function (b) {
+  b.onclick = function () { openBar(b.dataset.t); };
+});
+
+/* =========================================================
+   v1.2 — GÜN KARTLARI • PAZAR HAZIRLIĞI • DEPO PANELİ
+   ========================================================= */
+function dayRow(ic, t, v) {
+  return '<div class="row"><div class="ic">' + ic + '</div><div class="tx">' + t + '</div><div class="vl">' + v + '</div></div>';
+}
+function showDayCard() {
+  var L = day.last, h = '';
+  el.dayTitle.textContent = (L.market ? T('mktClose', { d: L.n }) : T('dayClose', { d: L.n }));
+  h += dayRow('💰', T('dayInc'), money(L.inc));
+  h += dayRow('🧾', T('dayServed'), L.market ? (L.served + ' / ' + (L.served + L.lost)) : ('' + L.served));
+  h += dayRow('🐟', T('dayFish'), '' + L.fish);
+  if (L.market || L.lost) h += dayRow('🚶', T('dayLost'), '' + L.lost);
+  if (L.top) h += dayRow('🏆', T('dayTop'), NM(FISH[L.top.f].n) + ' ×' + L.top.n);
+  if (L.out) h += dayRow('⚠️', T('dayOut'), NM(FISH[L.out.f].n) + ' ' + fmtDur(L.out.t));
+  if (L.auc) h += dayRow('🔔', T('dayAuction'), L.auc.n + ' × ' + money(L.auc.v));
+  if (L.spec && L.spec.length) h += dayRow('⭐', T('daySpec'), escH(L.spec.join(', ')));
+  if (S.company) {
+    submitScore(true);
+    var rk = myRank(Board.sort(Board.read()));
+    var fs = T('fishN', { n: fmtN(S.caught) });
+    h += dayRow('🏆', T('dayScore'), '<span class="dayRankV">' + (ONLINE ? fs : (rk ? T('dayRank', { s: fs, r: rk }) : fs)) + '</span>');
+    if (ONLINE) setTimeout(function () {             /* sunucu sırası gelince satırı güncelle */
+      Board.fetch(function (l, info) {
+        if (info.src !== 'online' || !info.me || el.dayScr.classList.contains('hidden')) return;
+        var v = el.dayRows.querySelector('.dayRankV');
+        if (v) v.textContent = T('dayRank', { s: fs, r: info.me.rank });
+      });
+    }, 1500);
+  }
+  el.dayRows.innerHTML = PX(h);
+  el.dayNext.classList.toggle('hidden', !L.next);
+  if (L.next) el.dayNext.innerHTML = T('mktTomorrow') + '<br><small>' + T('mktExpect') + '</small>';
+  el.dayGo.textContent = L.next ? T('goPrep') : T('goNextDay');
+  el.dayScr.classList.remove('hidden');
+  syncPause();
+}
+/* §4.2 Pazar sabahı hazırlığı — yalnız bu pazar için geçici hedef/öncelik */
+function showPrepCard() {
+  renderPrep();
+  el.prepScr.classList.remove('hidden');
+  syncPause();
+}
+/* v2.1: Pazar hazırlık ekranı — hedef stok düzenleme kalktı, artık tezgâh durumu gösterir */
+function renderPrep() {
+  var list = openCounters().filter(function (c) { return c.open && c.fish; });
+  var tot = 0, cap = 0;
+  for (var q = 0; q < list.length; q++) { tot += list[q].buffer.length; cap += counterMax(list[q]); }
+  el.prepDepot.textContent = T('prepStock', { a: tot, b: cap, n: list.length });
+  var h = '';
+  for (var i2 = 0; i2 < list.length; i2++) {
+    var c = list[i2], n = c.buffer.length, mx = counterMax(c);
+    var pctv = Math.round(n / Math.max(1, mx) * 100);
+    var col = pctv >= 60 ? 'p2' : pctv >= 25 ? 'p1' : 'p0';
+    h += '<div class="trow"><div class="ic">' + FISH[c.fish].ic + '</div>' +
+      '<div class="nm">' + NM(FISH[c.fish].n) + '<small>' + NM(AREAS[c.z].n) + '</small></div>' +
+      '<div class="stp"><span class="tv">' + n + '/' + mx + '</span>' +
+      '<span class="pz ' + col + '">' + pct(pctv) + '</span></div></div>';
+  }
+  el.prepRows.innerHTML = PX(h || '<div class="empty">' + T('noStall') + '</div>');
+}
+
+/* =========================================================
+   v2.3 — AÇIK TEZGÂHLAR EKRANI
+   İlk tezgâh sabit açık; ikinciden itibaren ücretsiz aç/kapat.
+   Gün sonu kartından, alt bardan ve gün başında (yeni tezgâh varsa) açılır.
+   ========================================================= */
+function openStallCount() {
+  var n = 0;
+  for (var i = 0; i < counters.length; i++)
+    if (counters[i].open && counters[i].fish && !AREAS[counters[i].z].locked) n++;
+  return n;
+}
+function renderStallScreen() {
+  var list = counters.filter(function (c) {
+    return c.fish && !AREAS[c.z].locked && (isFirstStall(c) || (canProduce(c.fish) && canProcess('fileto', c.fish)));
+  });
+  var h = '';
+  for (var i = 0; i < list.length; i++) {
+    var c = list[i], first = isFirstStall(c);
+    var yeni = !first && !c.seen && !c.open;
+    h += '<div class="trow' + (yeni ? ' newish' : '') + '"><div class="ic">' + FISH[c.fish].ic + '</div>' +
+      '<div class="nm">' + NM(FISH[c.fish].n) + (yeni ? ' <b style="color:var(--gold)">•</b>' : '') +
+      '<small>' + NM(AREAS[c.z].n) + ' • ' + T('nowStock', { n: c.buffer.length }) + '</small></div>' +
+      '<div class="stp"><button class="sw ' + (first ? 'lock' : (c.open ? 'on' : 'off')) + '" data-k="' + c.key + '"' +
+      (first ? ' disabled' : '') + '>' + (first ? T('swFixed') : (c.open ? T('swOn') : T('swOff'))) + '</button></div></div>';
+  }
+  el.stallRows.innerHTML = PX(h || '<div class="empty">' + T('noStall') + '</div>');
+  Array.prototype.forEach.call(el.stallRows.querySelectorAll('.sw:not([disabled])'), function (b) {
+    b.onclick = function () {
+      var c = counterByKey(b.dataset.k);
+      if (!c) return;
+      c.seen = true;
+      toggleStall(c);
+      sfx.sw(c.open);
+      renderStallScreen();
+    };
+  });
+}
+function openStallScreen() {
+  renderStallScreen();
+  el.stallScr.classList.remove('hidden');
+  syncPause();
+}
+function closeStallScreen() {
+  markStallsSeen();
+  el.stallScr.classList.add('hidden');
+  save(); syncPause();
+  if (barTab) renderBar();
+}
+function counterByKey(k) { for (var i = 0; i < counters.length; i++) if (counters[i].key === k) return counters[i]; return null; }
+
+/* ---------- menü ---------- */
+var curTab = 'liman';
+function row(ic, title, sub, val, val2) {
+  return '<div class="row"><div class="ic">' + ic + '</div><div class="tx">' + title +
+    (sub ? '<small>' + sub + '</small>' : '') + '</div><div class="vl">' + (val || '') +
+    (val2 ? '<small>' + val2 + '</small>' : '') + '</div></div>';
+}
+function lockTag() { return '<span style="color:var(--ink2)">' + T('locked') + '</span>'; }   /* v1.0: kilitli değer yeşil (para gibi) görünmesin */
+function renderTab() {
+  if (curTab === 'basarim') { el.tabBody.innerHTML = achTabHTML(); return; }   /* BAŞARIMLAR sekmesi */
+  var h = '', i;
+  if (curTab === 'liman') {
+    var lvl = repLevel(), nxt = lvl < REP_LEVELS.length ? REP_LEVELS[lvl] : null;
+    h += row('⭐', repTitle(), nxt ? (T('mNext') + ': ' + NM(nxt.t) + ' - ' + nxt.need) : T('mMax'), S.rep + '*');
+    h += row('💰', T('money'), T('mWage') + ': ' + money(wageTotal()) + perMin(), money(S.cash));
+    for (i = 0; i < AREAS.length; i++) {
+      var a = AREAS[i];
+      h += row(a.locked ? '🔒' : '🏝️', NM(a.n),
+        a.locked ? (money(a.cost) + ' + ' + a.rep + '*') : (T('level') + a.lvl + '/' + MAXLV),
+        a.locked ? lockTag() : (a.lvl < MAXLV ? money(a.up[a.lvl]) : T('done')));
+    }
+    h += row('🌿', T('envRow'), envStage() < ENV_UPS.length ? T('envNext', { n: NM(ENV_UPS[envStage()].n), l: ENV_UPS[envStage()].lv }) : T('done'),
+      envStage() + '/' + ENV_UPS.length, '+' + Math.round(envFlow() * 100) + '% ' + T('envCust'));
+    h += row('🏛️', NM(project.n), T('stage') + ' ' + project.stage + '/5',
+      project.done ? T('done') : pct(Math.round(projPct() * 100)), project.done ? '' : money(project.total - project.inv));
+    var used = SLOTS.filter(function (s) { return s.b && slotActive(s); }).length;
+    var tot = SLOTS.filter(slotActive).length;
+    h += row('🔨', T('mSlots'), T('mStaffCap') + ': ' + workers.length + '/' + staffCap(), used + '/' + tot);
+    for (var zq = 0; zq < zoneCount(); zq++) {
+      if (!zoneOpen(zq)) continue;
+      var opn = counters.filter(function (c) { return c.open && c.fish && zoneOfFish(c.fish) === zq; }).length;
+      var all = counters.filter(function (c) { return c.fish && !AREAS[c.z].locked && zoneOfFish(c.fish) === zq; }).length;
+      h += row('🐟', NM(AREAS[zq].n), T('zoneStaffD', { a: zoneStaff(zq), b: zoneStaffCap(zq) }), opn + '/' + all);
+    }
+    h += row('🧾', T('mOrders'), T('mLost') + ': ' + S.lost + ' - ' + T('mCaught') + ': ' + S.caught, S.served + '');
+    /* v0.4 — liman hizmet binaları genel bakış */
+    for (i = 0; i < SERV.length; i++) {
+      var sd2 = SERV[i], slv2 = sLvl(sd2.id);
+      if (slv2 > 0) {
+        h += row(sd2.icon, NM(sd2.n), NM(sd2.lv[slv2 - 1].d), 'Lv.' + slv2 + '/5',
+          slv2 < 5 ? money(upCost(sCost(sd2.lv[slv2].c))) : T('maxLv'));
+      } else {
+        var wy = servLockReason(sd2);
+        h += row('🔒', NM(sd2.n), wy || NM(sd2.r), lockTag(), wy ? '' : money(upCost(sCost(sd2.lv[0].c))));
+      }
+    }
+  } else if (curTab === 'personel') {
+    if (!workers.length) h += '<div class="empty">' + T('mNoStaff') + '</div>';
+    for (i = 0; i < workers.length; i++) {
+      var w = workers[i], Rl = ROLES[w.role];
+      h += row(Rl.icon, w.name + ' - ' + NM(Rl.n),
+        (w.zone >= 0 ? NM(AREAS[w.zone].n) : DEPOT_ROLES.indexOf(w.role) >= 0 ? T('depotName') : T('harborWide')) + (w.stall ? ' • ' + stallLabel(w.stall) : '') + ' • ' + NM(Rl.d),
+        money(Rl.wage) + perMin(), T('carry') + ' ' + carryW(w) + '/' + Rl.cap);
+    }
+    for (i = 0; i < zoneCount(); i++) {
+      if (!zoneOpen(i)) continue;
+      h += row('👷', T('zoneStaff', { n: NM(AREAS[i].n) }), T('mZoneStaff'), zoneStaff(i) + '/' + zoneStaffCap(i));
+    }
+    if (workers.length) h += row('💸', T('mTotalWage'), '', money(wageTotal()) + perMin());
+  } else if (curTab === 'urunler') {
+    for (i = 0; i < LINES.length; i++) {
+      var L = LINES[i], F = FISH[L.f];
+      var open = fishReady(L.f);
+      var why = !canSell(L.f) ? T('lineLocked', { s: stallName(L.stall) })
+        : (!canProduce(L.f) ? T('lineLocked', { s: NM(AREAS[spots[L.src].z].n) }) : T('lineOpen'));
+      h += row(open ? '🐟' : '🔒', (i + 1) + '. ' + NM(F.n) + (open ? '' : ' 🔒'),
+        why + ' • ' + T('mWeight') + ' ' + F.w + ' • ' + T('mCut') + ' ' + F.cut.toFixed(2) + 's • ' + F.out + ' ' + T('mYield'),
+        open ? money(prodValue('fileto', L.f)) : '—',
+        open && canProcess('fume', L.f) ? T('mSmoked') + ' ' + money(prodValue('fume', L.f)) : '');
+    }
+  } else if (curTab === 'album') {                 /* v1.1: tanışılan özel müşteriler */
+    var met = SPECIALS.filter(function (q) { return S.met.indexOf(q.id) >= 0; });
+    h += row('⭐', T('albMet'), met.length ? '' : T('albNone'), met.length + '/' + SPECIALS.length);
+    met.forEach(function (q) {
+      h += row('★', escH(NM(q.n)) + ' · ' + escH(NM(q.job)), escH(q.trait ? NM(q.trait) : NM(q.hi)), '', T('albFav') + ': ' + NM(FISH[q.fav].n));
+    });
+    if (met.length && met.length < SPECIALS.length) h += '<div class="empty">' + T('albLeft', { n: SPECIALS.length - met.length }) + '</div>';
+  } else {
+    h += row('🕹️', T('mCtrl'), T('ctrl'), '');
+    h += row('🎣', T('mLoop'), T('mLoopE'), '');
+    h += row('🔥', T('stSmoke'), T('mSmokeE'), '');
+    h += row('⭐', T('rep'), T('mRepE'), '');
+    h += row('🏗️', T('upArea'), T('mInvestE'), '');
+  }
+  el.tabBody.innerHTML = PX(h);
+}
+Array.prototype.forEach.call(document.querySelectorAll('#menuTabs .tab'), function (b) {
+  b.onclick = function () {
+    Array.prototype.forEach.call(document.querySelectorAll('#menuTabs .tab'), function (o) { o.classList.remove('on'); });
+    b.classList.add('on'); curTab = b.dataset.t; renderTab();
+  };
+});
+el.dpClose.onclick = closeBar;
+el.menuBtn.onclick = function () { openPauseMenu(); };
+el.closeMenu.onclick = function () { el.menuScreen.classList.add('hidden'); syncPause(); };
+el.menuSet.onclick = function () { el.menuScreen.classList.add('hidden'); openSettings(true); };
+el.menuSave.onclick = function () { manualSave(); };
+/* v1.2 — gün özeti / pazar hazırlığı */
+el.dayStalls.onclick = function () { openStallScreen(); };
+el.stallGo.onclick = function () { closeStallScreen(); };
+el.dayGo.onclick = function () {
+  el.dayScr.classList.add('hidden');
+  beginNextDay(false);
+  if (day.phase !== 'prep') syncPause();
+  sfx.buy();
+};
+el.prepGo.onclick = function () {
+  el.prepScr.classList.add('hidden');
+  day.phase = 'intro'; day.ph = 1.7;
+  syncPause(); save(); sfx.market();
+};
+
+/* ---------- ayarlar ---------- */
+function setLangTo(l) { lang = l; applyLang(); save(); }
+Array.prototype.forEach.call(document.querySelectorAll('#langSeg button,#langSeg2 button,#introLang button'), function (b) {
+  b.onclick = function () { setLangTo(b.dataset.l); };
+});
+Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (b) {
+  b.onclick = function () {
+    volLvl = clamp(parseInt(b.dataset.s, 10) || 0, 0, 2);
+    applyVolume(); ensureAudio();
+    Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.remove('on'); });
+    b.classList.add('on'); save();
+    if (volLvl) sfx.tap();                       /* seçilen seviyeyi hemen duy */
+  };
+});
+Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), function (b) {
+  b.onclick = function () {
+    zoomLvl = parseInt(b.dataset.z, 10);
+    Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), function (o) { o.classList.remove('on'); });
+    b.classList.add('on'); resize(); save();
+  };
+});
+el.setBtn.onclick = function () { el.startScreen.classList.add('hidden'); openSettings(false); };
+el.setClose.onclick = function () {
+  var from = el.settingsScreen.dataset.from;
+  el.settingsScreen.classList.add('hidden');
+  if (!S.started) el.startScreen.classList.remove('hidden');
+  else if (from === 'menu') el.menuScreen.classList.remove('hidden');
+  syncPause();
+};
+el.saveBtn.onclick = function () { if (!S.started) { toast(T('noRun')); sfx.bad(); return; } manualSave(); };
+el.saveQuitBtn.onclick = function () { if (!S.started) { toast(T('noRun')); sfx.bad(); return; } saveAndQuit(); };
+/* ayarlar › bu slotu sil: oyundan çıkar, slotu siler, menüye döner */
+el.resetBtn.onclick = function () {
+  if (!curSlot) return;
+  var n = curSlot;
+  ask(T('delAsk', { n: n, c: S.company || T('slotEmpty2') }), T('delYes'), function () {
+    if (S.started) { S.started = false; document.getElementById('hud').classList.add('hidden'); document.getElementById('objective').classList.add('hidden'); el.devbar.classList.add('hidden'); }
+    el.settingsScreen.classList.add('hidden'); el.menuScreen.classList.add('hidden');
+    deleteSlot(n); el.startScreen.classList.remove('hidden'); refreshSaveInfo(); syncPause(); musicPlay('menu');
+    toast(T('slotDeleted', { n: n }));
+  });
+};
+/* mağaza gizlilik şartları: çevrimiçi paylaşımı kapat / skor kaydımı sil / gizlilik politikası */
+Array.prototype.forEach.call(document.querySelectorAll('#onlineSeg button'), function (b) {
+  b.onclick = function () { onlineOK = b.dataset.o === '1'; onlineAsked = true; savePref(); syncSettingsUI(); sfx.tap(); toast(T(onlineOK ? 'onlineOnT' : 'onlineOffT')); };
+});
+function forgetMe(done, tries) {
+  /* yolda bir skor gönderimi varsa bitmesini bekle: silmeden sonra eski kimlikle satır kalmasın */
+  if (ONLINE && netSent.busy && (tries || 0) < 25) { setTimeout(function () { forgetMe(done, (tries || 0) + 1); }, 200); return; }
+  var old = PLAYER_ID;
+  function local() {
+    Store.del(BOARD_KEY);
+    PLAYER_ID = 'p' + newRunId(); Store.set('balikci_pid', PLAYER_ID); playLogged = false;
+    /* silinen veri bir sonraki otomatik gönderimde geri gelmesin: bu oyuna yeni kimlik + paylaşım kapalı */
+    if (S.runId) S.runId = newRunId();
+    netSent.at = 0; netSent.s = -1; netSent.busy = false; netSent.dirty = false;
+    onlineOK = false; savePref(); syncSettingsUI();
+    if (done) done();
+  }
+  if (!ONLINE) { local(); toast(T('forgetDone')); return; }
+  rpc('bt_forget', { p_player: old }).then(function () { local(); toast(T('forgetDone')); },
+    function () { toast(T('forgetFail')); sfx.bad(); });
+}
+/* açık rıza: çevrimiçi özellik ilk kez gerektiğinde bir kez sor; "hayır" da hatırlanır, Ayarlar'dan değişir */
+function askOnline(then) {
+  if (!ONLINE || onlineAsked || onlineOK) { if (then) then(); return; }
+  ask(T('onlineAsk'), T('onlineAskYes'), function () { onlineOK = true; onlineAsked = true; savePref(); syncSettingsUI(); if (S.started) submitScore(true); if (then) then(); },
+    function () { onlineAsked = true; savePref(); syncSettingsUI(); if (then) then(); });
+  el.askNo.textContent = T('onlineAskNo');
+}
+el.forgetBtn.onclick = function () { ask(T('forgetAsk'), T('forgetYes'), function () { forgetMe(); }); };
+el.privBtn.onclick = function () { el.privFrame.src = 'privacy.html#' + lang; el.privScr.classList.remove('hidden'); syncPause(); sfx.tap(); };
+el.aboutBtn.onclick = function () { el.privFrame.src = 'about.html#' + (lang === 'en' ? 'en' : 'tr'); el.privScr.classList.remove('hidden'); syncPause(); sfx.tap(); };
+el.privClose.onclick = function () { el.privScr.classList.add('hidden'); el.privFrame.src = 'about:blank'; syncPause(); };
+Array.prototype.forEach.call(document.querySelectorAll('#musSeg button'), function (b) {
+  b.onclick = function () { setMusicEnabled(b.dataset.m === '1'); syncSettingsUI(); savePref(); sfx.tap(); };
+});
+Array.prototype.forEach.call(document.querySelectorAll('#autoSeg button'), function (b) {
+  b.onclick = function () { setAutoMin(parseInt(b.dataset.m, 10)); sfx.tap(); };
+});
+Array.prototype.forEach.call(document.querySelectorAll('#autoOpts button'), function (b) {
+  b.onclick = function () { pickAutosave(parseInt(b.dataset.m, 10)); };
+});
+function syncSettingsUI() {
+  Array.prototype.forEach.call(document.querySelectorAll('#autoSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.m, 10) === S.autoMin); o.textContent = T('autoMinN', { m: o.dataset.m }); });
+  Array.prototype.forEach.call(document.querySelectorAll('#musSeg button'), function (o) { o.classList.toggle('on', (o.dataset.m === '1') === musicEnabled); });
+  Array.prototype.forEach.call(document.querySelectorAll('#onlineSeg button'), function (o) { o.classList.toggle('on', (o.dataset.o === '1') === onlineOK); });
+  Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.s, 10) === volLvl); });
+  Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.z, 10) === zoomLvl); });
+}
+
+/* =========================================================
+   DÖNGÜ
+   ========================================================= */
+var last = 0, saveT = 0;
+function frame(ts) {
+  requestAnimationFrame(frame);
+  var dt = Math.min(0.05, (ts - last) / 1000 || 0);
+  last = ts;
+  if (intro.on) { updateIntro(dt); return; }
+  if (!S.started) { gameT += dt; updateFx(dt); render(); drawHeroPreview(gameT); return; }
+  if (paused) { if (!document.hidden) render(); return; }   /* duraklatıldı: dünya tamamen donar */
+  gameT += dt; S.play += dt;
+  updatePlayer(dt);
+  updateWorkers(dt);
+  updateStations(dt);
+  updateCustomers(dt);
+  updateDay(dt);                    /* v1.2 — gün döngüsü + depo kilidi */
+  updateSpecials(dt);               /* v0.9 — özel isimli müşteriler */
+  updateFumeMachines(dt);           /* v1.3 — tezgâh füme makinesi */
+  updateChapter(dt);                /* v1.3 — Bölüm 1 hedefi */
+  updateEvents(dt);
+  updateMarket(dt);
+  updateTutorial();
+  updateFx(dt);
+  updateLevelUp(dt);
+  updateEnv(dt);
+  updateCoach(dt);
+  if (workers.length) S.cash = Math.max(0, S.cash - wageTotal() / 60 * dt);
+  updateCamera(dt);
+  syncHUD(dt);
+  /* v0.8 — otomatik kayıt: oyuncunun seçtiği aralıkta (oynanan süre). Sekme kapanınca/arka plana
+     geçince ve gün sonunda ayrıca güvenlik kaydı yapılır (beforeunload / visibilitychange / endDay). */
+  if (S.autoMin) { saveT += dt; if (saveT >= S.autoMin * 60) { saveT = 0; autoSaveNow(); } }
+  if (stallPrompt && !anyOverlay()) {        /* yeni tezgâh kuruldu: kararı hemen sor */
+    stallPrompt = false;
+    if (undecidedStalls().length) { openStallScreen(); sfx.cust(); }
+  }
+  render();
+}
+/* ---------- v0.8 — OTOMATİK KAYIT ---------- */
+var AUTO_OPTS = [5, 10, 30], autoCb = null;
+function autoSaveNow() {
+  save(); S.savedAt = Date.now();
+  el.autoBadge.textContent = T('autoSaved', { t: agoStr(S.savedAt) });
+  el.autoBadge.classList.remove('hidden', 'go'); void el.autoBadge.offsetWidth; el.autoBadge.classList.add('go');
+  clearTimeout(autoSaveNow._t); autoSaveNow._t = setTimeout(function () { el.autoBadge.classList.add('hidden'); }, 2600);
+}
+function autoLeft() { return S.autoMin ? Math.max(0, S.autoMin * 60 - saveT) : 0; }
+/* oyun başlamadan önce sorar (yeni oyunda her zaman; eski kayıtta ayar yoksa bir kez) */
+function askAutosave(cb) {
+  if (S.autoMin) { cb(); return; }
+  autoCb = cb;
+  var pref = 10;
+  try { var d = JSON.parse(Store.get(PREF_KEY) || 'null'); if (d && AUTO_OPTS.indexOf(d.autoMin) >= 0) pref = d.autoMin; } catch (e) { }
+  el.autoTitle.textContent = T('autoTitle'); el.autoSub.textContent = T('autoSub');
+  Array.prototype.forEach.call(el.autoOpts.children, function (b) {
+    var m = parseInt(b.dataset.m, 10);
+    b.innerHTML = '<b>' + T('autoMinN', { m: m }) + '</b><small>' + T(m === 5 ? 'auto5' : m === 10 ? 'auto10' : 'auto30') + '</small>';
+    b.classList.toggle('on', m === pref);
+  });
+  el.autoScr.classList.remove('hidden'); sfx.tap();
+}
+function pickAutosave(m) {
+  S.autoMin = m; saveT = 0;
+  var d = {};
+  try { d = JSON.parse(Store.get(PREF_KEY) || '{}') || {}; } catch (e) { }
+  d.autoMin = m; Store.set(PREF_KEY, JSON.stringify(d));
+  el.autoScr.classList.add('hidden');
+  var f = autoCb; autoCb = null;
+  if (f) f();
+}
+function setAutoMin(m) { S.autoMin = m; saveT = Math.min(saveT, m * 60); syncSettingsUI(); refreshSaveInfo(); save(); toast(T('autoSet', { m: m })); }
+function start() {
+  saveT = 0;
+  el.startScreen.classList.add('hidden');
+  document.getElementById('hud').classList.remove('hidden');
+  document.getElementById('objective').classList.remove('hidden');
+  el.devbar.classList.remove('hidden');
+  S.started = true; paused = false; syncPause();
+  ensureAudio(); applyVolume(); musicPlay('game');       /* oyunda müzik arkadan mırıldanır */
+  logPlay();
+  retOnStart();                                          /* uzun ayrılıktan dönüş: "Sen yokken…" */
+}
+/* OYNA: kayıt varsa devam; yoksa işletme adı → oyun. Adı olmayan eski kayıt önce ad sorar. */
+el.playBtn.onclick = function () {
+  var ls = lastSlot();
+  if (!ls) { openSlots('new'); return; }
+  if (curSlot !== ls) useSlot(ls);
+  if (!S.company) { openNameScreen('legacy'); sfx.tap(); return; }
+  el.startScreen.classList.add('hidden');
+  askAutosave(start);
+};
+el.newBtn.onclick = function () { openSlots('new'); };
+el.loadBtn.onclick = function () { openSlots('load'); };
+el.slotBack.onclick = closeSlots;
+el.nameBack.onclick = function () {
+  el.nameScr.classList.add('hidden');
+  if (nameMode === 'new') openHeroScreen(); else { el.startScreen.classList.remove('hidden'); refreshSaveInfo(); }
+  sfx.tap();
+};
+el.heroGo.onclick = confirmHero;
+el.heroBack.onclick = function () { el.heroScr.classList.add('hidden'); openSlots('new'); };
+el.heroDice.onclick = function () { var nm = el.heroName.value; pendingHero = randomHero(); if (nm) pendingHero.n = nm; renderHeroRows(); sfx.pick(); };
+el.heroNameDice.onclick = function () { el.heroName.value = pick(HERO_NAMES); sfx.pick(); };
+el.heroName.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); confirmHero(); } });
+el.askNo.onclick = function () { closeAsk(false); };
+el.askYes.onclick = function () { closeAsk(true); };
+el.storyBtn.onclick = function () { openIntro(null); };
+el.boardBtn.onclick = function () { openBoard('start'); };
+el.menuBoard.onclick = function () { openBoard('menu'); };
+el.boardClose.onclick = closeBoard;
+el.halClose.onclick = closeHal;
+el.actBtn.onclick = function () {
+  if (el.actBtn.dataset.a === 'hut') { openBar('level'); toast(T('hutWelcome')); }
+  else if (el.actBtn.dataset.a === 'hal') openHal();
+};
+Array.prototype.forEach.call(el.dpSub.children, function (b) { b.onclick = function () { setBuildSub(b.dataset.s); }; });
+el.nameGo.onclick = confirmName;
+el.nameDice.onclick = function () { el.nameIn.value = randomCompany([el.nameIn.value]); syncNamePreview(); renderNameChips(); sfx.pick(); };
+el.nameIn.addEventListener('input', syncNamePreview);
+el.nameIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); confirmName(); } });
+el.introScr.addEventListener('pointerdown', function (e) {
+  if (e.target === el.introSkip || (e.target.closest && e.target.closest('#introLang'))) return;
+  introAdvance();
+});
+el.introSkip.onclick = function (e) { e.stopPropagation(); ensureAudio(); sfx.tap(); closeIntro(); };
+window.addEventListener('keydown', function (e) {
+  if (!intro.on) return;
+  if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); closeIntro(); return; }
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); introAdvance(); }
+});
+window.addEventListener('resize', introResize);
+/* ESC: oyunu duraklat / devam ettir */
+/* Escape (klavye) ve Android geri tuşu aynı mantık: en üstteki paneli kapat, yoksa duraklatma menüsü.
+   true → işlendi; false → oyun başlamamış (ana ekran): uygulama arka plana alınabilir. */
+function backAction() {
+  if (!el.askScr.classList.contains('hidden')) { closeAsk(false); return true; }   /* onay sorusu: "hayır" */
+  if (fbOpen()) { fbClose(); return true; }     /* görüş formu en üstte */
+  if (retBack()) return true;                                  /* "Sen yokken…" kartı: topla ve kapat */
+  if (!el.privScr.classList.contains('hidden')) { el.privClose.click(); return true; }
+  if (!el.settingsScreen.classList.contains('hidden')) { el.setClose.click(); return true; }
+  if (!S.started) {                              /* oyun öncesi ekranlar: bir önceki ekrana dön; ana ekranda false */
+    if (!el.heroScr.classList.contains('hidden')) { el.heroBack.click(); return true; }
+    if (!document.getElementById('nameScr').classList.contains('hidden')) { el.nameBack.click(); return true; }
+    if (!el.slotScr.classList.contains('hidden')) { el.slotBack.click(); return true; }
+    return false;
+  }
+  if (!el.chEnd.classList.contains('hidden')) { el.chEndGo.click(); return true; }
+  if (!el.chScr.classList.contains('hidden')) { el.chClose.click(); return true; }
+  if (!el.autoScr.classList.contains('hidden')) return true;      /* otomatik kayıt seçimi zorunlu */
+  if (!document.getElementById('officeScr').classList.contains('hidden')) { document.getElementById('ofClose').click(); return true; }
+  if (!el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden')) return true;  /* gün kartı kendi butonuyla kapanır */
+  if (!el.stallScr.classList.contains('hidden')) { closeStallScreen(); return true; }
+  if (!el.boardScr.classList.contains('hidden')) { closeBoard(); return true; }
+  if (!el.halScr.classList.contains('hidden')) { closeHal(); return true; }
+  if (!el.menuScreen.classList.contains('hidden')) { el.closeMenu.click(); return true; }
+  if (barTab) { closeBar(); return true; }
+  openPauseMenu(); return true;
+}
+window.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape' && e.key !== 'Esc') return;
+  if (backAction()) e.preventDefault();
+});
+window.addEventListener('beforeunload', save);
+var hiddenPause = false;
+document.addEventListener('visibilitychange', function () {
+  if (document.hidden) { save(); hiddenPause = true; }
+  else { hiddenPause = false; last = 0; }      /* geri dönünce dev bir dt birikmesin */
+  syncPause();
+});
+
+var ECON = {
+  dayLen: 300,            /* 1 Pazar Günü = 5 dk aktif oynanış (§4.1) */
+  comm: 0.015,            /* alım/satım komisyonu (§4.4) */
+  officeCost: 18000, officeRep: 40,
+  licenseCost: 90000, licenseRep: 90,
+  privScale: 0.25,        /* özel işletme fiyat ölçeği */
+  dividendEvery: 4, dividendHealth: 55,
+  maxActiveContracts: 3, offerPool: 6,
+  normalBand: 0.18, bigBand: 0.28,
+  takeoverPremium: 1.20, takeoverPremiumMax: 1.35,
+  perkCap: { carry: 0.20, upcost: 0.20, speed: 0.20, value: 0.20, rate: 0.25 }
+};
+var SEC = {
+  fleet:   { tr: 'Balıkçılık Filosu', en: 'Fishing Fleet' },
+  log:     { tr: 'Liman Lojistiği', en: 'Port Logistics' },
+  cold:    { tr: 'Depolama', en: 'Cold Storage' },
+  proc:    { tr: 'İşleme', en: 'Processing' },
+  yard:    { tr: 'Tersane', en: 'Shipyard' },
+  resto:   { tr: 'Restoran Zinciri', en: 'Restaurants' },
+  pack:    { tr: 'Paketleme', en: 'Packaging' },
+  marine:  { tr: 'Deniz Nakliyatı', en: 'Marine Freight' },
+  deep:    { tr: 'Açık Deniz', en: 'Deep Sea' },
+  mach:    { tr: 'Endüstri Ekipmanı', en: 'Machinery' },
+  whole:   { tr: 'Toptan Ticaret', en: 'Wholesale' },
+  tour:    { tr: 'Kruvaziyer / Turizm', en: 'Tourism' }
+};
+/* §3 kurgusal şirket evreni + §9 perkler + §18.1 başlangıç değerleri */
+var COMPANIES = [
+  { id: 'kuzey', n: { tr: 'Kuzey Ağları A.Ş.', en: 'North Nets Co.' }, sec: 'fleet', risk: 72, price: 32, fl: 0.60, div: 0.25, col: '#2f6f9e',
+    p5: { k: 'netstock', v: 1, t: { tr: 'Ağ stok +1', en: 'Net stock +1' } }, p15: { k: 'netrate', v: 0.08, t: { tr: 'Ağ üretimi +%8', en: 'Net output +8%' } },
+    ctrl: { tr: 'Filo İskelesi', en: 'Fleet Pier' } },
+  { id: 'mavihat', n: { tr: 'MaviHat Lojistik', en: 'BlueLine Logistics' }, sec: 'log', risk: 38, price: 48, fl: 0.55, div: 0.30, col: '#3f8fbf',
+    p5: { k: 'wspeed', v: 0.05, t: { tr: 'Personel taşıma +%5', en: 'Staff speed +5%' } }, p15: { k: 'ctrslot', v: 1, t: { tr: 'Toplu teslim slotu +1', en: 'Bulk slot +1' } },
+    ctrl: { tr: 'Yükleme Koridoru', en: 'Loading Corridor' } },
+  { id: 'buzmar', n: { tr: 'BuzMar Soğuk Zincir', en: 'IceMar Cold Chain' }, sec: 'cold', risk: 30, price: 42, fl: 0.50, div: 0.35, col: '#58b7c9',
+    p5: { k: 'stock', v: 10, t: { tr: 'Depo kapasitesi +10', en: 'Storage +10' } }, p15: { k: 'upcost', v: 0.10, t: { tr: 'Yükseltme -%10', en: 'Upgrades -10%' } },
+    ctrl: { tr: 'Merkezi Depo', en: 'Central Depot' } },
+  { id: 'okyanus', n: { tr: 'Okyanus Gıda', en: 'Ocean Foods' }, sec: 'proc', risk: 58, price: 65, fl: 0.55, div: 0.25, col: '#d98455',
+    p5: { k: 'procspeed', v: 0.05, t: { tr: 'İşleme hızı +%5', en: 'Processing +5%' } }, p15: { k: 'value', v: 0.08, t: { tr: 'İşlenmiş ürün +%8', en: 'Processed value +8%' } },
+    ctrl: { tr: 'İşleme Tesisi', en: 'Processing Plant' } },
+  { id: 'tersane', n: { tr: 'Tersane 47', en: 'Shipyard 47' }, sec: 'yard', risk: 70, price: 95, fl: 0.40, div: 0.20, col: '#b8763a',
+    p5: { k: 'upcost', v: 0.05, t: { tr: 'Yükseltme -%5', en: 'Upgrades -5%' } }, p15: { k: 'rate', v: 0.06, t: { tr: 'Ağ + işleme +%6', en: 'Nets + cutting +6%' } },
+    ctrl: { tr: 'Büyük Tersane', en: 'Grand Shipyard' } },
+  { id: 'kiyi', n: { tr: 'Kıyı Sofrası', en: 'Shore Table' }, sec: 'resto', risk: 50, price: 38, fl: 0.65, div: 0.30, col: '#c8553d',
+    p5: { k: 'custval', v: 0.03, t: { tr: 'Müşteri harcaması +%3', en: 'Customer spend +3%' } }, p15: { k: 'premium', v: 0.08, t: { tr: 'Premium müşteri +%8', en: 'Premium customers +8%' } },
+    ctrl: { tr: 'Restoran Meydanı', en: 'Restaurant Square' } },
+  { id: 'atlas', n: { tr: 'Atlas Ambalaj', en: 'Atlas Packaging' }, sec: 'pack', risk: 32, price: 28, fl: 0.60, div: 0.30, col: '#8a7f5c',
+    p5: { k: 'ctrcap', v: 5, t: { tr: 'Kontrat teslim kapasitesi +5', en: 'Contract capacity +5' } }, p15: { k: 'ctrmul', v: 0.05, t: { tr: 'Hacimli kontrat +%5', en: 'Bulk contracts +5%' } },
+    ctrl: { tr: 'Paketleme Merkezi', en: 'Packaging Center' } },
+  { id: 'marti', n: { tr: 'Martı Denizcilik', en: 'Gull Maritime' }, sec: 'marine', risk: 60, price: 72, fl: 0.50, div: 0.25, col: '#5f7f9c',
+    p5: { k: 'flow', v: 0.05, t: { tr: 'Müşteri akışı +%5', en: 'Customer flow +5%' } }, p15: { k: 'ctrslot', v: 1, t: { tr: 'Gemi kontrat slotu +1', en: 'Ship contract slot +1' } },
+    ctrl: { tr: 'Derin Su Rıhtımı', en: 'Deepwater Quay' } },
+  { id: 'derinsu', n: { tr: 'DerinSu Avcılık', en: 'DeepBlue Fishing' }, sec: 'deep', risk: 85, price: 120, fl: 0.35, div: 0.15, col: '#1f4e6b',
+    p5: { k: 'rare', v: 0.03, t: { tr: 'Nadir av şansı +%3', en: 'Rare catch +3%' } }, p15: { k: 'netrate', v: 0.10, t: { tr: 'Açık deniz ağları +%10', en: 'Deep sea nets +10%' } },
+    ctrl: { tr: 'Açık Deniz Üssü', en: 'Deep Sea Base' } },
+  { id: 'makina', n: { tr: 'Liman Makina', en: 'Port Machinery' }, sec: 'mach', risk: 48, price: 54, fl: 0.50, div: 0.25, col: '#8d8156',
+    p5: { k: 'upcost', v: 0.04, t: { tr: 'Mekanik yükseltme -%4', en: 'Mech upgrades -4%' } }, p15: { k: 'upcost', v: 0.08, t: { tr: 'İstasyon yükseltme -%8', en: 'Station upgrades -8%' } },
+    ctrl: { tr: 'Bakım Atölyesi', en: 'Maintenance Shop' } },
+  { id: 'ada', n: { tr: 'Ada Pazarlama', en: 'Isle Trading' }, sec: 'whole', risk: 52, price: 44, fl: 0.60, div: 0.30, col: '#7b5ea7',
+    p5: { k: 'flow', v: 0.05, t: { tr: 'Toptan müşteri +%5', en: 'Wholesale customers +5%' } }, p15: { k: 'ctrmul', v: 0.06, t: { tr: 'Büyük alıcı siparişleri', en: 'Big buyer orders' } },
+    ctrl: { tr: 'Toptan Balık Hali', en: 'Wholesale Hall' } },
+  { id: 'mercan', n: { tr: 'Mercan Turizm', en: 'Coral Tourism' }, sec: 'tour', risk: 68, price: 80, fl: 0.45, div: 0.20, col: '#d4a029',
+    p5: { k: 'vip', v: 0.03, t: { tr: 'VIP müşteri +%3', en: 'VIP customers +3%' } }, p15: { k: 'custval', v: 0.06, t: { tr: 'Kruvaziyer dalgası +%6', en: 'Cruise wave +6%' } },
+    ctrl: { tr: 'Turistik İskele', en: 'Tourist Pier' } }
+];
+/* §6 kontrat tipleri */
+var CTYPES = [
+  { id: 'std',  n: { tr: 'Standart Tedarik', en: 'Standard Supply' }, dur: [180, 360], mul: 1.25, rel: 3,  qty: [6, 12],  minRel: 0 },
+  { id: 'rush', n: { tr: 'Acil Sipariş', en: 'Rush Order' },          dur: [60, 120],  mul: 1.60, rel: 4,  qty: [3, 6],   minRel: 20 },
+  { id: 'bulk', n: { tr: 'Hacimli Sevkiyat', en: 'Bulk Shipment' },   dur: [360, 600], mul: 1.35, rel: 5,  qty: [16, 28], minRel: 20 },
+  { id: 'frame',n: { tr: 'Çerçeve Anlaşma', en: 'Framework Deal' },   dur: [420, 600], mul: 1.50, rel: 10, qty: [10, 18], minRel: 40, parts: 3 },
+  { id: 'spec', n: { tr: 'Özel Sipariş', en: 'Special Order' },       dur: [240, 480], mul: 1.80, rel: 6,  qty: [8, 14],  minRel: 60 },
+  { id: 'excl', n: { tr: 'Münhasır Anlaşma', en: 'Exclusive Deal' },  dur: [600, 900], mul: 1.55, rel: 15, qty: [20, 34], minRel: 80 },
+  { id: 'resc', n: { tr: 'Kurtarma Kontratı', en: 'Rescue Contract' },dur: [240, 420], mul: 1.70, rel: 12, qty: [10, 18], minRel: 20, rescue: true },
+  { id: 'proj', n: { tr: 'Büyük Proje Tedariği', en: 'Project Supply' }, dur: [480, 720], mul: 1.65, rel: 20, qty: [24, 40], minRel: 60 }
+];
+/* §13 haber kütüphanesi (24 olay) */
+var NEWS = [
+  { id: 'bereket', sec: 'fleet', lo: 6, hi: 10, n: { tr: 'Bereketli Av Sezonu', en: 'Bountiful Season' } },
+  { id: 'firtina', sec: 'fleet', lo: -14, hi: -8, n: { tr: 'Sert Fırtına', en: 'Heavy Storm' } },
+  { id: 'filosip', sec: 'yard', lo: 8, hi: 12, n: { tr: 'Yeni Filo Siparişi', en: 'New Fleet Order' } },
+  { id: 'parca', sec: 'yard', lo: -10, hi: -6, n: { tr: 'Motor Parça Sıkıntısı', en: 'Engine Part Shortage' } },
+  { id: 'yogun', sec: 'log', lo: -9, hi: -5, n: { tr: 'Liman Yoğunluğu', en: 'Port Congestion' } },
+  { id: 'depoac', sec: 'cold', lo: 5, hi: 9, n: { tr: 'Yeni Depo Açılışı', en: 'New Depot Opens' } },
+  { id: 'depoar', sec: 'cold', lo: -12, hi: -8, n: { tr: 'Depo Arızası', en: 'Depot Breakdown' }, rescue: true },
+  { id: 'restsz', sec: 'resto', lo: 6, hi: 11, n: { tr: 'Restoran Sezonu', en: 'Restaurant Season' } },
+  { id: 'kruvaz', sec: 'tour', lo: 8, hi: 14, n: { tr: 'Kruvaziyer Dalgası', en: 'Cruise Wave' } },
+  { id: 'sezson', sec: 'tour', lo: -12, hi: -7, n: { tr: 'Sezon Sonu', en: 'Season Ends' } },
+  { id: 'toptan', sec: 'whole', lo: 7, hi: 12, n: { tr: 'Büyük Toptan Anlaşma', en: 'Big Wholesale Deal' } },
+  { id: 'hammad', sec: 'pack', lo: -8, hi: -5, n: { tr: 'Hammadde Artışı', en: 'Raw Material Spike' } },
+  { id: 'yenihat', sec: 'proc', lo: 6, hi: 10, n: { tr: 'Yeni İşleme Hattı', en: 'New Process Line' } },
+  { id: 'iade', sec: 'proc', lo: -11, hi: -6, n: { tr: 'Ürün İadesi', en: 'Product Recall' }, rescue: true },
+  { id: 'rota', sec: 'marine', lo: 5, hi: 9, n: { tr: 'Yeni Rota Açıldı', en: 'New Route Opened' } },
+  { id: 'rotak', sec: 'marine', lo: -12, hi: -7, n: { tr: 'Rota Kesintisi', en: 'Route Disruption' } },
+  { id: 'ihale', sec: 'mach', lo: 5, hi: 8, n: { tr: 'Bakım İhaleleri', en: 'Maintenance Tenders' } },
+  { id: 'kurum', sec: null, lo: 4, hi: 10, n: { tr: 'Büyük Kurumsal Sipariş', en: 'Major Corporate Order' } },
+  { id: 'yonetim', sec: null, lo: -4, hi: 6, n: { tr: 'Yönetim Değişimi', en: 'Management Change' } },
+  { id: 'temar', sec: null, lo: 3, hi: 6, n: { tr: 'Temettü Artışı', en: 'Dividend Raise' } },
+  { id: 'temkes', sec: null, lo: -9, hi: -5, n: { tr: 'Temettü Kesintisi', en: 'Dividend Cut' } },
+  { id: 'sermay', sec: null, lo: -3, hi: 3, n: { tr: 'Sermaye Artırımı', en: 'Capital Raise' }, act: 'raise' },
+  { id: 'gerial', sec: null, lo: 3, hi: 8, n: { tr: 'Geri Alım Programı', en: 'Buyback Program' }, act: 'buyback' },
+  { id: 'ortak', sec: null, lo: 5, hi: 10, n: { tr: 'Stratejik Ortaklık', en: 'Strategic Partnership' } }
+];
+/* §16 satın alınabilir küçük işletmeler */
+var PRIVS = [
+  { id: 'buzdepo', n: { tr: 'Küçük Buz Deposu', en: 'Small Ice Depot' }, cost: 120000, inc: 350, b: { k: 'stock', v: 5, t: { tr: 'Depo +5', en: 'Storage +5' } } },
+  { id: 'lokanta', n: { tr: 'Yerel Balık Lokantası', en: 'Local Fish Diner' }, cost: 180000, inc: 500, b: { k: 'premium', v: 0.02, t: { tr: 'Premium müşteri +%2', en: 'Premium +2%' } } },
+  { id: 'filo', n: { tr: 'Mini Nakliye Filosu', en: 'Mini Freight Fleet' }, cost: 260000, inc: 700, b: { k: 'ctrtime', v: 0.10, t: { tr: 'Kontrat süresi +%10', en: 'Contract time +10%' } } },
+  { id: 'paket', n: { tr: 'Paketleme Atölyesi', en: 'Packing Workshop' }, cost: 350000, inc: 900, b: { k: 'ctrmul', v: 0.03, t: { tr: 'Kontrat ödülü +%3', en: 'Contract reward +3%' } } },
+  { id: 'hal', n: { tr: 'Kıyı Balık Hali', en: 'Shore Fish Hall' }, cost: 600000, inc: 1500, b: { k: 'flow', v: 0.08, t: { tr: 'Toptan müşteri +%8', en: 'Wholesale +8%' } } },
+  { id: 'tersane2', n: { tr: 'Bölgesel Tersane', en: 'Regional Shipyard' }, cost: 950000, inc: 2200, b: { k: 'upcost', v: 0.05, t: { tr: 'Yükseltme -%5', en: 'Upgrades -5%' } } }
+];
+var HOLD_TIERS = [
+  { v: 0, n: { tr: 'Yerel İşletme', en: 'Local Business' } },
+  { v: 500000, n: { tr: 'Liman Grubu', en: 'Port Group' } },
+  { v: 2000000, n: { tr: 'Denizcilik Grubu', en: 'Maritime Group' } },
+  { v: 8000000, n: { tr: 'Bölgesel Holding', en: 'Regional Holding' } },
+  { v: 25000000, n: { tr: 'Deniz İmparatorluğu', en: 'Sea Empire' } }
+];
+
+
+
+/* =========================================================
+   PİYASA MOTORU (§4, §5, §10-§14, §21)
+   ========================================================= */
+var M = null;
+function cdef(id) { for (var i = 0; i < COMPANIES.length; i++) if (COMPANIES[i].id === id) return COMPANIES[i]; return null; }
+function cst(id) { for (var i = 0; i < M.co.length; i++) if (M.co[i].id === id) return M.co[i]; return null; }
+function newMarket() {
+  return {
+    v: 1, day: 1, t: 0, cycle: 'normal', cycleLeft: 4, seed: (Math.random() * 4294967296) >>> 0,
+    idx: 1000, prevIdx: 1000, news: [], mom: {},
+    co: COMPANIES.map(function (c) {
+      return { id: c.id, price: c.price, prev: c.price, hist: [c.price], health: 58 + (100 - c.risk) * 0.12,
+        growth: 50, risk: c.risk, sent: 0, free: Math.round(10000 * c.fl), own: 0, rel: 0,
+        div: 0, status: 'ok', ev: [], lockDay: -1, board: 0, listed: true, resc: 0 };
+    }),
+    offers: [], active: [], done: 0, failed: 0, divDay: 0,
+    office: false, license: false, priv: [], privOffer: null, privDay: 5,
+    boardQ: [], tut: 0, credit: 10, notif: []
+  };
+}
+/* §21: tohum save'de tutulur; kapat-aç ile farklı sonuç üretilmez */
+function srand() {
+  M.seed = (M.seed + 0x6D2B79F5) | 0;
+  var t = M.seed;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+function sr(a, b) { return a + srand() * (b - a); }
+function sPick(arr) { return arr[Math.floor(srand() * arr.length)]; }
+
+/* ---------- perkler (§9) ---------- */
+var PERK_GROUP = { netrate: 'rate', rate: 'rate', procspeed: 'speed', wspeed: 'speed', upcost: 'upcost', value: 'value', custval: 'value' };
+var _pkCache = {}, _pkT = -1;
+function perkSum(key) {
+  if (!M) return 0;
+  if (_pkT !== gameT) { _pkCache = {}; _pkT = gameT; }
+  if (_pkCache[key] !== undefined) return _pkCache[key];
+  var v = 0, i;
+  for (i = 0; i < M.co.length; i++) {
+    var c = M.co[i], d = cdef(c.id), pct = c.own / 10000;
+    if (pct >= 0.05 && d.p5.k === key) v += d.p5.v;
+    if (pct >= 0.15 && d.p15.k === key) v += d.p15.v;
+    if (pct >= 0.51) { if (d.p5.k === key) v += d.p5.v * 0.5; if (d.p15.k === key) v += d.p15.v * 0.5; }
+  }
+  for (i = 0; i < M.priv.length; i++) {
+    var pd = PRIVS.filter(function (q) { return q.id === M.priv[i]; })[0];
+    if (pd && pd.b.k === key) v += pd.b.v;
+  }
+  var g = PERK_GROUP[key];
+  if (g && ECON.perkCap[g]) v = Math.min(v, ECON.perkCap[g]);
+  _pkCache[key] = v;
+  return v;
+}
+function ownPct(c) { return c.own / 10000; }
+function portfolioValue() {
+  if (!M) return 0;
+  var v = 0;
+  for (var i = 0; i < M.co.length; i++) v += M.co[i].own * M.co[i].price;
+  return v;
+}
+function subsValue() {
+  var v = 0;
+  for (var i = 0; i < M.co.length; i++) if (ownPct(M.co[i]) >= 1) v += 10000 * M.co[i].price * 1.2;
+  for (var j = 0; j < M.priv.length; j++) {
+    var pd = PRIVS.filter(function (q) { return q.id === M.priv[j]; })[0];
+    if (pd) v += pd.cost * ECON.privScale;
+  }
+  return v;
+}
+function harborValue() {
+  var v = 0, i;
+  for (i = 0; i < AREAS.length; i++) if (!AREAS[i].locked) v += AREAS[i].cost + (AREAS[i].lvl - 1) * 2000;
+  for (i = 0; i < SLOTS.length; i++) if (SLOTS[i].b) v += bdef(SLOTS[i].b).cost;
+  v += project.inv + (M && M.office ? ECON.officeCost : 0);
+  return v;
+}
+function holdingValue() { return S.cash + harborValue() + portfolioValue() + subsValue(); }
+function holdingTier() {
+  var t = HOLD_TIERS[0], v = holdingValue();
+  for (var i = 0; i < HOLD_TIERS.length; i++) if (v >= HOLD_TIERS[i].v) t = HOLD_TIERS[i];
+  return t;
+}
+
+/* ---------- pazar günü ---------- */
+function marketProgress() { return M ? clamp(M.t / ECON.dayLen, 0, 1) : 0; }
+function updateMarket(dt) {
+  if (!M || !M.office) return;
+  M.t = day.t;                    /* v1.2: borsa günü = oyun günü, closeDay gün geçişinde */
+  updateContracts(dt);
+}
+var CYCLES = ['expand', 'normal', 'slow', 'recover'];
+var CYCLE_SEC = { expand: ['tour', 'resto', 'proc', 'log'], slow: ['tour', 'resto', 'whole'], recover: ['yard', 'mach', 'fleet'] };
+function closeDay() {
+  var i, c, d;
+  M.day++;
+  /* döngü (§12) */
+  M.cycleLeft--;
+  if (M.cycleLeft <= 0) { M.cycle = sPick(CYCLES); M.cycleLeft = Math.round(sr(3, 6)); }
+  /* sektör momentumu */
+  M.mom = {};
+  var secs = Object.keys(SEC);
+  M.mom[sPick(secs)] = sr(0.01, 0.05);
+  M.mom[sPick(secs)] = -sr(0.01, 0.05);
+  var cs = CYCLE_SEC[M.cycle];
+  if (cs) for (i = 0; i < cs.length; i++) M.mom[cs[i]] = (M.mom[cs[i]] || 0) + (M.cycle === 'slow' ? -0.03 : 0.03);
+  /* haberler (§13) */
+  var nToday = srand() < 0.5 ? 1 : 2;
+  var todays = [];
+  for (i = 0; i < nToday; i++) {
+    var ev = sPick(NEWS);
+    var target = ev.sec ? M.co.filter(function (q) { return cdef(q.id).sec === ev.sec; }) : [sPick(M.co)];
+    if (!target.length) continue;
+    var imp = sr(ev.lo, ev.hi) / 100;
+    for (var k = 0; k < target.length; k++) target[k].ev.push({ id: ev.id, imp: imp, left: srand() < 0.4 ? 2 : 1 });
+    var tn = target.length === 1 ? NM(cdef(target[0].id).n) : NM(SEC[ev.sec]);
+    todays.push({ d: M.day, t: NM(ev.n), w: tn, imp: imp, big: Math.abs(imp) > 0.11 });
+    if (ev.act === 'raise') corpAction(target[0], 'raise');
+    if (ev.act === 'buyback') corpAction(target[0], 'buyback');
+    if (ev.rescue) target[0].resc = 3;
+  }
+  M.news = todays.concat(M.news).slice(0, 36);
+  /* fiyat kapanışı (§23.1) */
+  var capTot = 0, capPrev = 0, chs = [], chSum = 0;
+  for (i = 0; i < M.co.length; i++) {
+    c = M.co[i]; d = cdef(c.id);
+    var sector = clamp(M.mom[d.sec] || 0, -0.05, 0.05);
+    var health = ((c.health - 50) / 50) * 0.04;
+    var evTot = 0;
+    for (var e = c.ev.length - 1; e >= 0; e--) {
+      evTot += c.ev[e].imp * (c.ev[e].left > 1 ? 1 : 0.6);
+      c.ev[e].left--; if (c.ev[e].left <= 0) c.ev.splice(e, 1);
+    }
+    evTot = clamp(evTot, -0.12, 0.12);
+    var pl = clamp(c.sent * 0.02, -0.02, 0.02);
+    var noise = sr(-0.03, 0.03);
+    var big = Math.abs(evTot) > 0.11;
+    var ch = sector + health + evTot + pl + noise;
+    chs.push({ c: c, ch: ch, big: big });
+    chSum += ch;
+  }
+  /* piyasa nötrlemesi: ortalama sürüklenme kırpılır (endeks dengede kalır) */
+  var avgCh = chSum / Math.max(1, chs.length);
+  for (i = 0; i < chs.length; i++) {
+    c = chs[i].c; d = cdef(c.id);
+    var big = chs[i].big;
+    var ch = chs[i].ch - avgCh;
+    ch = clamp(ch, -(big ? ECON.bigBand : ECON.normalBand), (big ? ECON.bigBand : ECON.normalBand));
+    var sector = clamp(M.mom[d.sec] || 0, -0.05, 0.05);
+    var evTot = ch;
+    c.prev = c.price;
+    c.price = Math.max(8, Math.round(c.price * (1 + ch) * 100) / 100);
+    c.hist.push(c.price); if (c.hist.length > 12) c.hist.shift();
+    /* sağlık / büyüme / risk (§5) */
+    c.health = clamp(c.health + (55 - c.health) * 0.06 + (sector + evTot) * 35 + c.sent * 2 + sr(-2, 2), 5, 100);
+    c.growth = clamp(c.growth + (50 - c.growth) * 0.05 + (ch > 0 ? 2 : -2) + c.sent + sr(-3, 3), 0, 100);
+    c.risk = clamp(d.risk + (100 - c.health) * 0.25 + sr(-4, 4), 5, 100);
+    c.sent *= 0.5;
+    c.status = c.health >= 75 && c.growth >= 60 ? 'strong' : c.health >= 45 ? 'ok' : c.health >= 25 ? 'press' : 'restr';
+    if (c.status === 'restr' && c.resc <= 0) c.resc = 3;
+    if (srand() < 0.08) corpAction(c, c.price > 500 ? 'split' : (c.health > 70 ? 'buyback' : 'raise'));
+    capTot += c.price * 10000; capPrev += c.prev * 10000;
+  }
+  M.prevIdx = M.idx;
+  M.idx = Math.round(M.idx * (capTot / Math.max(1, capPrev)));
+  /* temettü (§10) */
+  M.divDay++;
+  if (M.divDay >= ECON.dividendEvery) {
+    M.divDay = 0; payDividends();
+  }
+  /* pasif işletme geliri (§16) */
+  var pinc = privIncome();
+  if (pinc > 0) { S.cash += pinc; earn(pinc); notify(T('privIncome', { v: money(pinc) }), 'low'); }
+  /* kurtarma penceresi */
+  for (i = 0; i < M.co.length; i++) if (M.co[i].resc > 0) M.co[i].resc--;
+  /* kontrat havuzu + özel işletme teklifi + yönetim kurulu */
+  genOffers();
+  if (M.privOffer) { M.privOffer.left--; if (M.privOffer.left <= 0) M.privOffer = null; }
+  M.privDay--;
+  if (M.privDay <= 0 && !M.privOffer) { newPrivOffer(); M.privDay = Math.round(sr(4, 7)); }
+  for (i = 0; i < M.co.length; i++) {
+    c = M.co[i];
+    if (ownPct(c) >= 0.30) { c.board--; if (c.board <= 0) { c.board = 3; queueBoard(c); } }
+  }
+  var dch = M.idx - M.prevIdx;
+  if (!document.getElementById('officeScr').classList.contains('hidden')) renderOffice();
+  notify(T('mktClosed', { d: M.day, i: M.idx, c: (dch >= 0 ? '+' : '') + Math.round(dch / Math.max(1, M.prevIdx) * 1000) / 10 }), 'mid');
+  save();
+}
+function corpAction(c, kind) {
+  var d = cdef(c.id);
+  if (kind === 'raise') {
+    var add = Math.round(1000 * sr(0.5, 1.5));
+    c.free += add; c.price = Math.max(8, Math.round(c.price * 0.97 * 100) / 100);
+    c.health = clamp(c.health + 6, 0, 100);
+    notify(T('corpRaise', { n: NM(d.n) }), 'low');
+  } else if (kind === 'buyback') {
+    var rm = Math.min(c.free - 500, Math.round(600 * sr(0.5, 1.5)));
+    if (rm > 0) { c.free -= rm; c.price = Math.round(c.price * 1.04 * 100) / 100; notify(T('corpBuy', { n: NM(d.n) }), 'low'); }
+  } else if (kind === 'split') {
+    c.price = Math.round(c.price / 2 * 100) / 100; c.free *= 2; c.own *= 2;
+    notify(T('corpSplit', { n: NM(d.n) }), 'low');
+  }
+}
+function payDividends() {
+  var tot = 0;
+  for (var i = 0; i < M.co.length; i++) {
+    var c = M.co[i], d = cdef(c.id);
+    if (c.health < ECON.dividendHealth || c.status === 'press' || c.status === 'restr') continue;
+    if (!c.own) continue;
+    var pool = c.price * 10000 * 0.15 * d.div * (1 + (c.divBonus || 0));
+    var pay = Math.round(pool * ownPct(c));
+    if (pay > 0) { S.cash += pay; earn(pay); tot += pay; }
+  }
+  if (tot > 0) notify(T('divPaid', { v: money(tot) }), 'mid');
+}
+function newPrivOffer() {
+  var owned = M.priv;
+  var pool = PRIVS.filter(function (p) { return owned.indexOf(p.id) < 0 && p.cost * ECON.privScale <= Math.max(20000, holdingValue() * 0.8); });
+  if (!pool.length) return;
+  M.privOffer = { id: sPick(pool).id, left: 2 };
+  notify(T('privOffer'), 'mid');
+}
+function queueBoard(c) {
+  M.boardQ.push({ co: c.id, opts: ['cap', 'grow', 'cost', 'port', 'debt'].sort(function () { return srand() - 0.5; }).slice(0, 3) });
+  notify(T('boardReady', { n: NM(cdef(c.id).n) }), 'mid');
+}
+function applyBoard(entry, opt) {
+  var c = cst(entry.co), cost = Math.round(c.price * 10000 * 0.02);
+  if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return false; }
+  S.cash -= cost;
+  if (opt === 'cap') { c.health = clamp(c.health + 5, 0, 100); }
+  else if (opt === 'grow') { c.growth = clamp(c.growth + 12, 0, 100); c.risk = clamp(c.risk + 10, 0, 100); }
+  else if (opt === 'cost') { c.divBonus = (c.divBonus || 0) + 0.10; c.health = clamp(c.health + 2, 0, 100); }
+  else if (opt === 'port') { c.health = clamp(c.health + 3, 0, 100); S.rep += 3; }
+  else { c.health = clamp(c.health + 10, 0, 100); c.risk = clamp(c.risk - 10, 0, 100); }
+  M.boardQ.splice(M.boardQ.indexOf(entry), 1);
+  sfx.buy(); save(); return true;
+}
+/* =========================================================
+   KONTRATLAR (§6, §7)
+   ========================================================= */
+function ctype(id) { for (var i = 0; i < CTYPES.length; i++) if (CTYPES[i].id === id) return CTYPES[i]; return CTYPES[0]; }
+function maxActive() { return ECON.maxActiveContracts + Math.round(perkSum('ctrslot')) + servEff('ctrslot'); }
+function genOffers() {
+  M.offers = M.offers.filter(function (o) { return o.day >= M.day - 1; });
+  var prods = availableProducts();
+  if (!prods.length) return;
+  var tries = 0;
+  while (M.offers.length < ECON.offerPool && tries++ < 40) {
+    var c = sPick(M.co);
+    if (!c.listed && ownPct(c) >= 1) continue;
+    var types = CTYPES.filter(function (t) { return c.rel >= t.minRel && (!t.rescue || c.resc > 0); });
+    if (!types.length) continue;
+    var ty = sPick(types), p = sPick(prods);
+    var need = Math.round(sr(ty.qty[0], ty.qty[1])) + Math.round(perkSum('ctrcap') * 0.4);
+    var relMul = c.rel >= 95 ? 1.15 : c.rel >= 80 ? 1.10 : c.rel >= 60 ? 1.05 : 1;
+    var rew = Math.round(need * prodValue(p.k, p.f) * ty.mul * relMul * (1 + perkSum('ctrmul') + servEff('ctrrew')) + need * 2);
+    M.offers.push({ id: 'o' + M.day + '_' + Math.floor(srand() * 99999), co: c.id, ty: ty.id,
+      k: p.k, f: p.f, need: need, dur: Math.round(sr(ty.dur[0], ty.dur[1]) * (1 + perkSum('ctrtime') + servEff('offer'))),
+      rew: rew, rel: ty.rel, day: M.day });
+  }
+}
+function acceptContract(o) {
+  if (M.active.length >= maxActive()) { toast(T('ctrFull', { n: maxActive() })); sfx.bad(); return false; }
+  var i = M.offers.indexOf(o);
+  if (i >= 0) M.offers.splice(i, 1);
+  M.active.push({ id: o.id, co: o.co, ty: o.ty, k: o.k, f: o.f, need: o.need, got: 0, rew: o.rew, rel: o.rel, left: o.dur, dur: o.dur });
+  sfx.buy(); notify(T('ctrAccepted', { n: NM(cdef(o.co).n) }), 'low'); save();
+  return true;
+}
+function updateContracts(dt) {
+  for (var i = M.active.length - 1; i >= 0; i--) {
+    var a = M.active[i];
+    a.left -= dt;
+    if (a.left <= 0) {
+      var c = cst(a.co), ty = ctype(a.ty);
+      c.rel = clamp(c.rel - (ty.id === 'rush' || ty.id === 'excl' ? 8 : 5), 0, 100);
+      c.sent -= 0.5;
+      M.active.splice(i, 1); M.failed++;
+      notify(T('ctrFailed', { n: NM(cdef(a.co).n) }), 'mid'); sfx.bad(); save();
+    }
+  }
+}
+function contractWants(it) {
+  for (var i = 0; i < M.active.length; i++) {
+    var a = M.active[i];
+    if (a.k === it.k && a.f === it.f && a.got < a.need) return a;
+  }
+  return null;
+}
+function iDeliverContract(a, dt) {
+  if (!M || !M.office || !M.active.length) return false;
+  var want = null, i;
+  for (i = 0; i < a.carry.length; i++) {
+    if (!isGoods(a.carry[i])) continue;
+    var w = contractWants(a.carry[i]);
+    if (w) { want = a.carry[i]; break; }
+  }
+  if (!want) return false;
+  return tryTake(a, dt, function () {
+    var ct = contractWants(want);
+    var it = popCarry(a, function (q) { return q === want; });
+    ct.got++;
+    fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), office.x, office.y, 16, it, 0.26);
+    sfx.drop();
+    if (ct.got >= ct.need) completeContract(ct);
+  });
+}
+function completeContract(ct) {
+  var c = cst(ct.co), d = cdef(ct.co), ty = ctype(ct.ty);
+  S.cash += ct.rew; earn(ct.rew); noteFishIncome(ct.rew * 0.5);
+  c.rel = clamp(c.rel + ct.rel, 0, 100);
+  c.sent += 0.2 + (ty.mul - 1) * 0.5;
+  c.health = clamp(c.health + (ty.id === 'proj' || ty.id === 'frame' ? 3 : 1), 0, 100);
+  if (ty.rescue) { c.health = clamp(c.health + 25, 0, 100); c.resc = 0; c.rel = clamp(c.rel + 3, 0, 100); }
+  S.rep += 1;
+  M.active.splice(M.active.indexOf(ct), 1); M.done++;
+  addFloat(office.x, office.y - 0.5, '+' + money(ct.rew), '#ffe27a');
+  notify(T('ctrDone', { n: NM(d.n), v: money(ct.rew) }), 'mid');
+  sfx.coin(); checkRepLevel(); save();
+}
+
+/* =========================================================
+   HİSSE İŞLEMLERİ (§4.4, §8, §22.6)
+   ========================================================= */
+function orderPremium(c, qty) {
+  var pctF = qty / Math.max(1, c.free);
+  if (pctF <= 0.01) return 0;
+  if (pctF <= 0.02) return 0.03;
+  if (pctF <= 0.03) return 0.06;
+  if (pctF <= 0.04) return 0.10;
+  if (pctF <= 0.05) return 0.15;
+  return -1;
+}
+function buyCost(c, qty) {
+  var pr = orderPremium(c, qty);
+  if (pr < 0) return -1;
+  return Math.round(c.price * qty * (1 + pr) * (1 + ECON.comm));
+}
+function buyShares(id, qty) {
+  var c = cst(id);
+  if (!c || !c.listed) return false;
+  qty = Math.min(qty, c.free);
+  if (qty <= 0) { toast(T('noShares')); sfx.bad(); return false; }
+  if (ownPct(c) + qty / 10000 > 0.30 && !M.license) {
+    var lim = Math.max(0, Math.floor(0.30 * 10000 - c.own));
+    if (lim <= 0) { toast(T('need51')); sfx.bad(); return false; }
+    qty = Math.min(qty, lim);
+  }
+  var cost = buyCost(c, qty);
+  if (cost < 0) { toast(T('orderTooBig')); sfx.bad(); return false; }
+  if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return false; }
+  var before = ownPct(c);
+  S.cash -= cost; c.free -= qty; c.own += qty; c.lockDay = M.day; c.inv = (c.inv || 0) + cost;
+  checkThreshold(c, before);
+  sfx.coin(); save(); return true;
+}
+function sellShares(id, qty) {
+  var c = cst(id);
+  if (!c || !c.own) return false;
+  if (c.lockDay === M.day) { toast(T('sellLock')); sfx.bad(); return false; }
+  qty = Math.min(qty, c.own);
+  var gain = Math.round(c.price * qty * (1 - ECON.comm));
+  var avg = c.inv ? c.inv / (c.own || 1) : c.price;
+  c.own -= qty; c.free += qty; S.cash += gain; c.inv = Math.max(0, (c.inv || 0) - avg * qty);
+  notify(T('sold', { v: money(gain) }), 'low');
+  sfx.coin(); save(); return true;
+}
+var THRESH = [0.01, 0.05, 0.15, 0.30, 0.51, 1];
+function checkThreshold(c, before) {
+  var now = ownPct(c);
+  for (var i = 0; i < THRESH.length; i++) {
+    if (before < THRESH[i] && now >= THRESH[i]) {
+      notify(T('threshold', { n: NM(cdef(c.id).n), p: Math.round(THRESH[i] * 100) }), 'mid');
+      sfx.star();
+      if (THRESH[i] >= 1) { c.listed = false; notify(T('subsidiary', { n: NM(cdef(c.id).n) }), 'high'); }
+    }
+  }
+}
+function takeoverPrice(c, target) {
+  var need = Math.max(0, Math.round(target * 10000) - c.own);
+  var prem = ECON.takeoverPremium + (c.health / 100) * (ECON.takeoverPremiumMax - ECON.takeoverPremium);
+  return { need: need, cost: Math.round(need * c.price * prem), prem: prem };
+}
+function canTakeover(c) { return M.license && ownPct(c) >= 0.30 && c.rel >= 80 && c.listed; }
+function doTakeover(id, target) {
+  var c = cst(id);
+  if (!canTakeover(c)) { sfx.bad(); return false; }
+  var t = takeoverPrice(c, target);
+  if (S.cash < t.cost) { toast(T('noMoney')); sfx.bad(); return false; }
+  var before = ownPct(c);
+  S.cash -= t.cost; c.own += t.need; c.free = Math.max(0, c.free - t.need); c.inv = (c.inv || 0) + t.cost;
+  checkThreshold(c, before);
+  sfx.build(); save(); return true;
+}
+function buyPrivate() {
+  if (!M.privOffer) return false;
+  var pd = PRIVS.filter(function (q) { return q.id === M.privOffer.id; })[0];
+  var cost = Math.round(pd.cost * ECON.privScale);
+  if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return false; }
+  S.cash -= cost; M.priv.push(pd.id); M.privOffer = null;
+  notify(T('privBought', { n: NM(pd.n) }), 'high'); sfx.build(); save(); return true;
+}
+function privIncome() {
+  var v = 0;
+  for (var i = 0; i < M.priv.length; i++) {
+    var pd = PRIVS.filter(function (q) { return q.id === M.priv[i]; })[0];
+    if (pd) v += pd.inc;
+  }
+  return v;
+}
+function notify(msg, lvl) {
+  if (!M) return;
+  M.notif.unshift({ m: msg, d: M.day }); if (M.notif.length > 20) M.notif.pop();
+  if (lvl !== 'low') toast(msg);
+}
+/* =========================================================
+   TİCARET OFİSİ ARAYÜZÜ (§19)
+   ========================================================= */
+function migrateMarket(d) {
+  var base = newMarket();
+  if (!d) return base;
+  for (var k in base) if (d[k] !== undefined && k !== 'co') base[k] = d[k];
+  if (d.co) base.co = base.co.map(function (c) {
+    var old = null;
+    for (var i = 0; i < d.co.length; i++) if (d.co[i].id === c.id) old = d.co[i];
+    if (old) for (var kk in c) if (old[kk] !== undefined) c[kk] = old[kk];
+    return c;
+  });
+  return base;
+}
+var ofTab = 'market', ofSel = null, ofRefresh = 1;
+function openOffice() {
+  if (!officeBuilt()) return;
+  document.getElementById('officeScr').classList.remove('hidden');
+  renderOffice();
+}
+function closeOffice() { document.getElementById('officeScr').classList.add('hidden'); }
+function relLevel(rel) { return rel >= 95 ? 5 : rel >= 80 ? 4 : rel >= 60 ? 3 : rel >= 40 ? 2 : rel >= 20 ? 1 : 0; }
+function statusName(st) { return T(st === 'strong' ? 'stStrong' : st === 'ok' ? 'stOk' : st === 'press' ? 'stPress' : 'stRestr'); }
+function chgPct(c) { return c.prev ? ((c.price - c.prev) / c.prev) * 100 : 0; }
+function chgCls(v) { return v > 0.05 ? 'up' : v < -0.05 ? 'dn' : 'fl'; }
+function fmtPct(v) { return (v >= 0 ? '+' : '') + (Math.round(v * 10) / 10).toString().replace('.', ',') + '%'; }
+
+function renderOffice() {
+  if (!M) return;
+  var body = document.getElementById('ofBody'), h = '';
+  document.getElementById('ofDay').textContent = T('day') + ' ' + M.day + ' • ' + T('cy' + (M.cycle.charAt(0).toUpperCase() + M.cycle.slice(1)));
+  document.getElementById('ofDayBar').style.width = (marketProgress() * 100) + '%';
+  var i, c, d;
+  if (ofTab === 'market') {
+    var ich = M.prevIdx ? ((M.idx - M.prevIdx) / M.prevIdx) * 100 : 0;
+    h += '<div class="crow" style="cursor:default"><div class="nm"><b>' + T('idx') + '</b><small>' + T('day') + ' ' + M.day + '</small></div>' +
+      '<div class="pr">' + M.idx + '<small class="' + chgCls(ich) + '">' + fmtPct(ich) + '</small></div></div>';
+    for (i = 0; i < M.co.length; i++) {
+      c = M.co[i]; d = cdef(c.id);
+      var ch = chgPct(c);
+      h += '<div class="crow" data-c="' + c.id + '"><span class="sq" style="background:' + d.col + '"></span>' +
+        '<div class="nm">' + NM(d.n) + '<small>' + NM(SEC[d.sec]) + (c.own ? ' • ' + T('own') + ' %' + (Math.round(ownPct(c) * 1000) / 10) : '') +
+        (c.listed ? '' : ' • ' + T('subsV')) + '</small></div>' +
+        '<div class="pr">' + money(c.price) + '<small class="' + chgCls(ch) + '">' + fmtPct(ch) + '</small></div></div>';
+    }
+  } else if (ofTab === 'co') {
+    if (!ofSel) ofSel = M.co[0].id;
+    c = cst(ofSel); d = cdef(ofSel);
+    var ch2 = chgPct(c), mx = Math.max.apply(null, c.hist), mn = Math.min.apply(null, c.hist);
+    h += '<div class="crow" style="cursor:default"><span class="sq" style="background:' + d.col + '"></span>' +
+      '<div class="nm"><b>' + NM(d.n) + '</b><small>' + NM(SEC[d.sec]) + ' • ' + statusName(c.status) + '</small></div>' +
+      '<div class="pr">' + money(c.price) + '<small class="' + chgCls(ch2) + '">' + fmtPct(ch2) + '</small></div></div>';
+    if (c.hist.length > 2 && mx > mn) {
+      h += '<div class="spark">';
+      for (i = 0; i < c.hist.length; i++) h += '<i style="height:' + (8 + ((c.hist[i] - mn) / (mx - mn)) * 92) + '%"></i>';
+      h += '</div>';
+    }
+    h += '<div class="stat">' +
+      '<div>' + T('health') + '<b>' + Math.round(c.health) + '</b><span class="mbar"><i style="width:' + Math.round(c.health) + '%;background:#5fd37a"></i></span></div>' +
+      '<div>' + T('growth') + '<b>' + Math.round(c.growth) + '</b><span class="mbar"><i style="width:' + Math.round(c.growth) + '%;background:#ffc94a"></i></span></div>' +
+      '<div>' + T('risk') + '<b>' + Math.round(c.risk) + '</b><span class="mbar"><i style="width:' + Math.round(c.risk) + '%;background:#e5533d"></i></span></div></div>';
+    h += '<div class="stat"><div>' + T('rel') + '<b>' + Math.round(c.rel) + '</b></div>' +
+      '<div>' + T('own') + '<b>%' + (Math.round(ownPct(c) * 1000) / 10) + '</b></div>' +
+      '<div>' + T('free') + '<b>' + c.free + '</b></div></div>';
+    h += '<div class="note">' + T('relLv')[relLevel(c.rel)] + ' • %5: ' + NM(d.p5.t) + ' • %15: ' + NM(d.p15.t) +
+      ' • %51: ' + NM(d.ctrl) + '</div>';
+    if (c.listed) {
+      h += '<div class="qrow">' +
+        '<button class="b" data-b="1">' + T('buyB') + ' 1</button>' +
+        '<button class="b" data-b="10">' + T('buyB') + ' 10</button>' +
+        '<button class="b" data-b="100">' + T('buyB') + ' 100</button>' +
+        '<button class="b" data-b="f5">' + T('buyB') + ' %5</button></div>';
+      h += '<div class="qrow">' +
+        '<button class="s" data-s="10">' + T('sellB') + ' 10</button>' +
+        '<button class="s" data-s="100">' + T('sellB') + ' 100</button>' +
+        '<button class="s" data-s="all">' + T('sellB') + ' ' + T('maxInvest') + '</button></div>';
+      h += '<div class="note">' + T('commission') + ' %1,5 • ' + (c.lockDay === M.day ? T('sellLock') : '') + '</div>';
+      if (canTakeover(c)) {
+        var tk = takeoverPrice(c, 0.51), tk2 = takeoverPrice(c, 1);
+        h += '<div class="qrow"><button data-t="51">' + T('takeover') + ' %51 — ' + money(tk.cost) + '</button>' +
+          '<button data-t="100">' + T('takeover') + ' %100 — ' + money(tk2.cost) + '</button></div>';
+      } else if (ownPct(c) >= 0.30) {
+        h += '<div class="note">' + T('takeover') + ': ' + (M.license ? '' : T('license') + ' • ') + T('rel') + ' 80+</div>';
+      }
+    }
+    var bq = null;
+    for (i = 0; i < M.boardQ.length; i++) if (M.boardQ[i].co === c.id) bq = M.boardQ[i];
+    if (bq) {
+      h += '<div class="ctrc"><b>' + T('boardT') + '</b><small>' + money(Math.round(c.price * 10000 * 0.02)) + '</small><div class="qrow">';
+      for (i = 0; i < bq.opts.length; i++) h += '<button data-bd="' + bq.opts[i] + '">' + T('b' + bq.opts[i].charAt(0).toUpperCase() + bq.opts[i].slice(1)) + '</button>';
+      h += '</div></div>';
+    }
+    h += '<div class="qrow">';
+    for (i = 0; i < M.co.length; i++) h += '<button data-sel="' + M.co[i].id + '" style="min-width:34px;font-size:10px;' +
+      (M.co[i].id === ofSel ? 'border-color:#ffc94a' : '') + '">' + NM(cdef(M.co[i].id).n).slice(0, 4) + '</button>';
+    h += '</div>';
+  } else if (ofTab === 'ctr') {
+    h += '<div class="note">' + T('deliverAt') + ' • ' + T('activeCtr') + ': ' + M.active.length + '/' + maxActive() + '</div>';
+    for (i = 0; i < M.active.length; i++) {
+      var a = M.active[i], ad = cdef(a.co);
+      h += '<div class="ctrc"><b>' + NM(ad.n) + ' — ' + NM(ctype(a.ty).n) + '</b>' +
+        '<small>' + prodName(a.k, a.f) + ' ' + a.got + '/' + a.need + ' • ' + money(a.rew) + ' • ' + Math.ceil(a.left) + 's</small>' +
+        '<div class="pbar2"><i style="width:' + Math.round(a.got / a.need * 100) + '%"></i></div></div>';
+    }
+    if (!M.offers.length) h += '<div class="empty">' + T('noContract') + '</div>';
+    for (i = 0; i < M.offers.length; i++) {
+      var o = M.offers[i], od = cdef(o.co), oc = cst(o.co);
+      h += '<div class="ctrc"><b>' + NM(od.n) + ' — ' + NM(ctype(o.ty).n) + '</b>' +
+        '<small>' + prodName(o.k, o.f) + ' x' + o.need + ' • ' + Math.round(o.dur) + 's • +' + o.rel + ' ' + T('rel') +
+        ' • ' + T('relLv')[relLevel(oc.rel)] + '</small>' +
+        '<button class="go2" data-o="' + o.id + '">' + T('accept') + ' — ' + money(o.rew) + '</button></div>';
+    }
+  } else if (ofTab === 'port') {
+    var tot = 0, inv = 0;
+    for (i = 0; i < M.co.length; i++) {
+      c = M.co[i]; if (!c.own) continue;
+      d = cdef(c.id);
+      var val = c.own * c.price, avg = c.inv ? c.inv / c.own : c.price;
+      tot += val; inv += c.inv || 0;
+      var pl = ((c.price - avg) / avg) * 100;
+      h += '<div class="crow" data-c="' + c.id + '"><span class="sq" style="background:' + d.col + '"></span>' +
+        '<div class="nm">' + NM(d.n) + '<small>' + c.own + ' • ' + T('price') + ' ' + money(avg) + ' • %' + (Math.round(ownPct(c) * 1000) / 10) + '</small></div>' +
+        '<div class="pr">' + money(val) + '<small class="' + chgCls(pl) + '">' + fmtPct(pl) + '</small></div></div>';
+    }
+    if (!tot) h += '<div class="empty">' + T('empty') + '</div>';
+    h += '<div class="stat"><div>' + T('portV') + '<b>' + money(tot) + '</b></div>' +
+      '<div>' + T('money') + '<b>' + money(S.cash) + '</b></div>' +
+      '<div>' + T('privInc') + '<b>' + money(privIncome()) + '</b></div></div>';
+  } else if (ofTab === 'news') {
+    if (!M.news.length) h += '<div class="empty">' + T('noNews') + '</div>';
+    for (i = 0; i < Math.min(M.news.length, 18); i++) {
+      var nw = M.news[i];
+      h += '<div class="newsr" style="border-color:' + (nw.imp >= 0 ? '#5fd37a' : '#e5533d') + '">' +
+        '<b>' + nw.t + '</b> — ' + nw.w + ' <span class="' + chgCls(nw.imp * 100) + '">' + fmtPct(nw.imp * 100) + '</span>' +
+        ' <small style="opacity:.6">' + T('day') + ' ' + nw.d + '</small></div>';
+    }
+  } else {
+    var tier = holdingTier();
+    h += '<div class="stat"><div>' + T('holdingV') + '<b>' + money(holdingValue()) + '</b></div>' +
+      '<div>' + NM(tier.n) + '<b>&nbsp;</b></div></div>';
+    h += '<div class="stat"><div>' + T('harborV') + '<b>' + money(harborValue()) + '</b></div>' +
+      '<div>' + T('portV') + '<b>' + money(portfolioValue()) + '</b></div>' +
+      '<div>' + T('subsV') + '<b>' + money(subsValue()) + '</b></div></div>';
+    if (M.privOffer) {
+      var pd = PRIVS.filter(function (q) { return q.id === M.privOffer.id; })[0];
+      var pcost = Math.round(pd.cost * ECON.privScale);
+      h += '<div class="ctrc"><b>' + NM(pd.n) + '</b><small>' + NM(pd.b.t) + ' • ' + money(pd.inc) + '/' + T('day') +
+        ' • ' + T('offerLeft', { n: M.privOffer.left }) + '</small>' +
+        '<button class="go2" data-p="1">' + T('buyPriv') + ' — ' + money(pcost) + '</button></div>';
+    }
+    for (i = 0; i < M.priv.length; i++) {
+      var op = PRIVS.filter(function (q) { return q.id === M.priv[i]; })[0];
+      h += '<div class="crow" style="cursor:default"><span class="sq" style="background:#5fd37a"></span>' +
+        '<div class="nm">' + NM(op.n) + '<small>' + NM(op.b.t) + '</small></div><div class="pr">' + money(op.inc) + '</div></div>';
+    }
+    var subs = M.co.filter(function (q) { return ownPct(q) >= 0.51; });
+    for (i = 0; i < subs.length; i++) {
+      var sd = cdef(subs[i].id);
+      h += '<div class="crow" style="cursor:default"><span class="sq" style="background:' + sd.col + '"></span>' +
+        '<div class="nm">' + NM(sd.n) + '<small>' + NM(sd.ctrl) + ' • %' + (Math.round(ownPct(subs[i]) * 1000) / 10) + '</small></div></div>';
+    }
+    var pk = [];
+    ['netrate', 'rate', 'stock', 'wspeed', 'procspeed', 'value', 'custval', 'flow', 'upcost', 'ctrmul', 'premium', 'vip', 'rare'].forEach(function (k) {
+      var v = perkSum(k); if (v > 0.0001) pk.push(k + ' +' + (v < 1 ? Math.round(v * 100) + '%' : Math.round(v)));
+    });
+    h += '<div class="note">' + T('perks') + ': ' + (pk.length ? pk.join(' • ') : '—') + '</div>';
+  }
+  body.innerHTML = PX(h);
+  /* olaylar */
+  Array.prototype.forEach.call(body.querySelectorAll('.crow[data-c]'), function (r) {
+    r.onclick = function () { ofSel = r.dataset.c; setOfTab('co'); };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll('[data-b]'), function (b) {
+    b.onclick = function () {
+      var c2 = cst(ofSel), q = b.dataset.b;
+      var qty = q === 'f5' ? Math.max(1, Math.floor(c2.free * 0.05)) : parseInt(q, 10);
+      buyShares(ofSel, qty); renderOffice();
+    };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll('[data-s]'), function (b) {
+    b.onclick = function () {
+      var c2 = cst(ofSel), q = b.dataset.s;
+      sellShares(ofSel, q === 'all' ? c2.own : parseInt(q, 10)); renderOffice();
+    };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll('[data-t]'), function (b) {
+    b.onclick = function () { doTakeover(ofSel, b.dataset.t === '51' ? 0.51 : 1); renderOffice(); };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll('[data-bd]'), function (b) {
+    b.onclick = function () {
+      for (var q = 0; q < M.boardQ.length; q++) if (M.boardQ[q].co === ofSel) { applyBoard(M.boardQ[q], b.dataset.bd); break; }
+      renderOffice();
+    };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll('[data-sel]'), function (b) {
+    b.onclick = function () { ofSel = b.dataset.sel; renderOffice(); };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll('[data-o]'), function (b) {
+    b.onclick = function () {
+      for (var q = 0; q < M.offers.length; q++) if (M.offers[q].id === b.dataset.o) { acceptContract(M.offers[q]); break; }
+      renderOffice();
+    };
+  });
+  var pb = body.querySelector('[data-p]');
+  if (pb) pb.onclick = function () { buyPrivate(); renderOffice(); };
+}
+function setOfTab(t) {
+  ofTab = t;
+  Array.prototype.forEach.call(document.querySelectorAll('#ofTabs .tab'), function (b) { b.classList.toggle('on', b.dataset.t === t); });
+  renderOffice();
+}
+Array.prototype.forEach.call(document.querySelectorAll('#ofTabs .tab'), function (b) {
+  b.onclick = function () { setOfTab(b.dataset.t); };
+});
+document.getElementById('ofClose').onclick = closeOffice;
+document.getElementById('tradeBtn').onclick = openOffice;
+function syncTradeBtn() {
+  var btn = document.getElementById('tradeBtn');
+  var near = officeBuilt() && dist2(player.x, player.y, office.x, office.y) < 7 && !barTab;
+  btn.classList.toggle('hidden', !near);
+}
+/* =========================================================
+   v0.2 — GİRİŞ HİKÂYESİ (pixel gazete) • İŞLETME ADI • SKOR TABLOSU
+   ========================================================= */
+
+/* ---------- işletme adı ---------- */
+function cleanName(s) {
+  return String(s == null ? '' : s).replace(/<[^>]*>/g, '').replace(/[\u0000-\u001f\u007f<>`\\{}\[\]]/g, '')
+    .replace(/\s+/g, ' ').trim().slice(0, 24);
+}
+/* herkese açık skor tablosu = kullanıcı içeriği (mağaza kuralı): kaba/nefret içerikli adları engelle.
+   Uzun kökler harf dizisinin herhangi bir yerinde, kısa olanlar yalnız tam kelime olarak aranır (klasik, müsik geçer). */
+var BAD_ROOT = ['orospu', 'amina', 'aminak', 'amcik', 'sikis', 'siktir', 'sikerim', 'sikeyim', 'sikik', 'sikim', 'gotveren', 'pezevenk',
+  'kahpe', 'kaltak', 'yavsak', 'serefsiz', 'fuck', 'shit', 'bitch', 'nigger', 'nigga', 'faggot', 'whore', 'pussy', 'asshole', 'hitler', 'nazi'];
+var BAD_WORD = ['amk', 'aq', 'sik', 'sikt', 'got', 'oc', 'ibne', 'pust', 'yarak', 'yarrak', 'cunt', 'dick', 'cock', 'fag', 'slut', 'isis'];
+function nameNorm(s) {
+  return String(s || '').toLocaleLowerCase('tr').replace(/[çğıöşü0134578@$!|]/g, function (c) { return { 'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u', '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '@': 'a', '$': 's', '!': 'i', '|': 'i' }[c]; })
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+function nameBad(s) {
+  var n = nameNorm(s), glued = n.replace(/[^a-z]/g, '').replace(/(.)\1+/g, '$1'), words = n.split(/[^a-z]+/);
+  for (var i = 0; i < BAD_ROOT.length; i++) if (glued.indexOf(BAD_ROOT[i].replace(/(.)\1+/g, '$1')) >= 0) return true;
+  for (i = 0; i < words.length; i++) if (words[i] && BAD_WORD.indexOf(words[i].replace(/(.)\1+/g, '$1')) >= 0) return true;
+  return false;
+}
+/* Türkçe -ın/-in/-un/-ün eki (ünlü uyumu): Hasan'ın, Ayşe'nin, Dursun'un, Şükrü'nün */
+function trGen(w) {
+  var V = 'aeıioöuü', low = w.toLocaleLowerCase('tr'), v = 'e', i;
+  for (i = low.length - 1; i >= 0; i--) if (V.indexOf(low[i]) >= 0) { v = low[i]; break; }
+  var suf = { a: 'ın', 'ı': 'ın', e: 'in', i: 'in', o: 'un', u: 'un', 'ö': 'ün', 'ü': 'ün' }[v];
+  if (V.indexOf(low[low.length - 1]) >= 0) suf = 'n' + suf;
+  return w + "'" + suf;
+}
+var NAME_FIRST = ['Hasan', 'Özcan', 'Mehmet', 'Ayşe', 'Kemal', 'Recai', 'Temel', 'Dursun', 'İdris', 'Selim',
+  'Zeynep', 'Elif', 'Yusuf', 'Rıza', 'Fadime', 'Hüseyin', 'Nuri', 'Şükrü', 'Hatice', 'Emine', 'Mustafa',
+  'Cafer', 'Hamdi', 'Sevim', 'İsmail', 'Nazmi', 'Cemile', 'Erol', 'Bayram', 'Gülsüm'];
+var NAME_FMT = ['{f} Balıkçılık', '{f} Mutfak', '{f} Balık Evi', '{g} Balık Evi', '{g} Mutfağı',
+  '{f} Deniz Ürünleri', '{f} Balık Lokantası', '{f} & Oğulları', '{f} Kardeşler', '{f} Reis Balıkçılık',
+  'Kaptan {f} Balıkçılık', '{g} Tezgâhı', '{f} Usta Balık Pazarı', '{f} Su Ürünleri', '{g} Sofrası'];
+var NAME_FIX = ['Hamsi Keyfi', 'Martı Balıkçılık', 'Mavi Liman', 'Poyraz Balık', 'Yakamoz Balık Evi',
+  'Nazar Balıkçılık', 'Karadeniz Sofrası', 'Lodos Su Ürünleri', 'İskele Başı', 'Ağ & Olta', 'Dalga Balıkçılık',
+  'Palamut Durağı', 'Rıhtım Balık Evi', 'Uskumru Kardeşler', 'Yıldız Balık Evi', 'Kuzey Rüzgârı'];
+function randomCompany(avoid) {
+  for (var k = 0; k < 40; k++) {
+    var n;
+    if (Math.random() < 0.22) n = pick(NAME_FIX);
+    else { var f = pick(NAME_FIRST); n = pick(NAME_FMT).replace('{f}', f).replace('{g}', trGen(f)); }
+    if (n.length <= 24 && (!avoid || avoid.indexOf(n) < 0)) return n;
+  }
+  return 'Hasan Balıkçılık';
+}
+function fmtN(n) { return Math.round(n || 0).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US'); }
+function escH(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function newRunId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+/* ---------- SKOR TABLOSU ----------
+   Skor = ağlardan çıkan toplam balık (S.caught). Kasaya giren toplam para (S.earned)
+   tabloda ikincil bilgi olarak durur. Tablo kayıttan AYRI anahtarda tutulur:
+   "Yeni Oyun" kaydı siler ama tabloyu silmez. Depolama tek arayüzden geçer (Board.fetch /
+   Board.submit) — paylaşımlı bir sunucuya geçerken yalnız burası değişir. */
+var BOARD_KEY = 'balikci_board_v2', BOARD_MAX = 50, BOARD_SHOW = 20;
+/* herkese açık tablo: config.js içindeki Supabase adresi/anahtarı. Yoksa (ör. claude.ai
+   önizlemesi) tablo cihaz içi çalışır; bağlantı koparsa da cihaz içine düşer. */
+var ONLINE = (function () {
+  var c = window.BT_ONLINE;
+  return c && /^https?:\/\//.test(c.url || '') && c.key ? { url: c.url.replace(/\/+$/, ''), key: c.key } : null;
+})();
+/* kalıcı anonim oyuncu kimliği — "kaç kişi oynadı" sayımı için; Yeni Oyun'da silinmez */
+var PLAYER_ID = (function () {                      /* Ayarlar › Skor kaydımı sil → yenilenir */
+  var k = 'balikci_pid', v = null;
+  v = Store.get(k);
+  if (!v || v.length < 6) { v = 'p' + newRunId(); Store.set(k, v); }
+  return v;
+})();
+function netOn() { return !!ONLINE && onlineOK; }
+function rpc(name, args) {
+  return fetch(ONLINE.url + '/rest/v1/rpc/' + name, {
+    method: 'POST',
+    headers: { apikey: ONLINE.key, Authorization: 'Bearer ' + ONLINE.key, 'Content-Type': 'application/json' },
+    body: JSON.stringify(args)
+  }).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); });
+}
+var Board = {
+  online: !!ONLINE,
+  read: function () {
+    try {
+      var a = JSON.parse(Store.get(BOARD_KEY) || '[]');
+      if (!Array.isArray(a)) return [];
+      return a.filter(function (e) { return e && typeof e.id === 'string' && typeof e.n === 'string' && isFinite(e.s); });
+    } catch (e) { return []; }
+  },
+  write: function (a) { Store.set(BOARD_KEY, JSON.stringify(a)); },
+  sort: function (a) { return a.sort(function (x, y) { return y.s - x.s || x.at - y.at; }); },
+  /* cb(liste, bilgi) — bilgi: {src:'local'|'online'|'offline', me:{rank,...}, stats:{players,plays,runs}} */
+  fetch: function (cb) {
+    var local = Board.sort(Board.read());
+    if (!netOn()) { cb(local, { src: 'local' }); return; }
+    rpc('bt_board', { p_run: S.runId || '' }).then(function (d) {
+      cb(d.top || [], { src: 'online', me: d.me, stats: d.stats });
+    }, function () { cb(local, { src: 'offline' }); });
+  },
+  submit: function (e) {
+    var a = Board.read(), f = null;
+    for (var i = 0; i < a.length; i++) if (a[i].id === e.id) { f = a[i]; break; }
+    if (f) { f.n = e.n; f.h = e.h; f.s = Math.max(f.s, e.s); f.m = Math.max(f.m || 0, e.m); f.d = Math.max(f.d || 1, e.d); f.p = Math.max(f.p || 0, e.p || 0); f.at = e.at; }
+    else a.push(e);
+    a = Board.sort(a);
+    if (a.length > BOARD_MAX) a = a.slice(0, BOARD_MAX);
+    Board.write(a);
+  }
+};
+/* çevrimiçi gönderim seyreltilir (en sık 30 sn); gün sonu / kaydet-çık "force" ile gider.
+   Sunucu çok sık gelen isteği reddederse bir sonraki fırsatta yeniden denenir. */
+var netSent = { at: 0, s: -1, busy: false, dirty: false };
+function submitScore(force) {
+  if (!S.company || !S.runId) return;
+  var e = { id: S.runId, n: S.company, h: (S.hero && S.hero.n) || '', s: S.caught, m: Math.round(S.earned), d: day.n, p: Math.round(S.play || 0), at: Date.now() };
+  Board.submit(e);
+  if (!netOn() || nameBad(e.n) || nameBad(e.h)) return;   /* uygunsuz ad herkese açık tabloya gitmez */
+  var now = Date.now();
+  if (netSent.busy) { netSent.dirty = true; return; }
+  if (!force && now - netSent.at < 30000) return;
+  if (!force && e.s === netSent.s && !netSent.dirty) return;
+  netSent.busy = true; netSent.dirty = false;
+  rpc('bt_submit', { p_run: e.id, p_player: PLAYER_ID, p_company: e.n, p_fish: e.s, p_money: e.m,
+    p_day: e.d, p_play: e.p, p_hero: e.h }).then(function (r) {
+    netSent.busy = false;
+    if (r === 'ok') { netSent.at = Date.now(); netSent.s = e.s; }
+    else if (r === 'too_fast') netSent.dirty = true;
+  }, function () { netSent.busy = false; netSent.dirty = true; netSent.at = Date.now(); });
+}
+/* her oturum açılışında bir kez: oyuncu + oyun sayacı */
+var playLogged = false;
+function logPlay() {
+  if (!netOn() || playLogged) return;
+  playLogged = true;
+  rpc('bt_play', { p_player: PLAYER_ID, p_run: S.runId || '', p_lang: lang }).then(function () { }, function () { });
+}
+function myRank(list) {
+  for (var i = 0; i < list.length; i++) if (list[i].id === S.runId) return i + 1;
+  return 0;
+}
+function boardRow(e, i, mine) {
+  var medal = i < 3 ? ' m' + (i + 1) : '';
+  return '<div class="brow' + medal + (mine ? ' me' : '') + '"><span class="rk">' + (i + 1) + '</span>' +
+    '<span class="bn">' + escH(e.n) + (mine ? ' <em>' + T('boardYou') + '</em>' : '') +
+    '<small>' + (e.h ? escH(e.h) + ' • ' : '') + T('boardDay', { d: e.d || 1 }) + ' • ' + money(e.m || 0) +
+    (e.p ? ' • ⏱ ' + clockStr(e.p) : '') + '</small></span>' +
+    '<span class="bs">' + T('fishN', { n: fmtN(e.s) }) + '</span></div>';
+}
+var boardReq = 0;
+function renderBoard() {
+  var req = ++boardReq;
+  if (ONLINE) { el.boardRows.innerHTML = '<div class="empty">' + T('boardLoading') + '</div>'; el.boardNote.textContent = ''; }
+  Board.fetch(function (list, info) {
+    if (req !== boardReq) return;                       /* eski cevap geç geldiyse yok say */
+    var h = '', me = myRank(list) - 1, i;
+    if (!list.length) h = '<div class="empty">' + T('boardEmpty') + '</div>';
+    for (i = 0; i < Math.min(BOARD_SHOW, list.length); i++) h += boardRow(list[i], i, i === me);
+    if (info.src === 'online' && info.me && me < 0) {
+      h += '<div class="bsep">• • •</div>' + boardRow(info.me, info.me.rank - 1, true);
+    } else if (me >= BOARD_SHOW) h += '<div class="bsep">• • •</div>' + boardRow(list[me], me, true);
+    el.boardRows.innerHTML = h;
+    el.boardNote.textContent = info.src === 'online'
+      ? T('boardStats', { p: fmtN(info.stats && info.stats.players), g: fmtN(info.stats && info.stats.plays), h: (info.stats && info.stats.hours) || 0 })
+      : T(info.src === 'offline' ? 'boardOffline' : 'boardLocal');
+  });
+}
+function openBoard(from) {
+  if (S.started) submitScore();
+  askOnline(function () { if (!el.boardScr.classList.contains('hidden')) renderBoard(); });
+  el.boardScr.dataset.from = from || 'start';
+  el.startScreen.classList.add('hidden');
+  el.menuScreen.classList.add('hidden');
+  renderBoard();
+  el.boardScr.classList.remove('hidden');
+  syncPause(); sfx.tap();
+}
+function closeBoard() {
+  var from = el.boardScr.dataset.from;
+  el.boardScr.classList.add('hidden');
+  if (from === 'menu' && S.started) openPauseMenu();
+  else if (!S.started) el.startScreen.classList.remove('hidden');
+  syncPause();
+}
+
+/* ---------- v0.5 — KARAKTER OLUŞTURMA ---------- */
+var HERO_OPT = {
+  hs: { tr: ['Kısa', 'Dalgalı', 'Uzun', 'At kuyruğu', 'Kel'], en: ['Short', 'Wavy', 'Long', 'Ponytail', 'Bald'] },
+  hc: ['#1d1713', '#3d2a1a', '#6b3f22', '#a4471f', '#c9a45a', '#9a9a96'],
+  sk: [0, 1, 2, 3],
+  hw: { tr: ['Yok', 'Kasket', 'Yazma', 'Balıkçı beresi'], en: ['None', 'Flat cap', 'Headscarf', 'Fisher beanie'] },
+  fc: { tr: ['Yok', 'Bıyık', 'Sakal'], en: ['None', 'Moustache', 'Beard'] },
+  co: ['#1f4e6b', '#7a2b2b', '#2f5a3a', '#4a5058', '#5a3f7a'],
+  ap: ['#c9782f', '#b3422f', '#4f8f5a', '#3f6fb0', '#d9a441']
+};
+var HERO_ROWS = ['hs', 'hc', 'sk', 'hw', 'fc', 'co', 'ap'];
+var HERO_NAMES = ['Hasan', 'Recai', 'Temel', 'Dursun', 'Ayşe', 'Fadime', 'Zeynep', 'Kemal', 'İdris', 'Hatice', 'Selim', 'Emine', 'Yusuf', 'Rıza', 'Elif', 'Cafer'];
+function heroCount(k) { var v = HERO_OPT[k]; return Array.isArray(v) ? v.length : v.tr.length; }
+function randomHero() {
+  var h = { n: pick(HERO_NAMES) };
+  HERO_ROWS.forEach(function (k) { h[k] = irnd(0, heroCount(k) - 1); });
+  return h;
+}
+function cleanHero(h) {
+  if (!h || typeof h !== 'object') return null;
+  var o = { n: String(h.n == null ? '' : h.n).replace(/<[^>]*>/g, '').replace(/[\u0000-\u001f<>`\\{}\[\]]/g, '').replace(/\s+/g, ' ').trim().slice(0, 16) };
+  HERO_ROWS.forEach(function (k) { var v = parseInt(h[k], 10); o[k] = isNaN(v) ? 0 : clamp(v, 0, heroCount(k) - 1); });
+  return o;
+}
+/* kahramanın kıyafeti: drawPerson'a verilen tanım */
+function heroOutfit(h, face) {
+  h = h || { hs: 0, hc: 0, sk: 0, hw: 1, fc: 1, co: 0, ap: 0 };
+  var coat = HERO_OPT.co[h.co] || '#1f4e6b', o = {
+    coat: coat, coat2: shade(coat, 22), knit: shade(coat, 60),
+    apron: HERO_OPT.ap[h.ap], skin: PAL.skin[h.sk] || PAL.skin[0], hair: HERO_OPT.hc[h.hc],
+    hairStyle: h.hs, boot: '#16222b', bootTop: '#2f4450', pants: '#2b3a45', face: face
+  };
+  if (h.hw === 1) o.cap = '#14364a';
+  else if (h.hw === 2) o.scarf = '#b3422f';
+  else if (h.hw === 3) o.beanie = '#8d3423';
+  if (h.fc === 1) o.must = true; else if (h.fc === 2) o.beard = true;
+  return o;
+}
+var pendingHero = null, heroFace = 1;
+function heroLabel(k, v) {
+  var o = HERO_OPT[k];
+  if (Array.isArray(o)) return k === 'sk' ? '' : '';
+  return (o[lang] || o.tr)[v];
+}
+function openHeroScreen() {
+  pendingHero = pendingHero || randomHero();
+  el.heroName.value = pendingHero.n;
+  renderHeroRows();
+  el.heroScr.classList.remove('hidden');
+  el.heroCard.classList.remove('pop'); void el.heroCard.offsetWidth; el.heroCard.classList.add('pop');
+}
+function renderHeroRows() {
+  var h = '';
+  HERO_ROWS.forEach(function (k) {
+    var v = pendingHero[k], o = HERO_OPT[k], val;
+    if (k === 'sk') val = '<i class="swc" style="background:' + PAL.skin[v] + '"></i>';
+    else if (Array.isArray(o)) val = '<i class="swc" style="background:' + o[v] + '"></i>';
+    else val = escH((o[lang] || o.tr)[v]);
+    h += '<div class="hrow"><span>' + T('hero_' + k) + '</span><button data-k="' + k + '" data-d="-1">‹</button>' +
+      '<b>' + val + '</b><button data-k="' + k + '" data-d="1">›</button></div>';
+  });
+  el.heroRows.innerHTML = h;
+  Array.prototype.forEach.call(el.heroRows.querySelectorAll('button'), function (b) {
+    b.onclick = function () {
+      var k = b.dataset.k, n = heroCount(k);
+      pendingHero[k] = (pendingHero[k] + parseInt(b.dataset.d, 10) + n) % n;
+      renderHeroRows(); sfx.pick();
+    };
+  });
+}
+function confirmHero() {
+  var n = cleanHero({ n: el.heroName.value }).n;
+  if (n.length < 2) {
+    sfx.bad(); el.heroCard.classList.remove('shake'); void el.heroCard.offsetWidth; el.heroCard.classList.add('shake');
+    el.heroName.focus(); return;
+  }
+  pendingHero.n = n;
+  pendingHero = cleanHero(pendingHero);
+  el.heroName.blur();
+  el.heroScr.classList.add('hidden');
+  openNameScreen('new');
+  sfx.tap();
+}
+/* önizleme: iskele tahtası üstünde karakter, arada bir döner */
+function drawHeroPreview(t) {
+  if (el.heroScr.classList.contains('hidden') || !pendingHero) return;
+  var cv = el.heroCv, g = cv.getContext('2d'), old = ctx;
+  if (Math.floor(t / 1.6) % 2 !== (heroFace > 0 ? 0 : 1)) heroFace = -heroFace;
+  ctx = g;
+  try {
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.imageSmoothingEnabled = false;
+    g.fillStyle = '#16293a'; g.fillRect(0, 0, cv.width, cv.height);
+    for (var i = 0; i < 5; i++) { g.fillStyle = i % 2 ? '#7a5130' : '#8a5a33'; g.fillRect(0, 26 + i * 2, cv.width, 2); }
+    g.fillStyle = '#5a3a22'; g.fillRect(0, 26, cv.width, 1);
+    g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), 32);
+    var a = { x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: t * 6, act: 0, carry: [] };
+    drawPerson(a, heroOutfit(pendingHero, heroFace));
+  } catch (e) { }
+  ctx = old;
+}
+
+/* ---------- İŞLETME ADI EKRANI ---------- */
+var nameMode = 'new', pendingSlot = 0, introSeen = false;
+
+/* ---------- oyun içi onay penceresi (confirm() kısıtlı iframe'de yok sayılıyordu) ---------- */
+var askCb = null, askNoCb = null;
+function ask(msg, yesLabel, cb, noCb) {
+  askCb = cb; askNoCb = noCb || null;
+  el.askMsg.textContent = msg;
+  el.askYes.textContent = yesLabel || T('yes');
+  el.askNo.textContent = T('cancel');
+  el.askScr.classList.remove('hidden');
+  sfx.tap();
+}
+function closeAsk(yes) {
+  el.askScr.classList.add('hidden');
+  var f = askCb, g = askNoCb; askCb = null; askNoCb = null;
+  if (yes && f) f(); else if (!yes && g) g();
+}
+
+/* ---------- KAYIT SLOTLARI ekranı ---------- */
+var slotMode = 'new';
+function openSlots(mode) {
+  slotMode = mode || 'new';
+  el.startScreen.classList.add('hidden');
+  renderSlots();
+  el.slotScr.classList.remove('hidden');
+  sfx.tap();
+}
+function closeSlots() {
+  el.slotScr.classList.add('hidden');
+  el.startScreen.classList.remove('hidden');
+  refreshSaveInfo();
+}
+function beginNewInSlot(n) {
+  pendingSlot = n; pendingHero = null;
+  el.slotScr.classList.add('hidden');
+  if (!introSeen) openIntro(function () { openHeroScreen(); });
+  else openHeroScreen();
+}
+function renderSlots() {
+  el.slotTitle.textContent = T(slotMode === 'new' ? 'slotTitleNew' : 'slotTitleLoad');
+  el.slotSub.textContent = T(slotMode === 'new' ? 'slotSubNew' : 'slotSubLoad') + (Store.persistent ? '' : ' ' + T('noStorage'));
+  var h = '';
+  for (var i = 1; i <= SLOT_N; i++) {
+    var d = readSlot(i), m = metaOf(d), btns = '';
+    if (!m) btns = '<button class="sb go2" data-a="new" data-n="' + i + '">' + T('slotNew') + '</button>';
+    else if (slotMode === 'new') btns = '<button class="sb warn" data-a="over" data-n="' + i + '">' + T('slotOver') + '</button>';
+    else btns = '<button class="sb go2" data-a="load" data-n="' + i + '">' + T('slotLoad') + '</button>' +
+      '<button class="sb del" data-a="del" data-n="' + i + '" title="' + T('slotDel') + '">🗑</button>';
+    h += '<div class="slot' + (m ? '' : ' empty') + (i === curSlot && m ? ' cur' : '') + '">' +
+      '<div class="sn">' + i + '</div><div class="si">' +
+      (m ? '<b>' + escH(m.co || T('slotNoName')) + '</b><small>' + T('slotLine', { d: m.day, f: fmtN(m.fish), c: money(m.cash) }) +
+           '</small><small>' + T('slotWhen', { t: agoStr(m.at), p: clockStr(m.play) }) + '</small>'
+         : '<b>' + T('slotEmptyT') + '</b><small>' + T('slotEmptyS') + '</small>') +
+      '</div><div class="sa">' + btns + '</div></div>';
+  }
+  el.slotRows.innerHTML = PX(h);
+  Array.prototype.forEach.call(el.slotRows.querySelectorAll('.sb'), function (b) {
+    b.onclick = function () {
+      var n = parseInt(b.dataset.n, 10), a = b.dataset.a, m = saveMeta(n);
+      if (a === 'new') beginNewInSlot(n);
+      else if (a === 'over') ask(T('overAsk', { n: n, c: (m && m.co) || T('slotNoName') }), T('overYes'), function () { beginNewInSlot(n); });
+      else if (a === 'load') {
+        el.slotScr.classList.add('hidden');
+        useSlot(n);
+        if (!S.company) { openNameScreen('legacy'); return; }
+        askAutosave(function () { start(); toast(T('slotLoaded', { n: n, c: S.company })); });
+      } else if (a === 'del') ask(T('delAsk', { n: n, c: (m && m.co) || T('slotNoName') }), T('delYes'), function () {
+        deleteSlot(n); renderSlots(); refreshSaveInfo(); toast(T('slotDeleted', { n: n }));
+        if (!slotCount()) closeSlots();
+      });
+    };
+  });
+}
+function nameIdeas(cur) {
+  var a = [cur];
+  for (var i = 0; i < 4; i++) a.push(randomCompany(a));
+  return a.slice(1);
+}
+function renderNameChips() {
+  var ideas = nameIdeas(el.nameIn.value);
+  el.nameChips.innerHTML = ideas.map(function (n) { return '<button class="nchip">' + escH(n) + '</button>'; }).join('');
+  Array.prototype.forEach.call(el.nameChips.querySelectorAll('.nchip'), function (b) {
+    b.onclick = function () { el.nameIn.value = b.textContent; syncNamePreview(); sfx.pick(); };
+  });
+}
+function syncNamePreview() {
+  var n = cleanName(el.nameIn.value);
+  el.nameSign.textContent = n || '· · ·';
+  var bad = nameBad(n), ok = n.length >= 2 && !bad;
+  el.nameHint.textContent = bad ? T('nameBadT') : ok ? (n.length + '/24') : T('nameShort');
+  el.nameHint.classList.toggle('bad', !ok);
+  el.nameGo.classList.toggle('dim', !ok);
+}
+function openNameScreen(mode) {
+  nameMode = mode || 'new';
+  el.startScreen.classList.add('hidden');
+  el.nameIn.value = nameMode === 'new' ? randomCompany() : (S.company || randomCompany());
+  syncNamePreview(); renderNameChips();
+  el.nameScr.classList.remove('hidden');
+  el.nameCard.classList.remove('pop'); void el.nameCard.offsetWidth; el.nameCard.classList.add('pop');
+}
+function confirmName() {
+  var n = cleanName(el.nameIn.value);
+  if (n.length < 2 || nameBad(n)) {
+    syncNamePreview(); sfx.bad();
+    el.nameCard.classList.remove('shake'); void el.nameCard.offsetWidth; el.nameCard.classList.add('shake');
+    el.nameIn.focus();
+    return;
+  }
+  el.nameIn.blur();
+  if (nameMode === 'new') {                         /* seçilen slotta temiz bir oyun */
+    resetWorld();
+    curSlot = pendingSlot || curSlot || 1;
+    S.runId = newRunId();
+    S.hero = cleanHero(pendingHero || randomHero());
+  }
+  S.company = n;
+  if (!S.runId) S.runId = newRunId();
+  el.nameScr.classList.add('hidden');
+  var hello = S.hero ? T('welcomeHero', { h: S.hero.n, n: n }) : T('welcomeCo', { n: n });
+  askAutosave(function () { start(); save(); sfx.star(); toast(hello); });
+}
+
+/* ---------- GİRİŞ HİKÂYESİ: dönen pixel gazete + alt yazı ----------
+   Gazete 180×240 px'lik düşük çözünürlüklü bir tuvale çizilir, sahneye döndürülerek
+   ölçeklenir (en yakın komşu → kırık pixel kenarlar). Yazılar eşiklenir: yumuşatma yok. */
+var PAPER_W = 180, PAPER_H = 240, STAGE_W = 216, STAGE_H = 272;
+var INTRO = [
+  { art: 'pier', date: { tr: '3 NİSAN 1974', en: 'APRIL 3, 1974' },
+    hl: { tr: 'KASABANIN İSKELESİ SESSİZLİĞE GÖMÜLDÜ', en: 'THE OLD TOWN PIER FALLS SILENT' },
+    cap: { tr: '▲ Terk edilmiş iskele', en: '▲ The abandoned pier' },
+    sub: { tr: 'Karadeniz kıyısında küçük bir kasaba... Dedemin iskelesi yıllardır sessizdi. Ağlar kurumuş, tezgâhlar boş kalmıştı.',
+      en: 'A small town on the Black Sea... My grandfather\'s pier had been silent for years. The nets were dry, the stalls empty.' } },
+  { art: 'school', date: { tr: '18 NİSAN 1974', en: 'APRIL 18, 1974' },
+    hl: { tr: 'HAMSİ SÜRÜLERİ KOYA GERİ DÖNDÜ!', en: 'ANCHOVY SHOALS RETURN TO THE BAY!' },
+    cap: { tr: '▲ Koyda hamsi bolluğu', en: '▲ Anchovy bonanza' },
+    sub: { tr: 'Derken bir sabah manşetler çınladı: gümüş hamsi sürüleri koya geri dönmüştü!',
+      en: 'Then one morning the headlines rang out: silver anchovy shoals were back in the bay!' } },
+  { art: 'ad', date: { tr: '2 MAYIS 1974', en: 'MAY 2, 1974' },
+    hl: { tr: 'LİMAN CESUR BİR BALIKÇI ARIYOR', en: 'HARBOR SEEKS A BRAVE FISHERMAN' },
+    cap: { tr: '▲ Belediye ilanı', en: '▲ Town hall notice' },
+    sub: { tr: 'Belediye ilan vermişti: eski iskeleyi yeniden canlandıracak cesur birini arıyorlardı.',
+      en: 'Town hall had posted a notice: they were looking for someone brave enough to bring the old pier back to life.' } },
+  { art: 'dawn', date: { tr: '9 MAYIS 1974', en: 'MAY 9, 1974' },
+    hl: { tr: 'GENÇ BALIKÇI İŞİ DEVRALDI', en: 'YOUNG FISHER TAKES OVER THE PIER' },
+    cap: { tr: '▲ Şafakta ilk ağ', en: '▲ First net at dawn' },
+    sub: { tr: 'Cebimde birkaç kuruş, omzumda dedemin ağı... Şafak sökerken iskeleye geri döndüm.',
+      en: 'A few coins in my pocket, grandpa\'s net on my shoulder... I walked back to the pier as dawn broke.' } },
+  { art: 'harbor', date: { tr: 'YARIN', en: 'TOMORROW' },
+    hl: { tr: 'BUGÜN KÜÇÜK BİR TEZGÂH, YARIN KOCA BİR LİMAN', en: 'A TINY STALL TODAY, A GRAND HARBOR TOMORROW' },
+    cap: { tr: '▲ Hayal: koca bir liman', en: '▲ The dream: a grand harbor' },
+    sub: { tr: 'Bugün küçük bir tezgâh. Yarın koca bir liman. Ama önce... tabelaya bir isim lazım.',
+      en: 'A tiny stall today. A grand harbor tomorrow. But first... the sign needs a name.' } }
+];
+var intro = { on: false, gate: false, i: 0, t: 0, ph: 'in', out: 0, typed: 0, tick: 0, then: null, cv: null, g: null, pc: null, pg: null, list: null };
+
+/* 5×7 bitmap yazı tipi — gazete için. Tarayıcı fontu küçük boyda eşiklenince harfler
+   bozuluyordu (G→B, Ç→Q); bu yüzden her harf elle çizildi. Türkçe harfler temel harf +
+   işaretten kurulur (İ Ö Ü Ğ Ç Ş Â). Küçük harfler büyüğe çevrilir. */
+var GLY = {
+  A: '.###.|#...#|#...#|#####|#...#|#...#|#...#', B: '####.|#...#|#...#|####.|#...#|#...#|####.',
+  C: '.###.|#...#|#....|#....|#....|#...#|.###.', D: '####.|#...#|#...#|#...#|#...#|#...#|####.',
+  E: '#####|#....|#....|####.|#....|#....|#####', F: '#####|#....|#....|####.|#....|#....|#....',
+  G: '.###.|#...#|#....|#.###|#...#|#...#|.####', H: '#...#|#...#|#...#|#####|#...#|#...#|#...#',
+  I: '###|.#.|.#.|.#.|.#.|.#.|###', J: '..###|...#.|...#.|...#.|#..#.|#..#.|.##..',
+  K: '#...#|#..#.|#.#..|##...|#.#..|#..#.|#...#', L: '#....|#....|#....|#....|#....|#....|#####',
+  M: '#...#|##.##|#.#.#|#.#.#|#...#|#...#|#...#', N: '#...#|##..#|#.#.#|#..##|#...#|#...#|#...#',
+  O: '.###.|#...#|#...#|#...#|#...#|#...#|.###.', P: '####.|#...#|#...#|####.|#....|#....|#....',
+  Q: '.###.|#...#|#...#|#...#|#.#.#|#..#.|.##.#', R: '####.|#...#|#...#|####.|#.#..|#..#.|#...#',
+  S: '.####|#....|#....|.###.|....#|....#|####.', T: '#####|..#..|..#..|..#..|..#..|..#..|..#..',
+  U: '#...#|#...#|#...#|#...#|#...#|#...#|.###.', V: '#...#|#...#|#...#|#...#|#...#|.#.#.|..#..',
+  W: '#...#|#...#|#...#|#.#.#|#.#.#|#.#.#|.#.#.', X: '#...#|#...#|.#.#.|..#..|.#.#.|#...#|#...#',
+  Y: '#...#|#...#|.#.#.|..#..|..#..|..#..|..#..', Z: '#####|....#|...#.|..#..|.#...|#....|#####',
+  '0': '.###.|#...#|#..##|#.#.#|##..#|#...#|.###.', '1': '.#.|##.|.#.|.#.|.#.|.#.|###',
+  '2': '.###.|#...#|....#|...#.|..#..|.#...|#####', '3': '####.|....#|....#|.###.|....#|....#|####.',
+  '4': '...#.|..##.|.#.#.|#..#.|#####|...#.|...#.', '5': '#####|#....|####.|....#|....#|#...#|.###.',
+  '6': '..##.|.#...|#....|####.|#...#|#...#|.###.', '7': '#####|....#|...#.|..#..|.#...|.#...|.#...',
+  '8': '.###.|#...#|#...#|.###.|#...#|#...#|.###.', '9': '.###.|#...#|#...#|.####|....#|...#.|.##..',
+  '.': '.|.|.|.|.|.|#', ',': '..|..|..|..|..|.#|#.', '!': '#|#|#|#|#|.|#', "'": '#|#|.|.|.|.|.',
+  '?': '.###.|#...#|....#|...#.|..#..|.....|..#..', ':': '.|#|.|.|.|#|.', '-': '...|...|...|###|...|...|...',
+  '&': '.##..|#..#.|#.#..|.#...|#.#.#|#..#.|.##.#', '▲': '.....|.....|..#..|.###.|#####|.....|.....',
+  '/': '....#|...#.|...#.|..#..|.#...|.#...|#....'
+};
+var GLY_MARK = { 'İ': ['I', 'dot'], 'Ö': ['O', 'uml'], 'Ü': ['U', 'uml'], 'Ğ': ['G', 'brv'], 'Ç': ['C', 'ced'], 'Ş': ['S', 'ced'], 'Â': ['A', 'crc'] };
+var _gly = {};
+function glyph(ch) {
+  if (_gly[ch]) return _gly[ch];
+  var base = ch, mark = null;
+  if (GLY_MARK[ch]) { base = GLY_MARK[ch][0]; mark = GLY_MARK[ch][1]; }
+  var src = GLY[base];
+  if (!src) return null;
+  var rows = src.split('|'), w = rows[0].length, px = [], x, y;
+  for (y = 0; y < 7; y++) for (x = 0; x < w; x++) if (rows[y][x] === '#') px.push([x, y]);
+  var c = Math.floor(w / 2);
+  if (mark === 'dot') px.push([c, -2]);
+  if (mark === 'uml') { px.push([1, -2]); px.push([w - 2, -2]); }
+  if (mark === 'brv') { px.push([1, -2]); px.push([w - 2, -2]); px.push([2, -1]); }
+  if (mark === 'crc') { px.push([c, -2]); px.push([c - 1, -1]); px.push([c + 1, -1]); }
+  if (mark === 'ced') { px.push([c, 7]); px.push([c - 1, 8]); }
+  _gly[ch] = { w: w, px: px };
+  return _gly[ch];
+}
+/* yazı genişliği (piksel) — sx: yatay ölçek, bold: her pikseli bir sağa kalınlaştır */
+function pxMeasure(str, sx, bold) {
+  var w = 0, s = UP(str);
+  for (var i = 0; i < s.length; i++) {
+    var gl = s[i] === ' ' ? null : glyph(s[i]);
+    w += ((gl ? gl.w : 3) + (bold ? 1 : 0) + 1) * sx;
+  }
+  return Math.max(0, w - sx);
+}
+function pxText(g, str, x, y, sx, sy, bold, color, align) {
+  var s = UP(str), w = pxMeasure(s, sx, bold);
+  var cx = Math.round(align === 'center' ? x - w / 2 : align === 'right' ? x - w : x);
+  g.fillStyle = color;
+  for (var i = 0; i < s.length; i++) {
+    var gl = s[i] === ' ' ? null : glyph(s[i]);
+    if (gl) for (var k = 0; k < gl.px.length; k++) {
+      var p = gl.px[k];
+      g.fillRect(cx + p[0] * sx, Math.round(y) + p[1] * sy, sx * (bold ? 2 : 1), sy);
+    }
+    cx += ((gl ? gl.w : 3) + (bold ? 1 : 0) + 1) * sx;
+  }
+  return w;
+}
+function pxWrap(str, sx, bold, maxW) {
+  var words = UP(str).split(' '), lines = [], cur = '';
+  for (var i = 0; i < words.length; i++) {
+    var t = cur ? cur + ' ' + words[i] : words[i];
+    if (cur && pxMeasure(t, sx, bold) > maxW) { lines.push(cur); cur = words[i]; }
+    else cur = t;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+/* sabit tohumlu rastgele — sütun yazıları ve kâğıt lekeleri her karede aynı kalsın */
+function seedRnd(seed) { var s = seed >>> 0; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+/* baskı paleti: sepya tonlar (anlamsal anahtarlar → son sahnede renkli palet) */
+var PAL_SEPIA = { sky: '#d9c9a3', sky2: '#5e4e38', sea: '#8f7a57', sea2: '#6b5a40', lite: '#efe4c9',
+  wood: '#5a4731', wood2: '#3d3022', ink: '#2c231a', sun: '#f3e8cc', aw1: '#6b5a40', aw2: '#d9c9a3', gold: '#b9a171' };
+var PAL_COLOR = { sky: '#ffcf8a', sky2: '#27466b', sea: '#2b7fa6', sea2: '#1d5f80', lite: '#fff4d6',
+  wood: '#8a5a33', wood2: '#5a3a22', ink: '#1a1410', sun: '#ffe27a', aw1: '#c8553d', aw2: '#f4e9d2', gold: '#ffc94a' };
+
+function artPier(g, P, t, W, H) {
+  g.fillStyle = P.sky2; g.fillRect(0, 0, W, H);
+  var r = seedRnd(7), i;
+  for (i = 0; i < 26; i++) {                                    /* yıldızlar göz kırpar */
+    var sx = Math.floor(r() * W), sy = Math.floor(r() * 50), ph = r() * 6;
+    if (Math.sin(t * 2.2 + ph) > -0.3) { g.fillStyle = P.lite; g.fillRect(sx, sy, 1, 1); }
+  }
+  g.fillStyle = P.lite;                                          /* ay */
+  for (i = -8; i <= 8; i++) { var w = Math.round(Math.sqrt(64 - i * i)); g.fillRect(128 - w, 18 + i, w * 2, 1); }
+  g.fillStyle = P.sky2; for (i = -6; i <= 6; i++) { var w2 = Math.round(Math.sqrt(36 - i * i)); g.fillRect(132 - w2, 15 + i, w2 * 2, 1); }
+  g.fillStyle = P.sea2; g.fillRect(0, 56, W, H - 56);            /* deniz */
+  for (i = 0; i < 9; i++) {                                      /* ay yansıması */
+    var ry = 60 + i * 3, rw = 12 - i + Math.round(Math.sin(t * 3 + i) * 2);
+    g.fillStyle = P.lite; g.fillRect(126 - rw / 2 + Math.round(Math.sin(t * 2 + i) * 2), ry, rw, 1);
+  }
+  g.fillStyle = P.sea;
+  for (i = 0; i < 14; i++) { var wx = ((i * 23 + t * 6) % (W + 20)) - 10, wy = 62 + (i * 7) % 28; g.fillRect(Math.round(wx), wy, 6, 1); }
+  g.fillStyle = P.wood;  g.fillRect(0, 50, 92, 5);               /* iskele */
+  g.fillStyle = P.wood2; g.fillRect(0, 55, 92, 1);
+  for (i = 0; i < 92; i += 6) { g.fillStyle = P.wood2; g.fillRect(i, 50, 1, 5); }
+  for (i = 4; i < 92; i += 16) { g.fillStyle = P.wood2; g.fillRect(i, 56, 3, 14); }
+  g.fillStyle = P.ink; g.fillRect(70, 30, 2, 20); g.fillRect(66, 30, 10, 2);   /* söner fener */
+  if (Math.sin(t * 7) > 0.6 || Math.sin(t * 1.3) > 0.2) { g.fillStyle = P.sun; g.fillRect(68, 32, 6, 3); }
+  var by = 66 + Math.round(Math.sin(t * 1.6) * 1.2);             /* bağlı kayık */
+  g.fillStyle = P.wood; g.fillRect(100, by, 26, 4); g.fillRect(102, by + 4, 22, 2);
+  g.fillStyle = P.wood2; g.fillRect(100, by, 26, 1);
+  g.fillStyle = P.ink; g.fillRect(92, 55, 1, 1); g.fillRect(93, 56, 3, 1); g.fillRect(96, 58, 4, 1); g.fillRect(100, 61, 1, by - 61);
+  /* kurumuş ağ */
+  g.fillStyle = P.sea;
+  for (i = 0; i < 5; i++) { g.fillRect(20 + i * 4, 40, 1, 10); g.fillRect(18, 40 + i * 2, 20, 1); }
+}
+function artSchool(g, P, t, W, H) {
+  g.fillStyle = P.sky; g.fillRect(0, 0, W, 34);
+  g.fillStyle = P.sun; for (var i = -7; i <= 7; i++) { var w = Math.round(Math.sqrt(49 - i * i)); g.fillRect(24 - w, 14 + i, w * 2, 1); }
+  g.fillStyle = P.sea2; g.fillRect(0, 34, W, H - 34);
+  g.fillStyle = P.sea; for (i = 0; i < 6; i++) g.fillRect(0, 38 + i * 9, W, 2);
+  var cx = 84, cy = 62, k;
+  for (k = 0; k < 70; k++) {                                   /* dönen hamsi sürüsü */
+    var a = k * 0.61 + t * (0.9 + (k % 5) * 0.05), rr = 10 + (k * 7) % 26;
+    var fx = Math.round(cx + Math.cos(a) * rr * 1.6), fy = Math.round(cy + Math.sin(a) * rr * 0.55);
+    var dir = -Math.sin(a) >= 0 ? 1 : -1;
+    g.fillStyle = (k + Math.floor(t * 6)) % 7 === 0 ? P.lite : P.aw2;
+    g.fillRect(fx, fy, 4, 1); g.fillStyle = P.sky; g.fillRect(dir > 0 ? fx + 4 : fx - 1, fy, 1, 1);
+  }
+  for (k = 0; k < 4; k++) {                                    /* sıçrayan balıklar */
+    var ph = (t * 0.7 + k * 0.27) % 1, jx = 20 + k * 38 + ph * 18, jy = 36 - Math.sin(ph * Math.PI) * 18;
+    if (ph < 0.95) { g.fillStyle = P.lite; g.fillRect(Math.round(jx), Math.round(jy), 4, 2); g.fillStyle = P.ink; g.fillRect(Math.round(jx) + 3, Math.round(jy), 1, 1); }
+    if (ph > 0.9 || ph < 0.08) { g.fillStyle = P.lite; g.fillRect(Math.round(jx) - 2, 34, 1, 1); g.fillRect(Math.round(jx) + 5, 33, 1, 1); }
+  }
+  for (k = 0; k < 3; k++) {                                    /* martılar */
+    var gx = Math.round((k * 60 + t * 14) % (W + 20)) - 10, gy = 8 + k * 6, f = Math.sin(t * 8 + k) > 0;
+    g.fillStyle = P.ink;
+    g.fillRect(gx, gy + (f ? 0 : 1), 3, 1); g.fillRect(gx + 3, gy + 1, 1, 1); g.fillRect(gx + 4, gy + (f ? 0 : 1), 3, 1);
+  }
+}
+function artAd(g, P, t, W, H) {
+  g.fillStyle = P.sky; g.fillRect(0, 0, W, H);                   /* tuğla duvar */
+  var i, j;
+  for (j = 0; j < H; j += 6) {
+    g.fillStyle = P.sea; g.fillRect(0, j, W, 1);
+    for (i = (j / 6) % 2 ? 0 : 7; i < W; i += 14) g.fillRect(i, j, 1, 6);
+  }
+  var px = 26, py = 8, pw = 114, ph = 76;
+  g.fillStyle = P.ink; g.fillRect(px + 2, py + 2, pw, ph);         /* ilan kâğıdı */
+  g.fillStyle = P.lite; g.fillRect(px, py, pw, ph);
+  var flap = Math.round(Math.max(0, Math.sin(t * 2.4)) * 4);     /* rüzgârda köşe kalkar */
+  g.fillStyle = P.sky; g.fillRect(px + pw - flap, py + ph - flap, flap, flap);
+  g.fillStyle = P.aw2; for (i = 0; i < flap; i++) g.fillRect(px + pw - flap + i, py + ph - flap + (flap - 1 - i), i + 1, 1);
+  g.fillStyle = P.ink; g.fillRect(px + 3, py + 3, pw - 6, 1); g.fillRect(px + 3, py + ph - 4, pw - 6, 1);
+  pxText(g, lang === 'tr' ? 'İLAN' : 'NOTICE', px + pw / 2, py + 9, 2, 2, true, P.ink, 'center');
+  pxText(g, lang === 'tr' ? 'BALIKÇI ARANIYOR!' : 'FISHER WANTED!', px + pw / 2, py + 28, 1, 1, false, P.aw1, 'center');
+  g.fillStyle = P.sea;
+  for (i = 0; i < 5; i++) g.fillRect(px + 10, py + 41 + i * 5, pw - 20 - (i === 4 ? 30 : (i * 7) % 12), 2);
+  g.fillStyle = P.aw1; g.fillRect(px + 2, py + 1, 3, 3); g.fillRect(px + pw - 5, py + 1, 3, 3);   /* raptiye */
+  /* mühür */
+  g.fillStyle = P.aw1;
+  for (i = -6; i <= 6; i++) { var w = Math.round(Math.sqrt(36 - i * i)); g.fillRect(px + pw - 20 - w, py + ph - 16 + i, w * 2, 1); }
+  g.fillStyle = P.lite; g.fillRect(px + pw - 23, py + ph - 17, 6, 1); g.fillRect(px + pw - 21, py + ph - 19, 2, 5);
+  /* ilanın üstündeki martı */
+  var hop = Math.sin(t * 3) > 0.85 ? 1 : 0, mx = px + 12, my = py - 7 - hop;
+  g.fillStyle = P.lite; g.fillRect(mx, my, 7, 4); g.fillRect(mx + 6, my - 3, 3, 3);
+  g.fillStyle = P.sea2; g.fillRect(mx, my, 4, 2);
+  g.fillStyle = P.gold; g.fillRect(mx + 9, my - 2, 2, 1); g.fillRect(mx + 2, my + 4, 1, 3); g.fillRect(mx + 5, my + 4, 1, 3);
+  g.fillStyle = P.ink; g.fillRect(mx + 7, my - 2, 1, 1);
+}
+function artDawn(g, P, t, W, H) {
+  var i, rise = Math.min(1, t / 6);
+  g.fillStyle = P.sky; g.fillRect(0, 0, W, 50);
+  g.fillStyle = P.aw2; for (i = 0; i < 50; i += 2) if (i > 30) g.fillRect(0, i, W, 1);
+  var sy = 52 - Math.round(rise * 12);                         /* doğan güneş */
+  g.fillStyle = P.sun;
+  for (i = -14; i <= 0; i++) { var w = Math.round(Math.sqrt(196 - i * i)); g.fillRect(120 - w, sy + i, w * 2, 1); }
+  for (i = 0; i < 8; i++) {                                     /* ışınlar */
+    var a = Math.PI + (i + 0.5) * Math.PI / 8 + Math.sin(t) * 0.03;
+    for (var d = 18; d < 30; d += 2) g.fillRect(Math.round(120 + Math.cos(a) * d), Math.round(sy + Math.sin(a) * d), 1, 1);
+  }
+  g.fillStyle = P.sea2; g.fillRect(0, 52, W, H - 52);
+  for (i = 0; i < 10; i++) {                                    /* güneş yolu */
+    var gw = 20 - i * 1.5 + Math.sin(t * 3 + i) * 3;
+    g.fillStyle = P.sun; g.fillRect(Math.round(120 - gw / 2), 55 + i * 3, Math.round(gw), 1);
+  }
+  g.fillStyle = P.wood; g.fillRect(0, 60, 80, 5);                /* iskele */
+  for (i = 4; i < 80; i += 14) { g.fillStyle = P.wood2; g.fillRect(i, 65, 3, 20); }
+  /* balıkçı silueti: omzunda ağ, kıyıya doğru yürür */
+  var bx = Math.round(10 + Math.min(1, t / 5) * 48), step = Math.floor(t * 4) % 2, by = 60;
+  g.fillStyle = P.ink;
+  g.fillRect(bx + 1, by - 22, 5, 5);                              /* baş */
+  g.fillRect(bx, by - 24, 7, 2);                                  /* kasket */
+  g.fillRect(bx, by - 17, 7, 9);                                  /* gövde */
+  if (t < 5) { g.fillRect(bx + (step ? 0 : 1), by - 8, 2, 8); g.fillRect(bx + (step ? 5 : 4), by - 8, 2, 8); }
+  else { g.fillRect(bx + 1, by - 8, 2, 8); g.fillRect(bx + 4, by - 8, 2, 8); }
+  g.fillStyle = P.sea;                                             /* sırttaki ağ */
+  for (i = 0; i < 4; i++) { g.fillRect(bx - 5, by - 18 + i * 3, 6, 1); g.fillRect(bx - 5 + i * 2, by - 19, 1, 11); }
+  for (i = 0; i < 3; i++) {                                       /* martılar */
+    var mx = Math.round((i * 50 + t * 10) % (W + 10)) - 5, my = 12 + i * 7, f = Math.sin(t * 7 + i) > 0;
+    g.fillStyle = P.ink; g.fillRect(mx, my + (f ? 0 : 1), 3, 1); g.fillRect(mx + 3, my + 1, 1, 1); g.fillRect(mx + 4, my + (f ? 0 : 1), 3, 1);
+  }
+}
+function artHarbor(g, P, t, W, H) {
+  var i, r = seedRnd(31);
+  g.fillStyle = P.sky; g.fillRect(0, 0, W, H);
+  g.fillStyle = P.lite; for (i = 0; i < 3; i++) g.fillRect(Math.round((i * 70 + t * 5) % (W + 30)) - 20, 6 + i * 5, 18, 2);
+  /* deniz feneri + dönen ışık */
+  g.fillStyle = P.lite; g.fillRect(150, 18, 7, 34); g.fillStyle = P.aw1; g.fillRect(150, 26, 7, 4); g.fillRect(150, 38, 7, 4);
+  g.fillStyle = P.ink; g.fillRect(149, 14, 9, 4);
+  var beam = Math.sin(t * 2.2);
+  g.fillStyle = P.sun;
+  for (i = 1; i < 16; i++) g.fillRect(Math.round(153 + beam * i * 1.4), 15 - Math.floor(i / 5), 1, 2);
+  /* şehir silueti */
+  for (i = 0; i < 12; i++) {
+    var bw = 8 + Math.floor(r() * 8), bh = 12 + Math.floor(r() * 26), bx = i * 12;
+    g.fillStyle = i % 2 ? P.wood : P.wood2; g.fillRect(bx, 56 - bh, bw, bh);
+    g.fillStyle = P.sun;
+    for (var wy = 56 - bh + 3; wy < 52; wy += 5) for (var wx = bx + 2; wx < bx + bw - 2; wx += 3) if (r() > 0.45) g.fillRect(wx, wy, 1, 2);
+  }
+  /* kilim desenli pazar tentesi */
+  for (i = 0; i < 5; i++) {
+    var tx = 6 + i * 22;
+    for (var s = 0; s < 18; s += 3) { g.fillStyle = (s / 3) % 2 ? P.aw2 : P.aw1; g.fillRect(tx + s, 52, 3, 5); }
+    g.fillStyle = P.wood2; g.fillRect(tx, 57, 1, 6); g.fillRect(tx + 17, 57, 1, 6);
+    g.fillStyle = P.gold; g.fillRect(tx + 3, 60, 12, 3);
+  }
+  g.fillStyle = P.wood; g.fillRect(0, 63, W, 3);                  /* rıhtım */
+  g.fillStyle = P.sea2; g.fillRect(0, 66, W, H - 66);
+  g.fillStyle = P.sea; for (i = 0; i < 10; i++) g.fillRect(Math.round((i * 19 + t * 8) % (W + 10)) - 5, 70 + (i * 5) % 20, 5, 1);
+  /* gemiler salınır */
+  for (i = 0; i < 2; i++) {
+    var sx = 30 + i * 70, sy = 72 + Math.round(Math.sin(t * 1.5 + i * 2) * 1.2);
+    g.fillStyle = P.aw1; g.fillRect(sx, sy, 34, 6); g.fillStyle = P.ink; g.fillRect(sx + 2, sy + 6, 30, 2);
+    g.fillStyle = P.lite; g.fillRect(sx + 8, sy - 6, 14, 6); g.fillStyle = P.ink; g.fillRect(sx + 24, sy - 18, 1, 18);
+    g.fillStyle = P.aw2; g.fillRect(sx + 25, sy - 18, 6, 4);
+  }
+}
+/* v1.3 — Bölüm 1 sonu: oyuncunun GERÇEK limanının fotoğrafı (kapanış anında çekilir) */
+var chSnap = null;
+function takeHarborSnap() {
+  try {
+    var ox = camX, oy = camY;
+    camX = pX(8, 8); camY = pY(8, 8, 0) - 10;                  /* üç tezgâh + Kapalı Pazar kadrajda */
+    render();
+    var src = document.getElementById('game'), aw = PAPER_W - 14, ah = 84;
+    var sc = Math.min(src.width / (aw * 2.2), src.height / (ah * 2.2));
+    var cw = Math.round(aw * 2.2 * sc), chh = Math.round(ah * 2.2 * sc);
+    var col = document.createElement('canvas'); col.width = aw; col.height = ah;
+    var cg = col.getContext('2d'); cg.imageSmoothingEnabled = false;
+    cg.drawImage(src, Math.round((src.width - cw) / 2), Math.round(src.height * 0.46 - chh / 2), cw, chh, 0, 0, aw, ah);
+    var sep = document.createElement('canvas'); sep.width = aw; sep.height = ah;
+    var sg = sep.getContext('2d'); sg.drawImage(col, 0, 0);
+    var d = sg.getImageData(0, 0, aw, ah), a = d.data;
+    for (var i = 0; i < a.length; i += 4) {                    /* baskı sepyası */
+      var l = (a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11) / 255;
+      a[i] = 60 + l * 180; a[i + 1] = 48 + l * 170; a[i + 2] = 30 + l * 140;
+    }
+    sg.putImageData(d, 0, 0);
+    chSnap = { col: col, sep: sep };
+    camX = ox; camY = oy;
+  } catch (e) { chSnap = null; }
+}
+function artSnap(g, P, t, W, H) {
+  if (!chSnap) { artHarbor(g, P, t, W, H); return; }
+  g.drawImage(P === PAL_SEPIA ? chSnap.sep : chSnap.col, 0, 0, W, H);
+}
+/* ufukta devler: dev trol gemileri ve balık fabrikası, ışıkları yanar */
+function artGiants(g, P, t, W, H) {
+  var i;
+  g.fillStyle = P.sky2; g.fillRect(0, 0, W, H);
+  g.fillStyle = P.sky; for (i = 0; i < 26; i++) g.fillRect((i * 37) % W, (i * 13) % 34, 1, 1);          /* yıldızlar */
+  g.fillStyle = P.sea2; g.fillRect(0, 50, W, H - 50);
+  g.fillStyle = P.ink;                                                                                   /* fabrika */
+  g.fillRect(8, 26, 40, 24); g.fillRect(14, 12, 5, 14); g.fillRect(26, 16, 5, 10); g.fillRect(48, 34, 22, 16);
+  var glow = 0.5 + 0.5 * Math.sin(t * 2);
+  g.fillStyle = P.sun;
+  for (i = 0; i < 6; i++) if ((i + Math.floor(t * 2)) % 3) g.fillRect(12 + i * 6, 32, 2, 3);
+  g.globalAlpha = 0.4 + glow * 0.4; g.fillRect(15, 8 - Math.floor(t * 3) % 4, 3, 3); g.globalAlpha = 1;
+  for (i = 0; i < 3; i++) {                                                                              /* dev trol gemileri yaklaşır */
+    var sx = W - 20 - i * 48 - Math.min(24, t * 5), sy = 46 + i * 6 + Math.round(Math.sin(t + i) * 1);
+    g.fillStyle = P.ink; g.fillRect(sx, sy, 44, 7); g.fillRect(sx + 4, sy - 8, 22, 8); g.fillRect(sx + 30, sy - 22, 2, 22);
+    g.fillRect(sx + 32, sy - 18, 10, 1); g.fillRect(sx + 8, sy - 14, 6, 6);
+    g.fillStyle = P.aw1; g.fillRect(sx + 2, sy + 2, 40, 1);
+    g.fillStyle = P.sun; g.fillRect(sx + 6, sy - 5, 2, 2); g.fillRect(sx + 12, sy - 5, 2, 2); g.fillRect(sx + 18, sy - 5, 2, 2);
+    if (Math.sin(t * 4 + i) > 0) g.fillRect(sx + 30, sy - 23, 2, 1);
+  }
+  g.fillStyle = P.sea; for (i = 0; i < 12; i++) g.fillRect(Math.round((i * 23 + t * 6) % (W + 10)) - 5, 60 + (i * 7) % 22, 6, 1);
+  g.fillStyle = P.wood; g.fillRect(0, H - 10, 60, 4);                                                   /* bizim iskele, önde küçük */
+  g.fillStyle = P.lite; g.fillRect(40, H - 22, 5, 12); g.fillStyle = P.aw1; g.fillRect(40, H - 24, 5, 2);
+}
+var ARTS = { pier: artPier, school: artSchool, ad: artAd, dawn: artDawn, harbor: artHarbor, snap: artSnap, giants: artGiants };
+
+function drawPaper(g, sc, idx, t) {
+  var W = PAPER_W, H = PAPER_H, INK = '#2c231a', i, j;
+  g.fillStyle = '#e8dcc0'; g.fillRect(0, 0, W, H);
+  var r = seedRnd(101);                                             /* eskimiş kâğıt lekeleri */
+  for (i = 0; i < 160; i++) { g.fillStyle = r() > 0.5 ? '#ddd0b0' : '#efe5cc'; g.fillRect(Math.floor(r() * W), Math.floor(r() * H), 1 + Math.floor(r() * 2), 1); }
+  g.fillStyle = '#d3c39f'; g.fillRect(0, 0, W, 1); g.fillRect(0, H - 1, W, 1); g.fillRect(0, 0, 1, H); g.fillRect(W - 1, 0, 1, H);
+  g.fillStyle = '#cbbb96'; g.fillRect(W / 2, 0, 1, H);             /* orta katlama izi */
+  g.fillStyle = INK;
+  g.fillRect(6, 5, W - 12, 1);
+  pxText(g, lang === 'tr' ? 'LİMAN GAZETESİ' : 'HARBOR GAZETTE', W / 2, 13, 2, 2, false, INK, 'center');
+  g.fillRect(6, 30, W - 12, 2); g.fillRect(6, 43, W - 12, 1);
+  pxText(g, NM(sc.date), 8, 34, 1, 1, false, INK, 'left');
+  pxText(g, lang === 'tr' ? '25 KURUŞ' : '25 CENTS', W - 8, 34, 1, 1, false, INK, 'right');
+  /* manşet: dar ve uzun gazete harfi (yatay 1, dikey 2 kat) */
+  var lines = pxWrap(NM(sc.hl), 1, true, W - 14), lh = lines.length > 2 ? 12 : 19, sy = lines.length > 2 ? 1 : 2;
+  var hy = lines.length === 1 ? 58 : 50;
+  for (i = 0; i < lines.length; i++) { pxText(g, lines[i], W / 2, hy, 1, sy, true, INK, 'center'); hy += lh; }
+  /* resim kutusu */
+  var ax = 7, ay = 90, aw = W - 14, ah = 84;
+  g.save(); g.beginPath(); g.rect(ax, ay, aw, ah); g.clip(); g.translate(ax, ay);
+  var art = ARTS[sc.art];
+  art(g, PAL_SEPIA, t, aw, ah);
+  if (sc.art === 'harbor' || sc.art === 'snap') {                /* hayal sahnesi / limanın fotoğrafı renge bürünür */
+    var k = clamp((t - 1.2) / 2.2, 0, 1);
+    if (k > 0) { g.globalAlpha = k; art(g, PAL_COLOR, t, aw, ah); g.globalAlpha = 1; }
+  }
+  g.restore();
+  g.fillStyle = INK; g.fillRect(ax - 1, ay - 1, aw + 2, 1); g.fillRect(ax - 1, ay + ah, aw + 2, 1);
+  g.fillRect(ax - 1, ay - 1, 1, ah + 2); g.fillRect(ax + aw, ay - 1, 1, ah + 2);
+  pxText(g, NM(sc.cap), ax, ay + ah + 5, 1, 1, false, '#5a4a36', 'left');
+  /* sahte sütun yazıları */
+  var cy = ay + ah + 17, cw = Math.floor((W - 14 - 8) / 3), rr = seedRnd(11 + idx * 17);
+  for (j = 0; j < 3; j++) {
+    var cx = 7 + j * (cw + 4), yy = cy;
+    g.fillStyle = INK; g.fillRect(cx, yy, Math.floor(cw * (0.55 + rr() * 0.4)), 3); yy += 6;
+    while (yy < H - 6) {
+      var par = rr() < 0.18, lw = par ? Math.floor(cw * (0.3 + rr() * 0.4)) : cw - Math.floor(rr() * 3);
+      g.fillStyle = '#6f604b'; g.fillRect(cx, yy, lw, 1);
+      yy += par ? 5 : 3;
+    }
+    if (j < 2) { g.fillStyle = '#b6a47f'; g.fillRect(cx + cw + 1, cy, 1, H - 6 - cy); }
+  }
+}
+
+function introResize() {
+  if (!intro.cv) return;
+  var subH = Math.min(170, Math.max(120, innerHeight * 0.24));
+  var aw = innerWidth - 24, ah = innerHeight - subH - 40;
+  var sc = Math.min(aw / STAGE_W, ah / STAGE_H);
+  if (sc >= 2) sc = Math.floor(sc);
+  intro.cv.style.width = Math.round(STAGE_W * sc) + 'px';
+  intro.cv.style.height = Math.round(STAGE_H * sc) + 'px';
+}
+function openIntro(then, list) {
+  intro.then = then || null;
+  intro.list = list || INTRO;
+  intro.cv = el.introCv; intro.g = intro.cv.getContext('2d');
+  intro.cv.width = STAGE_W; intro.cv.height = STAGE_H;
+  if (!intro.pc) { intro.pc = document.createElement('canvas'); intro.pc.width = PAPER_W; intro.pc.height = PAPER_H; intro.pg = intro.pc.getContext('2d'); }
+  el.startScreen.classList.add('hidden');
+  el.introScr.classList.remove('hidden');
+  el.introSkip.textContent = T('skip');
+  el.introTap.textContent = T('tapStart');
+  introResize();
+  intro.on = true; intro.i = 0; intro.t = 0; intro.ph = 'gate'; intro.typed = 0;
+  el.introSub.textContent = ''; el.introNext.classList.add('hidden');
+  el.introGate.classList.remove('hidden');
+  el.introScr.classList.add('gate');
+  el.introDots.innerHTML = intro.list.map(function () { return '<i></i>'; }).join('');
+  syncIntroDots();
+}
+function syncIntroDots() {
+  Array.prototype.forEach.call(el.introDots.children, function (d, k) { d.className = k < intro.i ? 'd' : k === intro.i ? 'on' : ''; });
+}
+function introScene(i) {
+  intro.i = i; intro.t = 0; intro.ph = 'in'; intro.typed = 0;
+  el.introSub.textContent = ''; el.introNext.classList.add('hidden');
+  syncIntroDots();
+  noise(0.55, 0.13, { f: 500, to: 3600, q: 0.6, type: 'bandpass' });   /* vınn: dönen gazete */
+}
+function introAdvance() {
+  if (!intro.on) return;
+  ensureAudio();
+  if (intro.ph === 'gate') { musicPlay('menu'); el.introGate.classList.add('hidden'); el.introScr.classList.remove('gate'); introScene(0); return; }
+  var full = NM(intro.list[intro.i].sub);
+  if (intro.ph === 'in') { intro.t = 0.95; return; }                   /* dönmeyi atla */
+  if (intro.typed < full.length) { intro.typed = full.length; el.introSub.textContent = full; el.introNext.classList.remove('hidden'); return; }
+  if (intro.ph === 'hold') { intro.ph = 'out'; intro.out = 0; sfx.drop(); }
+}
+function closeIntro() {
+  intro.on = false; introSeen = true;
+  el.introScr.classList.add('hidden');
+  var f = intro.then; intro.then = null;
+  if (f) f(); else el.startScreen.classList.remove('hidden');
+}
+function updateIntro(dt) {
+  var g = intro.g, sc = intro.list[intro.i];
+  intro.t += dt;
+  g.imageSmoothingEnabled = false;
+  g.clearRect(0, 0, STAGE_W, STAGE_H);
+  if (intro.ph === 'gate') return;
+  var e = 1, rot = 0, s = 1, ox = 0;
+  if (intro.ph === 'in') {
+    e = clamp(intro.t / 0.9, 0, 1);
+    var q = 1 - Math.pow(1 - e, 3);
+    rot = (1 - q) * Math.PI * 5; s = 0.06 + q * 0.94;
+    if (e >= 1) { intro.ph = 'hold'; intro.t = 0; sfx.drop(); noise(0.12, 0.14, { f: 1400, to: 300 }); }
+  } else if (intro.ph === 'out') {
+    intro.out += dt;
+    var o = clamp(intro.out / 0.38, 0, 1);
+    rot = -o * 0.5; ox = -o * o * 260; s = 1 - o * 0.15;
+    if (o >= 1) { if (intro.i + 1 < intro.list.length) introScene(intro.i + 1); else { closeIntro(); return; } }
+  }
+  /* alt yazı: daktilo */
+  if (intro.ph === 'hold') {
+    var full = NM(sc.sub);
+    if (intro.typed < full.length) {
+      var prev = Math.floor(intro.typed);
+      intro.typed = Math.min(full.length, intro.typed + dt * 34);
+      if (Math.floor(intro.typed) !== prev) {
+        el.introSub.textContent = full.slice(0, Math.floor(intro.typed));
+        intro.tick++;
+        if (intro.tick % 3 === 0 && full[prev] !== ' ') tone(1500 + Math.random() * 300, 0.018, 'square', 0.05, { lp: 3000 });
+      }
+      if (intro.typed >= full.length) el.introNext.classList.remove('hidden');
+    }
+  }
+  drawPaper(intro.pg, sc, intro.i, intro.ph === 'in' ? 0 : intro.t);
+  g.save();
+  g.translate(Math.round(STAGE_W / 2 + ox), Math.round(STAGE_H / 2));
+  g.rotate(rot); g.scale(s, s);
+  g.fillStyle = 'rgba(0,0,0,.38)'; g.fillRect(-PAPER_W / 2 + 4, -PAPER_H / 2 + 5, PAPER_W, PAPER_H);
+  g.drawImage(intro.pc, -PAPER_W / 2, -PAPER_H / 2);
+  g.restore();
+}
+
+/* =========================================================
+   v0.7 — FAZ 3: LİMAN MEYDANI
+   Yönetim binaları tezgâh bölgelerinin DIŞINDA: müşteri yolunun doğusunda ayrı bir meydan.
+   1. bölgeye ahşap yaya köprüsüyle bağlanır (köprü kuyrukların kuzeyinden geçer, müşteriyle kesişmez).
+   İçinde: Personel Kulübesi (seviyeli) • Depo (kendi personeliyle) • Ticaret Merkezi • Balık Hali
+   ========================================================= */
+/* MEYDAN ve BRIDGE yukarıda (dünya verisiyle) tanımlı: manzara üretimi açılışta onları kullanır */
+var HUT = { x: 16.2, y: 0.7, w: 1.5, h: 1.2, lvl: 0, door: { x: 16.2, y: 1.8 } };
+var DEPOT = { x: 19.5, y: 1.1, w: 2.4, h: 1.8, lvl: 0, door: { x: 18.0, y: 2.4 }, shelf: {} };
+var WHALL = { x: 19.5, y: 5.0, w: 2.4, h: 1.6, built: false, door: { x: 18.0, y: 5.0 } };
+office.x = 16.3; office.y = 5.0; office.z = 0;           /* Ticaret Merkezi meydana taşındı */
+var HUT_LV = [{ c: 1500, l: 2 }, { c: 4000, l: 3 }, { c: 9000, l: 5 }, { c: 18000, l: 7 }, { c: 36000, l: 9 }];
+var DEPOT_LV = [{ c: 3000, l: 3, cap: 30 }, { c: 8000, l: 5, cap: 60 }, { c: 20000, l: 6, cap: 100 }, { c: 45000, l: 8, cap: 160 }];
+var WHALL_COST = 6000, WHALL_LV = 4;
+var DEPOT_ROLES = ['depocu', 'sevkiyat'];
+
+function onEast(x) { return x > 9.7; }
+/* köprü rotası: bölgeler ↔ meydan arasında giden çalışan önce köprüye yönelir */
+function routeVia(a, tx, ty) {
+  var aE = onEast(a.x), tE = onEast(tx);
+  if (aE === tE) return null;
+  var by = (BRIDGE.y0 + BRIDGE.y1) / 2;
+  if (aE) {
+    if (a.x > 15.3 && Math.abs(a.y - by) > 0.3) return { x: 15.8, y: by };
+    return { x: 9.0, y: by };
+  }
+  if (Math.abs(a.y - by) > 0.3 || a.x < 8.7) return { x: 9.0, y: by };
+  return { x: 15.8, y: by };
+}
+
+/* ---------- personel kulübesi ---------- */
+function hutBonus() { return HUT.lvl; }                          /* her bölgede +1 personel yeri / seviye */
+function hutNext() { return HUT.lvl < HUT_LV.length ? HUT_LV[HUT.lvl] : null; }
+
+/* ---------- depo ---------- */
+function depotCap() { return DEPOT.lvl ? DEPOT_LV[DEPOT.lvl - 1].cap : 0; }
+function depotCount() { var n = 0; for (var k in DEPOT.shelf) n += DEPOT.shelf[k]; return n; }
+function depotFree() { return Math.max(0, depotCap() - depotCount()); }
+function depotNext() { return DEPOT.lvl < DEPOT_LV.length ? DEPOT_LV[DEPOT.lvl] : null; }
+function depotStaffCap() { return DEPOT.lvl; }
+function depotStaff() { var n = 0; for (var i = 0; i < workers.length; i++) if (DEPOT_ROLES.indexOf(workers[i].role) >= 0) n++; return n; }
+function keyItem(k) { var p = k.split('|'); return { k: p[0], f: p[1] }; }
+function depotPut(it) { var k = itemKey(it); DEPOT.shelf[k] = (DEPOT.shelf[k] || 0) + 1; }
+function depotTake(k) {
+  if (!DEPOT.shelf[k]) return null;
+  if (--DEPOT.shelf[k] <= 0) delete DEPOT.shelf[k];
+  return keyItem(k);
+}
+function atDoor(a, d, r) { return dist2(a.x, a.y, d.x, d.y) < (r || 1.0); }
+/* rafa koy (oyuncu ya da depo hamalı) */
+function iDepotIn(a, dt) {
+  if (!DEPOT.lvl || depotFree() <= 0 || !hasCarry(a, isGoods)) return false;
+  return tryTake(a, dt, function () {
+    var it = popCarry(a, isGoods);
+    depotPut(it);
+    fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), DEPOT.x, DEPOT.y, 12, it, 0.24); sfx.drop();
+  });
+}
+/* raftan al: belirli türden, en çok n adet */
+function iDepotOut(a, k, n, dt) {
+  if (!DEPOT.shelf[k]) return false;
+  var have = 0;
+  for (var i = 0; i < a.carry.length; i++) if (itemKey(a.carry[i]) === k) have++;
+  if (have >= n) return false;
+  var probe = keyItem(k);
+  if (!fits(a, probe)) return false;
+  return tryTake(a, dt, function () {
+    var it = depotTake(k); if (!it) return;
+    a.carry.push(it);
+    fly(DEPOT.x, DEPOT.y, 12, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.24); sfx.pick();
+  });
+}
+/* stoğu azalan bir tezgâh için depoda uygun ürün var mı */
+function depotRefillTarget(w) {
+  var best = null;
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (AREAS[c.z].locked || !c.open || !c.fish || c.buffer.length >= 4) continue;
+    var taken = false;
+    for (var j = 0; j < workers.length; j++) if (workers[j] !== w && workers[j].tc === c && workers[j].task === 'refill') taken = true;
+    if (taken) continue;
+    for (var k in DEPOT.shelf) {
+      if (!acceptsAt(c, keyItem(k))) continue;
+      if (!best || c.buffer.length < best.c.buffer.length) best = { c: c, k: k };
+    }
+  }
+  return best;
+}
+/* tezgâhı zaten dolu olan ürün "fazla"dır → depoya */
+function isSurplus(it) {
+  if (!isGoods(it)) return false;
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (AREAS[c.z].locked) continue;
+    if (acceptsAt(c, it) && c.buffer.length < counterMax(c) - 2) return false;
+  }
+  return true;
+}
+function surplusMat(w) {
+  var mats = [], i, best = null, bd = 1e9;
+  for (i = 0; i < tables.length; i++) if (!AREAS[tables[i].z].locked) mats.push(tables[i].mat);
+  if (!AREAS[smoker.z].locked) mats.push(smoker.mat);
+  for (i = 0; i < mats.length; i++) {
+    var has = false;
+    for (var j = 0; j < mats[i].items.length; j++) if (isSurplus(mats[i].items[j])) { has = true; break; }
+    if (!has) continue;
+    var d = dist2(w.x, w.y, mats[i].x, mats[i].y);
+    if (d < bd) { bd = d; best = mats[i]; }
+  }
+  return best;
+}
+function idleAtDepot(w, sp, dt) { goTo(w, DEPOT.door.x - 0.4 + (w.name.length % 3) * 0.4, DEPOT.door.y + 0.9, sp, dt, 0.6); }
+/* Depo Hamalı: fazlayı hasırlardan depoya taşır; stoğu azalan tezgâhı depodan besler.
+   Her iş iki adımlı: 'load' (taşıyabildiği kadar yükle) → 'drop' (götür bırak). Tek ürünle yola çıkmaz. */
+function carryKeyCount(a, k) { var n = 0; for (var i = 0; i < a.carry.length; i++) if (itemKey(a.carry[i]) === k) n++; return n; }
+function aiDepocu(w, sp, dt) {
+  if (!DEPOT.lvl) { idleAtDepot(w, sp, dt); return; }
+  var full = carryW(w) >= ROLES.depocu.cap - 0.5;
+  if (w.task === 'refill') {
+    var c = w.tc;
+    if (!c || counters.indexOf(c) < 0 || !c.open) { w.task = hasCarry(w, isGoods) ? 'store' : null; w.mode = 'drop'; return; }
+    if (w.mode === 'load') {
+      if (goTo(w, DEPOT.door.x, DEPOT.door.y, sp, dt, 0.7)) {
+        var room = counterMax(c) - c.buffer.length;
+        var want = Math.min(8, Math.max(1, room));
+        if (full || !DEPOT.shelf[w.k] || carryKeyCount(w, w.k) >= want || !iDepotOut(w, w.k, want, dt)) w.mode = 'drop';
+      }
+      return;
+    }
+    if (!hasCarry(w, isGoods)) { w.task = null; return; }
+    if (goTo(w, c.x - 0.5, c.y - 0.6, sp, dt, 1.0)) { if (!iDropCounter(w, c, dt)) { w.task = 'store'; w.mode = 'drop'; } }
+    return;
+  }
+  if (w.task === 'store') {
+    if (w.mode === 'load') {
+      var m = w.mat;
+      if (m && !full && carryW(w) < depotFree()) {
+        if (goTo(w, m.x, m.y, sp, dt, 0.8)) { if (!iPickMat(w, m, dt, isSurplus)) w.mode = 'drop'; }
+        return;
+      }
+      w.mode = 'drop';
+    }
+    if (!hasCarry(w, isGoods)) { w.task = null; w.mat = null; return; }
+    if (depotFree() <= 0) { idleAtDepot(w, sp, dt); return; }
+    if (goTo(w, DEPOT.door.x, DEPOT.door.y, sp, dt, 0.7)) iDepotIn(w, dt);
+    return;
+  }
+  /* yeni iş seç */
+  if (hasCarry(w, isGoods)) { w.task = 'store'; w.mode = 'drop'; return; }
+  var need = depotRefillTarget(w);
+  if (need) { w.task = 'refill'; w.tc = need.c; w.k = need.k; w.mode = 'load'; return; }
+  var m2 = depotFree() > 0 ? surplusMat(w) : null;
+  if (m2) { w.task = 'store'; w.mat = m2; w.mode = 'load'; return; }
+  idleAtDepot(w, sp, dt);
+}
+/* Sevkiyatçı: ticaret kontratlarının ürününü depodan alıp Ticaret Merkezi'ne teslim eder */
+function contractKeyInDepot() {
+  for (var k in DEPOT.shelf) if (contractWants(keyItem(k))) return k;
+  return null;
+}
+function aiSevkiyat(w, sp, dt) {
+  var live = DEPOT.lvl && officeBuilt() && M.active.length;
+  if (hasCarry(w, isGoods)) {
+    var any = false;
+    if (live) for (var i = 0; i < w.carry.length; i++) if (isGoods(w.carry[i]) && contractWants(w.carry[i])) { any = true; break; }
+    if (any) { if (goTo(w, office.x, office.y + 1.1, sp, dt, 1.0)) iDeliverContract(w, dt); return; }
+    if (DEPOT.lvl && depotFree() > 0) { if (goTo(w, DEPOT.door.x, DEPOT.door.y, sp, dt, 0.7)) iDepotIn(w, dt); return; }
+    idleAtDepot(w, sp, dt); return;
+  }
+  var k = live ? contractKeyInDepot() : null;
+  if (k) {
+    var ct = contractWants(keyItem(k));
+    if (goTo(w, DEPOT.door.x, DEPOT.door.y, sp, dt, 0.7)) iDepotOut(w, k, Math.max(1, ct.need - ct.got), dt);
+    return;
+  }
+  idleAtDepot(w, sp, dt);
+}
+
+/* ---------- Balık Hali (meydan): depodaki malı günlük fiyatla sat / toptan al ---------- */
+function halProducts() {
+  var out = [];
+  for (var i = 0; i < LINES.length; i++) {
+    var f = LINES[i].f;
+    if (!fishReady(f)) continue;
+    if (out.indexOf('fileto|' + f) < 0) out.push('fileto|' + f);
+    if (canProcess('fume', f) && out.indexOf('fume|' + f) < 0) out.push('fume|' + f);
+  }
+  for (var k in DEPOT.shelf) if (out.indexOf(k) < 0) out.push(k);
+  return out;
+}
+function halMul(k) {                                   /* güne ve ürüne bağlı ±%25 dalgalanma */
+  var h = day.n * 131;
+  for (var i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0;
+  return 0.78 + (h % 1000) / 1000 * 0.47;
+}
+function halSell(k) { var it = keyItem(k); return Math.max(1, Math.round(prodValue(it.k, it.f) * 0.85 * halMul(k))); }
+function halBuy(k) { var it = keyItem(k); return Math.max(1, Math.round(prodValue(it.k, it.f) * 1.3 * halMul(k))); }
+function openHal() {
+  if (!WHALL.built) return;
+  renderHal();
+  el.halScr.classList.remove('hidden'); syncPause(); sfx.tap();
+}
+function closeHal() { el.halScr.classList.add('hidden'); syncPause(); }
+function renderHal() {
+  el.halTitle.textContent = T('whall');
+  el.halSub.textContent = T('halSub', { d: day.n, a: depotCount(), b: depotCap() });
+  var h = '', list = halProducts();
+  for (var i = 0; i < list.length; i++) {
+    var k = list[i], it = keyItem(k), n = DEPOT.shelf[k] || 0, m = halMul(k);
+    var trend = m > 1.1 ? '<span class="up">▲</span>' : m < 0.9 ? '<span class="dn">▼</span>' : '<span class="fl">•</span>';
+    h += '<div class="trow"><div class="ic">' + FISH[it.f].ic + '</div>' +
+      '<div class="nm">' + NM(FISH[it.f].n) + ' ' + T(it.k === 'fume' ? 'kFume' : 'kFileto') + ' ' + trend +
+      '<small>' + T('halRow', { n: n, s: money(halSell(k)), b: money(halBuy(k)) }) + '</small></div>' +
+      '<div class="stp"><button class="hb" data-a="sell" data-k="' + k + '" data-n="5"' + (n ? '' : ' disabled') + '>' + T('halSell5') + '</button>' +
+      '<button class="hb" data-a="sell" data-k="' + k + '" data-n="999"' + (n ? '' : ' disabled') + '>' + T('halSellAll') + '</button>' +
+      '<button class="hb b" data-a="buy" data-k="' + k + '" data-n="5">' + T('halBuy5') + '</button></div></div>';
+  }
+  el.halRows.innerHTML = PX(h || '<div class="empty">' + T('halEmpty') + '</div>');
+  Array.prototype.forEach.call(el.halRows.querySelectorAll('.hb'), function (b) {
+    b.onclick = function () {
+      var k = b.dataset.k, n = parseInt(b.dataset.n, 10), i2, got = 0;
+      if (b.dataset.a === 'sell') {
+        n = Math.min(n, DEPOT.shelf[k] || 0);
+        for (i2 = 0; i2 < n; i2++) if (depotTake(k)) got += halSell(k);
+        if (got) { S.cash += got; earn(got); noteDayIncome(got); sfx.coin(); toast(T('halSold', { n: n, v: money(got) })); }
+      } else {
+        n = Math.min(n, depotFree());
+        var cost = halBuy(k) * n;
+        if (!n) { toast(T('depotFull')); sfx.bad(); return; }
+        if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return; }
+        S.cash -= cost;
+        for (i2 = 0; i2 < n; i2++) depotPut(keyItem(k));
+        sfx.buy(); toast(T('halBought', { n: n, v: money(cost) }));
+      }
+      save(); renderHal();
+    };
+  });
+}
+
+/* ---------- meydan binaları: kurma / yükseltme ---------- */
+/* YAPI › Meydan kartları */
+function meydanCards(out) {
+  var lvNow = repLevel(), nx;
+  nx = hutNext();
+  out.push({ id: 'mhut', ic: '🏚️', t: HUT.lvl ? T('hutName') + '  ' + T('level') + HUT.lvl + (nx ? '→' + (HUT.lvl + 1) : '') : T('hutName'),
+    s: T('hutD', { n: HUT.lvl }), cost: nx ? upCost(nx.c) : 0, owned: !nx, blocked: nx && lvNow < nx.l, why: nx ? T('needLv', { l: nx.l }) : '',
+    buyTxt: HUT.lvl ? T('upgrade') : T('build'), go: function () { HUT.lvl++; sfx.build(); addPuff(HUT.x, HUT.y, '#ffc94a'); toast(T(HUT.lvl === 1 ? 'hutBuilt' : 'hutUp', { l: HUT.lvl })); } });
+  nx = depotNext();
+  out.push({ id: 'mdep', ic: '📦', t: DEPOT.lvl ? T('depotName') + '  ' + T('level') + DEPOT.lvl + (nx ? '→' + (DEPOT.lvl + 1) : '') : T('depotName'),
+    s: DEPOT.lvl ? T('depotD2', { a: depotCount(), b: depotCap(), n: nx ? nx.cap : depotCap() }) : T('depotD'),
+    cost: nx ? upCost(nx.c) : 0, owned: !nx, blocked: nx && lvNow < nx.l, why: nx ? T('needLv', { l: nx.l }) : '',
+    buyTxt: DEPOT.lvl ? T('upgrade') : T('build'), go: function () { DEPOT.lvl++; sfx.build(); addPuff(DEPOT.x, DEPOT.y, '#ffc94a'); toast(T(DEPOT.lvl === 1 ? 'depotBuilt' : 'depotUp', { l: DEPOT.lvl, c: depotCap() })); } });
+  if (DEPOT.lvl) {
+    var full = depotStaff() >= depotStaffCap();
+    DEPOT_ROLES.forEach(function (r) {
+      out.push({ id: 'mr' + r, ic: ROLES[r].icon, t: NM(ROLES[r].n) + ' (' + depotStaff() + '/' + depotStaffCap() + ')',
+        s: NM(ROLES[r].d) + ' • ' + money(ROLES[r].wage) + perMin(), cost: hireCost(r, -1), blocked: full, why: T('depotStaffFull'),
+        go: function () { hire(r, false, -1); save(); } });
+    });
+  }
+  out.push({ id: 'mhal', ic: '🏪', t: T('whall'), s: T('whallD'), cost: upCost(WHALL_COST), owned: WHALL.built,
+    blocked: !WHALL.built && (!DEPOT.lvl || lvNow < WHALL_LV), why: !DEPOT.lvl ? T('needDepot') : T('needLv', { l: WHALL_LV }),
+    buyTxt: T('build'), go: function () { WHALL.built = true; sfx.build(); addPuff(WHALL.x, WHALL.y, '#ffc94a'); toast(T('whallBuilt')); } });
+  if (!officeBuilt()) out.push({ id: 'moff', ic: '🏛️', t: T('office'), s: T('officeInMeydan'), pick: T('goProj'),
+    go: function () { openBar('proj'); } });
+}
+
+/* ---------- çizim ---------- */
+/* hizmet sahası zemini: sıkıştırılmış toprak + taş bordür, parseller arasında yürüyüş yolu */
+function drawYardGround() {
+  var r = SERVYARD, q = YARDPATH;
+  isoQuad(q.x0, q.y0, q.x1 - q.x0, q.y1 - q.y0, 0, '#b9ad92');
+  isoQuad(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, 0, '#c2b08a');
+  ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = '#a8966f';
+  for (var k = 0; k < 40; k++) { var gx = r.x0 + ((k * 0.618) % 1) * (r.x1 - r.x0), gy = r.y0 + ((k * 0.377) % 1) * (r.y1 - r.y0); px(R(pX(gx, gy)), R(pY(gx, gy, 0)), 2, 1, '#a8966f'); }
+  ctx.restore();
+  ctx.save(); ctx.strokeStyle = '#8a7a5c'; ctx.lineWidth = 2; ctx.beginPath();
+  ctx.moveTo(R(pX(r.x0, r.y0)), R(pY(r.x0, r.y0, 0))); ctx.lineTo(R(pX(r.x1, r.y0)), R(pY(r.x1, r.y0, 0)));
+  ctx.lineTo(R(pX(r.x1, r.y1)), R(pY(r.x1, r.y1, 0))); ctx.lineTo(R(pX(r.x0, r.y1)), R(pY(r.x0, r.y1, 0))); ctx.closePath(); ctx.stroke(); ctx.restore();
+  var gx0 = 20.0, gy0 = r.y1 - 0.3;                 /* saha adı: güney kenarda, önünde/arkasında bina yok */
+  if (dist2(player.x, player.y, gx0, gy0) < 90) uiText(gx0, gy0, 2, T('yardName'), PAL.gold, 7);
+}
+function drawMeydanGround() {
+  var r = MEYDAN;
+  isoQuad(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, 0, '#b9ad92');
+  ctx.save(); ctx.globalAlpha = 0.45; ctx.strokeStyle = '#9c9079'; ctx.lineWidth = 1;
+  for (var k = r.y0 + 0.6; k < r.y1; k += 0.6) {
+    ctx.beginPath(); ctx.moveTo(R(pX(r.x0, k)), R(pY(r.x0, k, 0))); ctx.lineTo(R(pX(r.x1, k)), R(pY(r.x1, k, 0))); ctx.stroke();
+  }
+  for (var j = r.x0 + 0.6; j < r.x1; j += 0.6) {
+    ctx.beginPath(); ctx.moveTo(R(pX(j, r.y0)), R(pY(j, r.y0, 0))); ctx.lineTo(R(pX(j, r.y1)), R(pY(j, r.y1, 0))); ctx.stroke();
+  }
+  ctx.restore();
+  /* bordür */
+  ctx.save(); ctx.strokeStyle = '#7d725c'; ctx.lineWidth = 2; ctx.beginPath();
+  ctx.moveTo(R(pX(r.x0, r.y0)), R(pY(r.x0, r.y0, 0))); ctx.lineTo(R(pX(r.x1, r.y0)), R(pY(r.x1, r.y0, 0)));
+  ctx.lineTo(R(pX(r.x1, r.y1)), R(pY(r.x1, r.y1, 0))); ctx.lineTo(R(pX(r.x0, r.y1)), R(pY(r.x0, r.y1, 0)));
+  ctx.closePath(); ctx.stroke(); ctx.restore();
+  /* yaya köprüsü: yolun üstünden ahşap tahta */
+  var b = BRIDGE;
+  isoQuad(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0, 1, '#8a5a33');
+  ctx.save(); ctx.strokeStyle = '#6a4326'; ctx.lineWidth = 1;
+  for (var q = b.x0 + 0.35; q < b.x1; q += 0.35) {
+    ctx.beginPath(); ctx.moveTo(R(pX(q, b.y0)), R(pY(q, b.y0, 1))); ctx.lineTo(R(pX(q, b.y1)), R(pY(q, b.y1, 1))); ctx.stroke();
+  }
+  ctx.strokeStyle = '#4a2f1c'; ctx.lineWidth = 1;
+  [b.y0, b.y1].forEach(function (yy) {                 /* korkuluk */
+    ctx.beginPath(); ctx.moveTo(R(pX(b.x0, yy)), R(pY(b.x0, yy, 6))); ctx.lineTo(R(pX(b.x1, yy)), R(pY(b.x1, yy, 6))); ctx.stroke();
+    for (var p2 = b.x0; p2 <= b.x1; p2 += 1.2) px(R(pX(p2, yy)), R(pY(p2, yy, 6)), 1, 5, '#4a2f1c');
+  });
+  ctx.restore();
+}
+function plotOutline(o, label, col) {
+  var x = o.x - o.w / 2, y = o.y - o.h / 2;
+  ctx.save(); ctx.setLineDash([3, 3]); ctx.lineDashOffset = -gameT * 6;
+  ctx.strokeStyle = col || '#c9a15e'; ctx.lineWidth = 1; ctx.beginPath();
+  ctx.moveTo(R(pX(x, y)), R(pY(x, y, 0))); ctx.lineTo(R(pX(x + o.w, y)), R(pY(x + o.w, y, 0)));
+  ctx.lineTo(R(pX(x + o.w, y + o.h)), R(pY(x + o.w, y + o.h, 0))); ctx.lineTo(R(pX(x, y + o.h)), R(pY(x, y + o.h, 0)));
+  ctx.closePath(); ctx.stroke(); ctx.restore();
+  if (dist2(player.x, player.y, o.x, o.y) < 30) uiLabel(o.x, o.y, 14, label, '#ffc94a', 0.85);
+  /* kurulmamış parselde eski püskü malzeme: bina kurulunca kalkar */
+  drawJunk({ x: o.x - 0.35, y: o.y - 0.1, t: 'tahta', v: 0.2 });
+  drawJunk({ x: o.x + 0.45, y: o.y + 0.25, t: o.w > 2 ? 'varil' : 'kasa', v: 0.7 });
+}
+function drawHut() {
+  var o = HUT;
+  if (!o.lvl) { plotOutline(o, '🏚️ ' + T('hutName') + ' • ' + T('buildAt')); return; }
+  var x = o.x - o.w / 2, y = o.y - o.h / 2, sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0));
+  shadow(o.x, o.y, 1.0);
+  isoBox(x, y, o.w, o.h, 0, 16 + o.lvl * 2, '#d2a468', '#7a4e2a', '#9a6836');
+  wallWood(sx, sy, 26, 14 + o.lvl * 2, '#9a6836');
+  roofTile(sx, sy - 16 - o.lvl * 2, 32, o.lvl);
+  px(sx - 3, sy - 9, 6, 9, '#4a2f1c'); px(sx + 1, sy - 5, 1, 1, PAL.brass);
+  windowTR(sx + 6, sy - 12, 5, 4, true);
+  /* v1.5: personel kulübesinin kimliği — kapı önünde sıra, çamaşır ipinde önlükler, baret askısı */
+  isoBox(o.x - 0.5, o.y + o.h / 2 + 0.12, 0.7, 0.14, 0, 3, PAL.woodLite, PAL.woodDark, PAL.wood);
+  var lx0 = o.x + o.w / 2 + 0.15, ly0 = o.y - o.h / 2, ly1 = o.y + o.h / 2;
+  vline(lx0, ly0, 0, 14, PAL.woodDark); vline(lx0, ly1, 0, 14, PAL.woodDark); hline(lx0, ly0, lx0, ly1, 13, '#d8d2c4');
+  for (var cl = 0; cl < Math.min(4, o.lvl + 1); cl++) { var cy2 = ly0 + 0.2 + cl * 0.25; wallQ(lx0, cy2, lx0, cy2 + 0.14, 8, 13, ['#e8762b', '#3f6fb0', '#f4f0e4', '#c8553d'][cl]); }
+  if (o.lvl >= 3) { px(sx - 14, sy - 12, 5, 2, '#e6b93a'); px(sx - 14, sy - 16, 5, 2, '#e6b93a'); px(sx - 15, sy - 14, 1, 8, PAL.woodDark); }
+  labelAt(o.x, o.y, 34 + o.lvl * 2, T('hutName') + ' ' + T('level') + o.lvl, '#ffd9a8', '👷');
+}
+function drawDepot() {
+  var o = DEPOT;
+  if (!o.lvl) { plotOutline(o, '📦 ' + T('depotName') + ' • ' + T('buildAt')); return; }
+  var x = o.x - o.w / 2, y = o.y - o.h / 2, sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0));
+  shadow(o.x, o.y, 1.5);
+  isoBox(x, y, o.w, o.h, 0, 22 + o.lvl * 2, '#c9c2b0', '#8a8474', '#a8a18f');
+  roofZinc(sx, sy - 22 - o.lvl * 2, 50, o.lvl);
+  /* sürgülü kapı */
+  px(sx - 14, sy - 16, 12, 16, '#3c4650'); px(sx - 14, sy - 16, 12, 1, '#5d6a75');
+  for (var i = 0; i < 4; i++) px(sx - 13 + i * 3, sy - 15, 1, 14, '#2c343c');
+  /* raf doluluğu: kapının yanında sandık yığını */
+  var fillN = Math.min(8, Math.ceil(depotCount() / Math.max(1, depotCap()) * 8));
+  for (var c = 0; c < fillN; c++) px(sx + 2 + (c % 4) * 5, sy - 5 - Math.floor(c / 4) * 5, 4, 4, c % 2 ? '#c9a15e' : '#a8793e');
+  labelAt(o.x, o.y, 40 + o.lvl * 2, T('depotName') + ' ' + depotCount() + '/' + depotCap(), '#ffd9a8', '📦');
+}
+function drawWhall() {
+  var o = WHALL;
+  if (!o.built) { plotOutline(o, '🏪 ' + T('whall') + ' • ' + T('buildAt')); return; }
+  var x = o.x - o.w / 2, y = o.y - o.h / 2, sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0));
+  shadow(o.x, o.y, 1.4);
+  /* v1.5: çelik direkli toptancı hal sundurması, testere dişi çatı (Mezat'ın taş revakından ayrı) */
+  isoQuad(x, y, o.w, o.h, 1, '#9d968a');
+  for (var k = 0; k < 6; k++) crate(x + 0.4 + (k % 3) * 0.3, y + 0.5 + Math.floor(k / 3) * 0.35, 1, k % 2 ? '#8a5a33' : '#a9743f');
+  isoBox(x + o.w - 0.6, y + 0.3, 0.3, 0.3, 1, 7, '#8b949c', '#5d666e', '#6c767d');            /* hal kantarı */
+  px(R(pX(x + o.w - 0.45, y + 0.6)) - 2, R(pY(x + o.w - 0.45, y + 0.6, 10)), 5, 3, '#cfe6a8');
+  var posts = [[x, y + o.h], [x + o.w / 2, y + o.h], [x + o.w, y + o.h], [x + o.w, y + o.h / 2], [x + o.w, y]];
+  posts.forEach(function (c2) { var cx = R(pX(c2[0], c2[1])), cy = R(pY(c2[0], c2[1], 20)); px(cx - 1, cy, 3, 20, '#4a5663'); px(cx - 2, cy, 5, 1, '#6c7a88'); });
+  /* tonoz (kemerli) çinko çatı: y boyunca yay, uçta kemerli alın camı */
+  var VN = 8, vz = [], vy = [], kk, rx0 = x - 0.08, rx1 = x + o.w + 0.08;
+  for (kk = 0; kk <= VN; kk++) { vy.push(y - 0.08 + (o.h + 0.16) * kk / VN); vz.push(20 + 9 * Math.sin(Math.PI * kk / VN)); }
+  quad(vy.map(function (yy, q) { return [pX(rx1, yy), pY(rx1, yy, vz[q])]; }).concat([[pX(rx1, vy[VN]), pY(rx1, vy[VN], 20)], [pX(rx1, vy[0]), pY(rx1, vy[0], 20)]]), '#9fbfcc');
+  for (kk = 1; kk < VN; kk++) vline(rx1, vy[kk], 20, vz[kk], '#4a5663');
+  for (kk = 0; kk < VN; kk++) roofPlane([[rx0, vy[kk], vz[kk]], [rx1, vy[kk], vz[kk]], [rx1, vy[kk + 1], vz[kk + 1]], [rx0, vy[kk + 1], vz[kk + 1]]], shade('#7a838a', kk < VN / 2 ? -14 + kk * 4 : 10 - (kk - VN / 2) * 5), null, 0);
+  for (kk = 1; kk < 6; kk++) { var rxk = rx0 + (rx1 - rx0) * kk / 6; ctx.strokeStyle = '#59626a'; ctx.beginPath(); for (var q2 = 0; q2 <= VN; q2++) { var X2 = R(pX(rxk, vy[q2])), Y2 = R(pY(rxk, vy[q2], vz[q2])); if (q2) ctx.lineTo(X2, Y2); else ctx.moveTo(X2, Y2); } ctx.stroke(); }
+  wallQ(x + 0.7, y + o.h, x + 1.7, y + o.h, 13, 18, '#1f4e7a');                          /* HAL levhası: balık */
+  var hx2 = R(pX(x + 1.2, y + o.h)), hy2 = R(pY(x + 1.2, y + o.h, 17));
+  px(hx2 - 4, hy2, 7, 3, '#ffffff'); px(hx2 + 3, hy2 - 1, 2, 5, '#ffffff'); px(hx2 - 3, hy2 + 1, 1, 1, '#1f4e7a');
+  labelAt(o.x, o.y, 30, T('whall'), '#ffd9a8', '🏪');
+}
+function drawMeydanSign() {
+  var sx = R(pX(15.5, 1.4)), sy = R(pY(15.5, 1.4, 0));
+  px(sx, sy - 14, 1, 14, '#4a2f1c');
+  px(sx - 10, sy - 18, 22, 7, '#8a5a33'); px(sx - 9, sy - 17, 20, 5, '#a8734a');
+  if (dist2(player.x, player.y, 15.5, 1.4) < 40) uiText(15.5, 1.4, 22, T('meydan'), PAL.gold, 7);
+}
+function pushMeydan(push) {
+  push(HUT.x + HUT.y, drawHut);
+  push(DEPOT.x + DEPOT.y, drawDepot);
+  push(WHALL.x + WHALL.y, drawWhall);
+  push(15.5 + 1.4, drawMeydanSign);
+}
+/* meydan kapıları: kulübe → personel paneli, hal → hal paneli (düğme), depo → oyuncu malı rafa koyar */
+function syncMeydanBtn() {
+  var b = el.actBtn, k = null;
+  if (!barTab && S.started) {
+    if (HUT.lvl && atDoor(player, HUT.door, 1.3)) k = 'hut';
+    else if (WHALL.built && atDoor(player, WHALL.door, 1.4)) k = 'hal';
+  }
+  b.classList.toggle('hidden', !k);
+  if (k && b.dataset.k !== k + lang) { b.dataset.k = k + lang; b.innerHTML = PX(k === 'hut' ? '👷 ' + T('hutBtn') : '🏪 ' + T('halBtn')); }
+  b.dataset.a = k || '';
+}
+
+/* =========================================================
+   v0.9 — ÖZEL İSİMLİ MÜŞTERİLER
+   Yeni ekonomi/sipariş mekaniği DEĞİL: mevcut tezgâh sistemine karakter ve yaşam hissi katar.
+   Her gün 2 özel müşteri: 1.si birkaç normal müşteriden sonra kuyruğa katılır, 2.si kapanışa yakın
+   "Özel bir müşteri geliyor..." bildiriminden sonra gelir; kapanış onun işi bitince devam eder.
+   Havuz ilk aşamada 50 kişilik planlanır; şu an tanımlı olanlar aşağıda (yeni kişi = diziye bir satır).
+   ========================================================= */
+/* v1.1: karakterler ayrı, elle düzenlenebilir dosyada: specials.js (window.BT_SPECIALS).
+   Burada yalnız doğrulanır/tamamlanır: eksik alan varsayılanla dolar, hatalı satır atlanır. */
+function specLang(v, d) {
+  if (v === undefined || v === null || v === '') return d;
+  if (typeof v === 'string') return { tr: v, en: v };
+  return { tr: String(v.tr || v.en || ''), en: String(v.en || v.tr || '') };
+}
+function specNum(v, d, lo, hi) { v = +v; return isFinite(v) ? clamp(v, lo, hi) : d; }
+/* v1.3 — özel müşteri ses efektleri: kısa, hafif, karakteri anımsatan (ayarlardaki sese bağlı) */
+var SPEC_SFX = {
+  hmm:     function () { melody([[220, 0.14, 0], [262, 0.18, 0.16]], 'triangle', 0.2, 1200); },
+  chime:   function () { melody([[1047, 0.1, 0], [1319, 0.1, 0.08], [1568, 0.18, 0.16]], 'sine', 0.14, 4000); },
+  whistle: function () { tone(900, 0.22, 'sine', 0.12, { to: 1500 }); tone(1500, 0.18, 'sine', 0.1, { at: 0.26, to: 1100 }); },
+  bell:    function () { melody([[1760, 0.12, 0], [1760, 0.16, 0.14]], 'sine', 0.12, 5000); },
+  kiss:    function () { tone(1200, 0.08, 'sine', 0.13, { to: 2100 }); tone(1500, 0.06, 'sine', 0.08, { at: 0.1, to: 2400 }); },
+  guitar:  function () { melody([[196, 0.3, 0], [247, 0.3, 0.07], [294, 0.3, 0.14], [392, 0.45, 0.21]], 'triangle', 0.18, 1800); },
+  sing:    function () { tone(440, 0.34, 'sine', 0.12, { to: 466 }); tone(523, 0.42, 'sine', 0.12, { at: 0.34, to: 494 }); },
+  eyo:     function () { melody([[392, 0.22, 0], [523, 0.34, 0.24]], 'triangle', 0.16, 2200); },
+  laugh:   function () { melody([[330, 0.07, 0], [300, 0.07, 0.11], [270, 0.1, 0.22]], 'square', 0.1, 1100); },
+  sigh:    function () { tone(420, 0.5, 'triangle', 0.13, { to: 220, atk: 0.08 }); },
+  kick:    function () { noise(0.12, 0.12, { f: 2400, to: 500 }); tone(620, 0.16, 'square', 0.1, { to: 280, lp: 1400 }); },
+  robot:   function () { melody([[220, 0.08, 0], [220, 0.08, 0.1], [165, 0.14, 0.2]], 'square', 0.1, 900); },
+  gull:    function () { tone(1600, 0.16, 'sawtooth', 0.07, { to: 1100, lp: 2200 }); tone(1500, 0.2, 'sawtooth', 0.06, { at: 0.2, to: 1000, lp: 2200 }); },
+  parrot:  function () { tone(1800, 0.07, 'square', 0.07, { to: 2500, lp: 3000 }); tone(1900, 0.08, 'square', 0.07, { at: 0.1, to: 2600, lp: 3000 }); },
+  meow:    function () { tone(650, 0.14, 'sine', 0.12, { to: 950 }); tone(950, 0.2, 'sine', 0.1, { at: 0.14, to: 560 }); },
+  camera:  function () { noise(0.03, 0.14, { f: 5000, type: 'highpass' }); noise(0.03, 0.12, { f: 5000, type: 'highpass', at: 0.12 }); },
+  cash:    function () { melody([[1319, 0.06, 0], [1760, 0.12, 0.06]], 'triangle', 0.14, 4000); },
+  drum:    function () { tone(110, 0.14, 'sine', 0.2, { to: 60 }); tone(110, 0.14, 'sine', 0.18, { at: 0.18, to: 60 }); },
+  sizzle:  function () { noise(0.4, 0.06, { f: 4000, type: 'highpass' }); },
+  fanfare: function () { melody([[523, 0.08, 0], [659, 0.08, 0.08], [784, 0.2, 0.16]], 'square', 0.1, 2000); }
+};
+function specSfx(sp) { var f = sp && SPEC_SFX[sp.sfx]; if (f) try { f(); } catch (e) { } }
+function normSpecials(list) {
+  var out = [], seen = {};
+  (Array.isArray(list) ? list : []).forEach(function (s) {
+    if (!s || typeof s !== 'object' || !s.id || !s.n || seen[s.id]) return;
+    seen[s.id] = 1;
+    var q = Array.isArray(s.qty) && s.qty.length === 2 ? [specNum(s.qty[0], 3, 1, 20) | 0, specNum(s.qty[1], 5, 1, 20) | 0] : [3, 5];
+    if (q[1] < q[0]) q[1] = q[0];
+    out.push({
+      id: String(s.id), n: (function (nn) { return { tr: nn.tr.slice(0, 24), en: nn.en.slice(0, 24) }; })(specLang(s.n, { tr: String(s.id), en: String(s.id) })),
+      fav: FISH[s.fav] ? s.fav : 'hamsi', sfx: SPEC_SFX[s.sfx] ? s.sfx : '',
+      job: specLang(s.job, { tr: 'Müşteri', en: 'Customer' }), trait: specLang(s.trait, null),
+      hi: specLang(s.hi, { tr: 'Merhaba!', en: 'Hello!' }), bye: specLang(s.bye, { tr: 'Teşekkürler!', en: 'Thanks!' }),
+      look: s.look && typeof s.look === 'object' ? s.look : {},
+      qty: q, pat: specNum(s.pat, 150, 40, 600), tip: specNum(s.tip, 1.1, 0.5, 3), rep: specNum(s.rep, 3, 0, 20) | 0,
+      fx: typeof s.fx === 'string' ? s.fx.slice(0, 2) : '', fxc: s.fxc || '#ffd76a', moon: !!s.moon, dance: !!s.dance
+    });
+  });
+  return out;
+}
+var SPECIALS = normSpecials(window.BT_SPECIALS);
+var SPEC_RETURN = 14;             /* v1.3: tanıdık özel müşteri kaç günde bir yeniden gelir */
+var SPEC_NORMALS = 3;              /* 1. özel müşteriden önce gelen normal müşteri sayısı */
+var SPEC2_AT = 42;                 /* 2. özel müşteri: gün bitmeden bu kadar saniye önce bildirimle */
+function specById(id) { for (var i = 0; i < SPECIALS.length; i++) if (SPECIALS[i].id === id) return SPECIALS[i]; return null; }
+/* günün iki özel müşterisini seç (dünküler tekrar gelmesin) */
+function pickSpecials() {
+  if (!SPECIALS.length) { day.spec = []; day.sp = 4; day.normals = 0; day.popT = 0; return; }   /* specials.js yoksa sistem sessizce kapalı */
+  /* v1.3: tanıdıklar 2 haftada bir (14 gün) yeniden uğrar; öbür yer hep yeni bir yüze ayrılır.
+     Gün başına: 1 "dönen tanıdık" (vadesi gelmişse) + 1 hiç gelmemiş kişi; biri yoksa öbür havuzdan. */
+  var last = S.specLast || (S.specLast = {}), dn = day.n || 1, prev = day.spec || [];
+  var fresh = SPECIALS.filter(function (s) { return last[s.id] === undefined && prev.indexOf(s.id) < 0; });
+  var due = SPECIALS.filter(function (s) { return last[s.id] !== undefined && dn - last[s.id] >= SPEC_RETURN && prev.indexOf(s.id) < 0; });
+  due.sort(function (x, y) { return last[x.id] - last[y.id]; });              /* en uzun süredir gelmeyen önce */
+  var chosen = [];
+  if (due.length) chosen.push(due[0]);
+  var f2 = fresh.filter(function (s) { return chosen.indexOf(s) < 0; });
+  while (chosen.length < 2 && f2.length) { var q = pick(f2); chosen.push(q); f2.splice(f2.indexOf(q), 1); }
+  for (var di = 1; chosen.length < 2 && di < due.length; di++) chosen.push(due[di]);
+  if (chosen.length < 2) {                                                    /* herkes son 14 günde geldiyse: en eskiler */
+    var rest = SPECIALS.filter(function (s) { return chosen.indexOf(s) < 0 && prev.indexOf(s.id) < 0; });
+    rest.sort(function (x, y) { return (last[x.id] || 0) - (last[y.id] || 0); });
+    while (chosen.length < 2 && rest.length) chosen.push(rest.shift());
+  }
+  if (chosen.length < 2) chosen.push(chosen[0] || SPECIALS[0]);
+  chosen.forEach(function (q2) { last[q2.id] = dn; });
+  day.spec = [chosen[0].id, chosen[1].id]; day.sp = 0; day.normals = 0; day.popT = 0;
+}
+function specType(sp) {
+  return { id: 'spec_' + sp.id, n: sp.n, coat: sp.look.coat, coat2: sp.look.coat2,
+    qty: sp.qty, pat: sp.pat, mult: sp.tip, rep: sp.rep, lvl: 1, tag: 'any', special: sp.id };
+}
+function specOutfit(sp, face) {
+  var o = {}, k;
+  for (k in sp.look) o[k] = sp.look[k];
+  o.skin = PAL.skin[sp.look.sk || 0]; o.face = face;
+  return o;
+}
+/* özel müşteri hangi tezgâha: kendi balığının tezgâhı; olmuyorsa açık ve satış yapabilen herhangi biri */
+function specStall(sp) {
+  var best = null;
+  for (var i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (AREAS[c.z].locked || !c.open || !c.fish || !fishReady(c.fish)) continue;
+    var free = false;
+    for (var j = 0; j < c.slots.length; j++) if (!c.slots[j]) { free = true; break; }   /* özel müşteri yedek sırayı da kullanabilir */
+    if (!free) continue;
+    if (c.fish === sp.fav) return c;
+    if (!best) best = c;
+  }
+  return best;
+}
+function mkCustomer(c, type, slot, ord, spec) {
+  var q = queueSlotPos(c, slot);
+  var cu = {
+    x: q.x + 2.0, y: 20.5 + rnd(0, 2), z: 0, bob: rnd(0, 6), face: -1, type: type, ord: ord,
+    state: 'walk', slot: slot, c: c, pat: type.pat * patienceMul(c.z), patMax: type.pat * patienceMul(c.z),
+    mood: 1, hair: irnd(0, 2), tone: irnd(0, 2)
+  };
+  if (spec) { cu.spec = spec.id; cu.sayT = 0; }
+  c.slots[slot] = cu; customers.push(cu);
+  return cu;
+}
+function spawnSpecial(idx) {
+  var sp = specById(day.spec && day.spec[idx]); if (!sp) return false;
+  var c = specStall(sp); if (!c) return false;
+  var slot = -1, qmax = queueMax(c.z), j;                  /* önce yer: kuyruk doluyken hayali sipariş füme payını bozmasın */
+  for (j = 0; j < qmax; j++) if (!c.slots[j]) { slot = j; break; }
+  if (slot < 0) for (j = qmax; j < c.slots.length; j++) if (!c.slots[j]) { slot = j; break; }
+  if (slot < 0) return false;
+  var type = specType(sp), ord = makeOrderFor(c, type);
+  if (!ord || !canProduce(ord.f) || !canProcess(ord.k, ord.f) || !canSell(ord.f)) return false;
+  mkCustomer(c, type, slot, ord, sp);
+  if (S.met.indexOf(sp.id) < 0) S.met.push(sp.id);
+  return true;
+}
+function specActive(idx) {
+  var id = day.spec && day.spec[idx];
+  for (var i = 0; i < customers.length; i++) if (customers[i].spec === id && customers[i].state !== 'leave') return true;
+  return false;
+}
+/* gün akışı: normal → 1. özel → normal → (bildirim) 2. özel → kapanış */
+function updateSpecials(dt) {
+  if (!day.spec || day.spec.some(function (id) { return !specById(id); })) pickSpecials();   /* dosyadan silinen kişi kayıtta kaldıysa yeniden seç */
+  if (day.phase !== 'play' && day.phase !== 'closing') return;
+  /* 1. özel müşteri: birkaç normal müşteriden sonra; hiç gelemediyse gün ortasında zorla */
+  if (day.sp === 0 && day.phase === 'play' && (day.normals >= SPEC_NORMALS || day.t > DAY_LEN * 0.55)) {
+    if (spawnSpecial(0)) day.sp = 1;
+  }
+  /* 2. özel müşteri: kapanışa yakın bildirim → birkaç saniye sonra yola çıkar */
+  if (day.sp <= 1 && day.t >= DAY_LEN - SPEC2_AT) {
+    day.sp = 2; day.popT = 3.2;
+    el.specPop.classList.remove('hidden', 'go'); void el.specPop.offsetWidth; el.specPop.classList.add('go');
+    el.specPopT.textContent = T('specComing');
+    sfx.bell();
+  }
+  if (day.sp === 2) {
+    day.popT -= dt;
+    if (day.popT <= 0) {
+      el.specPop.classList.add('hidden');
+      if (spawnSpecial(1)) day.sp = 3;
+      else day.popT = 1;                           /* kuyruk doluysa birazdan tekrar dene */
+    }
+  }
+  if (day.sp === 3 && !specActive(1)) day.sp = 4;  /* işi bitti → kapanış serbest */
+}
+/* kapanış 2. özel müşteriyi bekler (en fazla CLOSE_MAX + 30 sn; servis edilemezse gün yine kapanır) */
+function specHoldsClose() { return (day.sp === 2 || day.sp === 3) && day.ph < CLOSE_MAX + 30; }
+/* v1.3.3: özel müşteriler okunabilsin — söz süresi metnin uzunluğuna göre (4–9 sn), yürüyüş normalin ~%60'ı,
+   ayrılış yarı hızda. Selam bitmeden sipariş alınmaz ve bu sürede sabrı azalmaz. */
+var SPEC_WALK = 1.3, SPEC_LEAVE = 1.7;
+function sayDur(txt) { return clamp(2.2 + (txt || '').length * 0.075, 4, 9); }
+function specHiDur(cu) { var sp = specById(cu.spec); return sp ? sayDur(NM(sp.hi)) : 0; }
+function specTalking(cu) { return !!cu.spec && cu.state === 'wait' && (cu.sayT || 0) < specHiDur(cu); }
+/* konuşma balonu: gelince selam, mutlu giderken teşekkür */
+function drawSpecialTag(cu) {
+  var sp = specById(cu.spec); if (!sp) return;
+  if (sp.fx && cu.state !== 'leave' && !paused) {                                 /* v1.1: karakter işareti uçuşur */
+    cu.fxT = (cu.fxT || 0) + 0.016;
+    if (cu.fxT > 1.3) { cu.fxT = 0; addFloat(cu.x + rnd(-0.3, 0.3), cu.y - 0.6, sp.fx, sp.fxc); }
+  }
+  uiLabel(cu.x, cu.y, 44, '★ ' + NM(sp.n) + ' · ' + NM(sp.job), '#ffc94a', 0.95);
+  if (cu.state === 'wait' && !cu.sndHi) { cu.sndHi = true; specSfx(sp); }                                  /* v1.3: gelişte kendi sesi */
+  if (cu.state === 'leave' && cu.happyLeave !== false && !cu.sndBye) { cu.sndBye = true; specSfx(sp); }
+  var line = null;
+  if (specTalking(cu)) line = NM(sp.hi);
+  if (cu.state === 'leave' && cu.happyLeave !== false && (cu.byeT || 0) < sayDur(NM(sp.bye))) line = NM(sp.bye);
+  if (line) uiLabel(cu.x, cu.y, 56, '“' + line + '”', '#f4e9d2', 0.95);
+  if (specTalking(cu)) {                                                           /* söz bitene kadar küçük süre çubuğu */
+    var k = clamp((cu.sayT || 0) / specHiDur(cu), 0, 1), bx = R(pX(cu.x, cu.y)) - 10, by = R(pY(cu.x, cu.y, 0)) - 36;
+    px(bx, by, 20, 2, 'rgba(20,14,8,.6)'); px(bx, by, R(20 * k), 2, '#ffc94a');
+  }
+}
+
+/* =========================================================
+   v1.3 — BÖLÜM 1 HEDEFİ: "üç tezgâhı sonuna kadar büyüt"
+   Alınabilir her şey bir sayaca işlenir; kenardaki merdiven simgesi yanıp söner, tıklayınca
+   hedef ve eksikler görünür. Hepsi bitince (müdürler dahil) Bölüm 1 kapanış sahnesi.
+   ========================================================= */
+function chapterGroups() {
+  var g = [], i, n, t;
+  function add(ic, key, done, tot) { g.push({ ic: ic, t: T(key), d: Math.min(done, tot), n: tot }); }
+  add('🔓', 'chAreas', (AREAS[1].locked ? 0 : 1) + (AREAS[2].locked ? 0 : 1), 2);
+  n = 0; for (i = 0; i < AREAS.length; i++) n += AREAS[i].lvl - 1; add('🏗️', 'chLevels', n, AREAS.length * (MAXLV - 1));
+  n = 0; t = 0; for (i = 0; i < PADS.length; i++) if (PADS[i].max && PADS[i].kind !== 'decor') { n += PADS[i].lvl || 0; t += PADS[i].max; } add('⬆️', 'chPads', n, t);   /* süs noktaları Süsler satırında sayılır */
+  n = 0; for (i = 0; i < SLOTS.length; i++) if (SLOTS[i].b) n++; add('🔨', 'chSlots', n, SLOTS.length);
+  n = 0; for (i = 0; i < DECOR.length; i++) if (DECOR[i].got) n++; add('🌺', 'chDecor', n, DECOR.length);
+  add('🌿', 'chEnv', envStage(), ENV_UPS.length);
+  add('🔥', 'chFume', (fumeMachine(0) ? 1 : 0) + (fumeMachine(1) ? 1 : 0), 2);
+  add('🏛️', 'chProj', project.done ? 1 : 0, 1);
+  add('🏘️', 'chMeydan', (HUT.lvl ? 1 : 0) + (DEPOT.lvl ? 1 : 0) + (WHALL.built ? 1 : 0), 3);
+  n = 0; for (i = 0; i < 3; i++) if (mgr(i)) n++; add('👔', 'chMgr', n, 3);
+  return g;
+}
+function chapterProgress() {
+  var g = chapterGroups(), d = 0, n = 0;
+  for (var i = 0; i < g.length; i++) { d += g[i].d; n += g[i].n; }
+  return { d: d, n: n, p: n ? d / n : 0, g: g };
+}
+var chT = 0;
+function updateChapter(dt) {
+  chT -= dt; if (chT > 0) return; chT = 1;
+  if (!S.started || S.ch1) { el.chBtn.classList.toggle('hidden', !S.started || !!S.ch1); return; }
+  var pr = chapterProgress(), pc = Math.floor(pr.p * 100);
+  el.chBtn.classList.remove('hidden');
+  el.chPct.textContent = pc + '%';
+  el.chBtn.classList.toggle('blink', !S.chSeen || pc - (S.chSeenPct || 0) >= 10);
+  if (pr.d >= pr.n && pr.n > 0) openChapterEnd();
+}
+function openChapter() {
+  var pr = chapterProgress();
+  el.chTitle.textContent = T('chTitle'); el.chSub.textContent = T('chGoal');
+  el.chFill.style.width = Math.round(pr.p * 100) + '%'; el.chNum.textContent = pr.d + '/' + pr.n + ' • ' + Math.floor(pr.p * 100) + '%';
+  var h = '';
+  pr.g.forEach(function (q) { h += '<div class="row' + (q.d >= q.n ? ' ok' : '') + '"><div class="ic">' + q.ic + '</div><div class="tx">' + q.t + '</div><div class="vl">' + (q.d >= q.n ? '✔' : q.d + '/' + q.n) + '</div></div>'; });
+  el.chRows.innerHTML = PX(h);
+  el.chClose.textContent = T('resume');
+  S.chSeen = true; S.chSeenPct = Math.floor(pr.p * 100);
+  el.chBtn.classList.remove('blink');
+  el.chScr.classList.remove('hidden'); syncPause(); sfx.tap();
+}
+/* Bölüm 1 kapanışı — şimdilik sade kart; sinematik ara sahne oyuncuyla birlikte tasarlanacak */
+function chapterPaper() {
+  var hero = (S.hero && S.hero.n) || (lang === 'tr' ? 'GENÇ BALIKÇI' : 'THE YOUNG FISHER'), co = S.company || '';
+  var staff = workers.length, met = (S.met || []).length;
+  function both(tr, en) { return { tr: tr, en: en }; }
+  return [
+    { art: 'snap', date: both(day.n + '. GÜN', 'DAY ' + day.n),
+      hl: both('LİMANIN YENİ PATRONU - ' + hero, 'THE HARBOR HAS A NEW BOSS - ' + hero),
+      cap: both('▲ ' + (co.length > 22 ? co.slice(0, 21) + '.' : co), '▲ ' + (co.length > 22 ? co.slice(0, 21) + '.' : co)),
+      sub: both('Bir sandık ve bir ağla başlayan ' + hero + ', bugün ' + co + ' ile limanın en bilinen adı. ' + fmtN(S.caught) + ' balık, ' + day.n + ' gün, ' + staff + ' çalışan, ' + met + ' özel müşteri. Artık basit bir balıkçı değil, tezgâhları olan bir balıkçı iş insanı.',
+        'It started with one crate and one net. Today ' + hero + ' and ' + co + ' are the best-known names in the harbor: ' + fmtN(S.caught) + ' fish, ' + day.n + ' days, ' + staff + ' staff, ' + met + ' special customers. No longer a simple fisher - a fish tycoon.') },
+    { art: 'giants', date: both('ERTESİ SABAH', 'NEXT MORNING'),
+      hl: both('KARADENİZİN DEVLERİ TEDİRGİN', 'THE BLACK SEA GIANTS ARE WATCHING'),
+      cap: both('▲ Ufukta dev trol filoları', '▲ Giant trawler fleets on the horizon'),
+      sub: both('Poyraz Holding trol filosunu limana yolluyor, Kuzey Buz soğuk zincirini, Altın Olta lüks restoranlarını getiriyor. Bu başarı gözlerinden kaçmadı... Artık devler liginde hayatta kalmalıyız.',
+        'Poyraz Holding is sending its trawler fleet, Kuzey Buz its cold chain, Altın Olta its luxury restaurants. Your success did not go unnoticed... Now we must survive in the league of giants.') }
+  ];
+}
+function openChapterEnd() {
+  if (S.ch1) return;
+  S.ch1 = true; save();
+  closeBar();                                                   /* açık panel sahnenin arkasında kalmasın */
+  takeHarborSnap();
+  openIntro(function () { showChapterCard(); }, chapterPaper());
+  el.introGate.classList.add('hidden'); el.introScr.classList.remove('gate');
+  musicPlay('menu'); introScene(0);
+}
+function showChapterCard() {
+  el.chEndK.textContent = T('chEndK'); el.chEndT.textContent = T('chEndT');
+  el.chEndP.textContent = T('chEndP', { n: (S.hero && S.hero.n) || '', c: S.company || '' });
+  el.chEndG.textContent = T('chEndG');
+  el.chEndGo.textContent = T('resume');
+  el.chEnd.classList.remove('hidden'); syncPause();
+  sfx.levelUp(); musicPlay('game');
+}
+el.chBtn.onclick = openChapter;
+el.chClose.onclick = function () { el.chScr.classList.add('hidden'); syncPause(); };
+el.chEndGo.onclick = function () { el.chEnd.classList.add('hidden'); el.chBtn.classList.add('hidden'); syncPause(); };
+
+/* v1.3.2 — yerleşim denetimi: tam gelişmiş limanda her nesnenin kapladığı alan (en büyük hâliyle).
+   Aynı "own" değerine sahip parçalar birbirine ait (ör. tezgâh + tepsisi) ve çakışma sayılmaz. */
+function layoutRects() {
+  var R = [];
+  function add(id, own, z, x, y, hx, hy) { R.push({ id: id, own: own, z: z, x0: x - hx, y0: y - hy, x1: x + hx, y1: y + hy }); }
+  function unit(key, z, x, y) {
+    add('tezgâh ' + key, key, z, x, y, CTR_HW, CTR_HH);
+    var tp = { x: x + 0.98, y: y + 0.55 }; add('tepsi ' + key, key, z, tp.x, tp.y, 0.4, 0.34);
+    if (z !== smoker.z) add('füme mak. ' + key, key, z, x + 0.95, y - 0.6, 0.35, 0.35);
+  }
+  spots.forEach(function (sp, i) { add('ağ ' + i, 'net' + i, sp.z, sp.x, sp.y + 0.45, 0.65, 0.95); });
+  XNETS.forEach(function (sp) { add('ağ ' + sp.f, 'xn' + sp.f, sp.z, sp.x, sp.y + 0.45, 0.65, 0.95); });
+  tables.forEach(function (t, i) { add('masa ' + i, 'tb' + i, t.z, t.x, t.y, 0.72, 0.52); add('hasır ' + i, 'tb' + i, t.z, t.mat.x, t.mat.y, 0.62, 0.52); });
+  add('füme fırını', 'sm', smoker.z, smoker.x, smoker.y, 0.8, 0.65); add('fırın hasırı', 'sm', smoker.z, smoker.mat.x, smoker.mat.y, 0.62, 0.52);
+  unit('b0', 0, 8.9, 3.0); unit('b1', 1, 8.9, 10.4); unit('b2', 2, 8.9, 15.4);
+  var stallCats = BUILDINGS.filter(function (b) { return b.id === 'tezgah'; }).map(function (b) { return b.cat; });
+  SLOTS.forEach(function (sl) {
+    var canStall = sl.cats.some(function (c) { return stallCats.indexOf(c) >= 0; });
+    if (canStall) unit('ek-' + sl.id, sl.z, sl.x + 0.3, sl.y);
+    add('yapı ' + sl.id, canStall ? 'ek-' + sl.id : 'sl' + sl.id, sl.z, sl.x, sl.y, 0.65, 0.65);
+  });
+  add('Kapalı Pazar', 'proj', project.z, project.x, project.y, project.w / 2, project.h / 2);
+  var htp = trayPos({ key: 'hal' }); add('tepsi Kapalı Pazar', 'proj', project.z, htp.x, htp.y, 0.4, 0.34);
+  PLOTS.forEach(function (q) { add('parsel ' + q.id, 'pl' + q.id, q.z, q.x, q.y, 1.0, 1.0); });
+  MGR_DESKS.forEach(function (d, z) { R.push({ id: 'müdür masası ' + z, own: 'md' + z, z: z, x0: d.x - 0.5, y0: d.y - 1.0, x1: d.x + 0.5, y1: d.y + 0.3 }); });
+  AREA_LAMPS.forEach(function (ls, z) { ls.forEach(function (l, k) { add('lamba ' + z + '-' + k, 'lp' + z + k, z, l.x, l.y, 0.2, 0.2); }); });
+  BINS.forEach(function (b, i) { add('çöp ' + i, 'bin' + i, b.z, b.x, b.y, 0.3, 0.3); });
+  add('Ana Kasa', 'safe', 0, safe.x, safe.y, 0.5, 0.5);
+  DECOR.forEach(function (d) { add('süs ' + d.id, 'dc' + d.id, d.z, d.x, d.y, 0.42, 0.42); });
+  add('başlangıç noktası', 'start', 0, 4.5, 3.2, 0.25, 0.25);
+  return R;
+}
+function layoutClashes(margin) {
+  var R = layoutRects(), out = [], m = margin || 0;
+  for (var i = 0; i < R.length; i++) for (var j = i + 1; j < R.length; j++) {
+    var a = R[i], b = R[j]; if (a.own === b.own) continue;
+    var w = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) + m, h = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) + m;
+    if (w > 0.001 && h > 0.001) out.push(a.id + ' ✕ ' + b.id);
+  }
+  return out;
+}
+
+/* =========================================================
+   OYUNCUYU GERİ ÇAĞIRAN ŞEYLER: "SEN YOKKEN…" + BAŞARIMLAR
+   Tek parça bölüm. Mevcut fonksiyonlara yalnız birer satırlık çağrılar eklenir:
+     buildSave → ret: retSave()          loadFrom → retLoad(d)
+     start → retOnStart()                anyOverlay → retCardOpen()
+     backAction → retBack()              endDay → retDayEnd(day.last)
+     finishOrder → retSale(c, cu, pay)   iTrash → achTrash(a)
+     renderTab → achTabHTML()
+   • Uzakta kazanç: yalnız müdürü olan ve tam otomatikteki bölgeler çalışır. Gün ilerlemez,
+     müşteri doğmaz, Bölüm 1 sayacına dokunulmaz; kasaya yalnız para girer (skor sayılmaz).
+   • Başarımlar kayda (slot başına) yazılır; cihaz genelinde "hiç açıldı mı" ayrıca tutulur.
+   ========================================================= */
+var RET_MIN = 300;                     /* 5 dk'dan kısa ayrılıklar sayılmaz */
+var RET_FULL = 2 * 3600;               /* ilk 2 saat tam hızda */
+var RET_CAP = 8 * 3600;                /* en fazla 8 saat sayılır */
+var RET_TAIL = 0.4;                    /* 2 saatten sonrası %40 hızda (azalan getiri) */
+var RET_FRAC = 0.3;                    /* bölgenin son gerçek gelirinin %30'u */
+var RET_ALPHA = 0.25;                  /* dakikalık kayan ortalama katsayısı */
+var RET_ABSURD = 365 * 86400;          /* saat oynanmış (1 yıldan uzun ayrılık) → sıfır */
+var ACH_ALL_KEY = 'balikci_ach', OFF_HINT_KEY = 'balikci_offhint';
+var RET = { acc: [0, 0, 0], rate: [0, 0, 0], win: 0, lastPlay: -1, dayInc: 0, bestMkt: 0, loadedT: 0, hidAt: 0, cardV: 0, cardSec: 0 };
+S.ach = {};                            /* S0 anlık görüntüsünden önce: yeni oyun boş listeyle başlar */
+
+Object.assign(ICONS, {
+  kupa: ['............', '.kkkkkkkkkk.', 'kkyyyyyyyykk', 'kykyyyyyykyk', 'kkkyyyyyykkk', '..kyyyyyyk..', '...kyyyyk...', '....kyyk....', '.....kk.....', '....kddk....', '...kddddk...', '...kkkkkk...'],
+  soru: ['............', '...kkkkkk...', '..kwwwwwwk..', '..kwwkkwwk..', '..kkk.kwwk..', '.....kwwk...', '....kwwk....', '....kwwk....', '....kkkk....', '....kwwk....', '....kkkk....', '............'],
+  nota: ['.....kk.....', '.....kyk....', '.....kyyk...', '.....kykyk..', '.....kk.kk..', '.....k......', '.....k......', '..kkkk......', '.kyyyk......', '.kyyyk......', '..kkk.......', '............'],
+  cop:  ['............', '....kkkk....', '.kkkkkkkkkk.', '.kiiiiiiiik.', '.kkkkkkkkkk.', '..knininik..', '..knininik..', '..knininik..', '..knininik..', '..knininik..', '..kkkkkkkk..', '............'],
+  tac:  ['............', '............', '.k...kk...k.', 'kyk.kyyk.kyk', 'kyykyyyykyyk', 'kyyyyyyyyyyk', 'kyyryyyyryyk', 'kyyyyyyyyyyk', 'kkkkkkkkkkkk', '............', '............', '............']
+});
+
+Object.assign(STR.tr, {
+  tabs: STR.tr.tabs.concat(['BAŞARIM']),
+  offTitle: 'SEN YOKKEN…', offSub: '{t} uzaktaydın. Müdürlerin tezgâhları bir an bile boş bırakmadı.',
+  offZone: '{m} başındaydı', offTotal: 'KASAYA GİRECEK', offGo: 'TOPLA ▶',
+  offNote: 'Uzaktayken iş ağır aksak döner: ilk 2 saat tam, sonrası yavaşlayarak, en fazla 8 saat sayılır.',
+  offGot: '{n} kasaya kondu. Hoş geldin!',
+  offHint: 'İpucu: bir bölgeyi müdürüyle tam otomatiğe alırsan, sen yokken de azar azar kazandırır.',
+  achHead: 'BAŞARIMLAR', achCount: '{a}/{n} açıldı', achDevice: 'Bu cihazdaki bütün kayıtlarda: {a}/{n}',
+  achSecret: '???', achSecretD: 'Gizli başarım. Limanda bir şey olunca kendiliğinden açılır.',
+  achElse: 'başka bir kayıtta açıldı', achPopK: 'BAŞARIM AÇILDI', achMany: '{n} başarım birden açıldı!',
+  achMkt: 'Pazar günü rekorun: {v}',
+  achC_ilk: 'İLK ADIMLAR', achC_buy: 'BÜYÜME', achC_mus: 'MÜŞTERİLER', achC_eko: 'KESE', achC_giz: 'GİZLİ VE EĞLENCELİ'
+});
+Object.assign(STR.en, {
+  tabs: STR.en.tabs.concat(['AWARDS']),
+  offTitle: 'WHILE YOU WERE AWAY…', offSub: 'You were gone for {t}. Your managers never left the stalls unattended.',
+  offZone: '{m} kept watch', offTotal: 'GOING INTO THE SAFE', offGo: 'COLLECT ▶',
+  offNote: 'Things run slower while you are away: full pace for 2 hours, tapering after that, 8 hours at most.',
+  offGot: '{n} put in the safe. Welcome back!',
+  offHint: 'Tip: put a zone on full auto with its manager and it keeps earning a little while you are away.',
+  achHead: 'ACHIEVEMENTS', achCount: '{a}/{n} unlocked', achDevice: 'Across all saves on this device: {a}/{n}',
+  achSecret: '???', achSecretD: 'Secret achievement. It unlocks by itself when something happens around the harbor.',
+  achElse: 'unlocked in another save', achPopK: 'ACHIEVEMENT UNLOCKED', achMany: '{n} achievements unlocked!',
+  achMkt: 'Your market-day record: {v}',
+  achC_ilk: 'FIRST STEPS', achC_buy: 'GROWTH', achC_mus: 'CUSTOMERS', achC_eko: 'THE PURSE', achC_giz: 'SECRET & FUN'
+});
+
+/* ---------- başarım tablosu ----------
+   c: kategori • ic: ICONS adı • r: ödül (yalnız para ya da itibar, mütevazı) • s: gizli
+   chk: 1 sn'lik denetimde bakılan durum; chk'siz olanlar olaydan açılır (satış, gün sonu, çöp, toplama). */
+function _anyZone(fn) { for (var z = 0; z < 3; z++) if (fn(z)) return true; return false; }
+function _hasFileto() {
+  var i;
+  if (S.served > 0) return true;
+  for (i = 0; i < tables.length; i++) if (tables[i].mat.items.some(isFileto)) return true;
+  for (i = 0; i < counters.length; i++) if (counters[i].buffer.some(isGoods)) return true;
+  return player.carry.some(isGoods);
+}
+var ACH = [
+  { id: 'ilk_satis', c: 'ilk', ic: 'para', r: { cash: 50 }, chk: function () { return S.served >= 1; },
+    t: { tr: 'Siftah!', en: 'First Sale!' }, d: { tr: 'İlk müşterine balık sat. Siftahın bereketli olsun.', en: 'Sell to your very first customer. May it bring good luck.' } },
+  { id: 'ilk_fileto', c: 'ilk', ic: 'kesim', r: { cash: 30 }, chk: _hasFileto,
+    t: { tr: 'Usta Eli', en: 'Steady Hands' }, d: { tr: 'İlk filetonu kes.', en: 'Cut your first fillet.' } },
+  { id: 'ilk_isci', c: 'ilk', ic: 'hamal', r: { rep: 1 }, chk: function () { return workers.length > 0; },
+    t: { tr: 'Bir Elden İki El', en: 'An Extra Pair of Hands' }, d: { tr: 'İlk çalışanını işe al.', en: 'Hire your first worker.' } },
+  { id: 'ilk_fume', c: 'ilk', ic: 'restoran', r: { cash: 100 },
+    t: { tr: 'Tütsü Kokusu', en: 'A Whiff of Smoke' }, d: { tr: 'İlk füme ürününü sat.', en: 'Sell your first smoked product.' } },
+  { id: 'ilk_mudur', c: 'ilk', ic: 'koop', r: { rep: 2 }, chk: function () { return _anyZone(function (z) { return !!mgr(z); }); },
+    t: { tr: 'Masada Bir Bey', en: 'A Boss at the Desk' }, d: { tr: 'İlk bölge müdürünü ata.', en: 'Appoint your first zone manager.' } },
+
+  { id: 'pazar_acik', c: 'buy', ic: 'alan', r: { cash: 150 }, chk: function () { return !AREAS[1].locked; },
+    t: { tr: 'Pazar Kuruldu', en: 'The Market Opens' }, d: { tr: 'Balık Pazarı bölgesini aç.', en: 'Unlock the Fish Market area.' } },
+  { id: 'fume_acik', c: 'buy', ic: 'alan', r: { cash: 300 }, chk: function () { return !AREAS[2].locked; },
+    t: { tr: 'Baca Tütüyor', en: 'Smoke from the Chimney' }, d: { tr: 'Fümehane bölgesini aç.', en: 'Unlock the Smokehouse area.' } },
+  { id: 'bolge_usta', c: 'buy', ic: 'yukselt', r: { rep: 3 }, chk: function () { return AREAS.some(function (a) { return !a.locked && a.lvl >= MAXLV; }); },
+    t: { tr: 'Tam Donanım', en: 'Fully Kitted Out' }, d: { tr: 'Bir bölgeyi en üst seviyeye çıkar.', en: 'Raise an area to its top level.' } },
+  { id: 'hizmet_ilk', c: 'buy', ic: 'bina', r: { cash: 200 }, chk: function () { return servCount() > 0; },
+    t: { tr: 'Liman Canlanıyor', en: 'The Harbor Wakes Up' }, d: { tr: 'İlk hizmet binanı kur.', en: 'Build your first service building.' } },
+  { id: 'tam_otomatik', c: 'buy', ic: 'ag', r: { rep: 2 }, chk: function () { return _anyZone(function (z) { return zoneAuto(z) && !!mgr(z); }); },
+    t: { tr: 'Kendi Kendine Dönen Çark', en: 'The Wheel Turns Itself' }, d: { tr: 'Bir bölgeyi müdürüyle tam otomatiğe al.', en: 'Put a zone on full auto with its manager.' } },
+  { id: 'kapali_pazar', c: 'buy', ic: 'proje', r: { rep: 5 }, chk: function () { return !!project.done; },
+    t: { tr: 'Çatı Altında', en: 'Under One Roof' }, d: { tr: 'Kapalı Pazar\'ı tamamla.', en: 'Complete the Covered Market.' } },
+  { id: 'bolum1', c: 'buy', ic: 'fener', r: { rep: 10 }, chk: function () { return !!S.ch1; },
+    t: { tr: 'İskeleden İşletmeye', en: 'From Pier to Business' }, d: { tr: 'Bölüm 1\'i tamamla.', en: 'Complete Chapter 1.' } },
+
+  { id: 'musteri_100', c: 'mus', ic: 'pazar', r: { cash: 300 }, chk: function () { return S.served >= 100; },
+    t: { tr: 'Mahallenin Gözdesi', en: 'Neighborhood Favorite' }, d: { tr: '100 müşteriye hizmet et.', en: 'Serve 100 customers.' } },
+  { id: 'musteri_1000', c: 'mus', ic: 'pazar', r: { cash: 1500 }, chk: function () { return S.served >= 1000; },
+    t: { tr: 'Limanın Sofrası', en: 'The Harbor\'s Table' }, d: { tr: '1.000 müşteriye hizmet et.', en: 'Serve 1,000 customers.' } },
+  { id: 'ozel_5', c: 'mus', ic: 'itibar', r: { rep: 2 }, chk: function () { return (S.met || []).length >= 5; },
+    t: { tr: 'Tanıdık Simalar', en: 'Familiar Faces' }, d: { tr: '5 özel müşteriyle tanış.', en: 'Meet 5 special customers.' } },
+  { id: 'ozel_20', c: 'mus', ic: 'itibar', r: { rep: 5 }, chk: function () { return (S.met || []).length >= 20; },
+    t: { tr: 'Herkes Bizi Konuşuyor', en: 'The Talk of the Town' }, d: { tr: '20 özel müşteriyle tanış.', en: 'Meet 20 special customers.' } },
+  { id: 'vip', c: 'mus', ic: 'tac', r: { cash: 250 },
+    t: { tr: 'Kırmızı Halı', en: 'Red Carpet' }, d: { tr: 'Bir VIP müşteriye hizmet et.', en: 'Serve a VIP customer.' } },
+  { id: 'kusursuz_gun', c: 'mus', ic: 'ok', r: { rep: 3 },
+    t: { tr: 'Kimse Eli Boş Dönmedi', en: 'Nobody Left Empty-Handed' }, d: { tr: 'En az 20 müşterili bir günü tek kayıp vermeden kapat.', en: 'Close a day of 20+ customers without losing a single one.' } },
+
+  { id: 'kazanc_10k', c: 'eko', ic: 'para', r: { rep: 2 }, chk: function () { return S.earned >= 10000; },
+    t: { tr: 'Kese Dolmaya Başladı', en: 'The Purse Gets Heavy' }, d: { tr: 'Toplam $10.000 kazan.', en: 'Earn $10,000 in total.' } },
+  { id: 'kazanc_100k', c: 'eko', ic: 'kasa', r: { rep: 5 }, chk: function () { return S.earned >= 100000; },
+    t: { tr: 'Karadeniz Sermayesi', en: 'Black Sea Fortune' }, d: { tr: 'Toplam $100.000 kazan.', en: 'Earn $100,000 in total.' } },
+  { id: 'pazar_rekor', c: 'eko', ic: 'pazar', r: { cash: 400 },
+    t: { tr: 'Pazar Bereketi', en: 'Market Bounty' }, d: { tr: 'Tek bir Balık Pazarı gününde $2.500 kazan.', en: 'Earn $2,500 on a single Fish Market day.' } },
+  { id: 'sen_yokken', c: 'eko', ic: 'sure', r: { rep: 1 },
+    t: { tr: 'Göz Kulak Oldular', en: 'They Kept an Eye Out' }, d: { tr: 'Sen yokken müdürlerinin kazandığını topla.', en: 'Collect what your managers earned while you were away.' } },
+
+  { id: 'dansci', c: 'giz', ic: 'nota', s: 1, r: { cash: 200 },
+    t: { tr: 'Pist Burası mı?', en: 'Is This the Dance Floor?' }, d: { tr: 'Kuyrukta dans eden bir özel müşteriye hizmet et.', en: 'Serve a special customer who dances in the queue.' } },
+  { id: 'mezat_dolu', c: 'giz', ic: 'mezat', s: 1, r: { cash: 500 },
+    t: { tr: 'Mezat Coşkusu', en: 'Auction Fever' }, d: { tr: 'Balık Pazarı gününün sonunda mezatı ağzına kadar doldur.', en: 'Fill the auction to the brim at the end of a Fish Market day.' } },
+  { id: 'cop', c: 'giz', ic: 'cop', s: 1, r: { rep: 1 },
+    t: { tr: 'Temiz Liman', en: 'Tidy Harbor' }, d: { tr: 'Çöp kovasına bir şey at.', en: 'Throw something into a bin.' } },
+  { id: 'temel', c: 'giz', ic: 'soru', s: 1, r: { cash: 150 }, chk: function () { return (S.met || []).indexOf('temel') >= 0; },
+    t: { tr: 'Fıkra Gibi', en: 'Just Like a Joke' }, d: { tr: 'Karadenizli Temel ile tanış.', en: 'Meet Temel from the Black Sea coast.' } }
+];
+var ACH_CATS = ['ilk', 'buy', 'mus', 'eko', 'giz'];
+function achById(id) { for (var i = 0; i < ACH.length; i++) if (ACH[i].id === id) return ACH[i]; return null; }
+function achHas(id) { return !!(S.ach && S.ach[id]); }
+function achCount() { var n = 0; for (var i = 0; i < ACH.length; i++) if (achHas(ACH[i].id)) n++; return n; }
+function achGlobal() {
+  try { var a = JSON.parse(Store.get(ACH_ALL_KEY) || '[]'); return Array.isArray(a) ? a.filter(function (id) { return !!achById(id); }) : []; } catch (e) { return []; }
+}
+function achRewardText(r) {
+  var o = [];
+  if (r && r.cash) o.push('+' + money(r.cash));
+  if (r && r.rep) o.push('+' + r.rep + '*');
+  return o.join(' ');
+}
+var achQ = [], achBusyT = 0, achHideTo = 0;
+/* aç: ödülü ver, cihaz listesine yaz, bildirimi kuyruğa koy. Zaten açıksa hiçbir şey yapmaz. */
+var achMuted = false;                                         /* yalnız testler: tam tutar kontrol eden eski testlerde ödül karışmasın */
+function achUnlock(id) {
+  if (achMuted) return false;
+  var a = achById(id);
+  if (!a || achHas(id)) return false;
+  if (!S.ach) S.ach = {};
+  S.ach[id] = 1;
+  if (a.r && a.r.cash) S.cash += a.r.cash;                     /* ödül skora (kazanılan para) sayılmaz */
+  if (a.r && a.r.rep) { S.rep += a.r.rep; checkRepLevel(); }
+  var g = achGlobal();
+  if (g.indexOf(id) < 0) { g.push(id); Store.set(ACH_ALL_KEY, JSON.stringify(g)); }
+  achQ.push(id);
+  setTimeout(achPump, 0);                                      /* aynı anda açılanlar tek şeritte toplansın */
+  return true;
+}
+/* ucuz denetim: 1 sn'de bir, oyun akarken */
+function achCheck() {
+  for (var i = 0; i < ACH.length; i++) {
+    var a = ACH[i];
+    if (!a.chk || achHas(a.id)) continue;
+    try { if (a.chk()) achUnlock(a.id); } catch (e) { }
+  }
+}
+function achTrash(a) { if (a && a.isPlayer) achUnlock('cop'); }
+/* bildirim şeridi: tek tek gelir; üç ve fazlası birikirse tek şeritte toplanır (spam yok) */
+function achPump() {
+  var pop = document.getElementById('achPop');
+  if (!pop || !achQ.length || Date.now() < achBusyT || !S.started || paused || intro.on) return;   /* gazete sahnesinin arkasında harcanmasın */
+  var list = achQ.length >= 3 ? achQ.splice(0, achQ.length) : [achQ.shift()];
+  var cash = 0, rep = 0;
+  list.forEach(function (id) { var a = achById(id); if (a && a.r) { cash += a.r.cash || 0; rep += a.r.rep || 0; } });
+  var first = achById(list[0]);
+  document.getElementById('achPopI').style.backgroundImage = 'url(' + iconURL(list.length > 1 ? 'kupa' : first.ic, 3) + ')';
+  document.getElementById('achPopK').textContent = T('achPopK');
+  document.getElementById('achPopT').textContent = list.length > 1 ? T('achMany', { n: list.length }) : NM(first.t);
+  document.getElementById('achPopR').textContent = achRewardText({ cash: cash, rep: rep });
+  pop.classList.remove('hidden', 'go'); void pop.offsetWidth; pop.classList.add('go');
+  sfx.star();
+  achBusyT = Date.now() + 3400;
+  clearTimeout(achHideTo);
+  achHideTo = setTimeout(function () { pop.classList.add('hidden'); setTimeout(achPump, 400); }, 3000);
+}
+/* menü › BAŞARIMLAR sekmesi */
+function achTabHTML() {
+  var g = achGlobal(), n = ACH.length, a0 = achCount(), h = '';
+  h += '<div class="achHead"><b>' + T('achHead') + '</b><span>' + T('achCount', { a: a0, n: n }) + '</span></div>';
+  h += '<div class="achBar"><i style="width:' + Math.round(a0 / n * 100) + '%"></i></div>';
+  ACH_CATS.forEach(function (c) {
+    h += '<div class="achCat">' + T('achC_' + c) + '</div><div class="achGrid">';
+    ACH.forEach(function (a) {
+      if (a.c !== c) return;
+      var on = achHas(a.id), elsewhere = !on && g.indexOf(a.id) >= 0, hide = a.s && !on && !elsewhere;
+      h += '<div class="achCell ' + (on ? 'on' : 'off') + (hide ? ' secret' : '') + '" data-a="' + a.id + '">' +
+        '<i class="pxi" style="background-image:url(' + iconURL(hide ? 'soru' : a.ic, 3) + ')"></i>' +
+        '<div><b>' + escH(hide ? T('achSecret') : NM(a.t)) + '</b><small>' + escH(hide ? T('achSecretD') : NM(a.d)) + '</small>' +
+        (elsewhere ? '<small class="achElse">' + T('achElse') + '</small>' : '') +
+        (hide ? '' : '<em>' + achRewardText(a.r) + '</em>') + '</div></div>';
+    });
+    h += '</div>';
+    if (c === 'eko' && RET.bestMkt > 0) h += '<div class="empty">' + T('achMkt', { v: money(RET.bestMkt) }) + '</div>';
+  });
+  h += '<div class="empty">' + T('achDevice', { a: g.length, n: n }) + '</div>';
+  return h;
+}
+
+/* ---------- uzakta kazanç: bölge başına kayan gelir ortalaması ---------- */
+function retSale(c, cu, pay) {
+  try {
+    if (c && c.z >= 0 && c.z < RET.acc.length && pay > 0) RET.acc[c.z] += pay;
+    achUnlock('ilk_satis');
+    if (cu && cu.ord && cu.ord.k === 'fume') achUnlock('ilk_fume');
+    if (cu && cu.type && cu.type.id === 'vip') achUnlock('vip');
+    var sp = cu && cu.spec ? specById(cu.spec) : null;
+    if (sp && sp.dance) achUnlock('dansci');
+  } catch (e) { }
+}
+/* her ~60 sn oynanan süre: bölgenin dakikalık geliri kayan ortalamaya katılır */
+function retRoll() {
+  var k = 60 / Math.max(1, RET.win);
+  for (var z = 0; z < RET.acc.length; z++) {
+    var m = RET.acc[z] * k;
+    RET.rate[z] = RET.rate[z] > 0 ? RET.rate[z] * (1 - RET_ALPHA) + m * RET_ALPHA : m;
+    RET.acc[z] = 0;
+  }
+  RET.win = 0;
+}
+function retDayEnd(L) {
+  try {
+    if (!L) return;
+    if (L.inc > 0) RET.dayInc = RET.dayInc > 0 ? RET.dayInc * 0.7 + L.inc * 0.3 : L.inc;
+    if (L.served >= 20 && !L.lost) achUnlock('kusursuz_gun');
+    if (L.market) {
+      RET.bestMkt = Math.max(RET.bestMkt || 0, L.inc || 0);
+      if (L.inc >= 2500) achUnlock('pazar_rekor');
+      var cap = Math.round(servEff('auctionN'));
+      if (L.auc && cap > 0 && L.auc.n >= cap) achUnlock('mezat_dolu');
+    }
+  } catch (e) { }
+}
+/* bölgenin dakikalık maaş yükü (müdür dahil) */
+function zoneWagePM(z) {
+  var w = 0;
+  for (var i = 0; i < workers.length; i++) if (workers[i].zone === z && ROLES[workers[i].role]) w += ROLES[workers[i].role].wage * (1 - mgrEff(z, 'wage'));
+  if (mgr(z)) w += mgr(z).wage || 0;
+  return w * (1 - Math.min(0.5, servEff('wage')));
+}
+/* uzakta geçen süre (sn) → kazanç.
+   bölge hızı = min(%30 × brüt gelir/dk, brüt − maaş); toplam hız ≤ tipik gün geliri / 60 (saatte en fazla bir günlük gelir);
+   süre: 5 dk altı 0, ilk 2 sa tam, 2–8 sa %40, 8 sa sonrası sayılmaz; negatif / 1 yıldan uzun → 0 */
+function retCompute(sec) {
+  var o = { sec: 0, v: 0, zones: [], auto: 0, effMin: 0, perMin: 0 };
+  if (typeof sec !== 'number' || !isFinite(sec) || sec < RET_MIN || sec > RET_ABSURD) return o;
+  var s = Math.min(sec, RET_CAP), effMin = (Math.min(s, RET_FULL) + Math.max(0, s - RET_FULL) * RET_TAIL) / 60;
+  var rateSum = 0, gross = 0;
+  for (var z = 0; z < RET.rate.length; z++) {
+    if (!zoneOpen(z) || !zoneAuto(z) || !mgr(z)) continue;
+    o.auto++;
+    var g = RET.rate[z] || 0, r = Math.min(g * RET_FRAC, Math.max(0, g - zoneWagePM(z)));
+    gross += g;
+    if (r > 0) { o.zones.push({ z: z, r: r, v: 0 }); rateSum += r; }
+  }
+  var dayRef = RET.dayInc > 0 ? RET.dayInc : gross * DAY_LEN / 60;
+  o.perMin = Math.min(rateSum, dayRef / 60);
+  o.sec = s; o.effMin = effMin;
+  o.v = Math.max(0, Math.floor(o.perMin * effMin));
+  o.zones.forEach(function (q) { q.v = rateSum ? Math.floor(o.v * q.r / rateSum) : 0; });
+  return o;
+}
+function retCardOpen() { var e = document.getElementById('offScr'); return !!e && !e.classList.contains('hidden'); }
+function retShowCard(o) {
+  RET.cardV = o.v; RET.cardSec = o.sec;
+  document.getElementById('offTitle').textContent = T('offTitle');
+  document.getElementById('offSub').textContent = T('offSub', { t: clockStr(o.sec) });
+  var h = '';
+  o.zones.forEach(function (q) { h += row(ICO('koop'), escH(NM(AREAS[q.z].n)), escH(T('offZone', { m: mgr(q.z).n })), money(q.v)); });
+  document.getElementById('offRows').innerHTML = h;
+  document.getElementById('offTotL').textContent = T('offTotal');
+  document.getElementById('offTot').textContent = '+' + money(o.v);
+  document.getElementById('offNote').textContent = T('offNote');
+  document.getElementById('offGo').textContent = T('offGo');
+  document.getElementById('offScr').classList.remove('hidden');
+  syncPause(); sfx.bell();
+}
+function retCollect() {
+  if (!retCardOpen()) return 0;
+  var v = RET.cardV; RET.cardV = 0;
+  document.getElementById('offScr').classList.add('hidden');
+  if (v > 0) { S.cash += v; toast(T('offGot', { n: money(v) })); sfx.coin(); achUnlock('sen_yokken'); }
+  syncPause(); save();
+  return v;
+}
+function retBack() { if (!retCardOpen()) return false; retCollect(); return true; }
+/* ayrılık süresine göre kart (ya da bir kereye mahsus nazik ipucu) */
+function retOffer(sec) {
+  var o = retCompute(sec);
+  if (!S.started) return o;
+  if (o.v > 0) { retShowCard(o); return o; }
+  if (!o.auto && sec >= 1800 && sec <= RET_ABSURD && S.play >= 900 && Store.get(OFF_HINT_KEY) !== '1') {
+    Store.set(OFF_HINT_KEY, '1');
+    setTimeout(function () { toast(T('offHint')); }, 900);
+  }
+  return o;
+}
+/* kayıt / yükleme */
+function retSave() {
+  return { t: Date.now(), r: RET.rate.map(function (v) { return Math.round(v * 10) / 10; }), d: Math.round(RET.dayInc), m: Math.round(RET.bestMkt), a: Object.keys(S.ach || {}) };
+}
+function retLoad(d) {
+  var r = d && d.ret && typeof d.ret === 'object' ? d.ret : null;
+  function num(v) { v = +v; return isFinite(v) && v > 0 ? Math.min(v, 1e7) : 0; }
+  RET.acc = [0, 0, 0]; RET.win = 0; RET.lastPlay = -1; RET.cardV = 0;
+  RET.rate = [0, 1, 2].map(function (z) { return r && Array.isArray(r.r) ? num(r.r[z]) : 0; });
+  RET.dayInc = r ? num(r.d) : 0; RET.bestMkt = r ? num(r.m) : 0;
+  S.ach = {};
+  if (r && Array.isArray(r.a)) r.a.forEach(function (id) { if (typeof id === 'string' && achById(id)) S.ach[id] = 1; });
+  var t = r ? r.t : (d && d.at);
+  RET.loadedT = d && d !== BOOT && typeof t === 'number' && isFinite(t) ? t : 0;
+  achQ.length = 0; achBusyT = 0;
+  var pop = document.getElementById('achPop'); if (pop) pop.classList.add('hidden');
+  var card = document.getElementById('offScr'); if (card) card.classList.add('hidden');
+}
+function retOnStart() {
+  var t = RET.loadedT; RET.loadedT = 0; RET.lastPlay = -1;
+  if (t) retOffer((Date.now() - t) / 1000);
+}
+function retTick() {
+  if (!S.started) { RET.lastPlay = -1; return; }
+  var p = S.play;
+  if (RET.lastPlay >= 0) { var dp = p - RET.lastPlay; if (dp > 0 && dp < 5) RET.win += dp; }
+  RET.lastPlay = p;
+  if (RET.win >= 60) retRoll();
+  if (!paused) achCheck();
+  achPump();
+}
+/* arka plandan dönüş: 5 dk'dan uzunsa kart; kart açıkken arkaya geçilirse önce toplanır */
+document.addEventListener('visibilitychange', function () {
+  if (document.hidden) { if (retCardOpen()) retCollect(); RET.hidAt = Date.now(); return; }
+  var t = RET.hidAt; RET.hidAt = 0;
+  if (S.started && t) retOffer((Date.now() - t) / 1000);
+});
+setInterval(retTick, 1000);
+
+/* DOM: kart, bildirim şeridi, menü sekmesi, stiller (index.html'e dokunmadan) */
+(function () {
+  var css = document.createElement('style'); css.id = 'retCss';
+  css.textContent =
+    '#offScr{z-index:11}' +
+    '.offcard .row .vl{color:var(--gold)}' +
+    '.offsum{margin:10px 0 4px;text-align:center;background:rgba(0,0,0,.25);border:2px solid var(--edge);padding:8px}' +
+    '.offsum small{display:block;font-size:10px;letter-spacing:1.5px;color:var(--ink2)}' +
+    '.offsum b{display:block;font-size:26px;color:var(--green);text-shadow:2px 2px 0 #0a3a1a;letter-spacing:1px}' +
+    '.offcard p.offnote{font-size:10.5px;line-height:1.35;margin:6px 0 0;opacity:.8}' +
+    '#achPop{position:fixed;left:50%;top:calc(118px + env(safe-area-inset-top,0px));z-index:9;pointer-events:none;' +
+      'display:flex;align-items:center;gap:9px;width:max-content;max-width:88vw;padding:7px 14px 7px 9px;transform:translateX(-50%);' +
+      'background:linear-gradient(180deg,#3d2a0c,#241806);border:3px solid var(--gold);color:var(--ink);box-shadow:0 4px 0 rgba(0,0,0,.45)}' +
+    '#achPop.hidden{display:none}' +
+    '#achPop .pxi{width:30px;height:30px}' +
+    '#achPop small{display:block;font-size:9px;letter-spacing:1.5px;color:var(--gold)}' +
+    '#achPop b{display:block;font-size:14px;line-height:1.2}' +
+    '#achPop em{display:block;font-style:normal;font-size:10.5px;color:var(--green)}' +
+    '#achPop.go{animation:achIn 3s ease forwards}' +
+    '@keyframes achIn{0%{opacity:0;transform:translate(-50%,-14px)}10%{opacity:1;transform:translate(-50%,0)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-6px)}}' +
+    '#menuTabs .tab{font-size:9.5px;padding:8px 1px;letter-spacing:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+    '@media (max-width:400px){#menuTabs{flex-wrap:wrap}#menuTabs .tab{flex:1 0 30%;font-size:10.5px}}' +
+    '.achHead{display:flex;justify-content:space-between;align-items:baseline;margin:2px 0 5px}' +
+    '.achHead b{font-size:14px;color:var(--gold);letter-spacing:1px}.achHead span{font-size:11px;color:var(--ink2)}' +
+    '.achBar{height:8px;background:rgba(0,0,0,.35);border:2px solid var(--edge);margin-bottom:8px}.achBar i{display:block;height:100%;background:var(--gold)}' +
+    '.achCat{font-size:10px;letter-spacing:1.5px;color:var(--gold);margin:8px 0 4px}' +
+    '.achGrid{display:grid;grid-template-columns:1fr 1fr;gap:5px}' +
+    '.achCell{display:flex;gap:6px;align-items:flex-start;background:linear-gradient(180deg,#22425c,#1a3448);border:2px solid var(--edge);border-left:3px solid var(--kilim2);padding:6px;min-width:0}' +
+    '.achCell .pxi{width:24px;height:24px;flex:0 0 auto}' +
+    '.achCell div{min-width:0}' +
+    '.achCell b{display:block;font-size:11px;line-height:1.2;color:var(--ink)}' +
+    '.achCell small{display:block;font-size:9.5px;line-height:1.25;color:var(--ink2)}' +
+    '.achCell em{display:block;font-style:normal;font-size:9.5px;color:var(--green);margin-top:2px}' +
+    '.achCell.on{border-left-color:var(--gold)}' +
+    '.achCell.off{opacity:.55;border-left-color:var(--edge2)}.achCell.off .pxi{filter:grayscale(1) brightness(.8)}' +
+    '.achCell small.achElse{color:#ffb27a}';
+  document.head.appendChild(css);
+  var ov = document.createElement('div');
+  ov.className = 'overlay hidden'; ov.id = 'offScr';
+  ov.innerHTML = '<div class="card offcard"><h2 id="offTitle"></h2><p id="offSub"></p><div id="offRows"></div>' +
+    '<div class="offsum"><small id="offTotL"></small><b id="offTot"></b></div><p class="offnote" id="offNote"></p>' +
+    '<button class="go" id="offGo"></button></div>';
+  document.body.appendChild(ov);
+  document.getElementById('offGo').onclick = function () { retCollect(); };
+  var pop = document.createElement('div');
+  pop.id = 'achPop'; pop.className = 'hidden';
+  pop.innerHTML = '<i class="pxi" id="achPopI"></i><div><small id="achPopK"></small><b id="achPopT"></b><em id="achPopR"></em></div>';
+  document.body.appendChild(pop);
+  var tabs = document.getElementById('menuTabs');
+  if (tabs) {
+    var tb = document.createElement('button');
+    tb.className = 'tab'; tb.dataset.t = 'basarim'; tb.textContent = T('tabs')[5] || T('achHead');
+    tb.onclick = function () {
+      Array.prototype.forEach.call(document.querySelectorAll('#menuTabs .tab'), function (o) { o.classList.remove('on'); });
+      tb.classList.add('on'); curTab = 'basarim'; renderTab(); sfx.tap();
+    };
+    tabs.appendChild(tb);
+  }
+})();
+
+/* =========================================================
+   BAŞLAT
+   ========================================================= */
+resize();
+migrateOldSave();
+loadPref();
+S0 = JSON.parse(JSON.stringify(S));     /* temiz başlangıç: yeni oyun sayfayı yenilemeden buna döner */
+BOOT = buildSave();
+curSlot = lastSlot();
+if (curSlot) loadFrom(readSlot(curSlot));
+rebuildCounters();
+reassignWorkers();
+if (!M) M = newMarket();
+lastRepLvl = repLevel();
+paintIcons();
+applyLang();
+syncSettingsUI();
+refreshSaveInfo();
+syncPause();
+resize();
+camX = pX(player.x, player.y); camY = pY(player.x, player.y, 0);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { });
+/* açılış akışı: kayıt yoksa gazete hikâyesi → ana menü. "Yeni Oyun" ile silinip gelindiyse
+   hikâye → doğrudan işletme adı (oyuncu zaten yeni oyun dedi). */
+(function bootFlow() {
+  if (!slotCount()) openIntro(null);              /* ilk açılış: hikâye → ana menü */
+})();
+requestAnimationFrame(frame);
+
+/* =========================================================
+   GÖRÜŞ FORMU + MAĞAZA DEĞERLENDİRMESİ
+   Amaç: oyuncular oynasın ve fikrini söylesin (para değil).
+   1) Görüşünü yaz: duraklatma menüsünden ve Ayarlar'dan açılır; 1–5 yıldız (zorunlu), isteğe bağlı konu
+      (Hata / Öneri / Beğendim), en çok 500 karakter metin. Açıkken oyun durur.
+      • netOn() → bt_feedback RPC'si (online/schema.sql). Sunucuya ulaşılamazsa, paylaşım kapalıysa ya da
+        çevrimiçi tablo kurulu değilse görüş cihazdaki gelen kutusuna (en çok 20) yazılır; bir sonraki
+        açılışta (ve paylaşım yeniden açılınca) netOn() ise sırayla gönderilir (sunucu sınırı: 60 sn'de 1).
+      • Görüş hiçbir ödüle bağlı DEĞİLDİR (mağazalar teşvikli yorumu yasaklar).
+   2) Mağaza değerlendirmesi (yalnız uygulamada; web'de hiçbir şey yapmaz):
+      resmi uygulama içi değerlendirme penceresi (SKStoreReviewController / Play In-App Review),
+      native.js › BT_NATIVE.review() üzerinden.
+      • YALNIZ tarafsız tetikleyiciler: Bölüm 1 kapanış kartı kapatılınca, ya da en az 3 oyun günü bitmişken
+        iyi geçen bir günün (gelir var, kaçan müşteri sunulandan az) özeti kapatılınca. Görüş formundaki yıldız puanı bu karara HİÇ
+        girmez ("review gating" yasak: mutlu oyuncuyu mağazaya, mutsuzu forma yönlendirmek). Görüş
+        formundan asla çağrılmaz; form açıkken de sorulmaz.
+      • 60 gerçek günde en çok bir kez (zaman damgası saklanır), ilk oturumda asla, bir aksilikten
+        (hata sesi) hemen sonra asla.
+   ========================================================= */
+Object.assign(STR.tr, {
+  fbBtn: '⭐ GÖRÜŞÜNÜ YAZ', fbTitle: 'GÖRÜŞÜNÜ YAZ', fbSub: 'Oyunu nasıl buldun? Her görüş tek tek okunur.',
+  fbStarsLbl: 'PUANIN', fbStarN: '{n} yıldız', fbCatLbl: 'KONU (İSTEĞE BAĞLI)',
+  fbCat_bug: 'HATA', fbCat_idea: 'ÖNERİ', fbCat_love: 'BEĞENDİM',
+  fbTextLbl: 'MESAJIN (İSTEĞE BAĞLI)', fbPh: 'Ne hoşuna gitti, ne eksik, nerede takıldın?',
+  fbSend: 'GÖNDER', fbSending: 'GÖNDERİLİYOR…', fbCancel: 'VAZGEÇ',
+  fbNote: 'Görüşün herkese açık değildir; yalnız oyunun geliştiricisi okur. Ayarlar › Çevrimiçi verilerimi sil ile silinir.',
+  fbNeedStars: 'Önce 1–5 arası bir puan seç', fbTooLong: 'Mesaj en çok {n} karakter olabilir',
+  fbThanks: 'Teşekkürler! Görüşün bize ulaştı', fbQueued: 'Teşekkürler! Görüşün kaydedildi, çevrimiçi olunca gönderilecek',
+  fbTooMany: 'Bugün yeterince görüş gönderdin, yarın yine yaz', fbBad: 'Görüş gönderilemedi, metni kontrol edip tekrar dene',
+  forgetBtn: 'ÇEVRİMİÇİ VERİLERİMİ SİL',
+  forgetAsk: 'Bu cihazın çevrimiçi verileri (skor tablosu kayıtları ve gönderdiğin görüşler; sunucu ve cihaz) silinsin mi? Oyun kayıtların etkilenmez.',
+  forgetDone: 'Çevrimiçi verilerin silindi; paylaşım kapatıldı (Ayarlar\'dan yeniden açabilirsin)'
+});
+Object.assign(STR.en, {
+  fbBtn: '⭐ SEND FEEDBACK', fbTitle: 'SEND FEEDBACK', fbSub: 'How do you like the game? Every message is read.',
+  fbStarsLbl: 'YOUR RATING', fbStarN: '{n} stars', fbCatLbl: 'TOPIC (OPTIONAL)',
+  fbCat_bug: 'BUG', fbCat_idea: 'IDEA', fbCat_love: 'LOVE IT',
+  fbTextLbl: 'YOUR MESSAGE (OPTIONAL)', fbPh: 'What did you like, what is missing, where did you get stuck?',
+  fbSend: 'SEND', fbSending: 'SENDING…', fbCancel: 'CANCEL',
+  fbNote: 'Your feedback is not public; only the game\'s developer reads it. Settings › Delete my online data removes it.',
+  fbNeedStars: 'Pick a rating from 1 to 5 first', fbTooLong: 'The message can be at most {n} characters',
+  fbThanks: 'Thank you! Your feedback reached us', fbQueued: 'Thank you! Your feedback is saved and will be sent when online',
+  fbTooMany: 'You have sent plenty of feedback today, write again tomorrow', fbBad: 'Feedback could not be sent, check the text and try again',
+  forgetBtn: 'DELETE MY ONLINE DATA',
+  forgetAsk: 'Delete this device\'s online data (leaderboard entries and the feedback you sent; server and device)? Your game saves are not affected.',
+  forgetDone: 'Online data deleted; sharing turned off (you can turn it back on in Settings)'
+});
+var FB_OUTBOX = 'balikci_feedback_outbox', FB_MAX = 20, FB_LEN = 500, FB_GAP = 61000, FB_CATS = ['bug', 'idea', 'love'];
+var FB_VER = '1.7';                                    /* görüşle birlikte giden oyun sürümü */
+var fbScr = document.getElementById('fbScr'), fbCard = document.getElementById('fbCard'), fbText = document.getElementById('fbText'),
+  fbCount = document.getElementById('fbCount'), fbErrEl = document.getElementById('fbErr'), fbSendBtn = document.getElementById('fbSend');
+var fb = { stars: 0, cat: '', busy: false, lastSent: 0, flushBusy: false, stop: false, timer: 0, toastTm: 0 };
+function fbOpen() { return !!fbScr && !fbScr.classList.contains('hidden'); }
+/* 9×9 pixel yıldız (tek SVG yolu, keskin kenar) */
+var FB_STAR = (function () {
+  var rows = ['....#....', '....#....', '...###...', '#########', '.#######.', '..#####..', '..##.##..', '.##...##.', '.#.....#.'], d = '';
+  rows.forEach(function (r, y) { for (var x = 0; x < r.length; x++) if (r[x] === '#') d += 'M' + x + ' ' + y + 'h1v1h-1z'; });
+  return '<svg viewBox="0 0 9 9" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="' + d + '"/></svg>';
+})();
+function fbApplyLang() {
+  if (!fbScr) return;
+  var q = function (id) { return document.getElementById(id); };
+  q('fbTitle').textContent = T('fbTitle'); q('fbSub').textContent = T('fbSub');
+  q('fbStarsLbl').textContent = T('fbStarsLbl'); q('fbCatLbl').textContent = T('fbCatLbl'); q('fbTextLbl').textContent = T('fbTextLbl');
+  q('fbCancel').textContent = T('fbCancel'); q('fbNote').textContent = T('fbNote');
+  fbSendBtn.textContent = T(fb.busy ? 'fbSending' : 'fbSend'); fbText.placeholder = T('fbPh');
+  Array.prototype.forEach.call(document.querySelectorAll('#fbCats button'), function (b) { b.textContent = T('fbCat_' + b.dataset.c); });
+  Array.prototype.forEach.call(document.querySelectorAll('#fbStars button'), function (b) { b.setAttribute('aria-label', T('fbStarN', { n: b.dataset.v })); });
+  q('menuFb').innerHTML = PX(T('fbBtn')); q('fbBtn').innerHTML = PX(T('fbBtn'));
+  el.forgetBtn.textContent = T('forgetBtn');           /* "Skor kaydımı sil" artık görüşleri de siler */
+}
+function fbRender() {
+  Array.prototype.forEach.call(document.querySelectorAll('#fbStars button'), function (b) { b.classList.toggle('on', +b.dataset.v <= fb.stars); });
+  Array.prototype.forEach.call(document.querySelectorAll('#fbCats button'), function (b) { b.classList.toggle('on', b.dataset.c === fb.cat); });
+  var n = fbText.value.length;
+  fbCount.textContent = n + '/' + FB_LEN; fbCount.classList.toggle('bad', n > FB_LEN);
+  fbSendBtn.disabled = fb.busy; fbSendBtn.textContent = T(fb.busy ? 'fbSending' : 'fbSend');
+}
+function fbErr(msg) {
+  fbErrEl.textContent = msg || ''; fbErrEl.classList.toggle('hidden', !msg);
+  if (msg) { fbCard.classList.remove('shake'); void fbCard.offsetWidth; fbCard.classList.add('shake'); }
+}
+function fbShow() {
+  fb.stars = 0; fb.cat = ''; fbText.value = ''; fbErr('');        /* gönderim sürüyorsa "busy" kalır: çift gönderim olmasın */
+  fbApplyLang(); fbRender();
+  fbScr.classList.remove('hidden'); syncPause(); sfx.tap();
+}
+function fbClose() { fbScr.classList.add('hidden'); if (document.activeElement === fbText) fbText.blur(); syncPause(); }
+/* toast normalde katmanların (z 10) altında kalır ve duraklatmada sönmez: görüş mesajı üstte, kendi süresiyle */
+function fbToast(msg) {
+  toast(msg); el.toast.classList.add('fbtop');
+  clearTimeout(fb.toastTm);
+  fb.toastTm = setTimeout(function () { if (el.toast.textContent === msg) el.toast.classList.remove('on'); el.toast.classList.remove('fbtop'); }, 3000);
+}
+function fbArgs(it) {
+  return { p_player: it.p_player, p_run: it.p_run, p_stars: it.p_stars, p_cat: it.p_cat, p_text: it.p_text,
+    p_lang: it.p_lang, p_ver: it.p_ver, p_day: it.p_day };
+}
+/* cihazdaki gelen kutusu (gönderilemeyen görüşler) */
+function fbBox() {
+  try {
+    var a = JSON.parse(Store.get(FB_OUTBOX) || '[]');
+    return Array.isArray(a) ? a.filter(function (x) { return x && typeof x.p_player === 'string' && x.p_stars >= 1 && x.p_stars <= 5; }) : [];
+  } catch (e) { return []; }
+}
+function fbBoxSet(a) { if (a.length) Store.set(FB_OUTBOX, JSON.stringify(a)); else Store.del(FB_OUTBOX); }
+function fbQueue(it) { var a = fbBox(); a.push(it); while (a.length > FB_MAX) a.shift(); fbBoxSet(a); }
+function fbDrop(it) {
+  var a = fbBox();
+  for (var i = 0; i < a.length; i++) if (a[i].at === it.at && a[i].p_text === it.p_text) { a.splice(i, 1); break; }
+  fbBoxSet(a);
+}
+function fbSchedule(ms) { clearTimeout(fb.timer); fb.timer = setTimeout(function () { fbFlush(); }, Math.max(50, ms)); }
+/* gelen kutusunu sırayla boşalt (sunucu 60 sn'de 1 görüş kabul eder) */
+function fbFlush(force) {
+  if (!netOn() || fb.flushBusy || fb.stop) return;
+  var a = fbBox(); if (!a.length) return;
+  var it = a[0];
+  if (it.p_player !== PLAYER_ID) { fbDrop(it); fbFlush(force); return; }   /* "verilerimi sil" sonrası eski kimliğin görüşü gitmez */
+  var wait = FB_GAP - (Date.now() - fb.lastSent);
+  if (wait > 0 && !force) { fbSchedule(wait); return; }
+  fb.flushBusy = true;
+  rpc('bt_feedback', fbArgs(it)).then(function (r) {
+    fb.flushBusy = false;
+    if (r === 'ok') { fbDrop(it); fb.lastSent = Date.now(); if (fbBox().length) fbSchedule(FB_GAP); }
+    else if (r === 'too_fast') { fb.lastSent = Date.now(); fbSchedule(FB_GAP); }
+    else if (r === 'too_many' || r === 'busy') fb.stop = true;                /* bu oturumda bırak, sonraki açılışta dener */
+    else { fbDrop(it); if (fbBox().length) fbSchedule(FB_GAP); }             /* sunucu geçersiz saydı: tekrar denemenin anlamı yok */
+  }, function () { fb.flushBusy = false; });                                /* çevrimdışı: kutuda kalır */
+}
+function fbSend() {
+  if (fb.busy) return;
+  var text = fbText.value.replace(/\r\n?/g, '\n').trim();
+  if (!(fb.stars >= 1 && fb.stars <= 5)) { fbErr(T('fbNeedStars')); sfx.tap(); return; }
+  if (text.length > FB_LEN) { fbErr(T('fbTooLong', { n: FB_LEN })); sfx.tap(); return; }
+  fbErr('');
+  var it = { p_player: PLAYER_ID, p_run: S.runId || '', p_stars: fb.stars, p_cat: fb.cat || null, p_text: text,
+    p_lang: lang, p_ver: FB_VER, p_day: day.n || 1, at: Date.now() };
+  function queued() { fbQueue(it); fbClose(); fbToast(T('fbQueued')); sfx.buy(); if (netOn()) fbSchedule(FB_GAP - (Date.now() - fb.lastSent)); }
+  if (ONLINE && !onlineOK && !onlineAsked) { askOnline(function () { if (onlineOK) fbSend(); else queued(); }); return; }   /* form açık kalır, rıza sorusu üstte */
+  if (!netOn() || Date.now() - fb.lastSent < FB_GAP) { queued(); return; }
+  fb.busy = true; fbRender();
+  rpc('bt_feedback', fbArgs(it)).then(function (r) {
+    fb.busy = false; fbRender();
+    if (r === 'ok') { fb.lastSent = Date.now(); fbClose(); fbToast(T('fbThanks')); sfx.buy(); }
+    else if (r === 'too_fast') { fb.lastSent = Date.now(); queued(); }
+    else if (r === 'too_many' || r === 'busy') fbErr(T('fbTooMany'));
+    else fbErr(T('fbBad'));
+  }, function () { fb.busy = false; fbRender(); queued(); });
+}
+if (fbScr) {
+  document.getElementById('fbStars').innerHTML = [1, 2, 3, 4, 5].map(function (v) { return '<button type="button" data-v="' + v + '">' + FB_STAR + '</button>'; }).join('');
+  Array.prototype.forEach.call(document.querySelectorAll('#fbStars button'), function (b) {
+    b.onclick = function () { fb.stars = +b.dataset.v; if (fbErrEl.textContent === T('fbNeedStars')) fbErr(''); fbRender(); sfx.tap(); };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#fbCats button'), function (b) {
+    b.onclick = function () { fb.cat = fb.cat === b.dataset.c ? '' : b.dataset.c; fbRender(); sfx.tap(); };   /* ikinci dokunuş seçimi kaldırır */
+  });
+  fbText.addEventListener('input', fbRender);
+  fbSendBtn.onclick = fbSend;
+  document.getElementById('fbCancel').onclick = function () { fbClose(); sfx.tap(); };
+  document.getElementById('menuFb').onclick = function () { fbShow(); };
+  document.getElementById('fbBtn').onclick = function () { fbShow(); };
+  /* paylaşım yeniden açılınca bekleyen görüşleri gönder */
+  Array.prototype.forEach.call(document.querySelectorAll('#onlineSeg button'), function (b) {
+    b.addEventListener('click', function () { if (netOn()) fbFlush(); });
+  });
+  fbApplyLang();
+}
+
+/* ---------- mağaza değerlendirme penceresi (yalnız uygulama) ---------- */
+var RV_KEY = 'balikci_review_at', RV_SESS = 'balikci_sessions', RV_GAP = 60 * 24 * 3600 * 1000, RV_CALM = 20000, RV_DELAY = 1200;
+var rvSession = (function () { var n = (parseInt(Store.get(RV_SESS), 10) || 0) + 1; Store.set(RV_SESS, String(n)); return n; })();
+var rv = { badAt: 0, asked: 0, pending: false };
+(function () {                                           /* aksilik = hata sesi (kayıp müşteri, yetersiz para, ...) */
+  var bad = sfx.bad;
+  sfx.bad = function () { rv.badAt = Date.now(); return bad.apply(this, arguments); };
+})();
+function rvBlock() {
+  var N = window.BT_NATIVE;
+  if (!N || typeof N.review !== 'function') return 'web';
+  if (rvSession < 2) return 'first';
+  var last = parseInt(Store.get(RV_KEY), 10) || 0;
+  if (last && Date.now() - last < RV_GAP) return 'recent';
+  if (Date.now() - rv.badAt < RV_CALM) return 'fail';
+  if (fbOpen()) return 'feedback';
+  return '';
+}
+/* tarafsız tetikleyiciden çağrılır; oyun devam ettikten kısa süre sonra, araya bir pencere girmediyse sorar */
+function maybeAskReview() {
+  if (rv.pending || rvBlock()) return false;
+  rv.pending = true;
+  setTimeout(function () {
+    rv.pending = false;
+    if (rvBlock() || anyOverlay() || !S.started) return;
+    Store.set(RV_KEY, String(Date.now())); rv.asked++;
+    try { window.BT_NATIVE.review(); } catch (e) { }
+  }, RV_DELAY);
+  return true;
+}
+el.chEndGo.addEventListener('click', function () { maybeAskReview(); });            /* Bölüm 1 bitti */
+el.dayGo.addEventListener('click', function () {                                      /* ≥3 gün, gün iyi kapandı */
+  var L = day.last;
+  if (L && L.n >= 3 && L.inc > 0 && L.served >= L.lost) maybeAskReview();
+});
+if (netOn()) fbFlush();                                  /* açılışta bekleyen görüşleri gönder */
+
+window.BT = {
+  cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },
+  envStage: function () { return envStage(); }, buildSave: buildSave, loadFrom: loadFrom, DEPOT_LV: DEPOT_LV, counterMax: counterMax, queueMax: queueMax, upCost: upCost, envFlow: envFlow, legacyEnvStage: legacyEnvStage, ENV_UPS: ENV_UPS, scenery: scenery, SPECIALS: SPECIALS,
+  /* test/önizleme: bir kıyafeti verilen tuvale çiz */
+  drawOutfitOn: function (cv, o, t) { var old = ctx, g = cv.getContext('2d'); ctx = g; try { g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), cv.height - 4); drawPerson({ x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: t || 0, act: 0, carry: [] }, o); } catch (e) { } ctx = old; },
+  specOutfit: function (id, face) { return specOutfit(specById(id), face || 1); },
+  specState: function () { return { spec: day.spec, sp: day.sp, normals: day.normals, active: customers.filter(function (c) { return c.spec; }).map(function (c) { return c.spec + ':' + c.state; }) }; },
+  autoState: function () { return { min: S.autoMin, t: Math.round(saveT), left: Math.round(autoLeft()) }; }, fastForwardAutosave: function (sec) { saveT += sec; },
+  CTYPES: CTYPES, S: S, safe: safe, BINS: BINS, HUT: HUT, DEPOT: DEPOT, WHALL: WHALL, office: office, MEYDAN: MEYDAN, BRIDGE: BRIDGE, depotCount: function () { return depotCount(); }, openHal: function () { openHal(); }, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
+  trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
+  zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
+  pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
+  customers: customers, FISH: FISH, start: start, hire: hire, toast: toast,
+  rebuildCounters: rebuildCounters, buyBuilding: buyBuilding, investProject: investProject,
+  setLang: function (l) { setLangTo(l); },
+  M: function () { return M; },
+  sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
+  nameBad: nameBad, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
+  dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(),
+    pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
+    y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },
+  snapshot: function () { return JSON.stringify(M); },
+  restore: function (j) { M = JSON.parse(j); }, openOffice: openOffice, closeDay: function () { closeDay(); },
+  buyShares: buyShares, sellShares: sellShares, acceptContract: acceptContract,
+  setEvent: function (id) { event = EVENTS.filter(function (e) { return e.id === id; })[0]; eventT = event.dur; },
+  /* v0.4 hizmet binaları */
+  SERV: SERV, PLOTS: PLOTS,
+  serv: function () { return servState; },
+  servMods: function () { _seT = -1; return servMods(); },
+  servEff: function (k) { _seT = -1; return servEff(k); },
+  servBuild: function (id, plotId) { return servBuild(id, plotById(plotId) || servFreePlots(id)[0]); },
+  servUp: servUp, servMove: function (id, pid) { return servMove(id, plotById(pid)); },
+  servLock: function (id) { return servLockReason(sdef(id)); },
+  servFree: function (id) { return servFreePlots(id).map(function (p) { return p.id; }); },
+  servValidate: servValidate,
+  servRates: function () { return { fish: fishRate, serv: servRate, cap: Math.max(12, fishRate * 0.30) }; },
+  servUnlock: servUnlock, servCount: servCount,
+  T: T, STR: STR, lang: function () { return lang; },
+  music: function () { return { on: music.on, bar: music.bar, step: music.step, mode: music.mode, enabled: musicEnabled, vol: music.gain ? +music.gain.gain.value.toFixed(3) : 0 }; },
+  sfx: sfx, audio: function () { return { state: AC && AC.state, vol: masterGain && +masterGain.gain.value.toFixed(3), lvl: volLvl, on: soundOn, ready: audioReady }; },
+  setVol: function (v) { volLvl = clamp(v | 0, 0, 2); applyVolume(); ensureAudio(); return volLvl; },
+  /* duraklatma + kayıt */
+  paused: function () { return paused; },
+  saveNow: function () { manualSave(); return saveMeta(); }, slot: function () { return curSlot; }, saveSlots: function () { var o = []; for (var i = 1; i <= SLOT_N; i++) o.push(metaOf(readSlot(i))); return o; }, persistent: function () { return Store.persistent; },
+  saveQuit: saveAndQuit, saveMeta: saveMeta,
+  openSettings: function () { openSettings(false); },
+  openMenu: openPauseMenu,
+  /* v1.2 — depo / gün / balık pazarı */
+  day: day, DAY_LEN: DAY_LEN,
+  zones: function () { return spots.map(function (sp, i) { return { z: i, open: zoneOpen(i), cap: zoneStaffCap(i), staff: zoneStaff(i) }; }); },
+  stalls: function () { return counters.map(function (c) { return [c.key, c.fish, c.open ? 'AÇIK' : 'KAPALI', c.buffer.length]; }); },
+  setStall: function (key, on) { var c = counterByKey(key); return c ? setStall(c, on) : false; },
+  toggleStall: function (key) { var c = counterByKey(key); return c ? toggleStall(c) : false; },
+  stallScreen: openStallScreen, undecided: function () { return undecidedStalls().map(function (c) { return c.key; }); },
+  hireCost: hireCost, zoneStaffCap: zoneStaffCap, zoneFree: zoneFree,
+  workerZones: function () { return workers.map(function (w) { return w.role + '@' + (w.zone < 0 ? 'liman' : w.zone); }); },
+  endDay: function () { day.t = DAY_LEN; },
+  skipTo: function (n) { day.n = Math.max(1, n - 1); day.t = DAY_LEN; },
+
+
+  fillMats: function (n) {
+    var f = sellableFish(), total = 0;
+    for (var t = 0; t < tables.length; t++) {
+      if (AREAS[tables[t].z].locked) continue;
+      for (var i = 0; i < n; i++) { var fish = zoneFish(t).filter(function (q) { return f.indexOf(q) >= 0; })[0]; if (fish) tables[t].mat.items.push({ k: 'fileto', f: fish }); }
+      total += tables[t].mat.items.length;
+    }
+    return total;
+  },
+  dayStats: function () { return day.st; }, lastDay: function () { return day.last; },
+  closeOverlays: function () {
+    el.settingsScreen.classList.add('hidden'); el.menuScreen.classList.add('hidden'); syncPause();
+  }
+};
+/* test kancaları: uzakta kazanç + başarımlar */
+Object.assign(window.BT, {
+  ACH: ACH, achMute: function (v) { achMuted = !!v; }, ach: function () { return Object.keys(S.ach || {}); }, achAll: achGlobal, achUnlock: achUnlock, achCheck: achCheck,
+  achQueue: function () { return achQ.slice(); }, achTabHTML: achTabHTML,
+  ret: function () { return { rate: RET.rate.slice(), acc: RET.acc.slice(), win: RET.win, dayInc: RET.dayInc, bestMkt: RET.bestMkt, loadedT: RET.loadedT, card: retCardOpen(), cardV: RET.cardV, cardSec: RET.cardSec }; },
+  retSet: function (rates, dayInc) { if (rates) RET.rate = rates.slice(0, 3); if (dayInc !== undefined) RET.dayInc = dayInc; },
+  retRoll: retRoll, retCompute: retCompute, retOffer: retOffer, retCollect: retCollect, retDayEnd: retDayEnd, zoneWagePM: zoneWagePM,
+  RET_K: { MIN: RET_MIN, FULL: RET_FULL, CAP: RET_CAP, TAIL: RET_TAIL, FRAC: RET_FRAC, ABSURD: RET_ABSURD }
+});
+
+/* görüş formu + mağaza değerlendirmesi — test kancaları */
+Object.assign(window.BT, {
+  fbShow: function () { fbShow(); }, fbIsOpen: fbOpen, fbOutbox: fbBox, fbFlush: function (force) { fbFlush(force); },
+  rvState: function () { return { session: rvSession, why: rvBlock(), asked: rv.asked, at: parseInt(Store.get(RV_KEY), 10) || 0 }; },
+  askReview: function () { return maybeAskReview(); }
+});
+
+
+/* =========================================================
+   ŞİRKETLER • KONTRATLAR • LİMAN BORSASI  (FULL GDD v1.0)
+   Tek denge tablosu: ECON  (§24: kodda dağınık sabit yok)
+   ========================================================= */
+
+})();

@@ -1,0 +1,36 @@
+# Hamsi Koyu'yu (eski adı Balıkçı Tycoon) GitHub Pages'te herkese açık yayınlar.
+# Bir kez: Settings › Pages › Build and deployment › Source: "GitHub Actions".
+# Sonra main'e her push'ta (yalnız balikci-tycoon/ değişince) site güncellenir.
+# Adres: https://recaikas.github.io/okult-kahin-byblbn/
+name: Hamsi Koyu — Pages
+on:
+  push:
+    branches: [main]
+    paths: ['balikci-tycoon/**', '.github/workflows/balikci-pages.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Oyun dosyalarını topla
+        run: |
+          mkdir -p _site
+          cp balikci-tycoon/index.html balikci-tycoon/native.js balikci-tycoon/game.js balikci-tycoon/config.js balikci-tycoon/specials.js balikci-tycoon/privacy.html balikci-tycoon/about.html _site/
+          cp -r balikci-tycoon/fonts _site/fonts
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
