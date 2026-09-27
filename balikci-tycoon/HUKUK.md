@@ -3,10 +3,12 @@
 > **Önemli uyarı:** Bu belge hukuki danışmanlık değildir. Kaynaklardan derlenmiş, tek kişilik ve para kazanmayan bir
 > oyun geliştiricisi için hazırlanmış pratik bir kontrol listesidir. Resmî ücretler her yıl değişir. **Marka başvurusu**
 > için bir **marka vekiline**, **KVKK ve yurt dışına veri aktarımı** için bir **avukata** son sözü söylet.
-> Kaynaklar 2026-09-26'da tarandı. Doğrulanamayan her şey metinde **(doğrulanmadı)** diye işaretlendi.
+> Kaynaklar 2026-09-26'da tarandı; v1.8 güncellemesi 2026-09-27. Doğrulanamayan her şey metinde **(doğrulanmadı)**
+> diye işaretlendi.
 
 İlgili dosyalar: [`LICENSE`](LICENSE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) ·
-[`about.html`](about.html) · [`privacy.html`](privacy.html) · [`MAGAZA.md`](MAGAZA.md)
+[`about.html`](about.html) · [`privacy.html`](privacy.html) · [`MAGAZA.md`](MAGAZA.md) ·
+[`MARKA_ON_ARASTIRMA.md`](MARKA_ON_ARASTIRMA.md)
 
 ---
 
@@ -17,15 +19,17 @@
 2. **Depo herkese açık ve lisans dosyası yok.** Hukuken "tüm hakları saklı" anlamına gelir, ama ziyaretçi bunu
    bilmez. Öneri: özel bir **"kaynak kodu görünür, yayımlamak yasak"** lisansı. Metin `LICENSE`'ta (v1.7'de eklendi).
 3. **Marka tescili isteğe bağlı.** Türkiye'de tek sınıf için yaklaşık **9.830 TL** resmî ücret var, iki sınıf için
-   yaklaşık **12.650 TL**. Önce ücretsiz ön araştırmayı yap. "Hamsi Koyu" gerçek bir yer adı (İstanbul Garipçe'de bir
-   koy). Bu, tescilde küçük bir risk.
+   yaklaşık **12.650 TL**. Önce ücretsiz ön araştırmayı yap (sonuçlar: `MARKA_ON_ARASTIRMA.md`). "Hamsi Koyu" gerçek
+   bir yer adı (İstanbul Garipçe'de bir koy). Bu, tescilde küçük bir risk.
 4. **Mağazalar:** Apple yılda 99 $, Google bir kez 25 $. Para kazanmadığın için Apple'da AB **"trader değilim"**
    (non-trader) beyanı uygun. Google'da ev adresin görünmez, yalnız adın, ülken ve geliştirici e-postan görünür.
-   Google'da yeni kişisel hesap için **12 test kullanıcısı ve 14 gün kapalı test** şartı var.
-5. **En büyük açık KVKK.** Supabase'e giden veriler yurt dışına aktarım sayılır. **v1.7'de yapıldı:** çevrimiçi
-   paylaşım artık varsayılan olarak kapalı; ilk kullanımda açık rıza soruluyor. `privacy.html`'e veri sorumlusu,
-   hukuki sebep, yurt dışı aktarım, saklama süresi ve haklar bölümleri eklendi. **Sana kalan:** Supabase projesini
-   AB'de (Frankfurt) kurmak ve iletişim e-postasını yazmak.
+   Google'da yeni kişisel hesap için **12 test kullanıcısı ve 14 gün kapalı test** şartı var. İletişim e-postası
+   `recaizade3145@gmail.com` mağazalarda ve GitHub'da herkese açık görünür.
+5. **En büyük açık KVKK.** Supabase'e giden veriler yurt dışına aktarım sayılır. **v1.8 kararı:** çevrimiçi skor
+   tablosu **zorunlu ve her zaman açık**. İlk oyunda tek seferlik bir aydınlatma gösteriliyor; hukuki sebep hizmetin
+   ifası (KVKK m.5/2-c, GDPR m.6/1-b). **Sonucu:** açık rıza hizmetin ön şartı yapılamayacağı için yurt dışı aktarım
+   artık rızaya dayanamaz. **Supabase ile KVKK standart sözleşmesi imzalanıp 5 iş günü içinde Kurula bildirilmeden
+   çevrimiçi skor tablosu yayına açılamaz** (§6.4). Olmazsa `config.js` boş yayınla (oyun çevrimdışı tam çalışır).
 6. **Çocuk kategorisini hedefleme.** İçerik her yaşa uygun kalabilir (PEGI 3 / 4+). Ama hedef kitleyi **13+** seç.
    Apple'ın Kids kategorisini ve Google'ın Families programını seçme.
 7. **Vergi:** gelir yoksa yükümlülük de yok. Reklam, satın alma ya da bağış eklersen GVK 20/B istisnasına bak.
@@ -37,15 +41,16 @@
 | Konu | Durum | Ne yapmalı |
 |---|---|---|
 | GitHub deposu `recaikas/okult-kahin-byblbn` | **Herkese açık** (GitHub API: `private: false`). GitHub Pages ile yayınlanıyor. | Lisans ekle (§4). |
-| LICENSE dosyası | **Eklendi** (`balikci-tycoon/LICENSE`, v1.7). Telif sahibi olarak GitHub adın yazılı. | İstersen gerçek adınla değiştir. |
+| LICENSE dosyası | **Eklendi** (`balikci-tycoon/LICENSE`, v1.7). Telif sahibi olarak GitHub adın, iletişim `recaizade3145@gmail.com` (v1.8). | İstersen gerçek adınla değiştir. |
 | Depoda başka proje | Kökte ayrı bir Python/Streamlit projesi var (`app.py`, "Okult Kahin"). | Lisansı `balikci-tycoon/` ile sınırla ya da oyunu kendi deposuna taşı (§4.4). |
 | Commit yazarları | 60 commit'in **44'ü "Claude"** (yapay zekâ aracı) adına, 16'sı `recaikas` adına. | Bundan sonra commit'ler kendi adınla olsun. Yapay zekâ yardımı için "Co-Authored-By" satırı yeterli (§2.4). |
 | İmzalı commit | Yok (5 commit GitHub web imzalı, doğrulanamadı). | İsteğe bağlı: SSH ile commit imzala (§2.2). |
 | Üçüncü taraf varlık | Yalnız **Pixelify Sans** (OFL) ve mobil kabukta **Capacitor + eklentiler** (MIT), **Apache Cordova** ve **AndroidX** (Apache 2.0). Müzik ve sesler Web Audio ile kodda üretiliyor, dosya yok. Grafikler kodla çiziliyor. | `THIRD_PARTY_NOTICES.md` hazır. Hakkında ekranına ekle (§7). |
 | `@capacitor-community/in-app-review` | `package.json`'da var ama `node_modules`'da kurulu değil. Lock dosyasına göre lisansı MIT. Android tarafı Google'ın Play Review kitaplığını çekiyor olabilir. | `npm install` sonrası lisans satırını doğrula. |
-| Çevrimiçi skor varsayılanı | **v1.7'de düzeltildi:** varsayılan kapalı; skor tablosu ya da görüş formu ilk kullanıldığında açık rıza soruluyor. Eski "açık" ayarı onay sayılmıyor. | — |
-| `privacy.html` | **v1.7'de tamamlandı:** veri sorumlusu, hukuki sebepler, yurt dışı aktarım (AB/Almanya), saklama süresi (24 ay; `bt_cleanup`), haklar ve şikâyet yolu eklendi. | İletişim e-postasını doldur. |
-| `MAGAZA.md` | **v1.7'de güncellendi:** yeni ad, reklamsız ve ücretsiz karar, rıza, AB sunucusu. | — |
+| Çevrimiçi skor tablosu | **v1.8: zorunlu, her zaman açık.** v1.7'deki onay kartı ve Ayarlar düğmesi kaldırıldı. İlk oyunda tek seferlik KVKK aydınlatması (TAMAM); görülmeden ve internetsizken hiçbir şey gönderilmiyor. Görüş formu isteğe bağlı. | **Yayından önce KVKK standart sözleşmesi + Kurula bildirim şart** (§6.4). |
+| `privacy.html` | **v1.8:** zorunlu skor tablosu, hukuki sebep m.5/2-c / GDPR 6(1)(b), yurt dışı aktarımda standart sözleşme, AB/Almanya, saklama (24 ay; `bt_cleanup`), haklar, iletişim `recaizade3145@gmail.com`. | Standart sözleşme imzalanana kadar metin gerçeği yansıtmıyor; o zamana dek `config.js` boş kalmalı. |
+| `MAGAZA.md` | **v1.8'de güncellendi:** adım adım yapılacaklar, Supabase'e hazır e-posta, zorunlu veri beyanları. | — |
+| Marka ön araştırması | `MARKA_ON_ARASTIRMA.md` (ön tarama; resmî veri tabanı sonuçları senin aramanla eklenecek). | TÜRKPATENT araması (§3.4). |
 | Uygulama kimliği | **v1.7'de değişti:** `io.github.recaikas.hamsikoyu`, uygulama adı "Hamsi Koyu". | İlk yüklemeden sonra değiştirilemez. |
 
 ---
@@ -66,8 +71,8 @@
 
 | Yol | Maliyet | Pratik değeri | Öneri |
 |---|---|---|---|
-| **GitHub geçmişi** (commit'ler, push tarihleri, Pages dağıtım kayıtları, Actions günlükleri) | Ücretsiz | Yüksek. Commit tarihini kişi kendisi girebilir, ama GitHub'ın push/Actions/Pages kayıtları sunucu tarafında tutulur ve üçüncü kişi kaydıdır. Mağaza ve GitHub şikâyetlerinde genelde yeter. | **Şimdi.** Her sürüme `git tag v1.0.0` at ve GitHub'da **Release** oluştur. |
-| **Software Heritage** "Save code now" — https://archive.softwareheritage.org/save/ | Ücretsiz | Yüksek. Bağımsız, kâr amacı gütmeyen bir arşiv; depoyu tarihli ve kalıcı biçimde saklar. | **Şimdi**, sonra her büyük sürümde. |
+| **GitHub geçmişi** (commit'ler, push tarihleri, Pages dağıtım kayıtları, Actions günlükleri) | Ücretsiz | Yüksek. Commit tarihini kişi kendisi girebilir, ama GitHub'ın push/Actions/Pages kayıtları sunucu tarafında tutulur ve üçüncü kişi kaydıdır. Mağaza ve GitHub şikâyetlerinde genelde yeter. | **Yapıldı (v1.8):** v1.8 etiketi. Her sürüme etiket at, GitHub'da **Release** oluştur. |
+| **Software Heritage** "Save code now" — https://archive.softwareheritage.org/save/ | Ücretsiz | Yüksek. Bağımsız, kâr amacı gütmeyen bir arşiv; depoyu tarihli ve kalıcı biçimde saklar. | **Yapıldı (v1.8):** arşiv isteği. Her büyük sürümde tekrarla. |
 | **Internet Archive / Wayback Machine** — https://web.archive.org/save | Ücretsiz | Orta. Web sürümünün ve gizlilik sayfasının tarihli kopyası. | Yayın gününde. |
 | **OpenTimestamps** (https://opentimestamps.org) ile bir sürüm ZIP'inin SHA-256 özetini zaman damgala | Ücretsiz | Orta-yüksek. Dosyanın o tarihte var olduğunu kriptografik olarak gösterir. | İsteğe bağlı. |
 | **İmzalı commit'ler** (SSH anahtarıyla, GitHub'da "Verified") | Ücretsiz | Orta. Commit'in senin anahtarınla yapıldığını gösterir. | İsteğe bağlı. `git config --global gpg.format ssh` + `user.signingkey`. |
@@ -188,6 +193,7 @@ doğrula.
 - Ama **"Hamsi Koyu" gerçek bir yer adı**: İstanbul Sarıyer'de Garipçe yakınında küçük bir koy (Foursquare, Ekşi
   Sözlük). Ayrıca Trabzon'da ünlü "Hamsiköy" (sütlaç) ve Sinop'ta "Hamsilos Koyu" var.
 - TÜRKPATENT, WIPO ve mağaza aramaları bu ortamdan **yapılamadı** (erişim engellendi). 1-4. adımları sen yap.
+- Ön tarama ve senin arama sonuçların için ayrı dosya: [`MARKA_ON_ARASTIRMA.md`](MARKA_ON_ARASTIRMA.md).
 
 **Olası riskler:**
 - Yer adları, malın/hizmetin coğrafi kaynağını gösteriyorsa tescil edilmez (SMK m.5/1-c). Bir oyun için "Hamsi Koyu"
@@ -309,7 +315,8 @@ yeter. Tehdit etme.
   kazanmıyorsan herkese gösterilmez**.
 - **Herkese açık görünenler:** geliştirici adın (yasal adın), ülken ve **geliştirici e-posta adresin** (zorunlu).
   Satış ya da uygulama içi satın alma yaparsan **tam adresin** de görünür.
-  - Öneri: yalnız bu iş için ayrı bir e-posta adresi aç. **[GELİŞTİRİCİ E-POSTASI]**
+  - Geliştirici e-postası: **`recaizade3145@gmail.com`** (privacy.html, about.html, LICENSE ile aynı). Herkese açık
+    görünür, spam gelebilir; istersen ileride ayrı bir adres açıp hepsinde değiştir.
 - **D-U-N-S:** kişisel hesapta gerekmez. Yalnız kurumsal hesapta gerekir.
 - **Kapalı test şartı:** 13 Kasım 2023'ten sonra açılan kişisel hesaplarda üretime çıkmadan önce en az **12 test
   kullanıcısının 14 gün kesintisiz** kapalı teste katılması gerekir. Aralık 2024'te 20'den 12'ye indi. Sonra
@@ -322,7 +329,7 @@ yeter. Tehdit etme.
   olacağı için ek işin yok. APK'yı Play dışında dağıtacaksan uygulamanı bu hesaba kaydet.
 - **Play Console beyanları:**
   - Reklam içeriyor mu: **Hayır**.
-  - Veri güvenliği: `MAGAZA.md` §8.
+  - Veri güvenliği: `MAGAZA.md` §9 (v1.8'de veri toplama **zorunlu**).
   - Hedef kitle: §6.5.
   - Haber, finans, sağlık, devlet: **Hayır**.
   - Hesap silme bağlantısı: hesap oluşturulmadığı için **gerekmez**. Anonim kimlik bir hesap değildir, ama "Çevrimiçi
@@ -345,11 +352,12 @@ yeter. Tehdit etme.
 ### 6.4 KVKK (6698) — en önemli bölüm
 
 **Kişisel veri var mı?**
-- Çevrimiçi skor tablosu ve görüş formu açıkken şunlar gider:
+- v1.8'de skor tablosu zorunlu. `config.js` doluyken, aydınlatma görüldükten sonra internet varken her oyuncudan gider:
   - rastgele **kalıcı oyuncu kimliği**,
   - oyuncunun yazdığı **işletme ve karakter adı** (gerçek ad olabilir),
-  - **serbest görüş metni**.
-- Ayrıca Supabase sunucuları her istekte **IP adresini** görür ve kayıtlarında tutar.
+  - oyun istatistikleri, dil, açılış zamanı.
+- Görüş formu (isteğe bağlı) ayrıca **serbest görüş metni** gönderir.
+- Supabase sunucuları her istekte **IP adresini** görür ve kayıtlarında tutar.
 - Tek başına anonim görünen kimlik, IP ve cihazla birleşince kişiye bağlanabilir. Bu yüzden KVKK ve GDPR açısından
   **kişisel veri kabul edilmeli** (takma adlı veri).
 - `config.js` boşken hiçbir şey gönderilmez. KVKK işi **Supabase'i bağladığın anda** başlar.
@@ -358,10 +366,10 @@ yeter. Tehdit etme.
 
 | Yükümlülük | Durum / öneri |
 |---|---|
-| **Aydınlatma** (m.10 + Aydınlatma Tebliği): kimlik, amaç, hukuki sebep, aktarılan kişiler, toplama yöntemi, haklar | `privacy.html` büyük ölçüde hazır. **Eksikler:** veri sorumlusunun adı, hukuki sebepler, yurt dışı aktarım, saklama süresi, m.11 hakları ve başvuru yolu. Metin aşağıda. |
-| **Hukuki sebep** (m.5) | Skor tablosu: oyuncunun açtığı hizmetin sunulması (m.5/2-c) ya da meşru menfaat (m.5/2-f). Görüş formu: meşru menfaat (m.5/2-f). Bunlar yurt içi işleme için; yurt dışı aktarım ayrıca aşağıda. |
+| **Aydınlatma** (m.10 + Aydınlatma Tebliği): kimlik, amaç, hukuki sebep, aktarılan kişiler, toplama yöntemi, haklar | **Yapıldı (v1.8):** `privacy.html` eksiksiz; ayrıca ilk oyunda, veri gitmeden önce tek seferlik aydınlatma (işletme/karakter adı ve istatistikler herkese açık, görüşler gizli, rastgele kimlik, AB/Almanya'da Supabase, e-posta/konum/rehber yok, nasıl silinir). |
+| **Hukuki sebep** (m.5) | Skor tablosu: hizmetin/sözleşmenin ifası (**m.5/2-c**; GDPR m.6/1-b). Görüş formu: meşru menfaat (m.5/2-f; GDPR m.6/1-f). Bunlar yurt içi işleme için; yurt dışı aktarım ayrıca aşağıda. |
 | **Güvenlik** (m.12) | İyi: RLS, yalnız fonksiyonla yazma, anon anahtarla okuma yok. Supabase hesabında 2FA aç. Görüşleri dışa aktarıp başka yerde saklama. |
-| **İlgili kişi başvuruları** (m.11, en geç **30 gün** içinde yanıt) | Oyun içi silme düğmesi var. Ek olarak iletişim adresi ver. |
+| **İlgili kişi başvuruları** (m.11, en geç **30 gün** içinde yanıt) | Oyun içi "Çevrimiçi verilerimi sil" (sunucu kayıtları + görüşler; yeni anonim kimlik, oynamaya devam edilirse skor yeni kimlikle eklenir) ve `recaizade3145@gmail.com`. |
 | **VERBİS kaydı** | **Büyük olasılıkla muafsın.** Yıllık çalışanı 50'den az, yıllık mali bilanço toplamı 100 milyon TL'den az ve ana faaliyeti özel nitelikli veri işleme olmayan veri sorumluları muaf. |
 | **Veri ihlali bildirimi** (m.12/5) | Supabase anahtarın sızarsa ya da veriler açığa çıkarsa Kurula ve ilgili kişilere "en kısa sürede" bildir (Kurul kararı: 72 saat). |
 
@@ -372,66 +380,45 @@ Supabase sunucuları yurt dışında. Kanun artık şu yolları tanıyor:
 1. **Yeterlilik kararı:** Kurul, ülkeye göre karar verir. **Bildiğim kadarıyla AB ya da ABD için yayımlanmış bir
    yeterlilik kararı yok (doğrulanmadı).** Yani sunucuyu AB'ye koymak tek başına KVKK sorununu çözmez; ama GDPR'ı
    kolaylaştırır ve ileride bir AB kararı çıkarsa işe yarar.
-2. **Uygun güvenceler, pratikte "standart sözleşme":**
-   - KVKK'nın kendi metni (Supabase'in GDPR DPA'sı ya da AB SCC'leri yerine geçmez).
+2. **Uygun güvenceler, pratikte "standart sözleşme"** — **v1.8'de tek uygun yol bu:**
+   - KVKK'nın kendi metni, değiştirilmeden (Supabase'in GDPR DPA'sı ya da AB SCC'leri yerine geçmez).
    - Senin durumunda "veri sorumlusundan veri işleyene" modülü.
    - Türkçe imzalanır ve imzadan sonra **5 iş günü içinde** Kurula bildirilir (kvkk.gov.tr'deki bildirim modülü).
    - Bildirmemek idari para cezası sebebidir.
-   - Supabase'in ücretsiz planda KVKK standart sözleşmesi imzalayıp imzalamayacağı **belli değil**. Destek ekibine sor.
+   - Supabase'in ücretsiz planda KVKK standart sözleşmesi imzalayıp imzalamayacağı **belli değil**. Hazır İngilizce
+     e-posta: `MAGAZA.md` §0 adım 2.
 3. **Arızi (tekil) aktarım istisnaları** (m.9/6), örneğin aydınlatılmış **açık rıza**. Bu istisnalar yalnız
-   **düzenli olmayan** aktarımlar içindir. Her oyunda skor gönderen bir sistem düzenlidir, bu yüzden açık rızaya tek
-   başına güvenmek **zayıf**tır.
+   **düzenli olmayan** aktarımlar içindir. **v1.8'de artık kullanılamaz:** skor gönderimi düzenlidir ve zorunlu bir
+   hizmette açık rıza hizmetin ön şartı yapılamaz (rıza özgür iradeye dayanmalı, m.3/1-a). v1.7'deki rıza kartı bu
+   yüzden kaldırıldı; aktarım dayanağı standart sözleşmedir.
 
-**Pratik öneri (risk azaltma sırası):**
+**Pratik öneri (v1.8):**
 
-1. **Supabase projesini AB bölgesinde aç**: Frankfurt `eu-central-1` (Türkiye'ye en yakın). GDPR için Supabase'in DPA'sını
-   panelden kabul et ya da indir.
-2. **Varsayılanı kapalı yap:** `onlineOK = false` ile başla. İlk açılışta kısa bir kart göster: "Skorunu herkese açık
-   tabloya göndermek ister misin? Veriler AB'deki (Almanya) Supabase sunucularında tutulur. [Gizlilik] [Evet] [Hayır]".
-   Görüş formunun gönder düğmesinin yanına da tek satır aynı bilgi.
-3. **Veriyi en aza indir:**
+1. **Supabase projesini AB bölgesinde aç**: Frankfurt `eu-central-1`. GDPR için Supabase'in DPA'sını panelden kabul et.
+2. **⛔ ENGELLEYİCİ — Standart sözleşme:** Supabase'e KVKK standart sözleşmesini (veri sorumlusu → veri işleyen)
+   imzalayıp imzalamayacağını **yazılı** sor. İmzalanırsa **5 iş günü** içinde Kurula bildir. **Bu ikisi bitmeden
+   dolu `config.js`'li bir sürüm (kapalı test dahil) dağıtma.**
+3. **Supabase imzalamazsa** seçenekler:
+   - **(a)** çevrimiçi özellikler kapalı yayınla: `config.js` boş kalır, oyun cihaz içi skor listesiyle tam çalışır,
+     hiçbir veri gitmez (en kolay; mağaza beyanı "veri toplamıyor");
+   - **(b)** veritabanını Türkiye'de barındırılan bir sağlayıcıya taşı (ücretli; yurt dışı aktarım kalmaz);
+   - **(c)** bir KVKK avukatına danış.
+4. **Veriyi en aza indir:**
    - Oyun istatistiği ve takma ad dışında bir şey toplama.
    - Görüş metnine "kişisel bilgi yazma" uyarısı var; iyi.
-   - Oyun kaydı saymak (`bt_plays`) gerçekten gerekli mi? Değilse kaldır ya da süreli sil (ör. 12 ay).
+   - Açılış sayımları ve görüşler en çok 24 ay (`bt_cleanup`, ayda bir).
    - Ek güvenlik: işletme adını hazır bir ad listesinden seçtir. Bu hem KVKK hem kullanıcı içeriği (§6.6) sorununu
      küçültür.
-4. **Supabase'e KVKK standart sözleşmesi imzalayıp imzalamayacağını yazılı sor.** İmzalarsa 5 iş günü içinde Kurula
-   bildir. İmzalamazsa bir KVKK avukatına şu seçenekleri sor:
-   - (a) açık rıza ile devam etmek,
-   - (b) Türkiye'de barındırılan bir veritabanına geçmek (ücretli),
-   - (c) çevrimiçi özellikleri yalnız Türkiye dışı oyunculara açmak ya da tamamen kaldırmak.
 5. Gerçekçi risk: tek kişilik, ücretsiz, çok az veri toplayan bir oyun için yaptırım riski düşüktür, ama **sıfır
-   değildir**. Aydınlatma eksikliği tek başına idari para cezası sebebidir. Aydınlatma metnini eksiksiz yapmak ucuz
-   ve kolay; onu kesin yap.
+   değildir**. Aydınlatma v1.8'de tamam; kalan tek büyük açık standart sözleşme ve bildirim.
 
-**`privacy.html`'e eklenecek metin taslakları:**
-
-> **Veri sorumlusu:** [AD SOYAD], [İL], Türkiye — iletişim: [İLETİŞİM ADRESİ]
->
-> **Hukuki sebepler (KVKK m.5):** Skor tablosu verileri, sizin açtığınız çevrimiçi skor hizmetinin sunulması için
-> (m.5/2-c) ve oyunu geliştirmedeki meşru menfaatimiz için (m.5/2-f); görüşler, oyunu geliştirmedeki meşru menfaatimiz
-> için (m.5/2-f) işlenir.
->
-> **Yurt dışına aktarım:** Çevrimiçi skor tablosu ve görüş formu verileri, Supabase Inc.'in Avrupa Birliği'ndeki
-> (Almanya, Frankfurt) sunucularında barındırılır. Supabase bu verileri yalnız bizim adımıza, veri işleyen olarak
-> işler. Bu aktarım [KVKK m.9 kapsamında imzalanan standart sözleşmeye / açık rızanıza] dayanır. Supabase, hizmet
-> güvenliği için bağlantı IP adreslerini kısa süreli sunucu kayıtlarında tutabilir. Web sürümü GitHub Pages'te
-> barındırılır; GitHub da ziyaret IP adreslerini kayıt altına alabilir.
->
-> **Saklama süresi:** Skor kayıtları, silmenizi isteyene ya da skor tablosu kapatılana kadar; görüşler en çok
-> [24] ay saklanır.
->
-> **Haklarınız (KVKK m.11 / GDPR m.15-22):** verilerinizin işlenip işlenmediğini öğrenme, bilgi isteme, düzeltme,
-> silme, itiraz etme ve zarara uğradıysanız tazminat isteme. Oyun içindeki "Çevrimiçi verilerimi sil" düğmesiyle ya
-> da [İLETİŞİM ADRESİ] üzerinden başvurabilirsiniz; en geç 30 gün içinde yanıtlanır. Kişisel Verileri Koruma
-> Kurulu'na (kvkk.gov.tr) ya da AB'de yaşıyorsanız kendi ülkenizin veri koruma otoritesine şikâyette bulunabilirsiniz.
-
-(İngilizce karşılıkları da aynı yapıda eklenmeli.)
+`privacy.html` v1.8'de bu kararlara göre yazıldı (veri sorumlusu, m.5/2-c, standart sözleşmeye dayalı aktarım,
+saklama, haklar, iletişim). Karar değişirse (ör. seçenek b) aktarım paragrafını güncelle.
 
 ### 6.5 GDPR (AB oyuncuları) ve çocuklar
 
 - **GDPR (AB Genel Veri Koruma Tüzüğü)** AB'deki kişilere hizmet sunduğun için geçerlidir (m.3/2).
-  - Hukuki sebep: rıza ya da meşru menfaat.
+  - Hukuki sebep: skor tablosu için sözleşmenin/hizmetin ifası (m.6/1-b), görüşler için meşru menfaat (m.6/1-f).
   - Haklar: yukarıdaki metin.
   - Supabase'in DPA'sı AB SCC'lerini içerir.
 - **AB temsilcisi (m.27):** "arada bir yapılan, büyük ölçekli olmayan, düşük riskli" işleme için istisna var. Senin
@@ -450,8 +437,8 @@ Supabase sunucuları yurt dışında. Kanun artık şu yolları tanıyor:
   - Apple'da **Kids kategorisini seçme**. Kategori: Oyunlar › Simülasyon.
   - İçerik derecelendirmesi yine "her yaşa uygun" çıkabilir. Bu çelişki değildir: derecelendirme içerikle ilgilidir,
     hedef kitle kime yönelik olduğunla.
-  - `privacy.html`'deki "Oyun her yaş için uygundur" cümlesini şöyle değiştir: "İçerik her yaşa uygundur, ancak oyun
-    13 yaş altındaki çocuklara yönelik değildir ve onlardan bilerek veri toplamayız."
+  - **Yapıldı:** `privacy.html` artık "içerik her yaşa uygun, ama oyun çocuklara yönelik değil; bilerek veri
+    toplamayız" diyor.
 
 ### 6.6 Yaş derecelendirmesi (IARC / Apple anketi) — önerilen cevaplar
 
@@ -501,28 +488,35 @@ Supabase sunucuları yurt dışında. Kanun artık şu yolları tanıyor:
 
 - [x] `LICENSE` `balikci-tycoon/`'a kondu, README'ye lisans satırı eklendi (v1.7). (§4.2)
 - [ ] `git config user.name "[AD SOYAD]"` ve `user.email` ile bundan sonraki commit'leri kendi adına al. (§2.4)
-- [ ] Mevcut sürümü etiketle (`v1.6`), GitHub'da Release oluştur. Depoyu **Software Heritage**'a, oyun adresini
-      **Wayback Machine**'e kaydettir. (§2.2)
-- [ ] "Hamsi Koyu" için ön araştırma: TÜRKPATENT, WIPO Brand DB, TMview, App Store, Google Play, alan adı. (§3.4)
+- [x] v1.8 etiketi ve Software Heritage arşiv isteği (yapıldı, v1.8). (§2.2)
+- [ ] GitHub'da v1.8 **Release** oluştur; yayın günü oyun adresini ve `privacy.html`'i **Wayback Machine**'e kaydettir. (§2.2)
+- [ ] "Hamsi Koyu" için ön araştırma: TÜRKPATENT (e-Devlet), WIPO Brand DB, TMview, App Store, Google Play, alan adı.
+      Sonuçları `MARKA_ON_ARASTIRMA.md`'ye yaz. (§3.4)
 - [ ] Varsa `hamsikoyu.com` / `.com.tr` alan adını ve sosyal medya kullanıcı adlarını al (~10-20 $/yıl, isteğe bağlı).
 - [ ] Tasarım belgelerini, eskizleri ve not defterlerini tarihli bir klasörde sakla. (§2.4)
 
 ### Yayından önce
 
 - [x] Ad her yerde değişti (appId dahil). (v1.7)
-- [x] Çevrimiçi paylaşım varsayılan kapalı, ilk kullanımda izin kartı. (v1.7, §6.4)
+- [x] Skor tablosu zorunlu ve her zaman açık; ilk oyunda tek seferlik KVKK aydınlatması, öncesinde gönderim yok;
+      v1.7 rıza kartı ve Ayarlar düğmesi kaldırıldı. (v1.8, §6.4)
 - [ ] Supabase projesini **AB (Frankfurt)** bölgesinde aç, DPA'yı kabul et, hesapta 2FA aç. (§6.4)
-- [ ] Supabase'e KVKK standart sözleşmesini sor. İmzalanırsa **5 iş günü** içinde KVKK'ya bildir. (§6.4)
-- [x] `privacy.html` KVKK bölümleri eklendi (v1.7). - [ ] **İletişim adresini doldur.** (§6.4, §6.5)
+- [ ] **⛔ ENGELLEYİCİ:** Supabase ile KVKK **standart sözleşmesi** imzala ve **5 iş günü** içinde KVKK'ya bildir.
+      Bitmeden dolu `config.js`'li sürüm dağıtma. Olmazsa: (a) `config.js` boş yayınla, (b) Türkiye'de barındırılan
+      veritabanı, (c) KVKK avukatı. Hazır e-posta: `MAGAZA.md` §0 adım 2. (§6.4)
+- [x] `privacy.html` v1.8'e göre güncel (m.5/2-c, standart sözleşme). (§6.4, §6.5)
+- [x] İletişim adresi dolduruldu: `recaizade3145@gmail.com` (`privacy.html`, `about.html`, `LICENSE`). Herkese açık
+      görünür. (§6.2)
 - [x] Kaba ad filtresi (oyun + sunucu) eklendi (v1.7). Bildirilen adı silme: `online/schema.sql` sonundaki sorgu. (§6.6)
 - [x] Hakkında ve Lisanslar ekranı (`about.html`, internetsiz açılır) eklendi (v1.7). (§7)
 - [ ] `npm install` sonrası `in-app-review` lisansını ve Android bağımlılığını doğrula, `THIRD_PARTY_NOTICES.md`'yi
       güncelle.
 - [ ] Apple: bireysel hesap (99 $/yıl), **DSA → non-trader**, şifreleme → muaf, yeni yaş anketi, Kids kategorisi
       seçilmedi. (§6.1)
-- [ ] Google: kişisel hesap (25 $), ayrı geliştirici e-postası, **12 testçi × 14 gün** kapalı test, hedef kitle 13+,
-      reklam yok, veri güvenliği formu. (§6.2)
-- [x] `MAGAZA.md` "reklamsız" olarak güncellendi (v1.7).
+- [ ] Google: kişisel hesap (25 $), geliştirici e-postası `recaizade3145@gmail.com`, **12 testçi × 14 gün** kapalı
+      test, hedef kitle 13+, reklam yok, veri güvenliği formu (veri toplama **zorunlu**, `MAGAZA.md` §9). (§6.2)
+- [x] `MAGAZA.md` v1.8'e göre güncellendi (adım adım plan, veri beyanları).
+- [ ] Yayından sonra: ayda bir `bt_cleanup`, görüşleri `bt_gorusler`'den oku, veri isteklerini **30 gün** içinde yanıtla.
 
 ### İsteğe bağlı / sonra
 
@@ -549,7 +543,8 @@ Supabase sunucuları yurt dışında. Kanun artık şu yolları tanıyor:
 | Marka vekili | birkaç bin TL + KDV | Hayır |
 | Telif Hakları Genel Müdürlüğü kayıt-tescil | 2026 tutarı doğrulanmadı | Hayır |
 | Noter tespiti | tarifeye göre | Hayır |
-| KVKK avukat görüşmesi (tek seferlik) | serbest | Supabase açılacaksa önerilir |
+| KVKK standart sözleşmesi + Kurula bildirim | 0 | **Evet**, çevrimiçi skor tablosu açılacaksa |
+| KVKK avukat görüşmesi (tek seferlik) | serbest | Supabase sözleşmeyi imzalamazsa önerilir |
 
 ---
 

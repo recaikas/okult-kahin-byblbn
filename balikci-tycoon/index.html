@@ -295,6 +295,7 @@
     box-shadow:0 2px 0 rgba(4,12,20,.3)}
   .seg button.on{background:var(--gold);color:#3a2401;border-color:#7a5406}
   .lbl{font-size:11px;color:var(--ink2);letter-spacing:1.5px;margin-top:10px;display:block}
+  .setnote{font-size:11px;color:var(--ink2);margin:4px 0 2px;line-height:1.5;opacity:.85}
   .tabs{display:flex;gap:4px;margin-bottom:10px}
   .tab{flex:1;background:linear-gradient(180deg,#23445f,#1a3549);border:2px solid var(--edge);
     border-top-color:var(--edge2);color:var(--ink2);
@@ -531,7 +532,7 @@
   <div class="card">
     <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v1.7</div>
+    <div class="ver">v1.8</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -573,7 +574,7 @@
     <span class="lbl" id="setAuto">OTOMATİK KAYIT</span>
     <div class="seg" id="autoSeg"><button data-m="5">5 dk</button><button data-m="10" class="on">10 dk</button><button data-m="30">30 dk</button></div>
     <span class="lbl" id="setOnline">ÇEVRİMİÇİ SKOR TABLOSU</span>
-    <div class="seg" id="onlineSeg"><button data-o="1" id="onlOn" class="on">AÇIK</button><button data-o="0" id="onlOff">KAPALI</button></div>
+    <p class="setnote" id="onlineFixed">HER ZAMAN AÇIK — gizlilik: Ayarlar › Gizlilik Politikası</p>
     <span class="lbl" id="setSaveLbl">KAYIT</span>
     <div class="saveinfo" id="setSaveInfo">—</div>
     <button class="alt good" id="saveBtn">💾 KAYDET</button>

@@ -30,6 +30,7 @@ const NATIVE = () => {
 const newGame = async (p, name) => {
   await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
   await p.click('#heroGo'); await p.fill('#nameIn', name); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(800);
+  if (await p.isVisible('#askScr')) { await p.click('#askYes'); await sleep(300); }   /* v1.8 KVKK bilgilendirmesi (sahte Supabase varken) */
 };
 const resume = async p => {
   if (await p.isVisible('#introSkip')) { await p.click('#introSkip'); await sleep(300); }
@@ -84,11 +85,7 @@ const vis = (p, id) => p.evaluate(i => !document.getElementById(i).classList.con
   await p.click('#fbCats button[data-c="idea"]');
   /* 4 yıldız + ÖNERİ + metin → gönder */
   const exp = await p.evaluate(() => ({ pid: BT.pid(), run: BT.S.runId, day: BT.day.n }));
-  await p.click('#fbSend'); await sleep(300);
-  /* KVKK açık rıza: ilk gönderimde bir kez sorulur, form altta açık kalır; onayla → görüş hemen gider */
-  const cq = await p.evaluate(() => ({ ask: !document.getElementById('askScr').classList.contains('hidden'), msg: document.getElementById('askMsg').textContent, form: BT.fbIsOpen() }));
-  ok(cq.ask && cq.form && /Avrupa Birliği/.test(cq.msg) && fbCalls().length === 0, 'görüşte rıza sorulmadı ' + JSON.stringify(cq));
-  await p.click('#askYes'); await sleep(500);
+  await p.click('#fbSend'); await sleep(500);
   const sent = fbCalls()[0];
   const want = { p_player: exp.pid, p_run: exp.run, p_stars: 4, p_cat: 'idea', p_text: 'Harika oyun! wasd', p_lang: 'tr', p_day: exp.day };
   ok(sent && Object.keys(want).every(k => sent.body[k] === want[k]) && typeof sent.body.p_ver === 'string' && sent.body.p_ver.length > 0 &&
@@ -121,14 +118,14 @@ const vis = (p, id) => p.evaluate(i => !document.getElementById(i).classList.con
     open: BT.fbIsOpen(), set: !document.getElementById('settingsScreen').classList.contains('hidden') }));
   ok(off1.box.length === 1 && off1.box[0].p_text === 'çevrimdışı görüş' && off1.box[0].p_stars === 5 && /çevrimiçi olunca/.test(off1.t) && !off1.open && off1.set,
     'çevrimdışı görüş kutuya yazılmadı ' + JSON.stringify(off1));
-  /* paylaşım kapalı → hiç istek gitmeden kutuya */
+  /* cihaz çevrimdışı (navigator.onLine=false) → hiç istek denenmeden kutuya */
   net = 'ok';
-  await p.click('#onlineSeg button[data-o="0"]'); await sleep(150);
+  await ctx.setOffline(true); await sleep(150);
   const n0 = calls.length;
   await p.click('#fbBtn'); await p.click('#fbStars button[data-v="2"]'); await p.click('#fbCats button[data-c="bug"]'); await p.fill('#fbText', 'ikinci'); await p.click('#fbSend'); await sleep(400);
   const off2 = await p.evaluate(() => JSON.parse(localStorage.getItem('balikci_feedback_outbox') || '[]'));
-  ok(calls.length === n0 && off2.length === 2 && off2[1].p_cat === 'bug', 'paylaşım kapalıyken istek gitti / kutuya yazılmadı ' + JSON.stringify({ n: calls.length - n0, off2 }));
-  await p.click('#onlineSeg button[data-o="1"]'); await sleep(300);
+  ok(calls.length === n0 && off2.length === 2 && off2[1].p_cat === 'bug', 'çevrimdışıyken istek gitti / kutuya yazılmadı ' + JSON.stringify({ n: calls.length - n0, off2 }));
+  await ctx.setOffline(false); await sleep(300);
   /* sonraki açılış: netOn() → kutu gönderilir (birer birer; ikincisi 60 sn aralıkla) */
   await p.reload(); await sleep(1500);
   const fl1 = fbCalls().slice(1), box1 = await p.evaluate(() => BT.fbOutbox().length);
@@ -139,9 +136,9 @@ const vis = (p, id) => p.evaluate(i => !document.getElementById(i).classList.con
   /* 3) Çevrimiçi verilerimi sil: bt_forget + eski kimliğin bekleyen görüşü gitmez */
   await resume(p);
   await p.evaluate(() => document.getElementById('menuBtn').click()); await sleep(150); await p.click('#menuSet'); await sleep(200);
-  await p.click('#onlineSeg button[data-o="0"]'); await sleep(100);
+  await ctx.setOffline(true); await sleep(100);
   await p.click('#fbBtn'); await p.click('#fbStars button[data-v="1"]'); await p.click('#fbSend'); await sleep(300);
-  await p.click('#onlineSeg button[data-o="1"]'); await sleep(100);
+  await ctx.setOffline(false); await sleep(100);
   const pid0 = await p.evaluate(() => BT.pid()), fb0 = fbCalls().length;
   const fl = await p.evaluate(() => document.getElementById('forgetBtn').textContent);
   ok(/ÇEVRİMİÇİ VERİLERİMİ SİL/.test(fl), 'sil düğmesinin adı güncellenmedi: ' + fl);
@@ -150,15 +147,15 @@ const vis = (p, id) => p.evaluate(i => !document.getElementById(i).classList.con
   await p.click('#askYes'); await sleep(500);
   const fg = calls.find(c => c.name === 'bt_forget');
   ok(fg && fg.body.p_player === pid0 && await p.evaluate(() => BT.pid()) !== pid0, 'bt_forget çalışmadı ' + JSON.stringify(fg));
-  ok(await p.evaluate(() => BT.onlineOK()) === false, 'silme sonrası paylaşım kapanmadı');
-  await p.click('#onlineSeg button[data-o="1"]'); await sleep(100);
+  ok(await p.evaluate(() => BT.onlineOK()) === true, 'silme sonrası skor tablosu kapandı (v1.8: zorunlu)');
   await p.evaluate(() => BT.fbFlush(true)); await sleep(400);
   ok(fbCalls().length === fb0 && await p.evaluate(() => BT.fbOutbox().length) === 0, 'eski kimliğin görüşü gönderildi / kutuda kaldı');
   /* gelen kutusu en çok 20 (en eskisi düşer) */
-  await p.click('#onlineSeg button[data-o="0"]'); await sleep(100);
+  await ctx.setOffline(true); await sleep(100);
   const cap = await p.evaluate(() => { for (let i = 0; i < 23; i++) { BT.fbShow(); document.querySelector('#fbStars button[data-v="3"]').click(); const t = document.getElementById('fbText'); t.value = 't' + i; t.dispatchEvent(new Event('input')); document.getElementById('fbSend').click(); } const a = BT.fbOutbox(); return { n: a.length, first: a[0] && a[0].p_text, last: a[a.length - 1] && a[a.length - 1].p_text }; });
   ok(cap.n === 20 && cap.first === 't3' && cap.last === 't22', 'gelen kutusu 20 ile sınırlı değil ' + JSON.stringify(cap));
-  await p.click('#onlineSeg button[data-o="1"]'); await sleep(100);
+  await ctx.setOffline(false); await sleep(100);
+  await p.evaluate(() => { localStorage.removeItem('balikci_feedback_outbox'); });
   /* İngilizce etiketler */
   await p.evaluate(() => { BT.setLang('en'); BT.fbShow(); });
   const en = await p.evaluate(() => [document.getElementById('fbTitle').textContent, document.getElementById('fbSend').textContent, document.getElementById('forgetBtn').textContent, [...document.querySelectorAll('#fbCats button')].map(x => x.textContent).join()]);

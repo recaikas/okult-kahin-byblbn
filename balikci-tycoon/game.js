@@ -1990,12 +1990,12 @@ var Store = (function () {
 })();
 /* açık rıza sorusu + Hakkında ekranı metinleri */
 Object.assign(STR.tr, {
-  onlineAsk: 'Çevrimiçi skor tablosuna katılmak ister misin?\n\nİşletme adın, karakter adın ve oyun istatistiklerin herkese açık tabloda görünür; görüşlerin yalnız geliştiriciye gider. Veriler Avrupa Birliği\'ndeki (Almanya) Supabase sunucularında tutulur. Ayrıntılar: Ayarlar › Gizlilik. İstediğin an Ayarlar\'dan kapatıp verilerini silebilirsin.',
-  onlineAskYes: 'KATIL', onlineAskNo: 'HAYIR, TEŞEKKÜRLER', aboutBtn: 'HAKKINDA & LİSANSLAR', nameBadT: 'Bu ad kullanılamaz, başka bir ad dene.'
+  onlineInfo: 'Hamsi Koyu\'nun çevrimiçi skor tablosu var.\n\nİşletme adın, karakter adın ve oyun istatistiklerin herkese açık tabloda görünür; görüş formundan yazdıkların yalnız geliştiriciye gider. Bu bilgiler rastgele bir oyuncu kimliğiyle Avrupa Birliği\'ndeki (Almanya) Supabase sunucularında tutulur. E-posta, konum ya da rehber gibi kişisel bilgi alınmaz.\n\nAyrıntılar: Ayarlar › Gizlilik Politikası. Verilerini istediğin an Ayarlar › Çevrimiçi verilerimi sil ile silebilirsin.',
+  onlineInfoOk: 'TAMAM', onlineFixed: 'HER ZAMAN AÇIK — gizlilik: Ayarlar › Gizlilik Politikası', aboutBtn: 'HAKKINDA & LİSANSLAR', nameBadT: 'Bu ad kullanılamaz, başka bir ad dene.'
 });
 Object.assign(STR.en, {
-  onlineAsk: 'Join the online leaderboard?\n\nYour business name, character name and game stats appear on a public board; feedback goes only to the developer. Data is stored on Supabase servers in the European Union (Germany). Details: Settings › Privacy. You can turn it off and delete your data in Settings at any time.',
-  onlineAskYes: 'JOIN', onlineAskNo: 'NO, THANKS', aboutBtn: 'ABOUT & LICENSES', nameBadT: 'This name can\'t be used — try another.'
+  onlineInfo: 'Hamsi Koyu has an online leaderboard.\n\nYour business name, character name and game stats appear on a public board; what you write in the feedback form goes only to the developer. This data is stored with a random player ID on Supabase servers in the European Union (Germany). No personal details such as email, location or contacts are collected.\n\nDetails: Settings › Privacy Policy. You can delete your data at any time with Settings › Delete my online data.',
+  onlineInfoOk: 'OK', onlineFixed: 'ALWAYS ON — privacy: Settings › Privacy Policy', aboutBtn: 'ABOUT & LICENSES', nameBadT: 'This name can\'t be used — try another.'
 });
 var SLOT_N = 3, SLOT_PREFIX = 'balikci_slot_', LAST_KEY = 'balikci_last', OLD_KEY = 'balikci_tycoon_v3', PREF_KEY = 'balikci_pref';
 var curSlot = 0, BOOT = null, S0 = null;
@@ -2016,9 +2016,9 @@ function migrateOldSave() {
   for (var i = 1; i <= SLOT_N; i++) if (!readSlot(i)) { Store.set(slotKey(i), old); if (!lastSlot()) Store.set(LAST_KEY, String(i)); break; }
   Store.del(OLD_KEY);
 }
-var onlineOK = false;                /* KVKK/GDPR: çevrimiçi paylaşım oyuncu açıkça onaylayana kadar kapalı */
-var onlineAsked = false;              /* oyuncuya bir kez soruldu mu (evet ya da hayır) */
-function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, onc: onlineOK ? 1 : 0, ona: onlineAsked ? 1 : 0 })); }
+var onlineOK = true;                 /* v1.8: çevrimiçi skor tablosu oyunun sabit parçası (kapatılamaz) */
+var onlineAsked = false;              /* KVKK aydınlatma: bilgilendirme bir kez gösterildi mi — gösterilmeden hiçbir şey gönderilmez */
+function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, onn: onlineAsked ? 1 : 0 })); }
 function loadPref() {
   try {
     var d = JSON.parse(Store.get(PREF_KEY) || 'null'); if (!d) return;
@@ -2026,9 +2026,7 @@ function loadPref() {
     if (d.snd !== undefined) { volLvl = clamp(d.snd | 0, 0, 2); applyVolume(); }
     if (d.zoom) zoomLvl = d.zoom;
     if (d.mus !== undefined) musicEnabled = !!d.mus;
-    /* eski 'onl' alanı onay sayılmaz (varsayılan açıktı); yalnız açık seçim 'onc' geçerli */
-    if (d.onc !== undefined) onlineOK = !!d.onc;
-    if (d.ona !== undefined) onlineAsked = !!d.ona;
+    if (d.onn !== undefined) onlineAsked = !!d.onn;       /* v1.8 bilgilendirmesi görüldü (v1.7'nin rıza cevabı 'ona' sayılmaz) */
   } catch (e) { }
 }
 function buildSave() {
@@ -6121,7 +6119,7 @@ var el = {};
  'heroName', 'heroNameDice', 'heroRows', 'heroDice', 'heroGo', 'heroBack', 'heroTitle', 'heroSub', 'heroNameLbl',
  'chBtn', 'chPct', 'chScr', 'chTitle', 'chSub', 'chFill', 'chNum', 'chRows', 'chClose', 'chEnd', 'chEndK', 'chEndT', 'chEndP', 'chEndG', 'chEndGo',
  'actBtn', 'halScr', 'halTitle', 'halSub', 'halRows', 'halClose', 'autoScr', 'autoTitle', 'autoSub', 'autoOpts', 'autoBadge',
- 'setAuto', 'specPop', 'specPopT', 'setOnline', 'onlOn', 'onlOff', 'forgetBtn', 'privBtn', 'aboutBtn', 'privScr', 'privFrame', 'privClose'].forEach(function (id) {
+ 'setAuto', 'specPop', 'specPopT', 'setOnline', 'onlineFixed', 'forgetBtn', 'privBtn', 'aboutBtn', 'privScr', 'privFrame', 'privClose'].forEach(function (id) {
   el[id] = document.getElementById(id);
 });
 var toastT = 0;
@@ -6153,7 +6151,7 @@ function applyLang() {
   if (!el.nameScr.classList.contains('hidden')) { syncNamePreview(); renderNameChips(); }
   el.setTitle.textContent = T('settings'); el.setLang.textContent = T('langLbl');
   el.setSound.textContent = T('soundLbl'); el.setZoom.textContent = T('zoomLbl');
-  el.setOnline.textContent = T('onlineLbl'); el.onlOn.textContent = T('onlOn'); el.onlOff.textContent = T('onlOff');
+  el.setOnline.textContent = T('onlineLbl'); el.onlineFixed.textContent = T('onlineFixed');
   el.forgetBtn.textContent = T('forgetBtn'); el.privBtn.textContent = T('privBtn'); el.aboutBtn.textContent = T('aboutBtn'); el.privClose.textContent = T('privClose');
   el.setAuto.textContent = T('autoLbl'); el.setMusic.textContent = T('musicLbl'); el.musOn.textContent = T('musOn'); el.musOff.textContent = T('musOff');
   el.setClose.textContent = T('resume'); el.resetBtn.textContent = T('delSlot');
@@ -6935,9 +6933,6 @@ el.resetBtn.onclick = function () {
   });
 };
 /* mağaza gizlilik şartları: çevrimiçi paylaşımı kapat / skor kaydımı sil / gizlilik politikası */
-Array.prototype.forEach.call(document.querySelectorAll('#onlineSeg button'), function (b) {
-  b.onclick = function () { onlineOK = b.dataset.o === '1'; onlineAsked = true; savePref(); syncSettingsUI(); sfx.tap(); toast(T(onlineOK ? 'onlineOnT' : 'onlineOffT')); };
-});
 function forgetMe(done, tries) {
   /* yolda bir skor gönderimi varsa bitmesini bekle: silmeden sonra eski kimlikle satır kalmasın */
   if (ONLINE && netSent.busy && (tries || 0) < 25) { setTimeout(function () { forgetMe(done, (tries || 0) + 1); }, 200); return; }
@@ -6945,22 +6940,22 @@ function forgetMe(done, tries) {
   function local() {
     Store.del(BOARD_KEY);
     PLAYER_ID = 'p' + newRunId(); Store.set('balikci_pid', PLAYER_ID); playLogged = false;
-    /* silinen veri bir sonraki otomatik gönderimde geri gelmesin: bu oyuna yeni kimlik + paylaşım kapalı */
+    /* silinen veri eski kimlikle geri gelmesin: bu oyuna yeni kimlik; oynamaya devam edilirse skor yeni kimlikle eklenir */
     if (S.runId) S.runId = newRunId();
     netSent.at = 0; netSent.s = -1; netSent.busy = false; netSent.dirty = false;
-    onlineOK = false; savePref(); syncSettingsUI();
     if (done) done();
   }
   if (!ONLINE) { local(); toast(T('forgetDone')); return; }
   rpc('bt_forget', { p_player: old }).then(function () { local(); toast(T('forgetDone')); },
     function () { toast(T('forgetFail')); sfx.bad(); });
 }
-/* açık rıza: çevrimiçi özellik ilk kez gerektiğinde bir kez sor; "hayır" da hatırlanır, Ayarlar'dan değişir */
-function askOnline(then) {
-  if (!ONLINE || onlineAsked || onlineOK) { if (then) then(); return; }
-  ask(T('onlineAsk'), T('onlineAskYes'), function () { onlineOK = true; onlineAsked = true; savePref(); syncSettingsUI(); if (S.started) submitScore(true); if (then) then(); },
-    function () { onlineAsked = true; savePref(); syncSettingsUI(); if (then) then(); });
-  el.askNo.textContent = T('onlineAskNo');
+/* KVKK aydınlatma: çevrimiçi skor tablosu zorunlu; ilk gönderimden önce oyuncuya bir kez ne paylaşıldığı gösterilir.
+   Tek düğme (TAMAM); geri tuşuyla kapatmak da "okundu" sayılır. */
+function showOnlineNotice(then) {
+  if (!ONLINE || onlineAsked) { if (then) then(); return; }
+  function seen() { onlineAsked = true; savePref(); el.askNo.classList.remove('hidden'); if (S.started) submitScore(true); if (then) then(); }
+  ask(T('onlineInfo'), T('onlineInfoOk'), seen, seen);
+  el.askNo.classList.add('hidden');
 }
 el.forgetBtn.onclick = function () { ask(T('forgetAsk'), T('forgetYes'), function () { forgetMe(); }); };
 el.privBtn.onclick = function () { el.privFrame.src = 'privacy.html#' + lang; el.privScr.classList.remove('hidden'); syncPause(); sfx.tap(); };
@@ -6978,7 +6973,7 @@ Array.prototype.forEach.call(document.querySelectorAll('#autoOpts button'), func
 function syncSettingsUI() {
   Array.prototype.forEach.call(document.querySelectorAll('#autoSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.m, 10) === S.autoMin); o.textContent = T('autoMinN', { m: o.dataset.m }); });
   Array.prototype.forEach.call(document.querySelectorAll('#musSeg button'), function (o) { o.classList.toggle('on', (o.dataset.m === '1') === musicEnabled); });
-  Array.prototype.forEach.call(document.querySelectorAll('#onlineSeg button'), function (o) { o.classList.toggle('on', (o.dataset.o === '1') === onlineOK); });
+
   Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.s, 10) === volLvl); });
   Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.z, 10) === zoomLvl); });
 }
@@ -7063,7 +7058,7 @@ function start() {
   el.devbar.classList.remove('hidden');
   S.started = true; paused = false; syncPause();
   ensureAudio(); applyVolume(); musicPlay('game');       /* oyunda müzik arkadan mırıldanır */
-  logPlay();
+  showOnlineNotice(logPlay);
   retOnStart();                                          /* uzun ayrılıktan dönüş: "Sen yokken…" */
 }
 /* OYNA: kayıt varsa devam; yoksa işletme adı → oyun. Adı olmayan eski kayıt önce ad sorar. */
@@ -7990,7 +7985,7 @@ var PLAYER_ID = (function () {                      /* Ayarlar › Skor kaydım�
   if (!v || v.length < 6) { v = 'p' + newRunId(); Store.set(k, v); }
   return v;
 })();
-function netOn() { return !!ONLINE && onlineOK; }
+function netOn() { return !!ONLINE && onlineOK && onlineAsked && navigator.onLine !== false; }   /* çevrimdışıyken deneme bile */
 function rpc(name, args) {
   return fetch(ONLINE.url + '/rest/v1/rpc/' + name, {
     method: 'POST',
@@ -8086,7 +8081,7 @@ function renderBoard() {
 }
 function openBoard(from) {
   if (S.started) submitScore();
-  askOnline(function () { if (!el.boardScr.classList.contains('hidden')) renderBoard(); });
+  showOnlineNotice(function () { if (!el.boardScr.classList.contains('hidden')) renderBoard(); });
   el.boardScr.dataset.from = from || 'start';
   el.startScreen.classList.add('hidden');
   el.menuScreen.classList.add('hidden');
@@ -9981,8 +9976,8 @@ Object.assign(STR.tr, {
   fbThanks: 'Teşekkürler! Görüşün bize ulaştı', fbQueued: 'Teşekkürler! Görüşün kaydedildi, çevrimiçi olunca gönderilecek',
   fbTooMany: 'Bugün yeterince görüş gönderdin, yarın yine yaz', fbBad: 'Görüş gönderilemedi, metni kontrol edip tekrar dene',
   forgetBtn: 'ÇEVRİMİÇİ VERİLERİMİ SİL',
-  forgetAsk: 'Bu cihazın çevrimiçi verileri (skor tablosu kayıtları ve gönderdiğin görüşler; sunucu ve cihaz) silinsin mi? Oyun kayıtların etkilenmez.',
-  forgetDone: 'Çevrimiçi verilerin silindi; paylaşım kapatıldı (Ayarlar\'dan yeniden açabilirsin)'
+  forgetAsk: 'Bu cihazın çevrimiçi verileri (skor tablosu kayıtları ve gönderdiğin görüşler; sunucu ve cihaz) silinsin mi? Oyun kayıtların etkilenmez. Oynamaya devam edersen skorun yeni bir kimlikle tabloya yeniden eklenir.',
+  forgetDone: 'Çevrimiçi verilerin silindi; yeni anonim kimlik oluşturuldu'
 });
 Object.assign(STR.en, {
   fbBtn: '⭐ SEND FEEDBACK', fbTitle: 'SEND FEEDBACK', fbSub: 'How do you like the game? Every message is read.',
@@ -9995,11 +9990,11 @@ Object.assign(STR.en, {
   fbThanks: 'Thank you! Your feedback reached us', fbQueued: 'Thank you! Your feedback is saved and will be sent when online',
   fbTooMany: 'You have sent plenty of feedback today, write again tomorrow', fbBad: 'Feedback could not be sent, check the text and try again',
   forgetBtn: 'DELETE MY ONLINE DATA',
-  forgetAsk: 'Delete this device\'s online data (leaderboard entries and the feedback you sent; server and device)? Your game saves are not affected.',
-  forgetDone: 'Online data deleted; sharing turned off (you can turn it back on in Settings)'
+  forgetAsk: 'Delete this device\'s online data (leaderboard entries and the feedback you sent; server and device)? Your game saves are not affected. If you keep playing, your score is added to the board again under a new ID.',
+  forgetDone: 'Online data deleted; a new anonymous ID was created'
 });
 var FB_OUTBOX = 'balikci_feedback_outbox', FB_MAX = 20, FB_LEN = 500, FB_GAP = 61000, FB_CATS = ['bug', 'idea', 'love'];
-var FB_VER = '1.7';                                    /* görüşle birlikte giden oyun sürümü */
+var FB_VER = '1.8';                                    /* görüşle birlikte giden oyun sürümü */
 var fbScr = document.getElementById('fbScr'), fbCard = document.getElementById('fbCard'), fbText = document.getElementById('fbText'),
   fbCount = document.getElementById('fbCount'), fbErrEl = document.getElementById('fbErr'), fbSendBtn = document.getElementById('fbSend');
 var fb = { stars: 0, cat: '', busy: false, lastSent: 0, flushBusy: false, stop: false, timer: 0, toastTm: 0 };
@@ -10090,7 +10085,7 @@ function fbSend() {
   var it = { p_player: PLAYER_ID, p_run: S.runId || '', p_stars: fb.stars, p_cat: fb.cat || null, p_text: text,
     p_lang: lang, p_ver: FB_VER, p_day: day.n || 1, at: Date.now() };
   function queued() { fbQueue(it); fbClose(); fbToast(T('fbQueued')); sfx.buy(); if (netOn()) fbSchedule(FB_GAP - (Date.now() - fb.lastSent)); }
-  if (ONLINE && !onlineOK && !onlineAsked) { askOnline(function () { if (onlineOK) fbSend(); else queued(); }); return; }   /* form açık kalır, rıza sorusu üstte */
+  if (ONLINE && !onlineAsked) { showOnlineNotice(function () { fbSend(); }); return; }   /* form açık kalır, bilgilendirme üstte */
   if (!netOn() || Date.now() - fb.lastSent < FB_GAP) { queued(); return; }
   fb.busy = true; fbRender();
   rpc('bt_feedback', fbArgs(it)).then(function (r) {
@@ -10114,10 +10109,6 @@ if (fbScr) {
   document.getElementById('fbCancel').onclick = function () { fbClose(); sfx.tap(); };
   document.getElementById('menuFb').onclick = function () { fbShow(); };
   document.getElementById('fbBtn').onclick = function () { fbShow(); };
-  /* paylaşım yeniden açılınca bekleyen görüşleri gönder */
-  Array.prototype.forEach.call(document.querySelectorAll('#onlineSeg button'), function (b) {
-    b.addEventListener('click', function () { if (netOn()) fbFlush(); });
-  });
   fbApplyLang();
 }
 
@@ -10157,6 +10148,7 @@ el.dayGo.addEventListener('click', function () {                                
   if (L && L.n >= 3 && L.inc > 0 && L.served >= L.lost) maybeAskReview();
 });
 if (netOn()) fbFlush();                                  /* açılışta bekleyen görüşleri gönder */
+window.addEventListener('online', function () { if (netOn()) fbFlush(); });   /* bağlantı gelince bekleyen görüşler */
 
 window.BT = {
   cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },

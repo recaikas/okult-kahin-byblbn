@@ -1,9 +1,7 @@
 /* Mağaza gizlilik şartları (sahte Supabase ile):
-   0) KVKK açık rıza: oyuncu onaylamadan hiçbir istek gitmez; skor tablosu ilk açıldığında bir kez sorulur,
-      "hayır" hatırlanır; "katıl" ile gönderim başlar (ayrı temiz sayfada);
-   1) Ayarlar › Çevrimiçi skor tablosu › KAPALI iken hiçbir istek gitmez
-      (zorunlu gönderimde bile), tercih kalıcıdır;
-   2) Skor kaydımı sil → onay → bt_forget eski anonim kimlikle çağrılır, cihazdaki liste temizlenir, kimlik yenilenir;
+   0) v1.8 skor tablosu zorunlu: ilk oyunda tek düğmeli KVKK bilgilendirmesi; görülmeden istek gitmez, bir kez gösterilir,
+      geri tuşuyla kapatmak da okundu sayılır; ayarlarda aç/kapa yok;
+   2) Çevrimiçi verilerimi sil → bt_forget eski kimlikle; cihaz listesi temizlenir; yeni kimlikle gönderim sürer;
    3) Gizlilik politikası oyun içinde açılır (oyun duraklar), TR/EN metin yüklü, geri tuşu/Escape ile kapanır. */
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -22,49 +20,39 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   await p.goto(URL); await sleep(900);
   await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
   await p.click('#heroGo'); await p.fill('#nameIn', 'Gizli Liman'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(800);
-  ok(calls.length === 0, 'onay yokken istek gitti ' + JSON.stringify(calls.map(c => c.name)));
-  ok(await p.evaluate(() => BT.onlineOK()) === false, 'paylaşım varsayılan olarak açık');
-  /* 0) skor tablosu ilk açılışta rıza sorar; "hayır" → istek yok, bir daha sorulmaz */
+  /* 0) v1.8: skor tablosu zorunlu; ilk oyunda tek düğmeli KVKK bilgilendirmesi — görülmeden hiçbir istek gitmez */
+  const q = await p.evaluate(() => ({ ask: !document.getElementById('askScr').classList.contains('hidden'), msg: document.getElementById('askMsg').textContent, yes: document.getElementById('askYes').textContent, noHidden: document.getElementById('askNo').classList.contains('hidden') }));
+  ok(calls.length === 0, 'bilgilendirme görülmeden istek gitti ' + JSON.stringify(calls.map(c => c.name)));
+  ok(q.ask && /Avrupa Birliği/.test(q.msg) && /herkese açık/.test(q.msg) && /Çevrimiçi verilerimi sil/.test(q.msg) && q.yes === 'TAMAM' && q.noHidden, 'bilgilendirme çıkmadı ' + JSON.stringify(q));
+  await p.click('#askYes'); await sleep(500);
+  ok(calls.some(c => c.name === 'bt_play') && calls.some(c => c.name === 'bt_submit'), 'bilgilendirmeden sonra gönderim başlamadı ' + JSON.stringify(calls.map(c => c.name)));
+  ok(await p.evaluate(() => JSON.parse(localStorage.getItem('balikci_pref')).onn) === 1 && await p.evaluate(() => !document.getElementById('askNo').classList.contains('hidden')), 'bilgilendirme hatırlanmadı / HAYIR düğmesi gizli kaldı');
   await p.evaluate(() => { document.getElementById('menuBtn').click(); }); await sleep(200);
   await p.click('#menuBoard'); await sleep(300);
-  const q = await p.evaluate(() => ({ ask: !document.getElementById('askScr').classList.contains('hidden'), msg: document.getElementById('askMsg').textContent, yes: document.getElementById('askYes').textContent, no: document.getElementById('askNo').textContent, board: !document.getElementById('boardScr').classList.contains('hidden') }));
-  ok(q.ask && q.board && /Avrupa Birliği/.test(q.msg) && /herkese açık/.test(q.msg) && q.yes === 'KATIL' && /HAYIR/.test(q.no), 'rıza sorusu çıkmadı ' + JSON.stringify(q));
-  await p.click('#askNo'); await sleep(300);
-  ok(calls.length === 0 && await p.evaluate(() => BT.onlineOK()) === false, '"hayır" sonrası istek gitti ' + JSON.stringify(calls.map(c => c.name)));
-  ok(await p.evaluate(() => JSON.parse(localStorage.getItem('balikci_pref')).ona) === 1, '"hayır" hatırlanmadı');
-  await p.evaluate(() => window.__h ? window.__h.backButton() : BT.back()); await sleep(200);
-  await p.evaluate(() => { if (!document.getElementById('boardScr').classList.contains('hidden')) BT.back(); }); await sleep(200);
-  await p.evaluate(() => { document.getElementById('menuBtn').click(); }); await sleep(200);
-  await p.click('#menuBoard'); await sleep(300);
-  ok(await p.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'rıza sorusu ikinci kez soruldu');
+  ok(await p.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'bilgilendirme ikinci kez çıktı');
   await p.evaluate(() => BT.back()); await sleep(200);
   await p.evaluate(() => { if (!document.getElementById('menuScreen').classList.contains('hidden')) BT.back(); }); await sleep(200);
-  /* 1) paylaşımı kapat */
+  /* 1) ayarlarda aç/kapa yok; "her zaman açık" notu var */
   await p.evaluate(() => { document.getElementById('menuBtn').click(); }); await sleep(200);
   await p.click('#menuSet'); await sleep(200);
-  const lbl = await p.evaluate(() => [document.getElementById('setOnline').textContent, document.getElementById('forgetBtn').textContent, document.getElementById('privBtn').textContent]);
-  ok(lbl[0] === 'ÇEVRİMİÇİ SKOR TABLOSU' && /SİL/.test(lbl[1]) && /GİZLİLİK/.test(lbl[2]), 'ayar etiketleri yok ' + JSON.stringify(lbl));
-  await p.click('#onlineSeg button[data-o="0"]'); await sleep(200);
-  const n0 = calls.length;
-  await p.evaluate(() => { BT.S.caught = 99; BT.submitScore(true); }); await sleep(400);
-  ok(calls.length === n0, 'paylaşım kapalıyken istek gitti ' + JSON.stringify(calls.slice(n0)));
-  ok(await p.evaluate(() => JSON.parse(localStorage.getItem('balikci_pref')).onc) === 0, 'tercih kaydedilmedi');
-  await p.click('#onlineSeg button[data-o="1"]'); await sleep(200);
+  const lbl = await p.evaluate(() => [document.getElementById('setOnline').textContent, document.getElementById('forgetBtn').textContent, document.getElementById('privBtn').textContent, document.getElementById('onlineFixed').textContent, !!document.getElementById('onlineSeg')]);
+  ok(lbl[0] === 'ÇEVRİMİÇİ SKOR TABLOSU' && /SİL/.test(lbl[1]) && /GİZLİLİK/.test(lbl[2]) && /HER ZAMAN AÇIK/.test(lbl[3]) && !lbl[4], 'ayar etiketleri yanlış ' + JSON.stringify(lbl));
   await p.evaluate(() => { BT.S.caught = 120; BT.submitScore(true); }); await sleep(400);
-  ok(calls.some(c => c.name === 'bt_submit' && c.body.p_fish === 120), 'paylaşım açılınca skor gitmedi');
-  /* 2) skor kaydımı sil */
+  ok(calls.some(c => c.name === 'bt_submit' && c.body.p_fish === 120), 'skor gitmedi');
+  /* 2) çevrimiçi verilerimi sil: eski kimlikle silinir, yeni kimlik; paylaşım sürer ve yeni kimlikle gider */
   const pid0 = await p.evaluate(() => BT.pid());
   ok(!!(await p.evaluate(() => localStorage.getItem('balikci_board_v2'))), 'cihaz içi liste boş başladı');
   await p.click('#forgetBtn'); await sleep(200);
+  ok(/yeni bir kimlikle/.test(await p.evaluate(() => document.getElementById('askMsg').textContent)), 'silme sorusu yeniden eklenmeyi anlatmıyor');
   await p.click('#askYes'); await sleep(500);
   const f = calls.find(c => c.name === 'bt_forget');
   const after = await p.evaluate(() => ({ pid: BT.pid(), board: localStorage.getItem('balikci_board_v2'), stored: localStorage.getItem('balikci_pid') }));
   ok(f && f.body.p_player === pid0, 'bt_forget eski kimlikle çağrılmadı ' + JSON.stringify(f));
   ok(after.pid !== pid0 && after.stored === after.pid && !after.board, 'yerel temizlik/yeni kimlik yok ' + JSON.stringify(after));
-  /* inceleme bulgusu: silinen veri bir sonraki gönderimde geri gelmemeli (paylaşım kapanır, bu oyun yeni kimlik alır) */
   const nF = calls.length;
   const af = await p.evaluate(() => { BT.S.caught = 500; BT.submitScore(true); return { onl: BT.onlineOK(), run: BT.S.runId }; }); await sleep(400);
-  ok(af.onl === false && calls.length === nF, 'silmeden sonra skor yeniden gönderildi ' + JSON.stringify({ af, yeni: calls.slice(nF).map(c => c.name) }));
+  const re = calls.slice(nF).find(c => c.name === 'bt_submit');
+  ok(af.onl === true && re && re.body.p_player === after.pid && re.body.p_run === af.run && re.body.p_player !== pid0, 'silmeden sonra yeni kimlikle gönderim yanlış ' + JSON.stringify({ af, re }));
   /* 3) gizlilik politikası */
   await p.click('#privBtn'); await sleep(700);
   const pv = await p.evaluate(() => ({ open: !document.getElementById('privScr').classList.contains('hidden'), paused: BT.paused(),
@@ -87,9 +75,14 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   await p2.click('#heroGo'); await p2.fill('#nameIn', 'Onaylı Liman'); await p2.click('#nameGo'); await p2.click('#autoOpts button[data-m="10"]'); await sleep(800);
   ok(calls2.length === 0, 'temiz sayfada onaysız istek ' + JSON.stringify(calls2));
   await p2.evaluate(() => { document.getElementById('menuBtn').click(); }); await sleep(200);
-  await p2.click('#menuBoard'); await sleep(300); await p2.click('#askYes'); await sleep(600);
-  const y = await p2.evaluate(() => ({ on: BT.onlineOK(), pref: JSON.parse(localStorage.getItem('balikci_pref')) }));
-  ok(y.on && y.pref.onc === 1 && y.pref.ona === 1 && calls2.includes('bt_submit') && calls2.includes('bt_board'), '"katıl" sonrası gönderim yok ' + JSON.stringify({ y, calls2 }));
+  ok(calls2.length === 0 && await p2.evaluate(() => !document.getElementById('askScr').classList.contains('hidden')), 'temiz sayfada bilgilendirme yok');
+  await p2.evaluate(() => BT.back()); await sleep(600);   /* geri tuşuyla kapatmak da "okundu" sayılır */
+  ok(calls2.includes('bt_submit') && calls2.includes('bt_play'), 'geri tuşuyla kapatınca gönderim başlamadı ' + JSON.stringify(calls2));
+  await p2.reload(); await sleep(900);
+  if (await p2.isVisible('#introSkip')) await p2.click('#introSkip');
+  await p2.click('#playBtn'); await sleep(700);
+  if (await p2.isVisible('#autoOpts')) { await p2.click('#autoOpts button[data-m="10"]'); await sleep(400); }
+  ok(await p2.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'yeniden açılışta bilgilendirme tekrar çıktı');
   /* 6) herkese açık tabloya kaba ad gitmez (kullanıcı içeriği kuralı); benzer ama masum adlar geçer */
   const nb = await p2.evaluate(() => ({ bad: ['Orospu Balık', 'S1kt1r Liman', 'amk balık', 'Fuuuck Fish', 'göt balık'].filter(n => !BT.nameBad(n)),
     good: ['Klasik Balık', 'Müsik Evi', 'Kayarak Liman', 'Koç Balıkçılık', 'Scunthorpe Fish', 'Amasra Balık'].filter(BT.nameBad) }));

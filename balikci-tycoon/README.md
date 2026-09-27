@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v1.7** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v1.8** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -14,6 +14,28 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.8 — Zorunlu skor tablosu, simgede oyunun adı, iletişim adresi
+
+- **Çevrimiçi skor tablosu artık oyunun sabit parçası.** Ayarlardaki Açık/Kapalı düğmesi ve v1.7'nin rıza kartı
+  kaldırıldı. Ayarlarda "HER ZAMAN AÇIK" notu var.
+- **KVKK bilgilendirmesi:** ilk oyunda tek düğmeli (TAMAM) kısa bir bilgilendirme çıkar. İçinde ne paylaşıldığı,
+  sunucunun nerede olduğu (AB, Almanya) ve verilerin nasıl silineceği yazar. Görülmeden hiçbir şey gönderilmez;
+  geri tuşuyla kapatmak da görüldü sayılır. v1.7'deki "hayır" cevabı bilgilendirme yerine geçmez.
+- **Çevrimdışı oyun:** cihaz çevrimdışıyken (`navigator.onLine`) gönderim denenmez. Görüşler bekler, bağlantı gelince
+  gider.
+- **Çevrimiçi verilerimi sil** kaldı: sunucudaki kayıtları ve görüşleri siler, yeni kimlik üretir. Oynamaya devam
+  edilirse skor yeni kimlikle tabloya yeniden eklenir; onay metni bunu söyler.
+- **Hukuki sebep değişti:** artık hizmetin ifası (KVKK m.5/2-c, GDPR 6/1-b). Yurt dışı aktarım için Supabase ile
+  **KVKK standart sözleşmesi şart**; `config.js` ancak bu imzalanıp KVKK'ya bildirildikten sonra doldurulmalı
+  (MAGAZA.md §0).
+- **Simgede oyunun adı:** "HAMSİ KOYU" iskele tahtasına boyanmış tabela gibi yazıldı. Android uyarlanır simgede balığın
+  altında, yuvarlak maskenin içinde. Tüm boyutlar yeniden üretildi.
+- **İletişim:** recaizade3145@gmail.com — gizlilik politikası, Hakkında ekranı, LICENSE, mağaza belgesi.
+- `MARKA_ON_ARASTIRMA.md`: "Hamsi Koyu" ön araştırması. Web, GitHub ve alan adlarında çakışma yok. Resmî marka
+  veri tabanlarına bu ortamdan erişilemedi; TÜRKPATENT araştırmasını e-Devlet'ten kendin yap.
 
 ---
 
