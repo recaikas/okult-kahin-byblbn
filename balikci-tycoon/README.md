@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v1.8** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v1.9** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -14,6 +14,29 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.9 — İlk açılış, ilk satışa kadar rehber, oyuncu ilerleme takibi
+
+- **İlk açılış akışı:** önce büyük iki düğmeli **dil seçimi** (TÜRKÇE / ENGLISH; cihaz diline göre biri vurgulu),
+  dokununca gazete hikâyesi hemen başlar ("başlamak için dokun" kapısı yok), sonra seçilen dilde ana menü. Dil bir
+  kez sorulur.
+- **Eğitim rehberi** (ilk balık tezgâha, ilk para kasaya):
+  - oyuncudan hedefe akan sarı noktalı yol ve hedefte nabız gibi atan halka;
+  - hedef ekran dışındaysa ekran kenarında hedefe dönük ok;
+  - her adım bitince tebrik ve sıradaki adım ("✓ Balıklar sırtında! Sarı yolu izle: kesim masası");
+  - hedef yazısında taşınan balık ve fileto sayısı.
+- **İlerleme olayları:** her oyunda her kilometre taşı bir kez sunucuya gider. Kilometre taşları: eğitim adımları,
+  2/3/5/7/10/14/21/30. gün, 2. ve 3. bölge, itibar seviyeleri, ilk müdür, Bölüm 1 sonu. Oyuncunun o anki günü ve oyun
+  süresi de gider. Supabase'de izlemek için:
+  - `select * from bt_ilerleme;` — adım adım kaç oyuncu nereye geldi (yüzde, ortalama dakika);
+  - `select * from bt_birakma;` — 24 saattir açılmayan oyunlar hangi günde kaldı;
+  - `select * from bt_yolculuk;` — oyuncu oyuncu yaptıkları, sırayla.
+- Gizlilik politikası güncellendi (ilerleme adımları; 24 ay saklama). "Verilerimi sil" olayları da siler.
+- Ajan testleri: Sonnet tüm oyunu, Haiku ilk 10 dakikayı oynayıp raporladı (bulguların düzeltmeleri bir sonraki
+  maddede).
+- Test: `test-ilkacilis.js`.
 
 ---
 

@@ -32,6 +32,8 @@ Oyunu önce bir web linkiyle paylaşıp tepkileri ve oyun sürelerini görmek i�
      geri dönen, görüş sayısı ve ortalama yıldız.
    - `select * from bt_oyuncular;` — kişi kişi: işletme, oyun süresi, en uzun gün, son görülme.
    - `select * from bt_gorusler limit 50;` — yazılan görüşler.
+   - `select * from bt_ilerleme;` — adım adım kaç oyuncu nereye geldi (eğitim, günler, bölgeler, bölüm sonu).
+   - `select * from bt_birakma;` — oyunlar hangi günde bırakıldı. `select * from bt_yolculuk;` — oyuncu oyuncu yol.
 5. **KVKK notu:** test de olsa yurt dışı aktarım kuralı geçerli (aşağıda 2. adım). Tanıdıklarınla küçük bir testte risk
    düşüktür; linki geniş kitleye yaymadan önce standart sözleşme işini bitir.
 
