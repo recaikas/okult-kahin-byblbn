@@ -29,7 +29,7 @@ const MOCK = seed => {
   /* --- A: uygulama, yeni oyun, kayıt yansıtma, geri tuşu --- */
   let ctx = await b.newContext({ viewport: { width: 430, height: 860 } }); let p = await ctx.newPage();
   const errs = []; p.on('pageerror', e => errs.push(e.message));
-  const ext = []; await p.route('**/*', r => { const u = r.request().url(); if (!u.startsWith('http://localhost')) { ext.push(u); return r.abort(); } r.continue(); });
+  const ext = []; await p.route('**/*', r => { const u = r.request().url(); if (!u.startsWith('http://localhost')) { ext.push(u); return r.abort(); } r.fallback(); });
   await p.addInitScript(MOCK, {});
   await p.goto(URL); await sleep(1200);
   const A0 = await p.evaluate(() => ({ native: !!window.BT_NATIVE, bt: !!window.BT, bar: window.__barHidden, back: typeof window.__h.backButton }));
