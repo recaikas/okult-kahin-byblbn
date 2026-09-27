@@ -37,6 +37,16 @@ const send = async (p, stars, text) => {
   ok(s4.gain === 300, '5 yıldız farklı hediye aldı ' + JSON.stringify(s4));
   const amt = await p.evaluate(() => { BT.retSet(null, 10000); const a = BT.fbGiftAmt(); BT.retSet(null, 1e6); const c = BT.fbGiftAmt(); return [a, c]; });
   ok(amt[0] === 5000 && amt[1] === 20000, 'hediye tutarı ölçeklenmiyor ' + JSON.stringify(amt));
+  /* test dönemi dürtmesi: web'de 15 dk oyundan sonra sürüm başına bir kez görüş ister */
+  await p.evaluate(() => { BT.S.play = 100; }); await sleep(5600);
+  ok(await p.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), '15 dk dolmadan görüş istendi');
+  await p.evaluate(() => { BT.S.play = 950; }); await sleep(5600);
+  const nd = await p.evaluate(() => ({ ask: !document.getElementById('askScr').classList.contains('hidden'), msg: document.getElementById('askMsg').textContent, yes: document.getElementById('askYes').textContent, no: document.getElementById('askNo').textContent }));
+  ok(nd.ask && /geliştiriliyor/.test(nd.msg) && nd.yes === 'GÖRÜŞ YAZ' && nd.no === 'SONRA' && !/hediye/.test(nd.msg), 'görüş dürtmesi yanlış ' + JSON.stringify(nd));
+  await p.click('#askYes'); await sleep(300);
+  ok(await p.evaluate(() => BT.fbIsOpen()), 'GÖRÜŞ YAZ formu açmadı');
+  await p.evaluate(() => document.getElementById('fbCancel').click()); await sleep(5600);
+  ok(await p.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'görüş dürtmesi ikinci kez çıktı');
   ok(errs.length === 0, 'sayfa hatası: ' + errs.join(' | '));
   console.log(JSON.stringify({ s1: s1.gain, s2: s2.gain, s3: s3.gain, s4: s4.gain, amt }));
   console.log(fail.length ? 'HATALAR:\n - ' + fail.join('\n - ') : 'TAMAM: görüş hediyesi testi geçti');

@@ -39,6 +39,8 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
   sayılmaz; form hediyeyi önceden gösterir. Mağaza (App Store / Google Play) puanı ve yorumu **asla** ödüllendirilmez:
   Apple 5.6.1 ve Google Play kuralları yasaklıyor, mağaza değerlendirme penceresi bu hediyeden tamamen ayrı. Test:
   `test-hediye.js`.
+- **Link ile test hazırlığı:** web'de 15 dk oyundan sonra sürüm başına bir kez görüş isteği (mağaza sürümünde yok);
+  Supabase'de `bt_test_ozet` görünümü (kaç kişi, kaç dakika, geri dönen, görüşler). Adımlar: MAGAZA.md "Önce: link ile test".
 - `MARKA_ON_ARASTIRMA.md`: "Hamsi Koyu" ön araştırması. Web, GitHub ve alan adlarında çakışma yok. Resmî marka
   veri tabanlarına bu ortamdan erişilemedi; TÜRKPATENT araştırmasını e-Devlet'ten kendin yap.
 

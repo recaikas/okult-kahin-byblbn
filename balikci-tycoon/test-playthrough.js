@@ -106,6 +106,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
 
   /* ================= BAŞLANGIÇ ================= */
   await p.goto(process.env.URL || 'http://localhost:8099/index.html'); await sleep(1000);
+  await p.evaluate(() => BT.fbNudgeOff());   /* 15 dk görüş dürtmesi otomatik oyunu bölmesin */
   await shot('intro');
   await p.click('#introSkip'); await sleep(300); await shot('menu');
   await p.click('#playBtn'); await sleep(300); await p.click('#slotRows .sb[data-n="1"]'); await sleep(300);

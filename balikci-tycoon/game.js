@@ -9975,6 +9975,8 @@ Object.assign(STR.tr, {
   fbNeedStars: 'Önce 1–5 arası bir puan seç', fbTooLong: 'Mesaj en çok {n} karakter olabilir',
   fbGiftHint: '🎁 Bu sürümdeki ilk yorumuna (en az {n} harf) {v} oyun içi hediye. Kaç yıldız verirsen ver aynı hediye.',
   fbGiftGot: '🎁 Yorumun için {v} hediye kasana eklendi. Teşekkürler!',
+  fbNudge: 'Hamsi Koyu\'yu bir süredir oynuyorsun, çok teşekkürler! 🐟\n\nOyun hâlâ geliştiriliyor. Neyi sevdin, neyi sevmedin, nerede takıldın? İki cümle bile çok işime yarar.{g}',
+  fbNudgeGift: '\n\n🎁 İlk yorumuna {v} oyun içi hediye.', fbNudgeYes: 'GÖRÜŞ YAZ', fbNudgeNo: 'SONRA',
   fbThanks: 'Teşekkürler! Görüşün bize ulaştı', fbQueued: 'Teşekkürler! Görüşün kaydedildi, çevrimiçi olunca gönderilecek',
   fbTooMany: 'Bugün yeterince görüş gönderdin, yarın yine yaz', fbBad: 'Görüş gönderilemedi, metni kontrol edip tekrar dene',
   forgetBtn: 'ÇEVRİMİÇİ VERİLERİMİ SİL',
@@ -9991,6 +9993,8 @@ Object.assign(STR.en, {
   fbNeedStars: 'Pick a rating from 1 to 5 first', fbTooLong: 'The message can be at most {n} characters',
   fbGiftHint: '🎁 Your first comment in this version (at least {n} letters) earns {v} of in-game cash. Same gift whatever stars you give.',
   fbGiftGot: '🎁 {v} added to your cash for your comment. Thank you!',
+  fbNudge: 'You\'ve been playing Hamsi Koyu for a while — thank you! 🐟\n\nThe game is still in development. What did you like, what didn\'t you, where did you get stuck? Even two sentences help a lot.{g}',
+  fbNudgeGift: '\n\n🎁 {v} in-game gift for your first comment.', fbNudgeYes: 'WRITE FEEDBACK', fbNudgeNo: 'LATER',
   fbThanks: 'Thank you! Your feedback reached us', fbQueued: 'Thank you! Your feedback is saved and will be sent when online',
   fbTooMany: 'You have sent plenty of feedback today, write again tomorrow', fbBad: 'Feedback could not be sent, check the text and try again',
   forgetBtn: 'DELETE MY ONLINE DATA',
@@ -10044,6 +10048,17 @@ function fbGive(textLen) {
   var v = fbGiftAmt(); S.cash += v; Store.set(FB_GIFT_KEY, FB_VER); save();
   setTimeout(function () { fbToast(T('fbGiftGot', { v: money(v) })); sfx.buy(); }, 1600);
 }
+/* test dönemi: web'de (mağaza sürümünde değil) 15 dk oyundan sonra sürüm başına bir kez görüş iste; oyuncu meşgulken sormaz */
+var FB_NUDGE_KEY = 'balikci_fb_nudge', FB_NUDGE_SEC = 900;
+function fbNudgeTick() {
+  if (window.BT_NATIVE || !S.started || paused || anyOverlay() || fbOpen() || (S.play || 0) < FB_NUDGE_SEC) return;
+  if (Store.get(FB_NUDGE_KEY) === FB_VER) return;
+  Store.set(FB_NUDGE_KEY, FB_VER);
+  var g = fbGiftReady() ? T('fbNudgeGift', { v: money(fbGiftAmt()) }) : '';
+  ask(T('fbNudge', { g: g }), T('fbNudgeYes'), function () { fbShow(); }, null);
+  el.askNo.textContent = T('fbNudgeNo');
+}
+setInterval(fbNudgeTick, 5000);
 function fbShow() {
   fb.stars = 0; fb.cat = ''; fbText.value = ''; fbErr('');        /* gönderim sürüyorsa "busy" kalır: çift gönderim olmasın */
   fbApplyLang(); fbRender();
@@ -10252,7 +10267,7 @@ Object.assign(window.BT, {
 
 /* görüş formu + mağaza değerlendirmesi — test kancaları */
 Object.assign(window.BT, {
-  fbShow: function () { fbShow(); }, fbGiftAmt: fbGiftAmt, fbGiftReady: fbGiftReady, fbIsOpen: fbOpen, fbOutbox: fbBox, fbFlush: function (force) { fbFlush(force); },
+  fbShow: function () { fbShow(); }, fbGiftAmt: fbGiftAmt, fbGiftReady: fbGiftReady, fbNudgeOff: function () { Store.set(FB_NUDGE_KEY, FB_VER); }, fbIsOpen: fbOpen, fbOutbox: fbBox, fbFlush: function (force) { fbFlush(force); },
   rvState: function () { return { session: rvSession, why: rvBlock(), asked: rv.asked, at: parseInt(Store.get(RV_KEY), 10) || 0 }; },
   askReview: function () { return maybeAskReview(); }
 });

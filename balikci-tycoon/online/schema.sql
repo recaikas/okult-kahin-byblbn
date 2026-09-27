@@ -283,6 +283,35 @@ order by f.created_at desc;
 revoke all on public.bt_gorusler from anon, authenticated;
 
 -- ---------------------------------------------------------------------
+--  TEST ÖZETİ (yalnız sen): link ile test ederken tek satırda durum.
+--    select * from bt_test_ozet;
+--  kac_kisi: en az bir kez açan farklı oyuncu · son_24s / son_7g: o sürede oyunu açan oyuncu
+--  ort_dk / medyan_dk: oyuncu başına toplam oyun süresi (dakika) · 10dk_ustu / 60dk_ustu: o kadar oynayan kişi
+--  geri_donen: en az 2 farklı günde açan kişi · gorus / ort_yildiz: gelen görüşler
+-- ---------------------------------------------------------------------
+create or replace view public.bt_test_ozet with (security_invoker = true) as
+with oy as (
+  select player_id from public.bt_plays union select player_id from public.bt_scores
+), sure as (
+  select player_id, sum(play_sec) / 60.0 as dk from public.bt_scores group by player_id
+), gun as (
+  select player_id, count(distinct date(created_at)) as g from public.bt_plays group by player_id
+)
+select
+  (select count(*) from oy)                                                                    as kac_kisi,
+  (select count(distinct player_id) from public.bt_plays where created_at > now() - interval '24 hours') as son_24s,
+  (select count(distinct player_id) from public.bt_plays where created_at > now() - interval '7 days')   as son_7g,
+  (select round(avg(dk), 1) from sure)                                                          as ort_dk,
+  (select round((percentile_cont(0.5) within group (order by dk))::numeric, 1) from sure)       as medyan_dk,
+  (select count(*) from sure where dk >= 10)                                                    as "10dk_ustu",
+  (select count(*) from sure where dk >= 60)                                                    as "60dk_ustu",
+  (select count(*) from gun where g >= 2)                                                       as geri_donen,
+  (select max(day) from public.bt_scores)                                                       as en_uzun_gun,
+  (select count(*) from public.bt_feedback)                                                     as gorus,
+  (select round(avg(stars), 2) from public.bt_feedback)                                         as ort_yildiz;
+revoke all on public.bt_test_ozet from anon, authenticated;
+
+-- ---------------------------------------------------------------------
 --  KVKK saklama süresi (gizlilik politikası: açılış sayımları ve görüşler en çok 24 ay).
 --  Ayda bir SQL Editor'da çalıştır:  select bt_cleanup();
 --  Otomatik yapmak için (Supabase › Database › Extensions › pg_cron açıkken):
@@ -300,6 +329,7 @@ revoke all on function public.bt_cleanup() from public, anon, authenticated;
 
 -- ---------------------------------------------------------------------
 --  Senin için hazır sorgular (SQL Editor'da çalıştır):
+--    select * from bt_test_ozet;                          -- test özeti: kaç kişi, kaç dakika, geri dönen
 --    select * from bt_oyuncular;                          -- kim ne kadar oynadı
 --    select * from bt_board('');                          -- tablo + sayılar
 --    select date(created_at) gun, count(*) oyun, count(distinct player_id) kisi

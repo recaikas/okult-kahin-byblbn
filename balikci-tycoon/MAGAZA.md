@@ -16,6 +16,27 @@ Hukuki ayrıntılar ve kaynaklar: [`HUKUK.md`](HUKUK.md). Marka ön araştırmas
 
 ---
 
+## Önce: link ile test (mağazaya çıkmadan)
+
+Oyunu önce bir web linkiyle paylaşıp tepkileri ve oyun sürelerini görmek için:
+
+1. **Supabase** (yukarıdaki kararlar ve aşağıdaki 1. adım): AB/Frankfurt projesi aç, `online/schema.sql`'i çalıştır,
+   Project URL + anon key'i `config.js`'e yaz. Anon key herkese açık olacak şekilde tasarlanmıştır; güvenlik RLS ve
+   yalnız doğrulayan fonksiyonlarla sağlanır. Service/secret key'i asla koyma.
+2. **Siteyi aç:** PR #1'i `main`'e birleştir, sonra GitHub › Settings › Pages › Source: **GitHub Actions**.
+   Birkaç dakika sonra oyun şu adreste: **https://recaikas.github.io/okult-kahin-byblbn/**
+3. **Linki paylaş.** Oyuncu ilk oyunda KVKK bilgilendirmesini görür; 15 dakika oynayınca oyun bir kez görüş ister
+   (yalnız web'de; ilk yoruma oyun içi hediye).
+4. **İzle** (Supabase › SQL Editor):
+   - `select * from bt_test_ozet;` — kaç kişi, son 24 saat/7 gün, ortalama ve medyan dakika, 10/60 dk üstü oynayan,
+     geri dönen, görüş sayısı ve ortalama yıldız.
+   - `select * from bt_oyuncular;` — kişi kişi: işletme, oyun süresi, en uzun gün, son görülme.
+   - `select * from bt_gorusler limit 50;` — yazılan görüşler.
+5. **KVKK notu:** test de olsa yurt dışı aktarım kuralı geçerli (aşağıda 2. adım). Tanıdıklarınla küçük bir testte risk
+   düşüktür; linki geniş kitleye yaymadan önce standart sözleşme işini bitir.
+
+---
+
 ## 0. Senin yapman gerekenler (sırayla)
 
 Bunları yalnız sen yapabilirsin. Geri kalan her şey depoda hazır.
