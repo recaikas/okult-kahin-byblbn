@@ -95,6 +95,8 @@ Bunları yalnız sen yapabilirsin. Geri kalan her şey depoda hazır.
       ve mağaza hesaplarında değiştir.
 - [ ] *(İsteğe bağlı)* `LICENSE`, `about.html` ve `privacy.html`'deki "recaikas (GitHub: @recaikas)" satırını gerçek
       adınla değiştir. Apple ve Google mağazada zaten yasal adını gösterir.
+- [ ] **Telif kanıtı (5 dk, ücretsiz):** GitHub'da *Releases › Draft a new release* ile `v1.8` sürümünü oluştur;
+      https://archive.softwareheritage.org/save/ adresinde depo adresini yazıp "Save code now" de (HUKUK.md §2.2).
 - [ ] **Git kimliği:** bundan sonraki commit'ler senin adına olsun:
       `git config --global user.name "[AD SOYAD]"` ve `git config --global user.email "recaizade3145@gmail.com"`
       (HUKUK.md §2.4).

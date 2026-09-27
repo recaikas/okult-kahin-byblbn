@@ -71,8 +71,8 @@
 
 | Yol | Maliyet | Pratik değeri | Öneri |
 |---|---|---|---|
-| **GitHub geçmişi** (commit'ler, push tarihleri, Pages dağıtım kayıtları, Actions günlükleri) | Ücretsiz | Yüksek. Commit tarihini kişi kendisi girebilir, ama GitHub'ın push/Actions/Pages kayıtları sunucu tarafında tutulur ve üçüncü kişi kaydıdır. Mağaza ve GitHub şikâyetlerinde genelde yeter. | **Yapıldı (v1.8):** v1.8 etiketi. Her sürüme etiket at, GitHub'da **Release** oluştur. |
-| **Software Heritage** "Save code now" — https://archive.softwareheritage.org/save/ | Ücretsiz | Yüksek. Bağımsız, kâr amacı gütmeyen bir arşiv; depoyu tarihli ve kalıcı biçimde saklar. | **Yapıldı (v1.8):** arşiv isteği. Her büyük sürümde tekrarla. |
+| **GitHub geçmişi** (commit'ler, push tarihleri, Pages dağıtım kayıtları, Actions günlükleri) | Ücretsiz | Yüksek. Commit tarihini kişi kendisi girebilir, ama GitHub'ın push/Actions/Pages kayıtları sunucu tarafında tutulur ve üçüncü kişi kaydıdır. Mağaza ve GitHub şikâyetlerinde genelde yeter. | **Sen yap:** bu ortamdan erişilemedi (ağ kuralı); kendin 5 dakikada yaparsın, §8'e bak. |
+| **Software Heritage** "Save code now" — https://archive.softwareheritage.org/save/ | Ücretsiz | Yüksek. Bağımsız, kâr amacı gütmeyen bir arşiv; depoyu tarihli ve kalıcı biçimde saklar. | **Sen yap:** bu ortamdan erişilemedi (ağ kuralı); kendin 5 dakikada yaparsın, §8'e bak. |
 | **Internet Archive / Wayback Machine** — https://web.archive.org/save | Ücretsiz | Orta. Web sürümünün ve gizlilik sayfasının tarihli kopyası. | Yayın gününde. |
 | **OpenTimestamps** (https://opentimestamps.org) ile bir sürüm ZIP'inin SHA-256 özetini zaman damgala | Ücretsiz | Orta-yüksek. Dosyanın o tarihte var olduğunu kriptografik olarak gösterir. | İsteğe bağlı. |
 | **İmzalı commit'ler** (SSH anahtarıyla, GitHub'da "Verified") | Ücretsiz | Orta. Commit'in senin anahtarınla yapıldığını gösterir. | İsteğe bağlı. `git config --global gpg.format ssh` + `user.signingkey`. |
@@ -488,7 +488,9 @@ saklama, haklar, iletişim). Karar değişirse (ör. seçenek b) aktarım paragr
 
 - [x] `LICENSE` `balikci-tycoon/`'a kondu, README'ye lisans satırı eklendi (v1.7). (§4.2)
 - [ ] `git config user.name "[AD SOYAD]"` ve `user.email` ile bundan sonraki commit'leri kendi adına al. (§2.4)
-- [x] v1.8 etiketi ve Software Heritage arşiv isteği (yapıldı, v1.8). (§2.2)
+- [ ] **Sen yap (5 dk):** GitHub'da *Releases › Draft a new release* ile `v1.8` etiketi ve sürüm oluştur; sonra
+      https://archive.softwareheritage.org/save/ adresine `https://github.com/recaikas/okult-kahin-byblbn` yazıp
+      "Save code now" de. (Bu ortamın ağ kuralları etiket gönderimini ve Software Heritage'ı engelledi.) (§2.2)
 - [ ] GitHub'da v1.8 **Release** oluştur; yayın günü oyun adresini ve `privacy.html`'i **Wayback Machine**'e kaydettir. (§2.2)
 - [ ] "Hamsi Koyu" için ön araştırma: TÜRKPATENT (e-Devlet), WIPO Brand DB, TMview, App Store, Google Play, alan adı.
       Sonuçları `MARKA_ON_ARASTIRMA.md`'ye yaz. (§3.4)
