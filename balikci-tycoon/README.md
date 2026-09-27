@@ -34,6 +34,11 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 - **Simgede oyunun adı:** "HAMSİ KOYU" iskele tahtasına boyanmış tabela gibi yazıldı. Android uyarlanır simgede balığın
   altında, yuvarlak maskenin içinde. Tüm boyutlar yeniden üretildi.
 - **İletişim:** recaizade3145@gmail.com — gizlilik politikası, Hakkında ekranı, LICENSE, mağaza belgesi.
+- **Görüş hediyesi:** oyun içi görüş formunda, her sürümde en az 10 harflik ilk yoruma oyun içi para hediyesi verilir:
+  günlük gelirin yarısı, en az $300, en çok $20.000. Hediye verilen puandan bağımsızdır ve skor tablosundaki kazanca
+  sayılmaz; form hediyeyi önceden gösterir. Mağaza (App Store / Google Play) puanı ve yorumu **asla** ödüllendirilmez:
+  Apple 5.6.1 ve Google Play kuralları yasaklıyor, mağaza değerlendirme penceresi bu hediyeden tamamen ayrı. Test:
+  `test-hediye.js`.
 - `MARKA_ON_ARASTIRMA.md`: "Hamsi Koyu" ön araştırması. Web, GitHub ve alan adlarında çakışma yok. Resmî marka
   veri tabanlarına bu ortamdan erişilemedi; TÜRKPATENT araştırmasını e-Devlet'ten kendin yap.
 

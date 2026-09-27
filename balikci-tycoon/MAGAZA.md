@@ -115,6 +115,7 @@ Bunları yalnız sen yapabilirsin. Geri kalan her şey depoda hazır.
 | Pixel art simge + açılış ekranı (tüm boyutlar) | ✅ v1.6 |
 | Simgede oyun adı: "HAMSİ KOYU" alttaki ahşap iskelede (iOS / tam simge), Android uyarlanabilir simgede balığın altında | ✅ v1.8 |
 | Oyun içi görüş formu (yıldız + konu + metin; çevrimdışıyken cihazda bekler) | ✅ |
+| Görüş hediyesi: sürümde bir kez, ≥10 harf yorum, puandan bağımsız oyun içi para. **Mağaza puanı/yorumu ödüllendirilmez** (Apple 5.6.1, Google Play) — uygulama inceleme notunda da belirt | ✅ v1.8 |
 | Mağazanın kendi değerlendirme penceresi (`@capacitor-community/in-app-review`), 60 günde en çok 1 | ✅ `npm install` + `npm run sync` |
 | Yeni ad **Hamsi Koyu** + yeni uygulama kimliği `io.github.recaikas.hamsikoyu` | ✅ v1.7 |
 | Çevrimiçi skor tablosu **zorunlu, her zaman açık**; ilk oyunda tek seferlik KVKK aydınlatması (TAMAM), öncesinde gönderim yok. v1.7 onay kartı ve Ayarlar düğmesi kaldırıldı | ✅ v1.8 |

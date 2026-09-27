@@ -9973,6 +9973,8 @@ Object.assign(STR.tr, {
   fbSend: 'GÖNDER', fbSending: 'GÖNDERİLİYOR…', fbCancel: 'VAZGEÇ',
   fbNote: 'Görüşün herkese açık değildir; yalnız oyunun geliştiricisi okur. Ayarlar › Çevrimiçi verilerimi sil ile silinir.',
   fbNeedStars: 'Önce 1–5 arası bir puan seç', fbTooLong: 'Mesaj en çok {n} karakter olabilir',
+  fbGiftHint: '🎁 Bu sürümdeki ilk yorumuna (en az {n} harf) {v} oyun içi hediye. Kaç yıldız verirsen ver aynı hediye.',
+  fbGiftGot: '🎁 Yorumun için {v} hediye kasana eklendi. Teşekkürler!',
   fbThanks: 'Teşekkürler! Görüşün bize ulaştı', fbQueued: 'Teşekkürler! Görüşün kaydedildi, çevrimiçi olunca gönderilecek',
   fbTooMany: 'Bugün yeterince görüş gönderdin, yarın yine yaz', fbBad: 'Görüş gönderilemedi, metni kontrol edip tekrar dene',
   forgetBtn: 'ÇEVRİMİÇİ VERİLERİMİ SİL',
@@ -9987,6 +9989,8 @@ Object.assign(STR.en, {
   fbSend: 'SEND', fbSending: 'SENDING…', fbCancel: 'CANCEL',
   fbNote: 'Your feedback is not public; only the game\'s developer reads it. Settings › Delete my online data removes it.',
   fbNeedStars: 'Pick a rating from 1 to 5 first', fbTooLong: 'The message can be at most {n} characters',
+  fbGiftHint: '🎁 Your first comment in this version (at least {n} letters) earns {v} of in-game cash. Same gift whatever stars you give.',
+  fbGiftGot: '🎁 {v} added to your cash for your comment. Thank you!',
   fbThanks: 'Thank you! Your feedback reached us', fbQueued: 'Thank you! Your feedback is saved and will be sent when online',
   fbTooMany: 'You have sent plenty of feedback today, write again tomorrow', fbBad: 'Feedback could not be sent, check the text and try again',
   forgetBtn: 'DELETE MY ONLINE DATA',
@@ -10023,10 +10027,22 @@ function fbRender() {
   var n = fbText.value.length;
   fbCount.textContent = n + '/' + FB_LEN; fbCount.classList.toggle('bad', n > FB_LEN);
   fbSendBtn.disabled = fb.busy; fbSendBtn.textContent = T(fb.busy ? 'fbSending' : 'fbSend');
+  var gEl = document.getElementById('fbGift'), g = fbGiftReady();
+  gEl.classList.toggle('hidden', !g); if (g) gEl.textContent = T('fbGiftHint', { n: FB_GIFT_TXT, v: money(fbGiftAmt()) });
 }
 function fbErr(msg) {
   fbErrEl.textContent = msg || ''; fbErrEl.classList.toggle('hidden', !msg);
   if (msg) { fbCard.classList.remove('shake'); void fbCard.offsetWidth; fbCard.classList.add('shake'); }
+}
+/* görüş hediyesi: yalnız OYUN İÇİ görüş formu için (mağaza puanı/yorumu ödüllendirilmez — Apple 5.6.1, Google Play kuralları).
+   Sürüm başına cihazda bir kez, en az FB_GIFT_TXT harf yorum; puandan bağımsız; skor tablosundaki "kazanılan"a sayılmaz. */
+var FB_GIFT_KEY = 'balikci_fb_gift', FB_GIFT_TXT = 10;
+function fbGiftAmt() { return Math.max(300, Math.min(20000, Math.round((RET.dayInc || 0) * 0.5 / 50) * 50)); }
+function fbGiftReady() { return !!S.started && Store.get(FB_GIFT_KEY) !== FB_VER; }
+function fbGive(textLen) {
+  if (!fbGiftReady() || textLen < FB_GIFT_TXT) return;
+  var v = fbGiftAmt(); S.cash += v; Store.set(FB_GIFT_KEY, FB_VER); save();
+  setTimeout(function () { fbToast(T('fbGiftGot', { v: money(v) })); sfx.buy(); }, 1600);
 }
 function fbShow() {
   fb.stars = 0; fb.cat = ''; fbText.value = ''; fbErr('');        /* gönderim sürüyorsa "busy" kalır: çift gönderim olmasın */
@@ -10084,13 +10100,13 @@ function fbSend() {
   fbErr('');
   var it = { p_player: PLAYER_ID, p_run: S.runId || '', p_stars: fb.stars, p_cat: fb.cat || null, p_text: text,
     p_lang: lang, p_ver: FB_VER, p_day: day.n || 1, at: Date.now() };
-  function queued() { fbQueue(it); fbClose(); fbToast(T('fbQueued')); sfx.buy(); if (netOn()) fbSchedule(FB_GAP - (Date.now() - fb.lastSent)); }
+  function queued() { fbQueue(it); fbClose(); fbToast(T('fbQueued')); sfx.buy(); fbGive(text.replace(/\s/g, '').length); if (netOn()) fbSchedule(FB_GAP - (Date.now() - fb.lastSent)); }
   if (ONLINE && !onlineAsked) { showOnlineNotice(function () { fbSend(); }); return; }   /* form açık kalır, bilgilendirme üstte */
   if (!netOn() || Date.now() - fb.lastSent < FB_GAP) { queued(); return; }
   fb.busy = true; fbRender();
   rpc('bt_feedback', fbArgs(it)).then(function (r) {
     fb.busy = false; fbRender();
-    if (r === 'ok') { fb.lastSent = Date.now(); fbClose(); fbToast(T('fbThanks')); sfx.buy(); }
+    if (r === 'ok') { fb.lastSent = Date.now(); fbClose(); fbToast(T('fbThanks')); sfx.buy(); fbGive(text.replace(/\s/g, '').length); }
     else if (r === 'too_fast') { fb.lastSent = Date.now(); queued(); }
     else if (r === 'too_many' || r === 'busy') fbErr(T('fbTooMany'));
     else fbErr(T('fbBad'));
@@ -10236,7 +10252,7 @@ Object.assign(window.BT, {
 
 /* görüş formu + mağaza değerlendirmesi — test kancaları */
 Object.assign(window.BT, {
-  fbShow: function () { fbShow(); }, fbIsOpen: fbOpen, fbOutbox: fbBox, fbFlush: function (force) { fbFlush(force); },
+  fbShow: function () { fbShow(); }, fbGiftAmt: fbGiftAmt, fbGiftReady: fbGiftReady, fbIsOpen: fbOpen, fbOutbox: fbBox, fbFlush: function (force) { fbFlush(force); },
   rvState: function () { return { session: rvSession, why: rvBlock(), asked: rv.asked, at: parseInt(Store.get(RV_KEY), 10) || 0 }; },
   askReview: function () { return maybeAskReview(); }
 });
