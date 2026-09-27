@@ -1996,12 +1996,12 @@ var Store = (function () {
 })();
 /* açık rıza sorusu + Hakkında ekranı metinleri */
 Object.assign(STR.tr, {
-  onlineInfo: 'Hamsi Koyu\'nun çevrimiçi skor tablosu var.\n\nİşletme adın, karakter adın ve oyun istatistiklerin herkese açık tabloda görünür; görüş formundan yazdıkların yalnız geliştiriciye gider. Bu bilgiler rastgele bir oyuncu kimliğiyle Avrupa Birliği\'ndeki (Almanya) Supabase sunucularında tutulur. E-posta, konum ya da rehber gibi kişisel bilgi alınmaz.\n\nAyrıntılar: Ayarlar › Gizlilik Politikası. Verilerini istediğin an Ayarlar › Çevrimiçi verilerimi sil ile silebilirsin.',
-  onlineInfoOk: 'TAMAM', onlineFixed: 'HER ZAMAN AÇIK — gizlilik: Ayarlar › Gizlilik Politikası', aboutBtn: 'HAKKINDA & LİSANSLAR', nameBadT: 'Bu ad kullanılamaz, başka bir ad dene.'
+  onlineInfo: 'Hamsi Koyu\'nun çevrimiçi skor tablosu var.\n\nİşletme adın, karakter adın ve oyun istatistiklerin herkese açık tabloda görünür; görüş formundan yazdıkların ve oyundaki ilerleme adımların (eğitim, kaçıncı gün, açılan bölgeler) yalnız geliştiriciye gider. Bu bilgiler rastgele bir oyuncu kimliğiyle Avrupa Birliği\'ndeki (Almanya) Supabase sunucularında tutulur. E-posta, konum ya da rehber gibi kişisel bilgi alınmaz.\n\nAyrıntılar: Ayarlar › Gizlilik Politikası. Verilerini istediğin an Ayarlar › Çevrimiçi verilerimi sil ile silebilirsin.',
+  onlineInfoOk: 'TAMAM', dataInfoBtn: 'ℹ️ VERİLER & GİZLİLİK', onlineFixed: 'HER ZAMAN AÇIK — gizlilik: Ayarlar › Gizlilik Politikası', aboutBtn: 'HAKKINDA & LİSANSLAR', nameBadT: 'Bu ad kullanılamaz, başka bir ad dene.'
 });
 Object.assign(STR.en, {
-  onlineInfo: 'Hamsi Koyu has an online leaderboard.\n\nYour business name, character name and game stats appear on a public board; what you write in the feedback form goes only to the developer. This data is stored with a random player ID on Supabase servers in the European Union (Germany). No personal details such as email, location or contacts are collected.\n\nDetails: Settings › Privacy Policy. You can delete your data at any time with Settings › Delete my online data.',
-  onlineInfoOk: 'OK', onlineFixed: 'ALWAYS ON — privacy: Settings › Privacy Policy', aboutBtn: 'ABOUT & LICENSES', nameBadT: 'This name can\'t be used — try another.'
+  onlineInfo: 'Hamsi Koyu has an online leaderboard.\n\nYour business name, character name and game stats appear on a public board; what you write in the feedback form and your in-game progress milestones (tutorial, days reached, zones opened) go only to the developer. This data is stored with a random player ID on Supabase servers in the European Union (Germany). No personal details such as email, location or contacts are collected.\n\nDetails: Settings › Privacy Policy. You can delete your data at any time with Settings › Delete my online data.',
+  onlineInfoOk: 'OK', dataInfoBtn: 'ℹ️ DATA & PRIVACY', onlineFixed: 'ALWAYS ON — privacy: Settings › Privacy Policy', aboutBtn: 'ABOUT & LICENSES', nameBadT: 'This name can\'t be used — try another.'
 });
 var SLOT_N = 3, SLOT_PREFIX = 'balikci_slot_', LAST_KEY = 'balikci_last', OLD_KEY = 'balikci_tycoon_v3', PREF_KEY = 'balikci_pref';
 var curSlot = 0, BOOT = null, S0 = null;
@@ -6996,13 +6996,12 @@ function forgetMe(done, tries) {
   rpc('bt_forget', { p_player: old }).then(function () { local(); toast(T('forgetDone')); },
     function () { toast(T('forgetFail')); sfx.bad(); });
 }
-/* KVKK aydınlatma: çevrimiçi skor tablosu zorunlu; ilk gönderimden önce oyuncuya bir kez ne paylaşıldığı gösterilir.
-   Tek düğme (TAMAM); geri tuşuyla kapatmak da "okundu" sayılır. */
-function showOnlineNotice(then) {
-  if (!ONLINE || onlineAsked) { if (then) then(); return; }
-  function seen() { onlineAsked = true; savePref(); el.askNo.classList.remove('hidden'); if (S.started) submitScore(true); evFlush(); if (then) then(); }
-  ask(T('onlineInfo'), T('onlineInfoOk'), seen, seen);
-  el.askNo.classList.add('hidden');
+/* v1.9: bilgilendirme oyun başında ekrana çıkmaz (test oyuncuları tanıdık); menüdeki "Veriler & Gizlilik"ten okunur.
+   Eski çağrı yerleri bozulmasın diye fonksiyon kaldı: artık yalnız devam ettirir. */
+function showOnlineNotice(then) { if (then) then(); }
+function openDataInfo() {
+  ask(T('onlineInfo'), T('privBtn'), function () { el.privBtn.onclick(); }, null);
+  el.askNo.textContent = T('onlineInfoOk');
 }
 el.forgetBtn.onclick = function () { ask(T('forgetAsk'), T('forgetYes'), function () { forgetMe(); }); };
 el.privBtn.onclick = function () { el.privFrame.src = 'privacy.html#' + lang; el.privScr.classList.remove('hidden'); syncPause(); sfx.tap(); };
@@ -8033,7 +8032,7 @@ var PLAYER_ID = (function () {                      /* Ayarlar › Skor kaydım�
   if (!v || v.length < 6) { v = 'p' + newRunId(); Store.set(k, v); }
   return v;
 })();
-function netOn() { return !!ONLINE && onlineOK && onlineAsked && navigator.onLine !== false; }   /* çevrimdışıyken deneme bile */
+function netOn() { return !!ONLINE && onlineOK && navigator.onLine !== false; }   /* çevrimdışıyken deneme bile */
 function rpc(name, args) {
   return fetch(ONLINE.url + '/rest/v1/rpc/' + name, {
     method: 'POST',
@@ -10105,7 +10104,7 @@ function fbApplyLang() {
   fbSendBtn.textContent = T(fb.busy ? 'fbSending' : 'fbSend'); fbText.placeholder = T('fbPh');
   Array.prototype.forEach.call(document.querySelectorAll('#fbCats button'), function (b) { b.textContent = T('fbCat_' + b.dataset.c); });
   Array.prototype.forEach.call(document.querySelectorAll('#fbStars button'), function (b) { b.setAttribute('aria-label', T('fbStarN', { n: b.dataset.v })); });
-  q('menuFb').innerHTML = PX(T('fbBtn')); q('fbBtn').innerHTML = PX(T('fbBtn'));
+  q('menuFb').innerHTML = PX(T('fbBtn')); q('fbBtn').innerHTML = PX(T('fbBtn')); q('menuInfo').textContent = T('dataInfoBtn');
   el.forgetBtn.textContent = T('forgetBtn');           /* "Skor kaydımı sil" artık görüşleri de siler */
 }
 function fbRender() {
@@ -10199,7 +10198,6 @@ function fbSend() {
   var it = { p_player: PLAYER_ID, p_run: S.runId || '', p_stars: fb.stars, p_cat: fb.cat || null, p_text: text,
     p_lang: lang, p_ver: FB_VER, p_day: day.n || 1, at: Date.now() };
   function queued() { fbQueue(it); fbClose(); fbToast(T('fbQueued')); sfx.buy(); fbGive(text.replace(/\s/g, '').length); if (netOn()) fbSchedule(FB_GAP - (Date.now() - fb.lastSent)); }
-  if (ONLINE && !onlineAsked) { showOnlineNotice(function () { fbSend(); }); return; }   /* form açık kalır, bilgilendirme üstte */
   if (!netOn() || Date.now() - fb.lastSent < FB_GAP) { queued(); return; }
   fb.busy = true; fbRender();
   rpc('bt_feedback', fbArgs(it)).then(function (r) {
@@ -10222,6 +10220,7 @@ if (fbScr) {
   fbSendBtn.onclick = fbSend;
   document.getElementById('fbCancel').onclick = function () { fbClose(); sfx.tap(); };
   document.getElementById('menuFb').onclick = function () { fbShow(); };
+  document.getElementById('menuInfo').onclick = function () { openDataInfo(); };
   document.getElementById('fbBtn').onclick = function () { fbShow(); };
   fbApplyLang();
 }

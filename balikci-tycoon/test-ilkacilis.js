@@ -1,7 +1,7 @@
 /* v1.9 ilk açılış + ilerleme olayları (sahte Supabase):
    1) ilk açılışta önce dil seçimi; seçim → doğrudan gazete hikâyesi (kapı yok) → atla → ana menü seçilen dilde;
       yeniden açılışta dil sorulmaz;
-   2) yeni oyun: KVKK bilgilendirmesi görülünce 'oyun' olayı gider; eğitim adımı geçilince 'tut1' gider, tebrik yazısı çıkar,
+   2) yeni oyun: 'oyun' olayı hemen gider (bilgilendirme menüde); eğitim adımı geçilince 'tut1' gider, tebrik yazısı çıkar,
       hedef yazısında canlı ilerleme var; kaydet → yeniden aç → aynı olay ikinci kez gitmez. */
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -37,8 +37,8 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   /* 2) yeni oyun + ilerleme olayları + eğitim rehberi */
   await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
   await p.click('#heroGo'); await p.fill('#nameIn', 'Rehber Limanı'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(700);
-  ok(calls.filter(c => c.name === 'bt_event').length === 0, 'bilgilendirmeden önce olay gitti');
-  await p.click('#askYes'); await sleep(700);
+  ok(await p.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'açılışta bilgilendirme penceresi çıktı');
+  await sleep(700);
   const ev1 = calls.filter(c => c.name === 'bt_event').map(c => c.body.p_ev);
   ok(ev1.includes('oyun'), "'oyun' olayı gitmedi " + JSON.stringify(ev1));
   const o0 = await p.evaluate(() => document.getElementById('objText').textContent);

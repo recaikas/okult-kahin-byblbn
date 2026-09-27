@@ -394,6 +394,42 @@ select
 revoke all on public.bt_test_ozet from anon, authenticated;
 
 -- ---------------------------------------------------------------------
+--  YÖNETİM PANELİ (panel.html): tüm yönetici görünümlerini tek çağrıda verir.
+--  Yalnız doğru panel şifresiyle çalışır; şifrenin kendisi değil SHA-256 özeti saklanır.
+--  Şifre koymak / değiştirmek (SQL Editor):
+--    delete from bt_admin; insert into bt_admin(token_hash) values (encode(sha256(convert_to('YENI-SIFRE','UTF8')),'hex'));
+-- ---------------------------------------------------------------------
+create table if not exists public.bt_admin (token_hash text primary key);
+alter table public.bt_admin enable row level security;
+-- politika yok: anon okuyamaz, yazamaz.
+
+create or replace function public.bt_panel(p_token text)
+returns json
+language plpgsql security definer set search_path = public as $$
+begin
+  if p_token is null or char_length(p_token) < 12 or not exists (
+       select 1 from public.bt_admin where token_hash = encode(sha256(convert_to(p_token, 'UTF8')), 'hex')) then
+    perform pg_sleep(0.8);                       -- şifre denemelerini yavaşlat
+    return null;
+  end if;
+  return json_build_object(
+    'at',        now(),
+    'ozet',      (select row_to_json(o) from public.bt_test_ozet o),
+    'ilerleme',  coalesce((select json_agg(i) from public.bt_ilerleme i), '[]'::json),
+    'birakma',   coalesce((select json_agg(b) from public.bt_birakma b), '[]'::json),
+    'oyuncular', coalesce((select json_agg(x) from (select * from public.bt_oyuncular limit 500) x), '[]'::json),
+    'yolculuk',  coalesce((select json_agg(y) from (select * from public.bt_yolculuk limit 300) y), '[]'::json),
+    'gorusler',  coalesce((select json_agg(g) from (select * from public.bt_gorusler limit 300) g), '[]'::json),
+    'gunluk',    coalesce((select json_agg(d) from (
+                   select date(created_at) as gun, count(*) as acilis, count(distinct player_id) as kisi
+                   from public.bt_plays where created_at > now() - interval '30 days'
+                   group by 1 order by 1) d), '[]'::json)
+  );
+end $$;
+revoke all on function public.bt_panel(text) from public;
+grant execute on function public.bt_panel(text) to anon, authenticated;
+
+-- ---------------------------------------------------------------------
 --  KVKK saklama süresi (gizlilik politikası: açılış sayımları ve görüşler en çok 24 ay).
 --  Ayda bir SQL Editor'da çalıştır:  select bt_cleanup();
 --  Otomatik yapmak için (Supabase › Database › Extensions › pg_cron açıkken):
