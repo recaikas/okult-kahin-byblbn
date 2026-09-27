@@ -7,7 +7,7 @@
    4) değerlendirme penceresi: ilk oturumda sorulmaz; Bölüm 1 kartı kapanınca sorulur; 60 gün içinde ikinci kez
       sorulmaz; aksilikten hemen sonra ve kötü geçen günün ardından sorulmaz; görüş puanı karara girmez
       (1 yıldız verse de aynı tarafsız anda sorulur); web'de hiçbir şey yapmaz. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };

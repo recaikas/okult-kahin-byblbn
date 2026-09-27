@@ -4,7 +4,7 @@
    B) Büyüme: her aşamada yalnız "kazanç" (para/itibar) eklenir; bütün alımlar arayüzden tıklanır,
       personel/müdür arayüzden alınır, günler gerçekten oynanır (gün sonu/pazar/tezgâh ekranları tıklanır).
    C) Sayaç dolunca gazete kapanışı → bölüm kartı. Her aşamada hata/takılma kontrolü + ekran görüntüsü. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const SC = (process.env.SC || require('os').tmpdir() + '/bt-play') + '/';
 require('fs').mkdirSync(SC, { recursive: true });

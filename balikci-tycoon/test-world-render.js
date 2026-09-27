@@ -1,5 +1,5 @@
 /* dünya gerçekten çiziliyor mu? (piksel örneklemesi) */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
   const b = await chromium.launch({ args: ['--ignore-certificate-errors'] });

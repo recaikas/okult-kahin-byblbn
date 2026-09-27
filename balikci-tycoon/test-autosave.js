@@ -1,6 +1,6 @@
 /* v0.8 — otomatik kayıt testi: yeni oyunda sorulur, seçilen aralıkta kaydeder, ayardan değişir,
    kayda yazılır; eski kayıt (ayarsız) "Devam Et"te bir kez sorar, sonra sormaz. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 (async () => {

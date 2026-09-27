@@ -2,7 +2,7 @@
    azalmaz, normal müşteriden yavaş gelir ve yavaş gider, veda cümlesi ayrılırken görünür.
    2) füme talebi oranlı: makineli tezgâhta füme siparişi ~%20, Fümehane'de ~%30 — VIP ağırlıklı havuzda bile
    füme, fileto siparişlerinin yarısını geçmez. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };

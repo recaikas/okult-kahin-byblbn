@@ -4,7 +4,7 @@
    3) Android geri tuşu: açık alt panel → kapanır; sonra duraklatma menüsü açılır; sonra kapanır;
       ana ekranda uygulama arka plana alınır (minimizeApp); durum çubuğu gizlenir; 'pause' olayı kayıt alır;
    4) web'de (Capacitor yok) oyun aynen yüklenir; hiçbir dış adrese istek atılmaz (yazı tipi gömülü). */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };

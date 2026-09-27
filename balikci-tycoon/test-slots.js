@@ -1,7 +1,7 @@
 /* Kayıt slotları + Kaydet-Çık + Yeni Oyun kabul testi. Üç ortamda koşar:
    plain (normal sayfa), sandbox (claude.ai gibi: allow-modals YOK → confirm() yok sayılır),
    nostore (depolama tamamen kapalı). Yerel sunucu: npx http-server -p 8099 -s */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const BASE = process.env.BASE || 'http://localhost:8099/';
 const ENVS = [['plain', 'index.html'], ['sandbox', 'test-sandbox.html'], ['nostore', 'test-sandbox-nostore.html']];

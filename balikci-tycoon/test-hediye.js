@@ -1,6 +1,6 @@
 /* Görüş hediyesi (oyun içi form): sürüm başına bir kez, en az 10 harf yorum, puandan bağımsız, skor tablosu
    kazancına sayılmaz; formda önceden yazar. Mağaza puanı hiçbir yerde ödüllendirilmez (yalnız oyun içi form). */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };

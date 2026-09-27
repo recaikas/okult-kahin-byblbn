@@ -3,7 +3,7 @@
    yeni oyunda kapalı kalıyor ve ağ hiç balık üretmiyordu.)
    NOT: localStorage.clear()+reload ile test ETME — beforeunload yeni bir kayıt
    yazar ve hatayı maskeler. Her zaman temiz bir tarayıcı profili kullan. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
   const b = await chromium.launch({ args: ['--ignore-certificate-errors'] });

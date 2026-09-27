@@ -1,7 +1,7 @@
 /* v0.9 — özel isimli müşteriler: günde 2 kişi; 1. si birkaç normal müşteriden sonra kuyruğa,
    2. si kapanışa yakın "Özel bir müşteri geliyor..." bildiriminden sonra; kapanış onu bekler;
    gün kartında isimler; kayıt/yükleme sonrası akış bozulmaz. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 (async () => {

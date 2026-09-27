@@ -1,6 +1,6 @@
 /* v1.3 — Bölüm 1 kapanışı: neredeyse bitmiş liman → son müdür arayüzden alınır → sayaç dolar →
    gazete (gerçek dokunuşla iki sayfa) → bölüm kartı → devam → oyun sürer; kayıttan dönünce tekrar tetiklenmez. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const SC = (process.env.SC || require('os').tmpdir()) + '/'; const URL = process.env.URL || 'http://localhost:8099/index.html';
 const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };

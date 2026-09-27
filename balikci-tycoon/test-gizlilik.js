@@ -3,7 +3,7 @@
       geri tuşuyla kapatmak da okundu sayılır; ayarlarda aç/kapa yok;
    2) Çevrimiçi verilerimi sil → bt_forget eski kimlikle; cihaz listesi temizlenir; yeni kimlikle gönderim sürer;
    3) Gizlilik politikası oyun içinde açılır (oyun duraklar), TR/EN metin yüklü, geri tuşu/Escape ile kapanır. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };

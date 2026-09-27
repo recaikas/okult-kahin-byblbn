@@ -1,7 +1,7 @@
 /* Faz 3 kabul testi: Liman Meydanı (köprü + yürünebilirlik), Personel Kulübesi seviyesi,
    Depo (oyuncu rafa koyar, Depo Hamalı fazlayı taşır/tezgâhı besler), Sevkiyatçı (kontrat),
    Balık Hali (al/sat), çalışan rotası (bölge ↔ meydan), kayıt + eski kulübe göçü. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 (async () => {

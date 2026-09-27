@@ -1,6 +1,6 @@
 /* v0.8 — çevre gelişimi: başta bakımsız (kademe 0), ilerledikçe kademe artar ve bildirilir;
    manzara oyun alanına yakın, meydan/yol/bölgelerle çakışmaz. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 (async () => {

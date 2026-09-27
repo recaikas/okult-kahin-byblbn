@@ -1,5 +1,5 @@
 /* v0.6 — çöp kovası + oyun içi müzik testi */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 (async () => {

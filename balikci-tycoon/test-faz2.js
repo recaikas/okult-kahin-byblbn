@@ -1,6 +1,6 @@
 /* Faz 2 kabul testi: karakter oluşturma, tezgâh kasası (anında tahsil + KASA DOLU),
    bölge tahsildarı, personele devret (tam otomasyon), tezgâh başına tezgâhtar, eski kayıt uyumu. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 (async () => {

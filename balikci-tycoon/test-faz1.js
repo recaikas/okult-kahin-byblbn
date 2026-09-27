@@ -1,6 +1,6 @@
 /* Faz 1 kabul testi: müzik, kontrol eğitimi, seviye atlama, YAPI alt sekmeleri,
    süs yerleşimi, gün sonu müşteri yenilenmesi. Temiz profil + yerel sunucu (8099). */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 (async () => {

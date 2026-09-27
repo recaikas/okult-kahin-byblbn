@@ -7,7 +7,7 @@
    5) arka plandan dönüş (visibilitychange) + Escape kartı kapatır ve toplar;
    6) başarımlar kayıt/yüklemede korunur; eski kayıt (yeni alanlar olmadan) sorunsuz açılır.
    Yerel sunucu: npx http-server <klasör> -p 8102 -s -c-1 ; URL=http://localhost:8102/index.html node test-basarim.js */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const SC = (process.env.SC || require('os').tmpdir()) + '/';
 const URL = process.env.URL || 'http://localhost:8099/index.html';

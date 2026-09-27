@@ -5,7 +5,7 @@
    3) Restoran pasif para basmaz: fazla yoksa boş bekler, depo %60'tan doluysa ya da tezgâh %75'ten doluysa fazlayı
       pişirip satar;
    4) eski kayıt: kaldırılan binalar birleştiği binaya seviye olarak geçer, kalan harcama iade edilir; sayfa hatası yok. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };

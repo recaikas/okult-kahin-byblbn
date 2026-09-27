@@ -4,7 +4,7 @@
    2) ekranda: Hizmet Sahası binaları (en üst seviyede bile) birbirinin önüne/arkasına düşmez, Kapalı Pazar ana
       tezgâhın tentesiyle çakışmaz; 3) bölge tabelası ayrı nesne değil, ana tezgâhın tentesinde;
    4) her parselin önünde yürünebilir zemin var; 5) her şey kurulu hâlde sahne hatasız çizilir. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const SC = (process.env.SC || require('os').tmpdir()) + '/'; const URL = process.env.URL || 'http://localhost:8099/index.html';
 const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
