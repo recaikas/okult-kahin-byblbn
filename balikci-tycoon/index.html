@@ -342,6 +342,14 @@
   #introGate small{display:block;font-size:12px;letter-spacing:2px;color:var(--ink2);margin:10px 0 34px}
   #introTap{display:block;font-size:17px;letter-spacing:2px;color:var(--ink);text-shadow:2px 2px 0 #000;animation:blink 1.2s steps(2) infinite}
   #introGate.hidden{display:none}
+  #langPick{position:fixed;inset:0;z-index:60;background:#0d0906;display:flex;align-items:center;justify-content:center}
+  #langPick.hidden{display:none}
+  #langPick .lpcard{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:stretch;width:min(300px,84vw)}
+  #langPick b{display:block;font-size:40px;line-height:1.05;color:var(--gold);letter-spacing:2px;text-shadow:4px 4px 0 #7a2b10;margin-bottom:6px}
+  #langPick p{margin:0 0 10px;font-size:12px;letter-spacing:2px;color:var(--ink2)}
+  #langPick button{font-family:inherit;font-size:18px;letter-spacing:2px;padding:16px 10px;background:#1b2a36;color:var(--ink);border:3px solid #6b4a2a;box-shadow:0 4px 0 #0a0604;cursor:pointer}
+  #langPick button.sug{border-color:var(--gold);color:var(--gold)}
+  #langPick button:active{transform:translateY(3px);box-shadow:0 1px 0 #0a0604}
   #introScr.gate .isub,#introScr.gate #introDots,#introScr.gate #introCv{visibility:hidden}
   #introSkip{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:10px;z-index:2;
     background:rgba(10,8,6,.7);border:2px solid #6b4a2a;color:var(--ink);font-family:inherit;font-size:13px;
@@ -765,6 +773,15 @@
     <div id="boardRows"></div>
     <div class="bnote" id="boardNote"></div>
     <button class="go" id="boardClose">KAPAT</button>
+  </div>
+</div>
+
+<div class="hidden" id="langPick">
+  <div class="lpcard">
+    <b>HAMSİ<br>KOYU</b>
+    <p>DİL SEÇ · CHOOSE LANGUAGE</p>
+    <button data-l="tr">🇹🇷 TÜRKÇE</button>
+    <button data-l="en">🇬🇧 ENGLISH</button>
   </div>
 </div>
 

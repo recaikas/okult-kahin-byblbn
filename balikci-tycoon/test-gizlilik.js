@@ -87,9 +87,9 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   const nb = await p2.evaluate(() => ({ bad: ['Orospu Balık', 'S1kt1r Liman', 'amk balık', 'Fuuuck Fish', 'göt balık'].filter(n => !BT.nameBad(n)),
     good: ['Klasik Balık', 'Müsik Evi', 'Kayarak Liman', 'Koç Balıkçılık', 'Scunthorpe Fish', 'Amasra Balık'].filter(BT.nameBad) }));
   ok(!nb.bad.length && !nb.good.length, 'ad filtresi yanlış ' + JSON.stringify(nb));
-  const nS = calls2.length;
+  const nS = calls2.filter(n => n === 'bt_submit').length;
   await p2.evaluate(() => { BT.S.company = 'Orospu Liman'; BT.S.caught += 5; BT.submitScore(true); }); await p2.waitForTimeout(400);
-  ok(calls2.length === nS, 'kaba ad çevrimiçi tabloya gönderildi');
+  ok(calls2.filter(n => n === 'bt_submit').length === nS, 'kaba ad çevrimiçi tabloya gönderildi');
   await ctx2.close();
   ok(errs.length === 0, 'sayfa hatası: ' + errs.join(' | '));
   console.log(JSON.stringify({ calls: calls.map(c => c.name), pid0, after: { pid: after.pid } }));

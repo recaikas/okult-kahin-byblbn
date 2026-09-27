@@ -101,6 +101,8 @@ var STR = {
     chEndP: 'Bir sandık ve bir ağla başladın. Şimdi üç tezgâhı, müdürleri ve çalışanlarıyla {c} limanın en bilinen adı. {n}, artık basit bir balıkçı değilsin.',
     chEndG: 'Ama bu daha başlangıç. Artık devler liginde hayatta kalmalıyız…', mgrCard: '{n} — Müdür gerekli', mgrCardD: '4 personel tamam. Müdür masası kur, müdürünü seç: bölge tam otomatiğe geçer.', mgrPick: '👔 MÜDÜR SEÇ', mgrHired: '👔 {m}, {n} müdürü oldu — bölge tam otomatik', mgrListT: '{n} için müdür adayları', mgrCost: 'masa {d} + işe alım {f} • maaş {w}', mgrBoss: 'Müdür', fmT: 'Füme Makinesi • {n}', fmD: 'Tezgâhtaki filetoyu yerinde tüter; bu bölgenin müşterileri artık füme de ister (2.4× değer)', fmNeed: '🔒 Önce Fümehane', fmDone: '🔥 {n} tezgâhına füme makinesi kuruldu', envFlow: '+%{p} müşteri akışı', envRow: 'Çevre yatırımı', envNext: 'Sıradaki: {n} (Sv {l})', envCust: 'müşteri',
     tutDone: 'Eğitim tamam! Limanı büyüt 🎉',
+    tutNice: '✓ Harika!',
+    tutStepOK: ['✓ Balık birikti! Şimdi sandığın üstünden geç', '✓ Balıklar sırtında! Sarı yolu izle: kesim masası', '✓ Kesim başladı! Hazır filetoyu al', '🎉 İlk balığın tezgâhta! Müşteriler geliyor', '✓ Para kasada! Alttaki çubuktan bir şey al'],
     capUp: '🧺 Taşıma kapasitesi: {n}', spdUp: '👟 Hız +%11', priceUp: '💰 Fiyat +%10',
     /* tutorial */
     tut: ['Ağın yanında bekle — balık birikiyor',
@@ -300,6 +302,8 @@ var STR = {
     chEndP: 'You started with one crate and one net. Now, with three stalls, managers and a whole crew, {c} is the best-known name in the harbour. {n}, you are no longer a simple fisher.',
     chEndG: 'But this is only the beginning. Now we must survive in the league of giants…', mgrCard: '{n} — Manager needed', mgrCardD: 'All 4 roles filled. Set up a manager\'s desk and pick a manager: the zone goes fully automatic.', mgrPick: '👔 PICK MANAGER', mgrHired: '👔 {m} now runs {n} — zone fully automatic', mgrListT: 'Manager candidates for {n}', mgrCost: 'desk {d} + hiring {f} • wage {w}', mgrBoss: 'Manager', fmT: 'Smoker Box • {n}', fmD: 'Smokes fillets right at the stall; customers here now order smoked fish too (2.4× value)', fmNeed: '🔒 Smokehouse first', fmDone: '🔥 Smoker box installed at {n}', envFlow: '+{p}% customer flow', envRow: 'Surroundings', envNext: 'Next: {n} (Lv {l})', envCust: 'customers',
     tutDone: 'Tutorial done! Grow the harbor 🎉',
+    tutNice: '✓ Nice!',
+    tutStepOK: ['✓ Fish are in! Now walk over the crate', '✓ Fish on your back! Follow the yellow path to the cutting table', '✓ Cutting started! Grab the ready fillet', '🎉 Your first fish is on the stall! Customers are coming', '✓ Money banked! Buy something from the bottom bar'],
     capUp: '🧺 Carry capacity: {n}', spdUp: '👟 Speed +11%', priceUp: '💰 Price +10%',
     tut: ['Wait by the net — fish are coming',
           'Walk over the crate to pick up the fish',
@@ -910,6 +914,7 @@ function mgrCands(z) {
 }
 function mgrText(m) { return NM(MGR_BUFFS[m.a].t) + ' • ' + NM(MGR_BUFFS[m.b].t); }
 function hireMgr(z, c) {
+  progEv('mudur');
   if (!S.mgr) S.mgr = [];
   S.mgr[z] = { n: c.n, a: c.a, b: c.b, wage: MGR_DESK[z].wage, look: c.look };
   S.mgrCand[z] = null;
@@ -1718,6 +1723,7 @@ function endDay() {
 /* kart kapatılınca: yeni güne geç (pazar günüyse hazırlık ekranı) */
 function beginNextDay(skipPrep) {
   day.n++;
+  if ([2, 3, 5, 7, 10, 14, 21, 30].indexOf(day.n) >= 0) progEv('gun' + day.n);
   pickFeatured();
   pickSpecials();
   day.market = isMarketDay(day.n);
@@ -2047,6 +2053,7 @@ function buildSave() {
     stalls: counters.map(function (c) { return [c.key, c.open ? 1 : 0]; }),
     workers: workers.map(function (w) { return [w.role, w.zone === undefined ? 0 : w.zone]; }),
     ret: retSave(),                                   /* uzakta kazanç + başarımlar */
+    ev: Object.keys(S.evs || {}),                     /* v1.9: gönderilmiş ilerleme olayları (tekrar gitmesin) */
     mk: M
   };
 }
@@ -2112,6 +2119,7 @@ function loadFrom(d) {
     });
     if (d.mk) M = migrateMarket(d.mk);
     retLoad(d);                                       /* uzakta kazanç + başarımlar (yoksa boş) */
+    S.evs = {}; if (Array.isArray(d.ev)) d.ev.forEach(function (k) { if (typeof k === 'string' && /^[a-z0-9_]{2,24}$/.test(k)) S.evs[k] = 1; });
     return true;
   } catch (e) { return false; }
 }
@@ -3039,6 +3047,7 @@ function checkRepLevel() {
   var l = repLevel();
   if (l <= lastRepLvl) return;
   var from = lastRepLvl; lastRepLvl = l;
+  if (l >= 2) progEv('sv' + l);
   showLevelUp(from, l);
 }
 /* seviye atlama: oyunu DURDURMAYAN üst şerit — seviye, unvan, açılanlar, kısa fanfar + konfeti */
@@ -3149,7 +3158,7 @@ function applyPad(p) {
   else if (p.kind === 'price') { S.priceLvl++; p.lvl++; toast(T('priceUp')); }
   else if (p.kind === 'hire') { p.lvl++; hire(p.role); }
   else if (p.kind === 'area') {
-    AREAS[p.target].locked = false; rebuildCounters(); reassignWorkers();
+    AREAS[p.target].locked = false; rebuildCounters(); reassignWorkers(); progEv('bolge' + (p.target + 1));
     toast(T('areaOpen', { n: NM(AREAS[p.target].n) })); sfx.build();
     
   } else if (p.kind === 'arealv') {
@@ -3233,13 +3242,21 @@ function updateCoach(dt) {
                              : '<span class="keys"><i>W</i><i>A</i><i>S</i><i>D</i></span>' + T('coachKeys'))
     : '<span class="hand">✋</span>' + T('coachAuto');
 }
+/* eğitim hedef yazısına canlı ilerleme: kaç balık birikti / kaç taşıyorsun */
+function tutProgress() {
+  if (S.tut === 1 || S.tut === 2) { var n = 0; for (var i = 0; i < player.carry.length; i++) if (isFish(player.carry[i])) n++; return n ? ' · 🐟 ' + n : ''; }
+  if (S.tut === 3) { var g = 0; for (var j = 0; j < player.carry.length; j++) if (isGoods(player.carry[j])) g++; return g ? ' · 🍽 ' + g : ''; }
+  return '';
+}
 function updateTutorial() {
   if (S.tut >= TUTOK.length) return;
   /* v1.3: eğitimin çok ötesine geçmiş oyuncuda (sv 3+, otomatik bölge ya da bölüm sonu) yarım kalan eğitim hedefi kapanır */
   if (repLevel() >= 3 || S.ch1 || zoneAuto(0)) { S.tut = TUTOK.length; return; }
   if (TUTOK[S.tut]()) {
     S.tut++;
-    if (S.tut < TUTOK.length) sfx.star();
+    progEv('tut' + S.tut);                                   /* ilerleme olayı: hangi adımda bırakıldı */
+    addPuff(player.x, player.y, '#ffc94a');
+    if (S.tut < TUTOK.length) { sfx.star(); toast(T('tutStepOK')[S.tut - 1] || T('tutNice')); }
     else { toast(T('tutDone')); save(); }
   }
 }
@@ -5901,6 +5918,35 @@ function padInfo(p) {
   if (p.kind === 'decor') return { t: UP(NM(DECOR[p.decor].n)), e: T('stDecor') };
   return { t: UP(NM(ROLES[p.role].n)), e: NM(ROLES[p.role].d) + ' ' + money(ROLES[p.role].wage) + perMin() };
 }
+/* v1.9 eğitim rehberi (ilk satışa kadar): oyuncudan hedefe akan noktalı yol + hedefte nabız halkası */
+function drawTutGuide(tg) {
+  var dx = tg.x - player.x, dy = tg.y - player.y, d = Math.sqrt(dx * dx + dy * dy);
+  ctx.save();
+  if (d > 1.2) {
+    var step = 0.45, off = (gameT * 1.6) % step;
+    for (var t = 0.7 + off; t < d - 0.5; t += step) {
+      var wx = player.x + dx * t / d, wy = player.y + dy * t / d;
+      ctx.globalAlpha = 0.35 + 0.5 * Math.min(1, t / 2);
+      px(R(pX(wx, wy)) - 1, R(pY(wx, wy, 0)), 3, 2, '#ffc94a');
+    }
+  }
+  var ph = (gameT * 1.4) % 1, sx = pX(tg.x, tg.y), sy = pY(tg.x, tg.y, 0);
+  ctx.globalAlpha = 0.9 - ph * 0.7; ctx.strokeStyle = '#ffc94a'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.ellipse(sx, sy, 7 + ph * 9, 3.5 + ph * 4.5, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+}
+/* hedef görünmüyorsa ekran kenarında ona dönük ok (ekran koordinatı) */
+function drawTutEdge(tg) {
+  var sx = pX(tg.x, tg.y) + camOX, sy = pY(tg.x, tg.y, 20) + camOY, m = 22;
+  if (sx > 2 && sx < W - 2 && sy > 30 && sy < H - 44) return;          /* hedef (kısmen de olsa) görünüyor: ok gerekmez */
+  var cx = W / 2, cy = H / 2, a = Math.atan2(sy - cy, sx - cx);
+  var ex = clamp(sx, m, W - m), ey = clamp(sy, m + 40, H - m - 60);
+  var bob = Math.sin(gameT * 6) * 2;
+  ctx.save(); ctx.translate(ex + Math.cos(a) * bob, ey + Math.sin(a) * bob); ctx.rotate(a);
+  ctx.fillStyle = '#3d2413'; ctx.beginPath(); ctx.moveTo(11, 0); ctx.lineTo(-7, -9); ctx.lineTo(-3, 0); ctx.lineTo(-7, 9); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#ffc94a'; ctx.beginPath(); ctx.moveTo(8, 0); ctx.lineTo(-5, -6); ctx.lineTo(-2, 0); ctx.lineTo(-5, 6); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
 function drawArrow(tg) {
   var sx = R(pX(tg.x, tg.y)), sy = R(pY(tg.x, tg.y, 30 + (Math.sin(gameT * 4) > 0 ? 2 : 0)));
   px(sx - 3, sy - 8, 7, 4, '#ffc94a');
@@ -6082,11 +6128,12 @@ function render() {
   }
   for (i = 0; i < gulls.length; i++) drawGull(gulls[i]);
   drawFlyers(); drawPuffs(); drawFloats();
-  if (S.started) { var tg = tutorialTarget(); if (tg) drawArrow(tg); }
+  var tg = S.started ? tutorialTarget() : null; if (tg) { drawTutGuide(tg); drawArrow(tg); }
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   drawVignette();                           /* v0.1 — kenarları yumuşatan vinyet */
   if (S.started) dayTint();                 /* v1.2 — sabah/gündüz/akşam tonu */
+  if (tg) drawTutEdge(tg);                  /* v1.9 — hedef ekran dışındaysa kenarda ok */
   ctx.translate(camOX, camOY);
   renderUI();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -6230,7 +6277,7 @@ function syncHUD(dt) {
   if (S.tut < TUTOK.length) {
     el.objective.classList.remove('hidden');
     el.objLbl.textContent = T('goal') + ' ' + (S.tut + 1) + '/' + TUTOK.length;
-    el.objText.textContent = T('tut')[S.tut];
+    el.objText.textContent = T('tut')[S.tut] + tutProgress();
   } else if (undecidedStalls().length) {
     el.objective.classList.remove('hidden');
     el.objLbl.textContent = T('newStallLbl');
@@ -6310,7 +6357,7 @@ function barList() {
       var blk = S.rep < a.rep;
       out.push({ id: 'a' + i, ic: '🔓', t: NM(a.n), s: T('areaGives') + (a.rep ? ' • Sv ' + levelForRep(a.rep) : ''),
         cost: upCost(a.cost), blocked: blk, why: T('needRep', { n: a.rep, c: S.rep, l: levelForRep(a.rep) }),
-        go: function (k) { return function () { clearJunk(k); AREAS[k].locked = false; rebuildCounters(); reassignWorkers(); clampCam(); sfx.build(); toast(T('areaOpen', { n: NM(AREAS[k].n) })); }; }(i) });
+        go: function (k) { return function () { clearJunk(k); AREAS[k].locked = false; progEv('bolge' + (k + 1)); rebuildCounters(); reassignWorkers(); clampCam(); sfx.build(); toast(T('areaOpen', { n: NM(AREAS[k].n) })); }; }(i) });
       break;
     }
     if (!out.length) out.push({ empty: T('emptyArea') });
@@ -6953,7 +7000,7 @@ function forgetMe(done, tries) {
    Tek düğme (TAMAM); geri tuşuyla kapatmak da "okundu" sayılır. */
 function showOnlineNotice(then) {
   if (!ONLINE || onlineAsked) { if (then) then(); return; }
-  function seen() { onlineAsked = true; savePref(); el.askNo.classList.remove('hidden'); if (S.started) submitScore(true); if (then) then(); }
+  function seen() { onlineAsked = true; savePref(); el.askNo.classList.remove('hidden'); if (S.started) submitScore(true); evFlush(); if (then) then(); }
   ask(T('onlineInfo'), T('onlineInfoOk'), seen, seen);
   el.askNo.classList.add('hidden');
 }
@@ -7059,6 +7106,7 @@ function start() {
   S.started = true; paused = false; syncPause();
   ensureAudio(); applyVolume(); musicPlay('game');       /* oyunda müzik arkadan mırıldanır */
   showOnlineNotice(logPlay);
+  progEv('oyun'); evFlush();
   retOnStart();                                          /* uzun ayrılıktan dönüş: "Sen yokken…" */
 }
 /* OYNA: kayıt varsa devam; yoksa işletme adı → oyun. Adı olmayan eski kayıt önce ad sorar. */
@@ -8041,6 +8089,23 @@ function submitScore(force) {
     if (r === 'ok') { netSent.at = Date.now(); netSent.s = e.s; }
     else if (r === 'too_fast') netSent.dirty = true;
   }, function () { netSent.busy = false; netSent.dirty = true; netSent.at = Date.now(); });
+}
+/* v1.9 İLERLEME OLAYLARI: her oyunda (runId) her olay bir kez gönderilir — oyuncular nereye kadar geldi, nerede bıraktı.
+   Yalnız oyun içi kilometre taşları (eğitim adımı, gün, bölge, müdür, bölüm) + o anki oyun günü/süresi. */
+S.evs = {};
+var EV_Q = [], evBusy = false;
+function progEv(name) {
+  if (!S.evs) S.evs = {};
+  if (S.evs[name]) return;
+  S.evs[name] = 1;
+  if (EV_Q.length < 60) EV_Q.push({ p_player: PLAYER_ID, p_run: S.runId || '', p_ev: name, p_day: day.n || 1, p_play: Math.round(S.play || 0) });
+  evFlush();
+}
+function evFlush() {
+  if (!netOn() || evBusy || !EV_Q.length) return;
+  var it = EV_Q.shift(); evBusy = true;
+  it.p_player = PLAYER_ID;                               /* "verilerimi sil" sonrası yeni kimlikle */
+  rpc('bt_event', it).then(function () { evBusy = false; evFlush(); }, function () { evBusy = false; EV_Q.unshift(it); });
 }
 /* her oturum açılışında bir kez: oyuncu + oyun sayacı */
 var playLogged = false;
@@ -9452,7 +9517,7 @@ function chapterPaper() {
 }
 function openChapterEnd() {
   if (S.ch1) return;
-  S.ch1 = true; save();
+  S.ch1 = true; progEv('bolum1'); save();
   closeBar();                                                   /* açık panel sahnenin arkasında kalmasın */
   takeHarborSnap();
   openIntro(function () { showChapterCard(); }, chapterPaper());
@@ -9941,8 +10006,26 @@ camX = pX(player.x, player.y); camY = pY(player.x, player.y, 0);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { });
 /* açılış akışı: kayıt yoksa gazete hikâyesi → ana menü. "Yeni Oyun" ile silinip gelindiyse
    hikâye → doğrudan işletme adı (oyuncu zaten yeni oyun dedi). */
+/* v1.9 ilk açılış: önce dil seçimi (büyük iki düğme), sonra doğrudan gazete hikâyesi, sonra ana menü.
+   Dil düğmesine dokunmak ses için gereken kullanıcı hareketini de sağlar; "başlamak için dokun" kapısı atlanır. */
+var LANGPICK_KEY = 'balikci_langpick';
+function openLangPick() {
+  var lp = document.getElementById('langPick'), sug = /^tr/i.test(navigator.language || 'tr') ? 'tr' : 'en';
+  Array.prototype.forEach.call(lp.querySelectorAll('button'), function (b) {
+    b.classList.toggle('sug', b.dataset.l === sug);
+    b.onclick = function () {
+      Store.set(LANGPICK_KEY, '1'); lp.classList.add('hidden');
+      setLangTo(b.dataset.l); ensureAudio(); sfx.tap();
+      openIntro(null); introAdvance();                 /* kapıyı atla: hikâye hemen başlar */
+    };
+  });
+  el.startScreen.classList.add('hidden');
+  lp.classList.remove('hidden');
+}
 (function bootFlow() {
-  if (!slotCount()) openIntro(null);              /* ilk açılış: hikâye → ana menü */
+  if (slotCount()) return;                        /* kayıtlı oyuncu: doğrudan ana menü */
+  if (!Store.get(LANGPICK_KEY)) openLangPick();   /* ilk açılış: dil → hikâye → ana menü */
+  else openIntro(null);
 })();
 requestAnimationFrame(frame);
 
@@ -10195,10 +10278,10 @@ window.BT = {
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
   customers: customers, FISH: FISH, start: start, hire: hire, toast: toast,
   rebuildCounters: rebuildCounters, buyBuilding: buyBuilding, investProject: investProject,
-  setLang: function (l) { setLangTo(l); },
+  setLang: function (l) { setLangTo(l); }, lang: function () { return lang; },
   M: function () { return M; },
   sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
-  nameBad: nameBad, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
+  nameBad: nameBad, evs: function () { return Object.keys(S.evs || {}); }, evQ: function () { return EV_Q.slice(); }, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
   dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(),
     pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
     y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },
