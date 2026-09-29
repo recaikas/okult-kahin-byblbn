@@ -1,6 +1,7 @@
 /* dünya gerçekten çiziliyor mu? (piksel örneklemesi) */
 const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const URL = process.env.URL || 'http://localhost:8099/index.html';
 (async () => {
   const b = await chromium.launch({ args: ['--ignore-certificate-errors'] });
   const out = {}; const errs = [];
@@ -8,7 +9,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     const p = await b.newPage({ viewport: vp });
     p.on('pageerror', e => errs.push(e.message));
     p.on('console', m => { if (m.type()==='error') errs.push('C:'+m.text()); });
-    await p.goto('file:///home/user/okult-kahin-byblbn/balikci-tycoon/index.html');
+    await p.goto(URL);
     await sleep(900); await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(2500);
     /* v1.2: gün ışığı tonu renkleri kaydırır — örnekleme öğle saatinde (ton yok) yapılır */
     await p.evaluate(() => { if (window.BT && BT.day) BT.day.t = BT.DAY_LEN * 0.45; if (window.BT) BT.S.hero = null; /* varsayılan görünüm: renk örneklemesi sabit kalsın */ });

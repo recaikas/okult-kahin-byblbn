@@ -98,6 +98,10 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   /* eski kayıt (q alanı yok) bozulmadan yüklenir */
   R.legacy = await p.evaluate(() => { const d = BT.buildSave(); delete d.q; return BT.loadFrom(d); });
   ok(R.legacy === true, 'q alanı olmayan kayıt yüklenemedi');
+  /* v1.9.7: elle bozulmuş kayıt: metin / eksi / sonsuz sayılar geçerli aralığa */
+  R.bozuk = await p.evaluate(() => { const d = BT.buildSave(); Object.assign(d, { cash: 'abc', rep: -5000, served: '12', play: 1e999, capLvl: 3.7, runId: '<x>' });
+    const okL = BT.loadFrom(d); return { okL, cash: BT.S.cash, rep: BT.S.rep, served: BT.S.served, play: BT.S.play, cap: BT.S.capLvl, run: BT.S.runId }; });
+  ok(R.bozuk.okL && R.bozuk.cash === 0 && R.bozuk.rep === 0 && R.bozuk.served === 12 && R.bozuk.play === 0 && R.bozuk.cap === 3 && R.bozuk.run === '', 'bozuk kayıt doğrulanmadı ' + JSON.stringify(R.bozuk));
 
   await b.close();
   console.log(JSON.stringify({ R, errs }, null, 1));

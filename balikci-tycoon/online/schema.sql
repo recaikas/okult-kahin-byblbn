@@ -51,16 +51,59 @@ grant select (run_id, company, hero, fish, money, day, play_sec, updated_at) on 
 -- ---------------------------------------------------------------------
 --  Skor gönder (oyun her ~30 sn'de, gün sonunda ve kaydet-çık'ta çağırır)
 -- ---------------------------------------------------------------------
--- herkese açık tabloda kaba/nefret içerikli ad olmasın (istemcideki nameBad ile aynı liste; istemci atlatılırsa diye)
-create or replace function public.bt_bad_name(p text) returns boolean
+-- herkese açık tabloda kaba/nefret içerikli ad olmasın (istemcideki nameBad ile AYNI kurallar; istemci atlatılırsa diye)
+-- v1.9.7: kelime sınırı gözetilir — tam kelime (BAD_EXACT), kelime başı (BAD_START), her yerde (BAD_ANY),
+-- aralıklı yazım ("o r o s p u") ve iki kelimeye bölünmüş ifade. "Ata Mina", "Nigeria", "Shiitake", "Nazik", "Işıkım" geçer.
+create or replace function public.bt_bad_word(w text, spaced boolean, any_only boolean default false) returns boolean
 language sql immutable set search_path = public as $$
-  with n as (select translate(lower(coalesce(p, '')), 'çğıöşüâîû0134578@$!|', 'cgiosuaiuoieastbasii') as t)
-  select regexp_replace(regexp_replace(t, '[^a-z]', '', 'g'), '(.)\1+', '\1', 'g')
-           ~ '(orospu|amina|amcik|sikis|siktir|sikerim|sikeyim|sikik|sikim|gotveren|pezevenk|kahpe|kaltak|yavsak|serefsiz|fuck|shit|bitch|niger|niga|fagot|whore|pusy|ashole|hitler|nazi)'
-      or regexp_replace(t, '(.)\1+', '\1', 'g')
-           ~ '(^|[^a-z])(amk|aq|sik|sikt|got|oc|ibne|pust|yarak|cunt|dick|cock|fag|slut|isis)([^a-z]|$)'
-  from n
+  select case when any_only then
+    exists (select 1 from unnest(array['orospu','aminako','gotveren','pezevenk','serefsiz','fuck','bitch','whore','ashole','hitler','fagot']) r where strpos(w, r) > 0)
+  else
+    (w = any (array['amk','aq','sik','sikt','ibne','pust','yarak','cunt','dick','cock','fag','slut','isis','shit','shits','shity',
+                    'bulshit','niger','nigers','niga','nigas','nazi','nazis','pusy','amina','amcik']) and (w <> 'amina' or spaced))
+    or exists (select 1 from unnest(array['orospu','sikis','sikik','sikim','sikeyim','sikerim','siktir','amcik','aminako','gotveren','pezevenk','kahpe',
+                    'kaltak','yavsak','serefsiz','fuck','bitch','whore','ashole','hitler','fagot','nigers','nazis']) r where left(w, length(r)) = r)
+    or exists (select 1 from unnest(array['orospu','aminako','gotveren','pezevenk','serefsiz','fuck','bitch','whore','ashole','hitler','fagot']) r where strpos(w, r) > 0)
+  end
 $$;
+revoke all on function public.bt_bad_word(text, boolean, boolean) from public, anon, authenticated;
+
+create or replace function public.bt_bad_name(p text) returns boolean
+language plpgsql immutable set search_path = public as $$
+declare
+  n text := replace(translate(lower(coalesce(p, '')), 'çğıöşüâîû0134578@$!|', 'cgiosuaiuoieastbasii'), chr(775), '');   -- lower('İ') = i + U+0307
+  w text[];
+  i int; k int; q int; l int; run text;
+begin
+  -- ö/ü'lü Türkçe yazım katlamadan önce: "göt" engelli, İngilizce "Got Fish Co" serbest
+  if exists (select 1 from regexp_split_to_table(lower(coalesce(p, '')), '[^a-zçğıöşü]+') x
+             where x = any (array['göt','götü','götün','göte','götler','götlek','götoş'])) then return true; end if;
+  w := array(select regexp_replace(x, '(.)\1+', '\1', 'g') from regexp_split_to_table(n, '[^a-z]+') x where x <> '');
+  for i in 1 .. coalesce(array_length(w, 1), 0) loop
+    if public.bt_bad_word(w[i], false) then return true; end if;
+    if i < array_length(w, 1) and public.bt_bad_word(w[i] || w[i + 1], false, true) then return true; end if;
+  end loop;
+  i := 1;
+  while i <= coalesce(array_length(w, 1), 0) loop                -- aralıklı yazım: o r o s p u
+    if length(w[i]) = 1 then
+      run := ''; k := i;
+      while k <= array_length(w, 1) and length(w[k]) = 1 loop run := run || w[k]; k := k + 1; end loop;
+      if length(run) >= 3 then
+        run := regexp_replace(run, '(.)\1+', '\1', 'g');
+        for q in 1 .. length(run) loop
+          for l in 2 .. length(run) - q + 1 loop
+            if public.bt_bad_word(substr(run, q, l), true) then return true; end if;
+          end loop;
+        end loop;
+      end if;
+      i := k;
+    else
+      i := i + 1;
+    end if;
+  end loop;
+  return false;
+end $$;
+revoke all on function public.bt_bad_name(text) from public, anon, authenticated;
 
 drop function if exists public.bt_submit(text, text, text, integer, bigint, integer, integer);
 create or replace function public.bt_submit(
@@ -90,6 +133,10 @@ begin
   if found then
     if v_old.player_id <> p_player then return 'not_owner'; end if;
     if v_old.updated_at > now() - interval '8 seconds' then return 'too_fast'; end if;
+    -- v1.9.7: oyun süresini istemci söylüyor; gerçek zamandan hızlı artamaz (sunucu saati), balık da o sürede
+    -- oynanabilecek kadar artar. Sahte play_sec ile tabloya istenen sayı yazılamaz.
+    if p_play > v_old.play_sec + extract(epoch from (now() - v_old.updated_at)) * 1.1 + 60 then return 'implausible'; end if;
+    if p_fish > v_old.fish + greatest(0, p_play - v_old.play_sec) * 12 + 60 then return 'implausible'; end if;
     update public.bt_scores set
       company    = v_name,
       hero       = nullif(v_hero, ''),
@@ -100,6 +147,7 @@ begin
       updated_at = now()
     where run_id = p_run;
   else
+    if p_play > 21600 then return 'implausible'; end if;        -- v1.9.7: yeni oyunun ilk gönderimi en çok 6 saatlik
     if (select count(*) from public.bt_scores
         where player_id = p_player and created_at > now() - interval '1 hour') >= 20 then
       return 'too_many';
@@ -405,12 +453,23 @@ alter table public.bt_admin enable row level security;
 -- politika yok: anon okuyamaz, yazamaz.
 revoke all on public.bt_admin from anon, authenticated;
 
+-- v1.9.7: yanlış denemeler sayılır; son 10 dakikada 30 yanlış deneme varsa panel (doğru şifreye de) 10 dk kapanır.
+create table if not exists public.bt_admin_try (at timestamptz not null default now());
+alter table public.bt_admin_try enable row level security;
+revoke all on public.bt_admin_try from anon, authenticated;
+
 create or replace function public.bt_panel(p_token text)
 returns json
 language plpgsql security definer set search_path = public as $$
 begin
+  if (select count(*) from public.bt_admin_try where at > now() - interval '10 minutes') >= 30 then
+    perform pg_sleep(0.8);
+    return null;
+  end if;
   if p_token is null or char_length(p_token) < 12 or not exists (
        select 1 from public.bt_admin where token_hash = encode(sha256(convert_to(p_token, 'UTF8')), 'hex')) then
+    insert into public.bt_admin_try default values;
+    delete from public.bt_admin_try where at < now() - interval '1 day';
     perform pg_sleep(0.8);                       -- şifre denemelerini yavaşlat
     return null;
   end if;
