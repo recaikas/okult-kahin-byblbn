@@ -487,6 +487,14 @@ function trimLabels() {
 }
 function uiText(x, y, z, s, col, size, a, dx, dy, outline) { uiQ.push({ t: 3, x: x, y: y, z: z, s: s, c: col, sz: size || 12, a: a === undefined ? 1 : a, dx: dx, dy: dy, o: outline }); }
 function uiFont(px) { return 'bold ' + px + 'px "Pixelify Sans",ui-monospace,monospace'; }
+/* v1.9.6 — ortalı yazı: textAlign='center' yerine başlangıcı genişlikten hesapla. iPhone Safari, U+FE0F'li emoji
+   (🏚️ 🏛️ …) içeren metni center hizasında kutunun ortasından BAŞLATIP sağa taşırıyordu (kutu doğru, yazı kayık). */
+function textAt(g, s, x, align) {
+  g.textAlign = 'left';
+  if (align === 'left') return x;
+  var w = g.measureText(s).width;
+  return align === 'right' ? x - w : x - w / 2;
+}
 /* pixel joystick: koyu taban halkası + altın topuz + yön oku */
 function drawJoystick(jx, jy, dx, dy, a) {
   var r = 17, i, k = Math.hypot(dx, dy);
@@ -512,7 +520,7 @@ function renderUI() {
   trimLabels();
   uctx.setTransform(DPR2, 0, 0, DPR2, 0, 0);
   uctx.clearRect(0, 0, VW, VH);
-  uctx.textAlign = 'center'; uctx.textBaseline = 'alphabetic';
+  uctx.textAlign = 'left'; uctx.textBaseline = 'alphabetic';
   var taken = [];
   function hits(r) {
     for (var k = 0; k < taken.length; k++) {
@@ -543,13 +551,14 @@ function renderUI() {
       uctx.fillStyle = q.t === 1 ? '#c9a15e' : '#7a9ab0';
       uctx.fillRect(rect.x + 2, rect.y + 2, 2, 1); uctx.fillRect(rect.x + w - 4, rect.y + 2, 2, 1);
       uctx.fillStyle = q.c || '#f4e9d2';
-      uctx.fillText(q.s, cx, cy - 5);
+      uctx.fillText(q.s, Math.round(textAt(uctx, q.s, cx)), cy - 5);
     } else {
       uctx.font = uiFont(q.sz);
       uctx.lineWidth = 3; uctx.strokeStyle = q.o || 'rgba(10,26,39,.92)'; uctx.lineJoin = 'round';
-      uctx.strokeText(q.s, cx, cy);
+      var tx = Math.round(textAt(uctx, q.s, cx));
+      uctx.strokeText(q.s, tx, cy);
       uctx.fillStyle = q.c || '#f4e9d2';
-      uctx.fillText(q.s, cx, cy);
+      uctx.fillText(q.s, tx, cy);
     }
   }
   uctx.globalAlpha = 1;
@@ -3548,13 +3557,13 @@ function shadow(x, y, r) {
   ctx.restore();
 }
 function txt(s, x, y, c, font, align) {
-  ctx.font = font || F7; ctx.textAlign = align || 'center';
-  ctx.fillStyle = c || '#f4e9d2'; ctx.fillText(s, R(x), R(y));
+  ctx.font = font || F7; var tx = textAt(ctx, s, x, align || 'center');
+  ctx.fillStyle = c || '#f4e9d2'; ctx.fillText(s, R(tx), R(y));
 }
 function txtShadow(s, x, y, c, font, align) {
-  ctx.font = font || F7; ctx.textAlign = align || 'center';
-  ctx.fillStyle = '#0a1a27'; ctx.fillText(s, R(x) + 1, R(y) + 1);
-  ctx.fillStyle = c || '#f4e9d2'; ctx.fillText(s, R(x), R(y));
+  ctx.font = font || F7; var tx = textAt(ctx, s, x, align || 'center');
+  ctx.fillStyle = '#0a1a27'; ctx.fillText(s, R(tx) + 1, R(y) + 1);
+  ctx.fillStyle = c || '#f4e9d2'; ctx.fillText(s, R(tx), R(y));
 }
 function panel(x, y, w, h, bg, edge) {
   px(x, y, w, h, edge || '#0a1a27');
