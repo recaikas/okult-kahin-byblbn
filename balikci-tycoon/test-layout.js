@@ -49,7 +49,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   await p.evaluate(() => {
     const S = BT.S; S.ctrl = 2; S.cash = 5e6; S.rep = 260; S.env = 3; S.fumeM = [1, 1, 0]; S.tut = 99;
     BT.areas.forEach(a => { a.locked = false; a.lvl = 3; }); BT.decor.forEach(d => d.got = true);
-    const bl = { s1: 'cay', s2: 'depo', s3: 'tezgah', s4: 'cay', s5: 'tezgah', s6: 'tezgah', s7: 'vinc' }; BT.slots.forEach(s => s.b = bl[s.id]);
+    const bl = { s1: 'cay', s2: 'depo', s3: 'buz', s4: 'cay', s5: 'buz', s6: 'buz', s7: 'vinc' }; BT.slots.forEach(s => s.b = bl[s.id]);
     BT.project.done = true; BT.project.stage = 5; BT.project.inv = BT.project.total;
     BT.HUT.lvl = 5; BT.DEPOT.lvl = 2; BT.WHALL.built = true;
     BT.rebuildCounters(); BT.counters.forEach(c => BT.setStall(c.key, true));

@@ -137,14 +137,14 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
   /* ================= B) BÜYÜME ================= */
   const give = async (cash, rep) => { await p.evaluate(([c, r]) => { BT.S.cash += c; BT.S.rep = Math.max(BT.S.rep, r); }, [cash, rep]); await sleep(1400); await handleScreens(); };
   const hireZone = async (z) => {
-    for (const role of ['hamal', 'filetocu', 'tezgahtar', 'kasiyer']) {
+    for (const role of ['hamal', 'filetocu', 'tezgahtar', 'kasiyer'].concat(z === 3 ? ['asci'] : [])) {
       const have = await p.evaluate(([z, r]) => BT.workers.some(w => w.zone === z && w.role === r), [z, role]);
       if (have) continue;
       await openTab('level');
-      const cs = await cards(); const zc = cs.find(c => new RegExp(['İskelesi', 'Pazarı', 'Fümehane'][z]).test(c.t) && /personeli/.test(c.t));
+      const cs = await cards(); const zc = cs.find(c => new RegExp(['İskelesi', 'Pazarı', 'Fümehane', 'Mutfağı'][z]).test(c.t) && /personeli/.test(c.t));
       if (!zc) { log('  ! bölge personel kartı yok z' + z); break; }
       await p.evaluate(i => document.querySelectorAll('#dpCards .dcard')[i].querySelector('.buy').click(), zc.i); await sleep(200);
-      const rc = (await cards()).find(c => c.t.includes(['Hamal', 'Filetocu', 'Tezgâhtar', 'Tahsildar'][['hamal', 'filetocu', 'tezgahtar', 'kasiyer'].indexOf(role)]));
+      const rc = (await cards()).find(c => c.t.includes(['Hamal', 'Filetocu', 'Tezgâhtar', 'Tahsildar', 'Aşçı'][['hamal', 'filetocu', 'tezgahtar', 'kasiyer', 'asci'].indexOf(role)]));
       if (!rc || /no/.test(rc.cls)) { log('  ! ' + role + ' alınamadı z' + z, rc && rc.btn); await closeBar(); break; }
       const sp = await clickCard(rc.i); log('  + personel z' + z + ' ' + role + ' (' + Math.round(sp) + ')');
     }
@@ -152,7 +152,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
   };
   const hireMgr = async (z) => {
     await openTab('level');
-    let cs = await cards(); const mc = cs.find(c => /Müdür gerekli/.test(c.t) && c.t.includes(['İskelesi', 'Pazarı', 'Fümehane'][z]));
+    let cs = await cards(); const mc = cs.find(c => /Müdür gerekli/.test(c.t) && c.t.includes(['İskelesi', 'Pazarı', 'Fümehane', 'Mutfağı'][z]));
     if (!mc) { log('  ! müdür kartı yok z' + z, cs.map(c => c.t).filter(t => /Müdür|Devret|OTOMAT/.test(t))); await closeBar(); return; }
     await p.evaluate(i => document.querySelectorAll('#dpCards .dcard')[i].querySelector('.buy').click(), mc.i); await sleep(250);
     cs = await cards(); log('  adaylar:', cs.slice(1).map(c => c.t + ' [' + c.s.split('•').slice(0, 2).join('|').trim() + ']'));
@@ -221,11 +221,14 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
   await stage('Seviye 5 — müdürler', 60000, 65, async () => {
     await buyAll('build', 'meydan', null, 6);
     await hireZone(2);
-    for (const z of [0, 1, 2]) await hireMgr(z);
+    await buyAll('area');                                           /* v2.0: Balıkçı Mutfağı (itibar 60) */
+    log('  Mutfak açık mı:', await p.evaluate(() => !BT.areas[3].locked));
+    await hireZone(3);
+    for (const z of [0, 1, 2, 3]) await hireMgr(z);
     await buyAll('build', 'decor', null, 20);
   });
   /* kayıt/yükleme: sayfayı yenile, kayıtlı oyundan devam et */
-  const before = await p.evaluate(() => ({ ch: BT.chapter().d, mgr: [0, 1, 2].map(z => BT.mgr(z) && BT.mgr(z).n), env: BT.envStage(), cash: Math.round(BT.S.cash), day: BT.day.n }));
+  const before = await p.evaluate(() => ({ ch: BT.chapter().d, mgr: [0, 1, 2, 3].map(z => BT.mgr(z) && BT.mgr(z).n), env: BT.envStage(), cash: Math.round(BT.S.cash), day: BT.day.n }));
   await p.evaluate(() => BT.save && BT.save());
   await p.reload(); await sleep(1200);
   if (await p.isVisible('#introSkip')) await p.click('#introSkip');
@@ -233,7 +236,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
   if (await p.isVisible('#slotScr')) { await p.click('#slotRows .sb[data-n="1"]'); await sleep(500); }
   if (await p.isVisible('#autoScr')) { await p.click('#autoOpts button[data-m="10"]'); await sleep(300); }
   await sleep(1200); await handleScreens();
-  const after = await p.evaluate(() => ({ ch: BT.chapter().d, mgr: [0, 1, 2].map(z => BT.mgr(z) && BT.mgr(z).n), env: BT.envStage(), cash: Math.round(BT.S.cash), day: BT.day.n }));
+  const after = await p.evaluate(() => ({ ch: BT.chapter().d, mgr: [0, 1, 2, 3].map(z => BT.mgr(z) && BT.mgr(z).n), env: BT.envStage(), cash: Math.round(BT.S.cash), day: BT.day.n }));
   log('  💾 kayıt→yükleme', before, '→', after);
   if (JSON.stringify(before.mgr) !== JSON.stringify(after.mgr) || before.ch !== after.ch || before.env !== after.env) log('!! BUG: kayıt sonrası durum değişti');
   await shot('after-reload');
@@ -247,7 +250,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
     await buyAll('build', 'meydan', null, 8);
     await investProject();
     await buyAll('level', null, /Füme Makinesi/, 2);
-    for (const z of [0, 1, 2]) if (!(await p.evaluate(z => BT.mgr(z), z))) { await hireZone(z); await hireMgr(z); }
+    for (const z of [0, 1, 2, 3]) if (!(await p.evaluate(z => BT.mgr(z), z))) { await hireZone(z); await hireMgr(z); }
   } catch (e) { if (e.message !== 'INTRO') throw e; log('  (sayaç doldu, gazete açıldı)'); } });
   let c = await chapter();
   if (c.d < c.n) {

@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v1.9.8** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v2.0** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -16,6 +16,27 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
 ---
+
+## v2.0 — Balıkçı Mutfağı (4. bölge), Ek Tezgâh kalktı, Buz Makinesi
+
+- **Ek Tezgâh kaldırıldı:** Palamut ve Somon başka bölgelerin yapı noktalarına kurulan ek tezgâhlarda satılıyordu. Bu
+  yüzden o bölgelerin ağı, masası ve tezgâhtarı iki türü birbirine karıştırıyordu. Eski kayıtlarda kurulu Ek Tezgâh'ın
+  parası (2.200 $) yüklenirken iade edilir ve bir bildirim çıkar.
+- **Balıkçı Mutfağı** (Fümehane'nin güneyi, itibar 60 / Sv 5, 9.500 $): kendi başına bir üretim hattı.
+  - **Palamut ağı** ve **Somon ağı** ayrı → **Hamal** → **kesim masası** (Filetocu; iki tür ayrı yığınlarda).
+  - Bant → **Mutfak ocağı**: 1 palamut + 1 somon filetosundan bir tencere **Reis Güveci** (2 porsiyon). Ocağı
+    **Aşçı** %60 hızlandırır; Aşçı yalnız bu bölgenin personel listesinde çıkar.
+  - Güveç ocağın hasırına düşer → **Tezgâhtar** → **Mutfak Tezgâhı** → kasa → **Tahsildar** → Ana Kasa.
+  - Bölgenin kendi **müdürü** var (5 rolün hepsi alınınca). Kadro sınırı beşinci rol için +1; işe alım fiyatı
+    beşinci rol yüzünden katlanmaz (5. kişi, diğer bölgelerin 4. kişisi gibi fiyatlanır).
+  - Güveç porsiyonu büyük: sipariş yarı adet, birim fiyat yüksek. Güveç ve malzemeleri tütsülenmez, depoya
+    "fazla" diye taşınmaz. Hal'de güveç alınıp satılabilir.
+- **Buz Makinesi** (YAPI › ticaret, Sv 4): Ek Tezgâh'ın yerine. Bölgedeki tezgâhların vitrini +3 büyür.
+- **Mendirek Feneri** yeni bölgenin önünden denizdeki kayalığa taşındı.
+- **Bölüm 1 hedefi** dördüncü bölgeyi ve dördüncü müdürü de sayıyor.
+- `test-mutfak.js`: kilit ve ALAN sekmesi, aşçı yalnız Mutfak'ta, 60 sn'de güveç zinciri, **ürün karışmaması**
+  (palamut/somon başka bölgenin ağına, masasına, tezgâhına ya da depoya gitmiyor), Buz Makinesi, eski kayıt iadesi,
+  bölüm hedefi, yerleşim çakışması.
 
 ## v1.9.8 — Üç yeni parça, küçük saha insanları, depo yedeği
 

@@ -63,7 +63,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   await p.evaluate(() => { const b = [...document.querySelectorAll('#dpSub button')].find(x => !['decor', 'meydan', 'up'].includes(x.dataset.s)); b && b.click(); }); await sleep(250);
   await p.evaluate(() => { const c = [...document.querySelectorAll('#dpCards .dcard')].find(d => /Balık Pazarı/.test(d.textContent)); c && c.querySelector('.buy').click(); }); await sleep(250);
   R.slotList = await p.evaluate(() => [...document.querySelectorAll('#dpCards .dcard b')].map(x => x.textContent));
-  ok(R.slotList.some(t => /Ek Tezgâh/.test(t)) && !R.slotList.some(t => /Reklam Panosu/.test(t)), 'yapı listesi yanlış ' + JSON.stringify(R.slotList));
+  ok(R.slotList.some(t => /Buz Makinesi/.test(t)) && !R.slotList.some(t => /Ek Tezgâh/.test(t)) && !R.slotList.some(t => /Reklam Panosu/.test(t)), 'yapı listesi yanlış ' + JSON.stringify(R.slotList));
   R.leave = await p.evaluate(async () => {
     let maxX = 0; const t0 = Date.now();
     while (Date.now() - t0 < 15000) {
