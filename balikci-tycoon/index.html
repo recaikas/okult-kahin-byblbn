@@ -499,6 +499,10 @@
   #fbScr .duo .go{margin-top:8px;flex:1.4}
   #fbSend:disabled{filter:saturate(.35) brightness(.8)}
   #stallBtn{position:relative;margin-right:4px}
+  .plist{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+  .plist button{width:100%;text-align:left;padding:7px 10px;font-size:11px;background:#1a3549;border:2px solid #0a1a27;color:var(--ink);cursor:pointer;font-family:inherit}
+  .plist button.on{border-color:var(--gold);color:var(--gold)}
+  .plist button small{display:block;font-size:9px;color:var(--ink2);margin-top:2px}
   #stallBtn.new::after{content:'';position:absolute;top:3px;right:3px;width:6px;height:6px;background:#ffc94a;box-shadow:0 0 0 1px #1a2433}
 </style>
 </head>
@@ -583,6 +587,8 @@
       <button data-m="1" id="musOn" class="on">♪ AÇIK</button>
       <button data-m="0" id="musOff">KAPALI</button>
     </div>
+    <span class="lbl" id="setPlist">ÇALMA LİSTESİ</span>
+    <div class="plist" id="musList"></div>
     <span class="lbl" id="setZoom">GÖRÜNTÜ / ZOOM</span>
     <div class="seg" id="zoomSeg">
       <button data-z="1">-</button><button data-z="2" class="on">◻</button><button data-z="3">+</button>

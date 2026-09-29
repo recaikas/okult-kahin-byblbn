@@ -72,6 +72,19 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
     return { lens, seen };
   });
   ok(R.mus.lens.length === 3 && R.mus.lens.every(q => q[1] === q[2]) && R.mus.seen.join() === 'liman,yesilcam,iskele', 'müzik parçaları yanlış ' + JSON.stringify(R.mus));
+  /* ayarlar › çalma listesi: sırayla + 3 parça; seçilen parça hemen çalar ve tercihe yazılır */
+  R.pl = await p.evaluate(async () => {
+    BT.ui.openSettings(); await new Promise(r => setTimeout(r, 250));
+    const rows = [...document.querySelectorAll('#musList button')].map(b => b.textContent);
+    document.querySelector('#musList button[data-p="1"]').click(); await new Promise(r => setTimeout(r, 400));
+    const one = { pick: BT.musicPick(), song: BT.music().song, pref: JSON.parse(localStorage.getItem('balikci_pref')).mp, on: document.querySelector('#musList button[data-p="1"]').className };
+    document.querySelector('#musList button[data-p="-1"]').click(); await new Promise(r => setTimeout(r, 200));
+    const auto = { pick: BT.musicPick(), pref: JSON.parse(localStorage.getItem('balikci_pref')).mp };
+    BT.ui.closeSettings();
+    return { rows, one, auto };
+  });
+  ok(R.pl.rows.length === 4 && /Sırayla/.test(R.pl.rows[0]) && /Yeşilçam/.test(R.pl.rows.join()) && /Liman Yolu/.test(R.pl.rows.join()), 'çalma listesi eksik ' + JSON.stringify(R.pl.rows));
+  ok(R.pl.one.pick === 1 && R.pl.one.pref === 1 && /on/.test(R.pl.one.on) && R.pl.auto.pick === -1 && R.pl.auto.pref === -1, 'parça seçimi yanlış ' + JSON.stringify(R.pl));
   /* 3) Hal paleti + Hal Hamalı */
   R.hal = await p.evaluate(async () => {
     const wait = ms => new Promise(r => setTimeout(r, ms));

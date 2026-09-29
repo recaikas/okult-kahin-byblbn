@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Hamsi Koyu Paneli</title>
+<link href="fonts/fonts.css" rel="stylesheet">
+<!--
+  Hamsi Koyu — yönetim paneli (yalnız oyunun sahibi).
+  Veriler Supabase'deki bt_panel(şifre) fonksiyonundan gelir; doğru şifre olmadan hiçbir şey dönmez.
+  Sayfada şifre YOKTUR: veritabanında yalnız SHA-256 özeti tutulur (online/schema.sql › bt_admin).
+  Oyuncuların yazdığı her metin (işletme adı, görüş) ekrana basılmadan önce kaçışlanır.
+-->
+<style>
+  :root{--bg:#0d1b28;--pnl:#14293c;--pnl2:#1d3a52;--edge:#0a1a27;--ink:#f4e9d2;--ink2:#a9c0cf;--gold:#ffc94a;--green:#5fd37a;--red:#e5533d}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Pixelify Sans",ui-monospace,monospace;padding:16px}
+  h1{font-size:22px;color:var(--gold);margin:0 0 4px;letter-spacing:1px}
+  h2{font-size:15px;color:var(--gold);margin:22px 0 8px;letter-spacing:1px;text-transform:uppercase}
+  .sub{color:var(--ink2);font-size:12px}
+  .card{background:linear-gradient(180deg,var(--pnl2),var(--pnl));border:2px solid var(--edge);box-shadow:inset 0 1px 0 #2a5270;padding:14px;border-radius:2px}
+  .wrap{max-width:1100px;margin:0 auto}
+  #login{max-width:380px;margin:12vh auto 0;text-align:center}
+  input[type=password]{width:100%;padding:10px;margin:12px 0 8px;background:#0a1a27;border:2px solid #2a5270;color:var(--ink);font:inherit}
+  button{font:inherit;cursor:pointer;border:2px solid var(--edge);padding:8px 14px;color:#0a1a27;background:linear-gradient(180deg,#6fe08a,#4cc46a)}
+  button.alt{background:linear-gradient(180deg,#23445f,#1a3549);color:var(--ink)}
+  label{font-size:12px;color:var(--ink2)}
+  .err{color:var(--red);min-height:18px;font-size:12px;margin-top:6px}
+  .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:space-between;margin-bottom:6px}
+  .top .act{display:flex;gap:6px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .stat b{display:block;font-size:22px;color:var(--gold)}
+  .stat span{font-size:11px;color:var(--ink2)}
+  .tbl{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:12px}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #22405a;vertical-align:top}
+  th{color:var(--ink2);font-weight:400;white-space:nowrap}
+  td.n{text-align:right;white-space:nowrap}
+  .bar{height:8px;background:#0a1a27;min-width:80px}
+  .bar i{display:block;height:100%;background:var(--gold)}
+  .stars{color:var(--gold);white-space:nowrap}
+  .tag{display:inline-block;padding:0 6px;border:1px solid #2a5270;font-size:11px;color:var(--ink2);margin-right:4px}
+  .path{font-size:11px;color:var(--ink2);line-height:1.6}
+  .path b{color:var(--ink);font-weight:400}
+  .empty{color:var(--ink2);font-size:12px;padding:6px 0}
+  .hidden{display:none}
+  @media (max-width:520px){body{padding:10px}h1{font-size:18px}.stat b{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="login" class="card">
+    <h1>HAMSİ KOYU PANELİ</h1>
+    <div class="sub">Oyuncular nereye kadar geldi, ne yaptı, ne yazdı — yalnız sen.</div>
+    <form id="lf">
+      <input type="password" id="pw" placeholder="Panel şifresi" autocomplete="current-password" required minlength="12">
+      <div><label><input type="checkbox" id="rem"> Bu cihazda hatırla</label></div>
+      <div style="margin-top:10px"><button type="submit" id="go">GİRİŞ</button></div>
+      <div class="err" id="err"></div>
+    </form>
+  </div>
+
+  <div id="dash" class="hidden">
+    <div class="top">
+      <div><h1>HAMSİ KOYU PANELİ</h1><div class="sub" id="at">—</div></div>
+      <div class="act"><button class="alt" id="ref">↻ Yenile</button><button class="alt" id="out">Çıkış</button></div>
+    </div>
+    <h2>Özet</h2>
+    <div class="stats" id="ozet"></div>
+    <h2>Son 30 gün</h2>
+    <div class="card tbl" id="gunluk"></div>
+    <h2>Adım adım ilerleme</h2>
+    <div class="card tbl" id="ilerleme"></div>
+    <h2>Oyuncular ne yaptı (yolculuk)</h2>
+    <div class="card tbl" id="yolculuk"></div>
+    <h2>Oyuncular</h2>
+    <div class="card tbl" id="oyuncular"></div>
+    <h2>Oyunlar hangi günde bırakıldı</h2>
+    <div class="card tbl" id="birakma"></div>
+    <h2>Görüşler</h2>
+    <div class="card tbl" id="gorusler"></div>
+  </div>
+</div>
+<script src="config.js"></script>
+<script>
+(function () {
+  var CFG = window.BT_ONLINE || {}, KEY = 'bt_panel_token';
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(v) { return String(v === null || v === undefined ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function num(v) { return v === null || v === undefined ? '—' : Number(v).toLocaleString('tr-TR'); }
+  function when(t) { if (!t) return '—'; var d = new Date(t); return d.toLocaleDateString('tr-TR') + ' ' + d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }); }
+  function shortId(s) { return esc(String(s || '').slice(0, 8)); }
+  /* oyunun gönderdiği olay kodları → okunur adım */
+  var EV = { oyun: 'Yeni oyun', tut1: 'Ağda balık birikti', tut2: 'Balıkları sırtladı', tut3: 'Kesime bıraktı', tut4: 'İlk balık tezgâhta',
+    tut5: 'İlk para kasada', tut6: 'İlk yükseltme', bolge2: '2. bölge açıldı', bolge3: '3. bölge açıldı', mudur: 'İlk müdür', bolum1: 'BÖLÜM 1 BİTTİ' };
+  function evName(e) {
+    if (EV[e]) return EV[e];
+    var m = /^gun(\d+)$/.exec(e); if (m) return m[1] + '. gün';
+    m = /^sv(\d+)$/.exec(e); if (m) return 'İtibar Sv' + m[1];
+    return e;
+  }
+  function getToken() { try { return sessionStorage.getItem(KEY) || localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
+  function setToken(t, rem) { try { sessionStorage.setItem(KEY, t); if (rem) localStorage.setItem(KEY, t); } catch (e) { } }
+  function clearToken() { try { sessionStorage.removeItem(KEY); localStorage.removeItem(KEY); } catch (e) { } }
+  function load(token) {
+    if (!CFG.url || !CFG.key) return Promise.reject(new Error('config'));
+    return fetch(CFG.url + '/rest/v1/rpc/bt_panel', {
+      method: 'POST',
+      headers: { apikey: CFG.key, Authorization: 'Bearer ' + CFG.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_token: token })
+    }).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); });
+  }
+  function table(rows, cols) {
+    if (!rows || !rows.length) return '<div class="empty">Henüz veri yok.</div>';
+    var h = '<table><thead><tr>' + cols.map(function (c) { return '<th>' + esc(c[1]) + '</th>'; }).join('') + '</tr></thead><tbody>';
+    rows.forEach(function (r) { h += '<tr>' + cols.map(function (c) { var v = c[2] ? c[2](r[c[0]], r) : esc(r[c[0]]); return '<td' + (c[3] ? ' class="n"' : '') + '>' + v + '</td>'; }).join('') + '</tr>'; });
+    return h + '</tbody></table>';
+  }
+  function render(d) {
+    $('at').textContent = 'Son güncelleme: ' + when(d.at);
+    var o = d.ozet || {};
+    var S = [['kac_kisi', 'Farklı oyuncu'], ['son_24s', 'Son 24 saatte açan'], ['son_7g', 'Son 7 günde açan'], ['ort_dk', 'Ortalama dakika'],
+      ['medyan_dk', 'Medyan dakika'], ['10dk_ustu', '10 dk+ oynayan'], ['60dk_ustu', '60 dk+ oynayan'], ['geri_donen', 'Geri dönen (2+ gün)'],
+      ['en_uzun_gun', 'En uzun oyun günü'], ['gorus', 'Görüş'], ['ort_yildiz', 'Ortalama yıldız']];
+    $('ozet').innerHTML = S.map(function (s) { return '<div class="card stat"><b>' + esc(num(o[s[0]])) + '</b><span>' + esc(s[1]) + '</span></div>'; }).join('');
+    var g = d.gunluk || [], gm = Math.max.apply(null, [1].concat(g.map(function (x) { return x.kisi; })));
+    $('gunluk').innerHTML = table(g.slice().reverse(), [['gun', 'Gün', function (v) { return esc(new Date(v).toLocaleDateString('tr-TR')); }],
+      ['kisi', 'Kişi', function (v) { return esc(v) + '<div class="bar"><i style="width:' + Math.round(v / gm * 100) + '%"></i></div>'; }], ['acilis', 'Açılış', null, 1]]);
+    $('ilerleme').innerHTML = table(d.ilerleme, [['adim', 'Adım'], ['oyuncu', 'Oyuncu', null, 1],
+      ['yuzde', 'Yüzde', function (v) { return v === null ? '—' : '%' + esc(v) + '<div class="bar"><i style="width:' + Math.min(100, +v || 0) + '%"></i></div>'; }],
+      ['ort_dakika', 'Ort. dakika', function (v) { return esc(v === null ? '—' : v); }, 1]]);
+    $('yolculuk').innerHTML = table(d.yolculuk, [['oyuncu', 'Oyuncu', shortId], ['isletme', 'İşletme'], ['adim_sayisi', 'Adım', null, 1],
+      ['yol', 'Yol (dakika)', function (v) {
+        return '<div class="path">' + String(v || '').split(' → ').map(function (p) {
+          var m = /^([a-z0-9_]+) \(([\d.]+) dk\)$/.exec(p); return m ? '<b>' + esc(evName(m[1])) + '</b> ' + esc(m[2]) + ' dk' : esc(p);
+        }).join(' → ') + '</div>';
+      }], ['son_olay', 'Son', when]]);
+    $('oyuncular').innerHTML = table(d.oyuncular, [['oyuncu', 'Oyuncu', shortId], ['karakter', 'Karakter'], ['isletme', 'İşletme'],
+      ['oyun_sayisi', 'Oyun', null, 1], ['toplam_saat', 'Saat', null, 1], ['en_iyi_balik', 'En iyi balık', num, 1], ['en_uzun_gun', 'En uzun gün', null, 1],
+      ['acilis', 'Açılış', null, 1], ['son_gorulme', 'Son görülme', when]]);
+    $('birakma').innerHTML = table(d.birakma, [['son_gun', 'Kaldığı gün', null, 1], ['oyun', 'Oyun', null, 1], ['ort_dakika', 'Ort. dakika', null, 1], ['isletmeler', 'İşletmeler']]);
+    $('gorusler').innerHTML = table(d.gorusler, [['zaman', 'Zaman', when], ['yildiz', 'Yıldız', function (v) { var n = +v || 0; return '<span class="stars">' + '★★★★★'.slice(0, n) + '</span>'; }],
+      ['konu', 'Konu', function (v) { return v ? '<span class="tag">' + esc(v) + '</span>' : ''; }], ['metin', 'Metin', function (v) { return esc(v).replace(/\n/g, '<br>'); }],
+      ['gun', 'Gün', null, 1], ['dil', 'Dil'], ['surum', 'Sürüm']]);
+  }
+  function open(token, rem) {
+    $('err').textContent = ''; $('go').disabled = true;
+    return load(token).then(function (d) {
+      $('go').disabled = false;
+      if (!d) { clearToken(); $('err').textContent = 'Şifre yanlış.'; $('login').classList.remove('hidden'); $('dash').classList.add('hidden'); return; }
+      setToken(token, rem); render(d);
+      $('login').classList.add('hidden'); $('dash').classList.remove('hidden');
+    }, function (e) {
+      $('go').disabled = false;
+      $('err').textContent = e.message === 'config' ? 'config.js boş: Supabase bağlantısı yok.' : 'Bağlanılamadı, tekrar dene.';
+    });
+  }
+  $('lf').onsubmit = function (e) { e.preventDefault(); open($('pw').value, $('rem').checked); };
+  $('ref').onclick = function () { var t = getToken(); if (t) open(t); };
+  $('out').onclick = function () { clearToken(); $('pw').value = ''; $('dash').classList.add('hidden'); $('login').classList.remove('hidden'); };
+  var t0 = getToken(); if (t0) open(t0);
+})();
+</script>
+</body>
+</html>

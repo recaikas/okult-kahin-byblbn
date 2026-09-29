@@ -26,6 +26,9 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
     (düm-tek-·-tek-düm-·-tek-·), yürüyen bas.
   - Ana menüde "İskele Türküsü"; oyun içinde üç parça sırayla döner (İskele → Liman Yolu → Yeşilçam, her biri
     16 ölçü); Bölüm 1 jeneriğinde "Yeşilçam Hatırası".
+  - **Ayarlar › Çalma listesi:** "Sırayla çal" (varsayılan: menüde İskele Türküsü, oyunda üçü sırayla) ya da
+    tek parça seçilir; seçilen parça hemen başlar, menüde ve oyunda o çalar. Seçim cihazda saklanır; çalan parçanın
+    yanında ♪ görünür.
 - **Arayüz (TR/EN) taraması** — her ekran ve panel iki dilde açılıp taşma, ekran dışı ve dil sızıntısı arandı:
   - İngilizce arayüzde işletme adı önerileri İngilizce kalıpla ("Mustafa Seafood", "Blue Harbour"…).
   - Liman menüsü: rafa kalkan Kapalı Pazar satırı gizli; çevre satırı yol vitrinini de sayar ve Türkçe yüzde
@@ -34,6 +37,12 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
   - Yüzdeler dile göre: Türkçe "%37", İngilizce "37%" (bölüm ilerlemesi, ofis fiyat değişimleri, holding payları).
   - Holding avantajları okunur adlarla ("Müşteri akışı +%10"; eskiden iç anahtar "flow +10%").
 - Joker müdür yalnız **kendi bölgesinin** kasa ve tezgâhlarına bakar (testte ayrıca doğrulanır).
+- **Yönetim paneli** (`panel.html`, sitede: `…/okult-kahin-byblbn/panel.html`, arama motorlarına kapalı): şifreyle
+  açılır; özet, son 30 gün, adım adım ilerleme, **oyuncuların yolculuğu** (hangi adımı kaçıncı dakikada yaptı),
+  oyuncular, bırakılan günler ve görüşler. Sayfada şifre yok; veritabanında yalnız SHA-256 özeti (`bt_admin`).
+  Şifre değiştirmek: Supabase › SQL Editor ›
+  `delete from bt_admin; insert into bt_admin(token_hash) values (encode(sha256(convert_to('YENİ-ŞİFRE','UTF8')),'hex'));`
+  (en az 12 karakter). Oyuncuların yazdığı metinler panelde kaçışlanır (HTML çalışmaz). Test: `test-panel.js`.
 
 ---
 

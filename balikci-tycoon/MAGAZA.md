@@ -27,7 +27,8 @@ Oyunu önce bir web linkiyle paylaşıp tepkileri ve oyun sürelerini görmek i�
    Birkaç dakika sonra oyun şu adreste: **https://recaikas.github.io/okult-kahin-byblbn/**
 3. **Linki paylaş.** Oyuncu ilk oyunda KVKK bilgilendirmesini görür; 15 dakika oynayınca oyun bir kez görüş ister
    (yalnız web'de; ilk yoruma oyun içi hediye).
-4. **İzle** (Supabase › SQL Editor):
+4. **İzle:** en kolayı **https://recaikas.github.io/okult-kahin-byblbn/panel.html** (panel şifresiyle): özet,
+   adım adım ilerleme, oyuncuların yolculuğu, görüşler. Ya da Supabase › SQL Editor:
    - `select * from bt_test_ozet;` — kaç kişi, son 24 saat/7 gün, ortalama ve medyan dakika, 10/60 dk üstü oynayan,
      geri dönen, görüş sayısı ve ortalama yıldız.
    - `select * from bt_oyuncular;` — kişi kişi: işletme, oyun süresi, en uzun gün, son görülme.
