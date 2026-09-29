@@ -75,14 +75,14 @@ var STR = {
     musicLbl: 'MÜZİK', musOn: '♪ AÇIK', musOff: 'KAPALI',
     meydan: 'LİMAN MEYDANI', hutName: 'Personel Kulübesi', depotName: 'Depo', whall: 'Balık Hali', buildAt: 'YAPI › Meydan',
     hutD: 'Her bölgede +1 personel yeri / seviye (şu an +{n})', depotD: 'Fazla fileto/fümeyi türüne göre raflarda saklar; kendi personeli var',
-    depotD2: 'Raf {a}/{b} → {n} • depo personeli +1', whallD: 'Depodaki malı günün fiyatıyla sat, toptan al (Depo gerekir)',
+    depotD2: 'Raf {a}/{b} → {n} • depo personeli +1', whallD: 'Depodaki malı günün fiyatıyla sat, toptan al; alınan mal Hal paletinden depoya taşınır (Depo gerekir)',
     officeInMeydan: 'Ticaret Merkezi artık meydanda — PROJE sekmesinden kurulur', goProj: 'PROJE ›', upgrade: 'YÜKSELT', build: 'KUR',
     needDepot: '🔒 Önce Depo kur', depotStaffFull: 'Depo kadrosu dolu — depoyu yükselt', depotFull: 'Depo dolu',
     hutBuilt: '🏚️ Personel Kulübesi kuruldu: her bölgede +1 personel yeri', hutUp: '🏚️ Kulübe Sv {l}: her bölgede +{l} personel yeri',
     depotBuilt: '📦 Depo kuruldu — fazla ürün artık çöpe/mezata değil rafa', depotUp: '📦 Depo Sv {l}: kapasite {c}',
     whallBuilt: '🏪 Balık Hali açıldı', hutBtn: 'PERSONEL', halBtn: 'BALIK HALİ', hutWelcome: '👷 Kulübeye hoş geldin — personelini buradan yönet',
     halSub: '{d}. günün fiyatları • Depo {a}/{b}', halRow: 'Depoda {n} • Sat {s} • Al {b}', halSell5: 'SAT 5', halSellAll: 'HEPSİ', halBuy5: 'AL 5',
-    halEmpty: 'Henüz ürün yok', halSold: '{n} ürün satıldı: +{v}', halBought: '{n} ürün alındı: {v}', kFume: 'füme', kFileto: 'fileto',
+    halEmpty: 'Henüz ürün yok', halSold: '{n} ürün satıldı: +{v}', halBought: '{n} ürün alındı: {v}', halBoughtPal: '{n} ürün alındı ({v}) — Hal hamalı depoya taşıyor', halBoughtCarry: '{n} ürün alındı ({v}) — Hal önündeki palette; sırtla, depoya götür', halPalN: 'Palette {n}', halStaffFull: 'En çok 2 Hal hamalı', kFume: 'füme', kFileto: 'fileto',
     envUp1: '🌿 Liman canlanıyor: yol çakıl oldu, ağaçlar yeşeriyor', envUp2: '🪨 Yol arnavut kaldırımı oldu, sahil toparlandı',
     envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
     specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
@@ -98,7 +98,10 @@ var STR = {
     chAreas: 'Bölgeleri aç (Balık Pazarı, Fümehane)', chLevels: 'Bölge seviyeleri', chPads: 'Yükseltmeler (sepet, ayakkabı, fiyat)', chSlots: 'Yapı noktaları',
     chDecor: 'Süsler', chEnv: 'Çevre yatırımları', chFume: 'Füme makineleri', chProj: 'Kapalı Pazar', chMeydan: 'Meydan binaları (kulübe, depo, hal)', chMgr: 'Bölge müdürleri',
     chEndK: 'BÖLÜM 1 TAMAMLANDI', chEndT: 'BALIKÇI İŞ İNSANI',
-    chEndP: 'Bir sandık ve bir ağla başladın. Şimdi üç tezgâhı, müdürleri ve çalışanlarıyla {c} limanın en bilinen adı. {n}, artık basit bir balıkçı değilsin.',
+    chEndP: '1. Bölümü tamamladınız, elinize sağlık. 2. Bölüm için çalışmalara başladım. Buraya kadar oynadıysanız çok teşekkür ederim; bu bir gönül işi, herhangi bir kâr amacı gütmüyorum. Oyunu geliştirmemde yardımcı olmak için bir değerlendirme bırakabilir, tavsiye verebilirsiniz.',
+    chEndFb: '✍ DEĞERLENDİRME YAZ', chEndFin: 'OYUNU BİTİR', chEndGo: '1. BÖLÜMÜ OYNAMAYA DEVAM ET ▶',
+    endK: 'TEŞEKKÜRLER', endT: 'HAMSİ KOYU', endBy: 'BALABAN GURURLA SUNDU', endGo: 'ANA MENÜ',
+    endP: '{n} ve {c} için hikâyenin ilk bölümü burada bitiyor. Oynadığınız için çok teşekkürler — 2. Bölüm\'de görüşmek üzere!',
     chEndG: 'Ama bu daha başlangıç. Artık devler liginde hayatta kalmalıyız…', mgrCard: '{n} — Müdür gerekli', mgrCardD: '4 personel tamam. Müdür masası kur, müdürünü seç: bölge tam otomatiğe geçer.', mgrPick: '👔 MÜDÜR SEÇ', mgrHired: '👔 {m}, {n} müdürü oldu — bölge tam otomatik', mgrListT: '{n} için müdür adayları', mgrCost: 'masa {d} + işe alım {f} • maaş {w}', mgrBoss: 'Müdür', fmT: 'Füme Makinesi • {n}', fmD: 'Tezgâhtaki filetoyu yerinde tüter; bu bölgenin müşterileri artık füme de ister (2.4× değer)', fmNeed: '🔒 Önce Fümehane', fmDone: '🔥 {n} tezgâhına füme makinesi kuruldu', envFlow: '+%{p} müşteri akışı', envRow: 'Çevre yatırımı', envNext: 'Sıradaki: {n} (Sv {l})', envCust: 'müşteri',
     tutDone: 'Eğitim tamam! Limanı büyüt 🎉',
     tutNice: '✓ Harika!',
@@ -187,9 +190,9 @@ var STR = {
     plotOf: '{n} bölgesi', servInc: 'servis geliri',
     buy: 'SATIN AL', confirm: 'ONAYLA?', choose: 'SEÇ', back: '← GERİ',
     emptyArea: 'Açılacak yeni alan yok', emptyLevel: 'Şimdilik yükseltme yok',
-    emptyBuild: 'Yapı noktası yok', emptyProj: 'Proje bu bölge açılınca gelir',
+    emptyBuild: 'Yapı noktası yok', emptyProj: 'Yeni büyük projeler 2. bölümde',
     slotEmpty: 'Boş yapı yeri', slotOf: '{n} bölgesi',
-    areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs', roadShow: 'Yol vitrini',
+    areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs', roadShow: 'Yol vitrini', mZoneRow: 'Kadro {a}/{b} • açık tezgâh', mgrRush: '⏰ Yoğun saat! Müdürler tezgâhlara yardıma indi', mgrHelp: 'yardımda',
     rdFl: 'Yol Çiçekliği', rdFlD: 'Yol kenarına çiçeklik • müşteri akışı +%{p}', rdFlDone: 'Yola çiçeklik kondu 🌷',
     rdBb: 'Yol Reklam Panosu', rdBbD: 'İşletmenin adı ve amblemi yolda • müşteri akışı +%{p}', rdBbDone: 'Reklam panosu yolda yerini aldı 📣',
     lvEffect: 'Ağ +%18, tezgâh +4 stok, yeni yapı yeri',
@@ -285,7 +288,7 @@ var STR = {
     depotBuilt: '📦 Depot built — surplus goes to shelves, not the bin/auction', depotUp: '📦 Depot Lv {l}: capacity {c}',
     whallBuilt: '🏪 Fish Hall open', hutBtn: 'STAFF', halBtn: 'FISH HALL', hutWelcome: '👷 Welcome to the hut — manage your staff here',
     halSub: 'Day {d} prices • Depot {a}/{b}', halRow: 'In depot {n} • Sell {s} • Buy {b}', halSell5: 'SELL 5', halSellAll: 'ALL', halBuy5: 'BUY 5',
-    halEmpty: 'No goods yet', halSold: '{n} sold: +{v}', halBought: '{n} bought: {v}', kFume: 'smoked', kFileto: 'fillet',
+    halEmpty: 'No goods yet', halSold: '{n} sold: +{v}', halBought: '{n} bought: {v}', halBoughtPal: '{n} bought ({v}) — the market porter is taking them to the depot', halBoughtCarry: '{n} bought ({v}) — waiting on the pallet outside the market; carry them to the depot', halPalN: 'On pallet {n}', halStaffFull: 'At most 2 market porters', kFume: 'smoked', kFileto: 'fillet',
     envUp1: '🌿 The harbor comes alive: gravel road, trees turning green', envUp2: '🪨 The road is cobbled now, the shore tidied up',
     envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
     specComing: 'A special customer is coming...', daySpec: 'Special customers',
@@ -301,7 +304,10 @@ var STR = {
     chAreas: 'Open the zones (Fish Market, Smokehouse)', chLevels: 'Zone levels', chPads: 'Upgrades (basket, boots, price)', chSlots: 'Build spots',
     chDecor: 'Decorations', chEnv: 'Surroundings', chFume: 'Smoker boxes', chProj: 'Covered Market', chMeydan: 'Square buildings (hut, depot, hall)', chMgr: 'Zone managers',
     chEndK: 'CHAPTER 1 COMPLETE', chEndT: 'HARBOR MOGUL',
-    chEndP: 'You started with one crate and one net. Now, with three stalls, managers and a whole crew, {c} is the best-known name in the harbour. {n}, you are no longer a simple fisher.',
+    chEndP: 'You have completed Chapter 1 — well done! I have started working on Chapter 2. If you played this far, thank you so much; this is a labour of love, not for profit. You can help me improve the game by leaving a review and your suggestions.',
+    chEndFb: '✍ WRITE A REVIEW', chEndFin: 'FINISH THE GAME', chEndGo: 'KEEP PLAYING CHAPTER 1 ▶',
+    endK: 'THANK YOU', endT: 'HAMSİ KOYU', endBy: 'PROUDLY PRESENTED BY BALABAN', endGo: 'MAIN MENU',
+    endP: 'The first chapter of the story of {n} and {c} ends here. Thank you so much for playing — see you in Chapter 2!',
     chEndG: 'But this is only the beginning. Now we must survive in the league of giants…', mgrCard: '{n} — Manager needed', mgrCardD: 'All 4 roles filled. Set up a manager\'s desk and pick a manager: the zone goes fully automatic.', mgrPick: '👔 PICK MANAGER', mgrHired: '👔 {m} now runs {n} — zone fully automatic', mgrListT: 'Manager candidates for {n}', mgrCost: 'desk {d} + hiring {f} • wage {w}', mgrBoss: 'Manager', fmT: 'Smoker Box • {n}', fmD: 'Smokes fillets right at the stall; customers here now order smoked fish too (2.4× value)', fmNeed: '🔒 Smokehouse first', fmDone: '🔥 Smoker box installed at {n}', envFlow: '+{p}% customer flow', envRow: 'Surroundings', envNext: 'Next: {n} (Lv {l})', envCust: 'customers',
     tutDone: 'Tutorial done! Grow the harbor 🎉',
     tutNice: '✓ Nice!',
@@ -383,9 +389,9 @@ var STR = {
     plotOf: '{n} area', servInc: 'service income',
     buy: 'BUY', confirm: 'CONFIRM?', choose: 'PICK', back: '← BACK',
     emptyArea: 'No new area to unlock', emptyLevel: 'No upgrade available yet',
-    emptyBuild: 'No build spot yet', emptyProj: 'Unlocks with that area',
+    emptyBuild: 'No build spot yet', emptyProj: 'New big projects come in Chapter 2',
     slotEmpty: 'Empty build spot', slotOf: '{n} area',
-    areaGives: 'New net, cutting table and stall', decorGroup: 'Decor', roadShow: 'Road showcase',
+    areaGives: 'New net, cutting table and stall', decorGroup: 'Decor', roadShow: 'Road showcase', mZoneRow: 'Crew {a}/{b} • open stalls', mgrRush: '⏰ Rush hour! Managers are helping at the stalls', mgrHelp: 'helping',
     rdFl: 'Roadside Flowerbed', rdFlD: 'Flowerbed by the road • customer flow +{p}%', rdFlDone: 'A flowerbed on the road 🌷',
     rdBb: 'Road Billboard', rdBbD: 'Your company name and emblem by the road • customer flow +{p}%', rdBbDone: 'Billboard up by the road 📣',
     lvEffect: 'Nets +18%, stall +4 stock, new build spot',
@@ -696,7 +702,7 @@ function melody(notes, type, v, lp) {
    Hikâye + ana menüde çalar; oyuna girince yumuşakça susar.
    ========================================================= */
 var SONG = {
-  bpm: 132,
+  id: 'iskele', n: { tr: 'İskele Türküsü', en: 'Pier Folk Song' }, bpm: 132, style: 'iskele',
   /* [midi, sekizlik sayısı] — 0 = sus */
   lead: [
     [69,2],[74,2],[72,1],[69,1],[67,2],  [65,2],[67,1],[69,1],[67,2],[64,2],
@@ -711,34 +717,85 @@ var SONG = {
   /* ölçü başına bas kökü (MIDI) */
   bass: [38, 36, 38, 33,  38, 34, 33, 38,  34, 36, 31, 33,  34, 41, 33, 38]
 };
-var music = { on: false, timer: 0, next: 0, li: 0, lt: 0, bar: 0, step: 0, gain: null, wantOn: false, mode: 'menu' };
+/* v1.9.5 — iki yeni kendi bestemiz (dosya yok, Web Audio):
+   "Yeşilçam Hatırası": La Hicaz (La Si♭ Do♯ Re Mi Fa Sol), 84 BPM, ağır ve hüzünlü film teması; üçgen dalga
+   melodi, uzun bas + beşli, bağlama tınısında tel vuruşları, yalnız ölçü başında yumuşak def.
+   "Liman Yolu": Sol Rast havası (Fa doğal renkli), 120 BPM, hafif hareketli; maksum darbuka (düm-tek-·-tek-düm-·-tek-·),
+   yürüyen bas. Oyun içinde üç parça sırayla döner; menüde İskele Türküsü, bölüm sonu jeneriğinde Yeşilçam Hatırası. */
+var SONG_YESILCAM = {
+  id: 'yesilcam', n: { tr: 'Yeşilçam Hatırası', en: 'Yeşilçam Memory' }, bpm: 84, style: 'yesilcam',
+  lead: [
+    [69,3],[70,1],[73,2],[74,2],  [76,4],[74,1],[73,1],[70,2],  [73,2],[70,2],[69,4],  [69,6],[0,2],
+    [69,3],[70,1],[73,2],[74,2],  [76,2],[77,2],[76,1],[74,1],[73,2],  [74,2],[73,1],[70,1],[73,2],[70,2],  [69,6],[0,2],
+    [76,2],[77,2],[79,2],[81,2],  [79,3],[77,1],[76,4],  [77,2],[76,1],[74,1],[76,2],[74,1],[73,1],  [74,6],[0,2],
+    [76,2],[74,1],[73,1],[74,2],[73,1],[70,1],  [73,3],[70,1],[69,2],[67,2],  [70,2],[69,1],[67,1],[65,2],[64,2],  [69,6],[0,2]
+  ],
+  bass: [45, 46, 45, 45,  45, 50, 46, 45,  50, 43, 46, 50,  50, 46, 43, 45]
+};
+var SONG_LIMAN = {
+  id: 'liman', n: { tr: 'Liman Yolu', en: 'Harbour Road' }, bpm: 120, style: 'liman',
+  lead: [
+    [67,1],[71,1],[74,2],[74,1],[72,1],[71,2],  [72,1],[71,1],[69,2],[69,1],[71,1],[72,2],
+    [71,1],[69,1],[67,2],[69,1],[71,1],[69,1],[67,1],  [66,2],[69,2],[67,4],
+    [67,1],[71,1],[74,2],[74,1],[76,1],[74,2],  [77,1],[76,1],[74,2],[72,1],[74,1],[76,2],
+    [74,1],[72,1],[71,1],[69,1],[71,2],[69,2],  [67,6],[0,2],
+    [79,1],[79,1],[78,1],[76,1],[78,2],[74,2],  [76,1],[76,1],[74,1],[72,1],[74,2],[71,2],
+    [72,1],[72,1],[71,1],[69,1],[71,1],[72,1],[74,2],  [69,4],[0,2],[74,2],
+    [79,1],[79,1],[78,1],[76,1],[78,2],[74,2],  [76,1],[77,1],[76,1],[74,1],[72,2],[71,2],
+    [72,1],[71,1],[69,1],[71,1],[69,2],[66,2],  [67,6],[0,2]
+  ],
+  bass: [43, 48, 43, 50,  43, 41, 50, 43,  40, 48, 48, 50,  40, 48, 50, 43]
+};
+var SONGS = [SONG, SONG_LIMAN, SONG_YESILCAM];          /* oyun içi sıra: İskele → Liman Yolu → Yeşilçam */
+var music = { on: false, timer: 0, next: 0, li: 0, lt: 0, bar: 0, step: 0, gain: null, wantOn: false, mode: 'menu', si: 0, loops: 0 };
 var musicEnabled = true;                       /* ayarlar › müzik (tercihlere yazılır) */
 var MUSIC_VOL = { menu: 0.55, game: 0.2 };
 function midiF(m) { return 440 * Math.pow(2, (m - 69) / 12); }
-/* iki kip: 'menu' = tam düzenleme (kare dalga melodi, bas, davul);
-   'game' = arkadan mırıldanma (yumuşak sinüs melodi + alçak oktav, seyrek bas, davul yok) */
+function songAt(i) { music.si = ((i % SONGS.length) + SONGS.length) % SONGS.length; music.li = 0; music.lt = 0; music.bar = 0; music.step = 0; }
+/* iki kip: 'menu' = tam düzenleme (melodi, bas, vurmalı);
+   'game' = arkadan mırıldanma (yumuşak sinüs melodi + alçak oktav, seyrek bas; Liman Yolu'nda çok hafif darbuka) */
 function musicTick() {
   if (!music.on || !AC || AC.state !== 'running') return;
-  var e8 = 60 / SONG.bpm / 2, horizon = AC.currentTime + 0.25, hum = music.mode === 'game';
+  var horizon = AC.currentTime + 0.25, hum = music.mode === 'game';
   if (music.next < AC.currentTime) music.next = AC.currentTime + 0.05;
   while (music.next < horizon) {
+    var SG = SONGS[music.si] || SONG, sty = SG.style, e8 = 60 / SG.bpm / 2;
     var t = music.next, at = t - AC.currentTime, st = music.step % 8;
     /* melodi */
     if (music.lt <= 0) {
-      var n = SONG.lead[music.li];
-      music.li = (music.li + 1) % SONG.lead.length;
+      if (music.li === 0 && music.step > 0) {                 /* parça bir tur döndü */
+        music.loops++;
+        if (hum) { songAt(music.si + 1); SG = SONGS[music.si]; sty = SG.style; e8 = 60 / SG.bpm / 2; st = 0; }
+      }
+      var n = SG.lead[music.li];
+      music.li = (music.li + 1) % SG.lead.length;
       music.lt = n[1];
       if (n[0]) {
+        var len = e8 * n[1];
         if (hum) {
-          tone(midiF(n[0]), e8 * n[1] * 0.98, 'sine', 0.3, { at: at, atk: 0.05, dst: music.gain });
-          tone(midiF(n[0] - 12), e8 * n[1] * 0.98, 'triangle', 0.1, { at: at, atk: 0.06, lp: 900, dst: music.gain });
-        } else tone(midiF(n[0]), e8 * n[1] * 0.92, 'square', 0.16, { at: at, lp: 2300, atk: 0.012, dst: music.gain });
+          tone(midiF(n[0]), len * 0.98, 'sine', 0.3, { at: at, atk: sty === 'yesilcam' ? 0.09 : 0.05, dst: music.gain });
+          tone(midiF(n[0] - 12), len * 0.98, 'triangle', 0.1, { at: at, atk: 0.06, lp: 900, dst: music.gain });
+        } else if (sty === 'yesilcam') {
+          tone(midiF(n[0]), len * 0.97, 'triangle', 0.3, { at: at, lp: 2000, atk: 0.06, dst: music.gain });
+          tone(midiF(n[0] + 12), len * 0.9, 'sine', 0.05, { at: at, atk: 0.1, dst: music.gain });   /* ince üst ses */
+        } else tone(midiF(n[0]), len * 0.92, 'square', sty === 'liman' ? 0.14 : 0.16, { at: at, lp: sty === 'liman' ? 2600 : 2300, atk: 0.012, dst: music.gain });
       }
     }
     music.lt--;
-    var root = SONG.bass[music.bar % SONG.bass.length];
+    var root = SG.bass[music.bar % SG.bass.length];
     if (hum) {
       if (st === 0) tone(midiF(root), e8 * 3.6, 'triangle', 0.22, { at: at, lp: 500, atk: 0.04, dst: music.gain });
+      if (sty === 'liman' && (st === 1 || st === 3 || st === 6)) noise(0.03, 0.012, { f: 6000, type: 'highpass', at: at, dst: music.gain });
+    } else if (sty === 'yesilcam') {
+      if (st === 0) tone(midiF(root), e8 * 7.4, 'triangle', 0.26, { at: at, lp: 600, atk: 0.08, dst: music.gain });
+      if (st === 4) tone(midiF(root + 7), e8 * 3.6, 'triangle', 0.14, { at: at, lp: 700, atk: 0.06, dst: music.gain });
+      if (st === 2 || st === 6) tone(midiF(root + 12), e8 * 0.7, 'triangle', 0.1, { at: at, lp: 1800, dst: music.gain });   /* bağlama teli */
+      if (st === 0) tone(90, 0.2, 'sine', 0.15, { at: at, to: 50, dst: music.gain });                                        /* def */
+    } else if (sty === 'liman') {
+      var wb = st === 0 ? root : st === 2 ? root + 7 : st === 4 ? root + 12 : st === 6 ? root + 7 : 0;          /* yürüyen bas */
+      if (wb) tone(midiF(wb), e8 * 0.9, 'triangle', 0.3, { at: at, lp: 900, dst: music.gain });
+      if (st === 0 || st === 4) tone(120, 0.11, 'sine', 0.3, { at: at, to: 55, dst: music.gain });                         /* düm */
+      if (st === 1 || st === 3 || st === 6) noise(0.035, 0.05, { f: 5200, type: 'highpass', at: at, dst: music.gain });    /* tek */
     } else {
       /* bas: kök · · kök oktav · beşli · */
       var bn = st === 0 || st === 3 ? root : st === 4 ? root + 12 : st === 6 ? root + 7 : 0;
@@ -752,7 +809,9 @@ function musicTick() {
     if (music.step % 8 === 0) music.bar++;
   }
 }
-function musicPlay(mode) {
+/* song: SONGS sırası (verilmezse menüde İskele Türküsü, oyunda çalan parça sürer) */
+function musicPlay(mode, song) {
+  var prevMode = music.mode;
   music.mode = mode || (S.started ? 'game' : 'menu');
   music.wantOn = true;
   if (!musicEnabled || !ensureAudio()) return;
@@ -762,7 +821,9 @@ function musicPlay(mode) {
     g.cancelScheduledValues(now); g.setValueAtTime(Math.max(0.0001, g.value), now);
     g.exponentialRampToValueAtTime(MUSIC_VOL[music.mode], now + (music.on ? 1.8 : 1.2));
   } catch (e) { return; }
-  if (!music.on) { music.on = true; music.li = 0; music.lt = 0; music.bar = 0; music.step = 0; music.next = AC.currentTime + 0.1; }
+  var want = song !== undefined ? song : (music.mode === 'menu' ? 0 : null);
+  if (!music.on) { music.on = true; songAt(want === null ? music.si : want); music.next = AC.currentTime + 0.1; }
+  else if (want !== null && want !== music.si && (song !== undefined || prevMode !== 'menu')) { songAt(want); music.next = AC.currentTime + 0.3; }
   if (!music.timer) music.timer = setInterval(musicTick, 60);
 }
 function musicStop(fade) {
@@ -929,16 +990,94 @@ function hireMgr(z, c) {
 }
 function mgrWages() { var w = 0; for (var z = 0; z < 3; z++) if (mgr(z) && zoneOpen(z)) w += mgr(z).wage; return w; }
 function mgrPos(z) { return MGR_DESKS[z] || null; }
+function mgrOutfit(z, m) {
+  var looks = [['#2a2f3a', '#3a4150', '#8d2a2a'], ['#3a2a4a', '#524064', '#d9a441'], ['#1f3a3a', '#2f5252', '#3f6fb0']][m.look % 3];
+  return { coat: looks[0], coat2: looks[1], tie: looks[2], glasses: m.look !== 1, skin: PAL.skin[(m.look + z) % 4],
+    hair: PAL.hair[(m.look + 1) % PAL.hair.length], hairStyle: m.n.indexOf('Hanım') >= 0 ? 6 : 0, face: 1, pants: '#1c1f26' };
+}
 function drawMgrDesk(z) {
   var m = mgr(z), p = mgrPos(z); if (!m || !p) return;
   isoBox(p.x - 0.5, p.y - 0.3, 1.0, 0.6, 0, 9, '#8a5a33', '#5a3a1e', '#6f4526');
   var sx = R(pX(p.x, p.y)), sy = R(pY(p.x, p.y, 9));
   px(sx - 5, sy - 2, 5, 3, '#f4efe4'); px(sx + 1, sy - 3, 4, 2, '#c9a15e');          /* evrak + isimlik */
-  var looks = [['#2a2f3a', '#3a4150', '#8d2a2a'], ['#3a2a4a', '#524064', '#d9a441'], ['#1f3a3a', '#2f5252', '#3f6fb0']][m.look % 3];
-  var o = { coat: looks[0], coat2: looks[1], tie: looks[2], glasses: m.look !== 1, skin: PAL.skin[(m.look + z) % 4],
-    hair: PAL.hair[(m.look + 1) % PAL.hair.length], hairStyle: m.n.indexOf('Hanım') >= 0 ? 6 : 0, face: Math.sin(gameT * 0.4 + z) > 0 ? 1 : -1, pants: '#1c1f26' };
-  drawPerson({ x: p.x - 0.35, y: p.y - 0.75, z: 0, vx: 0, vy: 0, bob: gameT * 2 + z, act: 0, carry: [] }, o);
+  if (mgrAway(z)) return;                                                             /* v1.9.4: yoğun saatte tezgâhta */
+  var o = mgrOutfit(z, m); o.face = Math.sin(gameT * 0.4 + z) > 0 ? 1 : -1;
+  var s = mgrSeat(z);
+  drawPerson({ x: s.x, y: s.y, z: 0, vx: 0, vy: 0, bob: gameT * 2 + z, act: 0, carry: [] }, o);
   if (dist2(player.x, player.y, p.x, p.y) < 7) uiLabel(p.x, p.y, 30, '👔 ' + m.n + ' · ' + T('mgrBoss'), '#ffe6bf', 0.95);
+}
+/* =========================================================
+   v1.9.4 — JOKER MÜDÜR
+   Günün iki yoğun saatinde (öğle: günün %42–58'i, kapanış öncesi: son %15 + kapanış) müşteri akışı %30 artar
+   ve müdür masasından kalkıp KENDİ bölgesinde yardım eder: önce dolmaya yüz tutan tezgâh kasasını boşaltır
+   (para doğrudan hesaba), sonra stoğu azalan tezgâha kesim hasırından mal taşır; iş yoksa en kalabalık tezgâhın
+   yanında bekler. Yoğunluk bitince elindekini hasıra bırakıp masasına döner.
+   ========================================================= */
+var RUSH = [[0.42, 0.58], [0.85, 1.01]], RUSH_MUL = 1.3, MGR_CAP = 8, mgrAct = [], rushWas = false;
+function rushNow() {
+  if (day.phase === 'closing') return true;
+  if (day.phase !== 'play') return false;
+  var q = day.t / DAY_LEN;
+  for (var i = 0; i < RUSH.length; i++) if (q >= RUSH[i][0] && q < RUSH[i][1]) return true;
+  return false;
+}
+function rushMul() { return day.phase === 'play' && rushNow() ? RUSH_MUL : 1; }
+function mgrSeat(z) { var p = mgrPos(z); return { x: p.x - 0.35, y: p.y - 0.75 }; }
+function mgrAway(z) { var a = mgrAct[z], s = mgrSeat(z); return !!a && dist2(a.x, a.y, s.x, s.y) > 0.09; }
+function mgrZoneCounters(z) { return openCounters().filter(function (c) { return c.open && c.fish && zoneOfFish(c.fish) === z; }); }
+function mgrDropBack(a, z) {                                   /* yoğunluk bitti: elindeki mal bölgenin hasırına */
+  var t = zoneTable(z); if (!t) { a.carry.length = 0; return; }
+  while (hasCarry(a, isGoods)) t.mat.items.push(popCarry(a, isGoods));
+}
+function updateMgrJokers(dt) {
+  var rush = rushNow(), any = false, z;
+  for (z = 0; z < MGR_DESKS.length; z++) if (mgr(z) && zoneOpen(z)) any = true;
+  if (rush && !rushWas && any && day.phase === 'play') toast(T('mgrRush'));
+  rushWas = rush;
+  for (z = 0; z < MGR_DESKS.length; z++) {
+    if (!mgr(z) || !zoneOpen(z)) { mgrAct[z] = null; continue; }
+    var s = mgrSeat(z), a = mgrAct[z] || (mgrAct[z] = { x: s.x, y: s.y, z: 0, vx: 0, vy: 0, bob: 0, face: 1, carry: [], act: 0, zone: z, capX: MGR_CAP, mode: 'drop' });
+    var sp = 2.4 * (1 + mgrEff(z, 'wspeed')), mine = mgrZoneCounters(z), i, c;
+    if (!rush || !mine.length) {
+      if (hasCarry(a, isGoods)) mgrDropBack(a, z);
+      a.mode = 'drop'; a.tc = null;
+      if (!goTo(a, s.x, s.y, sp, dt, 0.12)) a.bob += dt * 8; else { a.x = s.x; a.y = s.y; }
+      continue;
+    }
+    a.bob += dt * 8;
+    if (a.mode === 'load') {                                   /* hasırdan yükle: dolana ya da mal bitene kadar */
+      var low = mine.filter(function (q) { return q.buffer.length < 4; });
+      var filt = function (it) { for (var k = 0; k < low.length; k++) if (acceptsAt(low[k], it)) return true; return false; };
+      var m = low.length && carryW(a) < MGR_CAP - 0.5 ? matWith(filt, a) : null;
+      if (m) { if (goTo(a, m.x, m.y, sp, dt, 0.8) && !iPickMat(a, m, dt, filt)) a.mode = 'drop'; continue; }
+      a.mode = 'drop';
+    }
+    if (hasCarry(a, isGoods)) {                                /* tezgâha bırak */
+      var dc = null;
+      for (i = 0; i < mine.length; i++) { c = mine[i]; if (c.buffer.length < counterMax(c) && hasCarry(a, function (it) { return acceptsAt(c, it); }) && (!dc || c.buffer.length < dc.buffer.length)) dc = c; }
+      if (dc) { if (goTo(a, dc.x - 0.5, dc.y - 0.6, sp, dt, 1.0)) iDropCounter(a, dc, dt); }
+      else mgrDropBack(a, z);
+      continue;
+    }
+    var tc = a.tc && mine.indexOf(a.tc) >= 0 && a.tc.tray.items.length ? a.tc : null;   /* başladığı kasayı sonuna kadar boşaltır */
+    if (!tc) for (i = 0; i < mine.length; i++) { c = mine[i]; if (trayValue(c) >= trayCap(c) * 0.35 && (!tc || trayValue(c) > trayValue(tc))) tc = c; }   /* dolmaya yüz tutan kasa */
+    a.tc = tc;
+    if (tc) { if (goTo(a, Math.min(tc.tray.x, 9.55), tc.tray.y, sp, dt, 0.8)) iCollectTray(a, tc, dt); continue; }
+    if (mine.some(function (q) { return q.buffer.length < 4; })) { a.mode = 'load'; continue; }
+    var busy = mine[0], bw = -1;                               /* iş yok: en kalabalık tezgâhın yanında */
+    for (i = 0; i < mine.length; i++) { var n = mine[i].slots.filter(Boolean).length; if (n > bw) { bw = n; busy = mine[i]; } }
+    goTo(a, busy.x - 1.0, busy.y + 1.1, sp, dt, 0.4);
+  }
+}
+function drawMgrJokers(push) {
+  for (var z = 0; z < MGR_DESKS.length; z++) (function (z2) {
+    var a = mgrAct[z2], m = mgr(z2); if (!a || !m || !mgrAway(z2)) return;
+    push(a.x + a.y + 0.15, function () {
+      var o = mgrOutfit(z2, m); o.face = a.face; o.walk = Math.hypot(a.vx, a.vy) > 0.05;
+      drawPerson(a, o);
+      if (dist2(player.x, player.y, a.x, a.y) < 9) uiLabel(a.x, a.y, 34, '👔 ' + m.n + ' · ' + T('mgrHelp'), '#ffe6bf', 0.95);
+    });
+  })(z);
 }
 function zoneCount() { return spots.length; }
 function zoneOpen(z) { return z >= 0 && z < spots.length && !AREAS[spots[z].z].locked; }
@@ -1075,7 +1214,9 @@ var ROLES = {
   kasiyer:   { id: 'kasiyer',   n: { tr: 'Tahsildar', en: 'Collector' }, icon: '💰', wage: 17, speed: 2.6, cap: 10, price: 620, zone: true, d: { tr: 'Tezgâh kasası → Ana Kasa', en: 'Stall cash → main safe' } },
   /* v0.7 — depo personeli (meydanda çalışır, bölge kadrosuna sayılmaz; sınırı depo seviyesi) */
   depocu:    { id: 'depocu',    n: { tr: 'Depo Hamalı', en: 'Depot Porter' }, icon: '📦', wage: 16, speed: 2.6, cap: 10, price: 900, zone: false, d: { tr: 'Fazlayı depoya, depodan tezgâha', en: 'Surplus → depot → stalls' } },
-  sevkiyat:  { id: 'sevkiyat',  n: { tr: 'Sevkiyatçı', en: 'Dispatcher' },   icon: '🚚', wage: 18, speed: 2.7, cap: 10, price: 1100, zone: false, d: { tr: 'Kontrat malını depodan teslim eder', en: 'Depot → contract delivery' } }
+  sevkiyat:  { id: 'sevkiyat',  n: { tr: 'Sevkiyatçı', en: 'Dispatcher' },   icon: '🚚', wage: 18, speed: 2.7, cap: 10, price: 1100, zone: false, d: { tr: 'Kontrat malını depodan teslim eder', en: 'Depot → contract delivery' } },
+  /* v1.9.4 — Hal Hamalı: Hal'den alınan malı Hal paletinden depoya taşır (depo kadrosundan ayrı, en çok 2) */
+  halhamal:  { id: 'halhamal',  n: { tr: 'Hal Hamalı', en: 'Market Porter' }, icon: '🛒', wage: 14, speed: 2.5, cap: 12, price: 900, zone: false, d: { tr: 'Hal paleti → Depo', en: 'Market pallet → depot' } }
 };
 var WNAMES = ['Hasan', 'Kerim', 'Zeynep', 'Mert', 'Deniz', 'Ayla', 'Tarık', 'Elif', 'Cem', 'Nur', 'Osman', 'Sevgi'];
 
@@ -1175,7 +1316,7 @@ function trayPos(c) {
   return { x: c.x + 0.98, y: c.y + 0.55 };
 }
 function fumePos(c) { return { x: c.x + 0.95, y: c.y - 0.6 }; }
-var MGR_DESKS = [{ x: 3.8, y: 5.4 }, { x: 3.17, y: 11.67 }, { x: 9.65, y: 13.88 }];
+var MGR_DESKS = [{ x: 0.8, y: 1.1 }, { x: 2.3, y: 11.6 }, { x: 7.7, y: 13.1 }];   /* v1.9.4: bölge köşelerinde (oturma yeri yürünebilir) */
 var AREA_LAMPS = [[{ x: 6.4, y: 0.23 }, { x: 0.3, y: 4.2 }], [{ x: 7.05, y: 6.25 }, { x: 6.52, y: 11.32 }], [{ x: 4.86, y: 12.25 }, { x: 0.21, y: 12.87 }]];
 function slotEff(z, eff) {
   var v = 0;
@@ -1222,7 +1363,7 @@ function staffCap() {
 }
 function hireCost(role, z) {
   var base = ROLES[role].price || 500;
-  var have = DEPOT_ROLES.indexOf(role) >= 0 ? depotStaff() : zoneStaff(z);
+  var have = role === 'halhamal' ? halStaff() : DEPOT_ROLES.indexOf(role) >= 0 ? depotStaff() : zoneStaff(z);
   return upCost(Math.round(base * Math.pow(1.85, have) * (1 + (z || 0) * 0.35)));
 }
 function workerSpeedMul() { return 1 + slotEff(null, 'wspeed') + perkSum('wspeed') + servEff('wspeed'); }
@@ -2059,7 +2200,7 @@ function buildSave() {
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
     auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
-    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0], autoMin: S.autoMin || 0, met: S.met || [], ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
+    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
     areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
@@ -2157,6 +2298,8 @@ function loadFrom(d) {
     DEPOT.shelf = {};
     if (md[2] && typeof md[2] === 'object') for (var sk in md[2]) { var sn = parseInt(md[2][sk], 10); if (sn > 0 && /^(fileto|fume)\|[a-z]+$/.test(sk) && FISH[sk.split('|')[1]]) DEPOT.shelf[sk] = sn; }
     WHALL.built = !!md[3];
+    WHALL.pal = {};
+    if (md[4] && typeof md[4] === 'object') for (var pk in md[4]) { var pn = parseInt(md[4][pk], 10); if (pn > 0 && /^(fileto|fume)\|[a-z]+$/.test(pk) && FISH[pk.split('|')[1]]) WHALL.pal[pk] = Math.min(pn, 999); }
     SLOTS.forEach(function (sl) { if (sl.b === 'kulube') { sl.b = null; HUT.lvl = Math.max(HUT.lvl, 1); } });
     if (d.decor) d.decor.forEach(function (v, i) { if (DECOR[i]) DECOR[i].got = !!v; });
     if (d.proj) { project.inv = d.proj[0] || 0; project.stage = d.proj[1] || 0; project.done = !!d.proj[2]; }
@@ -2189,7 +2332,7 @@ function loadFrom(d) {
 function resetWorld() {
   var k;
   if (typeof closeBar === 'function') closeBar();
-  workers.length = 0; customers.length = 0; flyers.length = 0; floats.length = 0; puffs.length = 0; yardFolk.length = 0;
+  workers.length = 0; customers.length = 0; flyers.length = 0; floats.length = 0; puffs.length = 0; yardFolk.length = 0; mgrAct.length = 0;
   event = null; eventT = 0; nextEvent = 80;
   for (k in S0) S[k] = S0[k];
   player.x = 4.5; player.y = 3.2; player.vx = 0; player.vy = 0; player.carry.length = 0; player.act = 0;
@@ -2278,7 +2421,7 @@ function anyOverlay() {
   return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') || !el.privScr.classList.contains('hidden') ||
     !el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden') ||
     !el.stallScr.classList.contains('hidden') || !el.boardScr.classList.contains('hidden') || !el.halScr.classList.contains('hidden') ||
-    !el.chScr.classList.contains('hidden') || !el.chEnd.classList.contains('hidden');
+    !el.chScr.classList.contains('hidden') || !el.chEnd.classList.contains('hidden') || !el.endScr.classList.contains('hidden');
 }
 function syncPause() {
   paused = S.started && anyOverlay();
@@ -2312,7 +2455,7 @@ function saveAndQuit() {
 /* =========================================================
    TAŞIMA / ETKİLEŞİM
    ========================================================= */
-function capOf(a) { return a.isPlayer ? capacity() : ROLES[a.role].cap; }
+function capOf(a) { return a.isPlayer ? capacity() : a.capX || ROLES[a.role].cap; }
 function fits(a, it) { return carryW(a) + itemW(it) <= capOf(a); }
 function popCarry(a, test) { for (var i = a.carry.length - 1; i >= 0; i--) if (test(a.carry[i])) return a.carry.splice(i, 1)[0]; return null; }
 function hasCarry(a, test) { for (var i = 0; i < a.carry.length; i++) if (test(a.carry[i])) return true; return false; }
@@ -2568,6 +2711,7 @@ function updatePlayer(dt) {
   }
   if (dist2(player.x, player.y, safe.x, safe.y) < 1.8) acted = iDeposit(player, dt) || acted;
   if (DEPOT.lvl && atDoor(player, DEPOT.door, 1.1)) acted = iDepotIn(player, dt) || acted;
+  if (WHALL.built && atDoor(player, WHALL.door, 1.4)) acted = iHalPick(player, dt) || acted;   /* v1.9.4: paletten sırtla */
   /* çöp kovası: yanlışlıkla atmamak için önce kısa bir bekleme */
   var nearBin = null;
   for (i = 0; i < BINS.length; i++) if (!AREAS[BINS[i].z].locked && dist2(player.x, player.y, BINS[i].x, BINS[i].y) < 0.85) nearBin = BINS[i];
@@ -2768,6 +2912,7 @@ function updateWorkers(dt) {
     else if (w.role === 'kasiyer') aiKasiyer(w, sp, dt);
     else if (w.role === 'depocu') aiDepocu(w, sp, dt);
     else if (w.role === 'sevkiyat') aiSevkiyat(w, sp, dt);
+    else if (w.role === 'halhamal') aiHalHamal(w, sp, dt);
     else aiFiletocu(w, sp, dt);
   }
 }
@@ -3004,7 +3149,7 @@ function patienceMul(z) { return (1 + decorCount() * 0.02) * (1 + mgrEff(z, 'pat
 
 function updateCounter(c, dt) {
   if (!c.open) return;                       /* v2.1: kapalı tezgâha müşteri gelmez */
-  var custMul = (event ? event.custMul : 1) * areaFlow(c.z) * dayCustMul() * (1 + envFlow() + roadFlow());   /* v1.2: çevre yatırımı; v1.9.3: yol çiçeklikleri + panolar */
+  var custMul = (event ? event.custMul : 1) * areaFlow(c.z) * dayCustMul() * (1 + envFlow() + roadFlow()) * rushMul();   /* v1.2: çevre yatırımı; v1.9.3: yol çiçeklikleri + panolar */
   c.spawnT -= dt * custMul;
   var qmax = queueMax(c.z), freeIdx = -1, i;
   for (i = 0; i < qmax; i++) if (!c.slots[i]) { freeIdx = i; break; }
@@ -3988,7 +4133,8 @@ var WORK_FIT = {
   tezgahtar: { coat: '#b8624a', coat2: '#d07c60', apron: '#f0ece0', cap: '#6f2f22', tray: true, must: true, pants: '#4a2f26' },
   kasiyer:   { coat: '#2f4a6b', coat2: '#456c94', vest: '#1a2f45', bag: true, glasses: true, pants: '#22303c' },
   depocu:    { coat: '#8a6a3a', coat2: '#a8844c', apron: '#5a4a32', kufe: true, cap: '#3a2f22', must: true, pants: '#3a3226' },
-  sevkiyat:  { coat: '#3f6a5a', coat2: '#568a76', vest: '#e0a030', bag: true, cap: '#20382f', pants: '#26332e' }
+  sevkiyat:  { coat: '#3f6a5a', coat2: '#568a76', vest: '#e0a030', bag: true, cap: '#20382f', pants: '#26332e' },
+  halhamal:  { coat: '#6a4a2a', coat2: '#8a6a3a', vest: '#c9a15e', kufe: true, cap: '#4a3220', must: true, pants: '#3a2c20' }
 };
 function workerOutfit(w) {
   var f = WORK_FIT[w.role] || WORK_FIT.hamal, o = {}, k;
@@ -4076,7 +4222,8 @@ var ROLE_TAG = {
   tezgahtar: { bg: '#b8624a', d: 'fish' },
   kasiyer:   { bg: '#2f4a6b', d: 'coin' },
   depocu:    { bg: '#8a6a3a', d: 'kufe' },
-  sevkiyat:  { bg: '#3f6a5a', d: 'cart' }
+  sevkiyat:  { bg: '#3f6a5a', d: 'cart' },
+  halhamal:  { bg: '#6a4a2a', d: 'cart' }
 };
 function drawRoleTag(w) {
   var g = ROLE_TAG[w.role] || ROLE_TAG.hamal;
@@ -6085,7 +6232,7 @@ function tutorialTarget() {
 function playerOccluded() {
   var pxp = pX(player.x, player.y), pyp = pY(player.x, player.y, 0), d = player.x + player.y + 0.3, i;
   var occ = [];
-  if (!AREAS[project.z].locked && project.stage >= 2) occ.push({ x: project.x, y: project.y, w: 60, h: 62 });
+  if (!AREAS[project.z].locked && project.done) occ.push({ x: project.x, y: project.y, w: 60, h: 62 });
   for (i = 0; i < PLOTS.length; i++) if (PLOTS[i].b && plotActive(PLOTS[i])) occ.push({ x: PLOTS[i].x, y: PLOTS[i].y, w: 46, h: 72 });
   for (i = 0; i < counters.length; i++) if (!AREAS[counters[i].z].locked) occ.push({ x: counters[i].x, y: counters[i].y, w: 30, h: 30 });
   for (i = 0; i < SLOTS.length; i++) if (SLOTS[i].b && slotActive(SLOTS[i])) occ.push({ x: SLOTS[i].x, y: SLOTS[i].y, w: 26, h: 28 });
@@ -6149,7 +6296,7 @@ function render() {
     if (p.b) push(p.x + p.y, function () { drawServ(p); });
     else push(p.x + p.y - 0.05, function () { drawPlot(p); });
   })(PLOTS[i]);
-  if (!AREAS[project.z].locked) push(project.x + project.y, drawProject);
+  if (!AREAS[project.z].locked && project.done) push(project.x + project.y, drawProject);   /* v1.9.4: Kapalı Pazar rafta — yalnız tamamlamış kayıtlarda */
   if (!AREAS[office.z].locked) push(office.x + office.y, drawOffice);
   for (i = 0; i < spots.length; i++) (function (s) {
     if (AREAS[s.z].locked) return; push(s.x + s.y, function () { quietDraw(s.z, s.x, s.y, function () { drawSpot(s); }); });
@@ -6186,6 +6333,7 @@ function render() {
   for (i = 0; i < cats.length; i++) (function (ct) { push(ct.x + ct.y + 0.1, function () { drawCat(ct); }); })(cats[i]);
   for (i = 0; i < customers.length; i++) (function (cu) { push(cu.x + cu.y + 0.2, function () { drawCustomer(cu); }); })(customers[i]);
   drawYardFolk(push);
+  drawMgrJokers(push);
   for (i = 0; i < workers.length; i++) (function (w) {
     var col = w.role === 'hamal' ? '#4f7fae' : w.role === 'filetocu' ? '#5f8f6a' : w.role === 'tezgahtar' ? '#b8624a' : '#7a6ba8';
     push(w.x + w.y + 0.15, function () {
@@ -6259,7 +6407,7 @@ var el = {};
  'boardClose', 'boardBtn', 'storyBtn', 'menuBoard', 'dpSub', 'lvlUp', 'lvlNum', 'lvlTitle', 'lvlList', 'lvlConf', 'coach', 'loadBtn', 'slotScr', 'slotTitle', 'slotSub',
  'slotRows', 'slotBack', 'nameBack', 'askScr', 'askMsg', 'askYes', 'askNo', 'heroScr', 'heroCard', 'heroCv',
  'heroName', 'heroNameDice', 'heroRows', 'heroDice', 'heroGo', 'heroBack', 'heroTitle', 'heroSub', 'heroNameLbl',
- 'chBtn', 'chPct', 'chScr', 'chTitle', 'chSub', 'chFill', 'chNum', 'chRows', 'chClose', 'chEnd', 'chEndK', 'chEndT', 'chEndP', 'chEndG', 'chEndGo',
+ 'chBtn', 'chPct', 'chScr', 'chTitle', 'chSub', 'chFill', 'chNum', 'chRows', 'chClose', 'chEnd', 'chEndK', 'chEndT', 'chEndP', 'chEndG', 'chEndGo', 'chEndFb', 'chEndFin', 'endScr', 'endK', 'endT', 'endP', 'endBy', 'endGo',
  'actBtn', 'halScr', 'halTitle', 'halSub', 'halRows', 'halClose', 'autoScr', 'autoTitle', 'autoSub', 'autoOpts', 'autoBadge',
  'setAuto', 'specPop', 'specPopT', 'setOnline', 'onlineFixed', 'forgetBtn', 'privBtn', 'aboutBtn', 'privScr', 'privFrame', 'privClose'].forEach(function (id) {
   el[id] = document.getElementById(id);
@@ -6733,7 +6881,7 @@ function renderProjPanel() {
       '<button class="buy' + (okR2 && S.cash >= lc ? (cfId === 'lic' ? ' cf' : '') : ' no') + '" data-x="lic">' +
       (okR2 ? (cfId === 'lic' ? T('confirm') : money(lc)) : T('needRep', { n: ECON.licenseRep, c: S.rep, l: levelForRep(ECON.licenseRep) })) + '</button></div>';
   }
-  if (AREAS[project.z].locked) {
+  if (AREAS[project.z].locked || !project.done) {                    /* v1.9.4: Kapalı Pazar rafta (Bölüm 2'de yeniden) */
     el.dpCards.innerHTML = PX(extra || '<div class="dempty">' + T('emptyProj') + '</div>');
     bindProjExtra(); return;
   }
@@ -6794,7 +6942,6 @@ function barHot() {
   }
   if (undecidedStalls().length) hot.level = true;
   for (i = 0; i < zoneCount(); i++) if (zoneOpen(i) && zoneFree(i) > 0 && S.cash >= hireCost('hamal', i)) hot.level = true;
-  if (!AREAS[project.z].locked && !project.done && S.cash >= 1000) hot.proj = true;
   if (M && officeReady() && !M.office && S.rep >= ECON.officeRep && S.cash >= upCost(ECON.officeCost)) hot.proj = true;
   if (M && M.office && !M.license && S.rep >= ECON.licenseRep && S.cash >= upCost(ECON.licenseCost)) hot.proj = true;
   for (i = 0; i < SERV.length; i++) {
@@ -6944,9 +7091,8 @@ function renderTab() {
         a.locked ? lockTag() : (a.lvl < MAXLV ? money(a.up[a.lvl]) : T('done')));
     }
     h += row('🌿', T('envRow'), envStage() < ENV_UPS.length ? T('envNext', { n: NM(ENV_UPS[envStage()].n), l: ENV_UPS[envStage()].lv }) : T('done'),
-      envStage() + '/' + ENV_UPS.length, '+' + Math.round(envFlow() * 100) + '% ' + T('envCust'));
-    h += row('🏛️', NM(project.n), T('stage') + ' ' + project.stage + '/5',
-      project.done ? T('done') : pct(Math.round(projPct() * 100)), project.done ? '' : money(project.total - project.inv));
+      envStage() + '/' + ENV_UPS.length, '+' + pct(Math.round((envFlow() + roadFlow()) * 100)) + ' ' + T('envCust'));   /* v1.9.5: yol vitrini dahil, dile göre % */
+    if (project.done) h += row('🏛️', NM(project.n), T('done'), T('done'));                                  /* Kapalı Pazar rafta: yalnız tamamlamış kayıtta */
     var used = SLOTS.filter(function (s) { return s.b && slotActive(s); }).length;
     var tot = SLOTS.filter(slotActive).length;
     h += row('🔨', T('mSlots'), T('mStaffCap') + ': ' + workers.length + '/' + staffCap(), used + '/' + tot);
@@ -6954,14 +7100,14 @@ function renderTab() {
       if (!zoneOpen(zq)) continue;
       var opn = counters.filter(function (c) { return c.open && c.fish && zoneOfFish(c.fish) === zq; }).length;
       var all = counters.filter(function (c) { return c.fish && !AREAS[c.z].locked && zoneOfFish(c.fish) === zq; }).length;
-      h += row('🐟', NM(AREAS[zq].n), T('zoneStaffD', { a: zoneStaff(zq), b: zoneStaffCap(zq) }), opn + '/' + all);
+      h += row('🐟', NM(AREAS[zq].n), T('mZoneRow', { a: zoneStaff(zq), b: zoneStaffCap(zq) }), opn + '/' + all);
     }
     h += row('🧾', T('mOrders'), T('mLost') + ': ' + S.lost + ' - ' + T('mCaught') + ': ' + S.caught, S.served + '');
     /* v0.4 — liman hizmet binaları genel bakış */
     for (i = 0; i < SERV.length; i++) {
       var sd2 = SERV[i], slv2 = sLvl(sd2.id);
       if (slv2 > 0) {
-        h += row(sd2.icon, NM(sd2.n), NM(sd2.lv[slv2 - 1].d), 'Lv.' + slv2 + '/5',
+        h += row(sd2.icon, NM(sd2.n), NM(sd2.lv[slv2 - 1].d), T('level') + slv2 + '/5',
           slv2 < 5 ? money(upCost(sCost(sd2.lv[slv2].c))) : T('maxLv'));
       } else {
         var wy = servLockReason(sd2);
@@ -7146,7 +7292,8 @@ function frame(ts) {
   updateWorkers(dt);
   updateStations(dt);
   updateCustomers(dt);
-  updateYardFolk(dt);                              /* v1.9.2: hizmet sahası yayaları (görsel) */
+  updateYardFolk(dt);
+  updateMgrJokers(dt);                             /* v1.9.4: yoğun saatte müdürler tezgâhta */                              /* v1.9.2: hizmet sahası yayaları (görsel) */
   updateDay(dt);                    /* v1.2 — gün döngüsü + depo kilidi */
   updateSpecials(dt);               /* v0.9 — özel isimli müşteriler */
   updateFumeMachines(dt);           /* v1.3 — tezgâh füme makinesi */
@@ -7279,6 +7426,7 @@ function backAction() {
     if (!el.slotScr.classList.contains('hidden')) { el.slotBack.click(); return true; }
     return false;
   }
+  if (!el.endScr.classList.contains('hidden')) { el.endGo.click(); return true; }
   if (!el.chEnd.classList.contains('hidden')) { el.chEndGo.click(); return true; }
   if (!el.chScr.classList.contains('hidden')) { el.chClose.click(); return true; }
   if (!el.autoScr.classList.contains('hidden')) return true;      /* otomatik kayıt seçimi zorunlu */
@@ -7868,7 +8016,12 @@ function relLevel(rel) { return rel >= 95 ? 5 : rel >= 80 ? 4 : rel >= 60 ? 3 : 
 function statusName(st) { return T(st === 'strong' ? 'stStrong' : st === 'ok' ? 'stOk' : st === 'press' ? 'stPress' : 'stRestr'); }
 function chgPct(c) { return c.prev ? ((c.price - c.prev) / c.prev) * 100 : 0; }
 function chgCls(v) { return v > 0.05 ? 'up' : v < -0.05 ? 'dn' : 'fl'; }
-function fmtPct(v) { return (v >= 0 ? '+' : '') + (Math.round(v * 10) / 10).toString().replace('.', ',') + '%'; }
+/* v1.9.5 — holding avantajlarının oyuncuya görünen adları */
+var PERK_N = { netrate: { tr: 'Ağ hızı', en: 'Net speed' }, rate: { tr: 'Üretim hızı', en: 'Production speed' }, stock: { tr: 'Stok', en: 'Stock' },
+  wspeed: { tr: 'Personel hızı', en: 'Staff speed' }, procspeed: { tr: 'İşleme hızı', en: 'Processing speed' }, value: { tr: 'Satış fiyatı', en: 'Sale price' },
+  custval: { tr: 'Müşteri ödemesi', en: 'Customer spend' }, flow: { tr: 'Müşteri akışı', en: 'Customer flow' }, upcost: { tr: 'Yükseltme indirimi', en: 'Upgrade discount' },
+  ctrmul: { tr: 'Kontrat ödülü', en: 'Contract reward' }, premium: { tr: 'Seçkin müşteri', en: 'Premium customers' }, vip: { tr: 'VIP müşteri', en: 'VIP customers' }, rare: { tr: 'Nadir balık', en: 'Rare catch' } };
+function fmtPct(v) { var n = (Math.round(Math.abs(v) * 10) / 10).toString(), sg = v >= 0 ? '+' : '-'; return lang === 'tr' ? sg + '%' + n.replace('.', ',') : sg + n + '%'; }
 
 function renderOffice() {
   if (!M) return;
@@ -8002,11 +8155,11 @@ function renderOffice() {
     for (i = 0; i < subs.length; i++) {
       var sd = cdef(subs[i].id);
       h += '<div class="crow" style="cursor:default"><span class="sq" style="background:' + sd.col + '"></span>' +
-        '<div class="nm">' + NM(sd.n) + '<small>' + NM(sd.ctrl) + ' • %' + (Math.round(ownPct(subs[i]) * 1000) / 10) + '</small></div></div>';
+        '<div class="nm">' + NM(sd.n) + '<small>' + NM(sd.ctrl) + ' • ' + pct(Math.round(ownPct(subs[i]) * 1000) / 10) + '</small></div></div>';
     }
     var pk = [];
     ['netrate', 'rate', 'stock', 'wspeed', 'procspeed', 'value', 'custval', 'flow', 'upcost', 'ctrmul', 'premium', 'vip', 'rare'].forEach(function (k) {
-      var v = perkSum(k); if (v > 0.0001) pk.push(k + ' +' + (v < 1 ? Math.round(v * 100) + '%' : Math.round(v)));
+      var v = perkSum(k); if (v > 0.0001) pk.push(NM(PERK_N[k] || { tr: k, en: k }) + ' +' + (v < 1 ? pct(Math.round(v * 100)) : Math.round(v)));   /* v1.9.5: ham anahtar değil, okunur ad */
     });
     h += '<div class="note">' + T('perks') + ': ' + (pk.length ? pk.join(' • ') : '—') + '</div>';
   }
@@ -8105,11 +8258,17 @@ var NAME_FMT = ['{f} Balıkçılık', '{f} Mutfak', '{f} Balık Evi', '{g} Balı
 var NAME_FIX = ['Hamsi Keyfi', 'Martı Balıkçılık', 'Mavi Liman', 'Poyraz Balık', 'Yakamoz Balık Evi',
   'Nazar Balıkçılık', 'Karadeniz Sofrası', 'Lodos Su Ürünleri', 'İskele Başı', 'Ağ & Olta', 'Dalga Balıkçılık',
   'Palamut Durağı', 'Rıhtım Balık Evi', 'Uskumru Kardeşler', 'Yıldız Balık Evi', 'Kuzey Rüzgârı'];
+/* v1.9.5 — İngilizce arayüzde öneriler İngilizce kalıpla (kişi adları Türkçe kalır: özel isim) */
+var NAME_FMT_EN = ["{f}'s Fish House", '{f} Seafood', '{f} & Sons', 'Captain {f} Fisheries', "{f}'s Kitchen", '{f} Fish Market',
+  "{f}'s Stall", '{f} Brothers', '{f} Fisheries', "{f}'s Table"];
+var NAME_FIX_EN = ['Anchovy Delight', 'Seagull Fisheries', 'Blue Harbour', 'North Wind Fish', 'Moonlit Fish House', 'Evil Eye Fisheries',
+  'Black Sea Table', 'Southwind Seafood', 'Pier Head', 'Net & Line', 'Wave Fisheries', 'Bonito Stop', 'Quay Fish House', 'Mackerel Brothers'];
 function randomCompany(avoid) {
+  var en = lang === 'en';
   for (var k = 0; k < 40; k++) {
     var n;
-    if (Math.random() < 0.22) n = pick(NAME_FIX);
-    else { var f = pick(NAME_FIRST); n = pick(NAME_FMT).replace('{f}', f).replace('{g}', trGen(f)); }
+    if (Math.random() < 0.22) n = pick(en ? NAME_FIX_EN : NAME_FIX);
+    else { var f = pick(NAME_FIRST); n = pick(en ? NAME_FMT_EN : NAME_FMT).replace('{f}', f).replace('{g}', trGen(f)); }
     if (n.length <= 24 && (!avoid || avoid.indexOf(n) < 0)) return n;
   }
   return 'Hasan Balıkçılık';
@@ -8970,7 +9129,7 @@ function updateIntro(dt) {
    Ekranda yatay konum x - y: yan yana binalar bu eksende ayak izlerinden fazla ayrık (üst üste binmez). */
 var HUT = { x: 16.1, y: 1.1, w: 1.5, h: 1.2, lvl: 0, door: { x: 16.45, y: 2.25 } };
 var DEPOT = { x: 20.0, y: 1.4, w: 2.4, h: 1.8, lvl: 0, door: { x: 19.6, y: 2.95 }, shelf: {} };
-var WHALL = { x: 19.9, y: 6.8, w: 2.4, h: 1.6, built: false, door: { x: 19.5, y: 8.15 } };
+var WHALL = { x: 19.9, y: 6.8, w: 2.4, h: 1.6, built: false, door: { x: 19.5, y: 8.15 }, pal: {} };   /* pal: Hal'den alınıp depoya taşınmayı bekleyen mal */
 office.x = 16.4; office.y = 8.1; office.z = 0;           /* Ticaret Merkezi meydana taşındı */
 var HUT_LV = [{ c: 1500, l: 2 }, { c: 4000, l: 3 }, { c: 9000, l: 5 }, { c: 18000, l: 7 }, { c: 36000, l: 9 }];
 var DEPOT_LV = [{ c: 3000, l: 3, cap: 30 }, { c: 8000, l: 5, cap: 60 }, { c: 20000, l: 6, cap: 100 }, { c: 45000, l: 8, cap: 160 }];
@@ -9141,6 +9300,36 @@ function aiSevkiyat(w, sp, dt) {
   idleAtDepot(w, sp, dt);
 }
 
+/* ---------- v1.9.4 — Hal paleti ve Hal Hamalı ----------
+   Hal'den alınan mal artık depoya ışınlanmaz: Hal'in önündeki palette bekler. Oyuncu Hal kapısında durunca
+   sırtlar (depo kapısında bırakır) ya da Hal Hamalı paletten depoya taşır. Satış depodan anında yapılır. */
+var HAL_STAFF = 2;
+function palCount() { var n = 0; for (var k in WHALL.pal) n += WHALL.pal[k]; return n; }
+function halStaff() { var n = 0; for (var i = 0; i < workers.length; i++) if (workers[i].role === 'halhamal') n++; return n; }
+function iHalPick(a, dt) {
+  var k = null; for (var q in WHALL.pal) if (WHALL.pal[q] > 0) { k = q; break; }
+  if (!k) return false;
+  var it = keyItem(k); if (!fits(a, it)) return false;
+  return tryTake(a, dt, function () {
+    if (!(WHALL.pal[k] > 0)) return;
+    if (--WHALL.pal[k] <= 0) delete WHALL.pal[k];
+    a.carry.push(it); fly(WHALL.door.x, WHALL.door.y - 0.4, 6, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.24); sfx.pick();
+  });
+}
+function aiHalHamal(w, sp, dt) {
+  if (!WHALL.built || !DEPOT.lvl) { goTo(w, WHALL.door.x + 0.8, WHALL.door.y + 0.6, sp, dt, 0.6); return; }
+  var full = carryW(w) >= ROLES.halhamal.cap - 0.5;
+  if (w.mode === 'load' && (full || !palCount()) && hasCarry(w, isGoods)) w.mode = 'drop';
+  if (w.mode === 'drop') {
+    if (!hasCarry(w, isGoods)) { w.mode = 'load'; return; }
+    if (depotFree() <= 0) { idleAtDepot(w, sp, dt); return; }
+    if (goTo(w, DEPOT.door.x + 0.3, DEPOT.door.y, sp, dt, 0.7)) iDepotIn(w, dt);
+    return;
+  }
+  if (palCount() && depotFree() > carryW(w)) { if (goTo(w, WHALL.door.x, WHALL.door.y, sp, dt, 0.7) && !iHalPick(w, dt)) w.mode = 'drop'; return; }
+  if (hasCarry(w, isGoods)) { w.mode = 'drop'; return; }
+  goTo(w, WHALL.door.x + 0.8 + (w.name.length % 2) * 0.4, WHALL.door.y + 0.6, sp, dt, 0.6);
+}
 /* ---------- Balık Hali (meydan): depodaki malı günlük fiyatla sat / toptan al ---------- */
 function halProducts() {
   var out = [];
@@ -9168,7 +9357,7 @@ function openHal() {
 function closeHal() { el.halScr.classList.add('hidden'); syncPause(); }
 function renderHal() {
   el.halTitle.textContent = T('whall');
-  el.halSub.textContent = T('halSub', { d: day.n, a: depotCount(), b: depotCap() });
+  el.halSub.textContent = T('halSub', { d: day.n, a: depotCount(), b: depotCap() }) + (palCount() ? ' • ' + T('halPalN', { n: palCount() }) : '');
   var h = '', list = halProducts();
   for (var i = 0; i < list.length; i++) {
     var k = list[i], it = keyItem(k), n = DEPOT.shelf[k] || 0, m = halMul(k);
@@ -9189,13 +9378,13 @@ function renderHal() {
         for (i2 = 0; i2 < n; i2++) if (depotTake(k)) got += halSell(k);
         if (got) { S.cash += got; earn(got); noteDayIncome(got); sfx.coin(); toast(T('halSold', { n: n, v: money(got) })); }
       } else {
-        n = Math.min(n, depotFree());
+        n = Math.min(n, depotFree() - palCount());           /* v1.9.4: palette bekleyen de depoda yer tutar */
         var cost = halBuy(k) * n;
-        if (!n) { toast(T('depotFull')); sfx.bad(); return; }
+        if (n <= 0) { toast(T('depotFull')); sfx.bad(); return; }
         if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return; }
         S.cash -= cost;
-        for (i2 = 0; i2 < n; i2++) depotPut(keyItem(k));
-        sfx.buy(); toast(T('halBought', { n: n, v: money(cost) }));
+        WHALL.pal[k] = (WHALL.pal[k] || 0) + n;                /* mal Hal paletinde: hamal ya da oyuncu depoya taşır */
+        sfx.buy(); toast(T(halStaff() ? 'halBoughtPal' : 'halBoughtCarry', { n: n, v: money(cost) }));
       }
       save(); renderHal();
     };
@@ -9226,6 +9415,9 @@ function meydanCards(out) {
   out.push({ id: 'mhal', ic: '🏪', t: T('whall'), s: T('whallD'), cost: upCost(WHALL_COST), owned: WHALL.built,
     blocked: !WHALL.built && (!DEPOT.lvl || lvNow < WHALL_LV), why: !DEPOT.lvl ? T('needDepot') : T('needLv', { l: WHALL_LV }),
     buyTxt: T('build'), go: function () { WHALL.built = true; sfx.build(); addPuff(WHALL.x, WHALL.y, '#ffc94a'); toast(T('whallBuilt')); } });
+  if (WHALL.built) out.push({ id: 'mrhalhamal', ic: ROLES.halhamal.icon, t: NM(ROLES.halhamal.n) + ' (' + halStaff() + '/' + HAL_STAFF + ')',
+    s: NM(ROLES.halhamal.d) + ' • ' + money(ROLES.halhamal.wage) + perMin(), cost: hireCost('halhamal', -1), blocked: halStaff() >= HAL_STAFF, why: T('halStaffFull'),
+    go: function () { hire('halhamal', false, -1); save(); } });
   if (!officeBuilt()) out.push({ id: 'moff', ic: '🏛️', t: T('office'), s: T('officeInMeydan'), pick: T('goProj'),
     go: function () { openBar('proj'); } });
 }
@@ -9378,6 +9570,12 @@ function drawWhall() {
   wallQ(x + 0.7, y + o.h, x + 1.7, y + o.h, 13, 18, '#1f4e7a');                          /* HAL levhası: balık */
   var hx2 = R(pX(x + 1.2, y + o.h)), hy2 = R(pY(x + 1.2, y + o.h, 17));
   px(hx2 - 4, hy2, 7, 3, '#ffffff'); px(hx2 + 3, hy2 - 1, 2, 5, '#ffffff'); px(hx2 - 3, hy2 + 1, 1, 1, '#1f4e7a');
+  var pn = palCount();                                                                /* v1.9.4: kapı önünde palet */
+  if (pn) {
+    isoBox(o.door.x + 0.35, o.door.y - 0.35, 0.6, 0.45, 0, 2, '#b8895a', '#7a4e2a', '#9a6a3d');
+    for (var pc = 0; pc < Math.min(6, Math.ceil(pn / 3)); pc++) crate(o.door.x + 0.5 + (pc % 3) * 0.17, o.door.y - 0.25 + Math.floor(pc / 3) * 0.02, 2 + Math.floor(pc / 3) * 4, pc % 2 ? '#c9a15e' : '#a8793e');
+    uiBadge(o.door.x + 0.65, o.door.y - 0.1, 16, '' + pn, '#ffd9a8');
+  }
   labelAt(o.x, o.y, 30, T('whall'), '#ffd9a8', '🏪');
 }
 var MSIGN = { x: 15.6, y: 3.7 };          /* v1.9.2: köprü çıkışının güneyi — kulübenin önüne düşmez */
@@ -9677,7 +9875,6 @@ function chapterGroups() {
   n = 0; for (i = 0; i < DECOR.length; i++) if (DECOR[i].got) n++; add('🌺', 'chDecor', n, DECOR.length);
   add('🌿', 'chEnv', envStage(), ENV_UPS.length);
   add('🔥', 'chFume', (fumeMachine(0) ? 1 : 0) + (fumeMachine(1) ? 1 : 0), 2);
-  add('🏛️', 'chProj', project.done ? 1 : 0, 1);
   add('🏘️', 'chMeydan', (HUT.lvl ? 1 : 0) + (DEPOT.lvl ? 1 : 0) + (WHALL.built ? 1 : 0), 3);
   n = 0; for (i = 0; i < 3; i++) if (mgr(i)) n++; add('👔', 'chMgr', n, 3);
   return g;
@@ -9693,14 +9890,14 @@ function updateChapter(dt) {
   if (!S.started || S.ch1) { el.chBtn.classList.toggle('hidden', !S.started || !!S.ch1); return; }
   var pr = chapterProgress(), pc = Math.floor(pr.p * 100);
   el.chBtn.classList.remove('hidden');
-  el.chPct.textContent = pc + '%';
+  el.chPct.textContent = pct(pc);
   el.chBtn.classList.toggle('blink', !S.chSeen || pc - (S.chSeenPct || 0) >= 10);
   if (pr.d >= pr.n && pr.n > 0) openChapterEnd();
 }
 function openChapter() {
   var pr = chapterProgress();
   el.chTitle.textContent = T('chTitle'); el.chSub.textContent = T('chGoal');
-  el.chFill.style.width = Math.round(pr.p * 100) + '%'; el.chNum.textContent = pr.d + '/' + pr.n + ' • ' + Math.floor(pr.p * 100) + '%';
+  el.chFill.style.width = Math.round(pr.p * 100) + '%'; el.chNum.textContent = pr.d + '/' + pr.n + ' • ' + pct(Math.floor(pr.p * 100));
   var h = '';
   pr.g.forEach(function (q) { h += '<div class="row' + (q.d >= q.n ? ' ok' : '') + '"><div class="ic">' + q.ic + '</div><div class="tx">' + q.t + '</div><div class="vl">' + (q.d >= q.n ? '✔' : q.d + '/' + q.n) + '</div></div>'; });
   el.chRows.innerHTML = PX(h);
@@ -9740,13 +9937,24 @@ function showChapterCard() {
   el.chEndK.textContent = T('chEndK'); el.chEndT.textContent = T('chEndT');
   el.chEndP.textContent = T('chEndP', { n: (S.hero && S.hero.n) || '', c: S.company || '' });
   el.chEndG.textContent = T('chEndG');
-  el.chEndGo.textContent = T('resume');
+  el.chEndFb.textContent = T('chEndFb'); el.chEndFin.textContent = T('chEndFin'); el.chEndGo.textContent = T('chEndGo');
   el.chEnd.classList.remove('hidden'); syncPause();
   sfx.levelUp(); musicPlay('game');
 }
 el.chBtn.onclick = openChapter;
 el.chClose.onclick = function () { el.chScr.classList.add('hidden'); syncPause(); };
 el.chEndGo.onclick = function () { el.chEnd.classList.add('hidden'); el.chBtn.classList.add('hidden'); syncPause(); };
+/* v1.9.4 — bölüm sonu üç seçenek: değerlendirme yaz (form kapanınca karta dönülür) · oyunu bitir (jenerik → ana menü) · devam et */
+var chFromFb = false;
+el.chEndFb.onclick = function () { chFromFb = true; el.chEnd.classList.add('hidden'); fbShow(); };
+el.chEndFin.onclick = function () {
+  el.chEnd.classList.add('hidden'); el.chBtn.classList.add('hidden');
+  el.endK.textContent = T('endK'); el.endT.textContent = T('endT'); el.endBy.textContent = T('endBy'); el.endGo.textContent = T('endGo');
+  el.endP.textContent = T('endP', { n: (S.hero && S.hero.n) || '', c: S.company || '' });
+  el.endBy.style.animation = 'none'; void el.endBy.offsetWidth; el.endBy.style.animation = '';
+  el.endScr.classList.remove('hidden'); syncPause(); musicPlay('menu', 2); sfx.star && sfx.star();   /* Yeşilçam Hatırası */
+};
+el.endGo.onclick = function () { el.endScr.classList.add('hidden'); saveAndQuit(); };
 
 /* v1.3.2 — yerleşim denetimi: tam gelişmiş limanda her nesnenin kapladığı alan (en büyük hâliyle).
    Aynı "own" değerine sahip parçalar birbirine ait (ör. tezgâh + tepsisi) ve çakışma sayılmaz. */
@@ -9881,8 +10089,6 @@ var ACH = [
     t: { tr: 'Liman Canlanıyor', en: 'The Harbor Wakes Up' }, d: { tr: 'İlk hizmet binanı kur.', en: 'Build your first service building.' } },
   { id: 'tam_otomatik', c: 'buy', ic: 'ag', r: { rep: 2 }, chk: function () { return _anyZone(function (z) { return zoneAuto(z) && !!mgr(z); }); },
     t: { tr: 'Kendi Kendine Dönen Çark', en: 'The Wheel Turns Itself' }, d: { tr: 'Bir bölgeyi müdürüyle tam otomatiğe al.', en: 'Put a zone on full auto with its manager.' } },
-  { id: 'kapali_pazar', c: 'buy', ic: 'proje', r: { rep: 5 }, chk: function () { return !!project.done; },
-    t: { tr: 'Çatı Altında', en: 'Under One Roof' }, d: { tr: 'Kapalı Pazar\'ı tamamla.', en: 'Complete the Covered Market.' } },
   { id: 'bolum1', c: 'buy', ic: 'fener', r: { rep: 10 }, chk: function () { return !!S.ch1; },
     t: { tr: 'İskeleden İşletmeye', en: 'From Pier to Business' }, d: { tr: 'Bölüm 1\'i tamamla.', en: 'Complete Chapter 1.' } },
 
@@ -10359,7 +10565,11 @@ function fbShow() {
   fbApplyLang(); fbRender();
   fbScr.classList.remove('hidden'); syncPause(); sfx.tap();
 }
-function fbClose() { fbScr.classList.add('hidden'); if (document.activeElement === fbText) fbText.blur(); syncPause(); }
+function fbClose() {
+  fbScr.classList.add('hidden'); if (document.activeElement === fbText) fbText.blur();
+  if (chFromFb) { chFromFb = false; el.chEnd.classList.remove('hidden'); }   /* v1.9.4: bölüm sonu kartına dön */
+  syncPause();
+}
 /* toast normalde katmanların (z 10) altında kalır ve duraklatmada sönmez: görüş mesajı üstte, kendi süresiyle */
 function fbToast(msg) {
   toast(msg); el.toast.classList.add('fbtop');
@@ -10484,7 +10694,7 @@ window.BT = {
   specOutfit: function (id, face) { return specOutfit(specById(id), face || 1); },
   specState: function () { return { spec: day.spec, sp: day.sp, normals: day.normals, active: customers.filter(function (c) { return c.spec; }).map(function (c) { return c.spec + ':' + c.state; }) }; },
   autoState: function () { return { min: S.autoMin, t: Math.round(saveT), left: Math.round(autoLeft()) }; }, fastForwardAutosave: function (sec) { saveT += sec; },
-  yardFolk: function () { return yardFolk; }, roadFlow: function () { return roadFlow(); },
+  yardFolk: function () { return yardFolk; }, roadFlow: function () { return roadFlow(); }, ui: { openSettings: openSettings, openPauseMenu: openPauseMenu, openStallScreen: openStallScreen, openHal: openHal, openOffice: openOffice, openChapter: openChapter, fbShow: fbShow, fbClose: fbClose, showChapterCard: showChapterCard, closeSettings: function () { el.settingsScreen.classList.add('hidden'); syncPause(); } }, rushNow: function () { return rushNow(); }, mgrAct: function () { return mgrAct; }, showChapterCard: function () { showChapterCard(); }, chapterGroups: function () { return chapterGroups(); }, ACH_IDS: function () { return (typeof ACH !== 'undefined' ? ACH : []).map(function (q) { return q.id; }); },
   CTYPES: CTYPES, S: S, safe: safe, BINS: BINS, HUT: HUT, DEPOT: DEPOT, WHALL: WHALL, office: office, MEYDAN: MEYDAN, BRIDGE: BRIDGE, depotCount: function () { return depotCount(); }, openHal: function () { openHal(); }, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
   zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
@@ -10515,7 +10725,7 @@ window.BT = {
   servRates: function () { return { fish: fishRate, serv: servRate, cap: Math.max(12, fishRate * 0.30) }; },
   servUnlock: servUnlock, servCount: servCount,
   T: T, STR: STR, lang: function () { return lang; },
-  music: function () { return { on: music.on, bar: music.bar, step: music.step, mode: music.mode, enabled: musicEnabled, vol: music.gain ? +music.gain.gain.value.toFixed(3) : 0 }; },
+  music: function () { return { on: music.on, bar: music.bar, step: music.step, mode: music.mode, enabled: musicEnabled, vol: music.gain ? +music.gain.gain.value.toFixed(3) : 0, song: (SONGS[music.si] || SONG).id, loops: music.loops }; }, SONGS: SONGS, songAt: function (i) { songAt(i); },
   sfx: sfx, audio: function () { return { state: AC && AC.state, vol: masterGain && +masterGain.gain.value.toFixed(3), lvl: volLvl, on: soundOn, ready: audioReady }; },
   setVol: function (v) { volLvl = clamp(v | 0, 0, 2); applyVolume(); ensureAudio(); return volLvl; },
   /* duraklatma + kayıt */

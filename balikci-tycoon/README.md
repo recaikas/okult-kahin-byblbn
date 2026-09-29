@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v1.9.3** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v1.9.5** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -14,6 +14,45 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.9.5 — İki yeni müzik, arayüz düzeltmeleri
+
+- **İki yeni kendi bestemiz** (dosya yok, Web Audio; telif sorunu yok):
+  - **"Yeşilçam Hatırası"** — La Hicaz makamı (La Si♭ Do♯ Re Mi Fa Sol), 84 BPM, ağır ve hüzünlü film teması:
+    üçgen dalga melodi ve ince üst ses, uzun bas + beşli, bağlama tınısında tel vuruşları, ölçü başında def.
+  - **"Liman Yolu"** — Sol Rast havası (Fa doğal renkli), 120 BPM, hafif hareketli: maksum darbuka
+    (düm-tek-·-tek-düm-·-tek-·), yürüyen bas.
+  - Ana menüde "İskele Türküsü"; oyun içinde üç parça sırayla döner (İskele → Liman Yolu → Yeşilçam, her biri
+    16 ölçü); Bölüm 1 jeneriğinde "Yeşilçam Hatırası".
+- **Arayüz (TR/EN) taraması** — her ekran ve panel iki dilde açılıp taşma, ekran dışı ve dil sızıntısı arandı:
+  - İngilizce arayüzde işletme adı önerileri İngilizce kalıpla ("Mustafa Seafood", "Blue Harbour"…).
+  - Liman menüsü: rafa kalkan Kapalı Pazar satırı gizli; çevre satırı yol vitrinini de sayar ve Türkçe yüzde
+    biçimi (+%8); bölge satırı "Kadro 0/5 • açık tezgâh" (eskiden "rol seç" yazıp açık tezgâh sayısını gösteriyordu);
+    hizmet binaları Türkçe'de "Sv." (eskiden sabit "Lv.").
+  - Yüzdeler dile göre: Türkçe "%37", İngilizce "37%" (bölüm ilerlemesi, ofis fiyat değişimleri, holding payları).
+  - Holding avantajları okunur adlarla ("Müşteri akışı +%10"; eskiden iç anahtar "flow +10%").
+- Joker müdür yalnız **kendi bölgesinin** kasa ve tezgâhlarına bakar (testte ayrıca doğrulanır).
+
+---
+
+## v1.9.4 — Faz D: Joker müdür, Hal hamalı, Bölüm 1 teşekkürü
+
+- **Yoğun saatler:** günün öğlesi (%42–58) ve kapanış öncesi (son %15 + kapanış). Bu saatlerde müşteri akışı
+  %30 artar; başlarken "⏰ Yoğun saat!" bildirimi çıkar.
+- **Joker müdür:** müdür masası bölgenin köşesinde. Yoğun saatte müdür masasından kalkar, **kendi bölgesinde**
+  önce dolmaya yüz tutan tezgâh kasasını sonuna kadar boşaltır (para doğrudan hesaba), sonra stoğu azalan tezgâha
+  kesim hasırından mal taşır; iş yoksa en kalabalık tezgâhın yanında bekler. Yoğunluk bitince masasına döner.
+- **Hal paleti + Hal Hamalı:** Hal'den alınan mal artık depoya ışınlanmaz; Hal'in önündeki palette bekler
+  (sayısı üstünde yazar). Oyuncu Hal kapısında durunca sırtlar, depo kapısında rafa bırakır; ya da YAPI › Meydan'dan
+  alınan **Hal Hamalı** (en çok 2) paletten depoya taşır. Palette bekleyen mal depoda yer tutar. Satış depodan anında.
+- **Kapalı Pazar rafta:** PROJE sekmesinde, haritada, Bölüm 1 hedefinde ve başarımlarda yok (Bölüm 2'de
+  geliştirilmiş hâliyle dönecek). Önceden tamamlamış kayıtlarda binası ve ton hattı çalışmaya devam eder.
+- **Bölüm 1 sonu:** gazete sahnesinden sonra teşekkür kartı ve üç seçenek:
+  **Değerlendirme yaz** (görüş formu; kapanınca karta dönülür) · **Oyunu bitir** ("Teşekkürler · Balaban gururla
+  sundu" jeneriği → kaydedip ana menü) · **1. Bölümü oynamaya devam et** (kaldığı yerden).
+- Test: `test-fazD.js`; `test-faz3.js` (Hal paleti) ve `test-chapter.js` (yeni kart) güncellendi.
 
 ---
 

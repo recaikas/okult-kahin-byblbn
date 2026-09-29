@@ -46,7 +46,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   for (let k = 0; k < 8 && await introOn(); k++) await tap();
   await sleep(1200); await p.screenshot({ path: SC + '5-kart.png' });
   const card = await p.evaluate(() => ({ vis: !document.getElementById('chEnd').classList.contains('hidden'), txt: document.getElementById('chEnd').innerText.replace(/\s+/g, ' ') }));
-  console.log('kart:', card); ok(card.vis && /Recai Balıkçılık/.test(card.txt) && /devler liginde/.test(card.txt), 'bölüm kartı yok/eksik');
+  console.log('kart:', card); ok(card.vis && /elinize sağlık/.test(card.txt) && /devler liginde/.test(card.txt) && /OYUNU BİTİR/.test(card.txt), 'bölüm kartı yok/eksik');   /* v1.9.4: teşekkür metni + 3 seçenek */
   await p.click('#chEndGo'); await sleep(1500);
   const after = await p.evaluate(() => ({ paused: BT.paused(), ch1: BT.S.ch1, chBtn: document.getElementById('chBtn').classList.contains('hidden'), day: BT.day.n, served: BT.S.served }));
   await sleep(8000);
