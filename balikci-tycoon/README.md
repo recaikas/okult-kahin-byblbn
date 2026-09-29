@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v1.9.5** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v1.9.6** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -14,6 +14,18 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.9.6 — Kayan etiket düzeltmesi (iPhone)
+
+- **Harita etiketleri kayıyordu:** iPhone Safari, U+FE0F'li emoji (🏚️ 🏛️ …) içeren etiketi `textAlign = 'center'` ile
+  kutunun ortasından **başlatıp** sağa taşırıyordu ("🏚️ Personel Kulübesi • YAPI › Meydan", "🏛️ TİCARET OFİSİ": kutu
+  solda, yazı sağa ekran dışına). Artık hiçbir yazı tarayıcının ortalamasına bırakılmıyor: başlangıç noktası ölçülen
+  genişlikten hesaplanıp soldan çiziliyor (`textAt`). Dünya etiketleri, rozetler, serbest yazılar ve dünya tuvalindeki
+  küçük yazılar (TR ve EN) hep bu yoldan geçer.
+- Test: `test-etiket.js` — TR ve EN'de meydan ile bölgelerde çizilen her etiket soldan hizalı ve yazı ortası kutu
+  ortasıyla ±1.5 px içinde (eski kodla kırılır).
 
 ---
 
