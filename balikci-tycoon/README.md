@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v1.8** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v1.9.5** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -14,6 +14,132 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.9.5 — İki yeni müzik, arayüz düzeltmeleri
+
+- **İki yeni kendi bestemiz** (dosya yok, Web Audio; telif sorunu yok):
+  - **"Yeşilçam Hatırası"** — La Hicaz makamı (La Si♭ Do♯ Re Mi Fa Sol), 84 BPM, ağır ve hüzünlü film teması:
+    üçgen dalga melodi ve ince üst ses, uzun bas + beşli, bağlama tınısında tel vuruşları, ölçü başında def.
+  - **"Liman Yolu"** — Sol Rast havası (Fa doğal renkli), 120 BPM, hafif hareketli: maksum darbuka
+    (düm-tek-·-tek-düm-·-tek-·), yürüyen bas.
+  - Ana menüde "İskele Türküsü"; oyun içinde üç parça sırayla döner (İskele → Liman Yolu → Yeşilçam, her biri
+    16 ölçü); Bölüm 1 jeneriğinde "Yeşilçam Hatırası".
+  - **Ayarlar › Çalma listesi:** "Sırayla çal" (varsayılan: menüde İskele Türküsü, oyunda üçü sırayla) ya da
+    tek parça seçilir; seçilen parça hemen başlar, menüde ve oyunda o çalar. Seçim cihazda saklanır; çalan parçanın
+    yanında ♪ görünür.
+- **Arayüz (TR/EN) taraması** — her ekran ve panel iki dilde açılıp taşma, ekran dışı ve dil sızıntısı arandı:
+  - İngilizce arayüzde işletme adı önerileri İngilizce kalıpla ("Mustafa Seafood", "Blue Harbour"…).
+  - Liman menüsü: rafa kalkan Kapalı Pazar satırı gizli; çevre satırı yol vitrinini de sayar ve Türkçe yüzde
+    biçimi (+%8); bölge satırı "Kadro 0/5 • açık tezgâh" (eskiden "rol seç" yazıp açık tezgâh sayısını gösteriyordu);
+    hizmet binaları Türkçe'de "Sv." (eskiden sabit "Lv.").
+  - Yüzdeler dile göre: Türkçe "%37", İngilizce "37%" (bölüm ilerlemesi, ofis fiyat değişimleri, holding payları).
+  - Holding avantajları okunur adlarla ("Müşteri akışı +%10"; eskiden iç anahtar "flow +10%").
+- Joker müdür yalnız **kendi bölgesinin** kasa ve tezgâhlarına bakar (testte ayrıca doğrulanır).
+- **Yönetim paneli** (`panel.html`, sitede: `…/okult-kahin-byblbn/panel.html`, arama motorlarına kapalı): şifreyle
+  açılır; özet, son 30 gün, adım adım ilerleme, **oyuncuların yolculuğu** (hangi adımı kaçıncı dakikada yaptı),
+  oyuncular, bırakılan günler ve görüşler. Sayfada şifre yok; veritabanında yalnız SHA-256 özeti (`bt_admin`).
+  Şifre değiştirmek: Supabase › SQL Editor ›
+  `delete from bt_admin; insert into bt_admin(token_hash) values (encode(sha256(convert_to('YENİ-ŞİFRE','UTF8')),'hex'));`
+  (en az 12 karakter). Oyuncuların yazdığı metinler panelde kaçışlanır (HTML çalışmaz). Test: `test-panel.js`.
+
+---
+
+## v1.9.4 — Faz D: Joker müdür, Hal hamalı, Bölüm 1 teşekkürü
+
+- **Yoğun saatler:** günün öğlesi (%42–58) ve kapanış öncesi (son %15 + kapanış). Bu saatlerde müşteri akışı
+  %30 artar; başlarken "⏰ Yoğun saat!" bildirimi çıkar.
+- **Joker müdür:** müdür masası bölgenin köşesinde. Yoğun saatte müdür masasından kalkar, **kendi bölgesinde**
+  önce dolmaya yüz tutan tezgâh kasasını sonuna kadar boşaltır (para doğrudan hesaba), sonra stoğu azalan tezgâha
+  kesim hasırından mal taşır; iş yoksa en kalabalık tezgâhın yanında bekler. Yoğunluk bitince masasına döner.
+- **Hal paleti + Hal Hamalı:** Hal'den alınan mal artık depoya ışınlanmaz; Hal'in önündeki palette bekler
+  (sayısı üstünde yazar). Oyuncu Hal kapısında durunca sırtlar, depo kapısında rafa bırakır; ya da YAPI › Meydan'dan
+  alınan **Hal Hamalı** (en çok 2) paletten depoya taşır. Palette bekleyen mal depoda yer tutar. Satış depodan anında.
+- **Kapalı Pazar rafta:** PROJE sekmesinde, haritada, Bölüm 1 hedefinde ve başarımlarda yok (Bölüm 2'de
+  geliştirilmiş hâliyle dönecek). Önceden tamamlamış kayıtlarda binası ve ton hattı çalışmaya devam eder.
+- **Bölüm 1 sonu:** gazete sahnesinden sonra teşekkür kartı ve üç seçenek:
+  **Değerlendirme yaz** (görüş formu; kapanınca karta dönülür) · **Oyunu bitir** ("Teşekkürler · Balaban gururla
+  sundu" jeneriği → kaydedip ana menü) · **1. Bölümü oynamaya devam et** (kaldığı yerden).
+- Test: `test-fazD.js`; `test-faz3.js` (Hal paleti) ve `test-chapter.js` (yeni kart) güncellendi.
+
+---
+
+## v1.9.3 — Faz C: Yol vitrini
+
+- **Süsler yolda:** tekne (denizde) ve fener (mendirekte) dışındaki bütün süsler bölge kenarlarından yolun doğu
+  kenarındaki **vitrine** taşındı. Tezgâh bölgeleri yalnız üretim ve satış için; kalabalık görünmez.
+- **Yol çiçekliği** (YAPI › Dekoratif, 8 adet): yol fenerlerinin iki yanına taş saksıda çiçek; tanesi $350'dan
+  başlar (her biri %30 pahalı), her biri müşteri akışı **+%2**.
+- **Yol reklam panosu** (3 adet, Sv3): işletmenin adı ve amblemi (lacivert rozette gümüş hamsi) yolda;
+  $1.400 / $2.800 / $5.600, her biri müşteri akışı **+%8**. Tezgâh bölgesindeki eski "TAZE BALIK" reklam panosu
+  yapısı kaldırıldı: eski kayıtta varsa parsel boşalır, yerine yolda bir pano bedava gelir.
+- Yol kademeleri (çakıl → arnavut kaldırımı → fener ve bordür) olduğu gibi; çiçeklik ve panolar onların üstüne
+  eklenir.
+- Bölge adı tabelası yalnız yakına gelince görünür. Ayrılan müşteriler yolun içinde kalır (vitrine ve meydana
+  taşmaz).
+- Test: `test-fazC.js`.
+
+---
+
+## v1.9.2 — Faz B: Liman Meydanı ve Hizmet Sahası
+
+- **Meydan ile saha kabaca eşit:** meydan güneye büyüdü (derinlik 7 → 11 karo), saha güneye kaydı (parsellerin
+  birbirine göre dizilişi aynı, ekranda üst üste binmezler). Meydanın kuzeydoğu köşesi sabit: daha doğusu
+  kameranın ulaşamadığı yer.
+- **Meydan yerleşimi:** kuzeyde Personel Kulübesi + Depo, güneyde Ticaret Ofisi + Balık Hali, ortası yürüyüş alanı.
+  Binalar ekranda birbirinin önüne düşmez; "LİMAN MEYDANI" tabelası köprü çıkışının güneyine alındı (kulübenin
+  önünü kapatıyordu). Kapılar binanın ön cephesinde.
+- **Personel Kulübesi ve Depo yeniden çizildi:** kapı, pencere, levha ekran pikseli yerine izometrik duvara oturuyor
+  (eğri/kayık görüntü bitti). Bina adı üstte sürekli durmuyor, yalnız kapıya yaklaşınca çıkıyor.
+  Kulübe: Sv1 ahşap kulübe → Sv2 çiçek kasası → Sv3 sundurma + bank → Sv4 ikinci pencere + baca → Sv5 badanalı ev +
+  bayrak. Depo: Sv1 küçük sac depo → Sv2 tam boy + yan rampa → Sv3 ikinci kapı + çatı ışıklığı → Sv4 forklift;
+  kapı önündeki sandık yığını rafların doluluğunu gösterir.
+- **Ticaret Ofisi baştan:** iki katlı taş ticaret evi — kemerli giriş ve levha, cumbalı badanalı üst kat, kırma
+  kiremit çatı, bayrak; yanında aktif kontrat sayısı kadar kâğıt asılı **kontrat panosu**.
+- **Hizmet Sahası artık boş değil:** kurulu binalar varken yoldan kasabalılar gelir, binalara girip çıkar, torbayla
+  bir sonrakine geçer, sonra yola döner (yalnız görsel; oyuncudan bir şey istemez, gelir değişmez). Binaların
+  arasındaki koridordan yürürler, binaların içinden geçmezler.
+- Test: `test-fazB.js` (alan oranı, ekranda çakışma, kapılar, yürüyüş yolu, yayalar).
+
+---
+
+## v1.9.1 — Test oyuncularının geri bildirimi, Faz A (hatalar ve kısayollar)
+
+- **Tahsildar takılması düzeldi:** tezgâh kasaları x≈9.9'da duruyor, oyun ise x>9.7'yi "meydan tarafı" sayıyordu.
+  2. ve 3. bölgenin tahsildarı kasaya gitmek için köprüye yönelip köprü ucunda takılıyordu (1. bölgede köprü tezgâhın
+  yanında olduğu için fark edilmiyordu). Sınır bölge kenarına (x=10) çekildi.
+- **Çıkıp girince tezgâh önü boşalmıyor:** kayıt artık her tezgâhın stoğunu, kasasındaki parayı ve kuyrukta bekleyen
+  müşterileri (sipariş, sabır, görünüm) tutuyor. Kaydet-çık ve sayfa yenileme sonrası kuyruk olduğu gibi döner.
+  Özel (isimli) müşteriler gün planına bağlı olduğu için kaydedilmez. Eski kayıtlar sorunsuz yüklenir.
+- **Açık Tezgâhlar düğmesi** sağ üstte ☰'ün yanında (balık simgesi). İkinci tezgâh kurulunca görünür; karar bekleyen
+  yeni tezgâh varsa üstünde sarı nokta yanar. YÜKSELT'teki kart kaldırıldı.
+- **YÜKSELT sırası:** önce oyuncunun kendi gelişimi (kapasite, hız, pazarlık), sonra bölge personeli, sonra füme
+  makinesi, en sonda müdür / personele devret. Devret kartı bölgede personel yokken çıkmaz.
+- Test: `test-fazA.js` (her bölgenin tahsildarı, kaydet-çık + yenileme sonrası kuyruk, düğme, YÜKSELT sırası).
+
+---
+
+## v1.9 — İlk açılış, ilk satışa kadar rehber, oyuncu ilerleme takibi
+
+- **İlk açılış akışı:** önce büyük iki düğmeli **dil seçimi** (TÜRKÇE / ENGLISH; cihaz diline göre biri vurgulu),
+  dokununca gazete hikâyesi hemen başlar ("başlamak için dokun" kapısı yok), sonra seçilen dilde ana menü. Dil bir
+  kez sorulur.
+- **Eğitim rehberi** (ilk balık tezgâha, ilk para kasaya):
+  - oyuncudan hedefe akan sarı noktalı yol ve hedefte nabız gibi atan halka;
+  - hedef ekran dışındaysa ekran kenarında hedefe dönük ok;
+  - her adım bitince tebrik ve sıradaki adım ("✓ Balıklar sırtında! Sarı yolu izle: kesim masası");
+  - hedef yazısında taşınan balık ve fileto sayısı.
+- **İlerleme olayları:** her oyunda her kilometre taşı bir kez sunucuya gider. Kilometre taşları: eğitim adımları,
+  2/3/5/7/10/14/21/30. gün, 2. ve 3. bölge, itibar seviyeleri, ilk müdür, Bölüm 1 sonu. Oyuncunun o anki günü ve oyun
+  süresi de gider. Supabase'de izlemek için:
+  - `select * from bt_ilerleme;` — adım adım kaç oyuncu nereye geldi (yüzde, ortalama dakika);
+  - `select * from bt_birakma;` — 24 saattir açılmayan oyunlar hangi günde kaldı;
+  - `select * from bt_yolculuk;` — oyuncu oyuncu yaptıkları, sırayla.
+- Gizlilik politikası güncellendi (ilerleme adımları; 24 ay saklama). "Verilerimi sil" olayları da siler.
+- Ajan testleri: Sonnet tüm oyunu, Haiku ilk 10 dakikayı oynayıp raporladı (bulguların düzeltmeleri bir sonraki
+  maddede).
+- Test: `test-ilkacilis.js`.
 
 ---
 

@@ -342,6 +342,14 @@
   #introGate small{display:block;font-size:12px;letter-spacing:2px;color:var(--ink2);margin:10px 0 34px}
   #introTap{display:block;font-size:17px;letter-spacing:2px;color:var(--ink);text-shadow:2px 2px 0 #000;animation:blink 1.2s steps(2) infinite}
   #introGate.hidden{display:none}
+  #langPick{position:fixed;inset:0;z-index:60;background:#0d0906;display:flex;align-items:center;justify-content:center}
+  #langPick.hidden{display:none}
+  #langPick .lpcard{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:stretch;width:min(300px,84vw)}
+  #langPick b{display:block;font-size:40px;line-height:1.05;color:var(--gold);letter-spacing:2px;text-shadow:4px 4px 0 #7a2b10;margin-bottom:6px}
+  #langPick p{margin:0 0 10px;font-size:12px;letter-spacing:2px;color:var(--ink2)}
+  #langPick button{font-family:inherit;font-size:18px;letter-spacing:2px;padding:16px 10px;background:#1b2a36;color:var(--ink);border:3px solid #6b4a2a;box-shadow:0 4px 0 #0a0604;cursor:pointer}
+  #langPick button.sug{border-color:var(--gold);color:var(--gold)}
+  #langPick button:active{transform:translateY(3px);box-shadow:0 1px 0 #0a0604}
   #introScr.gate .isub,#introScr.gate #introDots,#introScr.gate #introCv{visibility:hidden}
   #introSkip{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:10px;z-index:2;
     background:rgba(10,8,6,.7);border:2px solid #6b4a2a;color:var(--ink);font-family:inherit;font-size:13px;
@@ -465,6 +473,10 @@
   .chend h1{margin:8px 0 10px}
   .chend p{color:var(--ink)}
   .chgiant{font-size:16px !important;color:var(--gold) !important;letter-spacing:1px;margin-top:10px}
+  .chend .alt{font-size:12px}
+  .credits p{line-height:1.5}
+  .credits .presents{margin-top:18px;font-size:15px;letter-spacing:3px;color:var(--gold);animation:crIn 2.4s ease both}
+  @keyframes crIn{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:none}}
   .bnote{font-size:10.5px;color:var(--ink2);text-align:center;margin-top:8px;opacity:.8}
   .privcard{width:min(92vw,560px);max-height:88vh;display:flex;flex-direction:column;gap:8px}
   .privcard iframe{flex:1;min-height:60vh;border:0;border-radius:6px;background:#f6f1e4}
@@ -486,6 +498,12 @@
   .fberr{font-size:12.5px !important;color:#ff9b8a !important;margin:6px 0 0 !important}
   #fbScr .duo .go{margin-top:8px;flex:1.4}
   #fbSend:disabled{filter:saturate(.35) brightness(.8)}
+  #stallBtn{position:relative;margin-right:4px}
+  .plist{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+  .plist button{width:100%;text-align:left;padding:7px 10px;font-size:11px;background:#1a3549;border:2px solid #0a1a27;color:var(--ink);cursor:pointer;font-family:inherit}
+  .plist button.on{border-color:var(--gold);color:var(--gold)}
+  .plist button small{display:block;font-size:9px;color:var(--ink2);margin-top:2px}
+  #stallBtn.new::after{content:'';position:absolute;top:3px;right:3px;width:6px;height:6px;background:#ffc94a;box-shadow:0 0 0 1px #1a2433}
 </style>
 </head>
 <body>
@@ -499,6 +517,7 @@
   <div class="chip" id="dayChip"><i class="ci" id="dayIcon" data-i="gun"></i><span><small id="hDay">GÜN</small><span id="dayNum">1</span></span><span class="bar"><i id="dayfill"></i></span></div>
   <div class="spacer"></div>
   <div class="chip hidden" id="eventChip"><i class="ci" id="eventIcon" data-i="hamsi"></i><span><small id="eventName">OLAY</small><span id="eventT">0s</span></span></div>
+  <button class="btn hidden" id="stallBtn" aria-label="Açık tezgâhlar"><i class="ci" data-i="hamsi"></i></button>
   <button class="btn" id="menuBtn">☰</button>
 </div>
 
@@ -533,7 +552,7 @@
   <div class="card">
     <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v1.8</div>
+    <div class="ver">v1.9.5</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -568,6 +587,8 @@
       <button data-m="1" id="musOn" class="on">♪ AÇIK</button>
       <button data-m="0" id="musOff">KAPALI</button>
     </div>
+    <span class="lbl" id="setPlist">ÇALMA LİSTESİ</span>
+    <div class="plist" id="musList"></div>
     <span class="lbl" id="setZoom">GÖRÜNTÜ / ZOOM</span>
     <div class="seg" id="zoomSeg">
       <button data-z="1">-</button><button data-z="2" class="on">◻</button><button data-z="3">+</button>
@@ -656,6 +677,7 @@
     <button class="alt" id="menuBoard">🏆 SKOR TABLOSU</button>
     <button class="alt" id="menuSet">AYARLAR</button>
     <button class="alt" id="menuFb">GÖRÜŞÜNÜ YAZ</button>
+    <button class="alt" id="menuInfo">ℹ️ VERİLER &amp; GİZLİLİK</button>
   </div>
 </div>
 
@@ -754,7 +776,18 @@
     <h1 id="chEndT">BALIKÇI İŞ İNSANI</h1>
     <p id="chEndP">—</p>
     <p class="chgiant" id="chEndG">—</p>
-    <button class="go" id="chEndGo">DEVAM ET ▶</button>
+    <button class="go" id="chEndFb">DEĞERLENDİRME YAZ</button>
+    <button class="alt" id="chEndFin">OYUNU BİTİR</button>
+    <button class="alt" id="chEndGo">1. BÖLÜMÜ OYNAMAYA DEVAM ET ▶</button>
+  </div>
+</div>
+<div class="overlay hidden" id="endScr">
+  <div class="card chend credits">
+    <small id="endK">TEŞEKKÜRLER</small>
+    <h1 id="endT">HAMSİ KOYU</h1>
+    <p id="endP">—</p>
+    <p class="presents" id="endBy">BALABAN GURURLA SUNDU</p>
+    <button class="go" id="endGo">ANA MENÜ</button>
   </div>
 </div>
 
@@ -765,6 +798,15 @@
     <div id="boardRows"></div>
     <div class="bnote" id="boardNote"></div>
     <button class="go" id="boardClose">KAPAT</button>
+  </div>
+</div>
+
+<div class="hidden" id="langPick">
+  <div class="lpcard">
+    <b>HAMSİ<br>KOYU</b>
+    <p>DİL SEÇ · CHOOSE LANGUAGE</p>
+    <button data-l="tr">🇹🇷 TÜRKÇE</button>
+    <button data-l="en">🇬🇧 ENGLISH</button>
   </div>
 </div>
 

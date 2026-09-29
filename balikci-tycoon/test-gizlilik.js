@@ -1,6 +1,5 @@
 /* Mağaza gizlilik şartları (sahte Supabase ile):
-   0) v1.8 skor tablosu zorunlu: ilk oyunda tek düğmeli KVKK bilgilendirmesi; görülmeden istek gitmez, bir kez gösterilir,
-      geri tuşuyla kapatmak da okundu sayılır; ayarlarda aç/kapa yok;
+   0) skor tablosu zorunlu (ayarlarda aç/kapa yok); v1.9: bilgilendirme açılışta çıkmaz, menüde "Veriler & Gizlilik"te;
    2) Çevrimiçi verilerimi sil → bt_forget eski kimlikle; cihaz listesi temizlenir; yeni kimlikle gönderim sürer;
    3) Gizlilik politikası oyun içinde açılır (oyun duraklar), TR/EN metin yüklü, geri tuşu/Escape ile kapanır. */
 const { chromium } = require('./test-offline');
@@ -20,13 +19,19 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   await p.goto(URL); await sleep(900);
   await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
   await p.click('#heroGo'); await p.fill('#nameIn', 'Gizli Liman'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(800);
-  /* 0) v1.8: skor tablosu zorunlu; ilk oyunda tek düğmeli KVKK bilgilendirmesi — görülmeden hiçbir istek gitmez */
-  const q = await p.evaluate(() => ({ ask: !document.getElementById('askScr').classList.contains('hidden'), msg: document.getElementById('askMsg').textContent, yes: document.getElementById('askYes').textContent, noHidden: document.getElementById('askNo').classList.contains('hidden') }));
-  ok(calls.length === 0, 'bilgilendirme görülmeden istek gitti ' + JSON.stringify(calls.map(c => c.name)));
-  ok(q.ask && /Avrupa Birliği/.test(q.msg) && /herkese açık/.test(q.msg) && /Çevrimiçi verilerimi sil/.test(q.msg) && q.yes === 'TAMAM' && q.noHidden, 'bilgilendirme çıkmadı ' + JSON.stringify(q));
+  /* 0) v1.9: skor tablosu zorunlu; bilgilendirme açılışta ekrana çıkmaz — menüdeki "Veriler & Gizlilik"te okunur */
+  ok(await p.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'açılışta bilgilendirme penceresi çıktı');
+  await sleep(300);
+  ok(calls.some(c => c.name === 'bt_play') && calls.some(c => c.name === 'bt_submit'), 'oyun başında gönderim başlamadı ' + JSON.stringify(calls.map(c => c.name)));
+  await p.evaluate(() => { document.getElementById('menuBtn').click(); }); await sleep(200);
+  const mi = await p.evaluate(() => document.getElementById('menuInfo').textContent);
+  await p.click('#menuInfo'); await sleep(200);
+  const q = await p.evaluate(() => ({ ask: !document.getElementById('askScr').classList.contains('hidden'), msg: document.getElementById('askMsg').textContent, yes: document.getElementById('askYes').textContent, no: document.getElementById('askNo').textContent }));
+  ok(/VERİLER/.test(mi) && q.ask && /Avrupa Birliği/.test(q.msg) && /herkese açık/.test(q.msg) && /ilerleme/.test(q.msg) && /GİZLİLİK/.test(q.yes) && q.no === 'TAMAM', 'menüdeki bilgilendirme yanlış ' + JSON.stringify({ mi, q }));
   await p.click('#askYes'); await sleep(500);
-  ok(calls.some(c => c.name === 'bt_play') && calls.some(c => c.name === 'bt_submit'), 'bilgilendirmeden sonra gönderim başlamadı ' + JSON.stringify(calls.map(c => c.name)));
-  ok(await p.evaluate(() => JSON.parse(localStorage.getItem('balikci_pref')).onn) === 1 && await p.evaluate(() => !document.getElementById('askNo').classList.contains('hidden')), 'bilgilendirme hatırlanmadı / HAYIR düğmesi gizli kaldı');
+  ok(await p.evaluate(() => !document.getElementById('privScr').classList.contains('hidden')), 'bilgilendirmeden gizlilik politikası açılmadı');
+  await p.evaluate(() => document.getElementById('privClose').click()); await sleep(150);
+  await p.evaluate(() => { if (!document.getElementById('menuScreen').classList.contains('hidden')) BT.back(); }); await sleep(200);
   await p.evaluate(() => { document.getElementById('menuBtn').click(); }); await sleep(200);
   await p.click('#menuBoard'); await sleep(300);
   ok(await p.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'bilgilendirme ikinci kez çıktı');
@@ -73,23 +78,16 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   await p2.goto(URL); await sleep(900);
   await p2.click('#introSkip'); await p2.click('#playBtn'); await p2.click('#slotRows .sb[data-n="1"]');
   await p2.click('#heroGo'); await p2.fill('#nameIn', 'Onaylı Liman'); await p2.click('#nameGo'); await p2.click('#autoOpts button[data-m="10"]'); await sleep(800);
-  ok(calls2.length === 0, 'temiz sayfada onaysız istek ' + JSON.stringify(calls2));
   await p2.evaluate(() => { document.getElementById('menuBtn').click(); }); await sleep(200);
-  ok(calls2.length === 0 && await p2.evaluate(() => !document.getElementById('askScr').classList.contains('hidden')), 'temiz sayfada bilgilendirme yok');
-  await p2.evaluate(() => BT.back()); await sleep(600);   /* geri tuşuyla kapatmak da "okundu" sayılır */
-  ok(calls2.includes('bt_submit') && calls2.includes('bt_play'), 'geri tuşuyla kapatınca gönderim başlamadı ' + JSON.stringify(calls2));
-  await p2.reload(); await sleep(900);
-  if (await p2.isVisible('#introSkip')) await p2.click('#introSkip');
-  await p2.click('#playBtn'); await sleep(700);
-  if (await p2.isVisible('#autoOpts')) { await p2.click('#autoOpts button[data-m="10"]'); await sleep(400); }
-  ok(await p2.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'yeniden açılışta bilgilendirme tekrar çıktı');
+  await sleep(400);
+  ok(calls2.includes('bt_submit') && calls2.includes('bt_play') && await p2.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'temiz sayfada gönderim yok / pencere çıktı ' + JSON.stringify(calls2));
   /* 6) herkese açık tabloya kaba ad gitmez (kullanıcı içeriği kuralı); benzer ama masum adlar geçer */
   const nb = await p2.evaluate(() => ({ bad: ['Orospu Balık', 'S1kt1r Liman', 'amk balık', 'Fuuuck Fish', 'göt balık'].filter(n => !BT.nameBad(n)),
     good: ['Klasik Balık', 'Müsik Evi', 'Kayarak Liman', 'Koç Balıkçılık', 'Scunthorpe Fish', 'Amasra Balık'].filter(BT.nameBad) }));
   ok(!nb.bad.length && !nb.good.length, 'ad filtresi yanlış ' + JSON.stringify(nb));
-  const nS = calls2.length;
+  const nS = calls2.filter(n => n === 'bt_submit').length;
   await p2.evaluate(() => { BT.S.company = 'Orospu Liman'; BT.S.caught += 5; BT.submitScore(true); }); await p2.waitForTimeout(400);
-  ok(calls2.length === nS, 'kaba ad çevrimiçi tabloya gönderildi');
+  ok(calls2.filter(n => n === 'bt_submit').length === nS, 'kaba ad çevrimiçi tabloya gönderildi');
   await ctx2.close();
   ok(errs.length === 0, 'sayfa hatası: ' + errs.join(' | '));
   console.log(JSON.stringify({ calls: calls.map(c => c.name), pid0, after: { pid: after.pid } }));

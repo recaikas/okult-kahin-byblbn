@@ -53,7 +53,7 @@ grant select (run_id, company, hero, fish, money, day, play_sec, updated_at) on 
 -- ---------------------------------------------------------------------
 -- herkese açık tabloda kaba/nefret içerikli ad olmasın (istemcideki nameBad ile aynı liste; istemci atlatılırsa diye)
 create or replace function public.bt_bad_name(p text) returns boolean
-language sql immutable as $$
+language sql immutable set search_path = public as $$
   with n as (select translate(lower(coalesce(p, '')), 'çğıöşüâîû0134578@$!|', 'cgiosuaiuoieastbasii') as t)
   select regexp_replace(regexp_replace(t, '[^a-z]', '', 'g'), '(.)\1+', '\1', 'g')
            ~ '(orospu|amina|amcik|sikis|siktir|sikerim|sikeyim|sikik|sikim|gotveren|pezevenk|kahpe|kaltak|yavsak|serefsiz|fuck|shit|bitch|niger|niga|fagot|whore|pusy|ashole|hitler|nazi)'
@@ -238,6 +238,7 @@ begin
   get diagnostics n = row_count;
   delete from public.bt_plays where player_id = p_player;
   delete from public.bt_feedback where player_id = p_player;
+  delete from public.bt_events where player_id = p_player;
   return n;
 end $$;
 revoke all on function public.bt_forget(text) from public;
@@ -283,6 +284,88 @@ order by f.created_at desc;
 revoke all on public.bt_gorusler from anon, authenticated;
 
 -- ---------------------------------------------------------------------
+--  v1.9 İLERLEME OLAYLARI: oyuncular nereye kadar geldi, nerede bıraktı?
+--  Her oyunda (run) her olay bir kez: eğitim adımları (tut1..tut6), gün (gun2..gun30),
+--  bölge (bolge2, bolge3), itibar seviyesi (sv2..), müdür, bölüm sonu (bolum1), yeni oyun (oyun).
+-- ---------------------------------------------------------------------
+create table if not exists public.bt_events (
+  id         bigint generated always as identity primary key,
+  player_id  text not null check (char_length(player_id) between 6 and 40),
+  run_id     text          check (run_id is null or char_length(run_id) <= 40),
+  ev         text not null check (ev ~ '^[a-z0-9_]{2,24}$'),
+  day        integer       check (day is null or day >= 1),
+  play_sec   integer       check (play_sec is null or play_sec >= 0),
+  created_at timestamptz not null default now()
+);
+create unique index if not exists bt_events_run_ev on public.bt_events (run_id, ev);
+create index if not exists bt_events_player on public.bt_events (player_id, created_at);
+alter table public.bt_events enable row level security;
+-- bt_events için politika yok: anon okuyamaz, yazamaz; yalnız bt_event fonksiyonu yazar.
+revoke all on public.bt_events from anon, authenticated;   -- Supabase'in varsayılan tablo izinleri de kalksın
+
+create or replace function public.bt_event(p_player text, p_run text, p_ev text, p_day integer, p_play integer)
+returns text
+language plpgsql security definer set search_path = public as $$
+declare n integer;
+begin
+  if p_player is null or char_length(p_player) not between 6 and 40 then return 'bad_id'; end if;
+  if p_run is not null and char_length(p_run) > 40 then return 'bad_id'; end if;
+  if p_ev is null or p_ev !~ '^[a-z0-9_]{2,24}$' then return 'bad_ev'; end if;
+  select count(*) into n from public.bt_events where player_id = p_player and created_at > now() - interval '1 day';
+  if n >= 300 then return 'too_many'; end if;
+  insert into public.bt_events (player_id, run_id, ev, day, play_sec)
+  values (p_player, nullif(p_run, ''), p_ev, greatest(1, least(coalesce(p_day, 1), 100000)),
+          greatest(0, least(coalesce(p_play, 0), 100000000)))
+  on conflict (run_id, ev) do nothing;
+  return 'ok';
+end $$;
+revoke all on function public.bt_event(text, text, text, integer, integer) from public;
+grant execute on function public.bt_event(text, text, text, integer, integer) to anon, authenticated;
+
+-- ---------------------------------------------------------------------
+--  YÖNETİCİ GÖRÜNÜMLERİ (yalnız sen)
+--    select * from bt_ilerleme;   -- adım adım: kaç oyuncu buraya geldi, yüzde kaçı, ortalama kaçıncı dakikada
+--    select * from bt_birakma;    -- 24 saattir açılmamış oyunlar hangi günde kaldı
+--    select * from bt_yolculuk;   -- oyuncu oyuncu: sırayla neler yaptı
+-- ---------------------------------------------------------------------
+create or replace view public.bt_ilerleme with (security_invoker = true) as
+with adim(ev, sira, ad) as (values
+  ('oyun', 1, 'Yeni oyun başladı'), ('tut1', 2, 'Ağda balık birikti'), ('tut2', 3, 'Balıkları sırtladı'),
+  ('tut3', 4, 'Kesim masasına bıraktı'), ('tut4', 5, 'İlk balık tezgâhta'), ('tut5', 6, 'İlk para kasada'),
+  ('tut6', 7, 'İlk yükseltmeyi aldı'), ('gun2', 8, '2. güne geçti'), ('sv2', 9, 'İtibar seviye 2'),
+  ('gun3', 10, '3. güne geçti'), ('sv3', 11, 'İtibar seviye 3'), ('bolge2', 12, '2. bölgeyi açtı'),
+  ('gun5', 13, '5. güne geçti'), ('mudur', 14, 'İlk müdürü aldı'), ('gun7', 15, '7. güne geçti'),
+  ('bolge3', 16, '3. bölgeyi açtı'), ('gun10', 17, '10. güne geçti'), ('bolum1', 18, 'Bölüm 1 bitti'),
+  ('gun14', 19, '14. güne geçti'), ('gun21', 20, '21. güne geçti'), ('gun30', 21, '30. güne geçti')
+), bas as (select count(distinct player_id) as n from public.bt_events where ev = 'oyun')
+select a.sira, a.ad as adim,
+       count(distinct e.player_id)                                              as oyuncu,
+       round(100.0 * count(distinct e.player_id) / nullif((select n from bas), 0)) as yuzde,
+       round(avg(e.play_sec) / 60.0, 1)                                         as ort_dakika
+from adim a left join public.bt_events e on e.ev = a.ev
+group by a.sira, a.ad order by a.sira;
+revoke all on public.bt_ilerleme from anon, authenticated;
+
+create or replace view public.bt_birakma with (security_invoker = true) as
+select s.day as son_gun, count(*) as oyun, round(avg(s.play_sec) / 60.0, 1) as ort_dakika,
+       string_agg(s.company, ', ' order by s.updated_at desc) as isletmeler
+from public.bt_scores s
+where s.updated_at < now() - interval '24 hours'
+group by s.day order by s.day;
+revoke all on public.bt_birakma from anon, authenticated;
+
+create or replace view public.bt_yolculuk with (security_invoker = true) as
+select e.player_id as oyuncu,
+       (select string_agg(distinct s.company, ', ') from public.bt_scores s where s.run_id = e.run_id) as isletme,
+       count(*) as adim_sayisi,
+       string_agg(e.ev || ' (' || round(e.play_sec / 60.0, 1) || ' dk)', ' → ' order by e.play_sec, e.id) as yol,
+       max(e.created_at) as son_olay
+from public.bt_events e
+group by e.player_id, e.run_id
+order by son_olay desc;
+revoke all on public.bt_yolculuk from anon, authenticated;
+
+-- ---------------------------------------------------------------------
 --  TEST ÖZETİ (yalnız sen): link ile test ederken tek satırda durum.
 --    select * from bt_test_ozet;
 --  kac_kisi: en az bir kez açan farklı oyuncu · son_24s / son_7g: o sürede oyunu açan oyuncu
@@ -312,6 +395,43 @@ select
 revoke all on public.bt_test_ozet from anon, authenticated;
 
 -- ---------------------------------------------------------------------
+--  YÖNETİM PANELİ (panel.html): tüm yönetici görünümlerini tek çağrıda verir.
+--  Yalnız doğru panel şifresiyle çalışır; şifrenin kendisi değil SHA-256 özeti saklanır.
+--  Şifre koymak / değiştirmek (SQL Editor):
+--    delete from bt_admin; insert into bt_admin(token_hash) values (encode(sha256(convert_to('YENI-SIFRE','UTF8')),'hex'));
+-- ---------------------------------------------------------------------
+create table if not exists public.bt_admin (token_hash text primary key);
+alter table public.bt_admin enable row level security;
+-- politika yok: anon okuyamaz, yazamaz.
+revoke all on public.bt_admin from anon, authenticated;
+
+create or replace function public.bt_panel(p_token text)
+returns json
+language plpgsql security definer set search_path = public as $$
+begin
+  if p_token is null or char_length(p_token) < 12 or not exists (
+       select 1 from public.bt_admin where token_hash = encode(sha256(convert_to(p_token, 'UTF8')), 'hex')) then
+    perform pg_sleep(0.8);                       -- şifre denemelerini yavaşlat
+    return null;
+  end if;
+  return json_build_object(
+    'at',        now(),
+    'ozet',      (select row_to_json(o) from public.bt_test_ozet o),
+    'ilerleme',  coalesce((select json_agg(i) from public.bt_ilerleme i), '[]'::json),
+    'birakma',   coalesce((select json_agg(b) from public.bt_birakma b), '[]'::json),
+    'oyuncular', coalesce((select json_agg(x) from (select * from public.bt_oyuncular limit 500) x), '[]'::json),
+    'yolculuk',  coalesce((select json_agg(y) from (select * from public.bt_yolculuk limit 300) y), '[]'::json),
+    'gorusler',  coalesce((select json_agg(g) from (select * from public.bt_gorusler limit 300) g), '[]'::json),
+    'gunluk',    coalesce((select json_agg(d) from (
+                   select date(created_at) as gun, count(*) as acilis, count(distinct player_id) as kisi
+                   from public.bt_plays where created_at > now() - interval '30 days'
+                   group by 1 order by 1) d), '[]'::json)
+  );
+end $$;
+revoke all on function public.bt_panel(text) from public;
+grant execute on function public.bt_panel(text) to anon, authenticated;
+
+-- ---------------------------------------------------------------------
 --  KVKK saklama süresi (gizlilik politikası: açılış sayımları ve görüşler en çok 24 ay).
 --  Ayda bir SQL Editor'da çalıştır:  select bt_cleanup();
 --  Otomatik yapmak için (Supabase › Database › Extensions › pg_cron açıkken):
@@ -323,6 +443,7 @@ declare n1 integer; n2 integer;
 begin
   delete from public.bt_plays where created_at < now() - interval '24 months'; get diagnostics n1 = row_count;
   delete from public.bt_feedback where created_at < now() - interval '24 months'; get diagnostics n2 = row_count;
+  delete from public.bt_events where created_at < now() - interval '24 months';
   return n1 + n2;
 end $$;
 revoke all on function public.bt_cleanup() from public, anon, authenticated;
@@ -330,6 +451,9 @@ revoke all on function public.bt_cleanup() from public, anon, authenticated;
 -- ---------------------------------------------------------------------
 --  Senin için hazır sorgular (SQL Editor'da çalıştır):
 --    select * from bt_test_ozet;                          -- test özeti: kaç kişi, kaç dakika, geri dönen
+--    select * from bt_ilerleme;                           -- adım adım kaç oyuncu nereye geldi
+--    select * from bt_birakma;                            -- oyunlar hangi günde bırakıldı
+--    select * from bt_yolculuk;                           -- oyuncu oyuncu yaptıkları
 --    select * from bt_oyuncular;                          -- kim ne kadar oynadı
 --    select * from bt_board('');                          -- tablo + sayılar
 --    select date(created_at) gun, count(*) oyun, count(distinct player_id) kisi

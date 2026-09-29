@@ -19,6 +19,8 @@ const ENVS = [['plain', 'index.html'], ['sandbox', 'test-sandbox.html'], ['nosto
     const F = () => name === 'plain' ? p.mainFrame() : p.frames()[1];
     const f = F();
     const vis = id => f.evaluate(id => { const e = document.getElementById(id); return !!e && !e.classList.contains('hidden'); }, id);
+    /* depolama kapalı ortamlarda (sandbox/nostore) dil seçimi hatırlanamaz: her açılışta sorulur */
+    if (await vis('langPick')) { await f.click('#langPick button[data-l="tr"]'); await sleep(300); }
     const closeStall = () => f.evaluate(() => { const s = document.getElementById('stallScr'); if (!s.classList.contains('hidden')) document.getElementById('stallGo').click(); });
     const quit = async () => { await closeStall(); await f.click('#menuBtn'); await sleep(150); await f.click('#menuSet'); await sleep(150); await f.click('#saveQuitBtn'); await sleep(400); };
     const newIn = async (slot, co) => {

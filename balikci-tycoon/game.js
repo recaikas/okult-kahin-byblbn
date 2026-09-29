@@ -72,17 +72,17 @@ var STR = {
     autoMinN: '{m} dk', auto5: 'Sık kayıt — en güvenlisi', auto10: 'Önerilen', auto30: 'Seyrek kayıt',
     autoLbl: 'OTOMATİK KAYIT', autoSaved: '💾 Otomatik kaydedildi • {t}', autoSet: '💾 Otomatik kayıt: {m} dakikada bir',
     autoNext: 'Otomatik kayıt: {m} dk • sonraki {t}',
-    musicLbl: 'MÜZİK', musOn: '♪ AÇIK', musOff: 'KAPALI',
+    musicLbl: 'MÜZİK', musOn: '♪ AÇIK', musOff: 'KAPALI', musList: 'ÇALMA LİSTESİ', musAuto: 'Sırayla çal (hepsi)', musAutoD: 'Menüde İskele Türküsü, oyunda üç parça sırayla',
     meydan: 'LİMAN MEYDANI', hutName: 'Personel Kulübesi', depotName: 'Depo', whall: 'Balık Hali', buildAt: 'YAPI › Meydan',
     hutD: 'Her bölgede +1 personel yeri / seviye (şu an +{n})', depotD: 'Fazla fileto/fümeyi türüne göre raflarda saklar; kendi personeli var',
-    depotD2: 'Raf {a}/{b} → {n} • depo personeli +1', whallD: 'Depodaki malı günün fiyatıyla sat, toptan al (Depo gerekir)',
+    depotD2: 'Raf {a}/{b} → {n} • depo personeli +1', whallD: 'Depodaki malı günün fiyatıyla sat, toptan al; alınan mal Hal paletinden depoya taşınır (Depo gerekir)',
     officeInMeydan: 'Ticaret Merkezi artık meydanda — PROJE sekmesinden kurulur', goProj: 'PROJE ›', upgrade: 'YÜKSELT', build: 'KUR',
     needDepot: '🔒 Önce Depo kur', depotStaffFull: 'Depo kadrosu dolu — depoyu yükselt', depotFull: 'Depo dolu',
     hutBuilt: '🏚️ Personel Kulübesi kuruldu: her bölgede +1 personel yeri', hutUp: '🏚️ Kulübe Sv {l}: her bölgede +{l} personel yeri',
     depotBuilt: '📦 Depo kuruldu — fazla ürün artık çöpe/mezata değil rafa', depotUp: '📦 Depo Sv {l}: kapasite {c}',
     whallBuilt: '🏪 Balık Hali açıldı', hutBtn: 'PERSONEL', halBtn: 'BALIK HALİ', hutWelcome: '👷 Kulübeye hoş geldin — personelini buradan yönet',
     halSub: '{d}. günün fiyatları • Depo {a}/{b}', halRow: 'Depoda {n} • Sat {s} • Al {b}', halSell5: 'SAT 5', halSellAll: 'HEPSİ', halBuy5: 'AL 5',
-    halEmpty: 'Henüz ürün yok', halSold: '{n} ürün satıldı: +{v}', halBought: '{n} ürün alındı: {v}', kFume: 'füme', kFileto: 'fileto',
+    halEmpty: 'Henüz ürün yok', halSold: '{n} ürün satıldı: +{v}', halBought: '{n} ürün alındı: {v}', halBoughtPal: '{n} ürün alındı ({v}) — Hal hamalı depoya taşıyor', halBoughtCarry: '{n} ürün alındı ({v}) — Hal önündeki palette; sırtla, depoya götür', halPalN: 'Palette {n}', halStaffFull: 'En çok 2 Hal hamalı', kFume: 'füme', kFileto: 'fileto',
     envUp1: '🌿 Liman canlanıyor: yol çakıl oldu, ağaçlar yeşeriyor', envUp2: '🪨 Yol arnavut kaldırımı oldu, sahil toparlandı',
     envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
     specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
@@ -98,9 +98,14 @@ var STR = {
     chAreas: 'Bölgeleri aç (Balık Pazarı, Fümehane)', chLevels: 'Bölge seviyeleri', chPads: 'Yükseltmeler (sepet, ayakkabı, fiyat)', chSlots: 'Yapı noktaları',
     chDecor: 'Süsler', chEnv: 'Çevre yatırımları', chFume: 'Füme makineleri', chProj: 'Kapalı Pazar', chMeydan: 'Meydan binaları (kulübe, depo, hal)', chMgr: 'Bölge müdürleri',
     chEndK: 'BÖLÜM 1 TAMAMLANDI', chEndT: 'BALIKÇI İŞ İNSANI',
-    chEndP: 'Bir sandık ve bir ağla başladın. Şimdi üç tezgâhı, müdürleri ve çalışanlarıyla {c} limanın en bilinen adı. {n}, artık basit bir balıkçı değilsin.',
+    chEndP: '1. Bölümü tamamladınız, elinize sağlık. 2. Bölüm için çalışmalara başladım. Buraya kadar oynadıysanız çok teşekkür ederim; bu bir gönül işi, herhangi bir kâr amacı gütmüyorum. Oyunu geliştirmemde yardımcı olmak için bir değerlendirme bırakabilir, tavsiye verebilirsiniz.',
+    chEndFb: '✍ DEĞERLENDİRME YAZ', chEndFin: 'OYUNU BİTİR', chEndGo: '1. BÖLÜMÜ OYNAMAYA DEVAM ET ▶',
+    endK: 'TEŞEKKÜRLER', endT: 'HAMSİ KOYU', endBy: 'BALABAN GURURLA SUNDU', endGo: 'ANA MENÜ',
+    endP: '{n} ve {c} için hikâyenin ilk bölümü burada bitiyor. Oynadığınız için çok teşekkürler — 2. Bölüm\'de görüşmek üzere!',
     chEndG: 'Ama bu daha başlangıç. Artık devler liginde hayatta kalmalıyız…', mgrCard: '{n} — Müdür gerekli', mgrCardD: '4 personel tamam. Müdür masası kur, müdürünü seç: bölge tam otomatiğe geçer.', mgrPick: '👔 MÜDÜR SEÇ', mgrHired: '👔 {m}, {n} müdürü oldu — bölge tam otomatik', mgrListT: '{n} için müdür adayları', mgrCost: 'masa {d} + işe alım {f} • maaş {w}', mgrBoss: 'Müdür', fmT: 'Füme Makinesi • {n}', fmD: 'Tezgâhtaki filetoyu yerinde tüter; bu bölgenin müşterileri artık füme de ister (2.4× değer)', fmNeed: '🔒 Önce Fümehane', fmDone: '🔥 {n} tezgâhına füme makinesi kuruldu', envFlow: '+%{p} müşteri akışı', envRow: 'Çevre yatırımı', envNext: 'Sıradaki: {n} (Sv {l})', envCust: 'müşteri',
     tutDone: 'Eğitim tamam! Limanı büyüt 🎉',
+    tutNice: '✓ Harika!',
+    tutStepOK: ['✓ Balık birikti! Şimdi sandığın üstünden geç', '✓ Balıklar sırtında! Sarı yolu izle: kesim masası', '✓ Kesim başladı! Hazır filetoyu al', '🎉 İlk balığın tezgâhta! Müşteriler geliyor', '✓ Para kasada! Alttaki çubuktan bir şey al'],
     capUp: '🧺 Taşıma kapasitesi: {n}', spdUp: '👟 Hız +%11', priceUp: '💰 Fiyat +%10',
     /* tutorial */
     tut: ['Ağın yanında bekle — balık birikiyor',
@@ -151,8 +156,8 @@ var STR = {
     zoneFull: 'Bu bölgenin kadrosu dolu', zoneOf: '{n} bölgesi',
     stallSwitch: 'AÇIK TEZGÂHLAR', stallSwitchD: '{a}/{b} tezgâh açık — aç/kapat',
     stallManage: 'AÇ / KAPAT', stallTitle: 'AÇIK TEZGÂHLAR',
-    newStallLbl: 'YENİ', newStallHint: 'Yeni tezgâh hazır — alt bardaki YÜKSELT › AÇIK TEZGÂHLAR',
-    howToOpen: 'YÜKSELT › AÇIK TEZGÂHLAR', stallNewN: '{n} yeni tezgâh kararını bekliyor',
+    newStallLbl: 'YENİ', newStallHint: 'Yeni tezgâh hazır — sağ üstteki 🐟 düğmesinden aç',
+    howToOpen: 'SAĞ ÜSTTEKİ BALIK › AÇIK TEZGÂHLAR', stallNewN: '{n} yeni tezgâh kararını bekliyor',
     stallSub: 'Yetişemediğin tezgâhı kapat: kapalı tezgâha müşteri gelmez, ağ o türü üretmez.',
     swOn: 'AÇIK', swOff: 'KAPALI', swFixed: 'SABİT', stallClosed: 'KAPALI',
     dayStalls: 'AÇIK TEZGÂHLAR', stallNew: 'Yeni tezgâh kuruldu — açmak ister misin?',
@@ -185,9 +190,11 @@ var STR = {
     plotOf: '{n} bölgesi', servInc: 'servis geliri',
     buy: 'SATIN AL', confirm: 'ONAYLA?', choose: 'SEÇ', back: '← GERİ',
     emptyArea: 'Açılacak yeni alan yok', emptyLevel: 'Şimdilik yükseltme yok',
-    emptyBuild: 'Yapı noktası yok', emptyProj: 'Proje bu bölge açılınca gelir',
+    emptyBuild: 'Yapı noktası yok', emptyProj: 'Yeni büyük projeler 2. bölümde',
     slotEmpty: 'Boş yapı yeri', slotOf: '{n} bölgesi',
-    areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs',
+    areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs', roadShow: 'Yol vitrini', mZoneRow: 'Kadro {a}/{b} • açık tezgâh', mgrRush: '⏰ Yoğun saat! Müdürler tezgâhlara yardıma indi', mgrHelp: 'yardımda',
+    rdFl: 'Yol Çiçekliği', rdFlD: 'Yol kenarına çiçeklik • müşteri akışı +%{p}', rdFlDone: 'Yola çiçeklik kondu 🌷',
+    rdBb: 'Yol Reklam Panosu', rdBbD: 'İşletmenin adı ve amblemi yolda • müşteri akışı +%{p}', rdBbDone: 'Reklam panosu yolda yerini aldı 📣',
     lvEffect: 'Ağ +%18, tezgâh +4 stok, yeni yapı yeri',
     staffFull: 'Personel limiti dolu ({n})',
     tut6: 'Alt bardan bir yükseltme satın al',
@@ -271,7 +278,7 @@ var STR = {
     autoMinN: '{m} min', auto5: 'Frequent — safest', auto10: 'Recommended', auto30: 'Occasional',
     autoLbl: 'AUTOSAVE', autoSaved: '💾 Autosaved • {t}', autoSet: '💾 Autosave every {m} minutes',
     autoNext: 'Autosave: every {m} min • next in {t}',
-    musicLbl: 'MUSIC', musOn: '♪ ON', musOff: 'OFF',
+    musicLbl: 'MUSIC', musOn: '♪ ON', musOff: 'OFF', musList: 'PLAYLIST', musAuto: 'Play all in turn', musAutoD: 'Pier Folk Song in the menu, all three in turn in game',
     meydan: 'HARBOR SQUARE', hutName: 'Staff Hut', depotName: 'Depot', whall: 'Fish Hall', buildAt: 'BUILD › Square',
     hutD: '+1 staff slot in every zone per level (now +{n})', depotD: 'Stores surplus fillet/smoked fish on shelves by type; has its own staff',
     depotD2: 'Shelves {a}/{b} → {n} • +1 depot staff', whallD: 'Sell depot stock at today\'s price, buy wholesale (needs Depot)',
@@ -281,7 +288,7 @@ var STR = {
     depotBuilt: '📦 Depot built — surplus goes to shelves, not the bin/auction', depotUp: '📦 Depot Lv {l}: capacity {c}',
     whallBuilt: '🏪 Fish Hall open', hutBtn: 'STAFF', halBtn: 'FISH HALL', hutWelcome: '👷 Welcome to the hut — manage your staff here',
     halSub: 'Day {d} prices • Depot {a}/{b}', halRow: 'In depot {n} • Sell {s} • Buy {b}', halSell5: 'SELL 5', halSellAll: 'ALL', halBuy5: 'BUY 5',
-    halEmpty: 'No goods yet', halSold: '{n} sold: +{v}', halBought: '{n} bought: {v}', kFume: 'smoked', kFileto: 'fillet',
+    halEmpty: 'No goods yet', halSold: '{n} sold: +{v}', halBought: '{n} bought: {v}', halBoughtPal: '{n} bought ({v}) — the market porter is taking them to the depot', halBoughtCarry: '{n} bought ({v}) — waiting on the pallet outside the market; carry them to the depot', halPalN: 'On pallet {n}', halStaffFull: 'At most 2 market porters', kFume: 'smoked', kFileto: 'fillet',
     envUp1: '🌿 The harbor comes alive: gravel road, trees turning green', envUp2: '🪨 The road is cobbled now, the shore tidied up',
     envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
     specComing: 'A special customer is coming...', daySpec: 'Special customers',
@@ -297,9 +304,14 @@ var STR = {
     chAreas: 'Open the zones (Fish Market, Smokehouse)', chLevels: 'Zone levels', chPads: 'Upgrades (basket, boots, price)', chSlots: 'Build spots',
     chDecor: 'Decorations', chEnv: 'Surroundings', chFume: 'Smoker boxes', chProj: 'Covered Market', chMeydan: 'Square buildings (hut, depot, hall)', chMgr: 'Zone managers',
     chEndK: 'CHAPTER 1 COMPLETE', chEndT: 'HARBOR MOGUL',
-    chEndP: 'You started with one crate and one net. Now, with three stalls, managers and a whole crew, {c} is the best-known name in the harbour. {n}, you are no longer a simple fisher.',
+    chEndP: 'You have completed Chapter 1 — well done! I have started working on Chapter 2. If you played this far, thank you so much; this is a labour of love, not for profit. You can help me improve the game by leaving a review and your suggestions.',
+    chEndFb: '✍ WRITE A REVIEW', chEndFin: 'FINISH THE GAME', chEndGo: 'KEEP PLAYING CHAPTER 1 ▶',
+    endK: 'THANK YOU', endT: 'HAMSİ KOYU', endBy: 'PROUDLY PRESENTED BY BALABAN', endGo: 'MAIN MENU',
+    endP: 'The first chapter of the story of {n} and {c} ends here. Thank you so much for playing — see you in Chapter 2!',
     chEndG: 'But this is only the beginning. Now we must survive in the league of giants…', mgrCard: '{n} — Manager needed', mgrCardD: 'All 4 roles filled. Set up a manager\'s desk and pick a manager: the zone goes fully automatic.', mgrPick: '👔 PICK MANAGER', mgrHired: '👔 {m} now runs {n} — zone fully automatic', mgrListT: 'Manager candidates for {n}', mgrCost: 'desk {d} + hiring {f} • wage {w}', mgrBoss: 'Manager', fmT: 'Smoker Box • {n}', fmD: 'Smokes fillets right at the stall; customers here now order smoked fish too (2.4× value)', fmNeed: '🔒 Smokehouse first', fmDone: '🔥 Smoker box installed at {n}', envFlow: '+{p}% customer flow', envRow: 'Surroundings', envNext: 'Next: {n} (Lv {l})', envCust: 'customers',
     tutDone: 'Tutorial done! Grow the harbor 🎉',
+    tutNice: '✓ Nice!',
+    tutStepOK: ['✓ Fish are in! Now walk over the crate', '✓ Fish on your back! Follow the yellow path to the cutting table', '✓ Cutting started! Grab the ready fillet', '🎉 Your first fish is on the stall! Customers are coming', '✓ Money banked! Buy something from the bottom bar'],
     capUp: '🧺 Carry capacity: {n}', spdUp: '👟 Speed +11%', priceUp: '💰 Price +10%',
     tut: ['Wait by the net — fish are coming',
           'Walk over the crate to pick up the fish',
@@ -344,8 +356,8 @@ var STR = {
     zoneFull: "This zone's crew is full", zoneOf: '{n} zone',
     stallSwitch: 'OPEN STALLS', stallSwitchD: '{a}/{b} stalls open — switch on/off',
     stallManage: 'ON / OFF', stallTitle: 'OPEN STALLS',
-    newStallLbl: 'NEW', newStallHint: 'New stall ready — bottom bar UPGRADE › OPEN STALLS',
-    howToOpen: 'UPGRADE › OPEN STALLS', stallNewN: '{n} new stall awaiting your call',
+    newStallLbl: 'NEW', newStallHint: 'New stall ready — open it from the 🐟 button, top right',
+    howToOpen: 'TOP-RIGHT FISH › OPEN STALLS', stallNewN: '{n} new stall awaiting your call',
     stallSub: "Switch off a stall you can't keep up with: no customers arrive and its net stops.",
     swOn: 'ON', swOff: 'OFF', swFixed: 'FIXED', stallClosed: 'CLOSED',
     dayStalls: 'OPEN STALLS', stallNew: 'A new stall is built — switch it on?',
@@ -377,9 +389,11 @@ var STR = {
     plotOf: '{n} area', servInc: 'service income',
     buy: 'BUY', confirm: 'CONFIRM?', choose: 'PICK', back: '← BACK',
     emptyArea: 'No new area to unlock', emptyLevel: 'No upgrade available yet',
-    emptyBuild: 'No build spot yet', emptyProj: 'Unlocks with that area',
+    emptyBuild: 'No build spot yet', emptyProj: 'New big projects come in Chapter 2',
     slotEmpty: 'Empty build spot', slotOf: '{n} area',
-    areaGives: 'New net, cutting table and stall', decorGroup: 'Decor',
+    areaGives: 'New net, cutting table and stall', decorGroup: 'Decor', roadShow: 'Road showcase', mZoneRow: 'Crew {a}/{b} • open stalls', mgrRush: '⏰ Rush hour! Managers are helping at the stalls', mgrHelp: 'helping',
+    rdFl: 'Roadside Flowerbed', rdFlD: 'Flowerbed by the road • customer flow +{p}%', rdFlDone: 'A flowerbed on the road 🌷',
+    rdBb: 'Road Billboard', rdBbD: 'Your company name and emblem by the road • customer flow +{p}%', rdBbDone: 'Billboard up by the road 📣',
     lvEffect: 'Nets +18%, stall +4 stock, new build spot',
     staffFull: 'Staff limit reached ({n})',
     tut6: 'Buy an upgrade from the bottom bar',
@@ -688,7 +702,7 @@ function melody(notes, type, v, lp) {
    Hikâye + ana menüde çalar; oyuna girince yumuşakça susar.
    ========================================================= */
 var SONG = {
-  bpm: 132,
+  id: 'iskele', n: { tr: 'İskele Türküsü', en: 'Pier Folk Song' }, d: { tr: 'Karadeniz havası • Re minör • 132 BPM', en: 'Black Sea tune • D minor • 132 BPM' }, bpm: 132, style: 'iskele',
   /* [midi, sekizlik sayısı] — 0 = sus */
   lead: [
     [69,2],[74,2],[72,1],[69,1],[67,2],  [65,2],[67,1],[69,1],[67,2],[64,2],
@@ -703,34 +717,86 @@ var SONG = {
   /* ölçü başına bas kökü (MIDI) */
   bass: [38, 36, 38, 33,  38, 34, 33, 38,  34, 36, 31, 33,  34, 41, 33, 38]
 };
-var music = { on: false, timer: 0, next: 0, li: 0, lt: 0, bar: 0, step: 0, gain: null, wantOn: false, mode: 'menu' };
+/* v1.9.5 — iki yeni kendi bestemiz (dosya yok, Web Audio):
+   "Yeşilçam Hatırası": La Hicaz (La Si♭ Do♯ Re Mi Fa Sol), 84 BPM, ağır ve hüzünlü film teması; üçgen dalga
+   melodi, uzun bas + beşli, bağlama tınısında tel vuruşları, yalnız ölçü başında yumuşak def.
+   "Liman Yolu": Sol Rast havası (Fa doğal renkli), 120 BPM, hafif hareketli; maksum darbuka (düm-tek-·-tek-düm-·-tek-·),
+   yürüyen bas. Oyun içinde üç parça sırayla döner; menüde İskele Türküsü, bölüm sonu jeneriğinde Yeşilçam Hatırası. */
+var SONG_YESILCAM = {
+  id: 'yesilcam', n: { tr: 'Yeşilçam Hatırası', en: 'Yeşilçam Memory' }, d: { tr: 'La Hicaz • ağır ve hüzünlü • 84 BPM', en: 'A Hijaz • slow and wistful • 84 BPM' }, bpm: 84, style: 'yesilcam',
+  lead: [
+    [69,3],[70,1],[73,2],[74,2],  [76,4],[74,1],[73,1],[70,2],  [73,2],[70,2],[69,4],  [69,6],[0,2],
+    [69,3],[70,1],[73,2],[74,2],  [76,2],[77,2],[76,1],[74,1],[73,2],  [74,2],[73,1],[70,1],[73,2],[70,2],  [69,6],[0,2],
+    [76,2],[77,2],[79,2],[81,2],  [79,3],[77,1],[76,4],  [77,2],[76,1],[74,1],[76,2],[74,1],[73,1],  [74,6],[0,2],
+    [76,2],[74,1],[73,1],[74,2],[73,1],[70,1],  [73,3],[70,1],[69,2],[67,2],  [70,2],[69,1],[67,1],[65,2],[64,2],  [69,6],[0,2]
+  ],
+  bass: [45, 46, 45, 45,  45, 50, 46, 45,  50, 43, 46, 50,  50, 46, 43, 45]
+};
+var SONG_LIMAN = {
+  id: 'liman', n: { tr: 'Liman Yolu', en: 'Harbour Road' }, d: { tr: 'Rast havası • hafif hareketli • 120 BPM', en: 'Rast mode • light and lively • 120 BPM' }, bpm: 120, style: 'liman',
+  lead: [
+    [67,1],[71,1],[74,2],[74,1],[72,1],[71,2],  [72,1],[71,1],[69,2],[69,1],[71,1],[72,2],
+    [71,1],[69,1],[67,2],[69,1],[71,1],[69,1],[67,1],  [66,2],[69,2],[67,4],
+    [67,1],[71,1],[74,2],[74,1],[76,1],[74,2],  [77,1],[76,1],[74,2],[72,1],[74,1],[76,2],
+    [74,1],[72,1],[71,1],[69,1],[71,2],[69,2],  [67,6],[0,2],
+    [79,1],[79,1],[78,1],[76,1],[78,2],[74,2],  [76,1],[76,1],[74,1],[72,1],[74,2],[71,2],
+    [72,1],[72,1],[71,1],[69,1],[71,1],[72,1],[74,2],  [69,4],[0,2],[74,2],
+    [79,1],[79,1],[78,1],[76,1],[78,2],[74,2],  [76,1],[77,1],[76,1],[74,1],[72,2],[71,2],
+    [72,1],[71,1],[69,1],[71,1],[69,2],[66,2],  [67,6],[0,2]
+  ],
+  bass: [43, 48, 43, 50,  43, 41, 50, 43,  40, 48, 48, 50,  40, 48, 50, 43]
+};
+var SONGS = [SONG, SONG_LIMAN, SONG_YESILCAM];          /* oyun içi sıra: İskele → Liman Yolu → Yeşilçam */
+var music = { on: false, timer: 0, next: 0, li: 0, lt: 0, bar: 0, step: 0, gain: null, wantOn: false, mode: 'menu', si: 0, loops: 0 };
 var musicEnabled = true;                       /* ayarlar › müzik (tercihlere yazılır) */
+var musicPick = -1;                            /* v1.9.5 ayarlar › çalma listesi: -1 sırayla, 0.. tek parça (tercihlere yazılır) */
 var MUSIC_VOL = { menu: 0.55, game: 0.2 };
 function midiF(m) { return 440 * Math.pow(2, (m - 69) / 12); }
-/* iki kip: 'menu' = tam düzenleme (kare dalga melodi, bas, davul);
-   'game' = arkadan mırıldanma (yumuşak sinüs melodi + alçak oktav, seyrek bas, davul yok) */
+function songAt(i) { music.si = ((i % SONGS.length) + SONGS.length) % SONGS.length; music.li = 0; music.lt = 0; music.bar = 0; music.step = 0; }
+/* iki kip: 'menu' = tam düzenleme (melodi, bas, vurmalı);
+   'game' = arkadan mırıldanma (yumuşak sinüs melodi + alçak oktav, seyrek bas; Liman Yolu'nda çok hafif darbuka) */
 function musicTick() {
   if (!music.on || !AC || AC.state !== 'running') return;
-  var e8 = 60 / SONG.bpm / 2, horizon = AC.currentTime + 0.25, hum = music.mode === 'game';
+  var horizon = AC.currentTime + 0.25, hum = music.mode === 'game';
   if (music.next < AC.currentTime) music.next = AC.currentTime + 0.05;
   while (music.next < horizon) {
+    var SG = SONGS[music.si] || SONG, sty = SG.style, e8 = 60 / SG.bpm / 2;
     var t = music.next, at = t - AC.currentTime, st = music.step % 8;
     /* melodi */
     if (music.lt <= 0) {
-      var n = SONG.lead[music.li];
-      music.li = (music.li + 1) % SONG.lead.length;
+      if (music.li === 0 && music.step > 0) {                 /* parça bir tur döndü */
+        music.loops++;
+        if (hum && musicPick < 0) { songAt(music.si + 1); SG = SONGS[music.si]; sty = SG.style; e8 = 60 / SG.bpm / 2; st = 0; }
+      }
+      var n = SG.lead[music.li];
+      music.li = (music.li + 1) % SG.lead.length;
       music.lt = n[1];
       if (n[0]) {
+        var len = e8 * n[1];
         if (hum) {
-          tone(midiF(n[0]), e8 * n[1] * 0.98, 'sine', 0.3, { at: at, atk: 0.05, dst: music.gain });
-          tone(midiF(n[0] - 12), e8 * n[1] * 0.98, 'triangle', 0.1, { at: at, atk: 0.06, lp: 900, dst: music.gain });
-        } else tone(midiF(n[0]), e8 * n[1] * 0.92, 'square', 0.16, { at: at, lp: 2300, atk: 0.012, dst: music.gain });
+          tone(midiF(n[0]), len * 0.98, 'sine', 0.3, { at: at, atk: sty === 'yesilcam' ? 0.09 : 0.05, dst: music.gain });
+          tone(midiF(n[0] - 12), len * 0.98, 'triangle', 0.1, { at: at, atk: 0.06, lp: 900, dst: music.gain });
+        } else if (sty === 'yesilcam') {
+          tone(midiF(n[0]), len * 0.97, 'triangle', 0.3, { at: at, lp: 2000, atk: 0.06, dst: music.gain });
+          tone(midiF(n[0] + 12), len * 0.9, 'sine', 0.05, { at: at, atk: 0.1, dst: music.gain });   /* ince üst ses */
+        } else tone(midiF(n[0]), len * 0.92, 'square', sty === 'liman' ? 0.14 : 0.16, { at: at, lp: sty === 'liman' ? 2600 : 2300, atk: 0.012, dst: music.gain });
       }
     }
     music.lt--;
-    var root = SONG.bass[music.bar % SONG.bass.length];
+    var root = SG.bass[music.bar % SG.bass.length];
     if (hum) {
       if (st === 0) tone(midiF(root), e8 * 3.6, 'triangle', 0.22, { at: at, lp: 500, atk: 0.04, dst: music.gain });
+      if (sty === 'liman' && (st === 1 || st === 3 || st === 6)) noise(0.03, 0.012, { f: 6000, type: 'highpass', at: at, dst: music.gain });
+    } else if (sty === 'yesilcam') {
+      if (st === 0) tone(midiF(root), e8 * 7.4, 'triangle', 0.26, { at: at, lp: 600, atk: 0.08, dst: music.gain });
+      if (st === 4) tone(midiF(root + 7), e8 * 3.6, 'triangle', 0.14, { at: at, lp: 700, atk: 0.06, dst: music.gain });
+      if (st === 2 || st === 6) tone(midiF(root + 12), e8 * 0.7, 'triangle', 0.1, { at: at, lp: 1800, dst: music.gain });   /* bağlama teli */
+      if (st === 0) tone(90, 0.2, 'sine', 0.15, { at: at, to: 50, dst: music.gain });                                        /* def */
+    } else if (sty === 'liman') {
+      var wb = st === 0 ? root : st === 2 ? root + 7 : st === 4 ? root + 12 : st === 6 ? root + 7 : 0;          /* yürüyen bas */
+      if (wb) tone(midiF(wb), e8 * 0.9, 'triangle', 0.3, { at: at, lp: 900, dst: music.gain });
+      if (st === 0 || st === 4) tone(120, 0.11, 'sine', 0.3, { at: at, to: 55, dst: music.gain });                         /* düm */
+      if (st === 1 || st === 3 || st === 6) noise(0.035, 0.05, { f: 5200, type: 'highpass', at: at, dst: music.gain });    /* tek */
     } else {
       /* bas: kök · · kök oktav · beşli · */
       var bn = st === 0 || st === 3 ? root : st === 4 ? root + 12 : st === 6 ? root + 7 : 0;
@@ -744,7 +810,9 @@ function musicTick() {
     if (music.step % 8 === 0) music.bar++;
   }
 }
-function musicPlay(mode) {
+/* song: SONGS sırası (verilmezse menüde İskele Türküsü, oyunda çalan parça sürer) */
+function musicPlay(mode, song) {
+  var prevMode = music.mode;
   music.mode = mode || (S.started ? 'game' : 'menu');
   music.wantOn = true;
   if (!musicEnabled || !ensureAudio()) return;
@@ -754,7 +822,9 @@ function musicPlay(mode) {
     g.cancelScheduledValues(now); g.setValueAtTime(Math.max(0.0001, g.value), now);
     g.exponentialRampToValueAtTime(MUSIC_VOL[music.mode], now + (music.on ? 1.8 : 1.2));
   } catch (e) { return; }
-  if (!music.on) { music.on = true; music.li = 0; music.lt = 0; music.bar = 0; music.step = 0; music.next = AC.currentTime + 0.1; }
+  var want = song !== undefined ? song : musicPick >= 0 ? musicPick : (music.mode === 'menu' ? 0 : null);
+  if (!music.on) { music.on = true; songAt(want === null ? music.si : want); music.next = AC.currentTime + 0.1; }
+  else if (want !== null && want !== music.si && (song !== undefined || prevMode !== 'menu')) { songAt(want); music.next = AC.currentTime + 0.3; }
   if (!music.timer) music.timer = setInterval(musicTick, 60);
 }
 function musicStop(fade) {
@@ -910,6 +980,7 @@ function mgrCands(z) {
 }
 function mgrText(m) { return NM(MGR_BUFFS[m.a].t) + ' • ' + NM(MGR_BUFFS[m.b].t); }
 function hireMgr(z, c) {
+  progEv('mudur');
   if (!S.mgr) S.mgr = [];
   S.mgr[z] = { n: c.n, a: c.a, b: c.b, wage: MGR_DESK[z].wage, look: c.look };
   S.mgrCand[z] = null;
@@ -920,16 +991,94 @@ function hireMgr(z, c) {
 }
 function mgrWages() { var w = 0; for (var z = 0; z < 3; z++) if (mgr(z) && zoneOpen(z)) w += mgr(z).wage; return w; }
 function mgrPos(z) { return MGR_DESKS[z] || null; }
+function mgrOutfit(z, m) {
+  var looks = [['#2a2f3a', '#3a4150', '#8d2a2a'], ['#3a2a4a', '#524064', '#d9a441'], ['#1f3a3a', '#2f5252', '#3f6fb0']][m.look % 3];
+  return { coat: looks[0], coat2: looks[1], tie: looks[2], glasses: m.look !== 1, skin: PAL.skin[(m.look + z) % 4],
+    hair: PAL.hair[(m.look + 1) % PAL.hair.length], hairStyle: m.n.indexOf('Hanım') >= 0 ? 6 : 0, face: 1, pants: '#1c1f26' };
+}
 function drawMgrDesk(z) {
   var m = mgr(z), p = mgrPos(z); if (!m || !p) return;
   isoBox(p.x - 0.5, p.y - 0.3, 1.0, 0.6, 0, 9, '#8a5a33', '#5a3a1e', '#6f4526');
   var sx = R(pX(p.x, p.y)), sy = R(pY(p.x, p.y, 9));
   px(sx - 5, sy - 2, 5, 3, '#f4efe4'); px(sx + 1, sy - 3, 4, 2, '#c9a15e');          /* evrak + isimlik */
-  var looks = [['#2a2f3a', '#3a4150', '#8d2a2a'], ['#3a2a4a', '#524064', '#d9a441'], ['#1f3a3a', '#2f5252', '#3f6fb0']][m.look % 3];
-  var o = { coat: looks[0], coat2: looks[1], tie: looks[2], glasses: m.look !== 1, skin: PAL.skin[(m.look + z) % 4],
-    hair: PAL.hair[(m.look + 1) % PAL.hair.length], hairStyle: m.n.indexOf('Hanım') >= 0 ? 6 : 0, face: Math.sin(gameT * 0.4 + z) > 0 ? 1 : -1, pants: '#1c1f26' };
-  drawPerson({ x: p.x - 0.35, y: p.y - 0.75, z: 0, vx: 0, vy: 0, bob: gameT * 2 + z, act: 0, carry: [] }, o);
+  if (mgrAway(z)) return;                                                             /* v1.9.4: yoğun saatte tezgâhta */
+  var o = mgrOutfit(z, m); o.face = Math.sin(gameT * 0.4 + z) > 0 ? 1 : -1;
+  var s = mgrSeat(z);
+  drawPerson({ x: s.x, y: s.y, z: 0, vx: 0, vy: 0, bob: gameT * 2 + z, act: 0, carry: [] }, o);
   if (dist2(player.x, player.y, p.x, p.y) < 7) uiLabel(p.x, p.y, 30, '👔 ' + m.n + ' · ' + T('mgrBoss'), '#ffe6bf', 0.95);
+}
+/* =========================================================
+   v1.9.4 — JOKER MÜDÜR
+   Günün iki yoğun saatinde (öğle: günün %42–58'i, kapanış öncesi: son %15 + kapanış) müşteri akışı %30 artar
+   ve müdür masasından kalkıp KENDİ bölgesinde yardım eder: önce dolmaya yüz tutan tezgâh kasasını boşaltır
+   (para doğrudan hesaba), sonra stoğu azalan tezgâha kesim hasırından mal taşır; iş yoksa en kalabalık tezgâhın
+   yanında bekler. Yoğunluk bitince elindekini hasıra bırakıp masasına döner.
+   ========================================================= */
+var RUSH = [[0.42, 0.58], [0.85, 1.01]], RUSH_MUL = 1.3, MGR_CAP = 8, mgrAct = [], rushWas = false;
+function rushNow() {
+  if (day.phase === 'closing') return true;
+  if (day.phase !== 'play') return false;
+  var q = day.t / DAY_LEN;
+  for (var i = 0; i < RUSH.length; i++) if (q >= RUSH[i][0] && q < RUSH[i][1]) return true;
+  return false;
+}
+function rushMul() { return day.phase === 'play' && rushNow() ? RUSH_MUL : 1; }
+function mgrSeat(z) { var p = mgrPos(z); return { x: p.x - 0.35, y: p.y - 0.75 }; }
+function mgrAway(z) { var a = mgrAct[z], s = mgrSeat(z); return !!a && dist2(a.x, a.y, s.x, s.y) > 0.09; }
+function mgrZoneCounters(z) { return openCounters().filter(function (c) { return c.open && c.fish && zoneOfFish(c.fish) === z; }); }
+function mgrDropBack(a, z) {                                   /* yoğunluk bitti: elindeki mal bölgenin hasırına */
+  var t = zoneTable(z); if (!t) { a.carry.length = 0; return; }
+  while (hasCarry(a, isGoods)) t.mat.items.push(popCarry(a, isGoods));
+}
+function updateMgrJokers(dt) {
+  var rush = rushNow(), any = false, z;
+  for (z = 0; z < MGR_DESKS.length; z++) if (mgr(z) && zoneOpen(z)) any = true;
+  if (rush && !rushWas && any && day.phase === 'play') toast(T('mgrRush'));
+  rushWas = rush;
+  for (z = 0; z < MGR_DESKS.length; z++) {
+    if (!mgr(z) || !zoneOpen(z)) { mgrAct[z] = null; continue; }
+    var s = mgrSeat(z), a = mgrAct[z] || (mgrAct[z] = { x: s.x, y: s.y, z: 0, vx: 0, vy: 0, bob: 0, face: 1, carry: [], act: 0, zone: z, capX: MGR_CAP, mode: 'drop' });
+    var sp = 2.4 * (1 + mgrEff(z, 'wspeed')), mine = mgrZoneCounters(z), i, c;
+    if (!rush || !mine.length) {
+      if (hasCarry(a, isGoods)) mgrDropBack(a, z);
+      a.mode = 'drop'; a.tc = null;
+      if (!goTo(a, s.x, s.y, sp, dt, 0.12)) a.bob += dt * 8; else { a.x = s.x; a.y = s.y; }
+      continue;
+    }
+    a.bob += dt * 8;
+    if (a.mode === 'load') {                                   /* hasırdan yükle: dolana ya da mal bitene kadar */
+      var low = mine.filter(function (q) { return q.buffer.length < 4; });
+      var filt = function (it) { for (var k = 0; k < low.length; k++) if (acceptsAt(low[k], it)) return true; return false; };
+      var m = low.length && carryW(a) < MGR_CAP - 0.5 ? matWith(filt, a) : null;
+      if (m) { if (goTo(a, m.x, m.y, sp, dt, 0.8) && !iPickMat(a, m, dt, filt)) a.mode = 'drop'; continue; }
+      a.mode = 'drop';
+    }
+    if (hasCarry(a, isGoods)) {                                /* tezgâha bırak */
+      var dc = null;
+      for (i = 0; i < mine.length; i++) { c = mine[i]; if (c.buffer.length < counterMax(c) && hasCarry(a, function (it) { return acceptsAt(c, it); }) && (!dc || c.buffer.length < dc.buffer.length)) dc = c; }
+      if (dc) { if (goTo(a, dc.x - 0.5, dc.y - 0.6, sp, dt, 1.0)) iDropCounter(a, dc, dt); }
+      else mgrDropBack(a, z);
+      continue;
+    }
+    var tc = a.tc && mine.indexOf(a.tc) >= 0 && a.tc.tray.items.length ? a.tc : null;   /* başladığı kasayı sonuna kadar boşaltır */
+    if (!tc) for (i = 0; i < mine.length; i++) { c = mine[i]; if (trayValue(c) >= trayCap(c) * 0.35 && (!tc || trayValue(c) > trayValue(tc))) tc = c; }   /* dolmaya yüz tutan kasa */
+    a.tc = tc;
+    if (tc) { if (goTo(a, Math.min(tc.tray.x, 9.55), tc.tray.y, sp, dt, 0.8)) iCollectTray(a, tc, dt); continue; }
+    if (mine.some(function (q) { return q.buffer.length < 4; })) { a.mode = 'load'; continue; }
+    var busy = mine[0], bw = -1;                               /* iş yok: en kalabalık tezgâhın yanında */
+    for (i = 0; i < mine.length; i++) { var n = mine[i].slots.filter(Boolean).length; if (n > bw) { bw = n; busy = mine[i]; } }
+    goTo(a, busy.x - 1.0, busy.y + 1.1, sp, dt, 0.4);
+  }
+}
+function drawMgrJokers(push) {
+  for (var z = 0; z < MGR_DESKS.length; z++) (function (z2) {
+    var a = mgrAct[z2], m = mgr(z2); if (!a || !m || !mgrAway(z2)) return;
+    push(a.x + a.y + 0.15, function () {
+      var o = mgrOutfit(z2, m); o.face = a.face; o.walk = Math.hypot(a.vx, a.vy) > 0.05;
+      drawPerson(a, o);
+      if (dist2(player.x, player.y, a.x, a.y) < 9) uiLabel(a.x, a.y, 34, '👔 ' + m.n + ' · ' + T('mgrHelp'), '#ffe6bf', 0.95);
+    });
+  })(z);
 }
 function zoneCount() { return spots.length; }
 function zoneOpen(z) { return z >= 0 && z < spots.length && !AREAS[spots[z].z].locked; }
@@ -1066,7 +1215,9 @@ var ROLES = {
   kasiyer:   { id: 'kasiyer',   n: { tr: 'Tahsildar', en: 'Collector' }, icon: '💰', wage: 17, speed: 2.6, cap: 10, price: 620, zone: true, d: { tr: 'Tezgâh kasası → Ana Kasa', en: 'Stall cash → main safe' } },
   /* v0.7 — depo personeli (meydanda çalışır, bölge kadrosuna sayılmaz; sınırı depo seviyesi) */
   depocu:    { id: 'depocu',    n: { tr: 'Depo Hamalı', en: 'Depot Porter' }, icon: '📦', wage: 16, speed: 2.6, cap: 10, price: 900, zone: false, d: { tr: 'Fazlayı depoya, depodan tezgâha', en: 'Surplus → depot → stalls' } },
-  sevkiyat:  { id: 'sevkiyat',  n: { tr: 'Sevkiyatçı', en: 'Dispatcher' },   icon: '🚚', wage: 18, speed: 2.7, cap: 10, price: 1100, zone: false, d: { tr: 'Kontrat malını depodan teslim eder', en: 'Depot → contract delivery' } }
+  sevkiyat:  { id: 'sevkiyat',  n: { tr: 'Sevkiyatçı', en: 'Dispatcher' },   icon: '🚚', wage: 18, speed: 2.7, cap: 10, price: 1100, zone: false, d: { tr: 'Kontrat malını depodan teslim eder', en: 'Depot → contract delivery' } },
+  /* v1.9.4 — Hal Hamalı: Hal'den alınan malı Hal paletinden depoya taşır (depo kadrosundan ayrı, en çok 2) */
+  halhamal:  { id: 'halhamal',  n: { tr: 'Hal Hamalı', en: 'Market Porter' }, icon: '🛒', wage: 14, speed: 2.5, cap: 12, price: 900, zone: false, d: { tr: 'Hal paleti → Depo', en: 'Market pallet → depot' } }
 };
 var WNAMES = ['Hasan', 'Kerim', 'Zeynep', 'Mert', 'Deniz', 'Ayla', 'Tarık', 'Elif', 'Cem', 'Nur', 'Osman', 'Sevgi'];
 
@@ -1166,7 +1317,7 @@ function trayPos(c) {
   return { x: c.x + 0.98, y: c.y + 0.55 };
 }
 function fumePos(c) { return { x: c.x + 0.95, y: c.y - 0.6 }; }
-var MGR_DESKS = [{ x: 3.8, y: 5.4 }, { x: 3.17, y: 11.67 }, { x: 9.65, y: 13.88 }];
+var MGR_DESKS = [{ x: 0.8, y: 1.1 }, { x: 2.3, y: 11.6 }, { x: 7.7, y: 13.1 }];   /* v1.9.4: bölge köşelerinde (oturma yeri yürünebilir) */
 var AREA_LAMPS = [[{ x: 6.4, y: 0.23 }, { x: 0.3, y: 4.2 }], [{ x: 7.05, y: 6.25 }, { x: 6.52, y: 11.32 }], [{ x: 4.86, y: 12.25 }, { x: 0.21, y: 12.87 }]];
 function slotEff(z, eff) {
   var v = 0;
@@ -1213,7 +1364,7 @@ function staffCap() {
 }
 function hireCost(role, z) {
   var base = ROLES[role].price || 500;
-  var have = DEPOT_ROLES.indexOf(role) >= 0 ? depotStaff() : zoneStaff(z);
+  var have = role === 'halhamal' ? halStaff() : DEPOT_ROLES.indexOf(role) >= 0 ? depotStaff() : zoneStaff(z);
   return upCost(Math.round(base * Math.pow(1.85, have) * (1 + (z || 0) * 0.35)));
 }
 function workerSpeedMul() { return 1 + slotEff(null, 'wspeed') + perkSum('wspeed') + servEff('wspeed'); }
@@ -1231,19 +1382,30 @@ function projStageOf(p) { var st = 0; for (var i = 0; i < project.stages.length;
 /* ---------------- kozmetik (GDD §24) ---------------- */
 /* v0.3 — süsler tezgâh bölgelerinden çıkarıldı: batı kıyı şeridi (x<0), iskele önü su ve güney
    kumsal. decorClearance() fonksiyonel nesnelere en az 1.2 kare mesafeyi doğrular. */
+/* v1.9.3 — YOL VİTRİNİ: süsler tezgâh bölgelerinin kenarından yolun doğu kenarına (x = ROAD_VX) taşındı.
+   Tezgâhlar sade kalır; yol, oyuncunun süslerini sergilediği yer. Yuvalar fenerlerin (3.5, 8, 12.5, 17, 21.5),
+   köprünün (1.9–2.9), saha girişlerinin (15.1, 18.95) ve reklam panolarının (ROAD_BB) arasında. Uzun nesneler
+   (pano, lamba, heykel) y≈4.9–8.1 aralığına konmaz: ekranda Ticaret Ofisi'nin arkasında kalırdı.
+   Tekne (denizde) ve fener (mendirekte) yerinde kalır. */
+var ROAD_VX = 14.75;
+var ROAD_FL = [3.95, 7.55, 8.45, 12.05, 12.95, 16.55, 17.45, 21.05];   /* çiçeklikler: yol fenerlerinin iki yanı */
+var ROAD_BB = [10.25, 14.0, 20.1];                                   /* reklam panoları: işletme adı + amblem */
+var FL_COST = 350, FL_GROW = 1.3, FL_FLOW = 0.02, BB_COST = [1400, 2800, 5600], BB_FLOW = 0.08, BB_LV = 3;
+function roadFlow() { return clamp(S.roadFl | 0, 0, ROAD_FL.length) * FL_FLOW + clamp(S.roadBb | 0, 0, ROAD_BB.length) * BB_FLOW; }
+function flCost() { return Math.round(FL_COST * Math.pow(FL_GROW, S.roadFl | 0)); }
 var DECOR = [
-  { id: 'bayrak', z: 0, x: -0.35, y: 0.3,  cost: 600,  n: { tr: 'Bayrak Direği', en: 'Flag Pole' },   icon: '🇹🇷', got: false },
+  { id: 'bayrak', z: 0, x: ROAD_VX, y: 23.5, road: 1,  cost: 600,  n: { tr: 'Bayrak Direği', en: 'Flag Pole' },   icon: '🇹🇷', got: false },
   { id: 'tekne',  z: 0, x: 4.2, y: -1.25, cost: 1300, n: { tr: 'Balıkçı Teknesi', en: 'Fishing Boat' }, icon: '⛵', got: false },
-  { id: 'bank',   z: 0, x: -0.35, y: 3.4,  cost: 400,  n: { tr: 'Bank', en: 'Bench' },                icon: '🪑', got: false },
-  { id: 'simit',  z: 1, x: -0.35, y: 9.2,  cost: 900,  n: { tr: 'Simit Arabası', en: 'Simit Cart' },  icon: '🥯', got: false },
-  { id: 'lamba',  z: 1, x: -0.35, y: 11.6, cost: 700,  n: { tr: 'Sokak Lambası', en: 'Street Lamp' }, icon: '💡', got: false },
-  { id: 'cicek',  z: 1, x: -0.35, y: 6.5,  cost: 500,  n: { tr: 'Begonvil', en: 'Bougainvillea' },    icon: '🌺', got: false },
-  { id: 'caymasa', z: 2, x: 1.6, y: 18.6, cost: 800, n: { tr: 'Çay Masası', en: 'Tea Table' },      icon: '☕', got: false },
-  { id: 'heykel', z: 2, x: 5.2, y: 18.9, cost: 2600, n: { tr: 'Balık Heykeli', en: 'Fish Statue' }, icon: '🗿', lv: 6, got: false },
+  { id: 'bank',   z: 0, x: ROAD_VX, y: 4.9, road: 1,  cost: 400,  n: { tr: 'Bank', en: 'Bench' },                icon: '🪑', got: false },
+  { id: 'simit',  z: 1, x: ROAD_VX, y: 5.9, road: 1,  cost: 900,  n: { tr: 'Simit Arabası', en: 'Simit Cart' },  icon: '🥯', got: false },
+  { id: 'lamba',  z: 1, x: ROAD_VX, y: 18.0, road: 1,  cost: 700,  n: { tr: 'Sokak Lambası', en: 'Street Lamp' }, icon: '💡', got: false },
+  { id: 'cicek',  z: 1, x: ROAD_VX, y: 6.9, road: 1,  cost: 500,  n: { tr: 'Begonvil', en: 'Bougainvillea' },    icon: '🌺', got: false },
+  { id: 'caymasa', z: 2, x: ROAD_VX, y: 11.4, road: 1,  cost: 800, n: { tr: 'Çay Masası', en: 'Tea Table' },      icon: '☕', got: false },
+  { id: 'heykel', z: 2, x: ROAD_VX, y: 22.5, road: 1,  cost: 2600, n: { tr: 'Balık Heykeli', en: 'Fish Statue' }, icon: '🗿', lv: 6, got: false },
   /* v2.0 — Anadolu kıyı kültürü */
-  { id: 'nazar',  z: 0, x: 7.4, y: -0.4,  cost: 450,  n: { tr: 'Nazar Boncuğu', en: 'Evil Eye Charm' }, icon: '🧿', got: false },
-  { id: 'cesme',  z: 1, x: -0.45, y: 7.9, cost: 1500, n: { tr: 'Osmanlı Çeşmesi', en: 'Ottoman Fountain' }, icon: '⛲', lv: 5, got: false },
-  { id: 'kilim',  z: 1, x: -0.35, y: 10.4,  cost: 800,  n: { tr: 'Kilim Sergisi', en: 'Kilim Display' }, icon: '🧶', got: false },
+  { id: 'nazar',  z: 0, x: ROAD_VX, y: 1.2, road: 1,  cost: 450,  n: { tr: 'Nazar Boncuğu', en: 'Evil Eye Charm' }, icon: '🧿', got: false },
+  { id: 'cesme',  z: 1, x: ROAD_VX, y: 16.0, road: 1,  cost: 1500, n: { tr: 'Osmanlı Çeşmesi', en: 'Ottoman Fountain' }, icon: '⛲', lv: 5, got: false },
+  { id: 'kilim',  z: 1, x: ROAD_VX, y: 9.1, road: 1,  cost: 800,  n: { tr: 'Kilim Sergisi', en: 'Kilim Display' }, icon: '🧶', got: false },
   { id: 'fener',  z: 2, x: 8.6, y: 19.3, cost: 5200, n: { tr: 'Mendirek Feneri', en: 'Breakwater Lighthouse' }, icon: '🗼', lv: 7, got: false }
 ];
 function decorClearance() {
@@ -1272,11 +1434,11 @@ function sCost(v) { return Math.max(1, Math.round(v * SERVSCALE)); }
 
 /* Hizmet parselleri (§32) — yürüme koridoru ve kasa güvenli alanı dışında sabit. */
 var PLOTS = [                                   /* v1.4: 5 parsel, her biri 5 binanın hepsini alır; bölge açıldıkça açılır */
-  { id: 'p1', z: 0, x: 16.8, y: 10.0, n: { tr: 'Saha 1 · İskele', en: 'Yard 1 · Pier' },         allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
-  { id: 'p2', z: 0, x: 22.7, y: 12.0, n: { tr: 'Saha 2 · İskele', en: 'Yard 2 · Pier' },         allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
-  { id: 'p3', z: 1, x: 16.8, y: 13.8, n: { tr: 'Saha 3 · Pazar', en: 'Yard 3 · Market' },        allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
-  { id: 'p4', z: 1, x: 22.7, y: 15.8, n: { tr: 'Saha 4 · Pazar', en: 'Yard 4 · Market' },        allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
-  { id: 'p5', z: 2, x: 16.8, y: 17.6, n: { tr: 'Saha 5 · Fümehane', en: 'Yard 5 · Smokehouse' }, allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null }
+  { id: 'p1', z: 0, x: 16.8, y: 13.2, n: { tr: 'Saha 1 · İskele', en: 'Yard 1 · Pier' },         allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p2', z: 0, x: 22.7, y: 15.2, n: { tr: 'Saha 2 · İskele', en: 'Yard 2 · Pier' },         allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p3', z: 1, x: 16.8, y: 17.0, n: { tr: 'Saha 3 · Pazar', en: 'Yard 3 · Market' },        allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p4', z: 1, x: 22.7, y: 19.0, n: { tr: 'Saha 4 · Pazar', en: 'Yard 4 · Market' },        allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p5', z: 2, x: 16.8, y: 20.8, n: { tr: 'Saha 5 · Fümehane', en: 'Yard 5 · Smokehouse' }, allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null }
 ];
 function plotActive(p) { return !AREAS[p.z].locked; }
 function plotById(id) { for (var i = 0; i < PLOTS.length; i++) if (PLOTS[i].id === id) return PLOTS[i]; return null; }
@@ -1718,6 +1880,7 @@ function endDay() {
 /* kart kapatılınca: yeni güne geç (pazar günüyse hazırlık ekranı) */
 function beginNextDay(skipPrep) {
   day.n++;
+  if ([2, 3, 5, 7, 10, 14, 21, 30].indexOf(day.n) >= 0) progEv('gun' + day.n);
   pickFeatured();
   pickSpecials();
   day.market = isMarketDay(day.n);
@@ -1899,11 +2062,13 @@ function validateWorld() {
 function counterMax(c) { return 20 + (AREAS[c.z].lvl - 1) * 4 + slotEff(c.z, 'stock') + servEff('ctrcap'); }
 var safe = { z: 0, x: 1.2, y: 4.9, pop: 0 };
 /* v0.7 — Liman Meydanı alanı + yaya köprüsü (ayrıntılar FAZ 3 bölümünde) */
-var MEYDAN = { x0: 15.0, y0: -0.3, x1: 21.2, y1: 6.8 };
+/* v1.9.2 — meydan ve saha kabaca eşit: meydan güneye büyüdü (binalar aralıklı), saha güneye kaydı.
+   Meydanın KD köşesi (x1, y0) sabit kalmalı: x - y > 21.5 kameranın ulaşamadığı doğu ucu. */
+var MEYDAN = { x0: 15.0, y0: -0.3, x1: 21.2, y1: 10.8 };
 /* v1.3.2 — Hizmet Sahası: BİNA sekmesinin hizmet binaları (buzhane, restoran, hal…) tezgâh bölgelerinden
    çıkarıldı; meydanın güneyinde, yolun doğusunda kendi sahasında durur (tezgâh bölgeleri yalnız üretim + satış). */
-var SERVYARD = { x0: 15.3, y0: 8.6, x1: 24.2, y1: 20.0 };   /* v1.4: 5 parsel, 2 kaydırmalı sütun: binalar ekranda üst üste binmez */
-var YARDPATH = { x0: 17.9, y0: 6.5, x1: 18.9, y1: 8.9 };          /* meydan ↔ saha patikası */
+var SERVYARD = { x0: 15.0, y0: 12.1, x1: 23.8, y1: 21.9 };  /* v1.4: 5 parsel, 2 kaydırmalı sütun: binalar ekranda üst üste binmez */
+var YARDPATH = { x0: 17.6, y0: 10.5, x1: 18.6, y1: 12.4 };          /* meydan ↔ saha patikası */
 var BRIDGE = { x0: 9.3, y0: 1.9, x1: 15.7, y1: 2.9 };
 function inRect(x, y, r, m) { m = m || 0; return x > r.x0 + m && x < r.x1 - m && y > r.y0 + m && y < r.y1 - m; }
 /* v0.6 — çöp kovaları: elde kalan fazla mal (tezgâh/kuyruk dolu, yanlış tür) atılabilsin.
@@ -1947,7 +2112,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false     /* skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0     /* skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -1990,12 +2155,12 @@ var Store = (function () {
 })();
 /* açık rıza sorusu + Hakkında ekranı metinleri */
 Object.assign(STR.tr, {
-  onlineInfo: 'Hamsi Koyu\'nun çevrimiçi skor tablosu var.\n\nİşletme adın, karakter adın ve oyun istatistiklerin herkese açık tabloda görünür; görüş formundan yazdıkların yalnız geliştiriciye gider. Bu bilgiler rastgele bir oyuncu kimliğiyle Avrupa Birliği\'ndeki (Almanya) Supabase sunucularında tutulur. E-posta, konum ya da rehber gibi kişisel bilgi alınmaz.\n\nAyrıntılar: Ayarlar › Gizlilik Politikası. Verilerini istediğin an Ayarlar › Çevrimiçi verilerimi sil ile silebilirsin.',
-  onlineInfoOk: 'TAMAM', onlineFixed: 'HER ZAMAN AÇIK — gizlilik: Ayarlar › Gizlilik Politikası', aboutBtn: 'HAKKINDA & LİSANSLAR', nameBadT: 'Bu ad kullanılamaz, başka bir ad dene.'
+  onlineInfo: 'Hamsi Koyu\'nun çevrimiçi skor tablosu var.\n\nİşletme adın, karakter adın ve oyun istatistiklerin herkese açık tabloda görünür; görüş formundan yazdıkların ve oyundaki ilerleme adımların (eğitim, kaçıncı gün, açılan bölgeler) yalnız geliştiriciye gider. Bu bilgiler rastgele bir oyuncu kimliğiyle Avrupa Birliği\'ndeki (Almanya) Supabase sunucularında tutulur. E-posta, konum ya da rehber gibi kişisel bilgi alınmaz.\n\nAyrıntılar: Ayarlar › Gizlilik Politikası. Verilerini istediğin an Ayarlar › Çevrimiçi verilerimi sil ile silebilirsin.',
+  onlineInfoOk: 'TAMAM', dataInfoBtn: 'ℹ️ VERİLER & GİZLİLİK', onlineFixed: 'HER ZAMAN AÇIK — gizlilik: Ayarlar › Gizlilik Politikası', aboutBtn: 'HAKKINDA & LİSANSLAR', nameBadT: 'Bu ad kullanılamaz, başka bir ad dene.'
 });
 Object.assign(STR.en, {
-  onlineInfo: 'Hamsi Koyu has an online leaderboard.\n\nYour business name, character name and game stats appear on a public board; what you write in the feedback form goes only to the developer. This data is stored with a random player ID on Supabase servers in the European Union (Germany). No personal details such as email, location or contacts are collected.\n\nDetails: Settings › Privacy Policy. You can delete your data at any time with Settings › Delete my online data.',
-  onlineInfoOk: 'OK', onlineFixed: 'ALWAYS ON — privacy: Settings › Privacy Policy', aboutBtn: 'ABOUT & LICENSES', nameBadT: 'This name can\'t be used — try another.'
+  onlineInfo: 'Hamsi Koyu has an online leaderboard.\n\nYour business name, character name and game stats appear on a public board; what you write in the feedback form and your in-game progress milestones (tutorial, days reached, zones opened) go only to the developer. This data is stored with a random player ID on Supabase servers in the European Union (Germany). No personal details such as email, location or contacts are collected.\n\nDetails: Settings › Privacy Policy. You can delete your data at any time with Settings › Delete my online data.',
+  onlineInfoOk: 'OK', dataInfoBtn: 'ℹ️ DATA & PRIVACY', onlineFixed: 'ALWAYS ON — privacy: Settings › Privacy Policy', aboutBtn: 'ABOUT & LICENSES', nameBadT: 'This name can\'t be used — try another.'
 });
 var SLOT_N = 3, SLOT_PREFIX = 'balikci_slot_', LAST_KEY = 'balikci_last', OLD_KEY = 'balikci_tycoon_v3', PREF_KEY = 'balikci_pref';
 var curSlot = 0, BOOT = null, S0 = null;
@@ -2018,7 +2183,7 @@ function migrateOldSave() {
 }
 var onlineOK = true;                 /* v1.8: çevrimiçi skor tablosu oyunun sabit parçası (kapatılamaz) */
 var onlineAsked = false;              /* KVKK aydınlatma: bilgilendirme bir kez gösterildi mi — gösterilmeden hiçbir şey gönderilmez */
-function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, onn: onlineAsked ? 1 : 0 })); }
+function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, mp: musicPick, onn: onlineAsked ? 1 : 0 })); }
 function loadPref() {
   try {
     var d = JSON.parse(Store.get(PREF_KEY) || 'null'); if (!d) return;
@@ -2026,6 +2191,7 @@ function loadPref() {
     if (d.snd !== undefined) { volLvl = clamp(d.snd | 0, 0, 2); applyVolume(); }
     if (d.zoom) zoomLvl = d.zoom;
     if (d.mus !== undefined) musicEnabled = !!d.mus;
+    if (typeof d.mp === 'number') musicPick = d.mp >= 0 && d.mp < SONGS.length ? d.mp | 0 : -1;
     if (d.onn !== undefined) onlineAsked = !!d.onn;       /* v1.8 bilgilendirmesi görüldü (v1.7'nin rıza cevabı 'ona' sayılmaz) */
   } catch (e) { }
 }
@@ -2036,7 +2202,7 @@ function buildSave() {
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
     auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
-    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0], autoMin: S.autoMin || 0, met: S.met || [], ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
+    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
     areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
@@ -2047,8 +2213,49 @@ function buildSave() {
     stalls: counters.map(function (c) { return [c.key, c.open ? 1 : 0]; }),
     workers: workers.map(function (w) { return [w.role, w.zone === undefined ? 0 : w.zone]; }),
     ret: retSave(),                                   /* uzakta kazanç + başarımlar */
+    ev: Object.keys(S.evs || {}),                     /* v1.9: gönderilmiş ilerleme olayları (tekrar gitmesin) */
+    road: [S.roadFl | 0, S.roadBb | 0],               /* v1.9.3: yol çiçeklikleri + reklam panoları */
+    q: queueSave(),                                   /* v1.9.1: tezgâh stoğu, kasadaki para ve kuyruktaki müşteriler */
     mk: M
   };
+}
+/* v1.9.1 — çıkıp girince tezgâh önü boşalmasın: her tezgâhın stoğu, kasası ve bekleyen (özel olmayan) müşterileri.
+   [anahtar, ['fileto|hamsi', …], kasa $, [[sıra, tip, ürün, tür, adet, alınan, sabır, tam sabır, saç, ten], …]] */
+function queueSave() {
+  return counters.map(function (c) {
+    var cs = [];
+    for (var i = 0; i < c.slots.length; i++) {
+      var cu = c.slots[i];
+      if (!cu || cu.spec || (cu.state !== 'wait' && cu.state !== 'walk')) continue;
+      cs.push([i, cu.type.id, cu.ord.k, cu.ord.f, cu.ord.need, cu.ord.got, Math.round(cu.pat), Math.round(cu.patMax), cu.hair | 0, cu.tone | 0]);
+    }
+    return [c.key, c.buffer.map(itemKey), Math.round(trayValue(c)), cs];
+  });
+}
+function queueLoad(d) {
+  if (!Array.isArray(d.q)) return;                  /* eski kayıt: tezgâhlar boş başlar */
+  d.q.forEach(function (e) {
+    var c = Array.isArray(e) && counterByKey(e[0]); if (!c || !c.fish) return;
+    c.buffer.length = 0; c.tray.items.length = 0;
+    (Array.isArray(e[1]) ? e[1] : []).forEach(function (k) {
+      var it = typeof k === 'string' ? keyItem(k) : null;
+      if (it && (it.k === 'fileto' || it.k === 'fume') && it.f === c.fish && validItem(it) && c.buffer.length < counterMax(c)) c.buffer.push(it);
+    });
+    var v = Math.max(0, Math.min(1e9, +e[2] || 0));
+    if (v > 0) { var n = clamp(Math.ceil(v / 40), 1, 24); for (var t = 0; t < n; t++) c.tray.items.push({ k: 'money', v: v / n }); }
+    if (!c.open) return;
+    (Array.isArray(e[3]) ? e[3] : []).forEach(function (r) {
+      var slot = r[0] | 0, type = custById(r[1]);
+      if (!type || slot < 0 || slot >= queueMax(c.z) || c.slots[slot]) return;
+      if (r[3] !== c.fish || (r[2] !== 'fileto' && r[2] !== 'fume')) return;
+      var need = clamp(r[4] | 0, 1, 40), pm = Math.max(5, +r[7] || type.pat);
+      var q = queueSlotPos(c, slot);
+      var cu = { x: q.x, y: q.y, z: 0, bob: rnd(0, 6), face: -1, type: type, ord: { k: r[2], f: c.fish, need: need, got: clamp(r[5] | 0, 0, need - 1) },
+        state: 'wait', slot: slot, c: c, pat: clamp(+r[6] || pm, 5, pm), patMax: pm, mood: 1, hair: clamp(r[8] | 0, 0, 2), tone: clamp(r[9] | 0, 0, 2) };
+      c.slots[slot] = cu; customers.push(cu);
+    });
+    shiftQueue(c);
+  });
 }
 /* yalnız çalışan (başlatılmış) bir oyun, kendi slotuna yazılır */
 function save() {
@@ -2081,7 +2288,11 @@ function loadFrom(d) {
     S.env = typeof d.env === 'number' ? clamp(d.env | 0, 0, ENV_UPS.length) : -1;   /* -1: eski kayıt → mevcut görünüm korunur */
     if (d.areas) d.areas.forEach(function (v, i) { if (AREAS[i]) { AREAS[i].locked = !!v[0]; AREAS[i].lvl = v[1] || 1; } });
     if (d.pads) d.pads.forEach(function (v, i) { if (PADS[i]) { PADS[i].paid = v[0]; PADS[i].lvl = v[1]; if (v[2]) PADS[i].price = v[2]; } });
+    var rd = Array.isArray(d.road) ? d.road : [0, 0];
+    S.roadFl = clamp(parseInt(rd[0], 10) || 0, 0, ROAD_FL.length); S.roadBb = clamp(parseInt(rd[1], 10) || 0, 0, ROAD_BB.length);
     if (d.slots) d.slots.forEach(function (v, i) { if (SLOTS[i]) SLOTS[i].b = v; });
+    /* v1.9.3: tezgâh bölgesindeki reklam panosu yola taşındı — parsel boşalır, yolda bir pano bedava */
+    SLOTS.forEach(function (sl) { if (sl.b === 'pano') { sl.b = null; if (S.roadBb < ROAD_BB.length) S.roadBb++; else S.cash += bdef('pano').cost; } });
     /* v0.7 meydan; eski parsel kulübesi meydandaki kulübeye (Sv1) dönüşür */
     var md = Array.isArray(d.meydan) ? d.meydan : [0, 0, {}, 0];
     HUT.lvl = clamp(parseInt(md[0], 10) || 0, 0, HUT_LV.length);
@@ -2089,6 +2300,8 @@ function loadFrom(d) {
     DEPOT.shelf = {};
     if (md[2] && typeof md[2] === 'object') for (var sk in md[2]) { var sn = parseInt(md[2][sk], 10); if (sn > 0 && /^(fileto|fume)\|[a-z]+$/.test(sk) && FISH[sk.split('|')[1]]) DEPOT.shelf[sk] = sn; }
     WHALL.built = !!md[3];
+    WHALL.pal = {};
+    if (md[4] && typeof md[4] === 'object') for (var pk in md[4]) { var pn = parseInt(md[4][pk], 10); if (pn > 0 && /^(fileto|fume)\|[a-z]+$/.test(pk) && FISH[pk.split('|')[1]]) WHALL.pal[pk] = Math.min(pn, 999); }
     SLOTS.forEach(function (sl) { if (sl.b === 'kulube') { sl.b = null; HUT.lvl = Math.max(HUT.lvl, 1); } });
     if (d.decor) d.decor.forEach(function (v, i) { if (DECOR[i]) DECOR[i].got = !!v; });
     if (d.proj) { project.inv = d.proj[0] || 0; project.stage = d.proj[1] || 0; project.done = !!d.proj[2]; }
@@ -2111,7 +2324,9 @@ function loadFrom(d) {
       hire(role, true, z);
     });
     if (d.mk) M = migrateMarket(d.mk);
-    retLoad(d);                                       /* uzakta kazanç + başarımlar (yoksa boş) */
+    try { queueLoad(d); } catch (e) { }                /* bozuk kuyruk verisi kaydın geri kalanını bozmasın */
+    retLoad(d);                                     /* uzakta kazanç + başarımlar (yoksa boş) */
+    S.evs = {}; if (Array.isArray(d.ev)) d.ev.forEach(function (k) { if (typeof k === 'string' && /^[a-z0-9_]{2,24}$/.test(k)) S.evs[k] = 1; });
     return true;
   } catch (e) { return false; }
 }
@@ -2119,7 +2334,7 @@ function loadFrom(d) {
 function resetWorld() {
   var k;
   if (typeof closeBar === 'function') closeBar();
-  workers.length = 0; customers.length = 0; flyers.length = 0; floats.length = 0; puffs.length = 0;
+  workers.length = 0; customers.length = 0; flyers.length = 0; floats.length = 0; puffs.length = 0; yardFolk.length = 0; mgrAct.length = 0;
   event = null; eventT = 0; nextEvent = 80;
   for (k in S0) S[k] = S0[k];
   player.x = 4.5; player.y = 3.2; player.vx = 0; player.vy = 0; player.carry.length = 0; player.act = 0;
@@ -2208,7 +2423,7 @@ function anyOverlay() {
   return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') || !el.privScr.classList.contains('hidden') ||
     !el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden') ||
     !el.stallScr.classList.contains('hidden') || !el.boardScr.classList.contains('hidden') || !el.halScr.classList.contains('hidden') ||
-    !el.chScr.classList.contains('hidden') || !el.chEnd.classList.contains('hidden');
+    !el.chScr.classList.contains('hidden') || !el.chEnd.classList.contains('hidden') || !el.endScr.classList.contains('hidden');
 }
 function syncPause() {
   paused = S.started && anyOverlay();
@@ -2242,7 +2457,7 @@ function saveAndQuit() {
 /* =========================================================
    TAŞIMA / ETKİLEŞİM
    ========================================================= */
-function capOf(a) { return a.isPlayer ? capacity() : ROLES[a.role].cap; }
+function capOf(a) { return a.isPlayer ? capacity() : a.capX || ROLES[a.role].cap; }
 function fits(a, it) { return carryW(a) + itemW(it) <= capOf(a); }
 function popCarry(a, test) { for (var i = a.carry.length - 1; i >= 0; i--) if (test(a.carry[i])) return a.carry.splice(i, 1)[0]; return null; }
 function hasCarry(a, test) { for (var i = 0; i < a.carry.length; i++) if (test(a.carry[i])) return true; return false; }
@@ -2498,6 +2713,7 @@ function updatePlayer(dt) {
   }
   if (dist2(player.x, player.y, safe.x, safe.y) < 1.8) acted = iDeposit(player, dt) || acted;
   if (DEPOT.lvl && atDoor(player, DEPOT.door, 1.1)) acted = iDepotIn(player, dt) || acted;
+  if (WHALL.built && atDoor(player, WHALL.door, 1.4)) acted = iHalPick(player, dt) || acted;   /* v1.9.4: paletten sırtla */
   /* çöp kovası: yanlışlıkla atmamak için önce kısa bir bekleme */
   var nearBin = null;
   for (i = 0; i < BINS.length; i++) if (!AREAS[BINS[i].z].locked && dist2(player.x, player.y, BINS[i].x, BINS[i].y) < 0.85) nearBin = BINS[i];
@@ -2698,6 +2914,7 @@ function updateWorkers(dt) {
     else if (w.role === 'kasiyer') aiKasiyer(w, sp, dt);
     else if (w.role === 'depocu') aiDepocu(w, sp, dt);
     else if (w.role === 'sevkiyat') aiSevkiyat(w, sp, dt);
+    else if (w.role === 'halhamal') aiHalHamal(w, sp, dt);
     else aiFiletocu(w, sp, dt);
   }
 }
@@ -2934,7 +3151,7 @@ function patienceMul(z) { return (1 + decorCount() * 0.02) * (1 + mgrEff(z, 'pat
 
 function updateCounter(c, dt) {
   if (!c.open) return;                       /* v2.1: kapalı tezgâha müşteri gelmez */
-  var custMul = (event ? event.custMul : 1) * areaFlow(c.z) * dayCustMul() * (1 + envFlow());   /* v1.2: çevre yatırımı */
+  var custMul = (event ? event.custMul : 1) * areaFlow(c.z) * dayCustMul() * (1 + envFlow() + roadFlow()) * rushMul();   /* v1.2: çevre yatırımı; v1.9.3: yol çiçeklikleri + panolar */
   c.spawnT -= dt * custMul;
   var qmax = queueMax(c.z), freeIdx = -1, i;
   for (i = 0; i < qmax; i++) if (!c.slots[i]) { freeIdx = i; break; }
@@ -3039,6 +3256,7 @@ function checkRepLevel() {
   var l = repLevel();
   if (l <= lastRepLvl) return;
   var from = lastRepLvl; lastRepLvl = l;
+  if (l >= 2) progEv('sv' + l);
   showLevelUp(from, l);
 }
 /* seviye atlama: oyunu DURDURMAYAN üst şerit — seviye, unvan, açılanlar, kısa fanfar + konfeti */
@@ -3107,7 +3325,7 @@ function updateCustomers(dt) {
         sfx.bad();
       }
     } else {
-      cu.x += ((13.6 + (cu.c.lane || 0) * 1.7) - cu.x) * Math.min(1, dt * (cu.spec ? 0.9 : 1.6));
+      cu.x += ((13.6 + (cu.c.lane || 0) * 0.5) - cu.x) * Math.min(1, dt * (cu.spec ? 0.9 : 1.6));
       if (cu.spec) cu.byeT = (cu.byeT || 0) + dt;
       cu.y += (cu.spec ? SPEC_LEAVE : 3.6) * dt; cu.bob += dt * (cu.spec ? 5 : 8);
       if (cu.y > 23) customers.splice(i, 1);
@@ -3149,7 +3367,7 @@ function applyPad(p) {
   else if (p.kind === 'price') { S.priceLvl++; p.lvl++; toast(T('priceUp')); }
   else if (p.kind === 'hire') { p.lvl++; hire(p.role); }
   else if (p.kind === 'area') {
-    AREAS[p.target].locked = false; rebuildCounters(); reassignWorkers();
+    AREAS[p.target].locked = false; rebuildCounters(); reassignWorkers(); progEv('bolge' + (p.target + 1));
     toast(T('areaOpen', { n: NM(AREAS[p.target].n) })); sfx.build();
     
   } else if (p.kind === 'arealv') {
@@ -3233,13 +3451,21 @@ function updateCoach(dt) {
                              : '<span class="keys"><i>W</i><i>A</i><i>S</i><i>D</i></span>' + T('coachKeys'))
     : '<span class="hand">✋</span>' + T('coachAuto');
 }
+/* eğitim hedef yazısına canlı ilerleme: kaç balık birikti / kaç taşıyorsun */
+function tutProgress() {
+  if (S.tut === 1 || S.tut === 2) { var n = 0; for (var i = 0; i < player.carry.length; i++) if (isFish(player.carry[i])) n++; return n ? ' · 🐟 ' + n : ''; }
+  if (S.tut === 3) { var g = 0; for (var j = 0; j < player.carry.length; j++) if (isGoods(player.carry[j])) g++; return g ? ' · 🍽 ' + g : ''; }
+  return '';
+}
 function updateTutorial() {
   if (S.tut >= TUTOK.length) return;
   /* v1.3: eğitimin çok ötesine geçmiş oyuncuda (sv 3+, otomatik bölge ya da bölüm sonu) yarım kalan eğitim hedefi kapanır */
   if (repLevel() >= 3 || S.ch1 || zoneAuto(0)) { S.tut = TUTOK.length; return; }
   if (TUTOK[S.tut]()) {
     S.tut++;
-    if (S.tut < TUTOK.length) sfx.star();
+    progEv('tut' + S.tut);                                   /* ilerleme olayı: hangi adımda bırakıldı */
+    addPuff(player.x, player.y, '#ffc94a');
+    if (S.tut < TUTOK.length) { sfx.star(); toast(T('tutStepOK')[S.tut - 1] || T('tutNice')); }
     else { toast(T('tutDone')); save(); }
   }
 }
@@ -3909,7 +4135,8 @@ var WORK_FIT = {
   tezgahtar: { coat: '#b8624a', coat2: '#d07c60', apron: '#f0ece0', cap: '#6f2f22', tray: true, must: true, pants: '#4a2f26' },
   kasiyer:   { coat: '#2f4a6b', coat2: '#456c94', vest: '#1a2f45', bag: true, glasses: true, pants: '#22303c' },
   depocu:    { coat: '#8a6a3a', coat2: '#a8844c', apron: '#5a4a32', kufe: true, cap: '#3a2f22', must: true, pants: '#3a3226' },
-  sevkiyat:  { coat: '#3f6a5a', coat2: '#568a76', vest: '#e0a030', bag: true, cap: '#20382f', pants: '#26332e' }
+  sevkiyat:  { coat: '#3f6a5a', coat2: '#568a76', vest: '#e0a030', bag: true, cap: '#20382f', pants: '#26332e' },
+  halhamal:  { coat: '#6a4a2a', coat2: '#8a6a3a', vest: '#c9a15e', kufe: true, cap: '#4a3220', must: true, pants: '#3a2c20' }
 };
 function workerOutfit(w) {
   var f = WORK_FIT[w.role] || WORK_FIT.hamal, o = {}, k;
@@ -3997,7 +4224,8 @@ var ROLE_TAG = {
   tezgahtar: { bg: '#b8624a', d: 'fish' },
   kasiyer:   { bg: '#2f4a6b', d: 'coin' },
   depocu:    { bg: '#8a6a3a', d: 'kufe' },
-  sevkiyat:  { bg: '#3f6a5a', d: 'cart' }
+  sevkiyat:  { bg: '#3f6a5a', d: 'cart' },
+  halhamal:  { bg: '#6a4a2a', d: 'cart' }
 };
 function drawRoleTag(w) {
   var g = ROLE_TAG[w.role] || ROLE_TAG.hamal;
@@ -4359,6 +4587,44 @@ function drawRoadLamps(push) {
   if (envStage() < 3) return;
   for (var y = 3.5; y < 22; y += 4.5) (function (ly) { push(14.75 + ly, function () { drawLamp(14.75, ly); }); })(y);
 }
+/* v1.9.3 — yol vitrini: çiçeklikler (taş saksı + mevsim çiçekleri) ve reklam panoları (işletme adı + amblem) */
+function drawRoadShow(push) {
+  var k;
+  for (k = 0; k < Math.min(S.roadFl | 0, ROAD_FL.length); k++) (function (i) { push(ROAD_VX + ROAD_FL[i], function () { drawFlowerbed(ROAD_VX, ROAD_FL[i], i); }); })(k);
+  for (k = 0; k < Math.min(S.roadBb | 0, ROAD_BB.length); k++) (function (i) { push(ROAD_VX + ROAD_BB[i] + 0.3, function () { drawBillboard(ROAD_VX, ROAD_BB[i], i); }); })(k);
+}
+function drawFlowerbed(x, y, i) {
+  isoBox(x - 0.2, y - 0.3, 0.4, 0.6, 0, 4, PAL.stoneLite, PAL.stoneDark, PAL.stone);
+  isoQuad(x - 0.16, y - 0.26, 0.32, 0.52, 4, '#4a6b35');
+  var cols = [['#e5533d', '#ffc94a'], ['#d94a8c', '#f4f0e4'], ['#ffc94a', '#e0679e'], ['#9b6fd1', '#f4f0e4']][i % 4];
+  for (var f = 0; f < 6; f++) {
+    var fx = x - 0.1 + (f % 2) * 0.2, fy = y - 0.2 + Math.floor(f / 2) * 0.2, sw = Math.sin(gameT * 1.5 + f + i) > 0.7 ? 1 : 0;
+    var sx = R(pX(fx, fy)), sy = R(pY(fx, fy, 5));
+    px(sx, sy - 3, 1, 3, PAL.leaf); px(sx - 1 + sw, sy - 5, 3, 2, cols[f % 2]);
+  }
+}
+/* amblem: lacivert rozet içinde gümüş hamsi (oyunun simgesi) */
+function drawEmblem(x, y, z) {
+  var sx = R(pX(x, y)), sy = R(pY(x, y, z));
+  px(sx - 5, sy - 4, 10, 8, PAL.indigo); px(sx - 4, sy - 5, 8, 10, PAL.indigo);
+  px(sx - 3, sy - 1, 6, 2, '#cfe6f0'); px(sx + 3, sy - 2, 2, 1, '#cfe6f0'); px(sx + 3, sy + 1, 2, 1, '#cfe6f0');
+  px(sx - 3, sy - 1, 6, 1, '#f4fbff'); px(sx - 2, sy - 1, 1, 1, PAL.edge);
+}
+function drawBillboard(x, y, i) {
+  var y0 = y - 0.55, y1 = y + 0.55;
+  shadow(x, y, 0.7);
+  vline(x, y0 + 0.08, 0, 30, PAL.woodDark); vline(x, y1 - 0.08, 0, 30, PAL.woodDark);                  /* direkler */
+  wallQ(x, y0 - 0.04, x, y1 + 0.04, 13, 31, PAL.edge);                                                  /* çerçeve */
+  wallQ(x, y0, x, y1, 14, 30, '#f1ebda');
+  wallQ(x, y0, x, y1, 14, 17, [PAL.madder, PAL.indigo, '#2f7a4a'][i % 3]);                               /* alt şerit */
+  wallQ(x, y0, x, y1, 28, 30, [PAL.madder, PAL.indigo, '#2f7a4a'][i % 3]);
+  drawEmblem(x, y0 + 0.28, 22.5);
+  if (dist2(player.x, player.y, x, y) < 90) {
+    var nm = UP(S.company || (lang === 'tr' ? 'HAMSİ KOYU' : 'HAMSI COVE'));
+    if (nm.length > 12) nm = nm.split(' ')[0].slice(0, 12);                 /* panoya sığsın: uzun adda ilk kelime */
+    uiText(x, y + 0.2, 22.5, nm, '#1a2433', 6, 1, 0, 0, 'rgba(241,235,218,.9)');
+  }
+}
 
 /* v1.0 — kilitli bölgeler eski püskü eşya ve malzemeyle dolu; bölge açılınca temizlenir.
    Konumlar bölgeye göre sabit tohumla üretilir (her açılışta aynı). */
@@ -4703,7 +4969,7 @@ function drawLamp(x, y) {
 /* v1.3.2: bölge adı ana tezgâhın tentesindeki tahta levhada — ayrı bir yer kaplamaz, hiçbir şeyin önüne düşmez */
 function drawStallSign(c) {
   var a = AREAS[c.z];
-  if (!a || a.locked || a.lvl < 2 || dist2(player.x, player.y, c.x, c.y) > 60) return;
+  if (!a || a.locked || a.lvl < 2 || dist2(player.x, player.y, c.x, c.y) > 14) return;   /* v1.9.3: yalnız yakındayken (tezgâh önü sade) */
   var sx = R(pX(c.x, c.y)), top = 27, sy = R(pY(c.x, c.y, 12)) - top;
   var s = UP(NM(a.n)), fs = 7;
   uctx.font = uiFont(fs);
@@ -5680,47 +5946,40 @@ function dayTint() {
 }
 
 /* ---------- v2.0: TİCARET OFİSİ — cumbalı konak ---------- */
+/* v1.9.2 — Ticaret Ofisi: iki katlı taş ticaret evi — kemerli giriş, cumbalı üst kat, kırma çatı, önünde kontrat panosu */
 function drawOffice() {
-  var o = office, x = o.x - o.w / 2, y = o.y - o.h / 2;
-  var sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0));
-  if (!officeBuilt()) {
-    ctx.save(); ctx.setLineDash([3, 3]); ctx.lineDashOffset = -gameT * 6;
-    ctx.strokeStyle = '#c9a15e'; ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(R(pX(x, y)), R(pY(x, y, 0))); ctx.lineTo(R(pX(x + o.w, y)), R(pY(x + o.w, y, 0)));
-    ctx.lineTo(R(pX(x + o.w, y + o.h)), R(pY(x + o.w, y + o.h, 0))); ctx.lineTo(R(pX(x, y + o.h)), R(pY(x, y + o.h, 0)));
-    ctx.closePath(); ctx.stroke(); ctx.restore();
-    if (dist2(player.x, player.y, o.x, o.y) < 18) uiLabel(o.x, o.y, 14, T('office'), '#ffc94a', 0.85);
-    return;
-  }
+  var o = office, x0 = o.x - o.w / 2, y0 = o.y - o.h / 2, x1 = x0 + o.w, y1 = y0 + o.h, k;
+  if (!officeBuilt()) { plotOutline(o, '🏛️ ' + T('office')); return; }
   shadow(o.x, o.y, 1.3);
-  isoQuad(x - 0.1, y - 0.1, o.w + 0.2, o.h + 0.2, 0.4, '#a8a08c');
-  isoBox(x + 0.06, y + 0.06, o.w - 0.12, o.h - 0.12, 1.6, 28, '#efe6d0', '#b9ac90', '#d5c8ac');
-  wallStone(sx, sy, 40, 26);
-  /* cumba (çıkma kat) */
-  isoBox(x + 0.3, y - 0.18, o.w - 0.6, o.h * 0.5, 28, 40, '#f3ebd8', '#bfb296', '#dccfb2');
-  var cy = sy - 34;
-  px(sx - 13, cy + 6, 26, 1, PAL.woodDark);
-  windowTR(sx - 9, cy, 7, 7, true);
-  windowTR(sx + 2, cy, 7, 7, true);
-  px(sx - 14, cy + 7, 28, 1, PAL.iron);
-  for (var b = 0; b < 9; b++) px(sx - 13 + b * 3, cy + 7, 1, 3, PAL.iron);
-  px(sx - 14, cy + 10, 28, 1, PAL.iron);
-  /* çatı */
-  roofTile(sx, sy - 40, 46, 4);
-  /* kemerli giriş */
-  archDoor(sx, sy - 1, 11, 15);
-  tileBand(sx, sy - 22, 34);
-  /* tabela */
-  px(sx - 17, sy - 14, 34, 8, PAL.pnl);
-  px(sx - 16, sy - 13, 32, 6, PAL.indigo);
-  if (dist2(player.x, player.y, o.x, o.y) < 60) uiText(o.x, o.y, 18, T('office'), PAL.gold, 7);
+  isoQuad(x0 - 0.15, y0 - 0.15, o.w + 0.3, o.h + 0.55, 0.4, '#b9ad92');                                         /* taş avlu */
+  isoBox(x0, y0, o.w, o.h, 0, 3, PAL.stoneDark, '#7d725c', '#8a7f68');                                         /* kaide */
+  isoBox(x0 + 0.04, y0 + 0.04, o.w - 0.08, o.h - 0.08, 3, 17, PAL.stoneLite, PAL.stone, '#d5c8ac');            /* zemin kat: kesme taş */
+  for (k = 1; k < 4; k++) { hline(x0 + 0.04, y1 - 0.04, x1 - 0.04, y1 - 0.04, 3 + k * 3.5, PAL.stoneDark); hline(x1 - 0.04, y0 + 0.04, x1 - 0.04, y1 - 0.04, 3 + k * 3.5, PAL.stoneDark); }
+  /* kemerli giriş + üstünde levha */
+  winF(o.x - 0.24, o.x + 0.24, y1 - 0.04, 3, 13, '#4a2f1c', PAL.stoneDark);
+  wallQ(o.x - 0.17, y1 - 0.04, o.x + 0.17, y1 - 0.04, 13, 15, '#4a2f1c');
+  wallQ(x0 + 0.2, y1 - 0.04, x1 - 0.2, y1 - 0.04, 15.5, 17, PAL.indigo);
+  winF(x0 + 0.18, x0 + 0.42, y1 - 0.04, 7, 12, '#ffd98f', PAL.woodDark);
+  winF(x1 - 0.42, x1 - 0.18, y1 - 0.04, 7, 12, '#ffd98f', PAL.woodDark);
+  winR(x1 - 0.04, o.y - 0.2, o.y + 0.2, 7, 12, '#ffd98f', PAL.woodDark);
+  /* cumbalı üst kat: ön cepheye taşar, ahşap kirişli badana */
+  isoBox(x0 + 0.08, y0 + 0.02, o.w - 0.16, o.h + 0.12, 17, 30, PAL.lime, PAL.limeSh, '#e6dec9');
+  hline(x0 + 0.08, y1 + 0.14, x1 - 0.08, y1 + 0.14, 17, PAL.woodDark); hline(x0 + 0.08, y1 + 0.14, x1 - 0.08, y1 + 0.14, 30, PAL.woodDark);
+  for (k = 0; k < 3; k++) { var wx = x0 + 0.28 + k * 0.45; winF(wx, wx + 0.24, y1 + 0.14, 20, 27, '#ffd98f', PAL.woodDark); }
+  winR(x1 - 0.08, o.y - 0.3, o.y - 0.05, 20, 27, '#ffd98f', PAL.woodDark); winR(x1 - 0.08, o.y + 0.15, o.y + 0.4, 20, 27, '#ffd98f', PAL.woodDark);
+  roofHip(x0 - 0.12, x1 + 0.12, y0 - 0.1, y1 + 0.26, 30, 11, PAL.tileLite, PAL.tile, PAL.tileDark, 4);
+  /* kontrat panosu: aktif kontrat kadar kâğıt */
+  var bx = x1 + 0.45, by = y1 + 0.3;
+  vline(bx - 0.25, by, 0, 13, PAL.woodDark); vline(bx + 0.25, by, 0, 13, PAL.woodDark);
+  wallQ(bx - 0.3, by, bx + 0.3, by, 6, 13, '#8a5a33');
+  var na = (M && M.active) ? M.active.length : 0;
+  for (k = 0; k < Math.min(4, na); k++) { var nx = bx - 0.22 + k * 0.13; wallQ(nx, by + 0.001, nx + 0.09, by + 0.001, 8 + (k % 2), 11.5 + (k % 2), '#f4f0e4'); }
   /* bayrak */
-  px(sx + 18, sy - 52, 1, 14, '#d8d2c4');
-  var wv = R(Math.sin(gameT * 2) * 1);
-  px(sx + 19, sy - 52, 9, 6, '#e30a17');
-  px(sx + 22 + wv, sy - 50, 2, 2, '#ffffff');
-  if (M && M.active.length) uiBadge(o.x, o.y + o.h / 2 + 0.2, 10, M.active.length + '/' + maxActive(), '#9df5b0');
+  vline(x1 + 0.2, y0 + 0.1, 0, 46, '#d8d2c4');
+  var fsx = R(pX(x1 + 0.2, y0 + 0.1)), fsy = R(pY(x1 + 0.2, y0 + 0.1, 46)), wv = R(Math.sin(gameT * 2));
+  px(fsx + 1, fsy, 10, 6, '#e30a17'); px(fsx + 4 + wv, fsy + 2, 2, 2, '#ffffff');
+  if (dist2(player.x, player.y, o.x, o.y + 1.1) < 4) uiLabel(o.x, o.y, 48, T('office'), PAL.gold, 1);
+  if (na) uiBadge(bx, by, 16, na + '/' + maxActive(), '#9df5b0');
 }
 
 /* ---------- v2.0: KAPALI PAZAR (eski adıyla Kapalı Balık Hali) — kagir hal binası ---------- */
@@ -5901,6 +6160,35 @@ function padInfo(p) {
   if (p.kind === 'decor') return { t: UP(NM(DECOR[p.decor].n)), e: T('stDecor') };
   return { t: UP(NM(ROLES[p.role].n)), e: NM(ROLES[p.role].d) + ' ' + money(ROLES[p.role].wage) + perMin() };
 }
+/* v1.9 eğitim rehberi (ilk satışa kadar): oyuncudan hedefe akan noktalı yol + hedefte nabız halkası */
+function drawTutGuide(tg) {
+  var dx = tg.x - player.x, dy = tg.y - player.y, d = Math.sqrt(dx * dx + dy * dy);
+  ctx.save();
+  if (d > 1.2) {
+    var step = 0.45, off = (gameT * 1.6) % step;
+    for (var t = 0.7 + off; t < d - 0.5; t += step) {
+      var wx = player.x + dx * t / d, wy = player.y + dy * t / d;
+      ctx.globalAlpha = 0.35 + 0.5 * Math.min(1, t / 2);
+      px(R(pX(wx, wy)) - 1, R(pY(wx, wy, 0)), 3, 2, '#ffc94a');
+    }
+  }
+  var ph = (gameT * 1.4) % 1, sx = pX(tg.x, tg.y), sy = pY(tg.x, tg.y, 0);
+  ctx.globalAlpha = 0.9 - ph * 0.7; ctx.strokeStyle = '#ffc94a'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.ellipse(sx, sy, 7 + ph * 9, 3.5 + ph * 4.5, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+}
+/* hedef görünmüyorsa ekran kenarında ona dönük ok (ekran koordinatı) */
+function drawTutEdge(tg) {
+  var sx = pX(tg.x, tg.y) + camOX, sy = pY(tg.x, tg.y, 20) + camOY, m = 22;
+  if (sx > 2 && sx < W - 2 && sy > 30 && sy < H - 44) return;          /* hedef (kısmen de olsa) görünüyor: ok gerekmez */
+  var cx = W / 2, cy = H / 2, a = Math.atan2(sy - cy, sx - cx);
+  var ex = clamp(sx, m, W - m), ey = clamp(sy, m + 40, H - m - 60);
+  var bob = Math.sin(gameT * 6) * 2;
+  ctx.save(); ctx.translate(ex + Math.cos(a) * bob, ey + Math.sin(a) * bob); ctx.rotate(a);
+  ctx.fillStyle = '#3d2413'; ctx.beginPath(); ctx.moveTo(11, 0); ctx.lineTo(-7, -9); ctx.lineTo(-3, 0); ctx.lineTo(-7, 9); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#ffc94a'; ctx.beginPath(); ctx.moveTo(8, 0); ctx.lineTo(-5, -6); ctx.lineTo(-2, 0); ctx.lineTo(-5, 6); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
 function drawArrow(tg) {
   var sx = R(pX(tg.x, tg.y)), sy = R(pY(tg.x, tg.y, 30 + (Math.sin(gameT * 4) > 0 ? 2 : 0)));
   px(sx - 3, sy - 8, 7, 4, '#ffc94a');
@@ -5946,7 +6234,7 @@ function tutorialTarget() {
 function playerOccluded() {
   var pxp = pX(player.x, player.y), pyp = pY(player.x, player.y, 0), d = player.x + player.y + 0.3, i;
   var occ = [];
-  if (!AREAS[project.z].locked && project.stage >= 2) occ.push({ x: project.x, y: project.y, w: 60, h: 62 });
+  if (!AREAS[project.z].locked && project.done) occ.push({ x: project.x, y: project.y, w: 60, h: 62 });
   for (i = 0; i < PLOTS.length; i++) if (PLOTS[i].b && plotActive(PLOTS[i])) occ.push({ x: PLOTS[i].x, y: PLOTS[i].y, w: 46, h: 72 });
   for (i = 0; i < counters.length; i++) if (!AREAS[counters[i].z].locked) occ.push({ x: counters[i].x, y: counters[i].y, w: 30, h: 30 });
   for (i = 0; i < SLOTS.length; i++) if (SLOTS[i].b && slotActive(SLOTS[i])) occ.push({ x: SLOTS[i].x, y: SLOTS[i].y, w: 26, h: 28 });
@@ -6001,6 +6289,7 @@ function render() {
   })(DECOR[i]);
   pushMeydan(push);
   drawRoadLamps(push);
+  drawRoadShow(push);
   for (i = 0; i < BINS.length; i++) (function (bn) {
     if (AREAS[bn.z].locked) return; push(bn.x + bn.y, function () { drawBin(bn); });
   })(BINS[i]);
@@ -6009,7 +6298,7 @@ function render() {
     if (p.b) push(p.x + p.y, function () { drawServ(p); });
     else push(p.x + p.y - 0.05, function () { drawPlot(p); });
   })(PLOTS[i]);
-  if (!AREAS[project.z].locked) push(project.x + project.y, drawProject);
+  if (!AREAS[project.z].locked && project.done) push(project.x + project.y, drawProject);   /* v1.9.4: Kapalı Pazar rafta — yalnız tamamlamış kayıtlarda */
   if (!AREAS[office.z].locked) push(office.x + office.y, drawOffice);
   for (i = 0; i < spots.length; i++) (function (s) {
     if (AREAS[s.z].locked) return; push(s.x + s.y, function () { quietDraw(s.z, s.x, s.y, function () { drawSpot(s); }); });
@@ -6045,6 +6334,8 @@ function render() {
 
   for (i = 0; i < cats.length; i++) (function (ct) { push(ct.x + ct.y + 0.1, function () { drawCat(ct); }); })(cats[i]);
   for (i = 0; i < customers.length; i++) (function (cu) { push(cu.x + cu.y + 0.2, function () { drawCustomer(cu); }); })(customers[i]);
+  drawYardFolk(push);
+  drawMgrJokers(push);
   for (i = 0; i < workers.length; i++) (function (w) {
     var col = w.role === 'hamal' ? '#4f7fae' : w.role === 'filetocu' ? '#5f8f6a' : w.role === 'tezgahtar' ? '#b8624a' : '#7a6ba8';
     push(w.x + w.y + 0.15, function () {
@@ -6082,11 +6373,12 @@ function render() {
   }
   for (i = 0; i < gulls.length; i++) drawGull(gulls[i]);
   drawFlyers(); drawPuffs(); drawFloats();
-  if (S.started) { var tg = tutorialTarget(); if (tg) drawArrow(tg); }
+  var tg = S.started ? tutorialTarget() : null; if (tg) { drawTutGuide(tg); drawArrow(tg); }
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   drawVignette();                           /* v0.1 — kenarları yumuşatan vinyet */
   if (S.started) dayTint();                 /* v1.2 — sabah/gündüz/akşam tonu */
+  if (tg) drawTutEdge(tg);                  /* v1.9 — hedef ekran dışındaysa kenarda ok */
   ctx.translate(camOX, camOY);
   renderUI();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -6117,7 +6409,7 @@ var el = {};
  'boardClose', 'boardBtn', 'storyBtn', 'menuBoard', 'dpSub', 'lvlUp', 'lvlNum', 'lvlTitle', 'lvlList', 'lvlConf', 'coach', 'loadBtn', 'slotScr', 'slotTitle', 'slotSub',
  'slotRows', 'slotBack', 'nameBack', 'askScr', 'askMsg', 'askYes', 'askNo', 'heroScr', 'heroCard', 'heroCv',
  'heroName', 'heroNameDice', 'heroRows', 'heroDice', 'heroGo', 'heroBack', 'heroTitle', 'heroSub', 'heroNameLbl',
- 'chBtn', 'chPct', 'chScr', 'chTitle', 'chSub', 'chFill', 'chNum', 'chRows', 'chClose', 'chEnd', 'chEndK', 'chEndT', 'chEndP', 'chEndG', 'chEndGo',
+ 'chBtn', 'chPct', 'chScr', 'chTitle', 'chSub', 'chFill', 'chNum', 'chRows', 'chClose', 'chEnd', 'chEndK', 'chEndT', 'chEndP', 'chEndG', 'chEndGo', 'chEndFb', 'chEndFin', 'endScr', 'endK', 'endT', 'endP', 'endBy', 'endGo',
  'actBtn', 'halScr', 'halTitle', 'halSub', 'halRows', 'halClose', 'autoScr', 'autoTitle', 'autoSub', 'autoOpts', 'autoBadge',
  'setAuto', 'specPop', 'specPopT', 'setOnline', 'onlineFixed', 'forgetBtn', 'privBtn', 'aboutBtn', 'privScr', 'privFrame', 'privClose'].forEach(function (id) {
   el[id] = document.getElementById(id);
@@ -6153,7 +6445,7 @@ function applyLang() {
   el.setSound.textContent = T('soundLbl'); el.setZoom.textContent = T('zoomLbl');
   el.setOnline.textContent = T('onlineLbl'); el.onlineFixed.textContent = T('onlineFixed');
   el.forgetBtn.textContent = T('forgetBtn'); el.privBtn.textContent = T('privBtn'); el.aboutBtn.textContent = T('aboutBtn'); el.privClose.textContent = T('privClose');
-  el.setAuto.textContent = T('autoLbl'); el.setMusic.textContent = T('musicLbl'); el.musOn.textContent = T('musOn'); el.musOff.textContent = T('musOff');
+  el.setAuto.textContent = T('autoLbl'); el.setMusic.textContent = T('musicLbl'); el.musOn.textContent = T('musOn'); el.musOff.textContent = T('musOff'); var spl = document.getElementById('setPlist'); if (spl) spl.textContent = T('musList');
   el.setClose.textContent = T('resume'); el.resetBtn.textContent = T('delSlot');
   el.closeMenu.textContent = T('resume'); el.menuSet.textContent = T('settings');
   el.saveBtn.innerHTML = PX(T('saveNow')); el.saveQuitBtn.innerHTML = PX(T('saveQuit'));
@@ -6230,7 +6522,7 @@ function syncHUD(dt) {
   if (S.tut < TUTOK.length) {
     el.objective.classList.remove('hidden');
     el.objLbl.textContent = T('goal') + ' ' + (S.tut + 1) + '/' + TUTOK.length;
-    el.objText.textContent = T('tut')[S.tut];
+    el.objText.textContent = T('tut')[S.tut] + tutProgress();
   } else if (undecidedStalls().length) {
     el.objective.classList.remove('hidden');
     el.objLbl.textContent = T('newStallLbl');
@@ -6261,7 +6553,7 @@ function syncHUD(dt) {
   if (cfT > 0) { cfT -= dt; if (cfT <= 0 && cfId) { cfId = null; renderBar(); } }
   barLiveRefresh(dt);
   barHot();
-  syncTradeBtn(); syncMeydanBtn();
+  syncTradeBtn(); syncMeydanBtn(); syncStallBtn();
   ofRefresh -= dt;
   if (ofRefresh <= 0) {
     ofRefresh = 1;
@@ -6310,7 +6602,7 @@ function barList() {
       var blk = S.rep < a.rep;
       out.push({ id: 'a' + i, ic: '🔓', t: NM(a.n), s: T('areaGives') + (a.rep ? ' • Sv ' + levelForRep(a.rep) : ''),
         cost: upCost(a.cost), blocked: blk, why: T('needRep', { n: a.rep, c: S.rep, l: levelForRep(a.rep) }),
-        go: function (k) { return function () { clearJunk(k); AREAS[k].locked = false; rebuildCounters(); reassignWorkers(); clampCam(); sfx.build(); toast(T('areaOpen', { n: NM(AREAS[k].n) })); }; }(i) });
+        go: function (k) { return function () { clearJunk(k); AREAS[k].locked = false; progEv('bolge' + (k + 1)); rebuildCounters(); reassignWorkers(); clampCam(); sfx.build(); toast(T('areaOpen', { n: NM(AREAS[k].n) })); }; }(i) });
       break;
     }
     if (!out.length) out.push({ empty: T('emptyArea') });
@@ -6337,22 +6629,17 @@ function barList() {
       })(ZONE_ROLES[i]);
       return out;
     }
-    /* --- v2.3: tezgâh aç/kapat ekranına kısayol (ücretsiz, listede ilk sırada) --- */
-    if (switchableStalls().length) {
-      var yeniVar = undecidedStalls().length;
-      out.push({ id: 'stsw', ic: '🐟', t: T('stallSwitch') + (yeniVar ? ' •' : ''),
-        s: yeniVar ? T('stallNewN', { n: yeniVar })
-                   : T('stallSwitchD', { a: openStallCount(), b: switchableStalls().length + 1 }),
-        pick: T('stallManage'), go: function () { openStallScreen(); } });
+    /* v1.9.1 — sıra: önce oyuncunun kendi gelişimi (taşıma, hız, pazarlık), sonra personel, en sonda otomasyon.
+       Açık Tezgâhlar kısayolu ☰'ün yanındaki düğmeye taşındı. */
+    for (i = 0; i < PADS.length; i++) {
+      var p = PADS[i];
+      if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
+      if (AREAS[p.z].locked || p.lvl >= p.max) continue;
+      var info = padInfo(p), bl = padBlocked(p);
+      out.push({ id: p.id, ic: p.icon, t: info.t + (p.max > 1 ? '  ' + T('level') + p.lvl + '→' + (p.lvl + 1) : ''),
+        s: info.e, cost: upCost(padPrice(p)), blocked: bl, why: T('staffFull', { n: staffCap() }),
+        go: function (pp) { return function () { applyPad(pp); }; }(p) });
     }
-    /* --- v1.3: Füme Makinesi (Fümehane açılınca 1. ve 2. bölgeye) --- */
-    FUME_MACH.forEach(function (fm) {
-      if (AREAS[fm.z].locked || fumeMachine(fm.z)) return;
-      var ok = !AREAS[smoker.z].locked;
-      out.push({ id: 'fm' + fm.z, ic: '🔥', t: T('fmT', { n: NM(AREAS[fm.z].n) }), s: T('fmD'), cost: upCost(fm.cost),
-        blocked: !ok, why: T('fmNeed'),
-        go: function () { S.fumeM[fm.z] = 1; sfx.build(); toast(T('fmDone', { n: NM(AREAS[fm.z].n) })); } });
-    });
     /* --- v2.1: her açık bölge için personel kartı --- */
     for (i = 0; i < zoneCount(); i++) (function (z2) {
       if (!zoneOpen(z2)) return;
@@ -6363,9 +6650,17 @@ function barList() {
         pick: free > 0 ? T('choose') : null, blocked: free <= 0, why: T('zoneFull'),
         go: function () { barZone = z2; cfId = null; renderBar(); } });
     })(i);
+    /* --- v1.3: Füme Makinesi (Fümehane açılınca 1. ve 2. bölgeye) --- */
+    FUME_MACH.forEach(function (fm) {
+      if (AREAS[fm.z].locked || fumeMachine(fm.z)) return;
+      var ok = !AREAS[smoker.z].locked;
+      out.push({ id: 'fm' + fm.z, ic: '🔥', t: T('fmT', { n: NM(AREAS[fm.z].n) }), s: T('fmD'), cost: upCost(fm.cost),
+        blocked: !ok, why: T('fmNeed'),
+        go: function () { S.fumeM[fm.z] = 1; sfx.build(); toast(T('fmDone', { n: NM(AREAS[fm.z].n) })); } });
+    });
     /* --- v0.5: personele devret (tam otomasyon) --- */
     for (i = 0; i < zoneCount(); i++) (function (z3) {
-      if (!zoneOpen(z3)) return;
+      if (!zoneOpen(z3) || !zoneStaff(z3)) return;          /* v1.9.1: personel almadan otomasyon kartı çıkmaz */
       var ch = zoneChain(z3), on = zoneAuto(z3);
       var st = ZONE_ROLES.map(function (r) { return (ch[r] ? '✓' : '✗') + NM(ROLES[r].n); }).join(' ');
       if (ch.ok && !on && !mgr(z3)) {                                   /* v1.3: tam otomasyon için müdür gerekir */
@@ -6378,15 +6673,6 @@ function barList() {
         blocked: !ch.ok, why: T('autoNeed', { n: ch.miss.length }),
         go: function () { setZoneAuto(z3, !on); } });
     })(i);
-    for (i = 0; i < PADS.length; i++) {
-      var p = PADS[i];
-      if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
-      if (AREAS[p.z].locked || p.lvl >= p.max) continue;
-      var info = padInfo(p), bl = padBlocked(p);
-      out.push({ id: p.id, ic: p.icon, t: info.t + (p.max > 1 ? '  ' + T('level') + p.lvl + '→' + (p.lvl + 1) : ''),
-        s: info.e, cost: upCost(padPrice(p)), blocked: bl, why: T('staffFull', { n: staffCap() }),
-        go: function (pp) { return function () { applyPad(pp); }; }(p) });
-    }
     if (!out.length) out.push({ empty: T('emptyLevel') });
   } else if (barTab === 'build') {
     /* v0.3 — YAPI üç alt kategoride: Dekoratif • Geliştirmeler • Yapı Yükseltmeleri */
@@ -6396,7 +6682,7 @@ function barList() {
       var sl = barSlot;
       for (i = 0; i < BUILDINGS.length; i++) {
         var bd = BUILDINGS[i];
-        if (sl.cats.indexOf(bd.cat) < 0) continue;
+        if (sl.cats.indexOf(bd.cat) < 0 || bd.id === 'pano') continue;   /* v1.9.3: reklam panosu yolda (Dekoratif) */
         var owned = sl.b === bd.id;
         var refund = sl.b ? Math.round(bdef(sl.b).cost * 0.6) : 0;
         out.push({ id: 'b' + bd.id, ic: bd.icon, t: NM(bd.n), s: NM(bd.d), cost: upCost(bd.cost), refund: refund,
@@ -6410,10 +6696,18 @@ function barList() {
           s: NM(eu.d) + ' • ' + T('envFlow', { p: Math.round(eu.flow * 100) }), cost: eu.cost,
           blocked: lvNow < eu.lv, why: T('needLv', { l: eu.lv }), go: buyEnv });
       })(ENV_UPS[ek]);
+      /* v1.9.3 — yol vitrini: tek tek alınan çiçeklikler ve işletme adlı reklam panoları */
+      if ((S.roadFl | 0) < ROAD_FL.length) out.push({ id: 'rfl', ic: '🌷', t: T('rdFl') + '  ' + (S.roadFl | 0) + '/' + ROAD_FL.length,
+        s: T('rdFlD', { p: Math.round(FL_FLOW * 100) }), cost: flCost(),
+        go: function () { S.roadFl = (S.roadFl | 0) + 1; sfx.build(); toast(T('rdFlDone')); } });
+      if ((S.roadBb | 0) < ROAD_BB.length) out.push({ id: 'rbb', ic: '📣', t: T('rdBb') + '  ' + (S.roadBb | 0) + '/' + ROAD_BB.length,
+        s: T('rdBbD', { p: Math.round(BB_FLOW * 100) }), cost: BB_COST[S.roadBb | 0],
+        blocked: lvNow < BB_LV, why: T('needLv', { l: BB_LV }),
+        go: function () { S.roadBb = (S.roadBb | 0) + 1; sfx.build(); toast(T('rdBbDone')); } });
       for (i = 0; i < DECOR.length; i++) {
         var dc = DECOR[i];
         if (dc.got || AREAS[dc.z].locked) continue;
-        out.push({ id: 'd' + i, ic: dc.icon, t: NM(dc.n), s: T('decorGroup') + ' • ' + NM(AREAS[dc.z].n), cost: dc.cost,
+        out.push({ id: 'd' + i, ic: dc.icon, t: NM(dc.n), s: T('decorGroup') + ' • ' + (dc.road ? T('roadShow') : NM(AREAS[dc.z].n)), cost: dc.cost,
           blocked: dc.lv && lvNow < dc.lv, why: T('needLv', { l: dc.lv }),
           go: function (k) { return function () { DECOR[k].got = true; sfx.build(); toast(T('decorBought', { n: NM(DECOR[k].n) })); }; }(i) });
       }
@@ -6589,7 +6883,7 @@ function renderProjPanel() {
       '<button class="buy' + (okR2 && S.cash >= lc ? (cfId === 'lic' ? ' cf' : '') : ' no') + '" data-x="lic">' +
       (okR2 ? (cfId === 'lic' ? T('confirm') : money(lc)) : T('needRep', { n: ECON.licenseRep, c: S.rep, l: levelForRep(ECON.licenseRep) })) + '</button></div>';
   }
-  if (AREAS[project.z].locked) {
+  if (AREAS[project.z].locked || !project.done) {                    /* v1.9.4: Kapalı Pazar rafta (Bölüm 2'de yeniden) */
     el.dpCards.innerHTML = PX(extra || '<div class="dempty">' + T('emptyProj') + '</div>');
     bindProjExtra(); return;
   }
@@ -6650,7 +6944,6 @@ function barHot() {
   }
   if (undecidedStalls().length) hot.level = true;
   for (i = 0; i < zoneCount(); i++) if (zoneOpen(i) && zoneFree(i) > 0 && S.cash >= hireCost('hamal', i)) hot.level = true;
-  if (!AREAS[project.z].locked && !project.done && S.cash >= 1000) hot.proj = true;
   if (M && officeReady() && !M.office && S.rep >= ECON.officeRep && S.cash >= upCost(ECON.officeCost)) hot.proj = true;
   if (M && M.office && !M.license && S.rep >= ECON.licenseRep && S.cash >= upCost(ECON.licenseCost)) hot.proj = true;
   for (i = 0; i < SERV.length; i++) {
@@ -6800,9 +7093,8 @@ function renderTab() {
         a.locked ? lockTag() : (a.lvl < MAXLV ? money(a.up[a.lvl]) : T('done')));
     }
     h += row('🌿', T('envRow'), envStage() < ENV_UPS.length ? T('envNext', { n: NM(ENV_UPS[envStage()].n), l: ENV_UPS[envStage()].lv }) : T('done'),
-      envStage() + '/' + ENV_UPS.length, '+' + Math.round(envFlow() * 100) + '% ' + T('envCust'));
-    h += row('🏛️', NM(project.n), T('stage') + ' ' + project.stage + '/5',
-      project.done ? T('done') : pct(Math.round(projPct() * 100)), project.done ? '' : money(project.total - project.inv));
+      envStage() + '/' + ENV_UPS.length, '+' + pct(Math.round((envFlow() + roadFlow()) * 100)) + ' ' + T('envCust'));   /* v1.9.5: yol vitrini dahil, dile göre % */
+    if (project.done) h += row('🏛️', NM(project.n), T('done'), T('done'));                                  /* Kapalı Pazar rafta: yalnız tamamlamış kayıtta */
     var used = SLOTS.filter(function (s) { return s.b && slotActive(s); }).length;
     var tot = SLOTS.filter(slotActive).length;
     h += row('🔨', T('mSlots'), T('mStaffCap') + ': ' + workers.length + '/' + staffCap(), used + '/' + tot);
@@ -6810,14 +7102,14 @@ function renderTab() {
       if (!zoneOpen(zq)) continue;
       var opn = counters.filter(function (c) { return c.open && c.fish && zoneOfFish(c.fish) === zq; }).length;
       var all = counters.filter(function (c) { return c.fish && !AREAS[c.z].locked && zoneOfFish(c.fish) === zq; }).length;
-      h += row('🐟', NM(AREAS[zq].n), T('zoneStaffD', { a: zoneStaff(zq), b: zoneStaffCap(zq) }), opn + '/' + all);
+      h += row('🐟', NM(AREAS[zq].n), T('mZoneRow', { a: zoneStaff(zq), b: zoneStaffCap(zq) }), opn + '/' + all);
     }
     h += row('🧾', T('mOrders'), T('mLost') + ': ' + S.lost + ' - ' + T('mCaught') + ': ' + S.caught, S.served + '');
     /* v0.4 — liman hizmet binaları genel bakış */
     for (i = 0; i < SERV.length; i++) {
       var sd2 = SERV[i], slv2 = sLvl(sd2.id);
       if (slv2 > 0) {
-        h += row(sd2.icon, NM(sd2.n), NM(sd2.lv[slv2 - 1].d), 'Lv.' + slv2 + '/5',
+        h += row(sd2.icon, NM(sd2.n), NM(sd2.lv[slv2 - 1].d), T('level') + slv2 + '/5',
           slv2 < 5 ? money(upCost(sCost(sd2.lv[slv2].c))) : T('maxLv'));
       } else {
         var wy = servLockReason(sd2);
@@ -6872,6 +7164,15 @@ Array.prototype.forEach.call(document.querySelectorAll('#menuTabs .tab'), functi
 });
 el.dpClose.onclick = closeBar;
 el.menuBtn.onclick = function () { openPauseMenu(); };
+/* v1.9.1 — Açık Tezgâhlar kısayolu ☰'ün yanında: ikinci tezgâh kurulunca görünür */
+var stallBtn = document.getElementById('stallBtn');
+stallBtn.onclick = function () { sfx.tap(); openStallScreen(); };
+function syncStallBtn() {
+  var n = 0;
+  for (var i = 0; i < counters.length; i++) if (counters[i].fish && !AREAS[counters[i].z].locked) n++;
+  stallBtn.classList.toggle('hidden', !S.started || n < 2);
+  stallBtn.classList.toggle('new', S.started && undecidedStalls().length > 0);   /* yeni tezgâh kararını bekliyor */
+}
 el.closeMenu.onclick = function () { el.menuScreen.classList.add('hidden'); syncPause(); };
 el.menuSet.onclick = function () { el.menuScreen.classList.add('hidden'); openSettings(true); };
 el.menuSave.onclick = function () { manualSave(); };
@@ -6949,13 +7250,12 @@ function forgetMe(done, tries) {
   rpc('bt_forget', { p_player: old }).then(function () { local(); toast(T('forgetDone')); },
     function () { toast(T('forgetFail')); sfx.bad(); });
 }
-/* KVKK aydınlatma: çevrimiçi skor tablosu zorunlu; ilk gönderimden önce oyuncuya bir kez ne paylaşıldığı gösterilir.
-   Tek düğme (TAMAM); geri tuşuyla kapatmak da "okundu" sayılır. */
-function showOnlineNotice(then) {
-  if (!ONLINE || onlineAsked) { if (then) then(); return; }
-  function seen() { onlineAsked = true; savePref(); el.askNo.classList.remove('hidden'); if (S.started) submitScore(true); if (then) then(); }
-  ask(T('onlineInfo'), T('onlineInfoOk'), seen, seen);
-  el.askNo.classList.add('hidden');
+/* v1.9: bilgilendirme oyun başında ekrana çıkmaz (test oyuncuları tanıdık); menüdeki "Veriler & Gizlilik"ten okunur.
+   Eski çağrı yerleri bozulmasın diye fonksiyon kaldı: artık yalnız devam ettirir. */
+function showOnlineNotice(then) { if (then) then(); }
+function openDataInfo() {
+  ask(T('onlineInfo'), T('privBtn'), function () { el.privBtn.onclick(); }, null);
+  el.askNo.textContent = T('onlineInfoOk');
 }
 el.forgetBtn.onclick = function () { ask(T('forgetAsk'), T('forgetYes'), function () { forgetMe(); }); };
 el.privBtn.onclick = function () { el.privFrame.src = 'privacy.html#' + lang; el.privScr.classList.remove('hidden'); syncPause(); sfx.tap(); };
@@ -6970,9 +7270,24 @@ Array.prototype.forEach.call(document.querySelectorAll('#autoSeg button'), funct
 Array.prototype.forEach.call(document.querySelectorAll('#autoOpts button'), function (b) {
   b.onclick = function () { pickAutosave(parseInt(b.dataset.m, 10)); };
 });
+/* v1.9.5 — ayarlar › çalma listesi: "Sırayla" ya da tek parça; çalan parçanın yanında ♪ */
+function renderPlaylist() {
+  var box = document.getElementById('musList'); if (!box) return;
+  var now = music.on ? music.si : -9, h = '<button data-p="-1"' + (musicPick < 0 ? ' class="on"' : '') + '>↻ ' + escH(T('musAuto')) + '<small>' + escH(T('musAutoD')) + '</small></button>';
+  for (var i = 0; i < SONGS.length; i++) h += '<button data-p="' + i + '"' + (musicPick === i ? ' class="on"' : '') + '>' + (now === i ? '♪ ' : '') + escH(NM(SONGS[i].n)) + '<small>' + escH(NM(SONGS[i].d)) + '</small></button>';
+  box.innerHTML = h;
+  Array.prototype.forEach.call(box.querySelectorAll('button'), function (b) {
+    b.onclick = function () {
+      musicPick = parseInt(b.dataset.p, 10);
+      if (musicPick >= 0 && musicEnabled) musicPlay(S.started ? 'game' : 'menu', musicPick);
+      savePref(); sfx.tap(); renderPlaylist();
+    };
+  });
+}
 function syncSettingsUI() {
   Array.prototype.forEach.call(document.querySelectorAll('#autoSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.m, 10) === S.autoMin); o.textContent = T('autoMinN', { m: o.dataset.m }); });
   Array.prototype.forEach.call(document.querySelectorAll('#musSeg button'), function (o) { o.classList.toggle('on', (o.dataset.m === '1') === musicEnabled); });
+  renderPlaylist();
 
   Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.s, 10) === volLvl); });
   Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.z, 10) === zoomLvl); });
@@ -6994,6 +7309,8 @@ function frame(ts) {
   updateWorkers(dt);
   updateStations(dt);
   updateCustomers(dt);
+  updateYardFolk(dt);
+  updateMgrJokers(dt);                             /* v1.9.4: yoğun saatte müdürler tezgâhta */                              /* v1.9.2: hizmet sahası yayaları (görsel) */
   updateDay(dt);                    /* v1.2 — gün döngüsü + depo kilidi */
   updateSpecials(dt);               /* v0.9 — özel isimli müşteriler */
   updateFumeMachines(dt);           /* v1.3 — tezgâh füme makinesi */
@@ -7059,6 +7376,7 @@ function start() {
   S.started = true; paused = false; syncPause();
   ensureAudio(); applyVolume(); musicPlay('game');       /* oyunda müzik arkadan mırıldanır */
   showOnlineNotice(logPlay);
+  progEv('oyun'); evFlush();
   retOnStart();                                          /* uzun ayrılıktan dönüş: "Sen yokken…" */
 }
 /* OYNA: kayıt varsa devam; yoksa işletme adı → oyun. Adı olmayan eski kayıt önce ad sorar. */
@@ -7125,6 +7443,7 @@ function backAction() {
     if (!el.slotScr.classList.contains('hidden')) { el.slotBack.click(); return true; }
     return false;
   }
+  if (!el.endScr.classList.contains('hidden')) { el.endGo.click(); return true; }
   if (!el.chEnd.classList.contains('hidden')) { el.chEndGo.click(); return true; }
   if (!el.chScr.classList.contains('hidden')) { el.chClose.click(); return true; }
   if (!el.autoScr.classList.contains('hidden')) return true;      /* otomatik kayıt seçimi zorunlu */
@@ -7714,7 +8033,12 @@ function relLevel(rel) { return rel >= 95 ? 5 : rel >= 80 ? 4 : rel >= 60 ? 3 : 
 function statusName(st) { return T(st === 'strong' ? 'stStrong' : st === 'ok' ? 'stOk' : st === 'press' ? 'stPress' : 'stRestr'); }
 function chgPct(c) { return c.prev ? ((c.price - c.prev) / c.prev) * 100 : 0; }
 function chgCls(v) { return v > 0.05 ? 'up' : v < -0.05 ? 'dn' : 'fl'; }
-function fmtPct(v) { return (v >= 0 ? '+' : '') + (Math.round(v * 10) / 10).toString().replace('.', ',') + '%'; }
+/* v1.9.5 — holding avantajlarının oyuncuya görünen adları */
+var PERK_N = { netrate: { tr: 'Ağ hızı', en: 'Net speed' }, rate: { tr: 'Üretim hızı', en: 'Production speed' }, stock: { tr: 'Stok', en: 'Stock' },
+  wspeed: { tr: 'Personel hızı', en: 'Staff speed' }, procspeed: { tr: 'İşleme hızı', en: 'Processing speed' }, value: { tr: 'Satış fiyatı', en: 'Sale price' },
+  custval: { tr: 'Müşteri ödemesi', en: 'Customer spend' }, flow: { tr: 'Müşteri akışı', en: 'Customer flow' }, upcost: { tr: 'Yükseltme indirimi', en: 'Upgrade discount' },
+  ctrmul: { tr: 'Kontrat ödülü', en: 'Contract reward' }, premium: { tr: 'Seçkin müşteri', en: 'Premium customers' }, vip: { tr: 'VIP müşteri', en: 'VIP customers' }, rare: { tr: 'Nadir balık', en: 'Rare catch' } };
+function fmtPct(v) { var n = (Math.round(Math.abs(v) * 10) / 10).toString(), sg = v >= 0 ? '+' : '-'; return lang === 'tr' ? sg + '%' + n.replace('.', ',') : sg + n + '%'; }
 
 function renderOffice() {
   if (!M) return;
@@ -7848,11 +8172,11 @@ function renderOffice() {
     for (i = 0; i < subs.length; i++) {
       var sd = cdef(subs[i].id);
       h += '<div class="crow" style="cursor:default"><span class="sq" style="background:' + sd.col + '"></span>' +
-        '<div class="nm">' + NM(sd.n) + '<small>' + NM(sd.ctrl) + ' • %' + (Math.round(ownPct(subs[i]) * 1000) / 10) + '</small></div></div>';
+        '<div class="nm">' + NM(sd.n) + '<small>' + NM(sd.ctrl) + ' • ' + pct(Math.round(ownPct(subs[i]) * 1000) / 10) + '</small></div></div>';
     }
     var pk = [];
     ['netrate', 'rate', 'stock', 'wspeed', 'procspeed', 'value', 'custval', 'flow', 'upcost', 'ctrmul', 'premium', 'vip', 'rare'].forEach(function (k) {
-      var v = perkSum(k); if (v > 0.0001) pk.push(k + ' +' + (v < 1 ? Math.round(v * 100) + '%' : Math.round(v)));
+      var v = perkSum(k); if (v > 0.0001) pk.push(NM(PERK_N[k] || { tr: k, en: k }) + ' +' + (v < 1 ? pct(Math.round(v * 100)) : Math.round(v)));   /* v1.9.5: ham anahtar değil, okunur ad */
     });
     h += '<div class="note">' + T('perks') + ': ' + (pk.length ? pk.join(' • ') : '—') + '</div>';
   }
@@ -7951,11 +8275,17 @@ var NAME_FMT = ['{f} Balıkçılık', '{f} Mutfak', '{f} Balık Evi', '{g} Balı
 var NAME_FIX = ['Hamsi Keyfi', 'Martı Balıkçılık', 'Mavi Liman', 'Poyraz Balık', 'Yakamoz Balık Evi',
   'Nazar Balıkçılık', 'Karadeniz Sofrası', 'Lodos Su Ürünleri', 'İskele Başı', 'Ağ & Olta', 'Dalga Balıkçılık',
   'Palamut Durağı', 'Rıhtım Balık Evi', 'Uskumru Kardeşler', 'Yıldız Balık Evi', 'Kuzey Rüzgârı'];
+/* v1.9.5 — İngilizce arayüzde öneriler İngilizce kalıpla (kişi adları Türkçe kalır: özel isim) */
+var NAME_FMT_EN = ["{f}'s Fish House", '{f} Seafood', '{f} & Sons', 'Captain {f} Fisheries', "{f}'s Kitchen", '{f} Fish Market',
+  "{f}'s Stall", '{f} Brothers', '{f} Fisheries', "{f}'s Table"];
+var NAME_FIX_EN = ['Anchovy Delight', 'Seagull Fisheries', 'Blue Harbour', 'North Wind Fish', 'Moonlit Fish House', 'Evil Eye Fisheries',
+  'Black Sea Table', 'Southwind Seafood', 'Pier Head', 'Net & Line', 'Wave Fisheries', 'Bonito Stop', 'Quay Fish House', 'Mackerel Brothers'];
 function randomCompany(avoid) {
+  var en = lang === 'en';
   for (var k = 0; k < 40; k++) {
     var n;
-    if (Math.random() < 0.22) n = pick(NAME_FIX);
-    else { var f = pick(NAME_FIRST); n = pick(NAME_FMT).replace('{f}', f).replace('{g}', trGen(f)); }
+    if (Math.random() < 0.22) n = pick(en ? NAME_FIX_EN : NAME_FIX);
+    else { var f = pick(NAME_FIRST); n = pick(en ? NAME_FMT_EN : NAME_FMT).replace('{f}', f).replace('{g}', trGen(f)); }
     if (n.length <= 24 && (!avoid || avoid.indexOf(n) < 0)) return n;
   }
   return 'Hasan Balıkçılık';
@@ -7985,7 +8315,7 @@ var PLAYER_ID = (function () {                      /* Ayarlar › Skor kaydım�
   if (!v || v.length < 6) { v = 'p' + newRunId(); Store.set(k, v); }
   return v;
 })();
-function netOn() { return !!ONLINE && onlineOK && onlineAsked && navigator.onLine !== false; }   /* çevrimdışıyken deneme bile */
+function netOn() { return !!ONLINE && onlineOK && navigator.onLine !== false; }   /* çevrimdışıyken deneme bile */
 function rpc(name, args) {
   return fetch(ONLINE.url + '/rest/v1/rpc/' + name, {
     method: 'POST',
@@ -8041,6 +8371,23 @@ function submitScore(force) {
     if (r === 'ok') { netSent.at = Date.now(); netSent.s = e.s; }
     else if (r === 'too_fast') netSent.dirty = true;
   }, function () { netSent.busy = false; netSent.dirty = true; netSent.at = Date.now(); });
+}
+/* v1.9 İLERLEME OLAYLARI: her oyunda (runId) her olay bir kez gönderilir — oyuncular nereye kadar geldi, nerede bıraktı.
+   Yalnız oyun içi kilometre taşları (eğitim adımı, gün, bölge, müdür, bölüm) + o anki oyun günü/süresi. */
+S.evs = {};
+var EV_Q = [], evBusy = false;
+function progEv(name) {
+  if (!S.evs) S.evs = {};
+  if (S.evs[name]) return;
+  S.evs[name] = 1;
+  if (EV_Q.length < 60) EV_Q.push({ p_player: PLAYER_ID, p_run: S.runId || '', p_ev: name, p_day: day.n || 1, p_play: Math.round(S.play || 0) });
+  evFlush();
+}
+function evFlush() {
+  if (!netOn() || evBusy || !EV_Q.length) return;
+  var it = EV_Q.shift(); evBusy = true;
+  it.p_player = PLAYER_ID;                               /* "verilerimi sil" sonrası yeni kimlikle */
+  rpc('bt_event', it).then(function () { evBusy = false; evFlush(); }, function () { evBusy = false; EV_Q.unshift(it); });
 }
 /* her oturum açılışında bir kez: oyuncu + oyun sayacı */
 var playLogged = false;
@@ -8795,16 +9142,20 @@ function updateIntro(dt) {
    İçinde: Personel Kulübesi (seviyeli) • Depo (kendi personeliyle) • Ticaret Merkezi • Balık Hali
    ========================================================= */
 /* MEYDAN ve BRIDGE yukarıda (dünya verisiyle) tanımlı: manzara üretimi açılışta onları kullanır */
-var HUT = { x: 16.2, y: 0.7, w: 1.5, h: 1.2, lvl: 0, door: { x: 16.2, y: 1.8 } };
-var DEPOT = { x: 19.5, y: 1.1, w: 2.4, h: 1.8, lvl: 0, door: { x: 18.0, y: 2.4 }, shelf: {} };
-var WHALL = { x: 19.5, y: 5.0, w: 2.4, h: 1.6, built: false, door: { x: 18.0, y: 5.0 } };
-office.x = 16.3; office.y = 5.0; office.z = 0;           /* Ticaret Merkezi meydana taşındı */
+/* v1.9.2 — meydan yerleşimi: kuzeyde kulübe + depo, güneyde ofis + hal, ortası yürüyüş alanı; kapılar ön (güney) cephede.
+   Ekranda yatay konum x - y: yan yana binalar bu eksende ayak izlerinden fazla ayrık (üst üste binmez). */
+var HUT = { x: 16.1, y: 1.1, w: 1.5, h: 1.2, lvl: 0, door: { x: 16.45, y: 2.25 } };
+var DEPOT = { x: 20.0, y: 1.4, w: 2.4, h: 1.8, lvl: 0, door: { x: 19.6, y: 2.95 }, shelf: {} };
+var WHALL = { x: 19.9, y: 6.8, w: 2.4, h: 1.6, built: false, door: { x: 19.5, y: 8.15 }, pal: {} };   /* pal: Hal'den alınıp depoya taşınmayı bekleyen mal */
+office.x = 16.4; office.y = 8.1; office.z = 0;           /* Ticaret Merkezi meydana taşındı */
 var HUT_LV = [{ c: 1500, l: 2 }, { c: 4000, l: 3 }, { c: 9000, l: 5 }, { c: 18000, l: 7 }, { c: 36000, l: 9 }];
 var DEPOT_LV = [{ c: 3000, l: 3, cap: 30 }, { c: 8000, l: 5, cap: 60 }, { c: 20000, l: 6, cap: 100 }, { c: 45000, l: 8, cap: 160 }];
 var WHALL_COST = 6000, WHALL_LV = 4;
 var DEPOT_ROLES = ['depocu', 'sevkiyat'];
 
-function onEast(x) { return x > 9.7; }
+/* bölgeler x<10'da biter; tezgâh kasaları x≈9.9'da durur. Sınır 9.7 iken kasa "meydan tarafı" sayılıyor,
+   2. ve 3. bölgenin tahsildarı kasaya gitmek için köprüye yönelip köprü ucunda takılıyordu. */
+function onEast(x) { return x > 10.0; }
 /* köprü rotası: bölgeler ↔ meydan arasında giden çalışan önce köprüye yönelir */
 function routeVia(a, tx, ty) {
   var aE = onEast(a.x), tE = onEast(tx);
@@ -8966,6 +9317,36 @@ function aiSevkiyat(w, sp, dt) {
   idleAtDepot(w, sp, dt);
 }
 
+/* ---------- v1.9.4 — Hal paleti ve Hal Hamalı ----------
+   Hal'den alınan mal artık depoya ışınlanmaz: Hal'in önündeki palette bekler. Oyuncu Hal kapısında durunca
+   sırtlar (depo kapısında bırakır) ya da Hal Hamalı paletten depoya taşır. Satış depodan anında yapılır. */
+var HAL_STAFF = 2;
+function palCount() { var n = 0; for (var k in WHALL.pal) n += WHALL.pal[k]; return n; }
+function halStaff() { var n = 0; for (var i = 0; i < workers.length; i++) if (workers[i].role === 'halhamal') n++; return n; }
+function iHalPick(a, dt) {
+  var k = null; for (var q in WHALL.pal) if (WHALL.pal[q] > 0) { k = q; break; }
+  if (!k) return false;
+  var it = keyItem(k); if (!fits(a, it)) return false;
+  return tryTake(a, dt, function () {
+    if (!(WHALL.pal[k] > 0)) return;
+    if (--WHALL.pal[k] <= 0) delete WHALL.pal[k];
+    a.carry.push(it); fly(WHALL.door.x, WHALL.door.y - 0.4, 6, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.24); sfx.pick();
+  });
+}
+function aiHalHamal(w, sp, dt) {
+  if (!WHALL.built || !DEPOT.lvl) { goTo(w, WHALL.door.x + 0.8, WHALL.door.y + 0.6, sp, dt, 0.6); return; }
+  var full = carryW(w) >= ROLES.halhamal.cap - 0.5;
+  if (w.mode === 'load' && (full || !palCount()) && hasCarry(w, isGoods)) w.mode = 'drop';
+  if (w.mode === 'drop') {
+    if (!hasCarry(w, isGoods)) { w.mode = 'load'; return; }
+    if (depotFree() <= 0) { idleAtDepot(w, sp, dt); return; }
+    if (goTo(w, DEPOT.door.x + 0.3, DEPOT.door.y, sp, dt, 0.7)) iDepotIn(w, dt);
+    return;
+  }
+  if (palCount() && depotFree() > carryW(w)) { if (goTo(w, WHALL.door.x, WHALL.door.y, sp, dt, 0.7) && !iHalPick(w, dt)) w.mode = 'drop'; return; }
+  if (hasCarry(w, isGoods)) { w.mode = 'drop'; return; }
+  goTo(w, WHALL.door.x + 0.8 + (w.name.length % 2) * 0.4, WHALL.door.y + 0.6, sp, dt, 0.6);
+}
 /* ---------- Balık Hali (meydan): depodaki malı günlük fiyatla sat / toptan al ---------- */
 function halProducts() {
   var out = [];
@@ -8993,7 +9374,7 @@ function openHal() {
 function closeHal() { el.halScr.classList.add('hidden'); syncPause(); }
 function renderHal() {
   el.halTitle.textContent = T('whall');
-  el.halSub.textContent = T('halSub', { d: day.n, a: depotCount(), b: depotCap() });
+  el.halSub.textContent = T('halSub', { d: day.n, a: depotCount(), b: depotCap() }) + (palCount() ? ' • ' + T('halPalN', { n: palCount() }) : '');
   var h = '', list = halProducts();
   for (var i = 0; i < list.length; i++) {
     var k = list[i], it = keyItem(k), n = DEPOT.shelf[k] || 0, m = halMul(k);
@@ -9014,13 +9395,13 @@ function renderHal() {
         for (i2 = 0; i2 < n; i2++) if (depotTake(k)) got += halSell(k);
         if (got) { S.cash += got; earn(got); noteDayIncome(got); sfx.coin(); toast(T('halSold', { n: n, v: money(got) })); }
       } else {
-        n = Math.min(n, depotFree());
+        n = Math.min(n, depotFree() - palCount());           /* v1.9.4: palette bekleyen de depoda yer tutar */
         var cost = halBuy(k) * n;
-        if (!n) { toast(T('depotFull')); sfx.bad(); return; }
+        if (n <= 0) { toast(T('depotFull')); sfx.bad(); return; }
         if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return; }
         S.cash -= cost;
-        for (i2 = 0; i2 < n; i2++) depotPut(keyItem(k));
-        sfx.buy(); toast(T('halBought', { n: n, v: money(cost) }));
+        WHALL.pal[k] = (WHALL.pal[k] || 0) + n;                /* mal Hal paletinde: hamal ya da oyuncu depoya taşır */
+        sfx.buy(); toast(T(halStaff() ? 'halBoughtPal' : 'halBoughtCarry', { n: n, v: money(cost) }));
       }
       save(); renderHal();
     };
@@ -9051,6 +9432,9 @@ function meydanCards(out) {
   out.push({ id: 'mhal', ic: '🏪', t: T('whall'), s: T('whallD'), cost: upCost(WHALL_COST), owned: WHALL.built,
     blocked: !WHALL.built && (!DEPOT.lvl || lvNow < WHALL_LV), why: !DEPOT.lvl ? T('needDepot') : T('needLv', { l: WHALL_LV }),
     buyTxt: T('build'), go: function () { WHALL.built = true; sfx.build(); addPuff(WHALL.x, WHALL.y, '#ffc94a'); toast(T('whallBuilt')); } });
+  if (WHALL.built) out.push({ id: 'mrhalhamal', ic: ROLES.halhamal.icon, t: NM(ROLES.halhamal.n) + ' (' + halStaff() + '/' + HAL_STAFF + ')',
+    s: NM(ROLES.halhamal.d) + ' • ' + money(ROLES.halhamal.wage) + perMin(), cost: hireCost('halhamal', -1), blocked: halStaff() >= HAL_STAFF, why: T('halStaffFull'),
+    go: function () { hire('halhamal', false, -1); save(); } });
   if (!officeBuilt()) out.push({ id: 'moff', ic: '🏛️', t: T('office'), s: T('officeInMeydan'), pick: T('goProj'),
     go: function () { openBar('proj'); } });
 }
@@ -9112,38 +9496,74 @@ function plotOutline(o, label, col) {
   drawJunk({ x: o.x - 0.35, y: o.y - 0.1, t: 'tahta', v: 0.2 });
   drawJunk({ x: o.x + 0.45, y: o.y + 0.25, t: o.w > 2 ? 'varil' : 'kasa', v: 0.7 });
 }
+/* v1.9.2 — meydan binaları yeniden: kapı, pencere ve levhalar izometrik duvarlara oturur (ekran pikseli değil),
+   bina adı yalnız kapıya yaklaşınca çıkar (üstte sürekli duran levha yok), her seviye görünür biçimde farklı. */
+function nearDoor(d, r) { return dist2(player.x, player.y, d.x, d.y) < (r || 3.2); }
 function drawHut() {
-  var o = HUT;
-  if (!o.lvl) { plotOutline(o, '🏚️ ' + T('hutName') + ' • ' + T('buildAt')); return; }
-  var x = o.x - o.w / 2, y = o.y - o.h / 2, sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0));
+  var o = HUT, L = o.lvl, k;
+  if (!L) { plotOutline(o, '🏚️ ' + T('hutName') + ' • ' + T('buildAt')); return; }
+  var x0 = o.x - o.w / 2, y0 = o.y - o.h / 2, x1 = x0 + o.w, y1 = y0 + o.h, H = 13 + L * 1.5, dx = o.door.x;
   shadow(o.x, o.y, 1.0);
-  isoBox(x, y, o.w, o.h, 0, 16 + o.lvl * 2, '#d2a468', '#7a4e2a', '#9a6836');
-  wallWood(sx, sy, 26, 14 + o.lvl * 2, '#9a6836');
-  roofTile(sx, sy - 16 - o.lvl * 2, 32, o.lvl);
-  px(sx - 3, sy - 9, 6, 9, '#4a2f1c'); px(sx + 1, sy - 5, 1, 1, PAL.brass);
-  windowTR(sx + 6, sy - 12, 5, 4, true);
-  /* v1.5: personel kulübesinin kimliği — kapı önünde sıra, çamaşır ipinde önlükler, baret askısı */
-  isoBox(o.x - 0.5, o.y + o.h / 2 + 0.12, 0.7, 0.14, 0, 3, PAL.woodLite, PAL.woodDark, PAL.wood);
-  var lx0 = o.x + o.w / 2 + 0.15, ly0 = o.y - o.h / 2, ly1 = o.y + o.h / 2;
-  vline(lx0, ly0, 0, 14, PAL.woodDark); vline(lx0, ly1, 0, 14, PAL.woodDark); hline(lx0, ly0, lx0, ly1, 13, '#d8d2c4');
-  for (var cl = 0; cl < Math.min(4, o.lvl + 1); cl++) { var cy2 = ly0 + 0.2 + cl * 0.25; wallQ(lx0, cy2, lx0, cy2 + 0.14, 8, 13, ['#e8762b', '#3f6fb0', '#f4f0e4', '#c8553d'][cl]); }
-  if (o.lvl >= 3) { px(sx - 14, sy - 12, 5, 2, '#e6b93a'); px(sx - 14, sy - 16, 5, 2, '#e6b93a'); px(sx - 15, sy - 14, 1, 8, PAL.woodDark); }
-  labelAt(o.x, o.y, 34 + o.lvl * 2, T('hutName') + ' ' + T('level') + o.lvl, '#ffd9a8', '👷');
+  isoBox(x0 - 0.05, y0 - 0.05, o.w + 0.1, o.h + 0.1, 0, 2, PAL.stoneLite, PAL.stoneDark, PAL.stone);        /* taş temel */
+  var wl = L >= 5 ? [PAL.lime, PAL.limeSh, '#e6dec9'] : ['#d2a468', '#7a4e2a', '#9a6836'];
+  isoBox(x0, y0, o.w, o.h, 2, H, wl[0], wl[1], wl[2]);
+  if (L < 5) for (k = 1; k < 5; k++) { var zz = 2 + k * (H - 2) / 5; hline(x0, y1, x1, y1, zz, '#6a4224'); hline(x1, y0, x1, y1, zz, '#80532c'); }
+  else { wallQ(x0, y1, x1, y1, 2, 4, PAL.stoneDark); wallQ(x1, y0, x1, y1, 2, 4, PAL.stoneDark); }            /* badanalı: taş etek */
+  winF(dx - 0.2, dx + 0.2, y1, 2, 11, '#4a2f1c', '#6a4224');                                                  /* kapı */
+  px(R(pX(dx + 0.12, y1)), R(pY(dx + 0.12, y1, 7)), 1, 1, PAL.brass);
+  winR(x1, o.y - 0.25, o.y + 0.2, 6, 11, '#ffd98f', '#6a4224');                                                /* yan pencere */
+  if (L >= 4) winF(x0 + 0.2, x0 + 0.5, y1, 6, 11, '#ffd98f', '#6a4224');                                      /* ikinci pencere */
+  roofGableX(x0 - 0.12, x1 + 0.12, y0 - 0.12, y1 + 0.12, H, 8 + L, PAL.tileLite, PAL.tile, wl[2], PAL.tileDark, 5);
+  if (L >= 4) {                                                                                               /* baca + duman */
+    isoBox(x0 + 0.25, o.y - 0.25, 0.2, 0.2, H + 2, H + 13 + L, '#b7a88a', '#7d725c', '#9c9079');
+    if (Math.random() < 0.03) addPuff(x0 + 0.35, o.y - 0.15, '#d8d2c4');
+  }
+  if (L >= 2) {                                                                                               /* pencere önünde çiçek kasası */
+    isoBox(x1, o.y - 0.3, 0.1, 0.55, 5, 6.5, PAL.wood, PAL.woodDark, '#8a5a33');
+    for (k = 0; k < 4; k++) { var fy = o.y - 0.25 + k * 0.14; px(R(pX(x1 + 0.05, fy)), R(pY(x1 + 0.05, fy, 8)), 2, 2, ['#e5533d', '#ffc94a', '#f4f0e4', '#c8553d'][k]); }
+  }
+  if (L >= 3) {                                                                                               /* kapı önü sundurma + bank */
+    var px0 = dx - 0.45, px1 = dx + 0.45, py = y1 + 0.45;
+    vline(px0, py, 0, 12, PAL.woodDark); vline(px1, py, 0, 12, PAL.woodDark);
+    roofPlane([[px0 - 0.05, y1, 14], [px1 + 0.05, y1, 14], [px1 + 0.05, py + 0.05, 11], [px0 - 0.05, py + 0.05, 11]], PAL.tile, PAL.tileDark, 3);
+    isoBox(x1 - 0.45, y1 + 0.15, 0.4, 0.12, 0, 3, PAL.woodLite, PAL.woodDark, PAL.wood);
+  }
+  if (L >= 5) {                                                                                               /* bayrak */
+    vline(x1 + 0.1, y0 + 0.1, 0, 30, '#d8d2c4');
+    var fsx = R(pX(x1 + 0.1, y0 + 0.1)), fsy = R(pY(x1 + 0.1, y0 + 0.1, 30)), wv = R(Math.sin(gameT * 2));
+    px(fsx + 1, fsy, 8, 5, '#e30a17'); px(fsx + 4 + wv, fsy + 2, 2, 1, '#ffffff');
+  }
+  if (nearDoor(o.door)) uiLabel(o.x, o.y, H + 12 + L, T('hutName') + ' ' + T('level') + L, '#ffd9a8', 1);
 }
 function drawDepot() {
-  var o = DEPOT;
-  if (!o.lvl) { plotOutline(o, '📦 ' + T('depotName') + ' • ' + T('buildAt')); return; }
-  var x = o.x - o.w / 2, y = o.y - o.h / 2, sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0));
-  shadow(o.x, o.y, 1.5);
-  isoBox(x, y, o.w, o.h, 0, 22 + o.lvl * 2, '#c9c2b0', '#8a8474', '#a8a18f');
-  roofZinc(sx, sy - 22 - o.lvl * 2, 50, o.lvl);
-  /* sürgülü kapı */
-  px(sx - 14, sy - 16, 12, 16, '#3c4650'); px(sx - 14, sy - 16, 12, 1, '#5d6a75');
-  for (var i = 0; i < 4; i++) px(sx - 13 + i * 3, sy - 15, 1, 14, '#2c343c');
-  /* raf doluluğu: kapının yanında sandık yığını */
+  var o = DEPOT, L = o.lvl, k;
+  if (!L) { plotOutline(o, '📦 ' + T('depotName') + ' • ' + T('buildAt')); return; }
+  /* sv1 küçük sundurmalı depo; sv2+ tam boy; sv3 çatı ışıklığı; sv4 yan ek + rampa */
+  var sw = L === 1 ? 0.75 : 1, W = o.w * sw, D = o.h * sw, H = [0, 15, 18, 20, 21][L];
+  var x1 = o.x + o.w / 2, y1 = o.y + o.h / 2, x0 = x1 - W, y0 = y1 - D, dx = o.door.x;
+  shadow(x0 + W / 2, y0 + D / 2, 1.5 * sw);
+  isoQuad(x0 - 0.1, y0 - 0.1, W + 0.2, D + 0.35, 0.4, '#a8a08c');                                               /* beton zemin */
+  isoBox(x0, y0, W, D, 0, H, '#c9c2b0', '#8a8474', '#a8a18f');
+  for (k = 1; k < W / 0.16; k++) vline(x0 + k * 0.16, y1, 0, H, '#7c7667');                                   /* oluklu sac */
+  for (k = 1; k < D / 0.16; k++) vline(x1, y0 + k * 0.16, 0, H, '#958e7d');
+  wallQ(x0, y1, x1, y1, H - 2, H, '#6c767d'); wallQ(x1, y0, x1, y1, H - 2, H, '#7d868d');                     /* saçak */
+  winF(dx - 0.35, dx + 0.35, y1, 0, 12, '#3c4650', '#2c343c');                                                 /* sürgülü kapı */
+  for (k = 1; k < 5; k++) vline(dx - 0.35 + k * 0.14, y1, 0, 12, '#2c343c');
+  if (L >= 3) winF(x0 + 0.25, x0 + 0.6, y1, 0, 10, '#3c4650', '#2c343c');                                     /* ikinci kapı */
+  roofGableX(x0 - 0.1, x1 + 0.1, y0 - 0.1, y1 + 0.1, H, 6 + L, PAL.zinc, PAL.zincDark, '#a8a18f', '#6c767d', 6);
+  if (L >= 3) roofPlane([[o.x - 0.4, y1 - D / 4, H + 3], [o.x + 0.4, y1 - D / 4, H + 3], [o.x + 0.4, y1 - 0.1, H + 1], [o.x - 0.4, y1 - 0.1, H + 1]], '#9fbfcc', '#6c8a96', 3);   /* ışıklık */
+  if (L >= 2) {                                                                                               /* yan yükleme rampası */
+    isoBox(x1, o.y - 0.45, 0.35, 0.9, 0, 4, '#b9b3a4', '#8e897c', '#a39d8f');
+    winR(x1 + 0.001, o.y - 0.3, o.y + 0.3, 4, 14, '#5d6a75', '#2c343c');
+  }
+  if (L >= 4) {                                                                                               /* forklift rampada */
+    isoBox(x1 + 0.05, o.y + 0.5, 0.28, 0.3, 0, 6, '#e6b93a', '#a8841f', '#c99f2c');
+    vline(x1 + 0.05, o.y + 0.55, 0, 12, PAL.iron);
+  }
+  /* doluluk: kapı önünde sandık yığını (rafların ne kadar dolu olduğu görünür) */
   var fillN = Math.min(8, Math.ceil(depotCount() / Math.max(1, depotCap()) * 8));
-  for (var c = 0; c < fillN; c++) px(sx + 2 + (c % 4) * 5, sy - 5 - Math.floor(c / 4) * 5, 4, 4, c % 2 ? '#c9a15e' : '#a8793e');
-  labelAt(o.x, o.y, 40 + o.lvl * 2, T('depotName') + ' ' + depotCount() + '/' + depotCap(), '#ffd9a8', '📦');
+  for (k = 0; k < fillN; k++) crate(dx + 0.55 + (k % 2) * 0.24, y1 + 0.25 + Math.floor(k / 4) * 0.02, Math.floor((k % 4) / 2) * 4, k % 2 ? '#c9a15e' : '#a8793e');
+  if (nearDoor(o.door)) uiLabel(o.x, o.y, H + 14, T('depotName') + ' ' + depotCount() + '/' + depotCap(), '#ffd9a8', 1);
 }
 function drawWhall() {
   var o = WHALL;
@@ -9167,19 +9587,91 @@ function drawWhall() {
   wallQ(x + 0.7, y + o.h, x + 1.7, y + o.h, 13, 18, '#1f4e7a');                          /* HAL levhası: balık */
   var hx2 = R(pX(x + 1.2, y + o.h)), hy2 = R(pY(x + 1.2, y + o.h, 17));
   px(hx2 - 4, hy2, 7, 3, '#ffffff'); px(hx2 + 3, hy2 - 1, 2, 5, '#ffffff'); px(hx2 - 3, hy2 + 1, 1, 1, '#1f4e7a');
+  var pn = palCount();                                                                /* v1.9.4: kapı önünde palet */
+  if (pn) {
+    isoBox(o.door.x + 0.35, o.door.y - 0.35, 0.6, 0.45, 0, 2, '#b8895a', '#7a4e2a', '#9a6a3d');
+    for (var pc = 0; pc < Math.min(6, Math.ceil(pn / 3)); pc++) crate(o.door.x + 0.5 + (pc % 3) * 0.17, o.door.y - 0.25 + Math.floor(pc / 3) * 0.02, 2 + Math.floor(pc / 3) * 4, pc % 2 ? '#c9a15e' : '#a8793e');
+    uiBadge(o.door.x + 0.65, o.door.y - 0.1, 16, '' + pn, '#ffd9a8');
+  }
   labelAt(o.x, o.y, 30, T('whall'), '#ffd9a8', '🏪');
 }
+var MSIGN = { x: 15.6, y: 3.7 };          /* v1.9.2: köprü çıkışının güneyi — kulübenin önüne düşmez */
 function drawMeydanSign() {
-  var sx = R(pX(15.5, 1.4)), sy = R(pY(15.5, 1.4, 0));
+  var sx = R(pX(MSIGN.x, MSIGN.y)), sy = R(pY(MSIGN.x, MSIGN.y, 0));
   px(sx, sy - 14, 1, 14, '#4a2f1c');
   px(sx - 10, sy - 18, 22, 7, '#8a5a33'); px(sx - 9, sy - 17, 20, 5, '#a8734a');
-  if (dist2(player.x, player.y, 15.5, 1.4) < 40) uiText(15.5, 1.4, 22, T('meydan'), PAL.gold, 7);
+  if (dist2(player.x, player.y, MSIGN.x, MSIGN.y) < 40) uiText(MSIGN.x, MSIGN.y, 22, T('meydan'), PAL.gold, 7);
 }
 function pushMeydan(push) {
   push(HUT.x + HUT.y, drawHut);
   push(DEPOT.x + DEPOT.y, drawDepot);
   push(WHALL.x + WHALL.y, drawWhall);
-  push(15.5 + 1.4, drawMeydanSign);
+  push(MSIGN.x + MSIGN.y, drawMeydanSign);
+}
+/* =========================================================
+   v1.9.2 — HİZMET SAHASI YAYALARI (yalnız görsel; oyuncudan hiçbir şey istemez)
+   Yoldan gelen kasabalılar kurulu hizmet binalarına girip çıkar, torbayla bir sonrakine geçer, sonra yola döner.
+   Rota binaların arasından geçer: sütunlar arası koridor (YARD_LANE) + kapı hizası; binaların içinden yürünmez.
+   ========================================================= */
+var yardFolk = [], YARD_LANE = 19.75, YARD_GATES = [15.1, 18.95];   /* A sütunundaki binaların arası: yoldan giriş */
+function yardDoor(q) { return { x: q.x, y: Math.min(q.y + 1.05, SERVYARD.y1 - 0.08), p: q.id }; }
+function yardDoors() {
+  var out = [];
+  for (var i = 0; i < PLOTS.length; i++) {
+    var q = PLOTS[i], st = q.b && servState[q.b];
+    if (st && st.lvl > 0 && !(st.cons > 0) && plotActive(q)) out.push(yardDoor(q));
+  }
+  return out;
+}
+function yardRoute(f, to) { f.path = [{ x: YARD_LANE, y: f.y }, { x: YARD_LANE, y: to.y }, { x: to.x, y: to.y }]; f.to = to; }
+function updateYardFolk(dt) {
+  var doors = yardDoors(), want = doors.length ? Math.min(12, 2 + doors.length * 2) : 0, i;
+  if (yardFolk.length < want && Math.random() < dt * 0.5) {
+    var gy = pick(YARD_GATES), pool = CUST.filter(function (t) { return !t.serv; });
+    var f = { x: 14.7, y: gy, z: 0, vx: 0, vy: 0, bob: rnd(0, 6), face: 1, type: pick(pool), hair: irnd(0, 2), tone: irnd(0, 3), in: 0, visits: 0, bag: false };
+    yardRoute(f, pick(doors)); yardFolk.push(f);
+  }
+  for (i = yardFolk.length - 1; i >= 0; i--) {
+    var p = yardFolk[i];
+    if (p.in > 0) {                                           /* binanın içinde: görünmez */
+      p.in -= dt;
+      if (p.in <= 0) {
+        p.visits++; p.bag = true;
+        var alive = doors.filter(function (d) { return d.p !== p.to.p; });
+        if (p.visits >= 2 || !alive.length || Math.random() < 0.35) { var g = pick(YARD_GATES); yardRoute(p, { x: 14.7, y: g, exit: true }); }
+        else yardRoute(p, pick(alive));
+      }
+      continue;
+    }
+    var wp = p.path[0];
+    if (!wp) { yardFolk.splice(i, 1); continue; }
+    var dx = wp.x - p.x, dy = wp.y - p.y, L = Math.hypot(dx, dy), sp = 1.25;
+    if (L < 0.08) {
+      p.path.shift();
+      if (!p.path.length) {
+        if (p.to.exit) { yardFolk.splice(i, 1); continue; }
+        if (doors.some(function (d) { return d.p === p.to.p; })) p.in = rnd(2.5, 6);   /* bina hâlâ açık: içeri gir */
+        else yardRoute(p, { x: 14.7, y: pick(YARD_GATES), exit: true });
+      }
+      p.vx = 0; p.vy = 0; continue;
+    }
+    p.vx = dx / L; p.vy = dy / L;
+    p.x += p.vx * sp * dt; p.y += p.vy * sp * dt; p.bob += dt * 8;
+    p.face = pX(dx, dy) >= 0 ? 1 : -1;
+  }
+}
+function drawYardFolk(push) {
+  for (var i = 0; i < yardFolk.length; i++) (function (f) {
+    if (f.in > 0) return;
+    push(f.x + f.y + 0.2, function () {
+      var o = custOutfit(f); o.walk = true; o.mood = 1;
+      drawPerson(f, o);
+      if (f.bag) {                                            /* alışveriş torbası */
+        var sx = R(pX(f.x, f.y)), sy = R(pY(f.x, f.y, 0));
+        px(sx + f.face * 4 - 1, sy - 9, 3, 4, '#e8dcc0'); px(sx + f.face * 4 - 1, sy - 10, 3, 1, '#a8966f');
+      }
+    });
+  })(yardFolk[i]);
 }
 /* meydan kapıları: kulübe → personel paneli, hal → hal paneli (düğme), depo → oyuncu malı rafa koyar */
 function syncMeydanBtn() {
@@ -9400,7 +9892,6 @@ function chapterGroups() {
   n = 0; for (i = 0; i < DECOR.length; i++) if (DECOR[i].got) n++; add('🌺', 'chDecor', n, DECOR.length);
   add('🌿', 'chEnv', envStage(), ENV_UPS.length);
   add('🔥', 'chFume', (fumeMachine(0) ? 1 : 0) + (fumeMachine(1) ? 1 : 0), 2);
-  add('🏛️', 'chProj', project.done ? 1 : 0, 1);
   add('🏘️', 'chMeydan', (HUT.lvl ? 1 : 0) + (DEPOT.lvl ? 1 : 0) + (WHALL.built ? 1 : 0), 3);
   n = 0; for (i = 0; i < 3; i++) if (mgr(i)) n++; add('👔', 'chMgr', n, 3);
   return g;
@@ -9416,14 +9907,14 @@ function updateChapter(dt) {
   if (!S.started || S.ch1) { el.chBtn.classList.toggle('hidden', !S.started || !!S.ch1); return; }
   var pr = chapterProgress(), pc = Math.floor(pr.p * 100);
   el.chBtn.classList.remove('hidden');
-  el.chPct.textContent = pc + '%';
+  el.chPct.textContent = pct(pc);
   el.chBtn.classList.toggle('blink', !S.chSeen || pc - (S.chSeenPct || 0) >= 10);
   if (pr.d >= pr.n && pr.n > 0) openChapterEnd();
 }
 function openChapter() {
   var pr = chapterProgress();
   el.chTitle.textContent = T('chTitle'); el.chSub.textContent = T('chGoal');
-  el.chFill.style.width = Math.round(pr.p * 100) + '%'; el.chNum.textContent = pr.d + '/' + pr.n + ' • ' + Math.floor(pr.p * 100) + '%';
+  el.chFill.style.width = Math.round(pr.p * 100) + '%'; el.chNum.textContent = pr.d + '/' + pr.n + ' • ' + pct(Math.floor(pr.p * 100));
   var h = '';
   pr.g.forEach(function (q) { h += '<div class="row' + (q.d >= q.n ? ' ok' : '') + '"><div class="ic">' + q.ic + '</div><div class="tx">' + q.t + '</div><div class="vl">' + (q.d >= q.n ? '✔' : q.d + '/' + q.n) + '</div></div>'; });
   el.chRows.innerHTML = PX(h);
@@ -9452,7 +9943,7 @@ function chapterPaper() {
 }
 function openChapterEnd() {
   if (S.ch1) return;
-  S.ch1 = true; save();
+  S.ch1 = true; progEv('bolum1'); save();
   closeBar();                                                   /* açık panel sahnenin arkasında kalmasın */
   takeHarborSnap();
   openIntro(function () { showChapterCard(); }, chapterPaper());
@@ -9463,13 +9954,24 @@ function showChapterCard() {
   el.chEndK.textContent = T('chEndK'); el.chEndT.textContent = T('chEndT');
   el.chEndP.textContent = T('chEndP', { n: (S.hero && S.hero.n) || '', c: S.company || '' });
   el.chEndG.textContent = T('chEndG');
-  el.chEndGo.textContent = T('resume');
+  el.chEndFb.textContent = T('chEndFb'); el.chEndFin.textContent = T('chEndFin'); el.chEndGo.textContent = T('chEndGo');
   el.chEnd.classList.remove('hidden'); syncPause();
   sfx.levelUp(); musicPlay('game');
 }
 el.chBtn.onclick = openChapter;
 el.chClose.onclick = function () { el.chScr.classList.add('hidden'); syncPause(); };
 el.chEndGo.onclick = function () { el.chEnd.classList.add('hidden'); el.chBtn.classList.add('hidden'); syncPause(); };
+/* v1.9.4 — bölüm sonu üç seçenek: değerlendirme yaz (form kapanınca karta dönülür) · oyunu bitir (jenerik → ana menü) · devam et */
+var chFromFb = false;
+el.chEndFb.onclick = function () { chFromFb = true; el.chEnd.classList.add('hidden'); fbShow(); };
+el.chEndFin.onclick = function () {
+  el.chEnd.classList.add('hidden'); el.chBtn.classList.add('hidden');
+  el.endK.textContent = T('endK'); el.endT.textContent = T('endT'); el.endBy.textContent = T('endBy'); el.endGo.textContent = T('endGo');
+  el.endP.textContent = T('endP', { n: (S.hero && S.hero.n) || '', c: S.company || '' });
+  el.endBy.style.animation = 'none'; void el.endBy.offsetWidth; el.endBy.style.animation = '';
+  el.endScr.classList.remove('hidden'); syncPause(); musicPlay('menu', 2); sfx.star && sfx.star();   /* Yeşilçam Hatırası */
+};
+el.endGo.onclick = function () { el.endScr.classList.add('hidden'); saveAndQuit(); };
 
 /* v1.3.2 — yerleşim denetimi: tam gelişmiş limanda her nesnenin kapladığı alan (en büyük hâliyle).
    Aynı "own" değerine sahip parçalar birbirine ait (ör. tezgâh + tepsisi) ve çakışma sayılmaz. */
@@ -9604,8 +10106,6 @@ var ACH = [
     t: { tr: 'Liman Canlanıyor', en: 'The Harbor Wakes Up' }, d: { tr: 'İlk hizmet binanı kur.', en: 'Build your first service building.' } },
   { id: 'tam_otomatik', c: 'buy', ic: 'ag', r: { rep: 2 }, chk: function () { return _anyZone(function (z) { return zoneAuto(z) && !!mgr(z); }); },
     t: { tr: 'Kendi Kendine Dönen Çark', en: 'The Wheel Turns Itself' }, d: { tr: 'Bir bölgeyi müdürüyle tam otomatiğe al.', en: 'Put a zone on full auto with its manager.' } },
-  { id: 'kapali_pazar', c: 'buy', ic: 'proje', r: { rep: 5 }, chk: function () { return !!project.done; },
-    t: { tr: 'Çatı Altında', en: 'Under One Roof' }, d: { tr: 'Kapalı Pazar\'ı tamamla.', en: 'Complete the Covered Market.' } },
   { id: 'bolum1', c: 'buy', ic: 'fener', r: { rep: 10 }, chk: function () { return !!S.ch1; },
     t: { tr: 'İskeleden İşletmeye', en: 'From Pier to Business' }, d: { tr: 'Bölüm 1\'i tamamla.', en: 'Complete Chapter 1.' } },
 
@@ -9941,8 +10441,26 @@ camX = pX(player.x, player.y); camY = pY(player.x, player.y, 0);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { });
 /* açılış akışı: kayıt yoksa gazete hikâyesi → ana menü. "Yeni Oyun" ile silinip gelindiyse
    hikâye → doğrudan işletme adı (oyuncu zaten yeni oyun dedi). */
+/* v1.9 ilk açılış: önce dil seçimi (büyük iki düğme), sonra doğrudan gazete hikâyesi, sonra ana menü.
+   Dil düğmesine dokunmak ses için gereken kullanıcı hareketini de sağlar; "başlamak için dokun" kapısı atlanır. */
+var LANGPICK_KEY = 'balikci_langpick';
+function openLangPick() {
+  var lp = document.getElementById('langPick'), sug = /^tr/i.test(navigator.language || 'tr') ? 'tr' : 'en';
+  Array.prototype.forEach.call(lp.querySelectorAll('button'), function (b) {
+    b.classList.toggle('sug', b.dataset.l === sug);
+    b.onclick = function () {
+      Store.set(LANGPICK_KEY, '1'); lp.classList.add('hidden');
+      setLangTo(b.dataset.l); ensureAudio(); sfx.tap();
+      openIntro(null); introAdvance();                 /* kapıyı atla: hikâye hemen başlar */
+    };
+  });
+  el.startScreen.classList.add('hidden');
+  lp.classList.remove('hidden');
+}
 (function bootFlow() {
-  if (!slotCount()) openIntro(null);              /* ilk açılış: hikâye → ana menü */
+  if (slotCount()) return;                        /* kayıtlı oyuncu: doğrudan ana menü */
+  if (!Store.get(LANGPICK_KEY)) openLangPick();   /* ilk açılış: dil → hikâye → ana menü */
+  else openIntro(null);
 })();
 requestAnimationFrame(frame);
 
@@ -10022,7 +10540,7 @@ function fbApplyLang() {
   fbSendBtn.textContent = T(fb.busy ? 'fbSending' : 'fbSend'); fbText.placeholder = T('fbPh');
   Array.prototype.forEach.call(document.querySelectorAll('#fbCats button'), function (b) { b.textContent = T('fbCat_' + b.dataset.c); });
   Array.prototype.forEach.call(document.querySelectorAll('#fbStars button'), function (b) { b.setAttribute('aria-label', T('fbStarN', { n: b.dataset.v })); });
-  q('menuFb').innerHTML = PX(T('fbBtn')); q('fbBtn').innerHTML = PX(T('fbBtn'));
+  q('menuFb').innerHTML = PX(T('fbBtn')); q('fbBtn').innerHTML = PX(T('fbBtn')); q('menuInfo').textContent = T('dataInfoBtn');
   el.forgetBtn.textContent = T('forgetBtn');           /* "Skor kaydımı sil" artık görüşleri de siler */
 }
 function fbRender() {
@@ -10064,7 +10582,11 @@ function fbShow() {
   fbApplyLang(); fbRender();
   fbScr.classList.remove('hidden'); syncPause(); sfx.tap();
 }
-function fbClose() { fbScr.classList.add('hidden'); if (document.activeElement === fbText) fbText.blur(); syncPause(); }
+function fbClose() {
+  fbScr.classList.add('hidden'); if (document.activeElement === fbText) fbText.blur();
+  if (chFromFb) { chFromFb = false; el.chEnd.classList.remove('hidden'); }   /* v1.9.4: bölüm sonu kartına dön */
+  syncPause();
+}
 /* toast normalde katmanların (z 10) altında kalır ve duraklatmada sönmez: görüş mesajı üstte, kendi süresiyle */
 function fbToast(msg) {
   toast(msg); el.toast.classList.add('fbtop');
@@ -10116,7 +10638,6 @@ function fbSend() {
   var it = { p_player: PLAYER_ID, p_run: S.runId || '', p_stars: fb.stars, p_cat: fb.cat || null, p_text: text,
     p_lang: lang, p_ver: FB_VER, p_day: day.n || 1, at: Date.now() };
   function queued() { fbQueue(it); fbClose(); fbToast(T('fbQueued')); sfx.buy(); fbGive(text.replace(/\s/g, '').length); if (netOn()) fbSchedule(FB_GAP - (Date.now() - fb.lastSent)); }
-  if (ONLINE && !onlineAsked) { showOnlineNotice(function () { fbSend(); }); return; }   /* form açık kalır, bilgilendirme üstte */
   if (!netOn() || Date.now() - fb.lastSent < FB_GAP) { queued(); return; }
   fb.busy = true; fbRender();
   rpc('bt_feedback', fbArgs(it)).then(function (r) {
@@ -10139,6 +10660,7 @@ if (fbScr) {
   fbSendBtn.onclick = fbSend;
   document.getElementById('fbCancel').onclick = function () { fbClose(); sfx.tap(); };
   document.getElementById('menuFb').onclick = function () { fbShow(); };
+  document.getElementById('menuInfo').onclick = function () { openDataInfo(); };
   document.getElementById('fbBtn').onclick = function () { fbShow(); };
   fbApplyLang();
 }
@@ -10189,16 +10711,17 @@ window.BT = {
   specOutfit: function (id, face) { return specOutfit(specById(id), face || 1); },
   specState: function () { return { spec: day.spec, sp: day.sp, normals: day.normals, active: customers.filter(function (c) { return c.spec; }).map(function (c) { return c.spec + ':' + c.state; }) }; },
   autoState: function () { return { min: S.autoMin, t: Math.round(saveT), left: Math.round(autoLeft()) }; }, fastForwardAutosave: function (sec) { saveT += sec; },
+  yardFolk: function () { return yardFolk; }, roadFlow: function () { return roadFlow(); }, ui: { openSettings: openSettings, openPauseMenu: openPauseMenu, openStallScreen: openStallScreen, openHal: openHal, openOffice: openOffice, openChapter: openChapter, fbShow: fbShow, fbClose: fbClose, showChapterCard: showChapterCard, closeSettings: function () { el.settingsScreen.classList.add('hidden'); syncPause(); } }, rushNow: function () { return rushNow(); }, mgrAct: function () { return mgrAct; }, showChapterCard: function () { showChapterCard(); }, chapterGroups: function () { return chapterGroups(); }, ACH_IDS: function () { return (typeof ACH !== 'undefined' ? ACH : []).map(function (q) { return q.id; }); },
   CTYPES: CTYPES, S: S, safe: safe, BINS: BINS, HUT: HUT, DEPOT: DEPOT, WHALL: WHALL, office: office, MEYDAN: MEYDAN, BRIDGE: BRIDGE, depotCount: function () { return depotCount(); }, openHal: function () { openHal(); }, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
   zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
   customers: customers, FISH: FISH, start: start, hire: hire, toast: toast,
   rebuildCounters: rebuildCounters, buyBuilding: buyBuilding, investProject: investProject,
-  setLang: function (l) { setLangTo(l); },
+  setLang: function (l) { setLangTo(l); }, lang: function () { return lang; },
   M: function () { return M; },
   sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
-  nameBad: nameBad, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
+  nameBad: nameBad, evs: function () { return Object.keys(S.evs || {}); }, evQ: function () { return EV_Q.slice(); }, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
   dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(),
     pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
     y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },
@@ -10219,7 +10742,7 @@ window.BT = {
   servRates: function () { return { fish: fishRate, serv: servRate, cap: Math.max(12, fishRate * 0.30) }; },
   servUnlock: servUnlock, servCount: servCount,
   T: T, STR: STR, lang: function () { return lang; },
-  music: function () { return { on: music.on, bar: music.bar, step: music.step, mode: music.mode, enabled: musicEnabled, vol: music.gain ? +music.gain.gain.value.toFixed(3) : 0 }; },
+  music: function () { return { on: music.on, bar: music.bar, step: music.step, mode: music.mode, enabled: musicEnabled, vol: music.gain ? +music.gain.gain.value.toFixed(3) : 0, song: (SONGS[music.si] || SONG).id, loops: music.loops }; }, SONGS: SONGS, songAt: function (i) { songAt(i); }, musicPick: function () { return musicPick; },
   sfx: sfx, audio: function () { return { state: AC && AC.state, vol: masterGain && +masterGain.gain.value.toFixed(3), lvl: volLvl, on: soundOn, ready: audioReady }; },
   setVol: function (v) { volLvl = clamp(v | 0, 0, 2); applyVolume(); ensureAudio(); return volLvl; },
   /* duraklatma + kayıt */
