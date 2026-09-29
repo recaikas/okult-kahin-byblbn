@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v1.9.7** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v1.9.8** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -16,6 +16,19 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
 ---
+
+## v1.9.8 — Üç yeni parça, küçük saha insanları, depo yedeği
+
+- **Üç yeni müzik** (kendi bestemiz, Web Audio, telifsiz): **Bozkır Rüzgârı** (Anadolu rock, Mi Hicaz, 138 BPM; elektro
+  saz, beşli akorlu gitar, rock davul), **Yayla Horonu** (Karadeniz pop, 152 BPM; kemençe gibi tekrarlanan sekizlikler,
+  dörtlü ikinci tel, el çırpma), **Beyoğlu Tangosu** (Yeşilçam tangosu, Re nihavend, 116 BPM; akordeon, habanera bas).
+  Ayarlar › Çalma Listesi'nde altı parça; "Sırayla" hepsini döndürür.
+- **Hizmet Sahası'nda insanlar %80 boy:** yayalar, müşteriler ve çalışanlar sahaya girince küçülür (oyuncu hariç),
+  binaların yanında dev gibi durmaz. Piksel keskin kalır; yoldan girişte boy yumuşakça değişir.
+- **Vitrin önünde bekleme:** saha yayalarının yarısı dükkânın önünde 2–5 sn durup bakar; sonra ya içeri girer ya da
+  sonraki dükkâna geçer.
+- **Depo yedeği:** Depo Hamalı, hasırda biriken (en az 3 adet) her üründen depoda **2'şer yedek** tutar; tezgâhın malı
+  azalınca buradan destek taşır. Depo etiketinde **balık başına sayı** görünür (🐟4 🐠2 🍣1).
 
 ## v1.9.7 — Hata avı (hisse, sözlük, isim filtresi, yükleme, sunucu)
 
