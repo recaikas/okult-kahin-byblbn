@@ -118,7 +118,9 @@ const R = {};
     d.ret.t = ms === 'absurd' ? 1000 : d.ret.t + ms; d.at = d.ret.t;
     localStorage.setItem(k, JSON.stringify(d));
     BT.S.started = false;                                 /* yenilemede beforeunload kaydı damgayı ezmesin */
-    return { t: d.ret.t, cash: d.cash, day: d.day[0], served: d.served };
+    /* v1.9.1: kuyruktaki müşteriler kayıtla döner; uzakta kazanç bunun üstüne müşteri eklememeli */
+    const cust = (d.q || []).reduce((n, e) => n + ((e && e[3]) || []).length, 0);
+    return { t: d.ret.t, cash: d.cash, day: d.day[0], served: d.served, cust };
   }, { ms, mut });
   const reloadPlay = async () => {
     await p.reload(); await sleep(1200);
@@ -139,7 +141,7 @@ const R = {};
   ok(R.card.r.card && R.card.paused && R.card.rows === 2, 'kart açılmadı / oyun durmadı ' + JSON.stringify(R.card));
   ok(R.card.r.cardV >= expect * 0.97 && R.card.r.cardV <= expect * 1.02, 'kazanç beklenen aralıkta değil ' + R.card.r.cardV + ' ~ ' + expect);
   ok(/SEN YOKKEN/.test(R.card.txt) && /Sadık Bey/.test(R.card.txt) && /Gülten Hanım/.test(R.card.txt) && /TOPLA/.test(R.card.txt), 'kart metni eksik');
-  ok(R.card.day === R.saved.day && R.card.served === R.saved.served && R.card.cust === 0 && R.card.ch === R.chBefore, 'uzakta kazanç gün / müşteri / Bölüm 1 sayacını değiştirdi ' + JSON.stringify({ c: R.card, s: R.saved }));
+  ok(R.card.day === R.saved.day && R.card.served === R.saved.served && R.card.cust === R.saved.cust && R.card.ch === R.chBefore, 'uzakta kazanç gün / müşteri / Bölüm 1 sayacını değiştirdi ' + JSON.stringify({ c: R.card, s: R.saved }));
   ok(['cop', 'ilk_satis', 'vip'].every(id => R.card.ach.indexOf(id) >= 0), 'başarımlar yeniden yüklemede kayboldu ' + JSON.stringify(R.card.ach));
   /* TOPLA */
   if (!R.card.r.card) { console.log(JSON.stringify(R)); console.log('BASARIM_FAIL', fail); process.exit(1); }
