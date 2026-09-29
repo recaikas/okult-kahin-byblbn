@@ -2391,7 +2391,7 @@ function loadFrom(d) {
     var rd = Array.isArray(d.road) ? d.road : [0, 0];
     S.roadFl = clamp(parseInt(rd[0], 10) || 0, 0, ROAD_FL.length); S.roadBb = clamp(parseInt(rd[1], 10) || 0, 0, ROAD_BB.length);
     var oldStall = 0;
-    if (d.slots) d.slots.forEach(function (v, i) { if (!SLOTS[i]) return; if (v === 'tezgah') { oldStall++; v = null; } SLOTS[i].b = v && bdef(v) ? v : null; });
+    if (d.slots) d.slots.forEach(function (v, i) { if (!SLOTS[i]) return; if (v === 'tezgah') { oldStall++; v = null; } SLOTS[i].b = v; });
     if (oldStall) {                                   /* v2.0: Ek Tezgâh kalktı, parası iade */
       S.cash += oldStall * 2200;
       setTimeout(function () { notify(T('stallRefund', { n: oldStall, m: money(oldStall * 2200) }), 'high'); }, 2500);

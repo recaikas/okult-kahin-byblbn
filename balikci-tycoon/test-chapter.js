@@ -20,9 +20,9 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
     BT.project.done = true; BT.project.stage = 5; BT.project.inv = BT.project.total;
     BT.HUT.lvl = 5; BT.DEPOT.lvl = 2; BT.WHALL.built = true;
     BT.rebuildCounters(); BT.counters.forEach(c => BT.setStall(c.key, true));
-    for (let z = 0; z < 3; z++) ['hamal', 'filetocu', 'tezgahtar', 'kasiyer'].forEach(r => BT.hire(r, true, z));
-    S.mgr = [{ n: 'Sadık Bey', a: 'value', b: 'wspeed', wage: 35, look: 0 }, { n: 'Gülten Hanım', a: 'pat', b: 'flow', wage: 45, look: 1 }];
-    S.auto = [true, true, false];
+    for (let z = 0; z < 4; z++) BT.zoneRoles(z).forEach(r => BT.hire(r, true, z));                 /* v2.0: Mutfak'ın aşçısı dâhil */
+    S.mgr = [{ n: 'Sadık Bey', a: 'value', b: 'wspeed', wage: 35, look: 0 }, { n: 'Gülten Hanım', a: 'pat', b: 'flow', wage: 45, look: 1 }, null, { n: 'Levent Bey', a: 'rep', b: 'value', wage: 65, look: 2 }];
+    S.auto = [true, true, false, true];
     for (let i = 0; i < 11; i++) S.met.push(BT.SPECIALS[i].id);
     BT.player.x = 7.2; BT.player.y = 13.5;
   });
