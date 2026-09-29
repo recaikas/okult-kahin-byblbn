@@ -16,7 +16,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
     BT.areas.forEach(a => { a.locked = false; a.lvl = 3; });
     BT.pads.forEach(q => { if (q.max && q.kind !== 'decor') q.lvl = q.max; });
     BT.decor.forEach(d => d.got = true);
-    const bl = ['cay', 'tezgah', 'tezgah', 'cay', 'tezgah', 'tezgah', 'cay']; BT.slots.forEach((s, i) => s.b = bl[i]);
+    const bl = ['cay', 'buz', 'buz', 'cay', 'buz', 'buz', 'cay']; BT.slots.forEach((s, i) => s.b = bl[i]);
     BT.project.done = true; BT.project.stage = 5; BT.project.inv = BT.project.total;
     BT.HUT.lvl = 5; BT.DEPOT.lvl = 2; BT.WHALL.built = true;
     BT.rebuildCounters(); BT.counters.forEach(c => BT.setStall(c.key, true));
