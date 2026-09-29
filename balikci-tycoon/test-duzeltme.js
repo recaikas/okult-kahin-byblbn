@@ -36,10 +36,10 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
     'bölünme payı değiştirdi ' + JSON.stringify(R.sh));
   ok(R.sh.raise < 0.15 && R.sh.buyback && R.sh.saved && R.sh.legacy && R.sh.badTot, 'artırım / geri alım / kayıt yanlış ' + JSON.stringify(R.sh));
   /* 4) isim filtresi */
-  const OK = ['Amina', 'Amina Balık', 'Nigeria', 'Shiitake', 'Mishit', 'Got Fish Co', 'OC Balık', 'Ata Mina Balık', 'Nazik Balık', 'Işıkım Balık', 'IŞIKIM BALIK',
+  const OK = ['Amina', 'Amina Balık', 'Nigeria', 'Shiitake', 'Mishit', 'Got Fish Co', 'Götür Getir', 'OC Balık', 'Ata Mina Balık', 'Nazik Balık', 'Işıkım Balık', 'IŞIKIM BALIK',
     'Ata Mina Koyu', 'Hamsi Koyu', 'Klasik Balık', 'Müsiki Evi', 'Dickens Fish', 'Sikke Balık', 'Scunthorpe Fish', 'Assembly Fish', 'Pussycat Cafe', 'Cocktail Bar', 'Sussex Fish'];
   const BAD = ['Orospu', 'o r o s p u', 'Siktir Git', 'SİKTİR GİT', 'S1kt1r', 'fuck fish', 'Fucking Fish', 'Hamsiorospu', 'amk', 'Bitches', 'Nigga', 'N1gger', 'Shit Fish',
-    'Shitty Fish', 'Nazi Balık', 'aminakoyim', 'Amına Koyim', 'a m k', 's i k', 'Pezevenk Co', 'Şerefsiz', 'Yavşak', 'Orospular', 'Hitler Fish', 'ibne', 'Kahpe', 'Whore Co', 'A$$hole'];
+    'Shitty Fish', 'Nazi Balık', 'aminakoyim', 'Amına Koyim', 'a m k', 's i k', 'Pezevenk Co', 'Şerefsiz', 'Yavşak', 'Orospular', 'Hitler Fish', 'ibne', 'Kahpe', 'Whore Co', 'A$$hole', 'göt balık', 'GÖT Balık'];
   R.nm = await p.evaluate(([o, x]) => ({ fp: o.filter(n => BT.nameBad(n)), fn: x.filter(n => !BT.nameBad(n)) }), [OK, BAD]);
   ok(!R.nm.fp.length, 'masum ad engellendi: ' + R.nm.fp.join(', '));
   ok(!R.nm.fn.length, 'kötü ad geçti: ' + R.nm.fn.join(', '));

@@ -75,6 +75,9 @@ declare
   w text[];
   i int; k int; q int; l int; run text;
 begin
+  -- ö/ü'lü Türkçe yazım katlamadan önce: "göt" engelli, İngilizce "Got Fish Co" serbest
+  if exists (select 1 from regexp_split_to_table(lower(coalesce(p, '')), '[^a-zçğıöşü]+') x
+             where x = any (array['göt','götü','götün','göte','götler','götlek','götoş'])) then return true; end if;
   w := array(select regexp_replace(x, '(.)\1+', '\1', 'g') from regexp_split_to_table(n, '[^a-z]+') x where x <> '');
   for i in 1 .. coalesce(array_length(w, 1), 0) loop
     if public.bt_bad_word(w[i], false) then return true; end if;

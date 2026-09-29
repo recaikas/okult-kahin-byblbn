@@ -8186,7 +8186,11 @@ function badWord(w, spaced) {
   for (i = 0; i < BAD_ANY.length; i++) if (w.indexOf(BAD_ANY[i]) >= 0) return true;
   return false;
 }
+/* ö/ü'lü Türkçe yazım harf katlanmadan önce bakılır: "göt" engelli, İngilizce "Got Fish Co" serbest */
+var BAD_TR = ['göt', 'götü', 'götün', 'göte', 'götler', 'götlek', 'götoş'];
 function nameBad(s) {
+  var raw = String(s || '').toLocaleLowerCase('tr').split(/[^a-zçğıöşü]+/);
+  for (var r = 0; r < raw.length; r++) if (BAD_TR.indexOf(raw[r]) >= 0) return true;
   var words = nameNorm(s).split(/[^a-z]+/).filter(Boolean).map(function (w) { return w.replace(/(.)\1+/g, '$1'); }), i, k;
   for (i = 0; i < words.length; i++) {
     if (badWord(words[i], false)) return true;
