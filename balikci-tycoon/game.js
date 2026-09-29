@@ -72,7 +72,7 @@ var STR = {
     autoMinN: '{m} dk', auto5: 'Sık kayıt — en güvenlisi', auto10: 'Önerilen', auto30: 'Seyrek kayıt',
     autoLbl: 'OTOMATİK KAYIT', autoSaved: '💾 Otomatik kaydedildi • {t}', autoSet: '💾 Otomatik kayıt: {m} dakikada bir',
     autoNext: 'Otomatik kayıt: {m} dk • sonraki {t}',
-    musicLbl: 'MÜZİK', musOn: '♪ AÇIK', musOff: 'KAPALI', musList: 'ÇALMA LİSTESİ', musAuto: 'Sırayla çal (hepsi)', musAutoD: 'Menüde İskele Türküsü, oyunda üç parça sırayla',
+    musicLbl: 'MÜZİK', musOn: '♪ AÇIK', musOff: 'KAPALI', musList: 'ÇALMA LİSTESİ', musAuto: 'Sırayla çal (hepsi)', musAutoD: 'Menüde İskele Türküsü, oyunda tüm parçalar sırayla',
     meydan: 'LİMAN MEYDANI', hutName: 'Personel Kulübesi', depotName: 'Depo', whall: 'Balık Hali', buildAt: 'YAPI › Meydan',
     hutD: 'Her bölgede +1 personel yeri / seviye (şu an +{n})', depotD: 'Fazla fileto/fümeyi türüne göre raflarda saklar; kendi personeli var',
     depotD2: 'Raf {a}/{b} → {n} • depo personeli +1', whallD: 'Depodaki malı günün fiyatıyla sat, toptan al; alınan mal Hal paletinden depoya taşınır (Depo gerekir)',
@@ -278,7 +278,7 @@ var STR = {
     autoMinN: '{m} min', auto5: 'Frequent — safest', auto10: 'Recommended', auto30: 'Occasional',
     autoLbl: 'AUTOSAVE', autoSaved: '💾 Autosaved • {t}', autoSet: '💾 Autosave every {m} minutes',
     autoNext: 'Autosave: every {m} min • next in {t}',
-    musicLbl: 'MUSIC', musOn: '♪ ON', musOff: 'OFF', musList: 'PLAYLIST', musAuto: 'Play all in turn', musAutoD: 'Pier Folk Song in the menu, all three in turn in game',
+    musicLbl: 'MUSIC', musOn: '♪ ON', musOff: 'OFF', musList: 'PLAYLIST', musAuto: 'Play all in turn', musAutoD: 'Pier Folk Song in the menu, every track in turn in game',
     meydan: 'HARBOR SQUARE', hutName: 'Staff Hut', depotName: 'Depot', whall: 'Fish Hall', buildAt: 'BUILD › Square',
     hutD: '+1 staff slot in every zone per level (now +{n})', depotD: 'Stores surplus fillet/smoked fish on shelves by type; has its own staff',
     depotD2: 'Shelves {a}/{b} → {n} • +1 depot staff', whallD: 'Sell depot stock at today\'s price, buy wholesale (needs Depot)',
@@ -755,7 +755,52 @@ var SONG_LIMAN = {
   ],
   bass: [43, 48, 43, 50,  43, 41, 50, 43,  40, 48, 48, 50,  40, 48, 50, 43]
 };
-var SONGS = [SONG, SONG_LIMAN, SONG_YESILCAM];          /* oyun içi sıra: İskele → Liman Yolu → Yeşilçam */
+/* v1.9.8 — üç yeni kendi bestemiz (dosya yok, Web Audio; hiçbir şarkıdan alıntı yok → telif sorunu yok):
+   "Bozkır Rüzgârı": Anadolu rock, Mi Hicaz (Mi Fa Sol♯ La Si Do Re), 138 BPM; testere dalga "elektro saz" melodi,
+   beşli akorlu ritim gitar, sekizlik bas, rock davul (1-3 bas davul, 2-4 trampet, sekizlik zil).
+   "Yayla Horonu": Karadeniz pop, La Hüseyni havası (Fa♯ renkli), 152 BPM; kemençe gibi tekrarlanan sekizlikler ve
+   dörtlü paralel ikinci tel, oktav zıplayan pop bas, el çırpma.
+   "Beyoğlu Tangosu": Yeşilçam tangosu, Re Nihavend (Do♯ ile), 116 BPM; akordeon tınısı (hafif akortsuz iki kare
+   dalga), habanera bas (1 · · 2 3 · 4 ·), kesik akor vuruşları. */
+var SONG_ROCK = {
+  id: 'rock', n: { tr: 'Bozkır Rüzgârı', en: 'Steppe Wind' }, d: { tr: 'Anadolu rock • Mi Hicaz • 138 BPM', en: 'Anatolian rock • E Hijaz • 138 BPM' }, bpm: 138, style: 'rock',
+  lead: [
+    [64,1],[64,1],[65,1],[68,1],[69,2],[68,1],[65,1],  [64,2],[0,1],[64,1],[71,2],[69,1],[68,1],
+    [69,1],[69,1],[71,1],[72,1],[71,2],[69,1],[68,1],  [65,2],[68,1],[65,1],[64,4],
+    [64,1],[64,1],[65,1],[68,1],[69,2],[68,1],[65,1],  [64,2],[0,1],[64,1],[74,2],[72,1],[71,1],
+    [72,1],[71,1],[69,1],[68,1],[69,2],[71,2],          [68,2],[65,1],[68,1],[64,4],
+    [76,2],[76,1],[77,1],[76,2],[74,2],                 [72,1],[74,1],[72,1],[71,1],[69,4],
+    [74,2],[74,1],[76,1],[74,2],[72,2],                 [71,1],[72,1],[71,1],[69,1],[68,4],
+    [76,2],[76,1],[77,1],[80,2],[81,2],                 [80,1],[77,1],[76,1],[74,1],[76,4],
+    [72,1],[71,1],[69,1],[68,1],[69,1],[68,1],[65,2],  [64,6],[0,2]
+  ],
+  bass: [40, 40, 45, 40,  40, 38, 45, 40,  45, 45, 38, 40,  40, 41, 45, 40]
+};
+var SONG_KARADENIZ = {
+  id: 'karadeniz', n: { tr: 'Yayla Horonu', en: 'Highland Horon' }, d: { tr: 'Karadeniz pop • kemençe havası • 152 BPM', en: 'Black Sea pop • kemenche feel • 152 BPM' }, bpm: 152, style: 'karadeniz',
+  lead: [
+    [76,1],[76,1],[74,1],[72,1],[74,1],[74,1],[72,1],[71,1],  [72,1],[72,1],[71,1],[69,1],[71,2],[69,2],
+    [76,1],[76,1],[78,1],[79,1],[78,1],[76,1],[74,1],[72,1],  [74,1],[72,1],[71,1],[72,1],[69,4],
+    [76,1],[76,1],[74,1],[72,1],[74,1],[74,1],[72,1],[71,1],  [72,1],[72,1],[71,1],[69,1],[71,2],[69,2],
+    [76,1],[78,1],[79,1],[81,1],[79,1],[78,1],[76,1],[74,1],  [72,1],[74,1],[72,1],[71,1],[69,2],[0,2],
+    [81,2],[79,1],[78,1],[79,2],[76,2],                       [78,2],[76,1],[74,1],[76,4],
+    [79,2],[78,1],[76,1],[78,2],[74,2],                       [76,2],[74,1],[72,1],[74,4],
+    [81,2],[79,1],[78,1],[79,2],[81,2],                       [79,1],[78,1],[76,1],[74,1],[76,2],[72,2],
+    [74,1],[74,1],[72,1],[71,1],[72,1],[71,1],[69,1],[71,1],  [69,6],[0,2]
+  ],
+  bass: [45, 43, 38, 45,  45, 43, 43, 45,  38, 38, 43, 36,  38, 43, 40, 45]
+};
+var SONG_TANGO = {
+  id: 'tango', n: { tr: 'Beyoğlu Tangosu', en: 'Beyoğlu Tango' }, d: { tr: 'Yeşilçam tangosu • Re nihavend • 116 BPM', en: 'Yeşilçam tango • D Nahawand • 116 BPM' }, bpm: 116, style: 'tango',
+  lead: [
+    [69,3],[70,1],[69,2],[67,2],  [65,3],[67,1],[65,2],[64,2],  [62,2],[64,1],[65,1],[67,2],[69,2],  [70,3],[69,1],[69,4],
+    [69,3],[70,1],[69,2],[67,2],  [65,3],[67,1],[65,2],[64,2],  [73,2],[74,1],[76,1],[74,2],[73,2],  [74,6],[0,2],
+    [77,3],[76,1],[74,2],[72,2],  [70,3],[72,1],[74,4],          [79,3],[77,1],[76,2],[74,2],          [73,3],[74,1],[76,4],
+    [81,3],[79,1],[77,2],[76,2],  [74,2],[73,1],[74,1],[76,2],[70,2],  [69,3],[67,1],[65,2],[64,2],  [62,6],[0,2]
+  ],
+  bass: [38, 34, 38, 33,  38, 34, 33, 38,  41, 34, 43, 33,  38, 43, 33, 38]
+};
+var SONGS = [SONG, SONG_LIMAN, SONG_YESILCAM, SONG_ROCK, SONG_KARADENIZ, SONG_TANGO];   /* oyun içi sıra; menü 0, jenerik 2 (Yeşilçam) */
 var music = { on: false, timer: 0, next: 0, li: 0, lt: 0, bar: 0, step: 0, gain: null, wantOn: false, mode: 'menu', si: 0, loops: 0 };
 var musicEnabled = true;                       /* ayarlar › müzik (tercihlere yazılır) */
 var musicPick = -1;                            /* v1.9.5 ayarlar › çalma listesi: -1 sırayla, 0.. tek parça (tercihlere yazılır) */
@@ -783,11 +828,20 @@ function musicTick() {
       if (n[0]) {
         var len = e8 * n[1];
         if (hum) {
-          tone(midiF(n[0]), len * 0.98, 'sine', 0.3, { at: at, atk: sty === 'yesilcam' ? 0.09 : 0.05, dst: music.gain });
+          tone(midiF(n[0]), len * 0.98, 'sine', 0.3, { at: at, atk: sty === 'yesilcam' || sty === 'tango' ? 0.09 : 0.05, dst: music.gain });
           tone(midiF(n[0] - 12), len * 0.98, 'triangle', 0.1, { at: at, atk: 0.06, lp: 900, dst: music.gain });
         } else if (sty === 'yesilcam') {
           tone(midiF(n[0]), len * 0.97, 'triangle', 0.3, { at: at, lp: 2000, atk: 0.06, dst: music.gain });
           tone(midiF(n[0] + 12), len * 0.9, 'sine', 0.05, { at: at, atk: 0.1, dst: music.gain });   /* ince üst ses */
+        } else if (sty === 'rock') {                                   /* elektro saz: testere + alt oktav */
+          tone(midiF(n[0]), len * 0.95, 'sawtooth', 0.1, { at: at, lp: 1900, atk: 0.01, dst: music.gain });
+          tone(midiF(n[0] - 12), len * 0.95, 'square', 0.05, { at: at, lp: 1200, atk: 0.01, dst: music.gain });
+        } else if (sty === 'karadeniz') {                              /* kemençe: kısa yay + dörtlü ikinci tel */
+          tone(midiF(n[0]), len * 0.85, 'sawtooth', 0.1, { at: at, lp: 3000, atk: 0.015, dst: music.gain });
+          tone(midiF(n[0] - 5), len * 0.85, 'sawtooth', 0.045, { at: at, lp: 2200, atk: 0.015, dst: music.gain });
+        } else if (sty === 'tango') {                                  /* akordeon: iki kamış, hafif akortsuz */
+          tone(midiF(n[0]), len * 0.93, 'square', 0.08, { at: at, lp: 1700, atk: 0.03, dst: music.gain });
+          tone(midiF(n[0]) * 1.005, len * 0.93, 'square', 0.06, { at: at, lp: 1700, atk: 0.03, dst: music.gain });
         } else tone(midiF(n[0]), len * 0.92, 'square', sty === 'liman' ? 0.14 : 0.16, { at: at, lp: sty === 'liman' ? 2600 : 2300, atk: 0.012, dst: music.gain });
       }
     }
@@ -796,6 +850,7 @@ function musicTick() {
     if (hum) {
       if (st === 0) tone(midiF(root), e8 * 3.6, 'triangle', 0.22, { at: at, lp: 500, atk: 0.04, dst: music.gain });
       if (sty === 'liman' && (st === 1 || st === 3 || st === 6)) noise(0.03, 0.012, { f: 6000, type: 'highpass', at: at, dst: music.gain });
+      if ((sty === 'rock' || sty === 'karadeniz') && (st === 2 || st === 6)) noise(0.03, 0.012, { f: 5000, type: 'highpass', at: at, dst: music.gain });
     } else if (sty === 'yesilcam') {
       if (st === 0) tone(midiF(root), e8 * 7.4, 'triangle', 0.26, { at: at, lp: 600, atk: 0.08, dst: music.gain });
       if (st === 4) tone(midiF(root + 7), e8 * 3.6, 'triangle', 0.14, { at: at, lp: 700, atk: 0.06, dst: music.gain });
@@ -806,6 +861,33 @@ function musicTick() {
       if (wb) tone(midiF(wb), e8 * 0.9, 'triangle', 0.3, { at: at, lp: 900, dst: music.gain });
       if (st === 0 || st === 4) tone(120, 0.11, 'sine', 0.3, { at: at, to: 55, dst: music.gain });                         /* düm */
       if (st === 1 || st === 3 || st === 6) noise(0.035, 0.05, { f: 5200, type: 'highpass', at: at, dst: music.gain });    /* tek */
+    } else if (sty === 'rock') {
+      tone(midiF(root), e8 * 0.85, 'triangle', 0.3, { at: at, lp: 700, dst: music.gain });                                  /* sekizlik bas */
+      if (st % 2 === 0) {                                                                                                    /* beşli akor */
+        tone(midiF(root + 12), e8 * 0.7, 'sawtooth', 0.045, { at: at, lp: 1100, dst: music.gain });
+        tone(midiF(root + 19), e8 * 0.7, 'sawtooth', 0.035, { at: at, lp: 1100, dst: music.gain });
+      }
+      if (st === 0 || st === 4 || st === 5) tone(110, 0.12, 'sine', 0.34, { at: at, to: 45, dst: music.gain });           /* bas davul */
+      if (st === 2 || st === 6) {                                                                                            /* trampet */
+        noise(0.14, 0.08, { f: 1900, q: 0.7, type: 'bandpass', at: at, dst: music.gain });
+        tone(185, 0.07, 'triangle', 0.12, { at: at, to: 140, dst: music.gain });
+      }
+      noise(0.03, st % 2 ? 0.02 : 0.03, { f: 7500, type: 'highpass', at: at, dst: music.gain });                            /* zil */
+      if (st === 0 && music.bar % 4 === 0) noise(0.6, 0.04, { f: 5000, type: 'highpass', at: at, dst: music.gain });       /* ziller */
+    } else if (sty === 'karadeniz') {
+      var kb = st === 0 || st === 4 ? root : st === 2 || st === 6 ? root + 12 : st === 3 || st === 7 ? root + 7 : 0;         /* oktav zıplayan pop bas */
+      if (kb) tone(midiF(kb), e8 * 0.8, 'triangle', 0.3, { at: at, lp: 900, dst: music.gain });
+      if (st === 0 || st === 3 || st === 4) tone(100, 0.11, 'sine', 0.32, { at: at, to: 45, dst: music.gain });
+      if (st === 2 || st === 6) noise(0.08, 0.07, { f: 1500, q: 0.9, type: 'bandpass', at: at, dst: music.gain });           /* el çırpma */
+      if (st % 2 === 1) noise(0.03, 0.03, { f: 7000, type: 'highpass', at: at, dst: music.gain });
+    } else if (sty === 'tango') {
+      var hb = st === 0 ? [root, 2.7] : st === 3 ? [root + 7, 0.9] : st === 4 ? [root + 12, 1.8] : st === 6 ? [root + 7, 1.8] : null;   /* habanera bas */
+      if (hb) tone(midiF(hb[0]), e8 * hb[1], 'triangle', 0.3, { at: at, lp: 800, atk: 0.01, dst: music.gain });
+      if (st === 2 || st === 6) {                                                                                            /* kesik akor */
+        tone(midiF(root + 19), e8 * 0.5, 'square', 0.035, { at: at, lp: 1400, dst: music.gain });
+        tone(midiF(root + 24), e8 * 0.5, 'square', 0.03, { at: at, lp: 1400, dst: music.gain });
+      }
+      if (st === 0 || st === 4) noise(0.05, 0.03, { f: 3000, q: 1.2, type: 'bandpass', at: at, dst: music.gain });
     } else {
       /* bas: kök · · kök oktav · beşli · */
       var bn = st === 0 || st === 3 ? root : st === 4 ? root + 12 : st === 6 ? root + 7 : 0;
@@ -4198,7 +4280,7 @@ function drawCustomer(cu) {
   var spq = cu.spec ? specById(cu.spec) : null, z0 = cu.z;
   if (spq && spq.moon && cu.state !== 'wait') o.face = -o.face;                 /* v1.1: moonwalk */
   if (spq && spq.dance && cu.state === 'wait') { cu.z = Math.abs(Math.sin((cu.fidget || 0) * 5)) * 0.18; if (Math.sin((cu.fidget || 0) * 2.5) > 0) o.face = -o.face; }
-  drawPerson(cu, o);
+  drawPersonAt(cu, o);
   cu.z = z0;
   if (cu.spec) drawSpecialTag(cu);
   if (cu.state === 'leave') {                                    /* mutlu ayrılış */
@@ -6254,7 +6336,7 @@ function render() {
   for (i = 0; i < workers.length; i++) (function (w) {
     var col = w.role === 'hamal' ? '#4f7fae' : w.role === 'filetocu' ? '#5f8f6a' : w.role === 'tezgahtar' ? '#b8624a' : '#7a6ba8';
     push(w.x + w.y + 0.15, function () {
-      quietDraw(w.zone, w.x, w.y, function () { drawPerson(w, workerOutfit(w)); drawRoleTag(w); });
+      quietDraw(w.zone, w.x, w.y, function () { drawPersonAt(w, workerOutfit(w)); drawRoleTag(w); });
     });
   })(workers[i]);
   push(player.x + player.y + 0.25, function () {
@@ -9182,13 +9264,24 @@ function isSurplus(it) {
   }
   return true;
 }
+/* v1.9.8 — DEPO YEDEĞİ: hasırda biriken (en az 3 adet) her üründen depoda 2'şer yedek durur; tezgâhın malı
+   azalınca Depo Hamalı buradan destek taşır. Yedek, tezgâh doluyken taşınan "fazla"dan ayrı sayılır. */
+var DEPOT_RESERVE = 2;
+function matKeyCount(m, k) { var n = 0; for (var i = 0; i < m.items.length; i++) if (itemKey(m.items[i]) === k) n++; return n; }
+function reserveWant(it, m, w) {
+  if (!isGoods(it) || !DEPOT.lvl) return false;
+  var k = itemKey(it), have = (DEPOT.shelf[k] || 0) + (w ? carryKeyCount(w, k) : 0);
+  for (var i = 0; i < workers.length; i++) if (workers[i] !== w && workers[i].role === 'depocu') have += carryKeyCount(workers[i], k);
+  return have < DEPOT_RESERVE && matKeyCount(m, k) >= 3;
+}
+function depotPickable(m, w) { return function (it) { return isSurplus(it) || reserveWant(it, m, w); }; }
 function surplusMat(w) {
   var mats = [], i, best = null, bd = 1e9;
   for (i = 0; i < tables.length; i++) if (!AREAS[tables[i].z].locked) mats.push(tables[i].mat);
   if (!AREAS[smoker.z].locked) mats.push(smoker.mat);
   for (i = 0; i < mats.length; i++) {
-    var has = false;
-    for (var j = 0; j < mats[i].items.length; j++) if (isSurplus(mats[i].items[j])) { has = true; break; }
+    var has = false, okf = depotPickable(mats[i], w);
+    for (var j = 0; j < mats[i].items.length; j++) if (okf(mats[i].items[j])) { has = true; break; }
     if (!has) continue;
     var d = dist2(w.x, w.y, mats[i].x, mats[i].y);
     if (d < bd) { bd = d; best = mats[i]; }
@@ -9221,7 +9314,7 @@ function aiDepocu(w, sp, dt) {
     if (w.mode === 'load') {
       var m = w.mat;
       if (m && !full && carryW(w) < depotFree()) {
-        if (goTo(w, m.x, m.y, sp, dt, 0.8)) { if (!iPickMat(w, m, dt, isSurplus)) w.mode = 'drop'; }
+        if (goTo(w, m.x, m.y, sp, dt, 0.8)) { if (!iPickMat(w, m, dt, depotPickable(m, w))) w.mode = 'drop'; }
         return;
       }
       w.mode = 'drop';
@@ -9509,6 +9602,15 @@ function drawDepot() {
   var fillN = Math.min(8, Math.ceil(depotCount() / Math.max(1, depotCap()) * 8));
   for (k = 0; k < fillN; k++) crate(dx + 0.55 + (k % 2) * 0.24, y1 + 0.25 + Math.floor(k / 4) * 0.02, Math.floor((k % 4) / 2) * 4, k % 2 ? '#c9a15e' : '#a8793e');
   if (nearDoor(o.door)) uiLabel(o.x, o.y, H + 14, T('depotName') + ' ' + depotCount() + '/' + depotCap(), '#ffd9a8', 1);
+  var fc = depotFishLine();                                                                                    /* v1.9.8: balık başına sayı */
+  if (fc && dist2(player.x, player.y, o.x, o.y) < 30) uiLabel(o.x, o.y, H + (nearDoor(o.door) ? 4 : 14), fc, '#e8f4ff', 0.95);
+}
+/* depodaki mal, balık türüne göre (fileto + füme birlikte): "🐟4 🐠2 🍣1" */
+function depotFishLine() {
+  var n = {}, k, out = [];
+  for (k in DEPOT.shelf) { var f = keyItem(k).f; if (FISH[f]) n[f] = (n[f] || 0) + DEPOT.shelf[k]; }
+  for (k in FISH) if (n[k]) out.push(FISH[k].ic + n[k]);
+  return out.join(' ');
 }
 function drawWhall() {
   var o = WHALL;
@@ -9588,6 +9690,19 @@ function updateYardFolk(dt) {
       }
       continue;
     }
+    if (p.look > 0) {                                         /* v1.9.8: dükkânın önünde durup bakıyor */
+      p.look -= dt; p.vx = 0; p.vy = 0;
+      if (p.look <= 0) {
+        if (!doors.some(function (d) { return d.p === p.to.p; })) yardRoute(p, { x: 14.7, y: pick(YARD_GATES), exit: true });
+        else if (Math.random() < 0.6) { p.in = rnd(2.5, 6); p.looked = false; }                                             /* beğendi: içeri girer */
+        else {                                                                                                               /* sonraki dükkâna geçer */
+          var nx = doors.filter(function (d) { return d.p !== p.to.p; });
+          p.looked = false;
+          if (nx.length && p.visits < 2) yardRoute(p, pick(nx)); else yardRoute(p, { x: 14.7, y: pick(YARD_GATES), exit: true });
+        }
+      }
+      continue;
+    }
     var wp = p.path[0];
     if (!wp) { yardFolk.splice(i, 1); continue; }
     var dx = wp.x - p.x, dy = wp.y - p.y, L = Math.hypot(dx, dy), sp = 1.25;
@@ -9595,8 +9710,9 @@ function updateYardFolk(dt) {
       p.path.shift();
       if (!p.path.length) {
         if (p.to.exit) { yardFolk.splice(i, 1); continue; }
-        if (doors.some(function (d) { return d.p === p.to.p; })) p.in = rnd(2.5, 6);   /* bina hâlâ açık: içeri gir */
-        else yardRoute(p, { x: 14.7, y: pick(YARD_GATES), exit: true });
+        if (!doors.some(function (d) { return d.p === p.to.p; })) yardRoute(p, { x: 14.7, y: pick(YARD_GATES), exit: true });
+        else if (!p.looked && Math.random() < 0.55) { p.look = rnd(2, 5); p.looked = true; p.face = pX(0, -1) >= 0 ? 1 : -1; }   /* v1.9.8: önce vitrine bakar */
+        else { p.in = rnd(2.5, 6); p.looked = false; }                                                                       /* bina hâlâ açık: içeri gir */
       }
       p.vx = 0; p.vy = 0; continue;
     }
@@ -9605,16 +9721,42 @@ function updateYardFolk(dt) {
     p.face = pX(dx, dy) >= 0 ? 1 : -1;
   }
 }
+/* v1.9.8 — Hizmet Sahası'nda insanlar %80 boy: binaların yanında dev gibi durmasınlar (oyuncu hariç; yayalar,
+   müşteriler, çalışanlar). Kişi küçük bir ara tuvale 1:1 çizilir, sonra en yakın komşu örneklemeyle küçültülüp ayak
+   hizasından dünyaya basılır (piksel keskin kalır). Yoldan girişte boy 0.8 karede yumuşakça değişir. */
+var YARD_SC = 0.8, _mini = null;
+function yardScale(x, y) {
+  var r = SERVYARD, d = x - r.x0;                                  /* giriş yalnız yoldan (batı kenarı) */
+  if (d <= 0 || y < r.y0 - 0.3 || y > r.y1 + 0.3 || x > r.x1 + 0.3) return 1;
+  return Math.round((1 - (1 - YARD_SC) * clamp(d / 0.8, 0, 1)) * 20) / 20;
+}
+function drawPersonAt(a, o, after) {
+  var sc = yardScale(a.x, a.y);
+  if (sc >= 0.999) { drawPerson(a, o); if (after) after(); return; }
+  drawScaled(a, sc, function () { drawPerson(a, o); if (after) after(); });
+}
+function drawScaled(a, sc, fn) {
+  var bw = 40, bh = 72, foot = 6;
+  if (!_mini) { _mini = document.createElement('canvas'); _mini.width = bw; _mini.height = bh; }
+  var g = _mini.getContext('2d'), sx = R(pX(a.x, a.y)), sy = R(pY(a.x, a.y, a.z || 0)), old = ctx;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, bw, bh); g.imageSmoothingEnabled = false;
+  g.setTransform(1, 0, 0, 1, bw / 2 - sx, bh - foot - sy);
+  ctx = g;
+  try { fn(); } finally { ctx = old; }
+  var w = Math.round(bw * sc), h = Math.round(bh * sc);
+  ctx.drawImage(_mini, 0, 0, bw, bh, sx - Math.round(bw * sc / 2), sy - Math.round((bh - foot) * sc), w, h);
+}
 function drawYardFolk(push) {
   for (var i = 0; i < yardFolk.length; i++) (function (f) {
     if (f.in > 0) return;
     push(f.x + f.y + 0.2, function () {
-      var o = custOutfit(f); o.walk = true; o.mood = 1;
-      drawPerson(f, o);
-      if (f.bag) {                                            /* alışveriş torbası */
-        var sx = R(pX(f.x, f.y)), sy = R(pY(f.x, f.y, 0));
-        px(sx + f.face * 4 - 1, sy - 9, 3, 4, '#e8dcc0'); px(sx + f.face * 4 - 1, sy - 10, 3, 1, '#a8966f');
-      }
+      var o = custOutfit(f); o.walk = !(f.look > 0); o.mood = 1;
+      drawPersonAt(f, o, function () {
+        if (f.bag) {                                          /* alışveriş torbası */
+          var sx = R(pX(f.x, f.y)), sy = R(pY(f.x, f.y, 0));
+          px(sx + f.face * 4 - 1, sy - 9, 3, 4, '#e8dcc0'); px(sx + f.face * 4 - 1, sy - 10, 3, 1, '#a8966f');
+        }
+      });
     });
   })(yardFolk[i]);
 }
