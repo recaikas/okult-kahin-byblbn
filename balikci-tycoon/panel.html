@@ -148,7 +148,7 @@
     $('err').textContent = ''; $('go').disabled = true;
     return load(token).then(function (d) {
       $('go').disabled = false;
-      if (!d) { clearToken(); $('err').textContent = 'Şifre yanlış.'; $('login').classList.remove('hidden'); $('dash').classList.add('hidden'); return; }
+      if (!d) { clearToken(); $('err').textContent = 'Şifre yanlış. (Çok sayıda hatalı deneme olduysa panel 10 dakika kapanır.)'; $('login').classList.remove('hidden'); $('dash').classList.add('hidden'); return; }
       setToken(token, rem); render(d);
       $('login').classList.add('hidden'); $('dash').classList.remove('hidden');
     }, function (e) {

@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v1.9.6** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v1.9.7** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -16,6 +16,28 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
 ---
+
+## v1.9.7 — Hata avı (hisse, sözlük, isim filtresi, yükleme, sunucu)
+
+- **Hisse bölünmesi (split):** şirketin toplam hisse sayısı artık kayıtta (`tot`); bölünmede fiyat yarıya iner, toplam
+  ve oyuncunun hissesi ikiye katlanır, sahiplik yüzdesi **aynı kalır** (eskiden ikiye katlanıyordu). Sermaye artırımı ve
+  geri alım da toplamı günceller; temettü, pazar değeri, yönetim kurulu, %30 lisans sınırı hep `sahiplik = hisse / toplam`.
+- **Sözlükte çift anahtar:** `free` ve `noStall` iki kez tanımlıydı, ikincisi birincisini eziyordu. "Yapıyı taşı" satırı
+  yine "ücretsiz", tezgâh hazırlık ekranı yine doğru mesajı gösteriyor (ofisteki "Serbest" → `floatSh`, boş tezgâh →
+  `stallNone`). Test sözlükte çift anahtar kalmadığını da denetler.
+- **İsim filtresi:** kelime bazlı yeniden yazıldı (tam kelime / kelime başı / her yerde listeleri). Amina, Nigeria,
+  Shiitake, Mishit, Got Fish Co, OC Balık, Ata Mina Balık artık geçiyor; küfürler (boşluklu yazım dâhil) yine engelli.
+  Sunucudaki `bt_bad_name` aynı mantıkla güncellendi.
+- **Yükleme hatası:** `game.js` gelmezse iki kez daha denenir; yine gelmezse dilinde "Oyun yüklenemedi — TEKRAR DENE"
+  ekranı çıkar (eskiden sessiz, boş ekran).
+- **Kayıt doğrulama:** `loadFrom` para, itibar, seviye, satış, süre gibi sayıları sınırlar içinde doğrular; bozuk ya da
+  elle değiştirilmiş kayıt oyunu kilitlemez.
+- **Skor tablosu (sunucu):** oynama süresi sunucu saatinden hızlı artamaz, balık sayısı o sürede satılabilecek kadar
+  artar; yeni oyunun ilk gönderimi en çok 6 saatlik olabilir.
+- **Yönetim paneli:** 10 dakikada 30 hatalı şifre denemesinden sonra panel 10 dakika kapanır.
+- **Küçük şeyler:** favicon, meta açıklama ve paylaşım (Open Graph / Twitter) etiketleri; `test-world-render.js`
+  sabit dosya yolu yerine `URL` kullanır; hiçbir yerden çağrılmayan 20 fonksiyon ve 5 değişken (eski zemin
+  pedleri, eski çatı/duvar çizimleri vb.) silindi.
 
 ## v1.9.6 — Kayan etiket düzeltmesi (iPhone)
 
