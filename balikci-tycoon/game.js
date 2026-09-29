@@ -189,7 +189,9 @@ var STR = {
     emptyArea: 'Açılacak yeni alan yok', emptyLevel: 'Şimdilik yükseltme yok',
     emptyBuild: 'Yapı noktası yok', emptyProj: 'Proje bu bölge açılınca gelir',
     slotEmpty: 'Boş yapı yeri', slotOf: '{n} bölgesi',
-    areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs',
+    areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs', roadShow: 'Yol vitrini',
+    rdFl: 'Yol Çiçekliği', rdFlD: 'Yol kenarına çiçeklik • müşteri akışı +%{p}', rdFlDone: 'Yola çiçeklik kondu 🌷',
+    rdBb: 'Yol Reklam Panosu', rdBbD: 'İşletmenin adı ve amblemi yolda • müşteri akışı +%{p}', rdBbDone: 'Reklam panosu yolda yerini aldı 📣',
     lvEffect: 'Ağ +%18, tezgâh +4 stok, yeni yapı yeri',
     staffFull: 'Personel limiti dolu ({n})',
     tut6: 'Alt bardan bir yükseltme satın al',
@@ -383,7 +385,9 @@ var STR = {
     emptyArea: 'No new area to unlock', emptyLevel: 'No upgrade available yet',
     emptyBuild: 'No build spot yet', emptyProj: 'Unlocks with that area',
     slotEmpty: 'Empty build spot', slotOf: '{n} area',
-    areaGives: 'New net, cutting table and stall', decorGroup: 'Decor',
+    areaGives: 'New net, cutting table and stall', decorGroup: 'Decor', roadShow: 'Road showcase',
+    rdFl: 'Roadside Flowerbed', rdFlD: 'Flowerbed by the road • customer flow +{p}%', rdFlDone: 'A flowerbed on the road 🌷',
+    rdBb: 'Road Billboard', rdBbD: 'Your company name and emblem by the road • customer flow +{p}%', rdBbDone: 'Billboard up by the road 📣',
     lvEffect: 'Nets +18%, stall +4 stock, new build spot',
     staffFull: 'Staff limit reached ({n})',
     tut6: 'Buy an upgrade from the bottom bar',
@@ -1236,19 +1240,30 @@ function projStageOf(p) { var st = 0; for (var i = 0; i < project.stages.length;
 /* ---------------- kozmetik (GDD §24) ---------------- */
 /* v0.3 — süsler tezgâh bölgelerinden çıkarıldı: batı kıyı şeridi (x<0), iskele önü su ve güney
    kumsal. decorClearance() fonksiyonel nesnelere en az 1.2 kare mesafeyi doğrular. */
+/* v1.9.3 — YOL VİTRİNİ: süsler tezgâh bölgelerinin kenarından yolun doğu kenarına (x = ROAD_VX) taşındı.
+   Tezgâhlar sade kalır; yol, oyuncunun süslerini sergilediği yer. Yuvalar fenerlerin (3.5, 8, 12.5, 17, 21.5),
+   köprünün (1.9–2.9), saha girişlerinin (15.1, 18.95) ve reklam panolarının (ROAD_BB) arasında. Uzun nesneler
+   (pano, lamba, heykel) y≈4.9–8.1 aralığına konmaz: ekranda Ticaret Ofisi'nin arkasında kalırdı.
+   Tekne (denizde) ve fener (mendirekte) yerinde kalır. */
+var ROAD_VX = 14.75;
+var ROAD_FL = [3.95, 7.55, 8.45, 12.05, 12.95, 16.55, 17.45, 21.05];   /* çiçeklikler: yol fenerlerinin iki yanı */
+var ROAD_BB = [10.25, 14.0, 20.1];                                   /* reklam panoları: işletme adı + amblem */
+var FL_COST = 350, FL_GROW = 1.3, FL_FLOW = 0.02, BB_COST = [1400, 2800, 5600], BB_FLOW = 0.08, BB_LV = 3;
+function roadFlow() { return clamp(S.roadFl | 0, 0, ROAD_FL.length) * FL_FLOW + clamp(S.roadBb | 0, 0, ROAD_BB.length) * BB_FLOW; }
+function flCost() { return Math.round(FL_COST * Math.pow(FL_GROW, S.roadFl | 0)); }
 var DECOR = [
-  { id: 'bayrak', z: 0, x: -0.35, y: 0.3,  cost: 600,  n: { tr: 'Bayrak Direği', en: 'Flag Pole' },   icon: '🇹🇷', got: false },
+  { id: 'bayrak', z: 0, x: ROAD_VX, y: 23.5, road: 1,  cost: 600,  n: { tr: 'Bayrak Direği', en: 'Flag Pole' },   icon: '🇹🇷', got: false },
   { id: 'tekne',  z: 0, x: 4.2, y: -1.25, cost: 1300, n: { tr: 'Balıkçı Teknesi', en: 'Fishing Boat' }, icon: '⛵', got: false },
-  { id: 'bank',   z: 0, x: -0.35, y: 3.4,  cost: 400,  n: { tr: 'Bank', en: 'Bench' },                icon: '🪑', got: false },
-  { id: 'simit',  z: 1, x: -0.35, y: 9.2,  cost: 900,  n: { tr: 'Simit Arabası', en: 'Simit Cart' },  icon: '🥯', got: false },
-  { id: 'lamba',  z: 1, x: -0.35, y: 11.6, cost: 700,  n: { tr: 'Sokak Lambası', en: 'Street Lamp' }, icon: '💡', got: false },
-  { id: 'cicek',  z: 1, x: -0.35, y: 6.5,  cost: 500,  n: { tr: 'Begonvil', en: 'Bougainvillea' },    icon: '🌺', got: false },
-  { id: 'caymasa', z: 2, x: 1.6, y: 18.6, cost: 800, n: { tr: 'Çay Masası', en: 'Tea Table' },      icon: '☕', got: false },
-  { id: 'heykel', z: 2, x: 5.2, y: 18.9, cost: 2600, n: { tr: 'Balık Heykeli', en: 'Fish Statue' }, icon: '🗿', lv: 6, got: false },
+  { id: 'bank',   z: 0, x: ROAD_VX, y: 4.9, road: 1,  cost: 400,  n: { tr: 'Bank', en: 'Bench' },                icon: '🪑', got: false },
+  { id: 'simit',  z: 1, x: ROAD_VX, y: 5.9, road: 1,  cost: 900,  n: { tr: 'Simit Arabası', en: 'Simit Cart' },  icon: '🥯', got: false },
+  { id: 'lamba',  z: 1, x: ROAD_VX, y: 18.0, road: 1,  cost: 700,  n: { tr: 'Sokak Lambası', en: 'Street Lamp' }, icon: '💡', got: false },
+  { id: 'cicek',  z: 1, x: ROAD_VX, y: 6.9, road: 1,  cost: 500,  n: { tr: 'Begonvil', en: 'Bougainvillea' },    icon: '🌺', got: false },
+  { id: 'caymasa', z: 2, x: ROAD_VX, y: 11.4, road: 1,  cost: 800, n: { tr: 'Çay Masası', en: 'Tea Table' },      icon: '☕', got: false },
+  { id: 'heykel', z: 2, x: ROAD_VX, y: 22.5, road: 1,  cost: 2600, n: { tr: 'Balık Heykeli', en: 'Fish Statue' }, icon: '🗿', lv: 6, got: false },
   /* v2.0 — Anadolu kıyı kültürü */
-  { id: 'nazar',  z: 0, x: 7.4, y: -0.4,  cost: 450,  n: { tr: 'Nazar Boncuğu', en: 'Evil Eye Charm' }, icon: '🧿', got: false },
-  { id: 'cesme',  z: 1, x: -0.45, y: 7.9, cost: 1500, n: { tr: 'Osmanlı Çeşmesi', en: 'Ottoman Fountain' }, icon: '⛲', lv: 5, got: false },
-  { id: 'kilim',  z: 1, x: -0.35, y: 10.4,  cost: 800,  n: { tr: 'Kilim Sergisi', en: 'Kilim Display' }, icon: '🧶', got: false },
+  { id: 'nazar',  z: 0, x: ROAD_VX, y: 1.2, road: 1,  cost: 450,  n: { tr: 'Nazar Boncuğu', en: 'Evil Eye Charm' }, icon: '🧿', got: false },
+  { id: 'cesme',  z: 1, x: ROAD_VX, y: 16.0, road: 1,  cost: 1500, n: { tr: 'Osmanlı Çeşmesi', en: 'Ottoman Fountain' }, icon: '⛲', lv: 5, got: false },
+  { id: 'kilim',  z: 1, x: ROAD_VX, y: 9.1, road: 1,  cost: 800,  n: { tr: 'Kilim Sergisi', en: 'Kilim Display' }, icon: '🧶', got: false },
   { id: 'fener',  z: 2, x: 8.6, y: 19.3, cost: 5200, n: { tr: 'Mendirek Feneri', en: 'Breakwater Lighthouse' }, icon: '🗼', lv: 7, got: false }
 ];
 function decorClearance() {
@@ -1277,11 +1292,11 @@ function sCost(v) { return Math.max(1, Math.round(v * SERVSCALE)); }
 
 /* Hizmet parselleri (§32) — yürüme koridoru ve kasa güvenli alanı dışında sabit. */
 var PLOTS = [                                   /* v1.4: 5 parsel, her biri 5 binanın hepsini alır; bölge açıldıkça açılır */
-  { id: 'p1', z: 0, x: 16.8, y: 10.0, n: { tr: 'Saha 1 · İskele', en: 'Yard 1 · Pier' },         allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
-  { id: 'p2', z: 0, x: 22.7, y: 12.0, n: { tr: 'Saha 2 · İskele', en: 'Yard 2 · Pier' },         allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
-  { id: 'p3', z: 1, x: 16.8, y: 13.8, n: { tr: 'Saha 3 · Pazar', en: 'Yard 3 · Market' },        allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
-  { id: 'p4', z: 1, x: 22.7, y: 15.8, n: { tr: 'Saha 4 · Pazar', en: 'Yard 4 · Market' },        allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
-  { id: 'p5', z: 2, x: 16.8, y: 17.6, n: { tr: 'Saha 5 · Fümehane', en: 'Yard 5 · Smokehouse' }, allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null }
+  { id: 'p1', z: 0, x: 16.8, y: 13.2, n: { tr: 'Saha 1 · İskele', en: 'Yard 1 · Pier' },         allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p2', z: 0, x: 22.7, y: 15.2, n: { tr: 'Saha 2 · İskele', en: 'Yard 2 · Pier' },         allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p3', z: 1, x: 16.8, y: 17.0, n: { tr: 'Saha 3 · Pazar', en: 'Yard 3 · Market' },        allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p4', z: 1, x: 22.7, y: 19.0, n: { tr: 'Saha 4 · Pazar', en: 'Yard 4 · Market' },        allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null },
+  { id: 'p5', z: 2, x: 16.8, y: 20.8, n: { tr: 'Saha 5 · Fümehane', en: 'Yard 5 · Smokehouse' }, allow: ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'], b: null }
 ];
 function plotActive(p) { return !AREAS[p.z].locked; }
 function plotById(id) { for (var i = 0; i < PLOTS.length; i++) if (PLOTS[i].id === id) return PLOTS[i]; return null; }
@@ -1905,11 +1920,13 @@ function validateWorld() {
 function counterMax(c) { return 20 + (AREAS[c.z].lvl - 1) * 4 + slotEff(c.z, 'stock') + servEff('ctrcap'); }
 var safe = { z: 0, x: 1.2, y: 4.9, pop: 0 };
 /* v0.7 — Liman Meydanı alanı + yaya köprüsü (ayrıntılar FAZ 3 bölümünde) */
-var MEYDAN = { x0: 15.0, y0: -0.3, x1: 21.2, y1: 6.8 };
+/* v1.9.2 — meydan ve saha kabaca eşit: meydan güneye büyüdü (binalar aralıklı), saha güneye kaydı.
+   Meydanın KD köşesi (x1, y0) sabit kalmalı: x - y > 21.5 kameranın ulaşamadığı doğu ucu. */
+var MEYDAN = { x0: 15.0, y0: -0.3, x1: 21.2, y1: 10.8 };
 /* v1.3.2 — Hizmet Sahası: BİNA sekmesinin hizmet binaları (buzhane, restoran, hal…) tezgâh bölgelerinden
    çıkarıldı; meydanın güneyinde, yolun doğusunda kendi sahasında durur (tezgâh bölgeleri yalnız üretim + satış). */
-var SERVYARD = { x0: 15.3, y0: 8.6, x1: 24.2, y1: 20.0 };   /* v1.4: 5 parsel, 2 kaydırmalı sütun: binalar ekranda üst üste binmez */
-var YARDPATH = { x0: 17.9, y0: 6.5, x1: 18.9, y1: 8.9 };          /* meydan ↔ saha patikası */
+var SERVYARD = { x0: 15.0, y0: 12.1, x1: 23.8, y1: 21.9 };  /* v1.4: 5 parsel, 2 kaydırmalı sütun: binalar ekranda üst üste binmez */
+var YARDPATH = { x0: 17.6, y0: 10.5, x1: 18.6, y1: 12.4 };          /* meydan ↔ saha patikası */
 var BRIDGE = { x0: 9.3, y0: 1.9, x1: 15.7, y1: 2.9 };
 function inRect(x, y, r, m) { m = m || 0; return x > r.x0 + m && x < r.x1 - m && y > r.y0 + m && y < r.y1 - m; }
 /* v0.6 — çöp kovaları: elde kalan fazla mal (tezgâh/kuyruk dolu, yanlış tür) atılabilsin.
@@ -1953,7 +1970,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false     /* skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0     /* skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -2054,6 +2071,7 @@ function buildSave() {
     workers: workers.map(function (w) { return [w.role, w.zone === undefined ? 0 : w.zone]; }),
     ret: retSave(),                                   /* uzakta kazanç + başarımlar */
     ev: Object.keys(S.evs || {}),                     /* v1.9: gönderilmiş ilerleme olayları (tekrar gitmesin) */
+    road: [S.roadFl | 0, S.roadBb | 0],               /* v1.9.3: yol çiçeklikleri + reklam panoları */
     q: queueSave(),                                   /* v1.9.1: tezgâh stoğu, kasadaki para ve kuyruktaki müşteriler */
     mk: M
   };
@@ -2127,7 +2145,11 @@ function loadFrom(d) {
     S.env = typeof d.env === 'number' ? clamp(d.env | 0, 0, ENV_UPS.length) : -1;   /* -1: eski kayıt → mevcut görünüm korunur */
     if (d.areas) d.areas.forEach(function (v, i) { if (AREAS[i]) { AREAS[i].locked = !!v[0]; AREAS[i].lvl = v[1] || 1; } });
     if (d.pads) d.pads.forEach(function (v, i) { if (PADS[i]) { PADS[i].paid = v[0]; PADS[i].lvl = v[1]; if (v[2]) PADS[i].price = v[2]; } });
+    var rd = Array.isArray(d.road) ? d.road : [0, 0];
+    S.roadFl = clamp(parseInt(rd[0], 10) || 0, 0, ROAD_FL.length); S.roadBb = clamp(parseInt(rd[1], 10) || 0, 0, ROAD_BB.length);
     if (d.slots) d.slots.forEach(function (v, i) { if (SLOTS[i]) SLOTS[i].b = v; });
+    /* v1.9.3: tezgâh bölgesindeki reklam panosu yola taşındı — parsel boşalır, yolda bir pano bedava */
+    SLOTS.forEach(function (sl) { if (sl.b === 'pano') { sl.b = null; if (S.roadBb < ROAD_BB.length) S.roadBb++; else S.cash += bdef('pano').cost; } });
     /* v0.7 meydan; eski parsel kulübesi meydandaki kulübeye (Sv1) dönüşür */
     var md = Array.isArray(d.meydan) ? d.meydan : [0, 0, {}, 0];
     HUT.lvl = clamp(parseInt(md[0], 10) || 0, 0, HUT_LV.length);
@@ -2167,7 +2189,7 @@ function loadFrom(d) {
 function resetWorld() {
   var k;
   if (typeof closeBar === 'function') closeBar();
-  workers.length = 0; customers.length = 0; flyers.length = 0; floats.length = 0; puffs.length = 0;
+  workers.length = 0; customers.length = 0; flyers.length = 0; floats.length = 0; puffs.length = 0; yardFolk.length = 0;
   event = null; eventT = 0; nextEvent = 80;
   for (k in S0) S[k] = S0[k];
   player.x = 4.5; player.y = 3.2; player.vx = 0; player.vy = 0; player.carry.length = 0; player.act = 0;
@@ -2982,7 +3004,7 @@ function patienceMul(z) { return (1 + decorCount() * 0.02) * (1 + mgrEff(z, 'pat
 
 function updateCounter(c, dt) {
   if (!c.open) return;                       /* v2.1: kapalı tezgâha müşteri gelmez */
-  var custMul = (event ? event.custMul : 1) * areaFlow(c.z) * dayCustMul() * (1 + envFlow());   /* v1.2: çevre yatırımı */
+  var custMul = (event ? event.custMul : 1) * areaFlow(c.z) * dayCustMul() * (1 + envFlow() + roadFlow());   /* v1.2: çevre yatırımı; v1.9.3: yol çiçeklikleri + panolar */
   c.spawnT -= dt * custMul;
   var qmax = queueMax(c.z), freeIdx = -1, i;
   for (i = 0; i < qmax; i++) if (!c.slots[i]) { freeIdx = i; break; }
@@ -3156,7 +3178,7 @@ function updateCustomers(dt) {
         sfx.bad();
       }
     } else {
-      cu.x += ((13.6 + (cu.c.lane || 0) * 1.7) - cu.x) * Math.min(1, dt * (cu.spec ? 0.9 : 1.6));
+      cu.x += ((13.6 + (cu.c.lane || 0) * 0.5) - cu.x) * Math.min(1, dt * (cu.spec ? 0.9 : 1.6));
       if (cu.spec) cu.byeT = (cu.byeT || 0) + dt;
       cu.y += (cu.spec ? SPEC_LEAVE : 3.6) * dt; cu.bob += dt * (cu.spec ? 5 : 8);
       if (cu.y > 23) customers.splice(i, 1);
@@ -4416,6 +4438,44 @@ function drawRoadLamps(push) {
   if (envStage() < 3) return;
   for (var y = 3.5; y < 22; y += 4.5) (function (ly) { push(14.75 + ly, function () { drawLamp(14.75, ly); }); })(y);
 }
+/* v1.9.3 — yol vitrini: çiçeklikler (taş saksı + mevsim çiçekleri) ve reklam panoları (işletme adı + amblem) */
+function drawRoadShow(push) {
+  var k;
+  for (k = 0; k < Math.min(S.roadFl | 0, ROAD_FL.length); k++) (function (i) { push(ROAD_VX + ROAD_FL[i], function () { drawFlowerbed(ROAD_VX, ROAD_FL[i], i); }); })(k);
+  for (k = 0; k < Math.min(S.roadBb | 0, ROAD_BB.length); k++) (function (i) { push(ROAD_VX + ROAD_BB[i] + 0.3, function () { drawBillboard(ROAD_VX, ROAD_BB[i], i); }); })(k);
+}
+function drawFlowerbed(x, y, i) {
+  isoBox(x - 0.2, y - 0.3, 0.4, 0.6, 0, 4, PAL.stoneLite, PAL.stoneDark, PAL.stone);
+  isoQuad(x - 0.16, y - 0.26, 0.32, 0.52, 4, '#4a6b35');
+  var cols = [['#e5533d', '#ffc94a'], ['#d94a8c', '#f4f0e4'], ['#ffc94a', '#e0679e'], ['#9b6fd1', '#f4f0e4']][i % 4];
+  for (var f = 0; f < 6; f++) {
+    var fx = x - 0.1 + (f % 2) * 0.2, fy = y - 0.2 + Math.floor(f / 2) * 0.2, sw = Math.sin(gameT * 1.5 + f + i) > 0.7 ? 1 : 0;
+    var sx = R(pX(fx, fy)), sy = R(pY(fx, fy, 5));
+    px(sx, sy - 3, 1, 3, PAL.leaf); px(sx - 1 + sw, sy - 5, 3, 2, cols[f % 2]);
+  }
+}
+/* amblem: lacivert rozet içinde gümüş hamsi (oyunun simgesi) */
+function drawEmblem(x, y, z) {
+  var sx = R(pX(x, y)), sy = R(pY(x, y, z));
+  px(sx - 5, sy - 4, 10, 8, PAL.indigo); px(sx - 4, sy - 5, 8, 10, PAL.indigo);
+  px(sx - 3, sy - 1, 6, 2, '#cfe6f0'); px(sx + 3, sy - 2, 2, 1, '#cfe6f0'); px(sx + 3, sy + 1, 2, 1, '#cfe6f0');
+  px(sx - 3, sy - 1, 6, 1, '#f4fbff'); px(sx - 2, sy - 1, 1, 1, PAL.edge);
+}
+function drawBillboard(x, y, i) {
+  var y0 = y - 0.55, y1 = y + 0.55;
+  shadow(x, y, 0.7);
+  vline(x, y0 + 0.08, 0, 30, PAL.woodDark); vline(x, y1 - 0.08, 0, 30, PAL.woodDark);                  /* direkler */
+  wallQ(x, y0 - 0.04, x, y1 + 0.04, 13, 31, PAL.edge);                                                  /* çerçeve */
+  wallQ(x, y0, x, y1, 14, 30, '#f1ebda');
+  wallQ(x, y0, x, y1, 14, 17, [PAL.madder, PAL.indigo, '#2f7a4a'][i % 3]);                               /* alt şerit */
+  wallQ(x, y0, x, y1, 28, 30, [PAL.madder, PAL.indigo, '#2f7a4a'][i % 3]);
+  drawEmblem(x, y0 + 0.28, 22.5);
+  if (dist2(player.x, player.y, x, y) < 90) {
+    var nm = UP(S.company || (lang === 'tr' ? 'HAMSİ KOYU' : 'HAMSI COVE'));
+    if (nm.length > 12) nm = nm.split(' ')[0].slice(0, 12);                 /* panoya sığsın: uzun adda ilk kelime */
+    uiText(x, y + 0.2, 22.5, nm, '#1a2433', 6, 1, 0, 0, 'rgba(241,235,218,.9)');
+  }
+}
 
 /* v1.0 — kilitli bölgeler eski püskü eşya ve malzemeyle dolu; bölge açılınca temizlenir.
    Konumlar bölgeye göre sabit tohumla üretilir (her açılışta aynı). */
@@ -4760,7 +4820,7 @@ function drawLamp(x, y) {
 /* v1.3.2: bölge adı ana tezgâhın tentesindeki tahta levhada — ayrı bir yer kaplamaz, hiçbir şeyin önüne düşmez */
 function drawStallSign(c) {
   var a = AREAS[c.z];
-  if (!a || a.locked || a.lvl < 2 || dist2(player.x, player.y, c.x, c.y) > 60) return;
+  if (!a || a.locked || a.lvl < 2 || dist2(player.x, player.y, c.x, c.y) > 14) return;   /* v1.9.3: yalnız yakındayken (tezgâh önü sade) */
   var sx = R(pX(c.x, c.y)), top = 27, sy = R(pY(c.x, c.y, 12)) - top;
   var s = UP(NM(a.n)), fs = 7;
   uctx.font = uiFont(fs);
@@ -5737,47 +5797,40 @@ function dayTint() {
 }
 
 /* ---------- v2.0: TİCARET OFİSİ — cumbalı konak ---------- */
+/* v1.9.2 — Ticaret Ofisi: iki katlı taş ticaret evi — kemerli giriş, cumbalı üst kat, kırma çatı, önünde kontrat panosu */
 function drawOffice() {
-  var o = office, x = o.x - o.w / 2, y = o.y - o.h / 2;
-  var sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0));
-  if (!officeBuilt()) {
-    ctx.save(); ctx.setLineDash([3, 3]); ctx.lineDashOffset = -gameT * 6;
-    ctx.strokeStyle = '#c9a15e'; ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(R(pX(x, y)), R(pY(x, y, 0))); ctx.lineTo(R(pX(x + o.w, y)), R(pY(x + o.w, y, 0)));
-    ctx.lineTo(R(pX(x + o.w, y + o.h)), R(pY(x + o.w, y + o.h, 0))); ctx.lineTo(R(pX(x, y + o.h)), R(pY(x, y + o.h, 0)));
-    ctx.closePath(); ctx.stroke(); ctx.restore();
-    if (dist2(player.x, player.y, o.x, o.y) < 18) uiLabel(o.x, o.y, 14, T('office'), '#ffc94a', 0.85);
-    return;
-  }
+  var o = office, x0 = o.x - o.w / 2, y0 = o.y - o.h / 2, x1 = x0 + o.w, y1 = y0 + o.h, k;
+  if (!officeBuilt()) { plotOutline(o, '🏛️ ' + T('office')); return; }
   shadow(o.x, o.y, 1.3);
-  isoQuad(x - 0.1, y - 0.1, o.w + 0.2, o.h + 0.2, 0.4, '#a8a08c');
-  isoBox(x + 0.06, y + 0.06, o.w - 0.12, o.h - 0.12, 1.6, 28, '#efe6d0', '#b9ac90', '#d5c8ac');
-  wallStone(sx, sy, 40, 26);
-  /* cumba (çıkma kat) */
-  isoBox(x + 0.3, y - 0.18, o.w - 0.6, o.h * 0.5, 28, 40, '#f3ebd8', '#bfb296', '#dccfb2');
-  var cy = sy - 34;
-  px(sx - 13, cy + 6, 26, 1, PAL.woodDark);
-  windowTR(sx - 9, cy, 7, 7, true);
-  windowTR(sx + 2, cy, 7, 7, true);
-  px(sx - 14, cy + 7, 28, 1, PAL.iron);
-  for (var b = 0; b < 9; b++) px(sx - 13 + b * 3, cy + 7, 1, 3, PAL.iron);
-  px(sx - 14, cy + 10, 28, 1, PAL.iron);
-  /* çatı */
-  roofTile(sx, sy - 40, 46, 4);
-  /* kemerli giriş */
-  archDoor(sx, sy - 1, 11, 15);
-  tileBand(sx, sy - 22, 34);
-  /* tabela */
-  px(sx - 17, sy - 14, 34, 8, PAL.pnl);
-  px(sx - 16, sy - 13, 32, 6, PAL.indigo);
-  if (dist2(player.x, player.y, o.x, o.y) < 60) uiText(o.x, o.y, 18, T('office'), PAL.gold, 7);
+  isoQuad(x0 - 0.15, y0 - 0.15, o.w + 0.3, o.h + 0.55, 0.4, '#b9ad92');                                         /* taş avlu */
+  isoBox(x0, y0, o.w, o.h, 0, 3, PAL.stoneDark, '#7d725c', '#8a7f68');                                         /* kaide */
+  isoBox(x0 + 0.04, y0 + 0.04, o.w - 0.08, o.h - 0.08, 3, 17, PAL.stoneLite, PAL.stone, '#d5c8ac');            /* zemin kat: kesme taş */
+  for (k = 1; k < 4; k++) { hline(x0 + 0.04, y1 - 0.04, x1 - 0.04, y1 - 0.04, 3 + k * 3.5, PAL.stoneDark); hline(x1 - 0.04, y0 + 0.04, x1 - 0.04, y1 - 0.04, 3 + k * 3.5, PAL.stoneDark); }
+  /* kemerli giriş + üstünde levha */
+  winF(o.x - 0.24, o.x + 0.24, y1 - 0.04, 3, 13, '#4a2f1c', PAL.stoneDark);
+  wallQ(o.x - 0.17, y1 - 0.04, o.x + 0.17, y1 - 0.04, 13, 15, '#4a2f1c');
+  wallQ(x0 + 0.2, y1 - 0.04, x1 - 0.2, y1 - 0.04, 15.5, 17, PAL.indigo);
+  winF(x0 + 0.18, x0 + 0.42, y1 - 0.04, 7, 12, '#ffd98f', PAL.woodDark);
+  winF(x1 - 0.42, x1 - 0.18, y1 - 0.04, 7, 12, '#ffd98f', PAL.woodDark);
+  winR(x1 - 0.04, o.y - 0.2, o.y + 0.2, 7, 12, '#ffd98f', PAL.woodDark);
+  /* cumbalı üst kat: ön cepheye taşar, ahşap kirişli badana */
+  isoBox(x0 + 0.08, y0 + 0.02, o.w - 0.16, o.h + 0.12, 17, 30, PAL.lime, PAL.limeSh, '#e6dec9');
+  hline(x0 + 0.08, y1 + 0.14, x1 - 0.08, y1 + 0.14, 17, PAL.woodDark); hline(x0 + 0.08, y1 + 0.14, x1 - 0.08, y1 + 0.14, 30, PAL.woodDark);
+  for (k = 0; k < 3; k++) { var wx = x0 + 0.28 + k * 0.45; winF(wx, wx + 0.24, y1 + 0.14, 20, 27, '#ffd98f', PAL.woodDark); }
+  winR(x1 - 0.08, o.y - 0.3, o.y - 0.05, 20, 27, '#ffd98f', PAL.woodDark); winR(x1 - 0.08, o.y + 0.15, o.y + 0.4, 20, 27, '#ffd98f', PAL.woodDark);
+  roofHip(x0 - 0.12, x1 + 0.12, y0 - 0.1, y1 + 0.26, 30, 11, PAL.tileLite, PAL.tile, PAL.tileDark, 4);
+  /* kontrat panosu: aktif kontrat kadar kâğıt */
+  var bx = x1 + 0.45, by = y1 + 0.3;
+  vline(bx - 0.25, by, 0, 13, PAL.woodDark); vline(bx + 0.25, by, 0, 13, PAL.woodDark);
+  wallQ(bx - 0.3, by, bx + 0.3, by, 6, 13, '#8a5a33');
+  var na = (M && M.active) ? M.active.length : 0;
+  for (k = 0; k < Math.min(4, na); k++) { var nx = bx - 0.22 + k * 0.13; wallQ(nx, by + 0.001, nx + 0.09, by + 0.001, 8 + (k % 2), 11.5 + (k % 2), '#f4f0e4'); }
   /* bayrak */
-  px(sx + 18, sy - 52, 1, 14, '#d8d2c4');
-  var wv = R(Math.sin(gameT * 2) * 1);
-  px(sx + 19, sy - 52, 9, 6, '#e30a17');
-  px(sx + 22 + wv, sy - 50, 2, 2, '#ffffff');
-  if (M && M.active.length) uiBadge(o.x, o.y + o.h / 2 + 0.2, 10, M.active.length + '/' + maxActive(), '#9df5b0');
+  vline(x1 + 0.2, y0 + 0.1, 0, 46, '#d8d2c4');
+  var fsx = R(pX(x1 + 0.2, y0 + 0.1)), fsy = R(pY(x1 + 0.2, y0 + 0.1, 46)), wv = R(Math.sin(gameT * 2));
+  px(fsx + 1, fsy, 10, 6, '#e30a17'); px(fsx + 4 + wv, fsy + 2, 2, 2, '#ffffff');
+  if (dist2(player.x, player.y, o.x, o.y + 1.1) < 4) uiLabel(o.x, o.y, 48, T('office'), PAL.gold, 1);
+  if (na) uiBadge(bx, by, 16, na + '/' + maxActive(), '#9df5b0');
 }
 
 /* ---------- v2.0: KAPALI PAZAR (eski adıyla Kapalı Balık Hali) — kagir hal binası ---------- */
@@ -6087,6 +6140,7 @@ function render() {
   })(DECOR[i]);
   pushMeydan(push);
   drawRoadLamps(push);
+  drawRoadShow(push);
   for (i = 0; i < BINS.length; i++) (function (bn) {
     if (AREAS[bn.z].locked) return; push(bn.x + bn.y, function () { drawBin(bn); });
   })(BINS[i]);
@@ -6131,6 +6185,7 @@ function render() {
 
   for (i = 0; i < cats.length; i++) (function (ct) { push(ct.x + ct.y + 0.1, function () { drawCat(ct); }); })(cats[i]);
   for (i = 0; i < customers.length; i++) (function (cu) { push(cu.x + cu.y + 0.2, function () { drawCustomer(cu); }); })(customers[i]);
+  drawYardFolk(push);
   for (i = 0; i < workers.length; i++) (function (w) {
     var col = w.role === 'hamal' ? '#4f7fae' : w.role === 'filetocu' ? '#5f8f6a' : w.role === 'tezgahtar' ? '#b8624a' : '#7a6ba8';
     push(w.x + w.y + 0.15, function () {
@@ -6477,7 +6532,7 @@ function barList() {
       var sl = barSlot;
       for (i = 0; i < BUILDINGS.length; i++) {
         var bd = BUILDINGS[i];
-        if (sl.cats.indexOf(bd.cat) < 0) continue;
+        if (sl.cats.indexOf(bd.cat) < 0 || bd.id === 'pano') continue;   /* v1.9.3: reklam panosu yolda (Dekoratif) */
         var owned = sl.b === bd.id;
         var refund = sl.b ? Math.round(bdef(sl.b).cost * 0.6) : 0;
         out.push({ id: 'b' + bd.id, ic: bd.icon, t: NM(bd.n), s: NM(bd.d), cost: upCost(bd.cost), refund: refund,
@@ -6491,10 +6546,18 @@ function barList() {
           s: NM(eu.d) + ' • ' + T('envFlow', { p: Math.round(eu.flow * 100) }), cost: eu.cost,
           blocked: lvNow < eu.lv, why: T('needLv', { l: eu.lv }), go: buyEnv });
       })(ENV_UPS[ek]);
+      /* v1.9.3 — yol vitrini: tek tek alınan çiçeklikler ve işletme adlı reklam panoları */
+      if ((S.roadFl | 0) < ROAD_FL.length) out.push({ id: 'rfl', ic: '🌷', t: T('rdFl') + '  ' + (S.roadFl | 0) + '/' + ROAD_FL.length,
+        s: T('rdFlD', { p: Math.round(FL_FLOW * 100) }), cost: flCost(),
+        go: function () { S.roadFl = (S.roadFl | 0) + 1; sfx.build(); toast(T('rdFlDone')); } });
+      if ((S.roadBb | 0) < ROAD_BB.length) out.push({ id: 'rbb', ic: '📣', t: T('rdBb') + '  ' + (S.roadBb | 0) + '/' + ROAD_BB.length,
+        s: T('rdBbD', { p: Math.round(BB_FLOW * 100) }), cost: BB_COST[S.roadBb | 0],
+        blocked: lvNow < BB_LV, why: T('needLv', { l: BB_LV }),
+        go: function () { S.roadBb = (S.roadBb | 0) + 1; sfx.build(); toast(T('rdBbDone')); } });
       for (i = 0; i < DECOR.length; i++) {
         var dc = DECOR[i];
         if (dc.got || AREAS[dc.z].locked) continue;
-        out.push({ id: 'd' + i, ic: dc.icon, t: NM(dc.n), s: T('decorGroup') + ' • ' + NM(AREAS[dc.z].n), cost: dc.cost,
+        out.push({ id: 'd' + i, ic: dc.icon, t: NM(dc.n), s: T('decorGroup') + ' • ' + (dc.road ? T('roadShow') : NM(AREAS[dc.z].n)), cost: dc.cost,
           blocked: dc.lv && lvNow < dc.lv, why: T('needLv', { l: dc.lv }),
           go: function (k) { return function () { DECOR[k].got = true; sfx.build(); toast(T('decorBought', { n: NM(DECOR[k].n) })); }; }(i) });
       }
@@ -7083,6 +7146,7 @@ function frame(ts) {
   updateWorkers(dt);
   updateStations(dt);
   updateCustomers(dt);
+  updateYardFolk(dt);                              /* v1.9.2: hizmet sahası yayaları (görsel) */
   updateDay(dt);                    /* v1.2 — gün döngüsü + depo kilidi */
   updateSpecials(dt);               /* v0.9 — özel isimli müşteriler */
   updateFumeMachines(dt);           /* v1.3 — tezgâh füme makinesi */
@@ -8902,10 +8966,12 @@ function updateIntro(dt) {
    İçinde: Personel Kulübesi (seviyeli) • Depo (kendi personeliyle) • Ticaret Merkezi • Balık Hali
    ========================================================= */
 /* MEYDAN ve BRIDGE yukarıda (dünya verisiyle) tanımlı: manzara üretimi açılışta onları kullanır */
-var HUT = { x: 16.2, y: 0.7, w: 1.5, h: 1.2, lvl: 0, door: { x: 16.2, y: 1.8 } };
-var DEPOT = { x: 19.5, y: 1.1, w: 2.4, h: 1.8, lvl: 0, door: { x: 18.0, y: 2.4 }, shelf: {} };
-var WHALL = { x: 19.5, y: 5.0, w: 2.4, h: 1.6, built: false, door: { x: 18.0, y: 5.0 } };
-office.x = 16.3; office.y = 5.0; office.z = 0;           /* Ticaret Merkezi meydana taşındı */
+/* v1.9.2 — meydan yerleşimi: kuzeyde kulübe + depo, güneyde ofis + hal, ortası yürüyüş alanı; kapılar ön (güney) cephede.
+   Ekranda yatay konum x - y: yan yana binalar bu eksende ayak izlerinden fazla ayrık (üst üste binmez). */
+var HUT = { x: 16.1, y: 1.1, w: 1.5, h: 1.2, lvl: 0, door: { x: 16.45, y: 2.25 } };
+var DEPOT = { x: 20.0, y: 1.4, w: 2.4, h: 1.8, lvl: 0, door: { x: 19.6, y: 2.95 }, shelf: {} };
+var WHALL = { x: 19.9, y: 6.8, w: 2.4, h: 1.6, built: false, door: { x: 19.5, y: 8.15 } };
+office.x = 16.4; office.y = 8.1; office.z = 0;           /* Ticaret Merkezi meydana taşındı */
 var HUT_LV = [{ c: 1500, l: 2 }, { c: 4000, l: 3 }, { c: 9000, l: 5 }, { c: 18000, l: 7 }, { c: 36000, l: 9 }];
 var DEPOT_LV = [{ c: 3000, l: 3, cap: 30 }, { c: 8000, l: 5, cap: 60 }, { c: 20000, l: 6, cap: 100 }, { c: 45000, l: 8, cap: 160 }];
 var WHALL_COST = 6000, WHALL_LV = 4;
@@ -9221,38 +9287,74 @@ function plotOutline(o, label, col) {
   drawJunk({ x: o.x - 0.35, y: o.y - 0.1, t: 'tahta', v: 0.2 });
   drawJunk({ x: o.x + 0.45, y: o.y + 0.25, t: o.w > 2 ? 'varil' : 'kasa', v: 0.7 });
 }
+/* v1.9.2 — meydan binaları yeniden: kapı, pencere ve levhalar izometrik duvarlara oturur (ekran pikseli değil),
+   bina adı yalnız kapıya yaklaşınca çıkar (üstte sürekli duran levha yok), her seviye görünür biçimde farklı. */
+function nearDoor(d, r) { return dist2(player.x, player.y, d.x, d.y) < (r || 3.2); }
 function drawHut() {
-  var o = HUT;
-  if (!o.lvl) { plotOutline(o, '🏚️ ' + T('hutName') + ' • ' + T('buildAt')); return; }
-  var x = o.x - o.w / 2, y = o.y - o.h / 2, sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0));
+  var o = HUT, L = o.lvl, k;
+  if (!L) { plotOutline(o, '🏚️ ' + T('hutName') + ' • ' + T('buildAt')); return; }
+  var x0 = o.x - o.w / 2, y0 = o.y - o.h / 2, x1 = x0 + o.w, y1 = y0 + o.h, H = 13 + L * 1.5, dx = o.door.x;
   shadow(o.x, o.y, 1.0);
-  isoBox(x, y, o.w, o.h, 0, 16 + o.lvl * 2, '#d2a468', '#7a4e2a', '#9a6836');
-  wallWood(sx, sy, 26, 14 + o.lvl * 2, '#9a6836');
-  roofTile(sx, sy - 16 - o.lvl * 2, 32, o.lvl);
-  px(sx - 3, sy - 9, 6, 9, '#4a2f1c'); px(sx + 1, sy - 5, 1, 1, PAL.brass);
-  windowTR(sx + 6, sy - 12, 5, 4, true);
-  /* v1.5: personel kulübesinin kimliği — kapı önünde sıra, çamaşır ipinde önlükler, baret askısı */
-  isoBox(o.x - 0.5, o.y + o.h / 2 + 0.12, 0.7, 0.14, 0, 3, PAL.woodLite, PAL.woodDark, PAL.wood);
-  var lx0 = o.x + o.w / 2 + 0.15, ly0 = o.y - o.h / 2, ly1 = o.y + o.h / 2;
-  vline(lx0, ly0, 0, 14, PAL.woodDark); vline(lx0, ly1, 0, 14, PAL.woodDark); hline(lx0, ly0, lx0, ly1, 13, '#d8d2c4');
-  for (var cl = 0; cl < Math.min(4, o.lvl + 1); cl++) { var cy2 = ly0 + 0.2 + cl * 0.25; wallQ(lx0, cy2, lx0, cy2 + 0.14, 8, 13, ['#e8762b', '#3f6fb0', '#f4f0e4', '#c8553d'][cl]); }
-  if (o.lvl >= 3) { px(sx - 14, sy - 12, 5, 2, '#e6b93a'); px(sx - 14, sy - 16, 5, 2, '#e6b93a'); px(sx - 15, sy - 14, 1, 8, PAL.woodDark); }
-  labelAt(o.x, o.y, 34 + o.lvl * 2, T('hutName') + ' ' + T('level') + o.lvl, '#ffd9a8', '👷');
+  isoBox(x0 - 0.05, y0 - 0.05, o.w + 0.1, o.h + 0.1, 0, 2, PAL.stoneLite, PAL.stoneDark, PAL.stone);        /* taş temel */
+  var wl = L >= 5 ? [PAL.lime, PAL.limeSh, '#e6dec9'] : ['#d2a468', '#7a4e2a', '#9a6836'];
+  isoBox(x0, y0, o.w, o.h, 2, H, wl[0], wl[1], wl[2]);
+  if (L < 5) for (k = 1; k < 5; k++) { var zz = 2 + k * (H - 2) / 5; hline(x0, y1, x1, y1, zz, '#6a4224'); hline(x1, y0, x1, y1, zz, '#80532c'); }
+  else { wallQ(x0, y1, x1, y1, 2, 4, PAL.stoneDark); wallQ(x1, y0, x1, y1, 2, 4, PAL.stoneDark); }            /* badanalı: taş etek */
+  winF(dx - 0.2, dx + 0.2, y1, 2, 11, '#4a2f1c', '#6a4224');                                                  /* kapı */
+  px(R(pX(dx + 0.12, y1)), R(pY(dx + 0.12, y1, 7)), 1, 1, PAL.brass);
+  winR(x1, o.y - 0.25, o.y + 0.2, 6, 11, '#ffd98f', '#6a4224');                                                /* yan pencere */
+  if (L >= 4) winF(x0 + 0.2, x0 + 0.5, y1, 6, 11, '#ffd98f', '#6a4224');                                      /* ikinci pencere */
+  roofGableX(x0 - 0.12, x1 + 0.12, y0 - 0.12, y1 + 0.12, H, 8 + L, PAL.tileLite, PAL.tile, wl[2], PAL.tileDark, 5);
+  if (L >= 4) {                                                                                               /* baca + duman */
+    isoBox(x0 + 0.25, o.y - 0.25, 0.2, 0.2, H + 2, H + 13 + L, '#b7a88a', '#7d725c', '#9c9079');
+    if (Math.random() < 0.03) addPuff(x0 + 0.35, o.y - 0.15, '#d8d2c4');
+  }
+  if (L >= 2) {                                                                                               /* pencere önünde çiçek kasası */
+    isoBox(x1, o.y - 0.3, 0.1, 0.55, 5, 6.5, PAL.wood, PAL.woodDark, '#8a5a33');
+    for (k = 0; k < 4; k++) { var fy = o.y - 0.25 + k * 0.14; px(R(pX(x1 + 0.05, fy)), R(pY(x1 + 0.05, fy, 8)), 2, 2, ['#e5533d', '#ffc94a', '#f4f0e4', '#c8553d'][k]); }
+  }
+  if (L >= 3) {                                                                                               /* kapı önü sundurma + bank */
+    var px0 = dx - 0.45, px1 = dx + 0.45, py = y1 + 0.45;
+    vline(px0, py, 0, 12, PAL.woodDark); vline(px1, py, 0, 12, PAL.woodDark);
+    roofPlane([[px0 - 0.05, y1, 14], [px1 + 0.05, y1, 14], [px1 + 0.05, py + 0.05, 11], [px0 - 0.05, py + 0.05, 11]], PAL.tile, PAL.tileDark, 3);
+    isoBox(x1 - 0.45, y1 + 0.15, 0.4, 0.12, 0, 3, PAL.woodLite, PAL.woodDark, PAL.wood);
+  }
+  if (L >= 5) {                                                                                               /* bayrak */
+    vline(x1 + 0.1, y0 + 0.1, 0, 30, '#d8d2c4');
+    var fsx = R(pX(x1 + 0.1, y0 + 0.1)), fsy = R(pY(x1 + 0.1, y0 + 0.1, 30)), wv = R(Math.sin(gameT * 2));
+    px(fsx + 1, fsy, 8, 5, '#e30a17'); px(fsx + 4 + wv, fsy + 2, 2, 1, '#ffffff');
+  }
+  if (nearDoor(o.door)) uiLabel(o.x, o.y, H + 12 + L, T('hutName') + ' ' + T('level') + L, '#ffd9a8', 1);
 }
 function drawDepot() {
-  var o = DEPOT;
-  if (!o.lvl) { plotOutline(o, '📦 ' + T('depotName') + ' • ' + T('buildAt')); return; }
-  var x = o.x - o.w / 2, y = o.y - o.h / 2, sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0));
-  shadow(o.x, o.y, 1.5);
-  isoBox(x, y, o.w, o.h, 0, 22 + o.lvl * 2, '#c9c2b0', '#8a8474', '#a8a18f');
-  roofZinc(sx, sy - 22 - o.lvl * 2, 50, o.lvl);
-  /* sürgülü kapı */
-  px(sx - 14, sy - 16, 12, 16, '#3c4650'); px(sx - 14, sy - 16, 12, 1, '#5d6a75');
-  for (var i = 0; i < 4; i++) px(sx - 13 + i * 3, sy - 15, 1, 14, '#2c343c');
-  /* raf doluluğu: kapının yanında sandık yığını */
+  var o = DEPOT, L = o.lvl, k;
+  if (!L) { plotOutline(o, '📦 ' + T('depotName') + ' • ' + T('buildAt')); return; }
+  /* sv1 küçük sundurmalı depo; sv2+ tam boy; sv3 çatı ışıklığı; sv4 yan ek + rampa */
+  var sw = L === 1 ? 0.75 : 1, W = o.w * sw, D = o.h * sw, H = [0, 15, 18, 20, 21][L];
+  var x1 = o.x + o.w / 2, y1 = o.y + o.h / 2, x0 = x1 - W, y0 = y1 - D, dx = o.door.x;
+  shadow(x0 + W / 2, y0 + D / 2, 1.5 * sw);
+  isoQuad(x0 - 0.1, y0 - 0.1, W + 0.2, D + 0.35, 0.4, '#a8a08c');                                               /* beton zemin */
+  isoBox(x0, y0, W, D, 0, H, '#c9c2b0', '#8a8474', '#a8a18f');
+  for (k = 1; k < W / 0.16; k++) vline(x0 + k * 0.16, y1, 0, H, '#7c7667');                                   /* oluklu sac */
+  for (k = 1; k < D / 0.16; k++) vline(x1, y0 + k * 0.16, 0, H, '#958e7d');
+  wallQ(x0, y1, x1, y1, H - 2, H, '#6c767d'); wallQ(x1, y0, x1, y1, H - 2, H, '#7d868d');                     /* saçak */
+  winF(dx - 0.35, dx + 0.35, y1, 0, 12, '#3c4650', '#2c343c');                                                 /* sürgülü kapı */
+  for (k = 1; k < 5; k++) vline(dx - 0.35 + k * 0.14, y1, 0, 12, '#2c343c');
+  if (L >= 3) winF(x0 + 0.25, x0 + 0.6, y1, 0, 10, '#3c4650', '#2c343c');                                     /* ikinci kapı */
+  roofGableX(x0 - 0.1, x1 + 0.1, y0 - 0.1, y1 + 0.1, H, 6 + L, PAL.zinc, PAL.zincDark, '#a8a18f', '#6c767d', 6);
+  if (L >= 3) roofPlane([[o.x - 0.4, y1 - D / 4, H + 3], [o.x + 0.4, y1 - D / 4, H + 3], [o.x + 0.4, y1 - 0.1, H + 1], [o.x - 0.4, y1 - 0.1, H + 1]], '#9fbfcc', '#6c8a96', 3);   /* ışıklık */
+  if (L >= 2) {                                                                                               /* yan yükleme rampası */
+    isoBox(x1, o.y - 0.45, 0.35, 0.9, 0, 4, '#b9b3a4', '#8e897c', '#a39d8f');
+    winR(x1 + 0.001, o.y - 0.3, o.y + 0.3, 4, 14, '#5d6a75', '#2c343c');
+  }
+  if (L >= 4) {                                                                                               /* forklift rampada */
+    isoBox(x1 + 0.05, o.y + 0.5, 0.28, 0.3, 0, 6, '#e6b93a', '#a8841f', '#c99f2c');
+    vline(x1 + 0.05, o.y + 0.55, 0, 12, PAL.iron);
+  }
+  /* doluluk: kapı önünde sandık yığını (rafların ne kadar dolu olduğu görünür) */
   var fillN = Math.min(8, Math.ceil(depotCount() / Math.max(1, depotCap()) * 8));
-  for (var c = 0; c < fillN; c++) px(sx + 2 + (c % 4) * 5, sy - 5 - Math.floor(c / 4) * 5, 4, 4, c % 2 ? '#c9a15e' : '#a8793e');
-  labelAt(o.x, o.y, 40 + o.lvl * 2, T('depotName') + ' ' + depotCount() + '/' + depotCap(), '#ffd9a8', '📦');
+  for (k = 0; k < fillN; k++) crate(dx + 0.55 + (k % 2) * 0.24, y1 + 0.25 + Math.floor(k / 4) * 0.02, Math.floor((k % 4) / 2) * 4, k % 2 ? '#c9a15e' : '#a8793e');
+  if (nearDoor(o.door)) uiLabel(o.x, o.y, H + 14, T('depotName') + ' ' + depotCount() + '/' + depotCap(), '#ffd9a8', 1);
 }
 function drawWhall() {
   var o = WHALL;
@@ -9278,17 +9380,83 @@ function drawWhall() {
   px(hx2 - 4, hy2, 7, 3, '#ffffff'); px(hx2 + 3, hy2 - 1, 2, 5, '#ffffff'); px(hx2 - 3, hy2 + 1, 1, 1, '#1f4e7a');
   labelAt(o.x, o.y, 30, T('whall'), '#ffd9a8', '🏪');
 }
+var MSIGN = { x: 15.6, y: 3.7 };          /* v1.9.2: köprü çıkışının güneyi — kulübenin önüne düşmez */
 function drawMeydanSign() {
-  var sx = R(pX(15.5, 1.4)), sy = R(pY(15.5, 1.4, 0));
+  var sx = R(pX(MSIGN.x, MSIGN.y)), sy = R(pY(MSIGN.x, MSIGN.y, 0));
   px(sx, sy - 14, 1, 14, '#4a2f1c');
   px(sx - 10, sy - 18, 22, 7, '#8a5a33'); px(sx - 9, sy - 17, 20, 5, '#a8734a');
-  if (dist2(player.x, player.y, 15.5, 1.4) < 40) uiText(15.5, 1.4, 22, T('meydan'), PAL.gold, 7);
+  if (dist2(player.x, player.y, MSIGN.x, MSIGN.y) < 40) uiText(MSIGN.x, MSIGN.y, 22, T('meydan'), PAL.gold, 7);
 }
 function pushMeydan(push) {
   push(HUT.x + HUT.y, drawHut);
   push(DEPOT.x + DEPOT.y, drawDepot);
   push(WHALL.x + WHALL.y, drawWhall);
-  push(15.5 + 1.4, drawMeydanSign);
+  push(MSIGN.x + MSIGN.y, drawMeydanSign);
+}
+/* =========================================================
+   v1.9.2 — HİZMET SAHASI YAYALARI (yalnız görsel; oyuncudan hiçbir şey istemez)
+   Yoldan gelen kasabalılar kurulu hizmet binalarına girip çıkar, torbayla bir sonrakine geçer, sonra yola döner.
+   Rota binaların arasından geçer: sütunlar arası koridor (YARD_LANE) + kapı hizası; binaların içinden yürünmez.
+   ========================================================= */
+var yardFolk = [], YARD_LANE = 19.75, YARD_GATES = [15.1, 18.95];   /* A sütunundaki binaların arası: yoldan giriş */
+function yardDoor(q) { return { x: q.x, y: Math.min(q.y + 1.05, SERVYARD.y1 - 0.08), p: q.id }; }
+function yardDoors() {
+  var out = [];
+  for (var i = 0; i < PLOTS.length; i++) {
+    var q = PLOTS[i], st = q.b && servState[q.b];
+    if (st && st.lvl > 0 && !(st.cons > 0) && plotActive(q)) out.push(yardDoor(q));
+  }
+  return out;
+}
+function yardRoute(f, to) { f.path = [{ x: YARD_LANE, y: f.y }, { x: YARD_LANE, y: to.y }, { x: to.x, y: to.y }]; f.to = to; }
+function updateYardFolk(dt) {
+  var doors = yardDoors(), want = doors.length ? Math.min(12, 2 + doors.length * 2) : 0, i;
+  if (yardFolk.length < want && Math.random() < dt * 0.5) {
+    var gy = pick(YARD_GATES), pool = CUST.filter(function (t) { return !t.serv; });
+    var f = { x: 14.7, y: gy, z: 0, vx: 0, vy: 0, bob: rnd(0, 6), face: 1, type: pick(pool), hair: irnd(0, 2), tone: irnd(0, 3), in: 0, visits: 0, bag: false };
+    yardRoute(f, pick(doors)); yardFolk.push(f);
+  }
+  for (i = yardFolk.length - 1; i >= 0; i--) {
+    var p = yardFolk[i];
+    if (p.in > 0) {                                           /* binanın içinde: görünmez */
+      p.in -= dt;
+      if (p.in <= 0) {
+        p.visits++; p.bag = true;
+        var alive = doors.filter(function (d) { return d.p !== p.to.p; });
+        if (p.visits >= 2 || !alive.length || Math.random() < 0.35) { var g = pick(YARD_GATES); yardRoute(p, { x: 14.7, y: g, exit: true }); }
+        else yardRoute(p, pick(alive));
+      }
+      continue;
+    }
+    var wp = p.path[0];
+    if (!wp) { yardFolk.splice(i, 1); continue; }
+    var dx = wp.x - p.x, dy = wp.y - p.y, L = Math.hypot(dx, dy), sp = 1.25;
+    if (L < 0.08) {
+      p.path.shift();
+      if (!p.path.length) {
+        if (p.to.exit) { yardFolk.splice(i, 1); continue; }
+        if (doors.some(function (d) { return d.p === p.to.p; })) p.in = rnd(2.5, 6);   /* bina hâlâ açık: içeri gir */
+        else yardRoute(p, { x: 14.7, y: pick(YARD_GATES), exit: true });
+      }
+      p.vx = 0; p.vy = 0; continue;
+    }
+    p.vx = dx / L; p.vy = dy / L;
+    p.x += p.vx * sp * dt; p.y += p.vy * sp * dt; p.bob += dt * 8;
+    p.face = pX(dx, dy) >= 0 ? 1 : -1;
+  }
+}
+function drawYardFolk(push) {
+  for (var i = 0; i < yardFolk.length; i++) (function (f) {
+    if (f.in > 0) return;
+    push(f.x + f.y + 0.2, function () {
+      var o = custOutfit(f); o.walk = true; o.mood = 1;
+      drawPerson(f, o);
+      if (f.bag) {                                            /* alışveriş torbası */
+        var sx = R(pX(f.x, f.y)), sy = R(pY(f.x, f.y, 0));
+        px(sx + f.face * 4 - 1, sy - 9, 3, 4, '#e8dcc0'); px(sx + f.face * 4 - 1, sy - 10, 3, 1, '#a8966f');
+      }
+    });
+  })(yardFolk[i]);
 }
 /* meydan kapıları: kulübe → personel paneli, hal → hal paneli (düğme), depo → oyuncu malı rafa koyar */
 function syncMeydanBtn() {
@@ -10316,6 +10484,7 @@ window.BT = {
   specOutfit: function (id, face) { return specOutfit(specById(id), face || 1); },
   specState: function () { return { spec: day.spec, sp: day.sp, normals: day.normals, active: customers.filter(function (c) { return c.spec; }).map(function (c) { return c.spec + ':' + c.state; }) }; },
   autoState: function () { return { min: S.autoMin, t: Math.round(saveT), left: Math.round(autoLeft()) }; }, fastForwardAutosave: function (sec) { saveT += sec; },
+  yardFolk: function () { return yardFolk; }, roadFlow: function () { return roadFlow(); },
   CTYPES: CTYPES, S: S, safe: safe, BINS: BINS, HUT: HUT, DEPOT: DEPOT, WHALL: WHALL, office: office, MEYDAN: MEYDAN, BRIDGE: BRIDGE, depotCount: function () { return depotCount(); }, openHal: function () { openHal(); }, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
   zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,

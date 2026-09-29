@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v1.9.1** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v1.9.3** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -14,6 +14,45 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.9.3 — Faz C: Yol vitrini
+
+- **Süsler yolda:** tekne (denizde) ve fener (mendirekte) dışındaki bütün süsler bölge kenarlarından yolun doğu
+  kenarındaki **vitrine** taşındı. Tezgâh bölgeleri yalnız üretim ve satış için; kalabalık görünmez.
+- **Yol çiçekliği** (YAPI › Dekoratif, 8 adet): yol fenerlerinin iki yanına taş saksıda çiçek; tanesi $350'dan
+  başlar (her biri %30 pahalı), her biri müşteri akışı **+%2**.
+- **Yol reklam panosu** (3 adet, Sv3): işletmenin adı ve amblemi (lacivert rozette gümüş hamsi) yolda;
+  $1.400 / $2.800 / $5.600, her biri müşteri akışı **+%8**. Tezgâh bölgesindeki eski "TAZE BALIK" reklam panosu
+  yapısı kaldırıldı: eski kayıtta varsa parsel boşalır, yerine yolda bir pano bedava gelir.
+- Yol kademeleri (çakıl → arnavut kaldırımı → fener ve bordür) olduğu gibi; çiçeklik ve panolar onların üstüne
+  eklenir.
+- Bölge adı tabelası yalnız yakına gelince görünür. Ayrılan müşteriler yolun içinde kalır (vitrine ve meydana
+  taşmaz).
+- Test: `test-fazC.js`.
+
+---
+
+## v1.9.2 — Faz B: Liman Meydanı ve Hizmet Sahası
+
+- **Meydan ile saha kabaca eşit:** meydan güneye büyüdü (derinlik 7 → 11 karo), saha güneye kaydı (parsellerin
+  birbirine göre dizilişi aynı, ekranda üst üste binmezler). Meydanın kuzeydoğu köşesi sabit: daha doğusu
+  kameranın ulaşamadığı yer.
+- **Meydan yerleşimi:** kuzeyde Personel Kulübesi + Depo, güneyde Ticaret Ofisi + Balık Hali, ortası yürüyüş alanı.
+  Binalar ekranda birbirinin önüne düşmez; "LİMAN MEYDANI" tabelası köprü çıkışının güneyine alındı (kulübenin
+  önünü kapatıyordu). Kapılar binanın ön cephesinde.
+- **Personel Kulübesi ve Depo yeniden çizildi:** kapı, pencere, levha ekran pikseli yerine izometrik duvara oturuyor
+  (eğri/kayık görüntü bitti). Bina adı üstte sürekli durmuyor, yalnız kapıya yaklaşınca çıkıyor.
+  Kulübe: Sv1 ahşap kulübe → Sv2 çiçek kasası → Sv3 sundurma + bank → Sv4 ikinci pencere + baca → Sv5 badanalı ev +
+  bayrak. Depo: Sv1 küçük sac depo → Sv2 tam boy + yan rampa → Sv3 ikinci kapı + çatı ışıklığı → Sv4 forklift;
+  kapı önündeki sandık yığını rafların doluluğunu gösterir.
+- **Ticaret Ofisi baştan:** iki katlı taş ticaret evi — kemerli giriş ve levha, cumbalı badanalı üst kat, kırma
+  kiremit çatı, bayrak; yanında aktif kontrat sayısı kadar kâğıt asılı **kontrat panosu**.
+- **Hizmet Sahası artık boş değil:** kurulu binalar varken yoldan kasabalılar gelir, binalara girip çıkar, torbayla
+  bir sonrakine geçer, sonra yola döner (yalnız görsel; oyuncudan bir şey istemez, gelir değişmez). Binaların
+  arasındaki koridordan yürürler, binaların içinden geçmezler.
+- Test: `test-fazB.js` (alan oranı, ekranda çakışma, kapılar, yürüyüş yolu, yayalar).
 
 ---
 
