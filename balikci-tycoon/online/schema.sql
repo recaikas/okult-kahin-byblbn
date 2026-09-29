@@ -301,6 +301,7 @@ create unique index if not exists bt_events_run_ev on public.bt_events (run_id, 
 create index if not exists bt_events_player on public.bt_events (player_id, created_at);
 alter table public.bt_events enable row level security;
 -- bt_events için politika yok: anon okuyamaz, yazamaz; yalnız bt_event fonksiyonu yazar.
+revoke all on public.bt_events from anon, authenticated;   -- Supabase'in varsayılan tablo izinleri de kalksın
 
 create or replace function public.bt_event(p_player text, p_run text, p_ev text, p_day integer, p_play integer)
 returns text
@@ -402,6 +403,7 @@ revoke all on public.bt_test_ozet from anon, authenticated;
 create table if not exists public.bt_admin (token_hash text primary key);
 alter table public.bt_admin enable row level security;
 -- politika yok: anon okuyamaz, yazamaz.
+revoke all on public.bt_admin from anon, authenticated;
 
 create or replace function public.bt_panel(p_token text)
 returns json
