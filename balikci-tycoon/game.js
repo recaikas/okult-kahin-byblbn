@@ -153,8 +153,8 @@ var STR = {
     zoneFull: 'Bu bölgenin kadrosu dolu', zoneOf: '{n} bölgesi',
     stallSwitch: 'AÇIK TEZGÂHLAR', stallSwitchD: '{a}/{b} tezgâh açık — aç/kapat',
     stallManage: 'AÇ / KAPAT', stallTitle: 'AÇIK TEZGÂHLAR',
-    newStallLbl: 'YENİ', newStallHint: 'Yeni tezgâh hazır — alt bardaki YÜKSELT › AÇIK TEZGÂHLAR',
-    howToOpen: 'YÜKSELT › AÇIK TEZGÂHLAR', stallNewN: '{n} yeni tezgâh kararını bekliyor',
+    newStallLbl: 'YENİ', newStallHint: 'Yeni tezgâh hazır — sağ üstteki 🐟 düğmesinden aç',
+    howToOpen: 'SAĞ ÜSTTEKİ BALIK › AÇIK TEZGÂHLAR', stallNewN: '{n} yeni tezgâh kararını bekliyor',
     stallSub: 'Yetişemediğin tezgâhı kapat: kapalı tezgâha müşteri gelmez, ağ o türü üretmez.',
     swOn: 'AÇIK', swOff: 'KAPALI', swFixed: 'SABİT', stallClosed: 'KAPALI',
     dayStalls: 'AÇIK TEZGÂHLAR', stallNew: 'Yeni tezgâh kuruldu — açmak ister misin?',
@@ -348,8 +348,8 @@ var STR = {
     zoneFull: "This zone's crew is full", zoneOf: '{n} zone',
     stallSwitch: 'OPEN STALLS', stallSwitchD: '{a}/{b} stalls open — switch on/off',
     stallManage: 'ON / OFF', stallTitle: 'OPEN STALLS',
-    newStallLbl: 'NEW', newStallHint: 'New stall ready — bottom bar UPGRADE › OPEN STALLS',
-    howToOpen: 'UPGRADE › OPEN STALLS', stallNewN: '{n} new stall awaiting your call',
+    newStallLbl: 'NEW', newStallHint: 'New stall ready — open it from the 🐟 button, top right',
+    howToOpen: 'TOP-RIGHT FISH › OPEN STALLS', stallNewN: '{n} new stall awaiting your call',
     stallSub: "Switch off a stall you can't keep up with: no customers arrive and its net stops.",
     swOn: 'ON', swOff: 'OFF', swFixed: 'FIXED', stallClosed: 'CLOSED',
     dayStalls: 'OPEN STALLS', stallNew: 'A new stall is built — switch it on?',
@@ -2054,8 +2054,47 @@ function buildSave() {
     workers: workers.map(function (w) { return [w.role, w.zone === undefined ? 0 : w.zone]; }),
     ret: retSave(),                                   /* uzakta kazanç + başarımlar */
     ev: Object.keys(S.evs || {}),                     /* v1.9: gönderilmiş ilerleme olayları (tekrar gitmesin) */
+    q: queueSave(),                                   /* v1.9.1: tezgâh stoğu, kasadaki para ve kuyruktaki müşteriler */
     mk: M
   };
+}
+/* v1.9.1 — çıkıp girince tezgâh önü boşalmasın: her tezgâhın stoğu, kasası ve bekleyen (özel olmayan) müşterileri.
+   [anahtar, ['fileto|hamsi', …], kasa $, [[sıra, tip, ürün, tür, adet, alınan, sabır, tam sabır, saç, ten], …]] */
+function queueSave() {
+  return counters.map(function (c) {
+    var cs = [];
+    for (var i = 0; i < c.slots.length; i++) {
+      var cu = c.slots[i];
+      if (!cu || cu.spec || (cu.state !== 'wait' && cu.state !== 'walk')) continue;
+      cs.push([i, cu.type.id, cu.ord.k, cu.ord.f, cu.ord.need, cu.ord.got, Math.round(cu.pat), Math.round(cu.patMax), cu.hair | 0, cu.tone | 0]);
+    }
+    return [c.key, c.buffer.map(itemKey), Math.round(trayValue(c)), cs];
+  });
+}
+function queueLoad(d) {
+  if (!Array.isArray(d.q)) return;                  /* eski kayıt: tezgâhlar boş başlar */
+  d.q.forEach(function (e) {
+    var c = Array.isArray(e) && counterByKey(e[0]); if (!c || !c.fish) return;
+    c.buffer.length = 0; c.tray.items.length = 0;
+    (Array.isArray(e[1]) ? e[1] : []).forEach(function (k) {
+      var it = typeof k === 'string' ? keyItem(k) : null;
+      if (it && (it.k === 'fileto' || it.k === 'fume') && it.f === c.fish && validItem(it) && c.buffer.length < counterMax(c)) c.buffer.push(it);
+    });
+    var v = Math.max(0, Math.min(1e9, +e[2] || 0));
+    if (v > 0) { var n = clamp(Math.ceil(v / 40), 1, 24); for (var t = 0; t < n; t++) c.tray.items.push({ k: 'money', v: v / n }); }
+    if (!c.open) return;
+    (Array.isArray(e[3]) ? e[3] : []).forEach(function (r) {
+      var slot = r[0] | 0, type = custById(r[1]);
+      if (!type || slot < 0 || slot >= queueMax(c.z) || c.slots[slot]) return;
+      if (r[3] !== c.fish || (r[2] !== 'fileto' && r[2] !== 'fume')) return;
+      var need = clamp(r[4] | 0, 1, 40), pm = Math.max(5, +r[7] || type.pat);
+      var q = queueSlotPos(c, slot);
+      var cu = { x: q.x, y: q.y, z: 0, bob: rnd(0, 6), face: -1, type: type, ord: { k: r[2], f: c.fish, need: need, got: clamp(r[5] | 0, 0, need - 1) },
+        state: 'wait', slot: slot, c: c, pat: clamp(+r[6] || pm, 5, pm), patMax: pm, mood: 1, hair: clamp(r[8] | 0, 0, 2), tone: clamp(r[9] | 0, 0, 2) };
+      c.slots[slot] = cu; customers.push(cu);
+    });
+    shiftQueue(c);
+  });
 }
 /* yalnız çalışan (başlatılmış) bir oyun, kendi slotuna yazılır */
 function save() {
@@ -2118,7 +2157,8 @@ function loadFrom(d) {
       hire(role, true, z);
     });
     if (d.mk) M = migrateMarket(d.mk);
-    retLoad(d);                                       /* uzakta kazanç + başarımlar (yoksa boş) */
+    try { queueLoad(d); } catch (e) { }                /* bozuk kuyruk verisi kaydın geri kalanını bozmasın */
+    retLoad(d);                                     /* uzakta kazanç + başarımlar (yoksa boş) */
     S.evs = {}; if (Array.isArray(d.ev)) d.ev.forEach(function (k) { if (typeof k === 'string' && /^[a-z0-9_]{2,24}$/.test(k)) S.evs[k] = 1; });
     return true;
   } catch (e) { return false; }
@@ -6308,7 +6348,7 @@ function syncHUD(dt) {
   if (cfT > 0) { cfT -= dt; if (cfT <= 0 && cfId) { cfId = null; renderBar(); } }
   barLiveRefresh(dt);
   barHot();
-  syncTradeBtn(); syncMeydanBtn();
+  syncTradeBtn(); syncMeydanBtn(); syncStallBtn();
   ofRefresh -= dt;
   if (ofRefresh <= 0) {
     ofRefresh = 1;
@@ -6384,22 +6424,17 @@ function barList() {
       })(ZONE_ROLES[i]);
       return out;
     }
-    /* --- v2.3: tezgâh aç/kapat ekranına kısayol (ücretsiz, listede ilk sırada) --- */
-    if (switchableStalls().length) {
-      var yeniVar = undecidedStalls().length;
-      out.push({ id: 'stsw', ic: '🐟', t: T('stallSwitch') + (yeniVar ? ' •' : ''),
-        s: yeniVar ? T('stallNewN', { n: yeniVar })
-                   : T('stallSwitchD', { a: openStallCount(), b: switchableStalls().length + 1 }),
-        pick: T('stallManage'), go: function () { openStallScreen(); } });
+    /* v1.9.1 — sıra: önce oyuncunun kendi gelişimi (taşıma, hız, pazarlık), sonra personel, en sonda otomasyon.
+       Açık Tezgâhlar kısayolu ☰'ün yanındaki düğmeye taşındı. */
+    for (i = 0; i < PADS.length; i++) {
+      var p = PADS[i];
+      if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
+      if (AREAS[p.z].locked || p.lvl >= p.max) continue;
+      var info = padInfo(p), bl = padBlocked(p);
+      out.push({ id: p.id, ic: p.icon, t: info.t + (p.max > 1 ? '  ' + T('level') + p.lvl + '→' + (p.lvl + 1) : ''),
+        s: info.e, cost: upCost(padPrice(p)), blocked: bl, why: T('staffFull', { n: staffCap() }),
+        go: function (pp) { return function () { applyPad(pp); }; }(p) });
     }
-    /* --- v1.3: Füme Makinesi (Fümehane açılınca 1. ve 2. bölgeye) --- */
-    FUME_MACH.forEach(function (fm) {
-      if (AREAS[fm.z].locked || fumeMachine(fm.z)) return;
-      var ok = !AREAS[smoker.z].locked;
-      out.push({ id: 'fm' + fm.z, ic: '🔥', t: T('fmT', { n: NM(AREAS[fm.z].n) }), s: T('fmD'), cost: upCost(fm.cost),
-        blocked: !ok, why: T('fmNeed'),
-        go: function () { S.fumeM[fm.z] = 1; sfx.build(); toast(T('fmDone', { n: NM(AREAS[fm.z].n) })); } });
-    });
     /* --- v2.1: her açık bölge için personel kartı --- */
     for (i = 0; i < zoneCount(); i++) (function (z2) {
       if (!zoneOpen(z2)) return;
@@ -6410,9 +6445,17 @@ function barList() {
         pick: free > 0 ? T('choose') : null, blocked: free <= 0, why: T('zoneFull'),
         go: function () { barZone = z2; cfId = null; renderBar(); } });
     })(i);
+    /* --- v1.3: Füme Makinesi (Fümehane açılınca 1. ve 2. bölgeye) --- */
+    FUME_MACH.forEach(function (fm) {
+      if (AREAS[fm.z].locked || fumeMachine(fm.z)) return;
+      var ok = !AREAS[smoker.z].locked;
+      out.push({ id: 'fm' + fm.z, ic: '🔥', t: T('fmT', { n: NM(AREAS[fm.z].n) }), s: T('fmD'), cost: upCost(fm.cost),
+        blocked: !ok, why: T('fmNeed'),
+        go: function () { S.fumeM[fm.z] = 1; sfx.build(); toast(T('fmDone', { n: NM(AREAS[fm.z].n) })); } });
+    });
     /* --- v0.5: personele devret (tam otomasyon) --- */
     for (i = 0; i < zoneCount(); i++) (function (z3) {
-      if (!zoneOpen(z3)) return;
+      if (!zoneOpen(z3) || !zoneStaff(z3)) return;          /* v1.9.1: personel almadan otomasyon kartı çıkmaz */
       var ch = zoneChain(z3), on = zoneAuto(z3);
       var st = ZONE_ROLES.map(function (r) { return (ch[r] ? '✓' : '✗') + NM(ROLES[r].n); }).join(' ');
       if (ch.ok && !on && !mgr(z3)) {                                   /* v1.3: tam otomasyon için müdür gerekir */
@@ -6425,15 +6468,6 @@ function barList() {
         blocked: !ch.ok, why: T('autoNeed', { n: ch.miss.length }),
         go: function () { setZoneAuto(z3, !on); } });
     })(i);
-    for (i = 0; i < PADS.length; i++) {
-      var p = PADS[i];
-      if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
-      if (AREAS[p.z].locked || p.lvl >= p.max) continue;
-      var info = padInfo(p), bl = padBlocked(p);
-      out.push({ id: p.id, ic: p.icon, t: info.t + (p.max > 1 ? '  ' + T('level') + p.lvl + '→' + (p.lvl + 1) : ''),
-        s: info.e, cost: upCost(padPrice(p)), blocked: bl, why: T('staffFull', { n: staffCap() }),
-        go: function (pp) { return function () { applyPad(pp); }; }(p) });
-    }
     if (!out.length) out.push({ empty: T('emptyLevel') });
   } else if (barTab === 'build') {
     /* v0.3 — YAPI üç alt kategoride: Dekoratif • Geliştirmeler • Yapı Yükseltmeleri */
@@ -6919,6 +6953,15 @@ Array.prototype.forEach.call(document.querySelectorAll('#menuTabs .tab'), functi
 });
 el.dpClose.onclick = closeBar;
 el.menuBtn.onclick = function () { openPauseMenu(); };
+/* v1.9.1 — Açık Tezgâhlar kısayolu ☰'ün yanında: ikinci tezgâh kurulunca görünür */
+var stallBtn = document.getElementById('stallBtn');
+stallBtn.onclick = function () { sfx.tap(); openStallScreen(); };
+function syncStallBtn() {
+  var n = 0;
+  for (var i = 0; i < counters.length; i++) if (counters[i].fish && !AREAS[counters[i].z].locked) n++;
+  stallBtn.classList.toggle('hidden', !S.started || n < 2);
+  stallBtn.classList.toggle('new', S.started && undecidedStalls().length > 0);   /* yeni tezgâh kararını bekliyor */
+}
 el.closeMenu.onclick = function () { el.menuScreen.classList.add('hidden'); syncPause(); };
 el.menuSet.onclick = function () { el.menuScreen.classList.add('hidden'); openSettings(true); };
 el.menuSave.onclick = function () { manualSave(); };
@@ -8868,7 +8911,9 @@ var DEPOT_LV = [{ c: 3000, l: 3, cap: 30 }, { c: 8000, l: 5, cap: 60 }, { c: 200
 var WHALL_COST = 6000, WHALL_LV = 4;
 var DEPOT_ROLES = ['depocu', 'sevkiyat'];
 
-function onEast(x) { return x > 9.7; }
+/* bölgeler x<10'da biter; tezgâh kasaları x≈9.9'da durur. Sınır 9.7 iken kasa "meydan tarafı" sayılıyor,
+   2. ve 3. bölgenin tahsildarı kasaya gitmek için köprüye yönelip köprü ucunda takılıyordu. */
+function onEast(x) { return x > 10.0; }
 /* köprü rotası: bölgeler ↔ meydan arasında giden çalışan önce köprüye yönelir */
 function routeVia(a, tx, ty) {
   var aE = onEast(a.x), tE = onEast(tx);

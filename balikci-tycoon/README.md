@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v1.9** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v1.9.1** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -14,6 +14,22 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 ## Çekirdek döngü
 **AĞ → TOPLA → KESİM → TEZGÂH → SATIŞ → YATIRIM**
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
+
+---
+
+## v1.9.1 — Test oyuncularının geri bildirimi, Faz A (hatalar ve kısayollar)
+
+- **Tahsildar takılması düzeldi:** tezgâh kasaları x≈9.9'da duruyor, oyun ise x>9.7'yi "meydan tarafı" sayıyordu.
+  2. ve 3. bölgenin tahsildarı kasaya gitmek için köprüye yönelip köprü ucunda takılıyordu (1. bölgede köprü tezgâhın
+  yanında olduğu için fark edilmiyordu). Sınır bölge kenarına (x=10) çekildi.
+- **Çıkıp girince tezgâh önü boşalmıyor:** kayıt artık her tezgâhın stoğunu, kasasındaki parayı ve kuyrukta bekleyen
+  müşterileri (sipariş, sabır, görünüm) tutuyor. Kaydet-çık ve sayfa yenileme sonrası kuyruk olduğu gibi döner.
+  Özel (isimli) müşteriler gün planına bağlı olduğu için kaydedilmez. Eski kayıtlar sorunsuz yüklenir.
+- **Açık Tezgâhlar düğmesi** sağ üstte ☰'ün yanında (balık simgesi). İkinci tezgâh kurulunca görünür; karar bekleyen
+  yeni tezgâh varsa üstünde sarı nokta yanar. YÜKSELT'teki kart kaldırıldı.
+- **YÜKSELT sırası:** önce oyuncunun kendi gelişimi (kapasite, hız, pazarlık), sonra bölge personeli, sonra füme
+  makinesi, en sonda müdür / personele devret. Devret kartı bölgede personel yokken çıkmaz.
+- Test: `test-fazA.js` (her bölgenin tahsildarı, kaydet-çık + yenileme sonrası kuyruk, düğme, YÜKSELT sırası).
 
 ---
 

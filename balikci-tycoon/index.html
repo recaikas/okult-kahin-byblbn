@@ -494,6 +494,8 @@
   .fberr{font-size:12.5px !important;color:#ff9b8a !important;margin:6px 0 0 !important}
   #fbScr .duo .go{margin-top:8px;flex:1.4}
   #fbSend:disabled{filter:saturate(.35) brightness(.8)}
+  #stallBtn{position:relative;margin-right:4px}
+  #stallBtn.new::after{content:'';position:absolute;top:3px;right:3px;width:6px;height:6px;background:#ffc94a;box-shadow:0 0 0 1px #1a2433}
 </style>
 </head>
 <body>
@@ -507,6 +509,7 @@
   <div class="chip" id="dayChip"><i class="ci" id="dayIcon" data-i="gun"></i><span><small id="hDay">GÜN</small><span id="dayNum">1</span></span><span class="bar"><i id="dayfill"></i></span></div>
   <div class="spacer"></div>
   <div class="chip hidden" id="eventChip"><i class="ci" id="eventIcon" data-i="hamsi"></i><span><small id="eventName">OLAY</small><span id="eventT">0s</span></span></div>
+  <button class="btn hidden" id="stallBtn" aria-label="Açık tezgâhlar"><i class="ci" data-i="hamsi"></i></button>
   <button class="btn" id="menuBtn">☰</button>
 </div>
 
@@ -541,7 +544,7 @@
   <div class="card">
     <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v1.9</div>
+    <div class="ver">v1.9.1</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
