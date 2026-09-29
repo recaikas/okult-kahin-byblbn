@@ -1306,7 +1306,7 @@ var ROLES = {
   /* v0.5 — Tahsildar: kendi bölgesinin tezgâh kasalarını boşaltıp parayı Ana Kasa'ya yürüyerek taşır */
   kasiyer:   { id: 'kasiyer',   n: { tr: 'Tahsildar', en: 'Collector' }, icon: '💰', wage: 17, speed: 2.6, cap: 10, price: 620, zone: true, d: { tr: 'Tezgâh kasası → Ana Kasa', en: 'Stall cash → main safe' } },
   /* v2.0 — Aşçı: yalnız Balıkçı Mutfağı'nda; ocağı %60 hızlandırır */
-  asci:      { id: 'asci',      n: { tr: 'Aşçı', en: 'Cook' },        icon: '🍳', wage: 24, speed: 2.3, cap: 4, price: 900, zone: true, only: 3, d: { tr: 'Mutfağı %60 hızlandırır', en: 'Kitchen 60% faster' } },
+  asci:      { id: 'asci',      n: { tr: 'Aşçı', en: 'Cook' },        icon: '🍳', wage: 24, speed: 2.3, cap: 4, price: 700, zone: true, only: 3, d: { tr: 'Mutfağı %60 hızlandırır', en: 'Kitchen 60% faster' } },
   /* v0.7 — depo personeli (meydanda çalışır, bölge kadrosuna sayılmaz; sınırı depo seviyesi) */
   depocu:    { id: 'depocu',    n: { tr: 'Depo Hamalı', en: 'Depot Porter' }, icon: '📦', wage: 16, speed: 2.6, cap: 10, price: 900, zone: false, d: { tr: 'Fazlayı depoya, depodan tezgâha', en: 'Surplus → depot → stalls' } },
   sevkiyat:  { id: 'sevkiyat',  n: { tr: 'Sevkiyatçı', en: 'Dispatcher' },   icon: '🚚', wage: 18, speed: 2.7, cap: 10, price: 1100, zone: false, d: { tr: 'Kontrat malını depodan teslim eder', en: 'Depot → contract delivery' } },
@@ -1460,6 +1460,7 @@ function staffCap() {
 function hireCost(role, z) {
   var base = ROLES[role].price || 500;
   var have = role === 'halhamal' ? halStaff() : DEPOT_ROLES.indexOf(role) >= 0 ? depotStaff() : zoneStaff(z);
+  if (ROLES[role] && ROLES[role].zone && z >= 0) have = Math.max(0, have - (zoneRoles(z).length - ZONE_ROLES.length));   /* v2.0: Mutfak'ın 5. rolü fiyatı katlamasın */
   return upCost(Math.round(base * Math.pow(1.85, have) * (1 + (z || 0) * 0.35)));
 }
 function workerSpeedMul() { return 1 + slotEff(null, 'wspeed') + perkSum('wspeed') + servEff('wspeed'); }

@@ -27,7 +27,8 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
   - Bant → **Mutfak ocağı**: 1 palamut + 1 somon filetosundan bir tencere **Reis Güveci** (2 porsiyon). Ocağı
     **Aşçı** %60 hızlandırır; Aşçı yalnız bu bölgenin personel listesinde çıkar.
   - Güveç ocağın hasırına düşer → **Tezgâhtar** → **Mutfak Tezgâhı** → kasa → **Tahsildar** → Ana Kasa.
-  - Bölgenin kendi **müdürü** var (5 rolün hepsi alınınca). Kadro sınırı beşinci rol için +1.
+  - Bölgenin kendi **müdürü** var (5 rolün hepsi alınınca). Kadro sınırı beşinci rol için +1; işe alım fiyatı
+    beşinci rol yüzünden katlanmaz (5. kişi, diğer bölgelerin 4. kişisi gibi fiyatlanır).
   - Güveç porsiyonu büyük: sipariş yarı adet, birim fiyat yüksek. Güveç ve malzemeleri tütsülenmez, depoya
     "fazla" diye taşınmaz. Hal'de güveç alınıp satılabilir.
 - **Buz Makinesi** (YAPI › ticaret, Sv 4): Ek Tezgâh'ın yerine. Bölgedeki tezgâhların vitrini +3 büyür.
