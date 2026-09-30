@@ -44,6 +44,8 @@ yalnız ilk tezgâhla ~32 dakikada, 3 bölgeyle ~7 dakikada Efsane olunuyordu.
   Bölge personeli kartında da eksik rol yazar.
 - **Liman Meydanı ve Kapalı Pazar tabelaları:** ad tabelanın üstünde ayrı katmanda yüzüyordu (yakınlaştırmaya göre kayıyordu).
   Tabelada artık oyma/karalama çizgiler var; ad, yaklaşınca tabelanın üstünde çerçeveli etiket olarak çıkar.
+- **Hal malını yalnız Hal Hamalı taşır:** oyuncu Hal kapısından geçerken paletteki mal artık sırtına yüklenmez. Hal
+  Hamalı yoksa alınan mal doğrudan depoya teslim edilir; eski kayıtta hamalsız palette kalan mal da depoya geçer.
 - **Dil değişince her şey çevrilir:** çalma listesi, liman menüsü sekmeleri, alt panel, ticaret ofisi ve hazırlık ekranı
   dil değişince yeniden çizilir (önceden açık kalanlar Türkçe kalıyordu).
 - `test-v22.js`; eski ölçekle kurulan testler (env, faz1, mutfak, oynanış botu) yeni eşiklere göre güncellendi.

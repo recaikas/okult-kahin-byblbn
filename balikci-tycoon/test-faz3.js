@@ -106,7 +106,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
     await new Promise(r => setTimeout(r, 100));
     const out = { afterSell, afterBuy: { shelf: BT.DEPOT.shelf['fileto|hamsi'], pal: BT.WHALL.pal['fileto|hamsi'] || 0, cost: cash1 - BT.S.cash }, rows: document.querySelectorAll('#halRows .trow').length };
     document.getElementById('halClose').click();
-    /* v1.9.4: alınan mal Hal paletinde — oyuncu sırtlar, depo kapısında rafa bırakır */
+    /* v2.2: Hal Hamalı yokken alınan mal doğrudan depoya gider; oyuncu Hal kapısında mal sırtlamaz */
     const P = BT.player; P.carry.length = 0; P.x = BT.WHALL.door.x; P.y = BT.WHALL.door.y;
     await new Promise(r => setTimeout(r, 1500));
     out.picked = { carry: P.carry.length, pal: BT.WHALL.pal['fileto|hamsi'] || 0 };
@@ -115,8 +115,8 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
     out.stored = { shelf: BT.DEPOT.shelf['fileto|hamsi'], carry: P.carry.length };
     return out;
   });
-  ok(R.hal.afterSell.shelf === 5 && R.hal.afterSell.gain > 0 && R.hal.afterBuy.shelf === 5 && R.hal.afterBuy.pal === 5 && R.hal.afterBuy.cost > R.hal.afterSell.gain, 'hal al/sat yanlış ' + JSON.stringify(R.hal));
-  ok(R.hal.picked.carry === 5 && R.hal.picked.pal === 0 && R.hal.stored.shelf === 10 && R.hal.stored.carry === 0, 'hal paleti depoya taşınmadı ' + JSON.stringify(R.hal));
+  ok(R.hal.afterSell.shelf === 5 && R.hal.afterSell.gain > 0 && R.hal.afterBuy.shelf === 10 && R.hal.afterBuy.pal === 0 && R.hal.afterBuy.cost > R.hal.afterSell.gain, 'hal al/sat yanlış ' + JSON.stringify(R.hal));
+  ok(R.hal.picked.carry === 0 && R.hal.picked.pal === 0 && R.hal.stored.shelf === 10 && R.hal.stored.carry === 0, 'oyuncu Hal malını sırtladı ya da mal depoya gitmedi ' + JSON.stringify(R.hal));
   /* 8) kaydet → yeniden yükle */
   await p.evaluate(() => BT.saveQuit()); await sleep(300);
   await p.reload(); await sleep(1200);

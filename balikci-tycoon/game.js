@@ -82,7 +82,7 @@ var STR = {
     depotBuilt: '📦 Depo kuruldu — fazla ürün artık çöpe/mezata değil rafa', depotUp: '📦 Depo Sv {l}: kapasite {c}',
     whallBuilt: '🏪 Balık Hali açıldı', hutBtn: 'PERSONEL', halBtn: 'BALIK HALİ', hutWelcome: '👷 Kulübeye hoş geldin — personelini buradan yönet',
     halSub: '{d}. günün fiyatları • Depo {a}/{b}', halRow: 'Depoda {n} • Sat {s} • Al {b}', halSell5: 'SAT 5', halSellAll: 'HEPSİ', halBuy5: 'AL 5',
-    halEmpty: 'Henüz ürün yok', halSold: '{n} ürün satıldı: +{v}', halBought: '{n} ürün alındı: {v}', halBoughtPal: '{n} ürün alındı ({v}) — Hal hamalı depoya taşıyor', halBoughtCarry: '{n} ürün alındı ({v}) — Hal önündeki palette; sırtla, depoya götür', halPalN: 'Palette {n}', halStaffFull: 'En çok 2 Hal hamalı', kFume: 'füme', kFileto: 'fileto',
+    halEmpty: 'Henüz ürün yok', halSold: '{n} ürün satıldı: +{v}', halBought: '{n} ürün alındı: {v}', halBoughtPal: '{n} ürün alındı ({v}) — Hal hamalı depoya taşıyor', halBoughtCarry: '{n} ürün alındı ({v}) — depoya teslim edildi', halPalN: 'Palette {n}', halStaffFull: 'En çok 2 Hal hamalı', kFume: 'füme', kFileto: 'fileto',
     envUp1: '🌿 Liman canlanıyor: yol çakıl oldu, ağaçlar yeşeriyor', envUp2: '🪨 Yol arnavut kaldırımı oldu, sahil toparlandı',
     envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
     specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
@@ -288,7 +288,7 @@ var STR = {
     depotBuilt: '📦 Depot built — surplus goes to shelves, not the bin/auction', depotUp: '📦 Depot Lv {l}: capacity {c}',
     whallBuilt: '🏪 Fish Hall open', hutBtn: 'STAFF', halBtn: 'FISH HALL', hutWelcome: '👷 Welcome to the hut — manage your staff here',
     halSub: 'Day {d} prices • Depot {a}/{b}', halRow: 'In depot {n} • Sell {s} • Buy {b}', halSell5: 'SELL 5', halSellAll: 'ALL', halBuy5: 'BUY 5',
-    halEmpty: 'No goods yet', halSold: '{n} sold: +{v}', halBought: '{n} bought: {v}', halBoughtPal: '{n} bought ({v}) — the market porter is taking them to the depot', halBoughtCarry: '{n} bought ({v}) — waiting on the pallet outside the market; carry them to the depot', halPalN: 'On pallet {n}', halStaffFull: 'At most 2 market porters', kFume: 'smoked', kFileto: 'fillet',
+    halEmpty: 'No goods yet', halSold: '{n} sold: +{v}', halBought: '{n} bought: {v}', halBoughtPal: '{n} bought ({v}) — the market porter is taking them to the depot', halBoughtCarry: '{n} bought ({v}) — delivered to the depot', halPalN: 'On pallet {n}', halStaffFull: 'At most 2 market porters', kFume: 'smoked', kFileto: 'fillet',
     envUp1: '🌿 The harbor comes alive: gravel road, trees turning green', envUp2: '🪨 The road is cobbled now, the shore tidied up',
     envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
     specComing: 'A special customer is coming...', daySpec: 'Special customers',
@@ -3042,7 +3042,7 @@ function updatePlayer(dt) {
   }
   if (dist2(player.x, player.y, safe.x, safe.y) < 1.8) acted = iDeposit(player, dt) || acted;
   if (DEPOT.lvl && atDoor(player, DEPOT.door, 1.1)) acted = iDepotIn(player, dt) || acted;
-  if (WHALL.built && atDoor(player, WHALL.door, 1.4)) acted = iHalPick(player, dt) || acted;   /* v1.9.4: paletten sırtla */
+  /* v2.2: Hal paletini yalnız Hal Hamalı taşır; oyuncu kapıdan geçerken mal sırtına yüklenmez */
   /* çöp kovası: yanlışlıkla atmamak için önce kısa bir bekleme */
   var nearBin = null;
   for (i = 0; i < BINS.length; i++) if (!AREAS[BINS[i].z].locked && dist2(player.x, player.y, BINS[i].x, BINS[i].y) < 0.85) nearBin = BINS[i];
@@ -3424,6 +3424,10 @@ function updateStations(dt) {
     }
   }
   updateKitchen(dt);                  /* v2.0 — Balıkçı Mutfağı */
+  if (WHALL.built && DEPOT.lvl && !halStaff() && palCount()) {       /* v2.2: hamalsız palette kalan mal (eski kayıt) depoya geçer */
+    for (var pk2 in WHALL.pal) while (WHALL.pal[pk2] > 0 && depotFree() > 0) { WHALL.pal[pk2]--; depotPut(keyItem(pk2)); }
+    for (var pk3 in WHALL.pal) if (!(WHALL.pal[pk3] > 0)) delete WHALL.pal[pk3];
+  }
   for (i = 0; i < counters.length; i++) if (!AREAS[counters[i].z].locked) updateCounter(counters[i], dt);
   servTick(dt);                       /* v0.4 — hizmet binası gelir/inşaat döngüsü */
   updateCats(dt);                     /* v2.0 — liman kedileri */
@@ -9802,7 +9806,8 @@ function renderHal() {
         if (n <= 0) { toast(T('depotFull')); sfx.bad(); return; }
         if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return; }
         S.cash -= cost;
-        WHALL.pal[k] = (WHALL.pal[k] || 0) + n;                /* mal Hal paletinde: hamal ya da oyuncu depoya taşır */
+        if (halStaff()) WHALL.pal[k] = (WHALL.pal[k] || 0) + n;          /* mal Hal paletinde: Hal Hamalı depoya taşır */
+        else for (i2 = 0; i2 < n; i2++) depotPut(keyItem(k));             /* v2.2: hamal yoksa Hal malı depoya kendisi teslim eder */
         sfx.buy(); toast(T(halStaff() ? 'halBoughtPal' : 'halBoughtCarry', { n: n, v: money(cost) }));
       }
       save(); renderHal();
