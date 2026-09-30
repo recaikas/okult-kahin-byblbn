@@ -194,21 +194,21 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
     await shot(name.replace(/\W+/g, '_').slice(0, 20));
   };
 
-  await stage('Seviye 2 — Balık Pazarı', 2500, 12, async () => {
+  await stage('Seviye 2 — Balık Pazarı', 2500, 20, async () => {   /* v2.2: itibar yeni ölçekte (Sv2 15, Sv3 45, Sv4 150, Sv5 350, Sv8 1700) */
     await buyAll('area');
     const lv = await (async () => { await openTab('level'); const cs = await cards(); await closeBar(); return cs.map(c => c.t + ' | ' + c.btn); })();
     log('  YÜKSELT kartları:', lv);
     await buyAll('level', null, UPG, 4);
   });
   await playDay('gün A');
-  await stage('Seviye 3 — Fümehane + personel', 12000, 32, async () => {
+  await stage('Seviye 3 — Fümehane + personel', 12000, 50, async () => {
     await buyAll('area');
     await buyAll('build', 'meydan', /Kulübe|Hut/, 1);
     await hireZone(0);
     await buyAll('build', 'decor', /Çakıl/, 1);
   });
   await playDay('gün B');
-  await stage('Seviye 4 — yükseltmeler + yapılar', 60000, 45, async () => {
+  await stage('Seviye 4 — yükseltmeler + yapılar', 60000, 160, async () => {
     await buyAll('build', 'meydan', /Kulübe/, 2);
     await hireZone(0);
     await buyAll('build', 'up');
@@ -218,7 +218,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
     await hireZone(1);
   });
   await playDay('gün C');
-  await stage('Seviye 5 — müdürler', 60000, 65, async () => {
+  await stage('Seviye 5 — müdürler', 60000, 400, async () => {
     await buyAll('build', 'meydan', null, 6);
     await hireZone(2);
     await buyAll('area');                                           /* v2.0: Balıkçı Mutfağı (itibar 60) */
@@ -242,7 +242,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
   await shot('after-reload');
   await playDay('gün D (otomatik)');
   await playDay('gün E (otomatik)');
-  await stage('Seviye 8 — her şey', 250000, 190, async () => { try {
+  await stage('Seviye 8 — her şey', 250000, 2000, async () => { try {
     await buyAll('build', 'up');
     await buildSlots();
     await buyAll('build', 'decor', null, 20);

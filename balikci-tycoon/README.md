@@ -31,7 +31,11 @@ yalnız ilk tezgâhla ~32 dakikada, 3 bölgeyle ~7 dakikada Efsane olunuyordu.
   150 (Sv4), Holding lisansı 700 (Sv6).
 - **Eski kayıtlar:** kayıt sürümü 7. Eski (v6) kayıtlardaki itibar yeni ölçeğe taşınır: aynı seviye, seviye içinde aynı
   oran (ör. eski 60 → 350, eski 350 → 4.500). Kimse yükleyince seviye kaybetmez; tavan yalnız yeni ilerlemeyi etkiler.
-- `test-v22.js`.
+- **Eski kayıtlarda seviye korunur:** eski kayıttan gelen seviye taban olarak saklanır (`lvF`); tavan yalnız bunun
+  üstündeki yeni ilerlemeyi sınırlar. Tek bölgeyle Efsane olmuş eski oyuncu Efsane kalır.
+- **Yol reklam panoları:** işletme adı ve amblem ayrı katmanda düz yazıldığı için pano yüzünden kayıyordu. Artık yüzeye
+  eğik çiziliyor: balıkçı logosu + okunmayan karalama satırları; yazı yok.
+- `test-v22.js`; eski ölçekle kurulan testler (env, faz1, mutfak, oynanış botu) yeni eşiklere göre güncellendi.
 
 ## v2.1 — Müzik motoru, deniz ambiyansı, dört yeni tür
 

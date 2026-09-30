@@ -1635,7 +1635,7 @@ function projStageOf(p) { var st = 0; for (var i = 0; i < project.stages.length;
    Tekne (denizde) ve fener (mendirekte) yerinde kalır. */
 var ROAD_VX = 14.75;
 var ROAD_FL = [3.95, 7.55, 8.45, 12.05, 12.95, 16.55, 17.45, 21.05];   /* çiçeklikler: yol fenerlerinin iki yanı */
-var ROAD_BB = [10.25, 14.0, 20.1];                                   /* reklam panoları: işletme adı + amblem */
+var ROAD_BB = [10.25, 14.0, 20.1];                                   /* reklam panoları: balıkçı logosu + karalama */
 var FL_COST = 350, FL_GROW = 1.3, FL_FLOW = 0.02, BB_COST = [1400, 2800, 5600], BB_FLOW = 0.08, BB_LV = 3;
 function roadFlow() { return clamp(S.roadFl | 0, 0, ROAD_FL.length) * FL_FLOW + clamp(S.roadBb | 0, 0, ROAD_BB.length) * BB_FLOW; }
 function flCost() { return Math.round(FL_COST * Math.pow(FL_GROW, S.roadFl | 0)); }
@@ -2360,7 +2360,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0     /* skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0, lvFloor: 0     /* skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -2378,7 +2378,7 @@ function carryW(a) { var w = 0; for (var i = 0; i < a.carry.length; i++) w += it
 var LEVEL_CAP = [3, 5, 7, 10];
 function openAreaCount() { var n = 0; for (var i = 0; i < AREAS.length; i++) if (!AREAS[i].locked) n++; return Math.max(1, n); }
 function levelCap() { return LEVEL_CAP[Math.min(LEVEL_CAP.length, openAreaCount()) - 1]; }
-function repLevel() { return Math.min(levelForRep(S.rep), levelCap()); }
+function repLevel() { return Math.min(levelForRep(S.rep), Math.max(levelCap(), S.lvFloor | 0)); }   /* lvFloor: eski kayıttaki seviye korunur */
 function repCapped() { return levelForRep(S.rep) > repLevel(); }
 /* v2.2 — eski kayıt (v6 ve öncesi) itibarını yeni ölçeğe taşı: aynı seviye, seviye içinde aynı oran */
 var REP_OLD = [0, 10, 30, 40, 60, 90, 130, 180, 250, 350];
@@ -2458,7 +2458,7 @@ function loadPref() {
 }
 function buildSave() {
   return {
-    v: 7, at: Date.now(), play: Math.round(S.play || 0),
+    v: 7, at: Date.now(), play: Math.round(S.play || 0), lvF: S.lvFloor | 0,
     cash: S.cash, rep: S.rep, capLvl: S.capLvl, spdLvl: S.spdLvl, priceLvl: S.priceLvl,
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
@@ -2532,7 +2532,7 @@ function loadFrom(d) {
   if (!d) return false;
   try {
     /* v1.9.7: elle bozulmuş kayıt — metin, eksi, sonsuz sayılar geçerli aralığa (normal oyunda para eksiye düşmez) */
-    S.cash = numIn(d.cash, 0, 1e13); S.rep = numIn(d.rep, 0, 1e9); if (!(d.v >= 7)) S.rep = repFromOld(S.rep);   /* v2.2: yeni itibar ölçeği */ S.capLvl = numIn(d.capLvl, 0, 20, true); S.spdLvl = numIn(d.spdLvl, 0, 20, true);
+    S.cash = numIn(d.cash, 0, 1e13); S.rep = numIn(d.rep, 0, 1e9); if (!(d.v >= 7)) { S.rep = repFromOld(S.rep); S.lvFloor = levelForRep(S.rep); } else S.lvFloor = clamp(parseInt(d.lvF, 10) || 0, 0, 10);   /* v2.2: yeni itibar ölçeği; eski seviye taban */ S.capLvl = numIn(d.capLvl, 0, 20, true); S.spdLvl = numIn(d.spdLvl, 0, 20, true);
     S.priceLvl = numIn(d.priceLvl, 0, 20, true); S.served = numIn(d.served, 0, 1e9, true); S.lost = numIn(d.lost, 0, 1e9, true);
     S.caught = numIn(d.caught, 0, 1e10, true); S.tut = numIn(d.tut, 0, 99, true);
     S.play = numIn(d.play, 0, 1e9); S.savedAt = numIn(d.at, 0, 1e14);
@@ -4899,12 +4899,6 @@ function drawFlowerbed(x, y, i) {
   }
 }
 /* amblem: lacivert rozet içinde gümüş hamsi (oyunun simgesi) */
-function drawEmblem(x, y, z) {
-  var sx = R(pX(x, y)), sy = R(pY(x, y, z));
-  px(sx - 5, sy - 4, 10, 8, PAL.indigo); px(sx - 4, sy - 5, 8, 10, PAL.indigo);
-  px(sx - 3, sy - 1, 6, 2, '#cfe6f0'); px(sx + 3, sy - 2, 2, 1, '#cfe6f0'); px(sx + 3, sy + 1, 2, 1, '#cfe6f0');
-  px(sx - 3, sy - 1, 6, 1, '#f4fbff'); px(sx - 2, sy - 1, 1, 1, PAL.edge);
-}
 function drawBillboard(x, y, i) {
   var y0 = y - 0.55, y1 = y + 0.55;
   shadow(x, y, 0.7);
@@ -4913,11 +4907,22 @@ function drawBillboard(x, y, i) {
   wallQ(x, y0, x, y1, 14, 30, '#f1ebda');
   wallQ(x, y0, x, y1, 14, 17, [PAL.madder, PAL.indigo, '#2f7a4a'][i % 3]);                               /* alt şerit */
   wallQ(x, y0, x, y1, 28, 30, [PAL.madder, PAL.indigo, '#2f7a4a'][i % 3]);
-  drawEmblem(x, y0 + 0.28, 22.5);
-  if (dist2(player.x, player.y, x, y) < 90) {
-    var nm = UP(S.company || (lang === 'tr' ? 'HAMSİ KOYU' : 'HAMSI COVE'));
-    if (nm.length > 12) nm = nm.split(' ')[0].slice(0, 12);                 /* panoya sığsın: uzun adda ilk kelime */
-    uiText(x, y + 0.2, 22.5, nm, '#1a2433', 6, 1, 0, 0, 'rgba(241,235,218,.9)');
+  /* v2.2 — logo ve "yazı" pano yüzüne eğik çizilir (yüzeyle birlikte kayar, ayrı katmanda yazı yok):
+     solda balıkçı logosu, sağda okunmayan karalama satırları */
+  var c = [PAL.madder, PAL.indigo, '#2f7a4a'][i % 3], F = function (a, b, z0, z1, col) { wallQ(x, y0 + a, x, y0 + b, z0, z1, col); };
+  F(0.10, 0.40, 18.5, 27.5, '#dcebf2');                                   /* logo zemini */
+  F(0.15, 0.33, 21, 25, PAL.indigo); F(0.18, 0.30, 20, 26, PAL.indigo);   /* balık gövdesi */
+  F(0.33, 0.38, 22, 24, PAL.indigo); F(0.36, 0.39, 20, 22, PAL.indigo); F(0.36, 0.39, 24, 26, PAL.indigo);   /* kuyruk */
+  F(0.19, 0.215, 23.5, 24.5, '#f4fbff');                                  /* göz */
+  F(0.14, 0.36, 19, 19.8, c);                                             /* dalga çizgisi */
+  var rows = [[25.5, [0.14, 0.2, 0.1, 0.16]], [22.5, [0.2, 0.08, 0.18]], [19.5, [0.1, 0.22, 0.12]]];
+  for (var r = 0; r < rows.length; r++) {
+    var u = 0.48 + ((i + r) % 2) * 0.02;
+    for (var k = 0; k < rows[r][1].length && u < 1.02; k++) {
+      var w = Math.min(rows[r][1][(k + i) % rows[r][1].length], 1.02 - u);
+      F(u, u + w, rows[r][0], rows[r][0] + 1.2, r === 0 ? '#1a2433' : '#5a6470');
+      u += w + 0.05;
+    }
   }
 }
 

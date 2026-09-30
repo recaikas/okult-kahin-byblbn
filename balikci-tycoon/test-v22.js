@@ -39,11 +39,16 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
       const d = BT.buildSave(); d.v = 6; d.rep = r; d.areas = d.areas.map(() => [0, 1]);
       BT.loadFrom(d); out.push([r, BT.S.rep, BT.repLevel()]);
     }
+    /* eski kayıt, tek bölge açık, Efsane: tavan yüzünden düşmez */
+    const d3 = BT.buildSave(); d3.v = 6; d3.rep = 350; d3.areas = d3.areas.map((a, i) => [i ? 1 : 0, 1]); BT.loadFrom(d3);
+    const floor = [BT.repLevel(), BT.buildSave().lvF];
     const d2 = BT.buildSave(); const cur = d2.rep; BT.loadFrom(d2);
-    return { out, v: d2.v, same: BT.S.rep === cur };
+    floor.push(BT.repLevel());
+    return { out, v: d2.v, same: BT.S.rep === cur, floor };
   });
   const lvOld = r => [0, 10, 30, 40, 60, 90, 130, 180, 250, 350].filter(n => r >= n).length;
   ok(R.old.out.every(([r, n, l]) => l === lvOld(r)), 'eski kayıtta seviye değişti ' + JSON.stringify(R.old.out));
+  ok(JSON.stringify(R.old.floor) === '[10,10,10]', 'eski kayıttaki seviye tavan yüzünden düştü ' + JSON.stringify(R.old.floor));
   ok(R.old.v === 7 && R.old.same, 'yeni kayıt ikinci kez dönüştürüldü ' + JSON.stringify(R.old));
 
   if (errs.length) fail.push('sayfa hatası: ' + [...new Set(errs)].join(' | '));
