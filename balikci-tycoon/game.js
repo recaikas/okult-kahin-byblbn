@@ -72,7 +72,7 @@ var STR = {
     autoMinN: '{m} dk', auto5: 'Sık kayıt — en güvenlisi', auto10: 'Önerilen', auto30: 'Seyrek kayıt',
     autoLbl: 'OTOMATİK KAYIT', autoSaved: '💾 Otomatik kaydedildi • {t}', autoSet: '💾 Otomatik kayıt: {m} dakikada bir',
     autoNext: 'Otomatik kayıt: {m} dk • sonraki {t}',
-    musicLbl: 'MÜZİK', musOn: '♪ AÇIK', musOff: 'KAPALI', musList: 'ÇALMA LİSTESİ', musAuto: 'Sırayla çal (hepsi)', musAutoD: 'Menüde İskele Türküsü, oyunda tüm parçalar sırayla (yoğun saatte davul katmanı)',
+    musicLbl: 'MÜZİK', volMus: 'Müzik', volSfx: 'Efektler', volAmb: 'Ortam (dalga, martı)', musOn: '♪ AÇIK', musOff: 'KAPALI', musList: 'ÇALMA LİSTESİ', musAuto: 'Sırayla çal (hepsi)', musAutoD: 'Menüde İskele Türküsü, oyunda tüm parçalar sırayla (yoğun saatte davul katmanı)',
     meydan: 'LİMAN MEYDANI', hutName: 'Personel Kulübesi', depotName: 'Depo', whall: 'Balık Hali', buildAt: 'YAPI › Meydan',
     hutD: 'Her bölgede +1 personel yeri / seviye (şu an +{n})', depotD: 'Fazla fileto/fümeyi türüne göre raflarda saklar; kendi personeli var',
     depotD2: 'Raf {a}/{b} → {n} • depo personeli +1', whallD: 'Depodaki malı günün fiyatıyla sat, toptan al; alınan mal Hal paletinden depoya taşınır (Depo gerekir)',
@@ -278,7 +278,7 @@ var STR = {
     autoMinN: '{m} min', auto5: 'Frequent — safest', auto10: 'Recommended', auto30: 'Occasional',
     autoLbl: 'AUTOSAVE', autoSaved: '💾 Autosaved • {t}', autoSet: '💾 Autosave every {m} minutes',
     autoNext: 'Autosave: every {m} min • next in {t}',
-    musicLbl: 'MUSIC', musOn: '♪ ON', musOff: 'OFF', musList: 'PLAYLIST', musAuto: 'Play all in turn', musAutoD: 'Pier Folk Song in the menu, every track in turn in game (drums join at rush hour)',
+    musicLbl: 'MUSIC', volMus: 'Music', volSfx: 'Effects', volAmb: 'Ambience (waves, gulls)', musOn: '♪ ON', musOff: 'OFF', musList: 'PLAYLIST', musAuto: 'Play all in turn', musAutoD: 'Pier Folk Song in the menu, every track in turn in game (drums join at rush hour)',
     meydan: 'HARBOR SQUARE', hutName: 'Staff Hut', depotName: 'Depot', whall: 'Fish Hall', buildAt: 'BUILD › Square',
     hutD: '+1 staff slot in every zone per level (now +{n})', depotD: 'Stores surplus fillet/smoked fish on shelves by type; has its own staff',
     depotD2: 'Shelves {a}/{b} → {n} • +1 depot staff', whallD: 'Sell depot stock at today\'s price, buy wholesale (needs Depot)',
@@ -611,6 +611,25 @@ cvs.addEventListener('contextmenu', function (e) { e.preventDefault(); });
    • Zarf (attack/decay) ile tık sesi yok, kare dalga yumuşatılmış
    ========================================================= */
 var AC = null, masterGain = null, soundOn = true, volLvl = 2;   /* 0 kapalı, 1 kısık, 2 açık */
+/* v2.3 — üç ayrı kanal: müzik, efektler (satış, taşıma, arayüz), ortam (dalga, martı, çan). Her biri ayarlardan
+   ayrı kısılır. Efekt kanalında sıkıştırıcı var: çok tezgâhta aynı anda çalan sesler patlamaz. */
+var VOL = { mus: 0.8, sfx: 0.7, amb: 0.7 };
+var musBus = null, sfxBus = null, ambBus = null, sfxMul = 1, sfxCtx = null;
+function setupBuses() {
+  var comp = AC.createDynamicsCompressor();
+  comp.threshold.value = -20; comp.knee.value = 12; comp.ratio.value = 6; comp.attack.value = 0.003; comp.release.value = 0.2;
+  comp.connect(masterGain);
+  sfxBus = AC.createGain(); sfxBus.connect(comp);
+  ambBus = AC.createGain(); ambBus.connect(masterGain);
+  musBus = AC.createGain(); musBus.connect(masterGain);
+  applyBusVol();
+}
+function applyBusVol() {
+  if (!AC || !sfxBus) return;
+  var t = AC.currentTime;
+  try { musBus.gain.setTargetAtTime(VOL.mus, t, 0.03); sfxBus.gain.setTargetAtTime(VOL.sfx, t, 0.03); ambBus.gain.setTargetAtTime(VOL.amb * 1.4, t, 0.03); }
+  catch (e) { musBus.gain.value = VOL.mus; sfxBus.gain.value = VOL.sfx; ambBus.gain.value = VOL.amb * 1.4; }
+}
 var VOLS = [0, 0.22, 0.5];
 var audioReady = false;
 
@@ -623,6 +642,7 @@ function ensureAudio() {
       masterGain = AC.createGain();
       masterGain.gain.value = VOLS[volLvl] || 0;
       masterGain.connect(AC.destination);
+      setupBuses();
     }
     if (AC.state === 'suspended' && AC.resume) AC.resume();
     audioReady = AC.state === 'running';
@@ -654,7 +674,7 @@ function tone(f, d, type, v, o) {
     osc.type = type || 'square';
     osc.frequency.setValueAtTime(f, t0);
     if (o.to) osc.frequency.exponentialRampToValueAtTime(Math.max(1, o.to), t0 + d);
-    var peak = Math.max(0.0001, v === undefined ? 0.5 : v);
+    var peak = Math.max(0.0001, (v === undefined ? 0.5 : v) * (o.dst ? 1 : sfxMul));
     var atk = o.atk === undefined ? 0.008 : o.atk;
     g.gain.setValueAtTime(0.0001, t0);
     g.gain.exponentialRampToValueAtTime(peak, t0 + atk);
@@ -665,7 +685,7 @@ function tone(f, d, type, v, o) {
       bq.type = 'lowpass'; bq.frequency.value = o.lp;
       node.connect(bq); node = bq;
     }
-    node.connect(g); g.connect(o.dst || masterGain);
+    node.connect(g); g.connect(o.dst || sfxBus || masterGain);
     osc.start(t0); osc.stop(t0 + d + 0.02);
   } catch (e) { }
 }
@@ -692,9 +712,9 @@ function noise(d, v, o) {
     bq.Q.value = o.q || 1;
     var g = AC.createGain();
     g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(Math.max(0.0001, v), t0 + 0.006);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0001, v * (o.dst ? 1 : sfxMul)), t0 + 0.006);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
-    src.connect(bq); bq.connect(g); g.connect(o.dst || masterGain);
+    src.connect(bq); bq.connect(g); g.connect(o.dst || sfxBus || masterGain);
     src.start(t0); src.stop(t0 + d + 0.02);
   } catch (e) { }
 }
@@ -1027,7 +1047,7 @@ function musicPlay(mode, song) {
   music.wantOn = true;
   if (!musicEnabled || !ensureAudio()) return;
   try {
-    if (!music.gain) { music.gain = AC.createGain(); music.gain.gain.value = 0.0001; music.gain.connect(masterGain); }
+    if (!music.gain) { music.gain = AC.createGain(); music.gain.gain.value = 0.0001; music.gain.connect(musBus || masterGain); }
     var g = music.gain.gain, now = AC.currentTime;
     g.cancelScheduledValues(now); g.setValueAtTime(Math.max(0.0001, g.value), now);
     g.exponentialRampToValueAtTime(MUSIC_VOL[music.mode], now + (music.on ? 1.8 : 1.2));
@@ -1107,6 +1127,27 @@ var sfx = {
   /* balık pazarı günü açılışı */
   market: function () { melody([[523, 0.1, 0], [659, 0.1, 0.09], [784, 0.1, 0.18], [1047, 0.3, 0.27]], 'square', 0.26, 2600); }
 };
+/* v2.3 — GÜRÜLTÜ SINIRI: iş sesleri (al, bırak, sıçrama, satır, para, müşteri) çok tezgâhta üst üste binip uğultuya
+   dönüyordu. Çalışanın/tezgâhın sesi oyuncuya uzaklıkla kısılır (9 karede susar), aynı ses art arda sık çalmaz,
+   çeyrek saniyede en çok 6 iş sesi çalar. Oyuncunun kendi eylemleri ve arayüz sesleri tam duyulur. */
+var sfxStat = { asked: 0, played: 0 };
+var SFX_GAP = { coin: 0.09, pick: 0.06, drop: 0.06, splash: 0.12, chop: 0.08, cust: 0.3 }, _sfxLast = {}, _sfxWin = [];
+Object.keys(SFX_GAP).forEach(function (k) {
+  var f = sfx[k];
+  sfx[k] = function () {
+    var now = AC ? AC.currentTime : 0, mul = 1, c = sfxCtx;
+    if (c && !c.isPlayer) mul = clamp(1 - Math.sqrt(dist2(player.x, player.y, c.x, c.y)) / 9, 0, 1) * 0.55;
+    sfxStat.asked++;
+    if (mul < 0.06) return;
+    if (_sfxLast[k] !== undefined && now - _sfxLast[k] < SFX_GAP[k] / Math.max(mul, 0.35)) return;
+    while (_sfxWin.length && now - _sfxWin[0] > 0.25) _sfxWin.shift();
+    if (_sfxWin.length >= 6) return;
+    _sfxLast[k] = now; _sfxWin.push(now); sfxStat.played++;
+    sfxMul = mul;
+    try { f.apply(sfx, arguments); } finally { sfxMul = 1; }
+  };
+});
+function sfxFrom(ctx, fn) { var o = sfxCtx; sfxCtx = ctx; try { fn(); } finally { sfxCtx = o; } }
 /* --- çok hafif liman ortam sesi: dalga soluğu (yalnız tam seste) --- */
 var ambT = 0;
 /* v2.1 — DENİZ YATAĞI: oyun sırasında sürekli, çok alçak dalga uğultusu. Döngülü gürültü → alçak geçiren → kazanç;
@@ -1123,7 +1164,7 @@ function seaBedSet(on) {
       var lfo = AC.createOscillator(); lfo.frequency.value = 0.11;
       var lg = AC.createGain(); lg.gain.value = 0.5;
       lfo.connect(lg); lg.connect(sw.gain);
-      src.connect(lp); lp.connect(sw); sw.connect(g); g.connect(masterGain);
+      src.connect(lp); lp.connect(sw); sw.connect(g); g.connect(ambBus || masterGain);
       src.start(); lfo.start();
       seaBed = { g: g, on: false };
     }
@@ -1135,20 +1176,20 @@ function seaBedSet(on) {
 }
 function harborBell(at) {                                               /* iskele çanı: çan kısmi sesleri, uzun sönüm */
   var f = rnd(560, 640);
-  tone(f, 2.4, 'sine', 0.05, { at: at || 0, atk: 0.004 });
-  tone(f * 2.76, 1.2, 'sine', 0.018, { at: at || 0, atk: 0.004 });
-  tone(f * 5.4, 0.5, 'sine', 0.008, { at: at || 0, atk: 0.004 });
+  tone(f, 2.4, 'sine', 0.05, { at: at || 0, atk: 0.004, dst: ambBus });
+  tone(f * 2.76, 1.2, 'sine', 0.018, { at: at || 0, atk: 0.004, dst: ambBus });
+  tone(f * 5.4, 0.5, 'sine', 0.008, { at: at || 0, atk: 0.004, dst: ambBus });
 }
 function updateAmbient(dt) {
   if (volLvl < 2 || !soundOn || !audioReady) return;
   ambT -= dt;
   if (ambT > 0) return;
   ambT = rnd(5.5, 9.5);
-  noise(2.2, 0.030, { f: 520, to: 180, q: 0.5 });          /* kıyıya vuran dalga */
+  noise(2.2, 0.030, { f: 520, to: 180, q: 0.5, dst: ambBus });          /* kıyıya vuran dalga */
   if (Math.random() < 0.28) {                                /* uzakta martı */
     var f0 = rnd(900, 1150);
-    tone(f0, 0.10, 'triangle', 0.045, { to: f0 * 1.5, lp: 2600 });
-    tone(f0 * 1.4, 0.09, 'triangle', 0.035, { at: 0.13, to: f0, lp: 2600 });
+    tone(f0, 0.10, 'triangle', 0.045, { to: f0 * 1.5, lp: 2600, dst: ambBus });
+    tone(f0 * 1.4, 0.09, 'triangle', 0.035, { at: 0.13, to: f0, lp: 2600, dst: ambBus });
   }
   if (Math.random() < 0.12) { harborBell(0.4); if (Math.random() < 0.5) harborBell(1.1); }   /* v2.1: iskele çanı */
 }
@@ -2444,7 +2485,7 @@ function migrateOldSave() {
 }
 var onlineOK = true;                 /* v1.8: çevrimiçi skor tablosu oyunun sabit parçası (kapatılamaz) */
 var onlineAsked = false;              /* KVKK aydınlatma: bilgilendirme bir kez gösterildi mi — gösterilmeden hiçbir şey gönderilmez */
-function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, mp: musicPick, onn: onlineAsked ? 1 : 0 })); }
+function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, mp: musicPick, onn: onlineAsked ? 1 : 0, vol: [VOL.mus, VOL.sfx, VOL.amb] })); }
 function loadPref() {
   try {
     var d = JSON.parse(Store.get(PREF_KEY) || 'null'); if (!d) return;
@@ -2453,6 +2494,7 @@ function loadPref() {
     if (d.zoom) zoomLvl = d.zoom;
     if (d.mus !== undefined) musicEnabled = !!d.mus;
     if (typeof d.mp === 'number') musicPick = d.mp >= 0 && d.mp < SONGS.length ? d.mp | 0 : -1;
+    if (Array.isArray(d.vol)) { VOL.mus = clamp(+d.vol[0] || 0, 0, 1); VOL.sfx = clamp(+d.vol[1] || 0, 0, 1); VOL.amb = clamp(+d.vol[2] || 0, 0, 1); applyBusVol(); }
     if (d.onn !== undefined) onlineAsked = !!d.onn;       /* v1.8 bilgilendirmesi görüldü (v1.7'nin rıza cevabı 'ona' sayılmaz) */
   } catch (e) { }
 }
@@ -2783,7 +2825,7 @@ function goTo(a, tx, ty, spd, dt, stopR) {
   moveActor(a, dx, dy, spd, dt); return false;
 }
 function actDelay(a) { return a.isPlayer ? 0.075 : 0.1; }
-function tryTake(a, dt, fn) { a.act -= dt; if (a.act > 0) return true; a.act = actDelay(a); fn(); return true; }
+function tryTake(a, dt, fn) { a.act -= dt; if (a.act > 0) return true; a.act = actDelay(a); sfxFrom(a, fn); return true; }
 
 /* Bir bölgeden birden çok tür geçiyorsa hamal, tezgâhı en aç olan türü alır;
    böylece kesim masası tek türle dolup diğer hatları aç bırakmaz. */
@@ -2985,7 +3027,7 @@ function iDeposit(a, dt) {
   var it = popCarry(a, isMoney);
   S.cash += it.v; earn(it.v); safe.pop = 1;
   fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), safe.x, safe.y, 13, it, 0.24);
-  addFloat(safe.x, safe.y - 0.4, '+' + money(it.v), '#8ef2a2'); sfx.coin();
+  addFloat(safe.x, safe.y - 0.4, '+' + money(it.v), '#8ef2a2'); sfxFrom(a, function () { sfx.coin(); });
   return true;
 }
 
@@ -3523,7 +3565,7 @@ function updateCounter(c, dt) {
       };
       c.slots[freeIdx] = cu; customers.push(cu);
       day.normals = (day.normals || 0) + 1;           /* v0.9: özel müşteri zamanlaması için */
-      if (dist2(player.x, player.y, c.x, c.y) < 90) sfx.cust();
+      if (dist2(player.x, player.y, c.x, c.y) < 90) sfxFrom({ x: c.x, y: c.y }, function () { sfx.cust(); });
     }
   }
   c.eatT -= dt;
@@ -3577,7 +3619,7 @@ function finishOrder(c, cu) {
   var fp = queueSlotPos(c, cu.slot);
   addFloat(fp.x, fp.y - 0.5, '+' + money(pay), '#ffe27a');
   addFloat(fp.x + 0.6, fp.y - 1.1, '+' + cu.type.rep + '*', '#ffd76a');
-  sfx.coin(); checkRepLevel();
+  sfxFrom({ x: c.x, y: c.y }, function () { sfx.coin(); }); checkRepLevel();
 }
 var lastRepLvl = 1, lvlUpT = 0;
 function checkRepLevel() {
@@ -6763,6 +6805,7 @@ function applyLang() {
   document.documentElement.lang = lang;
   /* v2.2: dil değişince açık kalan her liste yeniden çizilir (çalma listesi, liman menüsü sekmesi, alt panel, ofis, hazırlık) */
   if (typeof renderPlaylist === 'function') renderPlaylist();
+  if (typeof syncSettingsUI === 'function' && document.getElementById('volMusL')) syncSettingsUI();
   if (typeof renderTab === 'function' && el.tabBody) renderTab();
   if (typeof barTab !== 'undefined' && barTab && typeof renderBar === 'function') renderBar();
   var ofs = document.getElementById('officeScr'); if (ofs && !ofs.classList.contains('hidden') && typeof renderOffice === 'function') renderOffice();
@@ -7645,12 +7688,28 @@ function renderPlaylist() {
     };
   });
 }
+function bindVolSliders() {
+  [['volMus', 'mus'], ['volSfx', 'sfx'], ['volAmb', 'amb']].forEach(function (q) {
+    var r = document.getElementById(q[0] + 'R'); if (!r || r.dataset.b) return; r.dataset.b = '1';
+    r.addEventListener('input', function () {
+      VOL[q[1]] = clamp((parseInt(r.value, 10) || 0) / 100, 0, 1); applyBusVol();
+      var l = document.getElementById(q[0] + 'L'); if (l) l.textContent = T(q[0]) + ' · ' + r.value + '%';
+    });
+    r.addEventListener('change', function () { savePref(); if (q[1] === 'sfx') sfx.tap(); });
+  });
+}
 function syncSettingsUI() {
+  bindVolSliders();
   Array.prototype.forEach.call(document.querySelectorAll('#autoSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.m, 10) === S.autoMin); o.textContent = T('autoMinN', { m: o.dataset.m }); });
   Array.prototype.forEach.call(document.querySelectorAll('#musSeg button'), function (o) { o.classList.toggle('on', (o.dataset.m === '1') === musicEnabled); });
   renderPlaylist();
 
   Array.prototype.forEach.call(document.querySelectorAll('#sndSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.s, 10) === volLvl); });
+  [['volMus', 'mus'], ['volSfx', 'sfx'], ['volAmb', 'amb']].forEach(function (q) {           /* v2.3: kanal ses kaydırıcıları */
+    var r = document.getElementById(q[0] + 'R'), l = document.getElementById(q[0] + 'L');
+    if (r) r.value = Math.round(VOL[q[1]] * 100);
+    if (l) l.textContent = T(q[0]) + ' · ' + Math.round(VOL[q[1]] * 100) + '%';
+  });
   Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.z, 10) === zoomLvl); });
 }
 
@@ -11185,7 +11244,8 @@ window.BT = {
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
   zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
-  REP_LEVELS: REP_LEVELS, repLevel: function () { return repLevel(); }, repCapped: function () { return repCapped(); }, notifs: function () { return M ? M.notif.map(function (n) { return n.m; }) : []; },
+  snd: function () { return { vol: { mus: VOL.mus, sfx: VOL.sfx, amb: VOL.amb }, buses: !!(musBus && sfxBus && ambBus), stat: { asked: sfxStat.asked, played: sfxStat.played }, musDst: !!(music.gain && musBus) }; },
+  sfxFrom: sfxFrom, sfx: sfx, REP_LEVELS: REP_LEVELS, repLevel: function () { return repLevel(); }, repCapped: function () { return repCapped(); }, notifs: function () { return M ? M.notif.map(function (n) { return n.m; }) : []; },
   canProcess: canProcess, scr: function (x, y, z) { return { x: Math.round(uiX(x, y)), y: Math.round(uiY(x, y, z || 0)) }; }, kitchen: kitchen, COOK_TIME: COOK_TIME, zoneRoles: zoneRoles, customers: customers, FISH: FISH, start: start, hire: hire, toast: toast,
   rebuildCounters: rebuildCounters, buyBuilding: buyBuilding, investProject: investProject,
   setLang: function (l) { setLangTo(l); }, lang: function () { return lang; },

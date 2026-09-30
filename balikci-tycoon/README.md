@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v2.2.2** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v2.3** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -16,6 +16,18 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
 ---
+
+## v2.3 — Ayrı ses kanalları ve gürültü sınırı
+
+- **Üç kanal:** müzik, efektler (satış, taşıma, arayüz) ve ortam (dalga, martı, iskele çanı) ayrı. Ayarlar › Ses
+  altında üç kaydırıcı; değerler tercihe yazılır. 🔇/🔉/🔊 hepsinin üstünde ana ses olarak kalır.
+- **Uğultu bitti:** tezgâh sayısı artınca her çalışanın al/bırak sesi ve her satışın para sesi üst üste biniyordu.
+  - Çalışan ve tezgâh sesleri oyuncuya uzaklıkla kısılır, 9 karede susar.
+  - Aynı ses art arda sık çalmaz.
+  - Çeyrek saniyede en çok 6 iş sesi çalar.
+  - Efekt kanalında sıkıştırıcı var.
+  - Oyuncunun kendi eylemleri ve arayüz sesleri hep tam duyulur.
+- `test-v23.js`.
 
 ## v2.2.2 — Hizmet Sahası giriş tabelası
 
