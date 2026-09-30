@@ -42,6 +42,8 @@ yalnız ilk tezgâhla ~32 dakikada, 3 bölgeyle ~7 dakikada Efsane olunuyordu.
   iki türlü masası için de geçerli.
 - **Mutfak müdür kartı hep görünür:** rol eksikken "Balıkçı Mutfağı — Müdür gerekli · Önce eksik personel: Aşçı" der.
   Bölge personeli kartında da eksik rol yazar.
+- **Liman Meydanı ve Kapalı Pazar tabelaları:** ad tabelanın üstünde ayrı katmanda yüzüyordu (yakınlaştırmaya göre kayıyordu).
+  Tabelada artık oyma/karalama çizgiler var; ad, yaklaşınca tabelanın üstünde çerçeveli etiket olarak çıkar.
 - **Dil değişince her şey çevrilir:** çalma listesi, liman menüsü sekmeleri, alt panel, ticaret ofisi ve hazırlık ekranı
   dil değişince yeniden çizilir (önceden açık kalanlar Türkçe kalıyordu).
 - `test-v22.js`; eski ölçekle kurulan testler (env, faz1, mutfak, oynanış botu) yeni eşiklere göre güncellendi.
