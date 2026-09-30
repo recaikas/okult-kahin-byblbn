@@ -59,8 +59,9 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   ok(!R.chain0.ok, 'zincir erken tamam');
   await p.evaluate(() => { BT.S.cash = 50000; });
   await p.click('.dtab[data-t="level"]'); await sleep(300);
-  R.autoCardBlocked = await p.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].map(d => d.textContent).find(t => /Devret/.test(t)) || '');
-  ok(/Eksik rol/.test(R.autoCardBlocked), 'devret kartı eksik rolleri göstermiyor');
+  /* v2.2: rol eksikken müdür kartı görünür ve eksik personeli adıyla söyler */
+  R.autoCardBlocked = await p.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].map(d => d.textContent).find(t => /Müdür gerekli/.test(t)) || '');
+  ok(/eksik personel/i.test(R.autoCardBlocked), 'müdür kartı eksik rolleri göstermiyor ' + R.autoCardBlocked.slice(0, 160));
   await p.evaluate(() => { BT.hire('hamal', true, 0); BT.hire('filetocu', true, 0); BT.hire('tezgahtar', true, 0); });
   await p.click('.dtab[data-t="level"]'); await sleep(200); await p.click('.dtab[data-t="level"]'); await sleep(300);
   /* v1.3: 4 rol tamamlanınca önce müdür seçilir; müdür gelince bölge tam otomatiğe geçer */
