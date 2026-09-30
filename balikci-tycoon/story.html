@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Dipteki Söz — Gün Testi</title>
+<style>
+  :root { --bg:#120c1e; --pn:#1e1530; --ln:#3a2b58; --tx:#f6e9d3; --mu:#b9a88c; --ac:#ffd166; --ok:#6fe39a; --no:#ff7a6a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--tx); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 20px; margin: 4px 0 2px; color: var(--ac); letter-spacing: .5px; }
+  p.sub { margin: 0 0 14px; color: var(--mu); }
+  .box { background: var(--pn); border: 1px solid var(--ln); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+  .box h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--mu); margin: 0 0 8px; }
+  .days { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+  .day { text-align: left; background: #2a1f42; color: var(--tx); border: 1px solid var(--ln); border-radius: 8px; padding: 8px 10px; cursor: pointer; font: inherit; }
+  .day:hover { border-color: var(--ac); }
+  .day b { display: block; color: var(--ac); font-size: 12px; }
+  .day.done { border-color: var(--ok); }
+  .day.done b::after { content: " ✓"; color: var(--ok); }
+  .row { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+  label { display: inline-flex; gap: 6px; align-items: center; }
+  select, input[type=range], button.sm { font: inherit; }
+  select, button.sm { background: #2a1f42; color: var(--tx); border: 1px solid var(--ln); border-radius: 6px; padding: 4px 8px; }
+  button.sm { cursor: pointer; }
+  #berV { min-width: 2ch; display: inline-block; color: var(--ac); font-weight: 700; }
+  pre { margin: 0; white-space: pre-wrap; word-break: break-word; font: 12px/1.4 ui-monospace, Menlo, Consolas, monospace; color: #e6dcc8; max-height: 320px; overflow: auto; }
+  .log div { padding: 4px 0; border-bottom: 1px dashed var(--ln); }
+  .log .k { color: var(--ac); }
+  .note { color: var(--mu); font-size: 12px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Dipteki Söz · Gün Testi</h1>
+  <p class="sub">Hikâyenin 12 gününü oyuna girmeden tek tek oynat. Aynı sahne dosyası (story.js) oyunda da kullanılır.</p>
+
+  <section class="box">
+    <h2>Ayarlar</h2>
+    <div class="row">
+      <label>Dil <select id="lang"><option value="tr">Türkçe</option><option value="en">English</option></select></label>
+      <label>Bereket <input id="ber" type="range" min="3" max="10" value="6"> <span id="berV">6</span>/10</label>
+      <label>Söz <select id="promise"><option value="">(yok)</option><option value="given">verildi</option><option value="try">deneyecek</option><option value="kept">tutuldu</option><option value="broken">bozuldu</option></select></label>
+      <label><input id="kitchen" type="checkbox"> Mutfak açık</label>
+      <label><input id="chain" type="checkbox" checked> Sonuçları sonraki güne taşı</label>
+      <button class="sm" id="reset">Sıfırla</button>
+    </div>
+    <div class="note">"Söz" Gün 8'de verilir, Gün 10'da tutulur ya da bozulur; Gün 11 ve 12 buna göre değişir. Zinciri açık bırakırsan oynadığın günün sonucu (Bereket, söz) bir sonraki güne aktarılır.</div>
+  </section>
+
+  <section class="box">
+    <h2>Günler</h2>
+    <div class="days" id="days"></div>
+  </section>
+
+  <section class="box">
+    <h2>Sonuç kaydı</h2>
+    <div class="log" id="log"><div class="note">Henüz gün oynanmadı.</div></div>
+  </section>
+</main>
+<script src="story.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var AC = null, done = {}, logN = 0;
+  function ac() {
+    if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } }
+    if (AC && AC.state === 'suspended') AC.resume();
+    return AC;
+  }
+  function flags() { var p = $('promise').value, f = {}; if (p) f.promise = p; return f; }
+  function renderDays() {
+    var h = '', L = $('lang').value;
+    for (var n = 1; n <= HK_STORY.days; n++) h += '<button class="day' + (done[n] ? ' done' : '') + '" data-n="' + n + '"><b>' + (L === 'en' ? 'Day ' : 'Gün ') + n + '</b>' + HK_STORY.title(n, L) + '</button>';
+    $('days').innerHTML = h;
+  }
+  function log(n, r) {
+    if (!logN) $('log').innerHTML = '';
+    logN++;
+    var d = document.createElement('div');
+    d.innerHTML = '<span class="k">Gün ' + n + ' · ' + HK_STORY.title(n, 'tr') + (r.skipped ? ' (atlandı)' : '') + '</span><pre></pre>';
+    d.querySelector('pre').textContent = JSON.stringify(r, null, 1);
+    $('log').insertBefore(d, $('log').firstChild);
+  }
+  function openDay(n) {
+    if (HK_STORY.isOpen()) return;
+    var a = ac();
+    HK_STORY.open(n, {
+      lang: $('lang').value, ber: +$('ber').value, flags: flags(), kitchen: $('kitchen').checked,
+      audio: a, dst: a ? a.destination : null,
+      onDone: function (r) {
+        done[n] = 1; log(n, r);
+        if ($('chain').checked) {
+          var b = +$('ber').value;
+          if (typeof r.berSet === 'number') b = r.berSet;
+          if (r.ber) b += r.ber;
+          b = Math.max(3, Math.min(10, b)); $('ber').value = b; $('berV').textContent = b;
+          if (r.flags && r.flags.promise) $('promise').value = r.flags.promise;
+        }
+        renderDays();
+      }
+    });
+  }
+  $('days').addEventListener('click', function (e) { var b = e.target.closest('.day'); if (b) openDay(+b.dataset.n); });
+  $('ber').addEventListener('input', function () { $('berV').textContent = this.value; });
+  $('lang').addEventListener('change', renderDays);
+  $('reset').addEventListener('click', function () { done = {}; logN = 0; $('ber').value = 6; $('berV').textContent = 6; $('promise').value = ''; $('log').innerHTML = '<div class="note">Henüz gün oynanmadı.</div>'; renderDays(); });
+  var q = new URLSearchParams(location.search); if (q.get('lang') === 'en') $('lang').value = 'en';
+  renderDays();
+  if (q.get('day')) setTimeout(function () { openDay(+q.get('day')); }, 50);
+})();
+</script>
+</body>
+</html>
