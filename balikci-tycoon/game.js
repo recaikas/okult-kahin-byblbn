@@ -9856,8 +9856,7 @@ function drawYardGround() {
   ctx.save(); ctx.strokeStyle = '#8a7a5c'; ctx.lineWidth = 2; ctx.beginPath();
   ctx.moveTo(R(pX(r.x0, r.y0)), R(pY(r.x0, r.y0, 0))); ctx.lineTo(R(pX(r.x1, r.y0)), R(pY(r.x1, r.y0, 0)));
   ctx.lineTo(R(pX(r.x1, r.y1)), R(pY(r.x1, r.y1, 0))); ctx.lineTo(R(pX(r.x0, r.y1)), R(pY(r.x0, r.y1, 0))); ctx.closePath(); ctx.stroke(); ctx.restore();
-  var gx0 = 20.0, gy0 = r.y1 - 0.3;                 /* saha adı: güney kenarda, önünde/arkasında bina yok */
-  if (dist2(player.x, player.y, gx0, gy0) < 90) uiText(gx0, gy0, 2, T('yardName'), PAL.gold, 7);
+  /* v2.2.2: yerde yüzen saha adı kalktı; girişte ahşap tabela var (drawYardSign) */
 }
 function drawMeydanGround() {
   var r = MEYDAN;
@@ -10024,19 +10023,23 @@ function signScrawl(x, y, w, col, seed) {
     cx += 2;
   }
 }
-function drawMeydanSign() {
-  var sx = R(pX(MSIGN.x, MSIGN.y)), sy = R(pY(MSIGN.x, MSIGN.y, 0));
+var YSIGN = { x: 18.95, y: 12.2 };        /* v2.2.2: Hizmet Sahası girişi (meydandan inen patikanın yanı) */
+function drawMeydanSign() { drawWoodSign(MSIGN, 11); }
+function drawYardSign() { drawWoodSign(YSIGN, 23); }
+function drawWoodSign(o, seed) {
+  var sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0));
   px(sx, sy - 14, 1, 14, '#4a2f1c');
   px(sx - 10, sy - 18, 22, 7, '#8a5a33'); px(sx - 9, sy - 17, 20, 5, '#a8734a');
   /* v2.2 — tabelada ayrı katmanda yazı yok (yakınlaştırmaya göre kayıyordu): yazı tabelaya oyulmuş, harfe benzeyen
      okunmaz bir karalama olarak dünya pikselleriyle çizilir, tabelayla birlikte hareket eder */
-  signScrawl(sx - 8, sy - 16, 18, '#4a2f1c', 11);
+  signScrawl(sx - 8, sy - 16, 18, '#4a2f1c', seed);
 }
 function pushMeydan(push) {
   push(HUT.x + HUT.y, drawHut);
   push(DEPOT.x + DEPOT.y, drawDepot);
   push(WHALL.x + WHALL.y, drawWhall);
   push(MSIGN.x + MSIGN.y, drawMeydanSign);
+  push(YSIGN.x + YSIGN.y, drawYardSign);
 }
 /* =========================================================
    v1.9.2 — HİZMET SAHASI YAYALARI (yalnız görsel; oyuncudan hiçbir şey istemez)
