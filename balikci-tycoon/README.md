@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v2.0** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v2.1** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -16,6 +16,22 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
 ---
+
+## v2.1 — Müzik motoru, deniz ambiyansı, dört yeni tür
+
+- **Ölçü uzunluğu parçaya göre:** motor artık her ölçüyü 8 sekizlik saymıyor (`bar` alanı). 9/8 ve 6/8 parçalar mümkün.
+- **Oyun modunda imza tını:** arka plan mırıldanmasında her parça kendi çalgısıyla duyulur: İskele Türküsü ve Yayla
+  Horonu kemençe, Liman Yolu ud, Yeşilçam keman, Bozkır Rüzgârı saz, Beyoğlu Tangosu akordeon, yeni parçalar bağlama,
+  klarnet, koro ve yaylılar.
+- **Yoğun saatte davul katmanı:** öğle ve kapanış öncesindeki yoğun saatlerde müziğe hafif davul ve zil eklenir.
+- **Deniz ambiyansı:** oyun boyunca çok alçak, yavaşça kabarıp çekilen dalga uğultusu; ara ara martı ve iskele çanı.
+  Menüde, duraklatınca ve ses kısıkken susar.
+- **Dört yeni tür** (kendi bestemiz, telifsiz; makam aralıkları 12 perdeye yaklaştırıldı):
+  - **Ege Zeybeği:** 9/8 (2+2+2+3), La Kürdi; zurna, ağır davul, bağlama teli.
+  - **Mutfak Çiftetellisi:** Re Hicaz; klarnet, çiftetelli darbukası.
+  - **Ağ Çekme Türküsü:** 6/8; bir ses çağırır, koro cevaplar, cevapta ayak vuruşu, el çırpma ve halat hışırtısı.
+  - **Gün Batımı Arabeski:** Re Saba; yaylılar. "Oyunu bitir" jeneriğinde artık bu çalar.
+- `test-v21.js`; test-fazD on parçalı çalma listesine göre güncellendi.
 
 ## v2.0 — Balıkçı Mutfağı (4. bölge), Ek Tezgâh kalktı, Buz Makinesi
 

@@ -64,15 +64,15 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   ok(R.jk.refill.buf >= 4, 'joker müdür tezgâha mal taşımadı ' + JSON.stringify(R.jk));
   ok(R.jk.back, 'yoğunluk bitince müdür masasına dönmedi');
 
-  /* müzik: altı parça, her biri 16 ölçü; sırayla değişince hata yok */
+  /* müzik: on parça, her biri 16 ölçü (ölçü uzunluğu parçaya göre: 9/8, 6/8); sırayla değişince hata yok */
   R.mus = await p.evaluate(async () => {
-    const lens = BT.SONGS.map(sg => [sg.id, sg.lead.reduce((a, n) => a + n[1], 0), sg.bass.length * 8]);
+    const lens = BT.SONGS.map(sg => [sg.id, sg.lead.reduce((a, n) => a + n[1], 0), sg.bass.length * (sg.bar || 8)]);
     const seen = [];
-    for (const i of [1, 2, 3, 4, 5, 0]) { BT.songAt(i); await new Promise(r => setTimeout(r, 700)); seen.push(BT.music().song); }
+    for (const i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]) { BT.songAt(i); await new Promise(r => setTimeout(r, 700)); seen.push(BT.music().song); }
     return { lens, seen };
   });
-  ok(R.mus.lens.length === 6 && R.mus.lens.every(q => q[1] === q[2]) && R.mus.seen.join() === 'liman,yesilcam,rock,karadeniz,tango,iskele', 'müzik parçaları yanlış ' + JSON.stringify(R.mus));
-  /* ayarlar › çalma listesi: sırayla + 6 parça; seçilen parça hemen çalar ve tercihe yazılır */
+  ok(R.mus.lens.length === 10 && R.mus.lens.every(q => q[1] === q[2]) && R.mus.seen.join() === 'liman,yesilcam,rock,karadeniz,tango,zeybek,ciftetelli,shanty,arabesk,iskele', 'müzik parçaları yanlış ' + JSON.stringify(R.mus));
+  /* ayarlar › çalma listesi: sırayla + 10 parça; seçilen parça hemen çalar ve tercihe yazılır */
   R.pl = await p.evaluate(async () => {
     BT.ui.openSettings(); await new Promise(r => setTimeout(r, 250));
     const rows = [...document.querySelectorAll('#musList button')].map(b => b.textContent);
@@ -83,7 +83,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
     BT.ui.closeSettings();
     return { rows, one, auto };
   });
-  ok(R.pl.rows.length === 7 && /Sırayla/.test(R.pl.rows[0]) && ['Yeşilçam', 'Liman Yolu', 'Bozkır Rüzgârı', 'Yayla Horonu', 'Beyoğlu Tangosu'].every(n => R.pl.rows.join().includes(n)), 'çalma listesi eksik ' + JSON.stringify(R.pl.rows));
+  ok(R.pl.rows.length === 11 && /Sırayla/.test(R.pl.rows[0]) && ['Yeşilçam', 'Liman Yolu', 'Bozkır Rüzgârı', 'Yayla Horonu', 'Beyoğlu Tangosu', 'Ege Zeybeği', 'Mutfak Çiftetellisi', 'Ağ Çekme Türküsü', 'Gün Batımı Arabeski'].every(n => R.pl.rows.join().includes(n)), 'çalma listesi eksik ' + JSON.stringify(R.pl.rows));
   ok(R.pl.one.pick === 1 && R.pl.one.pref === 1 && /on/.test(R.pl.one.on) && R.pl.auto.pick === -1 && R.pl.auto.pref === -1, 'parça seçimi yanlış ' + JSON.stringify(R.pl));
   /* 3) Hal paleti + Hal Hamalı */
   R.hal = await p.evaluate(async () => {
