@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v2.1** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v2.2** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -16,6 +16,39 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
 ---
+
+## v2.2 — İtibar temposu: bölge tavanı ve yeni eşikler
+
+Ölçüm (tam personel, otomatik): 1 bölge 11, 2 bölge 34,5, 3 bölge 47,5, 4 bölge 76 itibar/dk. Eski eşiklerle (Efsane 350)
+yalnız ilk tezgâhla ~32 dakikada, 3 bölgeyle ~7 dakikada Efsane olunuyordu.
+
+- **Yeni eşikler:** 15, 45, 150, 350, 700, 1.100, 1.700, 2.800, 4.500. İlk üç seviye hâlâ hızlı. Model (oyuncu %60
+  verimle): Sv4 ~9 dk, Sv5 ~16 dk, Sv7 ~35 dk, Efsane ~110 dk. Tam otomasyonda Efsane ~67 dk.
+- **Bölge tavanı:** açık bölge sayısı seviyenin üst sınırı: 1 bölge Sv3, 2 bölge Sv5, 3 bölge Sv7, 4 bölge Sv10. Fazla
+  itibar birikir, bölge açılınca seviyeye dönüşür. Tavanda HUD "SV 3 · TAVAN" yazar, seviye başına bir kez "… bölgesini
+  açınca seviye atlarsın" ipucu çıkar. Liman sekmesinde tavan satırı var.
+- **Kilitler aynı seviyede kaldı:** Balık Pazarı 15 (Sv2), Fümehane 45 (Sv3), Balıkçı Mutfağı 350 (Sv5), Ticaret Ofisi
+  150 (Sv4), Holding lisansı 700 (Sv6).
+- **Eski kayıtlar:** kayıt sürümü 7. Eski (v6) kayıtlardaki itibar yeni ölçeğe taşınır: aynı seviye, seviye içinde aynı
+  oran (ör. eski 60 → 350, eski 350 → 4.500). Kimse yükleyince seviye kaybetmez; tavan yalnız yeni ilerlemeyi etkiler.
+- **Eski kayıtlarda seviye korunur:** eski kayıttan gelen seviye taban olarak saklanır (`lvF`); tavan yalnız bunun
+  üstündeki yeni ilerlemeyi sınırlar. Tek bölgeyle Efsane olmuş eski oyuncu Efsane kalır.
+- **Yol reklam panoları:** işletme adı ve amblem ayrı katmanda düz yazıldığı için pano yüzünden kayıyordu. Artık yüzeye
+  eğik çiziliyor: balıkçı logosu + okunmayan karalama satırları; yazı yok.
+- **Mutfak döngüsü tıkanması düzeldi:** hamal bir seferde 8 palamut getirip kesim masasının girişini doldurunca, yığını
+  dolu palamut kesilemiyor, somon masaya giremiyordu; mutfak eşini beklediği için döngü kilitleniyordu. Artık iki türlü
+  masada her tür girişin en çok yarısını tutar. Hamal masaya bakar: yeri olmayan türü yüklemez, o türün boş yeri kadar
+  alır; elindekine yer yoksa öbür türün ağına gider. Güveç ocağı 5 palamut + 5 somon tutar. Aynı kural Balık Pazarı'nın
+  iki türlü masası için de geçerli.
+- **Mutfak müdür kartı hep görünür:** rol eksikken "Balıkçı Mutfağı — Müdür gerekli · Önce eksik personel: Aşçı" der.
+  Bölge personeli kartında da eksik rol yazar.
+- **Liman Meydanı ve Kapalı Pazar tabelaları:** ad tabelanın üstünde ayrı katmanda yüzüyordu (yakınlaştırmaya göre kayıyordu).
+  Tabelada artık oyma/karalama çizgiler var; ad, yaklaşınca tabelanın üstünde çerçeveli etiket olarak çıkar.
+- **Hal malını yalnız Hal Hamalı taşır:** oyuncu Hal kapısından geçerken paletteki mal artık sırtına yüklenmez. Hal
+  Hamalı yoksa alınan mal doğrudan depoya teslim edilir; eski kayıtta hamalsız palette kalan mal da depoya geçer.
+- **Dil değişince her şey çevrilir:** çalma listesi, liman menüsü sekmeleri, alt panel, ticaret ofisi ve hazırlık ekranı
+  dil değişince yeniden çizilir (önceden açık kalanlar Türkçe kalıyordu).
+- `test-v22.js`; eski ölçekle kurulan testler (env, faz1, mutfak, oynanış botu) yeni eşiklere göre güncellendi.
 
 ## v2.1 — Müzik motoru, deniz ambiyansı, dört yeni tür
 

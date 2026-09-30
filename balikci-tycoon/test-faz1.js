@@ -28,7 +28,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   R.coach2 = await p.evaluate(() => ({ vis: !document.getElementById('coach').classList.contains('hidden'), c: BT.S.ctrl }));
   ok(!R.coach2.vis && R.coach2.c === 2, 'eğitim kapanmadı');
   /* seviye atlama */
-  await p.evaluate(() => { BT.S.rep = 12; }); await sleep(500);
+  await p.evaluate(() => { BT.S.rep = 18; }); await sleep(500);
   R.lvl = await p.evaluate(() => ({ vis: !document.getElementById('lvlUp').classList.contains('hidden'), t: document.getElementById('lvlUp').textContent, hud: document.getElementById('hRep').textContent, paused: BT.paused() }));
   ok(R.lvl.vis && /SEVİYE 2/.test(R.lvl.t) && /Balık Pazarı/.test(R.lvl.t), 'seviye şeridi yok');
   ok(!R.lvl.paused, 'seviye şeridi oyunu durdurdu');

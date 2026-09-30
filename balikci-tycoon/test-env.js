@@ -31,7 +31,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   ok(/Çakıl Yol/.test(R.locked.t) && /Seviye 3/.test(R.locked.btn), 'çakıl yol kartı kilitli değil ' + JSON.stringify(R.locked));
   await p.evaluate(() => document.querySelector('#dpCards .dcard .buy').click()); await sleep(200);
   ok(await p.evaluate(() => BT.envStage()) === 0, 'seviye şartı olmadan alındı');
-  await p.evaluate(() => { BT.S.rep = 30; }); await p.click('#dpSub button[data-s="decor"]'); await sleep(250);
+  await p.evaluate(() => { BT.S.rep = 50; }); await p.click('#dpSub button[data-s="decor"]'); await sleep(250);
   const flow0 = await p.evaluate(() => BT.envFlow());
   for (let k = 0; k < 2; k++) { await p.evaluate(() => document.querySelector('#dpCards .dcard .buy').click()); await sleep(200); }
   R.bought = await p.evaluate(() => ({ env: BT.envStage(), cash: BT.S.cash, flow: BT.envFlow(), next: document.querySelector('#dpCards .dcard b').textContent }));
