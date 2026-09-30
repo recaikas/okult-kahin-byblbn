@@ -96,6 +96,30 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   ok(R.sale.sold, 'güveç satılmadı');
   ok(R.sale.prod && R.sale.prod.f === 'guvec' && R.sale.prod.k === 'fileto' && R.sale.prod.need <= 7, 'güveç siparişi yanlış ' + JSON.stringify(R.sale.prod));
 
+  /* v2.2 — tıkanma senaryosu: palamut çok hızlı, somon çok yavaş, tek hamal; başlangıçta eski tıkanmanın aynısı
+     (hamalın eli 8 palamut dolu, palamut yığını dolu, ocakta 5 palamut). Döngü yine güveç üretmeli. */
+  R.jam = await p.evaluate(async () => {
+    const z = 3, T = BT.tables[z], K = BT.kitchen, net = BT.spots[z], xn = BT.XNETS.find(n => n.f === 'somon');
+    for (let i = BT.workers.length - 1; i >= 0; i--) if (BT.workers[i].zone === z && BT.workers[i].role === 'hamal') BT.workers.splice(i, 1);
+    const h = BT.hire('hamal', true, z);
+    const r0 = net.rate, r1 = xn.rate; net.rate = 0.5; xn.rate = 5;
+    T.inn.length = 0; T.mat.items.length = 0; K.inn.length = 0; K.mat.items.length = 0;
+    for (let i = 0; i < 8; i++) T.mat.items.push({ k: 'fileto', f: 'palamut' });
+    for (let i = 0; i < 5; i++) K.inn.push({ k: 'fileto', f: 'palamut' });
+    for (let i = 0; i < 8; i++) h.carry.push({ k: 'fish', f: 'palamut' });
+    let maxP = 0, cooked = 0, last = K.mat.items.length, lateCook = 0; const t0 = Date.now();
+    while (Date.now() - t0 < 80000) {
+      await new Promise(q => setTimeout(q, 250));
+      maxP = Math.max(maxP, T.inn.filter(i => i.f === 'palamut').length);
+      const km = K.mat.items.length; if (km > last) { cooked += km - last; if (Date.now() - t0 > 40000) lateCook += km - last; } last = km;
+      if (K.mat.items.length > 8) K.mat.items.length = 4;                      /* tezgâh tarafı yetişmezse hasır dolmasın */
+    }
+    net.rate = r0; xn.rate = r1;
+    return { maxP, cooked, lateCook, kin: K.inn.map(i => i.f[0]).join(''), inn: T.inn.map(i => i.f[0]).join('') };
+  });
+  ok(R.jam.maxP <= 5, 'masa girişi tek türle doluyor ' + JSON.stringify(R.jam));
+  ok(R.jam.cooked >= 4 && R.jam.lateCook >= 2, 'dengesiz akışta mutfak döngüsü tıkandı ' + JSON.stringify(R.jam));
+
   /* Fümehane fırını palamut almaz; güveç füme olmaz */
   R.smoke = await p.evaluate(() => ({ fumeIng: BT.canProcess ? BT.canProcess('fume', 'palamut') : null, fumeDish: BT.canProcess ? BT.canProcess('fume', 'guvec') : null,
     stallFume: BT.stallFume(BT.counters.find(c => c.key === 'b3')) }));

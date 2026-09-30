@@ -35,6 +35,15 @@ yalnız ilk tezgâhla ~32 dakikada, 3 bölgeyle ~7 dakikada Efsane olunuyordu.
   üstündeki yeni ilerlemeyi sınırlar. Tek bölgeyle Efsane olmuş eski oyuncu Efsane kalır.
 - **Yol reklam panoları:** işletme adı ve amblem ayrı katmanda düz yazıldığı için pano yüzünden kayıyordu. Artık yüzeye
   eğik çiziliyor: balıkçı logosu + okunmayan karalama satırları; yazı yok.
+- **Mutfak döngüsü tıkanması düzeldi:** hamal bir seferde 8 palamut getirip kesim masasının girişini doldurunca, yığını
+  dolu palamut kesilemiyor, somon masaya giremiyordu; mutfak eşini beklediği için döngü kilitleniyordu. Artık iki türlü
+  masada her tür girişin en çok yarısını tutar. Hamal masaya bakar: yeri olmayan türü yüklemez, o türün boş yeri kadar
+  alır; elindekine yer yoksa öbür türün ağına gider. Güveç ocağı 5 palamut + 5 somon tutar. Aynı kural Balık Pazarı'nın
+  iki türlü masası için de geçerli.
+- **Mutfak müdür kartı hep görünür:** rol eksikken "Balıkçı Mutfağı — Müdür gerekli · Önce eksik personel: Aşçı" der.
+  Bölge personeli kartında da eksik rol yazar.
+- **Dil değişince her şey çevrilir:** çalma listesi, liman menüsü sekmeleri, alt panel, ticaret ofisi ve hazırlık ekranı
+  dil değişince yeniden çizilir (önceden açık kalanlar Türkçe kalıyordu).
 - `test-v22.js`; eski ölçekle kurulan testler (env, faz1, mutfak, oynanış botu) yeni eşiklere göre güncellendi.
 
 ## v2.1 — Müzik motoru, deniz ambiyansı, dört yeni tür

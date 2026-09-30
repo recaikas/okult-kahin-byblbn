@@ -61,7 +61,7 @@ var STR = {
     coachAuto: 'Durman yeter: karakter ağdan kendiliğinden alır, masaya/tezgâha kendiliğinden bırakır',
     stallOfFish: '{f} tezgâhı', autoBadge: '⚙ OTOMATİK', autoCard: '{n} — Personele Devret', autoCardOn: '{n} — OTOMATİK',
     autoCardOnD: 'Ekip kendi çalışır (%20 hızlı). Gezip kontrol edebilirsin; kasayı geçerken toplarsın.',
-    autoGive: '⚙ DEVRET', autoBack: '↩ GERİ AL', autoNeed: 'Eksik rol: {n}', autoMissing: 'Eksik personel: {m}',
+    autoGive: '⚙ DEVRET', autoBack: '↩ GERİ AL', autoNeed: 'Eksik rol: {n}', missShort: 'eksik: {m}', autoMissing: 'Eksik personel: {m}',
     autoOn: '⚙ {n} personele devredildi — artık kendi kendine çalışır', autoOff: '{n} yeniden sende',
     heroTitle: 'KARAKTERİN', heroSub: 'Limanın yeni balıkçısı kim? Görünüşünü seç.', heroNameLbl: 'ADIN',
     heroRandom: '🎲 RASTGELE', heroGo: 'DEVAM ▶', hero_hs: 'Saç modeli', hero_hc: 'Saç rengi', hero_sk: 'Ten rengi',
@@ -102,7 +102,7 @@ var STR = {
     chEndFb: '✍ DEĞERLENDİRME YAZ', chEndFin: 'OYUNU BİTİR', chEndGo: '1. BÖLÜMÜ OYNAMAYA DEVAM ET ▶',
     endK: 'TEŞEKKÜRLER', endT: 'HAMSİ KOYU', endBy: 'BALABAN GURURLA SUNDU', endGo: 'ANA MENÜ',
     endP: '{n} ve {c} için hikâyenin ilk bölümü burada bitiyor. Oynadığınız için çok teşekkürler — 2. Bölüm\'de görüşmek üzere!',
-    chEndG: 'Ama bu daha başlangıç. Artık devler liginde hayatta kalmalıyız…', mgrCard: '{n} — Müdür gerekli', mgrCardD: '4 personel tamam. Müdür masası kur, müdürünü seç: bölge tam otomatiğe geçer.', mgrPick: '👔 MÜDÜR SEÇ', mgrHired: '👔 {m}, {n} müdürü oldu — bölge tam otomatik', mgrListT: '{n} için müdür adayları', mgrCost: 'masa {d} + işe alım {f} • maaş {w}', mgrBoss: 'Müdür', fmT: 'Füme Makinesi • {n}', fmD: 'Tezgâhtaki filetoyu yerinde tüter; bu bölgenin müşterileri artık füme de ister (2.4× değer)', fmNeed: '🔒 Önce Fümehane', fmDone: '🔥 {n} tezgâhına füme makinesi kuruldu', envFlow: '+%{p} müşteri akışı', envRow: 'Çevre yatırımı', envNext: 'Sıradaki: {n} (Sv {l})', envCust: 'müşteri',
+    chEndG: 'Ama bu daha başlangıç. Artık devler liginde hayatta kalmalıyız…', mgrCard: '{n} — Müdür gerekli', mgrCardD: 'Kadro tamam. Müdür masası kur, müdürünü seç: bölge tam otomatiğe geçer.', mgrNeedStaff: 'Önce eksik personel: {m}', mgrPick: '👔 MÜDÜR SEÇ', mgrHired: '👔 {m}, {n} müdürü oldu — bölge tam otomatik', mgrListT: '{n} için müdür adayları', mgrCost: 'masa {d} + işe alım {f} • maaş {w}', mgrBoss: 'Müdür', fmT: 'Füme Makinesi • {n}', fmD: 'Tezgâhtaki filetoyu yerinde tüter; bu bölgenin müşterileri artık füme de ister (2.4× değer)', fmNeed: '🔒 Önce Fümehane', fmDone: '🔥 {n} tezgâhına füme makinesi kuruldu', envFlow: '+%{p} müşteri akışı', envRow: 'Çevre yatırımı', envNext: 'Sıradaki: {n} (Sv {l})', envCust: 'müşteri',
     tutDone: 'Eğitim tamam! Limanı büyüt 🎉',
     tutNice: '✓ Harika!',
     tutStepOK: ['✓ Balık birikti! Şimdi sandığın üstünden geç', '✓ Balıklar sırtında! Sarı yolu izle: kesim masası', '✓ Kesim başladı! Hazır filetoyu al', '🎉 İlk balığın tezgâhta! Müşteriler geliyor', '✓ Para kasada! Alttaki çubuktan bir şey al'],
@@ -267,7 +267,7 @@ var STR = {
     coachAuto: 'Just stand still: you pick up from the net and drop at tables/stalls automatically',
     stallOfFish: '{f} stall', autoBadge: '⚙ AUTO', autoCard: '{n} — Hand over to staff', autoCardOn: '{n} — AUTOMATED',
     autoCardOnD: 'The crew runs it (20% faster). Walk by to inspect; you still collect cash as you pass.',
-    autoGive: '⚙ HAND OVER', autoBack: '↩ TAKE BACK', autoNeed: 'Missing roles: {n}', autoMissing: 'Missing staff: {m}',
+    autoGive: '⚙ HAND OVER', autoBack: '↩ TAKE BACK', autoNeed: 'Missing roles: {n}', missShort: 'missing: {m}', autoMissing: 'Missing staff: {m}',
     autoOn: '⚙ {n} handed to staff — it now runs itself', autoOff: '{n} is back in your hands',
     heroTitle: 'YOUR CHARACTER', heroSub: 'Who is the harbor\'s new fisher? Pick a look.', heroNameLbl: 'YOUR NAME',
     heroRandom: '🎲 RANDOM', heroGo: 'NEXT ▶', hero_hs: 'Hair style', hero_hc: 'Hair colour', hero_sk: 'Skin tone',
@@ -308,7 +308,7 @@ var STR = {
     chEndFb: '✍ WRITE A REVIEW', chEndFin: 'FINISH THE GAME', chEndGo: 'KEEP PLAYING CHAPTER 1 ▶',
     endK: 'THANK YOU', endT: 'HAMSİ KOYU', endBy: 'PROUDLY PRESENTED BY BALABAN', endGo: 'MAIN MENU',
     endP: 'The first chapter of the story of {n} and {c} ends here. Thank you so much for playing — see you in Chapter 2!',
-    chEndG: 'But this is only the beginning. Now we must survive in the league of giants…', mgrCard: '{n} — Manager needed', mgrCardD: 'All 4 roles filled. Set up a manager\'s desk and pick a manager: the zone goes fully automatic.', mgrPick: '👔 PICK MANAGER', mgrHired: '👔 {m} now runs {n} — zone fully automatic', mgrListT: 'Manager candidates for {n}', mgrCost: 'desk {d} + hiring {f} • wage {w}', mgrBoss: 'Manager', fmT: 'Smoker Box • {n}', fmD: 'Smokes fillets right at the stall; customers here now order smoked fish too (2.4× value)', fmNeed: '🔒 Smokehouse first', fmDone: '🔥 Smoker box installed at {n}', envFlow: '+{p}% customer flow', envRow: 'Surroundings', envNext: 'Next: {n} (Lv {l})', envCust: 'customers',
+    chEndG: 'But this is only the beginning. Now we must survive in the league of giants…', mgrCard: '{n} — Manager needed', mgrCardD: 'All roles filled. Set up a manager\'s desk and pick a manager: the zone goes fully automatic.', mgrNeedStaff: 'Hire the missing staff first: {m}', mgrPick: '👔 PICK MANAGER', mgrHired: '👔 {m} now runs {n} — zone fully automatic', mgrListT: 'Manager candidates for {n}', mgrCost: 'desk {d} + hiring {f} • wage {w}', mgrBoss: 'Manager', fmT: 'Smoker Box • {n}', fmD: 'Smokes fillets right at the stall; customers here now order smoked fish too (2.4× value)', fmNeed: '🔒 Smokehouse first', fmDone: '🔥 Smoker box installed at {n}', envFlow: '+{p}% customer flow', envRow: 'Surroundings', envNext: 'Next: {n} (Lv {l})', envCust: 'customers',
     tutDone: 'Tutorial done! Grow the harbor 🎉',
     tutNice: '✓ Nice!',
     tutStepOK: ['✓ Fish are in! Now walk over the crate', '✓ Fish on your back! Follow the yellow path to the cutting table', '✓ Cutting started! Grab the ready fillet', '🎉 Your first fish is on the stall! Customers are coming', '✓ Money banked! Buy something from the bottom bar'],
@@ -2176,7 +2176,7 @@ var tables = [
 var smoker = { z: 2, x: 3.4, y: 15.4, inn: [], cur: null, t: 0, belt: 0, mat: { x: 4.6, y: 16.1, items: [] }, max: 8 };
 /* v2.0 — MUTFAK OCAĞI: kesim masasının hasırından bantla palamut ve somon filetosu çeker; birer tanesinden bir
    tencere Reis Güveci (iki porsiyon) pişirir. Aşçı varsa %60 hızlı. Güveç siparişi yarı adettir (porsiyon büyük). Güveç kendi hasırına düşer, tezgâhtar oradan tezgâha taşır. */
-var kitchen = { z: 3, x: 6.2, y: 20.8, inn: [], cur: false, t: 0, belt: 0, mat: { x: 7.0, y: 21.5, items: [] }, max: 8, worker: null };
+var kitchen = { z: 3, x: 6.2, y: 20.8, inn: [], cur: false, t: 0, belt: 0, mat: { x: 7.0, y: 21.5, items: [] }, max: 10, worker: null };
 var COOK_TIME = 4.5;
 var counters = [];
 function mkCounter(z, x, y, key) {
@@ -2788,11 +2788,12 @@ function tryTake(a, dt, fn) { a.act -= dt; if (a.act > 0) return true; a.act = a
 /* Bir bölgeden birden çok tür geçiyorsa hamal, tezgâhı en aç olan türü alır;
    böylece kesim masası tek türle dolup diğer hatları aç bırakmaz. */
 function neediestIndex(s, a) {
-  var best = -1, bs = -1e9;
+  var best = -1, bs = -1e9, tzA = a && a.zone >= 0 ? zoneTable(a.zone) : null;
   for (var i = s.stock.length - 1; i >= 0; i--) {
     var it = s.stock[i];
     if (!fits(a, it)) continue;
-    var c = stallOf(it.f);
+    if (tzA && tableRoom(tzA, it.f, a) <= 0) continue;  /* v2.2: masada yeri olmayan türü alma */
+    var c = stallOf(it.f) || (lineOf(it.f) && lineOf(it.f).ing ? stallOf(lineOf(it.f).ing) : null);
     if (!c) continue;                                   /* tezgâhı kapalı türü alma */
     var fill = c.buffer.length / Math.max(1, counterMax(c));
     var waiting = 0;
@@ -2800,7 +2801,7 @@ function neediestIndex(s, a) {
     var sc = waiting * 8 - fill * 10 + (i === s.stock.length - 1 ? 0.5 : 0);
     if (sc > bs) { bs = sc; best = i; }
   }
-  if (best < 0) for (var j = s.stock.length - 1; j >= 0; j--) if (fits(a, s.stock[j])) return j;
+  if (best < 0) for (var j = s.stock.length - 1; j >= 0; j--) if (fits(a, s.stock[j]) && !(tzA && tableRoom(tzA, s.stock[j].f, a) <= 0)) return j;
   return best;
 }
 function iPickFish(a, s, dt) {
@@ -2815,10 +2816,18 @@ function iPickFish(a, s, dt) {
     if (a.isPlayer) sfx.splash(); else sfx.pick();
   });
 }
+/* v2.2 — TÜR BAŞINA MASA GİRİŞİ: iki türlü masada (Mutfak: palamut + somon, Pazar: uskumru + orkinos) her tür
+   girişin en çok yarısını tutar. Eskiden hamal 8 palamut getirip girişi doldurunca, yığını dolu palamut kesilemiyor,
+   somon masaya giremiyordu → mutfak eşini bekliyor, döngü kilitleniyordu. Hamal da masaya bakıp yeri olan türü yükler. */
+function innCap(tb) { var n = tableTypes(tb); return n > 1 ? Math.floor(tb.max / n) : tb.max; }
+function innCount(tb, f) { var n = 0; for (var i = 0; i < tb.inn.length; i++) if (tb.inn[i].f === f) n++; return n; }
+function carryFish(a, f) { var n = 0; for (var i = 0; i < a.carry.length; i++) if (a.carry[i].k === 'fish' && a.carry[i].f === f) n++; return n; }
+function tableRoom(tb, f, a) { return Math.min(innCap(tb) - innCount(tb, f), tb.max - tb.inn.length) - (a ? carryFish(a, f) : 0); }
+function tableTakes(tb, it) { return tableAccepts(tb, it) && innCount(tb, it.f) < innCap(tb); }
 /* v2.1: masa yalnız kendi bölgesinin balığını alır */
 function iDropTable(a, tb, dt) {
   if (tb.inn.length >= tb.max) return false;
-  var ok = function (it) { return tableAccepts(tb, it); };
+  var ok = function (it) { return tableTakes(tb, it); };
   if (!hasCarry(a, ok)) return false;
   return tryTake(a, dt, function () {
     var it = popCarry(a, ok); tb.inn.push(it);
@@ -2844,8 +2853,8 @@ function iDropSmoker(a, dt) {
     fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), smoker.x, smoker.y, 12, it, 0.26); sfx.drop();
   });
 }
-/* v2.0 — mutfak: palamut/somon filetosu ocağa (tür başına en çok 4) */
-function kitchenNeeds(f) { var n = 0; for (var i = 0; i < kitchen.inn.length; i++) if (kitchen.inn[i].f === f) n++; return n < 4; }
+/* v2.0 — mutfak: palamut/somon filetosu ocağa (v2.2: tür başına en çok 5) */
+function kitchenNeeds(f) { var n = 0; for (var i = 0; i < kitchen.inn.length; i++) if (kitchen.inn[i].f === f) n++; return n < 5; }   /* v2.2: 5 palamut + 5 somon */
 function kitchenTakes(it) { return isFileto(it) && isIng(it) && kitchenNeeds(it.f); }
 function iDropKitchen(a, dt) {
   if (!hasCarry(a, kitchenTakes)) return false;
@@ -3130,7 +3139,9 @@ function bestSpot(w) {
     var tz = zoneTable(w.zone);
     var zn = zoneNets(w.zone).filter(function (n) {
       if (AREAS[n.z].locked) return false;
-      if (!n.f || !tz) return true;                 /* v1.3: yığını dolu ve masada zaten bekleyen tür için ağa gitme */
+      if (!tz) return true;
+      if (!n.f) { for (var j = n.stock.length - 1; j >= 0; j--) if (tableRoom(tz, n.stock[j].f, w) > 0) return true; return !n.stock.length; }
+      if (tableRoom(tz, n.f, w) <= 0) return false;                  /* v2.2: masada bu türe yer yoksa bu ağa gitme */
       var inq = 0; for (var k = 0; k < tz.inn.length; k++) if (tz.inn[k].f === n.f) inq++;
       return !(inq >= 3 && pileCount(tz, n.f) > pileCap(tz) - FISH[n.f].out);
     });
@@ -3151,7 +3162,9 @@ function bestSpot(w) {
 function tableWithSpace(w) {
   if (w && w.zone >= 0) {
     var t = zoneTable(w.zone);
-    return (t && !AREAS[t.z].locked && t.inn.length < t.max) ? t : null;
+    if (!t || AREAS[t.z].locked || t.inn.length >= t.max) return null;
+    for (var k = 0; k < w.carry.length; k++) if (tableTakes(t, w.carry[k])) return t;   /* v2.2: elindekilerden birine yer var mı */
+    return w.carry.length ? null : t;
   }
   var list = openTables().filter(function (t2) { return t2.inn.length < t2.max; }), best = null, bd = 1e9;
   for (var i = 0; i < list.length; i++) {
@@ -3244,6 +3257,7 @@ function aiHamal(w, sp, dt) {
   if (w.mode === 'drop') {
     var t = tableWithSpace(w);
     if (t) { if (goTo(w, t.x - 0.1, t.y - 0.35, sp, dt, 0.9)) iDropTable(w, t, dt); }
+    else if (canLoad && !full) w.mode = 'load';                        /* v2.2: elindekine yer yok → öbür türü getir */
     else if (s) goTo(w, s.x + 1.5, s.y + 1.8, sp, dt, 1.2);
     return;
   }
@@ -6743,6 +6757,12 @@ function toast(msg) { el.toast.textContent = msg; el.toast.classList.add('on'); 
 
 function applyLang() {
   document.documentElement.lang = lang;
+  /* v2.2: dil değişince açık kalan her liste yeniden çizilir (çalma listesi, liman menüsü sekmesi, alt panel, ofis, hazırlık) */
+  if (typeof renderPlaylist === 'function') renderPlaylist();
+  if (typeof renderTab === 'function' && el.tabBody) renderTab();
+  if (typeof barTab !== 'undefined' && barTab && typeof renderBar === 'function') renderBar();
+  var ofs = document.getElementById('officeScr'); if (ofs && !ofs.classList.contains('hidden') && typeof renderOffice === 'function') renderOffice();
+  if (el.prepScr && !el.prepScr.classList.contains('hidden') && typeof renderPrep === 'function') renderPrep();
   fbApplyLang();                                /* görüş formu etiketleri */
   el.hMoney.textContent = T('money'); el.hCarry.textContent = T('carry'); el.hRep.textContent = T('rep'); el.hRep.dataset.l = '';
   el.startTag.textContent = T('tag');
@@ -6977,7 +6997,7 @@ function barList() {
       var free = zoneFree(z2);
       var zfn = zoneFish(z2).filter(function (q) { return lineLive(q); }).map(function (q) { return NM(FISH[q].n); });
       out.push({ id: 'zs' + z2, ic: '👷', t: T('zoneStaff', { n: NM(AREAS[z2].n) }),
-        s: T('zoneStaffD', { a: zoneStaff(z2), b: zoneStaffCap(z2) }) + (zfn.length ? ' • ' + zfn.join(', ') : ''),
+        s: T('zoneStaffD', { a: zoneStaff(z2), b: zoneStaffCap(z2) }) + (zfn.length ? ' • ' + zfn.join(', ') : '') + (zoneStaff(z2) && !zoneChain(z2).ok ? ' • ' + T('missShort', { m: zoneChain(z2).miss.join(', ') }) : ''),
         pick: free > 0 ? T('choose') : null, blocked: free <= 0, why: T('zoneFull'),
         go: function () { barZone = z2; cfId = null; renderBar(); } });
     })(i);
@@ -6994,6 +7014,11 @@ function barList() {
       if (!zoneOpen(z3) || !zoneStaff(z3)) return;          /* v1.9.1: personel almadan otomasyon kartı çıkmaz */
       var ch = zoneChain(z3), on = zoneAuto(z3);
       var st = zoneRoles(z3).map(function (r) { return (ch[r] ? '✓' : '✗') + NM(ROLES[r].n); }).join(' ');
+      if (!ch.ok && !mgr(z3)) {                                         /* v2.2: müdür kartı hep görünür, eksik rolü söyler */
+        out.push({ id: 'mg' + z3, ic: '👔', t: T('mgrCard', { n: NM(AREAS[z3].n) }), s: T('mgrNeedStaff', { m: ch.miss.join(', ') }) + ' • ' + st,
+          blocked: true, why: T('autoMissing', { m: ch.miss.join(', ') }) });
+        return;
+      }
       if (ch.ok && !on && !mgr(z3)) {                                   /* v1.3: tam otomasyon için müdür gerekir */
         out.push({ id: 'mg' + z3, ic: '👔', t: T('mgrCard', { n: NM(AREAS[z3].n) }), s: T('mgrCardD'),
           pick: T('mgrPick'), go: function () { barMgr = z3; cfId = null; renderBar(); } });

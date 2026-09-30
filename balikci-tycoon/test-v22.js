@@ -51,6 +51,16 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   ok(JSON.stringify(R.old.floor) === '[10,10,10]', 'eski kayıttaki seviye tavan yüzünden düştü ' + JSON.stringify(R.old.floor));
   ok(R.old.v === 7 && R.old.same, 'yeni kayıt ikinci kez dönüştürüldü ' + JSON.stringify(R.old));
 
+  /* dil değişince açık menü ve çalma listesi yeniden çizilir */
+  R.lang = await p.evaluate(async () => {
+    BT.ui.openPauseMenu(); await new Promise(r => setTimeout(r, 300));
+    const tr = document.getElementById('tabBody').innerText;
+    BT.setLang('en'); await new Promise(r => setTimeout(r, 300));
+    const en = document.getElementById('tabBody').innerText, pl = document.getElementById('musList').innerText;
+    BT.setLang('tr');
+    return { trHas: /Balıkçı İskelesi/.test(tr), enHas: /Fishing Pier/.test(en), enTr: /Balıkçı İskelesi|Maaş gideri/.test(en), plEn: /Pier Folk Song/.test(pl) && !/İskele Türküsü/.test(pl) };
+  });
+  ok(R.lang.trHas && R.lang.enHas && !R.lang.enTr && R.lang.plEn, 'dil değişince menü/çalma listesi Türkçe kaldı ' + JSON.stringify(R.lang));
   if (errs.length) fail.push('sayfa hatası: ' + [...new Set(errs)].join(' | '));
   await b.close();
   console.log(JSON.stringify(R));
