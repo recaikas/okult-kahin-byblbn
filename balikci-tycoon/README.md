@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v2.2** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v2.2.1** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -16,6 +16,12 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
 ---
+
+## v2.2.1 — Tabela yazıları tabelaya işlendi
+
+- Liman Meydanı ve Kapalı Pazar tabelalarında ayrı katmanda yüzen ad (ve v2.2'deki çerçeveli etiket) kaldırıldı. Yazı
+  artık tabelaya oyulmuş, harfe benzeyen okunmaz bir karalama (`signScrawl`): dünya pikselleriyle çizilir, yakınlaştırma
+  ve kamerayla birlikte kaymaz.
 
 ## v2.2 — İtibar temposu: bölge tavanı ve yeni eşikler
 

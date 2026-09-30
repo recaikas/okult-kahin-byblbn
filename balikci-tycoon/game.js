@@ -6379,9 +6379,7 @@ function drawProject() {
     var lx = R(pX(p.x, p.y + p.h / 2)), ly = R(pY(p.x, p.y + p.h / 2, 28));
     px(lx - 22, ly - 11, 44, 10, PAL.pnl);
     px(lx - 21, ly - 10, 42, 8, PAL.indigo);
-    px(lx - 17, ly - 8, 10, 1, PAL.gold); px(lx - 5, ly - 8, 14, 1, PAL.gold); px(lx + 11, ly - 8, 6, 1, PAL.gold);   /* v2.2: tabelada karalama yazı */
-    px(lx - 13, ly - 5, 12, 1, '#c9a15e'); px(lx + 1, ly - 5, 9, 1, '#c9a15e');
-    if (dist2(player.x, player.y, p.x, p.y) < 70) uiLabel(p.x, p.y + p.h / 2, 46, NM(project.n), PAL.gold, 0.95);   /* ad tabelanın üstünde etiket */
+    signScrawl(lx - 18, ly - 8, 36, PAL.gold, 29);                                   /* v2.2: tabelaya işlenmiş karalama yazı */
     px(lx - 23, ly + 1, 2, 9, PAL.iron); px(lx + 21, ly + 1, 2, 9, PAL.iron);
     for (var l = 0; l < 6; l++) px(lx - 18 + l * 7, ly - 13, 2, 2, (l + Math.floor(gameT * 2)) % 3 ? '#ffd98f' : '#f0ece0');
   }
@@ -10012,15 +10010,27 @@ function drawWhall() {
   labelAt(o.x, o.y, 30, T('whall'), '#ffd9a8', '🏪');
 }
 var MSIGN = { x: 15.6, y: 3.7 };          /* v1.9.2: köprü çıkışının güneyi — kulübenin önüne düşmez */
+/* tabela yazısı: 3 piksel boylu, harfe benzeyen sütunlar ve kelime boşlukları (okunmaz, tabelaya işlenmiş) */
+function signScrawl(x, y, w, col, seed) {
+  var r = seedRnd(seed || 7), cx = x;
+  while (cx < x + w - 1) {
+    var word = 2 + Math.floor(r() * 4);
+    for (var k = 0; k < word && cx < x + w - 1; k++) {
+      var h = 2 + Math.floor(r() * 2), top = r() < 0.2 ? -1 : 0;
+      px(cx, y + 3 - h + top, 1, h, col);
+      if (r() < 0.55) px(cx + 1, y + (r() < 0.5 ? 0 : 2), 1, 1, col);
+      cx += 2;
+    }
+    cx += 2;
+  }
+}
 function drawMeydanSign() {
   var sx = R(pX(MSIGN.x, MSIGN.y)), sy = R(pY(MSIGN.x, MSIGN.y, 0));
   px(sx, sy - 14, 1, 14, '#4a2f1c');
   px(sx - 10, sy - 18, 22, 7, '#8a5a33'); px(sx - 9, sy - 17, 20, 5, '#a8734a');
-  /* v2.2 — tabelaya ayrı katmanda yazı basılmaz (yakınlaştırmaya göre kayıyordu): oyma çapa + karalama çizgileri;
-     ad, yaklaşınca tabelanın üstünde çerçeveli etiket olarak çıkar */
-  px(sx - 7, sy - 16, 1, 3, '#5a3a1f'); px(sx - 8, sy - 14, 3, 1, '#5a3a1f'); px(sx - 8, sy - 16, 3, 1, '#5a3a1f');
-  px(sx - 3, sy - 16, 5, 1, '#6e4626'); px(sx + 3, sy - 16, 6, 1, '#6e4626'); px(sx - 3, sy - 14, 8, 1, '#6e4626'); px(sx + 6, sy - 14, 3, 1, '#6e4626');
-  if (dist2(player.x, player.y, MSIGN.x, MSIGN.y) < 40) uiLabel(MSIGN.x, MSIGN.y, 24, T('meydan'), PAL.gold, 0.95);
+  /* v2.2 — tabelada ayrı katmanda yazı yok (yakınlaştırmaya göre kayıyordu): yazı tabelaya oyulmuş, harfe benzeyen
+     okunmaz bir karalama olarak dünya pikselleriyle çizilir, tabelayla birlikte hareket eder */
+  signScrawl(sx - 8, sy - 16, 18, '#4a2f1c', 11);
 }
 function pushMeydan(push) {
   push(HUT.x + HUT.y, drawHut);
