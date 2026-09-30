@@ -87,7 +87,7 @@ var STR = {
     envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
     specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
     albMet: 'Tanıştığın özel müşteriler', albLeft: 'Henüz tanışmadığın {n} kişi daha var — her gün 2 özel müşteri gelir.', albNone: 'Henüz kimseyle tanışmadın. Her gün 2 özel müşteri gelir.', albFav: 'Sevdiği',
-    featDay: 'Günün müşterisi: {n}', levelUp: '⭐ Yeni seviye: {t}!', lvlN: 'SEVİYE {l}', lvShort: 'SV {l}', lvBonus: 'Satış primi {p}',
+    featDay: 'Günün müşterisi: {n}', levelUp: '⭐ Yeni seviye: {t}!', lvlN: 'SEVİYE {l}', lvShort: 'SV {l}', lvCap: 'TAVAN', lvCapHint: 'İtibarın Sv{l} tavanında birikiyor. {n} bölgesini açınca seviye atlarsın!', lvCapHintAny: 'İtibarın Sv{l} tavanında birikiyor. Yeni bölge açınca seviye atlarsın!', mCap: 'Tavan: {n} bölge açık → en çok Sv{l}', lvBonus: 'Satış primi {p}',
     areaOpen: '🔓 {n} açıldı!',
     areaLvUp: '🏗️ {n} → Sv.{l}',
     built: '🔨 {n} kuruldu',
@@ -293,7 +293,7 @@ var STR = {
     envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
     specComing: 'A special customer is coming...', daySpec: 'Special customers',
     albMet: 'Special customers you\'ve met', albLeft: '{n} more to meet — 2 special customers visit every day.', albNone: 'You haven\'t met anyone yet. 2 special customers visit every day.', albFav: 'Loves',
-    featDay: 'Customer of the day: {n}', levelUp: '⭐ New rank: {t}!', lvlN: 'LEVEL {l}', lvShort: 'LV {l}', lvBonus: 'Sales bonus {p}',
+    featDay: 'Customer of the day: {n}', levelUp: '⭐ New rank: {t}!', lvlN: 'LEVEL {l}', lvShort: 'LV {l}', lvCap: 'CAP', lvCapHint: 'Your reputation is piling up at the Lv{l} cap. Open {n} to rank up!', lvCapHintAny: 'Your reputation is piling up at the Lv{l} cap. Open a new area to rank up!', mCap: 'Cap: {n} areas open → up to Lv{l}', lvBonus: 'Sales bonus {p}',
     areaOpen: '🔓 {n} unlocked!',
     areaLvUp: '🏗️ {n} → Lv.{l}',
     built: '🔨 {n} built',
@@ -1499,20 +1499,20 @@ var EVENTS = [
    Ofis 40, Lisans 90). Her seviye: satış primi +%2 ve "un" listesindeki açılımlar. */
 var REP_LEVELS = [
   { need: 0,   t: { tr: 'Çırak Balıkçı', en: 'Apprentice' }, un: [] },
-  { need: 10,  t: { tr: 'Tayfa', en: 'Deckhand' },
+  { need: 15, t: { tr: 'Tayfa', en: 'Deckhand' },
     un: [{ tr: 'Balık Pazarı bölgesi', en: 'Fish Market area' }, { tr: 'Esnaf müşteriler', en: 'Merchant customers' }] },
-  { need: 30,  t: { tr: 'İskele Esnafı', en: 'Pier Trader' },
+  { need: 45, t: { tr: 'İskele Esnafı', en: 'Pier Trader' },
     un: [{ tr: 'Fümehane bölgesi', en: 'Smokehouse area' }, { tr: 'Şef ve Kaptan müşteriler', en: 'Chef & Captain customers' }, { tr: 'Reklam Panosu', en: 'Billboard' }, { tr: 'Çakıl Yol (satın alınır)', en: 'Gravel Road (buyable)' }] },
-  { need: 40,  t: { tr: 'Tezgâh Ustası', en: 'Stall Master' },
+  { need: 150, t: { tr: 'Tezgâh Ustası', en: 'Stall Master' },
     un: [{ tr: 'Ticaret Ofisi', en: 'Trade Office' }, { tr: 'Buz Makinesi', en: 'Ice Machine' }] },
-  { need: 60,  t: { tr: 'Pazar Ustası', en: 'Market Master' },
+  { need: 350, t: { tr: 'Pazar Ustası', en: 'Market Master' },
     un: [{ tr: 'Balıkçı Mutfağı bölgesi', en: "Fishermen's Kitchen area" }, { tr: 'VIP müşteriler', en: 'VIP customers' }, { tr: 'Ağ Vinci', en: 'Net Crane' }, { tr: 'Osmanlı Çeşmesi', en: 'Ottoman Fountain' }, { tr: 'Arnavut Kaldırımı (satın alınır)', en: 'Cobblestone Road (buyable)' }] },
-  { need: 90,  t: { tr: 'Kaptan', en: 'Captain' },
+  { need: 700, t: { tr: 'Kaptan', en: 'Captain' },
     un: [{ tr: 'Holding lisansı', en: 'Holding license' }, { tr: 'Balık Heykeli', en: 'Fish Statue' }] },
-  { need: 130, t: { tr: 'Reis', en: 'Skipper' }, un: [{ tr: 'Mendirek Feneri', en: 'Breakwater Lighthouse' }] },
-  { need: 180, t: { tr: 'Liman İşletmecisi', en: 'Harbor Operator' }, un: [{ tr: 'Fenerli Bordür ve Çiçeklik (satın alınır)', en: 'Lamps & Flowerbeds (buyable)' }] },
-  { need: 250, t: { tr: 'Liman Ağası', en: 'Harbor Lord' }, un: [] },
-  { need: 350, t: { tr: 'Karadeniz Efsanesi', en: 'Black Sea Legend' }, un: [] }
+  { need: 1100, t: { tr: 'Reis', en: 'Skipper' }, un: [{ tr: 'Mendirek Feneri', en: 'Breakwater Lighthouse' }] },
+  { need: 1700, t: { tr: 'Liman İşletmecisi', en: 'Harbor Operator' }, un: [{ tr: 'Fenerli Bordür ve Çiçeklik (satın alınır)', en: 'Lamps & Flowerbeds (buyable)' }] },
+  { need: 2800, t: { tr: 'Liman Ağası', en: 'Harbor Lord' }, un: [] },
+  { need: 4500, t: { tr: 'Karadeniz Efsanesi', en: 'Black Sea Legend' }, un: [] }
 ];
 function levelForRep(n) { var l = 1; for (var i = 0; i < REP_LEVELS.length; i++) if (n >= REP_LEVELS[i].need) l = i + 1; return l; }
 function repBonus() { return (repLevel() - 1) * 0.02; }        /* seviye başına satış primi */
@@ -1520,10 +1520,10 @@ function repBonus() { return (repLevel() - 1) * 0.02; }        /* seviye başın
 /* ---------------- AREA (GDD §20-21) ---------------- */
 var AREAS = [
   { id: 'iskele', n: { tr: 'Balıkçı İskelesi', en: 'Fishing Pier' }, x0: 0, y0: 0,  x1: 10, y1: 6,    locked: false, cost: 0,    rep: 0,  lvl: 1, up: [0, 1100, 3400] },
-  { id: 'pazar',  n: { tr: 'Balık Pazarı', en: 'Fish Market' },      x0: 0, y0: 6,  x1: 10, y1: 12,   locked: true,  cost: 1300, rep: 10, lvl: 1, up: [0, 2400, 6800] },
-  { id: 'fume',   n: { tr: 'Fümehane', en: 'Smokehouse' },           x0: 0, y0: 12, x1: 10, y1: 17.5, locked: true,  cost: 4600, rep: 30, lvl: 1, up: [0, 4200, 11000] },
+  { id: 'pazar',  n: { tr: 'Balık Pazarı', en: 'Fish Market' },      x0: 0, y0: 6,  x1: 10, y1: 12,   locked: true,  cost: 1300, rep: 15, lvl: 1, up: [0, 2400, 6800] },
+  { id: 'fume',   n: { tr: 'Fümehane', en: 'Smokehouse' },           x0: 0, y0: 12, x1: 10, y1: 17.5, locked: true,  cost: 4600, rep: 45, lvl: 1, up: [0, 4200, 11000] },
   /* v2.0 — son bölge: palamut + somon → Reis Güveci (kendi ağları, masası, mutfağı, tezgâhı, kadrosu, müdürü) */
-  { id: 'mutfak', n: { tr: 'Balıkçı Mutfağı', en: "Fishermen's Kitchen" }, x0: 0, y0: 17.5, x1: 10, y1: 23.5, locked: true, cost: 9500, rep: 60, lvl: 1, up: [0, 7500, 17000] }
+  { id: 'mutfak', n: { tr: 'Balıkçı Mutfağı', en: "Fishermen's Kitchen" }, x0: 0, y0: 17.5, x1: 10, y1: 23.5, locked: true, cost: 9500, rep: 350, lvl: 1, up: [0, 7500, 17000] }
 ];
 var MAXLV = 3;
 function areaNetMul(z) { return 1 + (AREAS[z].lvl - 1) * 0.18 + (slotEff(z, 'netrate') || 0) + perkSum('netrate') + perkSum('rate'); }
@@ -2360,7 +2360,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0     /* skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0     /* skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -2373,7 +2373,20 @@ var gameT = 0, camX = 0, camY = 0, camTX = 0, camTY = 0;
 function capacity() { return 8 + S.capLvl * 3; }
 function speed() { return 3.1 * Math.pow(1.11, S.spdLvl); }
 function carryW(a) { var w = 0; for (var i = 0; i < a.carry.length; i++) w += itemW(a.carry[i]); return w; }
-function repLevel() { return levelForRep(S.rep); }
+/* v2.2 — BÖLGE TAVANI: açık bölge sayısı seviyenin üst sınırıdır (1 → Sv3, 2 → Sv5, 3 → Sv7, 4 → Sv10).
+   Fazla itibar birikir; yeni bölge açılınca seviyeye dönüşür. Tek tezgâhla Efsane olunamaz. */
+var LEVEL_CAP = [3, 5, 7, 10];
+function openAreaCount() { var n = 0; for (var i = 0; i < AREAS.length; i++) if (!AREAS[i].locked) n++; return Math.max(1, n); }
+function levelCap() { return LEVEL_CAP[Math.min(LEVEL_CAP.length, openAreaCount()) - 1]; }
+function repLevel() { return Math.min(levelForRep(S.rep), levelCap()); }
+function repCapped() { return levelForRep(S.rep) > repLevel(); }
+/* v2.2 — eski kayıt (v6 ve öncesi) itibarını yeni ölçeğe taşı: aynı seviye, seviye içinde aynı oran */
+var REP_OLD = [0, 10, 30, 40, 60, 90, 130, 180, 250, 350];
+function repFromOld(r) {
+  r = +r || 0;
+  for (var i = 0; i < REP_OLD.length - 1; i++) if (r < REP_OLD[i + 1]) return Math.round(REP_LEVELS[i].need + (r - REP_OLD[i]) / (REP_OLD[i + 1] - REP_OLD[i]) * (REP_LEVELS[i + 1].need - REP_LEVELS[i].need));
+  return Math.round(REP_LEVELS[REP_LEVELS.length - 1].need + (r - 350) * 13);
+}
 function repTitle() { return NM(REP_LEVELS[repLevel() - 1].t); }
 function wageTotal() { var w = 0; for (var i = 0; i < workers.length; i++) w += ROLES[workers[i].role].wage * (1 - mgrEff(workers[i].zone, 'wage')); return (w + mgrWages()) * (1 - Math.min(0.5, servEff('wage'))); }
 function upCost(v) { return Math.max(1, Math.round(v * (1 - Math.min(0.45, perkSum('upcost') + servEff('upcost'))))); }
@@ -2445,7 +2458,7 @@ function loadPref() {
 }
 function buildSave() {
   return {
-    v: 6, at: Date.now(), play: Math.round(S.play || 0),
+    v: 7, at: Date.now(), play: Math.round(S.play || 0),
     cash: S.cash, rep: S.rep, capLvl: S.capLvl, spdLvl: S.spdLvl, priceLvl: S.priceLvl,
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
@@ -2519,7 +2532,7 @@ function loadFrom(d) {
   if (!d) return false;
   try {
     /* v1.9.7: elle bozulmuş kayıt — metin, eksi, sonsuz sayılar geçerli aralığa (normal oyunda para eksiye düşmez) */
-    S.cash = numIn(d.cash, 0, 1e13); S.rep = numIn(d.rep, 0, 1e9); S.capLvl = numIn(d.capLvl, 0, 20, true); S.spdLvl = numIn(d.spdLvl, 0, 20, true);
+    S.cash = numIn(d.cash, 0, 1e13); S.rep = numIn(d.rep, 0, 1e9); if (!(d.v >= 7)) S.rep = repFromOld(S.rep);   /* v2.2: yeni itibar ölçeği */ S.capLvl = numIn(d.capLvl, 0, 20, true); S.spdLvl = numIn(d.spdLvl, 0, 20, true);
     S.priceLvl = numIn(d.priceLvl, 0, 20, true); S.served = numIn(d.served, 0, 1e9, true); S.lost = numIn(d.lost, 0, 1e9, true);
     S.caught = numIn(d.caught, 0, 1e10, true); S.tut = numIn(d.tut, 0, 99, true);
     S.play = numIn(d.play, 0, 1e9); S.savedAt = numIn(d.at, 0, 1e14);
@@ -6816,9 +6829,15 @@ function syncHUD(dt) {
   el.rep.textContent = S.rep;
   checkRepLevel();
   var lvl = repLevel();
-  if (el.hRep.dataset.l !== lvl + lang) { el.hRep.dataset.l = lvl + lang; el.hRep.textContent = T('rep') + ' · ' + T('lvShort', { l: lvl }); }
+  var capd = repCapped();
+  if (el.hRep.dataset.l !== lvl + lang + capd) { el.hRep.dataset.l = lvl + lang + capd; el.hRep.textContent = T('rep') + ' · ' + T('lvShort', { l: lvl }) + (capd ? ' · ' + T('lvCap') : ''); }
   var cur = REP_LEVELS[lvl - 1].need, nxt = lvl < REP_LEVELS.length ? REP_LEVELS[lvl].need : cur + 1;
-  el.repfill.style.width = clamp((S.rep - cur) / (nxt - cur) * 100, 0, 100) + '%';
+  el.repfill.style.width = (capd ? 100 : clamp((S.rep - cur) / (nxt - cur) * 100, 0, 100)) + '%';
+  if (capd && S.capHint !== lvl) {                                   /* v2.2: tavan ipucu (seviye başına bir kez) */
+    S.capHint = lvl;
+    var nextA = null; for (var ai = 1; ai < AREAS.length; ai++) if (AREAS[ai].locked) { nextA = AREAS[ai]; break; }
+    notify(nextA ? T('lvCapHint', { l: lvl, n: NM(nextA.n) }) : T('lvCapHintAny', { l: lvl }), 'mid');
+  }
   if (event) {
     el.eventChip.classList.remove('hidden');
     setChipIcon(el.eventIcon, EMO_MAP[event.icon] || 'hamsi');
@@ -7392,6 +7411,7 @@ function renderTab() {
   if (curTab === 'liman') {
     var lvl = repLevel(), nxt = lvl < REP_LEVELS.length ? REP_LEVELS[lvl] : null;
     h += row('⭐', repTitle(), nxt ? (T('mNext') + ': ' + NM(nxt.t) + ' - ' + nxt.need) : T('mMax'), S.rep + '*');
+    if (levelCap() < REP_LEVELS.length) h += row('🔝', T('lvCap'), T('mCap', { n: openAreaCount(), l: levelCap() }), repCapped() ? '⚠' : '');
     h += row('💰', T('money'), T('mWage') + ': ' + money(wageTotal()) + perMin(), money(S.cash));
     for (i = 0; i < AREAS.length; i++) {
       var a = AREAS[i];
@@ -7779,8 +7799,8 @@ document.addEventListener('visibilitychange', function () {
 var ECON = {
   dayLen: 300,            /* 1 Pazar Günü = 5 dk aktif oynanış (§4.1) */
   comm: 0.015,            /* alım/satım komisyonu (§4.4) */
-  officeCost: 18000, officeRep: 40,
-  licenseCost: 90000, licenseRep: 90,
+  officeCost: 18000, officeRep: 150,
+  licenseCost: 90000, licenseRep: 700,
   privScale: 0.25,        /* özel işletme fiyat ölçeği */
   dividendEvery: 4, dividendHealth: 55,
   maxActiveContracts: 3, offerPool: 6,
@@ -11111,6 +11131,7 @@ window.BT = {
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
   zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
+  REP_LEVELS: REP_LEVELS, repLevel: function () { return repLevel(); }, repCapped: function () { return repCapped(); }, notifs: function () { return M ? M.notif.map(function (n) { return n.m; }) : []; },
   canProcess: canProcess, scr: function (x, y, z) { return { x: Math.round(uiX(x, y)), y: Math.round(uiY(x, y, z || 0)) }; }, kitchen: kitchen, COOK_TIME: COOK_TIME, zoneRoles: zoneRoles, customers: customers, FISH: FISH, start: start, hire: hire, toast: toast,
   rebuildCounters: rebuildCounters, buyBuilding: buyBuilding, investProject: investProject,
   setLang: function (l) { setLangTo(l); }, lang: function () { return lang; },
