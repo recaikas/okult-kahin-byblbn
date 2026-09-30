@@ -17,6 +17,18 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## Hikâye (hazırlık) — Dipteki Söz, 12 gün
+
+Oyuna henüz bağlı değil; önce günler tek tek gözden geçirilecek. Test sayfası: `story.html` (canlıda `/story.html`).
+
+- `story.js`: kendi kendine yeten sahne motoru (`window.HK_STORY`). 192×120 piksel sahne, daktilo diyalog, Bereket Ölçeri, atla düğmesi, sonuç kartı.
+- Sekiz mini oyun: seçim, zamanlama çubuğu, denge, sıralı seçim (ezberli), fırça, söyleşi, fener, ritim.
+- 12 gün TR/EN yazıldı: 1 Altın Ok Ucu · 2 Uskumru Tartısı · 3 Son Levrek · 4 Ağdaki Yunus · 5 Höyüğün Hikâyesi · 6 Bekçiye Sofra · 7 Yay ve Kemer · 8 Şahmeran · 9 Hasta Vezir · 10 Fener Gecesi · 11 Ağıt · 12 Bereket Sabahı.
+- Tek gerçek seçim Gün 10'da: söz tutulur ya da bozulur. Bozulursa Gün 11–12 telafi yoluna döner; unvan yine kazanılır, Bereket 8'de kalır.
+- Her gün bir sonuç nesnesi döner (itibar, Bereket, kalıcı etki, eşya, söz parçası, bayrak). Oyuna bağlanınca bunlar kayda işlenecek.
+- `story.html`: dil, Bereket, söz durumu ve mutfak ayarlanır; istenen gün açılır; sonuç kaydı görünür. "Sonuçları sonraki güne taşı" açıkken zincir sırayla oynanabilir.
+- Test: `test-story.js` 12 günü sırayla, bozulan söz dalını ve İngilizceyi oynatır; `story-bot.js` ile her mini oyunun kazanılabildiğini doğrular.
+
 ## v2.3 — Ayrı ses kanalları ve gürültü sınırı
 
 - **Üç kanal:** müzik, efektler (satış, taşıma, arayüz) ve ortam (dalga, martı, iskele çanı) ayrı. Ayarlar › Ses
