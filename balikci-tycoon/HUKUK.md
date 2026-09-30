@@ -42,7 +42,7 @@
 |---|---|---|
 | GitHub deposu `recaikas/okult-kahin-byblbn` | **Herkese açık** (GitHub API: `private: false`). GitHub Pages ile yayınlanıyor. | Lisans ekle (§4). |
 | LICENSE dosyası | **Eklendi** (`balikci-tycoon/LICENSE`, v1.7). Telif sahibi olarak GitHub adın, iletişim `recaizade3145@gmail.com` (v1.8). | İstersen gerçek adınla değiştir. |
-| Depoda başka proje | Kökte ayrı bir Python/Streamlit projesi var (`app.py`, "Okult Kahin"). | Lisansı `balikci-tycoon/` ile sınırla ya da oyunu kendi deposuna taşı (§4.4). |
+| Depoda başka proje | **Kaldırıldı** (v2.0 sonrası): kökteki Streamlit projesi (`app.py`) ve eski remaster klasörü silindi; depoda yalnız oyun var. | — |
 | Commit yazarları | 60 commit'in **44'ü "Claude"** (yapay zekâ aracı) adına, 16'sı `recaikas` adına. | Bundan sonra commit'ler kendi adınla olsun. Yapay zekâ yardımı için "Co-Authored-By" satırı yeterli (§2.4). |
 | İmzalı commit | Yok (5 commit GitHub web imzalı, doğrulanamadı). | İsteğe bağlı: SSH ile commit imzala (§2.2). |
 | Üçüncü taraf varlık | Yalnız **Pixelify Sans** (OFL) ve mobil kabukta **Capacitor + eklentiler** (MIT), **Apache Cordova** ve **AndroidX** (Apache 2.0). Müzik ve sesler Web Audio ile kodda üretiliyor, dosya yok. Grafikler kodla çiziliyor. | `THIRD_PARTY_NOTICES.md` hazır. Hakkında ekranına ekle (§7). |
