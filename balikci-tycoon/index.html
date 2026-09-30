@@ -305,6 +305,9 @@
     border-top-color:var(--edge2);color:var(--ink2);
     padding:10px 4px;font-size:14px;cursor:pointer;font-family:inherit;letter-spacing:1px;
     box-shadow:0 2px 0 rgba(4,12,20,.3)}
+  .vols{display:flex;flex-direction:column;gap:6px;margin:8px 0 2px}
+  .vols label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--ink2)}
+  .vols input[type=range]{width:100%;accent-color:var(--gold);height:22px}
   .seg button.on{background:var(--gold);color:#3a2401;border-color:#7a5406}
   .lbl{font-size:11px;color:var(--ink2);letter-spacing:1.5px;margin-top:10px;display:block}
   .setnote{font-size:11px;color:var(--ink2);margin:4px 0 2px;line-height:1.5;opacity:.85}
@@ -564,7 +567,7 @@
   <div class="card">
     <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v2.2.2</div>
+    <div class="ver">v2.3</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -593,6 +596,11 @@
       <button data-s="0">🔇</button>
       <button data-s="1">🔉</button>
       <button data-s="2" class="on">🔊</button>
+    </div>
+    <div class="vols">
+      <label><span id="volMusL">Müzik</span><input type="range" id="volMusR" min="0" max="100" step="5" value="80"></label>
+      <label><span id="volSfxL">Efektler</span><input type="range" id="volSfxR" min="0" max="100" step="5" value="70"></label>
+      <label><span id="volAmbL">Ortam</span><input type="range" id="volAmbR" min="0" max="100" step="5" value="70"></label>
     </div>
     <span class="lbl" id="setMusic">MÜZİK</span>
     <div class="seg" id="musSeg">
