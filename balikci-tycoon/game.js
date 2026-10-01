@@ -87,6 +87,7 @@ var STR = {
     envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
     specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
     custTitle: '📖 MÜŞTERİ DEFTERİ', custSub: 'Koya gelen herkes. Görmediğin kara gölge, adını söylemeyen ?????. Siparişini bitir, adını öğren.', custStory: 'HİKÂYE', custSpec: 'ÖZEL', custTypes: 'TİPLER', custTap: 'Bir karta dokun.', custNever: 'Henüz koya gelmedi.', custNoName: 'Adını henüz söylemedi. Siparişini tamamla, kendini tanıtsın.', custVisits: 'Kaç kez geldi: {n}', custServed: 'Servis edilen: {n}', custTypeD: 'Sipariş {a}–{b} · sabır {p} sn · fiyat ×{m}', custStoryD: 'Dipteki Söz hikâyesinin bir parçası.', custNewName: '📖 Deftere yazıldı: {n}',
+    lineIng: '{d} malzemesi (tezgâhta satılmaz, mutfağa gider)', helpGot: 'ANLADIM', helpReset: '💡 Sekme ipuçlarını yeniden göster', helpResetD: 'İpuçları sıfırlandı: her sekme ilk açılışta yeniden anlatılacak',
     storyName: 'Dipteki Söz', storyNext: 'Sıradaki: Gün {d} · {t} — bir koy sakini tezgâhına gelecek', storyFin: 'Hikâye tamamlandı. Unvan: Dipteki Sözün Bekçisi', storyBer: 'Bereket Ölçeri', storyBerD: 'ağ verimi {p}%', storyBuffs: 'Kalıcı etkiler', storyFaces: 'Koyun yüzleri', storyDone: '✦ Dipteki Söz tamamlandı: Dipteki Sözün Bekçisi',
     albMet: 'Tanıştığın özel müşteriler', albLeft: 'Henüz tanışmadığın {n} kişi daha var — her gün 2 özel müşteri gelir.', albNone: 'Henüz kimseyle tanışmadın. Her gün 2 özel müşteri gelir.', albFav: 'Sevdiği',
     featDay: 'Günün müşterisi: {n}', levelUp: '⭐ Yeni seviye: {t}!', lvlN: 'SEVİYE {l}', lvShort: 'SV {l}', lvCap: 'TAVAN', lvCapHint: 'İtibarın Sv{l} tavanında birikiyor. {n} bölgesini açınca seviye atlarsın!', lvCapHintAny: 'İtibarın Sv{l} tavanında birikiyor. Yeni bölge açınca seviye atlarsın!', mCap: 'Tavan: {n} bölge açık → en çok Sv{l}', lvBonus: 'Satış primi {p}',
@@ -296,6 +297,7 @@ var STR = {
     envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
     specComing: 'A special customer is coming...', daySpec: 'Special customers',
     custTitle: '📖 CUSTOMER BOOK', custSub: 'Everyone who visits the cove. Unseen are shadows; those who haven\'t told their name are ?????. Finish their order to learn it.', custStory: 'STORY', custSpec: 'SPECIAL', custTypes: 'TYPES', custTap: 'Tap a card.', custNever: 'Hasn\'t visited the cove yet.', custNoName: 'Hasn\'t told you their name yet. Complete their order and they\'ll introduce themselves.', custVisits: 'Visits: {n}', custServed: 'Served: {n}', custTypeD: 'Order {a}–{b} · patience {p}s · price ×{m}', custStoryD: 'Part of The Promise Below.', custNewName: '📖 Added to the book: {n}',
+    lineIng: 'ingredient for {d} (not sold at a stall, goes to the kitchen)', helpGot: 'GOT IT', helpReset: '💡 Show tab tips again', helpResetD: 'Tips reset: each tab will explain itself again on first open',
     storyName: 'The Promise Below', storyNext: 'Next: Day {d} · {t} — someone from the cove will visit your stall', storyFin: 'Story complete. Title: Keeper of the Promise Below', storyBer: 'Bounty Gauge', storyBerD: 'net yield {p}%', storyBuffs: 'Permanent effects', storyFaces: 'Faces of the cove', storyDone: '✦ The Promise Below complete: Keeper of the Promise Below',
     albMet: 'Special customers you\'ve met', albLeft: '{n} more to meet — 2 special customers visit every day.', albNone: 'You haven\'t met anyone yet. 2 special customers visit every day.', albFav: 'Loves',
     featDay: 'Customer of the day: {n}', levelUp: '⭐ New rank: {t}!', lvlN: 'LEVEL {l}', lvShort: 'LV {l}', lvCap: 'CAP', lvCapHint: 'Your reputation is piling up at the Lv{l} cap. Open {n} to rank up!', lvCapHintAny: 'Your reputation is piling up at the Lv{l} cap. Open a new area to rank up!', mCap: 'Cap: {n} areas open → up to Lv{l}', lvBonus: 'Sales bonus {p}',
@@ -2424,7 +2426,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0, lvFloor: 0, names: [], story: null, custSeen: {}, specN: {}, custNewF: false, stallSt: {}     /* skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0, lvFloor: 0, names: [], story: null, custSeen: {}, specN: {}, custNewF: false, stallSt: {}, help: {}     /* skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -2528,7 +2530,7 @@ function buildSave() {
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
     auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
-    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, custSeen: S.custSeen || {}, specN: S.specN || {}, custNewF: S.custNewF ? 1 : 0, stallSt: S.stallSt || {}, ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
+    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, custSeen: S.custSeen || {}, specN: S.specN || {}, custNewF: S.custNewF ? 1 : 0, stallSt: S.stallSt || {}, help: S.help || {}, ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
     areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
@@ -2612,6 +2614,9 @@ function loadFrom(d) {
     S.story = storyLoad(d.story);
     S.custSeen = numMap(d.custSeen); S.specN = numMap(d.specN); S.custNewF = !!d.custNewF;
     S.stallSt = stallLoad(d.stallSt);
+    /* v2.7: ipuçları; eski ve uzun oynanmış kayıtta hepsi görülmüş sayılır (yeni başlayana anlatılır) */
+    S.help = {}; if (d.help && typeof d.help === 'object') { for (var hk in d.help) if (HELP[hk]) S.help[hk] = 1; }
+    else if ((+d.play || 0) > 600) for (var hk2 in HELP) S.help[hk2] = 1;
     S.mgr = Array.isArray(d.mgr) ? d.mgr.map(function (m) { return m && MGR_BUFFS[m.a] && MGR_BUFFS[m.b] ? { n: String(m.n || '').slice(0, 20), a: m.a, b: m.b, wage: +m.wage || 40, look: m.look | 0 } : null; }) : [];
     S.mgrCand = [];
     var chv = Array.isArray(d.ch) ? d.ch : [0, 0, 0];
@@ -2762,6 +2767,7 @@ function anyOverlay() {
   if (retCardOpen()) return true;               /* "Sen yokken…" kartı */
   if (storyOpenNow()) return true;              /* v2.4: hikâye ara sahnesi */
   if (el.custScr && !el.custScr.classList.contains('hidden')) return true;   /* v2.5: müşteri defteri */
+  if (el.helpScr && !el.helpScr.classList.contains('hidden')) return true;   /* v2.7: ilk kez ipucu */
   return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') || !el.privScr.classList.contains('hidden') ||
     !el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden') ||
     !el.stallScr.classList.contains('hidden') || !el.boardScr.classList.contains('hidden') || !el.halScr.classList.contains('hidden') ||
@@ -2778,7 +2784,7 @@ function openSettings(fromMenu) {
   syncSettingsUI(); refreshSaveInfo(); syncPause();
 }
 function openPauseMenu() {
-  renderTab(); el.menuScreen.classList.remove('hidden'); syncPause();
+  renderTab(); el.menuScreen.classList.remove('hidden'); syncPause(); helpOnce('m_' + curTab);
 }
 function saveAndQuit() {
   submitScore(true);
@@ -6825,7 +6831,7 @@ var el = {};
  'pauseBadge', 'pauseTxt', 'saveInfo', 'setSaveInfo', 'saveBtn', 'saveQuitBtn', 'menuSave', 'newBtn', 'setSaveLbl',
  'dayChip', 'dayIcon', 'dayNum', 'dayfill', 'hDay', 'dayBanner', 'dayBannerT', 'dayBannerS',
  'dayScr', 'dayTitle', 'dayRows', 'dayNext', 'dayGo', 'dayStalls',
- 'stallScr', 'stallTitle', 'stallSub', 'stallRows', 'stallGo', 'custScr', 'custTitle', 'custSub', 'custTabs', 'custGrid', 'custDet', 'custGo', 'prepScr', 'prepTitle', 'prepSub',
+ 'stallScr', 'stallTitle', 'stallSub', 'stallRows', 'stallGo', 'helpScr', 'helpT', 'helpB', 'helpGo', 'custScr', 'custTitle', 'custSub', 'custTabs', 'custGrid', 'custDet', 'custGo', 'prepScr', 'prepTitle', 'prepSub',
  'prepDepot', 'prepRows', 'prepGo', 'introScr', 'introCv', 'introSub', 'introNext', 'introSkip', 'introGate',
  'introDots', 'introTap', 'introTag', 'nameScr', 'nameCard', 'nameTitle', 'nameSub', 'nameSign', 'nameIn', 'nameDice', 'nameHint',
  'nameIdeasLbl', 'nameChips', 'nameGo', 'boardScr', 'boardTitle', 'boardSub', 'boardRows', 'boardNote',
@@ -7022,6 +7028,7 @@ function openBar(t) {
     b.classList.toggle('on', b.dataset.t === t);
   });
   renderBar();
+  helpOnce('bar_' + t);                            /* v2.7 */
 }
 function purchase(cost, blocked, fn) {
   if (blocked) { sfx.bad(); return false; }
@@ -7244,7 +7251,7 @@ function buildHot(sub) {
   if (sub === 'dev') { for (i = 0; i < SLOTS.length; i++) if (slotActive(SLOTS[i]) && !SLOTS[i].b && S.cash >= 900) return true; return false; }
   return false;
 }
-function setBuildSub(sub) { buildSub = sub; barSlot = null; cfId = null; renderBar(); sfx.tap(); }
+function setBuildSub(sub) { buildSub = sub; barSlot = null; cfId = null; renderBar(); sfx.tap(); helpOnce('bsub_' + sub); }
 /* v1.3: panel açıkken para/seviye değişince kartların rengi güncellensin (eskiden yalnız alımda yenileniyordu) */
 var barCards = [], barSigLast = '', barSigT = 0;
 function barSig() {
@@ -7437,13 +7444,13 @@ function showDayCard() {
   if (L.next) el.dayNext.innerHTML = T('mktTomorrow') + '<br><small>' + T('mktExpect') + '</small>';
   el.dayGo.textContent = L.next ? T('goPrep') : T('goNextDay');
   el.dayScr.classList.remove('hidden');
-  syncPause();
+  syncPause(); helpOnce('day');
 }
 /* §4.2 Pazar sabahı hazırlığı — yalnız bu pazar için geçici hedef/öncelik */
 function showPrepCard() {
   renderPrep();
   el.prepScr.classList.remove('hidden');
-  syncPause();
+  syncPause(); helpOnce('prep');
 }
 /* v2.1: Pazar hazırlık ekranı — hedef stok düzenleme kalktı, artık tezgâh durumu gösterir */
 function renderPrep() {
@@ -7516,7 +7523,7 @@ function renderStallScreen() {
 function openStallScreen() {
   renderStallScreen();
   el.stallScr.classList.remove('hidden');
-  syncPause();
+  syncPause(); helpOnce('stall');
 }
 function closeStallScreen() {
   markStallsSeen();
@@ -7663,7 +7670,9 @@ function renderTab() {
     for (i = 0; i < LINES.length; i++) {
       var L = LINES[i], F = FISH[L.f];
       var open = fishReady(L.f);
-      var why = !canSell(L.f) ? T('lineLocked', { s: stallName(L.stall) })
+      var stk = L.stall || (L.ing && lineOf(L.ing) ? lineOf(L.ing).stall : null);   /* v2.7: Mutfak malzemesinin kendi tezgâhı yok (sekme hata verip açılmıyordu) */
+      var why = L.ing ? (lineLive(L.f) ? T('lineIng', { d: NM(FISH[L.ing].n) }) : T('lineLocked', { s: NM(AREAS[spots[L.src].z].n) }))
+        : !canSell(L.f) ? T('lineLocked', { s: stk ? stallName(stk) : NM(AREAS[spots[L.src].z].n) })
         : (!canProduce(L.f) ? T('lineLocked', { s: NM(AREAS[spots[L.src].z].n) }) : T('lineOpen'));
       h += row(open ? '🐟' : '🔒', (i + 1) + '. ' + NM(F.n) + (open ? '' : ' 🔒'),
         why + ' • ' + T('mWeight') + ' ' + F.w + ' • ' + T('mCut') + ' ' + F.cut.toFixed(2) + 's • ' + F.out + ' ' + T('mYield'),
@@ -7685,12 +7694,15 @@ function renderTab() {
     h += row('⭐', T('rep'), T('mRepE'), '');
     h += row('🏗️', T('upArea'), T('mInvestE'), '');
   }
+  if (curTab === 'yardim') h += '<button class="alt" id="helpReset" style="margin-top:8px;width:100%">' + T('helpReset') + '</button>';
   el.tabBody.innerHTML = PX(h);
+  var hr = document.getElementById('helpReset');
+  if (hr) hr.onclick = function () { S.help = {}; sfx.tap(); toast(T('helpResetD')); save(); };
 }
 Array.prototype.forEach.call(document.querySelectorAll('#menuTabs .tab'), function (b) {
   b.onclick = function () {
     Array.prototype.forEach.call(document.querySelectorAll('#menuTabs .tab'), function (o) { o.classList.remove('on'); });
-    b.classList.add('on'); curTab = b.dataset.t; renderTab();
+    b.classList.add('on'); curTab = b.dataset.t; renderTab(); helpOnce('m_' + curTab);
   };
 });
 el.dpClose.onclick = closeBar;
@@ -7714,6 +7726,7 @@ el.menuSave.onclick = function () { manualSave(); };
 el.dayStalls.onclick = function () { openStallScreen(); };
 el.stallGo.onclick = function () { closeStallScreen(); };
 el.custGo.onclick = function () { sfx.tap(); closeCustBook(); };
+el.helpGo.onclick = function () { sfx.tap(); helpClose(); };
 el.dayGo.onclick = function () {
   el.dayScr.classList.add('hidden');
   beginNextDay(false);
@@ -8587,7 +8600,7 @@ var ofTab = 'market', ofSel = null, ofRefresh = 1;
 function openOffice() {
   if (!officeBuilt()) return;
   document.getElementById('officeScr').classList.remove('hidden');
-  renderOffice();
+  renderOffice(); helpOnce('of_' + ofTab);
 }
 function closeOffice() { document.getElementById('officeScr').classList.add('hidden'); }
 function relLevel(rel) { return rel >= 95 ? 5 : rel >= 80 ? 4 : rel >= 60 ? 3 : rel >= 40 ? 2 : rel >= 20 ? 1 : 0; }
@@ -8781,7 +8794,7 @@ function renderOffice() {
   if (pb) pb.onclick = function () { buyPrivate(); renderOffice(); };
 }
 function setOfTab(t) {
-  ofTab = t;
+  ofTab = t; helpOnce('of_' + t);
   Array.prototype.forEach.call(document.querySelectorAll('#ofTabs .tab'), function (b) { b.classList.toggle('on', b.dataset.t === t); });
   renderOffice();
 }
@@ -9022,7 +9035,7 @@ function openBoard(from) {
   el.startScreen.classList.add('hidden');
   el.menuScreen.classList.add('hidden');
   renderBoard();
-  el.boardScr.classList.remove('hidden');
+  el.boardScr.classList.remove('hidden'); helpOnce('board');
   syncPause(); sfx.tap();
 }
 function closeBoard() {
@@ -9965,7 +9978,7 @@ function halBuy(k) { var it = keyItem(k); return Math.max(1, Math.round(prodValu
 function openHal() {
   if (!WHALL.built) return;
   renderHal();
-  el.halScr.classList.remove('hidden'); syncPause(); sfx.tap();
+  el.halScr.classList.remove('hidden'); syncPause(); sfx.tap(); helpOnce('hal');
 }
 function closeHal() { el.halScr.classList.add('hidden'); syncPause(); }
 function renderHal() {
@@ -10649,6 +10662,66 @@ function updateStory(dt) {
   st.tryT = 2;
   if (storySpawn()) sfxFrom({ x: storyVis.c.x, y: storyVis.c.y }, function () { specSfx(storyVis && specById(storyVis.spec)); });
 }
+
+/* =========================================================
+   v2.7 — İLK KEZ İPUÇLARI: bir sekmeye/panele ilk girişte o sekmenin ne işe yaradığını anlatan kart.
+   Kayıt başına bir kez (S.help). Menü › YARDIM'dan yeniden gösterilebilir. Eski, uzun oynanmış kayıtta hepsi görülmüş sayılır.
+   ========================================================= */
+var HELP = {
+  bar_area: { ic: '🔓', tr: ['YENİ ALAN AÇ', 'Koyu büyüttüğün yer. Her yeni bölge yeni bir balık türü, yeni ağ, kesim masası ve tezgâh getirir.', 'Bölge açmak için para ve yeterli itibar (⭐) gerekir. Gri kart: itibarın henüz yetmiyor.', 'İtibar seviyen, açık bölge sayısıyla sınırlıdır: tavana takıldıysan yeni bölge aç.'],
+              en: ['OPEN NEW AREA', 'Where you grow the cove. Each new zone brings a new fish, a new net, a cutting table and a stall.', 'Opening a zone costs money and enough reputation (⭐). A grey card means your reputation isn\'t there yet.', 'Your reputation level is capped by the number of open zones: if you hit the cap, open a new zone.'] },
+  bar_level: { ic: '⬆️', tr: ['YÜKSELTMELER', 'Seni ve işletmeni hızlandıran her şey burada.', 'Üstte kendi gelişimin (taşıma kapasitesi, hız, pazarlık). Altta bölge seviyesi (ağlar daha hızlı dolar) ve personel.', 'Personel: bir bölgeye hamal, filetocu, tezgâhtar ve tahsildar alınca o bölge kendi kendine çalışır. Kadro tamamlanınca müdür atayabilirsin; maaşlar her dakika kasadan düşer.'],
+               en: ['UPGRADES', 'Everything that speeds up you and your business.', 'At the top: your own growth (carry capacity, speed, bargaining). Below: zone levels (nets fill faster) and staff.', 'Staff: hire a porter, filleter, stall-keeper and cashier for a zone and it runs by itself. With a full crew you can appoint a manager; wages are paid every minute.'] },
+  bar_build: { ic: '🔨', tr: ['YAPI', 'Koyuna yapı ve süs kurduğun yer. Üstteki alt sekmelerle geçiş yaparsın:', '🔨 Geliştirme: boş yapı noktalarına Çay Ocağı, Buz Makinesi gibi destek yapıları. 🏗️ Yükseltme: kurduğun yapıları güçlendirir. 🌺 Dekor: süsler müşteri sabrını artırır. 🏛️ Meydan: Depo, Balık Hali ve Personel Kulübesi.', 'Her kartta ne işe yaradığı yazar; pahalı alımlarda bir kez daha onay istenir.'],
+               en: ['BUILD', 'Where you place buildings and decorations. Switch with the sub-tabs on top:', '🔨 Improve: support buildings like the Tea House or Ice Machine on empty build spots. 🏗️ Upgrade: strengthen what you built. 🌺 Decor: decorations raise customer patience. 🏛️ Square: Depot, Fish Hall and Staff Lodge.', 'Each card says what it does; expensive purchases ask for confirmation.'] },
+  bar_proj: { ic: '🏛️', tr: ['BÜYÜK PROJE', 'Uzun vadeli yatırımlar. Projeye parça parça para koyarsın; aşamalar tamamlandıkça koy değişir ve itibar kazanırsın.', 'Belli bir itibara ulaşınca Ticaret Ofisi de buradan kurulur: borsa, şirketler ve kontratlar oradadır.'],
+              en: ['GRAND PROJECT', 'Long-term investments. You fund a project bit by bit; as stages complete the cove changes and you earn reputation.', 'At a certain reputation the Trade Office is built from here too: the market, companies and contracts live there.'] },
+  bar_serv: { ic: '🏢', tr: ['BİNA', 'Hizmet sahasındaki büyük binalar (restoran, kooperatif, nakliye ofisi…). Her biri kalıcı bir avantaj verir: maaş indirimi, toptancı müşteri, fazla balığı satma gibi.', 'Bir bina seç, sonra haritada boş bir parsel seç. Kurduğun binayı başka parsele ücretsiz taşıyabilirsin.'],
+              en: ['BUILDINGS', 'The big buildings in the service yard (restaurant, cooperative, shipping office…). Each gives a lasting perk: lower wages, wholesale customers, selling surplus fish and more.', 'Pick a building, then pick an empty plot on the map. You can move a building to another plot for free.'] },
+  bsub_decor: { ic: '🌺', tr: ['DEKOR', 'Süsler koyu güzelleştirir ve müşteri sabrını artırır: müşteriler daha uzun bekler, daha az kaçar.'], en: ['DECOR', 'Decorations make the cove prettier and raise customer patience: they wait longer and leave less.'] },
+  bsub_up: { ic: '🏗️', tr: ['YAPI YÜKSELTME', 'Kurduğun destek yapılarını bir üst seviyeye çıkarır; etkileri büyür.'], en: ['BUILDING UPGRADES', 'Takes your support buildings up a level; their effects grow.'] },
+  bsub_meydan: { ic: '🏛️', tr: ['MEYDAN', 'Ortak binalar: Depo (fazla ürünü saklar, tezgâhlara destek taşır), Balık Hali (paletle toptan mal gelir; Hal Hamalı taşır) ve Personel Kulübesi (personel sınırını artırır).'], en: ['SQUARE', 'Shared buildings: Depot (stores surplus, supplies the stalls), Fish Hall (wholesale pallets; the Hall Porter carries them) and Staff Lodge (raises the staff cap).'] },
+  m_liman: { ic: '⚓', tr: ['LİMAN', 'İşletmenin özeti: itibar seviyen ve tavan, para ve maaş gideri, açık bölgeler ve seviyeleri, satış ve kaçan müşteri sayıları.', 'Neyin eksik olduğunu görmek için ilk bakılacak yer.'], en: ['HARBOR', 'Your business at a glance: reputation level and cap, money and wages, open zones and their levels, sales and lost customers.', 'The first place to look when something is missing.'] },
+  m_personel: { ic: '👷', tr: ['PERSONEL', 'Çalışanlarının listesi: kim hangi bölgede, hangi işte, dakikada ne kadar maaş alıyor ve ne kadar taşıyabiliyor. Personeli alt çubuktaki YÜKSELTME sekmesinden alırsın.'], en: ['STAFF', 'Your workers: who is in which zone, doing what, their wage per minute and how much they carry. Hire staff from the UPGRADE tab at the bottom.'] },
+  m_urunler: { ic: '🐟', tr: ['ÜRÜNLER', 'Satabildiğin balıklar ve fiyatları: fileto ve füme değeri, kesim süresi, verim. Kilitli olanın neden kilitli olduğu yazar.'], en: ['PRODUCTS', 'The fish you can sell and their prices: fillet and smoked value, cutting time, yield. Locked ones say why.'] },
+  m_album: { ic: '⭐', tr: ['ALBÜM', 'Tanıştığın özel müşteriler ve Dipteki Söz hikâyesinin durumu (gün, Bereket Ölçeri, kalıcı etkiler).', 'Herkesi görmek için üstteki 📖 Müşteri Defteri\'ne bak.'], en: ['ALBUM', 'Special customers you\'ve met and the state of The Promise Below story (day, Bounty Gauge, permanent effects).', 'For everyone, see the 📖 Customer Book at the top.'] },
+  m_yardim: { ic: '❓', tr: ['YARDIM', 'Oyunun temel döngüsü ve kontroller. İpuçlarını yeniden görmek istersen buradaki düğmeyi kullan.'], en: ['HELP', 'The core loop and the controls. Use the button here to see the tips again.'] },
+  m_basarim: { ic: '🏆', tr: ['BAŞARIMLAR', 'Oynadıkça açılan rozetler. Kilitli olanın nasıl açılacağı yazar.'], en: ['ACHIEVEMENTS', 'Badges you unlock as you play. Locked ones say how to get them.'] },
+  of_market: { ic: '📈', tr: ['PİYASA', 'Koyun borsası: genel endeks ve şirketlerin hisse fiyatları, günlük yüzde değişimleriyle. Bir şirkete dokununca ŞİRKET sekmesinde ayrıntısı açılır.'], en: ['MARKET', 'The cove\'s stock market: the index and each company\'s share price with its daily change. Tap a company to open it in COMPANY.'] },
+  of_co: { ic: '🏢', tr: ['ŞİRKET', 'Seçili şirketin fiyat geçmişi, sağlığı, büyümesi ve riski. Buradan hisse alıp satarsın.', 'Payın %5, %15 ve %51\'e ulaşınca ek avantajlar açılır; ilişkin yüksekse şirketi tamamen satın alabilirsin.'], en: ['COMPANY', 'The selected company\'s price history, health, growth and risk. Buy and sell shares here.', 'Reaching 5%, 15% and 51% unlocks extra perks; with a strong relationship you can take the company over.'] },
+  of_ctr: { ic: '📜', tr: ['KONTRAT', 'Şirketlerin teslim teklifleri: belli sürede belli miktarda ürün teslim et, ödülü ve şirketle ilişki puanını al. Aynı anda alabileceğin kontrat sayısı sınırlı.'], en: ['CONTRACTS', 'Delivery offers from companies: deliver a set amount in time to earn the reward and relationship points. You can only hold a few at once.'] },
+  of_port: { ic: '💼', tr: ['PORTFÖY', 'Elindeki hisseler: kaç adet, ortalama alış fiyatı, şu anki değeri ve kâr/zarar yüzdesi. Altta toplam portföy, kasan ve özel şirket gelirin.'], en: ['PORTFOLIO', 'The shares you hold: count, average buy price, current value and profit/loss. Below: total portfolio, cash and private income.'] },
+  of_news: { ic: '📰', tr: ['HABER', 'Hisse fiyatlarını oynatan haberler; yeşil yükseltir, kırmızı düşürür. Al-sat kararından önce buraya bak.'], en: ['NEWS', 'News that moves share prices; green pushes up, red pulls down. Check it before you trade.'] },
+  of_hold: { ic: '🏦', tr: ['HOLDİNG', 'Toplam değerin: liman varlığın, portföyün ve bağlı ortaklıkların. Arada çıkan özel şirket tekliflerini satın alırsan her gün gelir getirir.'], en: ['HOLDING', 'Your total worth: harbor assets, portfolio and subsidiaries. Private company offers that pop up bring daily income if you buy them.'] },
+  stall: { ic: '🐟', tr: ['TEZGÂHLAR', 'Her tezgâhın bugünkü geliri, gideri ve net kazancı. Oklar düne göre artışı (▲) ya da azalışı (▼) gösterir.', 'Tezgâha dokununca ayrıntı açılır. Yetişemediğin tezgâhı KAPALI yap: o tezgâha müşteri gelmez, ağ o türü üretmez.'], en: ['STALLS', 'Each stall\'s income, expense and net today. Arrows show the rise (▲) or fall (▼) versus yesterday.', 'Tap a stall for details. Switch OFF a stall you can\'t keep up with: no customers come and its net stops.'] },
+  cust: { ic: '📖', tr: ['MÜŞTERİ DEFTERİ', 'Koya gelen herkesin koleksiyonu. Hiç görmediğin kara gölgedir (???). Gördüğün ama adını bilmediğin ?????\'dır.', 'Bir özel müşterinin siparişini tamamla: kendini tanıtır, adı deftere yazılır. Kartlara dokununca ayrıntı çıkar.'], en: ['CUSTOMER BOOK', 'A collection of everyone who visits the cove. Unseen ones are shadows (???). Seen but unnamed ones are ?????.', 'Complete a special customer\'s order and they introduce themselves; the name goes in the book. Tap a card for details.'] },
+  hal: { ic: '📦', tr: ['BALIK HALİ', 'Toptan mal gelen yer. Paletleri sen taşıyamazsın; Hal Hamalı alır ve depoya ya da tezgâhlara götürür. Hamal yoksa mal doğrudan depoya iner.'], en: ['FISH HALL', 'Where wholesale goods arrive. You can\'t carry the pallets; the Hall Porter takes them to the depot or the stalls. Without one, goods go straight to the depot.'] },
+  chapter: { ic: '🪜', tr: ['BÖLÜM HEDEFİ', 'Bu bölümü bitirmek için yapman gerekenlerin listesi. Her satır neyin eksik olduğunu söyler; hepsi dolunca bölüm kapanır.'], en: ['CHAPTER GOAL', 'Everything you need to finish this chapter. Each row tells you what\'s missing; fill them all and the chapter closes.'] },
+  prep: { ic: '🧺', tr: ['PAZAR GÜNÜ', 'Bugün pazar: daha çok müşteri gelir. Başlamadan önce yalnız bu pazar için hangi balığa öncelik vereceğini ve hedef stokları ayarla.'], en: ['MARKET DAY', 'It\'s market day: more customers come. Before it starts, set priorities and target stock for this market only.'] },
+  day: { ic: '🌙', tr: ['GÜN SONU', 'Günün özeti: gelir, satış, kaçan müşteri, en çok satan ve en çok tükenen ürün. Yarına ne yapacağını buradan anlarsın.'], en: ['END OF DAY', 'The day in numbers: income, sales, lost customers, best seller and what ran out. Use it to plan tomorrow.'] },
+  board: { ic: '🏅', tr: ['SKOR TABLOSU', 'Diğer oyuncuların işletmeleriyle karşılaştırma. Sıralama toplam kazanca göre.'], en: ['LEADERBOARD', 'Compare with other players\' businesses. Ranked by total earnings.'] }
+};
+var helpQ = [];
+function helpOff() { return !!window.HK_HELP_OFF; }
+function helpOnce(key) {
+  if (helpOff() || !HELP[key] || !S.started) return;
+  var seen = S.help || (S.help = {});
+  if (seen[key] || helpQ.indexOf(key) >= 0) return;
+  seen[key] = 1; helpQ.push(key);
+  if (el.helpScr.classList.contains('hidden')) helpShow();
+}
+function helpShow() {
+  var key = helpQ[0]; if (!key) return;
+  var h = HELP[key], L = h[lang] || h.tr;
+  el.helpT.textContent = h.ic + ' ' + L[0];
+  el.helpB.innerHTML = L.slice(1).map(function (x) { return '<p>' + escH(x) + '</p>'; }).join('');
+  el.helpGo.textContent = T('helpGot');
+  el.helpScr.classList.remove('hidden'); syncPause();
+}
+function helpClose() {
+  helpQ.shift(); el.helpScr.classList.add('hidden');
+  if (helpQ.length) helpShow(); else { syncPause(); save(); }
+}
 /* =========================================================
    v2.5 — MÜŞTERİ DEFTERİ: koya gelen herkes bir koleksiyon. Görülmeyen kara gölge "???",
    görülen ama adı bilinmeyen "?????", tanışılan tam kart (meslek, huy, sevdiği balık, kaç kez geldi).
@@ -10688,7 +10761,7 @@ function custBookData() {
 var STORY_FIRST = { k: 1, h: 1, t: 5, a: 6, v: 9 };       /* karakterin hikâyede ilk göründüğü gün */
 function openCustBook() {
   S.custNewF = false; custBtn.classList.remove('new');
-  renderCustBook(); el.custScr.classList.remove('hidden'); syncPause();
+  renderCustBook(); el.custScr.classList.remove('hidden'); syncPause(); helpOnce('cust');
 }
 function closeCustBook() { el.custScr.classList.add('hidden'); syncPause(); save(); }
 function renderCustBook() {
@@ -10779,7 +10852,7 @@ function openChapter() {
   el.chClose.textContent = T('resume');
   S.chSeen = true; S.chSeenPct = Math.floor(pr.p * 100);
   el.chBtn.classList.remove('blink');
-  el.chScr.classList.remove('hidden'); syncPause(); sfx.tap();
+  el.chScr.classList.remove('hidden'); syncPause(); sfx.tap(); helpOnce('chapter');
 }
 /* Bölüm 1 kapanışı — şimdilik sade kart; sinematik ara sahne oyuncuyla birlikte tasarlanacak */
 function chapterPaper() {
@@ -11570,6 +11643,7 @@ window.BT = {
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
   zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
+  help: function () { return { seen: Object.keys(S.help || {}), open: !el.helpScr.classList.contains('hidden'), title: el.helpT.textContent, keys: Object.keys(HELP) }; },
   stallSt: function (k) { var c = counterByKey(k); return c ? stSt(c) : null; }, stallExpPM: function (k) { var c = counterByKey(k); return c ? stallExpPM(c) : 0; }, stallTick: stallTick, stallNewDay: stallNewDay,
   custBook: function () { return custBookData(); }, openCustBook: function () { openCustBook(); }, finishOrder: finishOrder, notifsAll: function () { return el.toast.textContent; },
   story: function () { return { st: S.story, vis: storyVis, on: storyOn(), open: storyOpenNow(), mute: storyMute, netMul: storyNetMul(), name: function (id) { return specName(specById(id)); } }; }, storySet: function (o) { var st = stQ(); for (var k in o) st[k] = o[k]; },
