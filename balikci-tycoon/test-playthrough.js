@@ -151,6 +151,9 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
     await closeBar();
   };
   const hireMgr = async (z) => {
+    /* müdür adaylarının ücreti rastgele (≈8–18 bin): bütçe şansa kalmasın, eksikse tamamlanır (kayda yazılır) */
+    const top = await p.evaluate(() => { const need = 20000 - BT.S.cash; if (need > 0) BT.S.cash += need; return Math.max(0, Math.round(need)); });
+    if (top) log('  (müdür bütçesi +' + top + ')');
     await openTab('level');
     let cs = await cards(); const mc = cs.find(c => /Müdür gerekli/.test(c.t) && c.t.includes(['İskelesi', 'Pazarı', 'Fümehane', 'Mutfağı'][z]));
     if (!mc) { log('  ! müdür kartı yok z' + z, cs.map(c => c.t).filter(t => /Müdür|Devret|OTOMAT/.test(t))); await closeBar(); return; }
