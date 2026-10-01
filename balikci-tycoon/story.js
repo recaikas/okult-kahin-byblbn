@@ -336,6 +336,9 @@
     s: [{ tr: 'ŞAHMERAN', en: 'SHAHMERAN' }, '#2f8a5a', '#fff2b0'], v: [{ tr: 'HASTA VEZİR', en: 'THE SICK VIZIER' }, '#2a3050', '#e8cdb2'],
     d: [{ tr: 'YUNUS', en: 'DOLPHIN' }, '#6a8ab0', '#fff']
   };
+  /* isimler: koy halkı ilk karşılaşmada "?????"; kendini tanıttığı (ya da biri adını söylediği) satırda açılır */
+  var NAMED = { a: 1, h: 1, k: 1, t: 1, s: 1, v: 1 };
+  function learn(list) { String(list).split(',').forEach(function (k) { if (NAMED[k]) CTX.known[k] = 1; }); }
   function $(id) { return el[id]; }
   function build() {
     if (!document.getElementById('hkstCss')) { var st = document.createElement('style'); st.id = 'hkstCss'; st.textContent = CSS; document.head.appendChild(st); }
@@ -371,7 +374,7 @@
     el.segs.innerHTML = h; el.berL.textContent = tx(UI.ber);
   }
   function say(w, t) {
-    var m = WHO[w] || WHO.n; el.who.textContent = tx(m[0]); el.who.style.background = m[1]; el.who.style.color = m[2];
+    var m = WHO[w] || WHO.n; el.who.textContent = NAMED[w] && !CTX.known[w] ? '?????' : tx(m[0]); el.who.style.background = m[1]; el.who.style.color = m[2];
     TY = { on: true, text: t, i: 0, acc: 0, delay: 0.03, who: w }; S.talk = w === 'n' ? null : w; el.txt.textContent = ''; el.nx.hidden = true;
   }
   function endTyping() { TY.on = false; S.talk = null; el.nx.hidden = false; el.txt.textContent = TY.text; }
@@ -391,6 +394,7 @@
     if (s.it) for (var r in s.it) if (C[r]) C[r].item = s.it[r] || null;
     if (s.sit) for (var u in s.sit) if (C[u]) C[u].sit = !!s.sit[u];
     if (s.fx) s.fx.split(',').forEach(function (f) { if (FX[f]) FX[f](); });
+    if (s.learn) learn(s.learn);
     say(s.w || 'n', tx(s.t));
   }
   function tap() { if (mode !== 'dlg') return; if (TY.on) { TY.i = TY.text.length; endTyping(); } else next(); }
@@ -398,7 +402,7 @@
     if (mode === 'dlg' && SEQ) { TY.on = false; S.talk = null; var list = SEQ.list, e = SEQ.end; for (var i = SEQ.i + 1; i < list.length; i++) applyQuiet(list[i]); SEQ = null; if (e) e(); }
     else if (mode === 'mini' && MG) MG.finish(true);
   }
-  function applyQuiet(s) { if (typeof s === 'function') s = s(CTX); if (!s) return; if (s.bg) S.bg = s.bg; if (s.show) s.show.split(',').forEach(function (k) { if (C[k]) C[k].vis = true; }); if (s.hide) s.hide.split(',').forEach(function (k) { if (C[k]) C[k].vis = false; }); }
+  function applyQuiet(s) { if (typeof s === 'function') s = s(CTX); if (!s) return; if (s.learn) learn(s.learn); if (s.bg) S.bg = s.bg; if (s.show) s.show.split(',').forEach(function (k) { if (C[k]) C[k].vis = true; }); if (s.hide) s.hide.split(',').forEach(function (k) { if (C[k]) C[k].vis = false; }); }
   var FX = {
     shake: function () { S.shake = 0.6; }, flash: function () { S.flash = 0.7; }, ding: function () { sfx('ding'); }, kopuz: function () { sfx('kopuz'); S.shake = 0.2; },
     steam: function () { S.steam = true; }, nosteam: function () { S.steam = false; }, bars: function () { S.barsT = 1; }, nobars: function () { S.barsT = 0; },
@@ -643,8 +647,8 @@
     adil: { n: { tr: 'Adil Tezgâh', en: 'Fair Stall' }, d: { tr: 'Kalıcı · satış fiyatı +%4', en: 'Permanent · sale price +4%' } },
     sert: { n: { tr: 'Sert Tezgâh', en: 'Stern Stall' }, d: { tr: 'Kalıcı · müşteri akışı +%6', en: 'Permanent · customer flow +6%' } },
     muhafiz: { n: { tr: 'Koy Muhafızı', en: 'Cove Guardian' }, d: { tr: 'Kalıcı · fırtına günü müşteri kaybı yarıya iner, mutfak %10 hızlı', en: 'Permanent · storm-day customer loss halved, kitchen 10% faster' } },
-    altinok: { n: { tr: 'Altın Ok', en: 'Golden Arrow' }, d: { tr: 'Kalıcı · nadir balık şansı biraz artar', en: 'Permanent · slightly higher rare-fish chance' } },
-    denizsozu: { n: { tr: 'Deniz Sözü', en: 'Sea Promise' }, d: { tr: 'Kalıcı · nadir balık şansı biraz artar; yunus iskelede görünür', en: 'Permanent · slightly higher rare-fish chance; the dolphin visits the pier' } },
+    altinok: { n: { tr: 'Altın Ok', en: 'Golden Arrow' }, d: { tr: 'Kalıcı · bütün ağlar %3 daha hızlı dolar', en: 'Permanent · all nets fill 3% faster' } },
+    denizsozu: { n: { tr: 'Deniz Sözü', en: 'Sea Promise' }, d: { tr: 'Kalıcı · bütün ağlar %3 daha hızlı dolar', en: 'Permanent · all nets fill 3% faster' } },
     bekci: { n: { tr: 'Dipteki Sözün Bekçisi', en: 'Keeper of the Promise Below' }, d: { tr: 'Unvan · kazanılan itibar +%5', en: 'Title · reputation gains +5%' } }
   };
   var ITEMS = {
@@ -667,11 +671,12 @@
   DAYS[1] = {
     title: { tr: 'Altın Ok Ucu', en: 'The Golden Arrowhead' }, when: { tr: 'şafak · 1 dk', en: 'dawn · 1 min' },
     open: [
-      L('n', 'Şafak. Ağlar ağır geliyor; Kalender ile Hacer Teyze iskelede balığı ayıklıyor.', 'Dawn. The nets come up heavy; Kalender and Aunt Hacer sort the catch on the pier.', { bg: 'dock', show: 'h,k,y', pos: { h: [40, 1], k: [150, -1], y: [96, 1] }, cam: [96, 60, 1], cut: 1, fx: 'bars' }),
+      L('n', 'Şafak. Tezgâhına iki kişi geliyor: başörtülü yaşlı bir kadın ve asık suratlı bir balıkçı. Ellerinde ağdan yeni çıkmış balık.', 'Dawn. Two people come to your stall: an old woman in a headscarf and a sullen fisherman, carrying fish fresh from the net.', { bg: 'dock', show: 'h,k,y', pos: { h: [40, 1], k: [150, -1], y: [96, 1] }, cam: [96, 60, 1], cut: 1, fx: 'bars' }),
       L('k', 'Bu da ne? Balıkların arasında parlıyor...', 'What\'s this? Something\'s shining among the fish...', { fx: 'glint', cam: [150, 86, 2.4] }),
       L('n', 'Üç kenarlı, altından bir ok ucu. Eski, ama pırıl pırıl.', 'A three-edged arrowhead of gold. Old, yet gleaming.', { cam: [158, 90, 3] }),
       L('k', 'Bizim değil bu. Geri atın denize, uğursuzluk getirir.', 'That\'s not ours. Throw it back, it brings bad luck.', { ex: { k: 'a' }, cam: [150, 80, 2] }),
-      L('h', 'Dur Kalender! Deniz vermişse bir bildiği vardır. Tut şunu evladım.', 'Wait, Kalender! If the sea gave it, it knows why. Hold it, dear.', { cam: [40, 80, 2] }),
+      L('h', 'Dur Kalender! Deniz vermişse bir bildiği vardır. Tut şunu evladım.', 'Wait, Kalender! If the sea gave it, it knows why. Hold it, dear.', { cam: [40, 80, 2], learn: 'k' }),
+      L('k', 'Hacer Teyze, sen de her şeye bir anlam bulursun...', 'Aunt Hacer, you find a meaning in everything...', { ex: { k: 't' }, cam: [150, 80, 2], learn: 'h' }),
       L('n', 'İskeledeki su kovasında, kimse dokunmadan halkalar açılıyor.', 'In the bucket on the pier, rings spread on the water though no one touches it.', { cam: [96, 70, 1.5], fx: 'low' })
     ],
     mini: { type: 'choice', title: { tr: 'OK UCU', en: 'ARROWHEAD' }, q: { tr: 'Ok ucunu ne yapacaksın?', en: 'What will you do with the arrowhead?' },
@@ -756,7 +761,8 @@
   DAYS[5] = {
     title: { tr: 'Höyüğün Hikâyesi', en: 'The Tale of the Mound' }, when: { tr: 'gün batımı · 1 dk', en: 'sunset · 1 min' },
     open: [
-      L('n', 'Temel Dede seni koyun arkasındaki höyüğe çıkarıyor. Balbal taşları gölge salıyor.', 'Grandpa Temel takes you up the mound behind the cove. The balbal stones cast long shadows.', { bg: 'mound_dusk', show: 't,y', pos: { t: [120, -1], y: [80, 1] }, cam: [100, 60, 1], cut: 1, fx: 'bars' }),
+      L('n', 'Ak sakallı bir ihtiyar tezgâhına uğruyor, seni koyun arkasındaki höyüğe çıkarıyor. Balbal taşları gölge salıyor.', 'A white-bearded old man stops by your stall and takes you up the mound behind the cove. The balbal stones cast long shadows.', { bg: 'mound_dusk', show: 't,y', pos: { t: [120, -1], y: [80, 1] }, cam: [100, 60, 1], cut: 1, fx: 'bars' }),
+      L('t', 'Bana Temel Dede derler. Bu koyun en yaşlısıyım; masalları da ben bilirim.', 'They call me Grandpa Temel. I\'m the oldest in this cove, so the tales are mine to tell.', { cam: [120, 76, 2.4], learn: 't' }),
       L('t', 'Çok eskiden bu topraklarda yarı kadın, yarı yılan bir ana yaşarmış derler.', 'They say that long ago a mother, half woman and half serpent, lived in these lands.', { cam: [120, 76, 2.4] }),
       L('t', 'Oğullarına bir yay bırakmış: "Bu yayı geren, bu kemeri kuşanan kalsın bu toprakta."', 'She left her sons a bow: "Who draws this bow and girds this belt, let him keep this land."', { fx: 'kopuz' }),
       L('t', 'Yunanlı bir yazıcı da böyle bir şey yazmış, ama o bizim ağzımızdan duymadı. Hadi, şu toprağı bir temizle.', 'A Greek writer wrote something like it, but he never heard it from our lips. Come, clear that soil.', { cam: [45, 86, 2.6] })
@@ -792,9 +798,9 @@
         : [L('n', 'Sıra karıştı, yemek de biraz soğudu. Ama niyet belliydi.', 'The order slipped and the food cooled a little. But your intent was clear.', { cam: [130, 80, 3] }), L('a', 'Sıra yanlış, yemek soğuk... Ama kimse bana kase uzatmamıştı.', 'Wrong order, cold food... But no one had ever offered me a bowl.', { ex: { a: 'h' } })];
       return pre.concat([
         L('n', 'Kaseyi iki eliyle aldı. Bir kaşık, bir kaşık daha.', 'He takes the bowl with both hands. One spoonful, then another.', { it: { y: null, a: 'bowl' }, p: { y: 'idle', a: 'hold' }, ex: { a: 'h' }, cam: [124, 82, 3], fx: 'eat' }),
-        L('a', 'Adım Alp Er Tunga. Yayı bu kıyıda gerdiğim günden beri nöbetteyim.', 'My name is Alp Er Tunga. I have kept watch since the day I drew my bow on this shore.', { fx: 'noeat', it: { a: null }, p: { a: 'knees' }, cam: [130, 80, 3] }),
+        L('a', 'Adım Alp Er Tunga. Yayı bu kıyıda gerdiğim günden beri nöbetteyim.', 'My name is Alp Er Tunga. I have kept watch since the day I drew my bow on this shore.', { learn: 'a', fx: 'noeat', it: { a: null }, p: { a: 'knees' }, cam: [130, 80, 3] }),
         L('y', 'Nöbet kimin için?', 'Whose watch?', { cam: [98, 80, 3] }),
-        L('a', 'Anam için. Dipte yaşar. Yılanların şahı derler ona: Şahmeran.', 'My mother\'s. She dwells below. They call her the queen of serpents: Shahmeran.', { cam: [130, 80, 3], fx: 'kopuz' }),
+        L('a', 'Anam için. Dipte yaşar. Yılanların şahı derler ona: Şahmeran.', 'My mother\'s. She dwells below. They call her the queen of serpents: Shahmeran.', { learn: 's', cam: [130, 80, 3], fx: 'kopuz' }),
         L('a', 'Söz unutuldu, ağıtım susuldu. Bereket çekiliyor. Yarın yayı nasıl gerdiğimi de anlatırım.', 'The promise was forgotten, my lament fell silent. The bounty ebbs. Tomorrow I\'ll show you how I draw the bow.', { ex: { a: 't' } }),
         L('n', 'Ağlardaki balıkların nereye gittiğini ilk kez anladın.', 'For the first time you understand where the fish in your nets have gone.', { cam: [96, 60, 1], fx: 'nosteam' })
       ]);
@@ -854,6 +860,7 @@
     title: { tr: 'Hasta Vezir', en: 'The Sick Vizier' }, when: { tr: 'öğleden sonra · 1 dk', en: 'afternoon · 1 min' },
     open: [
       L('n', 'Kış elbiseli, yüzü solgun bir adam pazara geliyor. Öksürüyor, elinde ağır bir para kesesi.', 'A pale man in winter clothes comes to the market. He coughs, a heavy purse in his hand.', { bg: 'market', show: 'v,y', pos: { v: [140, -1], y: [80, 1] }, it: { v: 'purse' }, cam: [110, 64, 1.4], cut: 1, fx: 'bars' }),
+      L('v', 'Uzak bir sarayın veziriyim. Hastayım; hekimler çaresiz.', 'I am the vizier of a distant palace. I am ill; the physicians are helpless.', { cam: [140, 76, 2.6], learn: 'v' }),
       L('v', 'Hayatım yılanların şahının elinde. Onu bulan, dilediğini alır.', 'My life lies in the hands of the serpent queen. Whoever finds her may name his price.', { cam: [140, 76, 2.6] }),
       L('v', 'Sen bu koyda yaşıyorsun... Bir şey duydun mu? Gözlerime bak.', 'You live in this cove... Have you heard anything? Look me in the eye.', { ex: { v: 'a' } })
     ],
@@ -966,7 +973,8 @@
     if (running) return false;
     var D = DAYS[n]; if (!D) return false;
     HOST = host || {}; LANG = HOST.lang === 'en' ? 'en' : 'tr'; onDone = HOST.onDone || null;
-    CTX = { day: n, ber: HOST.ber || 6, flags: HOST.flags || {}, kitchen: !!HOST.kitchen };
+    CTX = { day: n, ber: HOST.ber || 6, flags: HOST.flags || {}, kitchen: !!HOST.kitchen, known: {} };
+    (HOST.known || []).forEach(function (k) { CTX.known[k] = 1; });
     AC = HOST.audio || null; DST = HOST.dst || (AC ? AC.destination : null);
     freshState(); build(); fit(); hud(); running = true; last = performance.now(); raf = requestAnimationFrame(frame);
     el.skip.textContent = tx(UI.skip);
@@ -978,7 +986,7 @@
       play(openList, function () {
         startMini(D.mini, function (r1) {
           var go2 = D.mini2 ? D.mini2(r1, CTX) : null;
-          function after(r2) { play(D.after(r1, r2, CTX), function () { var res = D.res(r1, r2, CTX); res.day = n; res.r1 = r1; res.r2 = r2 || null; if (r1.skipped || (r2 && r2.skipped)) res.skipped = true; result(res); }); }
+          function after(r2) { play(D.after(r1, r2, CTX), function () { var res = D.res(r1, r2, CTX); res.day = n; res.known = Object.keys(CTX.known); res.r1 = r1; res.r2 = r2 || null; if (r1.skipped || (r2 && r2.skipped)) res.skipped = true; result(res); }); }
           if (go2) { var pre = D.pre2 ? D.pre2(r1, CTX) : []; play(pre, function () { startMini(go2, after); }); }
           else after(null);
         });
@@ -986,7 +994,22 @@
     }, RM ? 400 : 1600);
     return true;
   }
+  /* oyunda koya gerçekten gelen karakterler (specials.js biçiminde görünüş) ve her günün tezgâha gelen ziyaretçisi */
+  var CAST = {
+    k: { n: { tr: 'Kalender', en: 'Kalender' }, job: { tr: 'Balıkçı', en: 'Fisherman' }, sfx: 'hmm', fx: '?', fxc: '#9fd3b0',
+      look: { coat: '#557563', coat2: '#6a8a78', beanie: '#34463a', must: true, hair: '#2a2018', hairStyle: 0, sk: 1, pants: '#2e3a34' } },
+    h: { n: { tr: 'Hacer Teyze', en: 'Aunt Hacer' }, job: { tr: 'Komşu', en: 'Neighbour' }, sfx: 'sigh', fx: '♥', fxc: '#ff8a6a',
+      look: { short: 1, belly: 1, coat: '#c8553d', coat2: '#d8704f', scarf: '#7a2a4a', scarfDots: true, hair: '#8a8a86', hairStyle: 6, sk: 0, skirt: '#4a3a5a' } },
+    t: { n: { tr: 'Temel Dede', en: 'Grandpa Temel' }, job: { tr: 'Koyun yaşlısı', en: 'Cove elder' }, sfx: 'hmm', fx: '~', fxc: '#e8dcc0',
+      look: { coat: '#8a7a5a', coat2: '#9e8e6a', cap: '#3a3028', beard: true, hair: '#e8e4da', hairStyle: 4, sk: 1, pants: '#4a4034' } },
+    a: { n: { tr: 'Alp Er Tunga', en: 'Alp Er Tunga' }, job: { tr: 'Yabancı', en: 'Stranger' }, sfx: 'drum', fx: '✦', fxc: '#e4b94a',
+      look: { tall: 1, coat: '#7a3a24', coat2: '#94502e', beanie: '#c0392b', sash: '#e4b94a', cape: '#4a2a1a', must: true, hair: '#1d1713', hairStyle: 0, sk: 2, pants: '#3a2a1a' } },
+    v: { n: { tr: 'Hasta Vezir', en: 'The Sick Vizier' }, job: { tr: 'Yolcu', en: 'Traveller' }, sfx: 'sigh', fx: '·', fxc: '#b8c0e0',
+      look: { coat: '#2a3050', coat2: '#3a4268', turban: '#e8e2d2', chain: true, hair: '#4a3a2a', hairStyle: 0, sk: 0, pants: '#1e2238', bigBag: '#6b4a2a' } }
+  };
+  var VISIT = [null, 'k', 'h', 'h', 'k', 't', 'h', 'a', 'a', 'v', 'v', 't', 'a'];
   window.HK_STORY = {
+    cast: CAST, visitor: function (n) { return VISIT[n] || null; },
     days: 12, open: open, isOpen: function () { return running; }, close: function () { destroy(); },
     title: function (n, lang) { var l = LANG; LANG = lang || LANG; var t = DAYS[n] ? tx(DAYS[n].title) : ''; LANG = l; return t; },
     buffs: BUFFS, items: ITEMS, pieces: PIECES,

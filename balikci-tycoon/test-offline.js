@@ -6,6 +6,8 @@ const EMPTY_CFG = "window.BT_ONLINE = { url: '', key: '' };";
 /* v1.9: ilk açılıştaki dil seçimi eski testlerin akışını bozmasın (kendi testi test-ilkacilis.js ayrı bağlamda) */
 const offline = async ctx => {
   await ctx.addInitScript(() => { try { if (!localStorage.getItem('balikci_langpick')) localStorage.setItem('balikci_langpick', '1'); } catch (e) { } });
+  /* v2.4: hikâye ziyaretçisi oyunu ara sahneyle durdurur; onu sınamayan testlerde kapalı (test-story-game.js açar) */
+  await ctx.addInitScript(() => { window.HK_STORY_OFF = 1; });
   return ctx.route('**/config.js', r => r.fulfill({ contentType: 'application/javascript', body: EMPTY_CFG }));
 };
 const chromium = Object.create(pw.chromium);

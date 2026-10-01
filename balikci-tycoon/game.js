@@ -86,6 +86,7 @@ var STR = {
     envUp1: '🌿 Liman canlanıyor: yol çakıl oldu, ağaçlar yeşeriyor', envUp2: '🪨 Yol arnavut kaldırımı oldu, sahil toparlandı',
     envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
     specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
+    storyName: 'Dipteki Söz', storyNext: 'Sıradaki: Gün {d} · {t} — bir koy sakini tezgâhına gelecek', storyFin: 'Hikâye tamamlandı. Unvan: Dipteki Sözün Bekçisi', storyBer: 'Bereket Ölçeri', storyBerD: 'ağ verimi {p}%', storyBuffs: 'Kalıcı etkiler', storyFaces: 'Koyun yüzleri', storyDone: '✦ Dipteki Söz tamamlandı: Dipteki Sözün Bekçisi',
     albMet: 'Tanıştığın özel müşteriler', albLeft: 'Henüz tanışmadığın {n} kişi daha var — her gün 2 özel müşteri gelir.', albNone: 'Henüz kimseyle tanışmadın. Her gün 2 özel müşteri gelir.', albFav: 'Sevdiği',
     featDay: 'Günün müşterisi: {n}', levelUp: '⭐ Yeni seviye: {t}!', lvlN: 'SEVİYE {l}', lvShort: 'SV {l}', lvCap: 'TAVAN', lvCapHint: 'İtibarın Sv{l} tavanında birikiyor. {n} bölgesini açınca seviye atlarsın!', lvCapHintAny: 'İtibarın Sv{l} tavanında birikiyor. Yeni bölge açınca seviye atlarsın!', mCap: 'Tavan: {n} bölge açık → en çok Sv{l}', lvBonus: 'Satış primi {p}',
     areaOpen: '🔓 {n} açıldı!',
@@ -292,6 +293,7 @@ var STR = {
     envUp1: '🌿 The harbor comes alive: gravel road, trees turning green', envUp2: '🪨 The road is cobbled now, the shore tidied up',
     envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
     specComing: 'A special customer is coming...', daySpec: 'Special customers',
+    storyName: 'The Promise Below', storyNext: 'Next: Day {d} · {t} — someone from the cove will visit your stall', storyFin: 'Story complete. Title: Keeper of the Promise Below', storyBer: 'Bounty Gauge', storyBerD: 'net yield {p}%', storyBuffs: 'Permanent effects', storyFaces: 'Faces of the cove', storyDone: '✦ The Promise Below complete: Keeper of the Promise Below',
     albMet: 'Special customers you\'ve met', albLeft: '{n} more to meet — 2 special customers visit every day.', albNone: 'You haven\'t met anyone yet. 2 special customers visit every day.', albFav: 'Loves',
     featDay: 'Customer of the day: {n}', levelUp: '⭐ New rank: {t}!', lvlN: 'LEVEL {l}', lvShort: 'LV {l}', lvCap: 'CAP', lvCapHint: 'Your reputation is piling up at the Lv{l} cap. Open {n} to rank up!', lvCapHintAny: 'Your reputation is piling up at the Lv{l} cap. Open a new area to rank up!', mCap: 'Cap: {n} areas open → up to Lv{l}', lvBonus: 'Sales bonus {p}',
     areaOpen: '🔓 {n} unlocked!',
@@ -614,7 +616,7 @@ var AC = null, masterGain = null, soundOn = true, volLvl = 2;   /* 0 kapalı, 1 
 /* v2.3 — üç ayrı kanal: müzik, efektler (satış, taşıma, arayüz), ortam (dalga, martı, çan). Her biri ayarlardan
    ayrı kısılır. Efekt kanalında sıkıştırıcı var: çok tezgâhta aynı anda çalan sesler patlamaz. */
 var VOL = { mus: 0.8, sfx: 0.7, amb: 0.7 };
-var musBus = null, sfxBus = null, ambBus = null, sfxMul = 1, sfxCtx = null;
+var musBus = null, sfxBus = null, ambBus = null, sfxMul = 1, sfxCtx = null, storyMute = false;
 function setupBuses() {
   var comp = AC.createDynamicsCompressor();
   comp.threshold.value = -20; comp.knee.value = 12; comp.ratio.value = 6; comp.attack.value = 0.003; comp.release.value = 0.2;
@@ -627,8 +629,9 @@ function setupBuses() {
 function applyBusVol() {
   if (!AC || !sfxBus) return;
   var t = AC.currentTime;
-  try { musBus.gain.setTargetAtTime(VOL.mus, t, 0.03); sfxBus.gain.setTargetAtTime(VOL.sfx, t, 0.03); ambBus.gain.setTargetAtTime(VOL.amb * 1.4, t, 0.03); }
-  catch (e) { musBus.gain.value = VOL.mus; sfxBus.gain.value = VOL.sfx; ambBus.gain.value = VOL.amb * 1.4; }
+  var q = storyMute ? 0 : 1;                       /* v2.4: ara sahnede oyunun müziği ve ortamı tamamen susar */
+  try { musBus.gain.setTargetAtTime(VOL.mus * q, t, 0.05); sfxBus.gain.setTargetAtTime(VOL.sfx, t, 0.03); ambBus.gain.setTargetAtTime(VOL.amb * 1.4 * q, t, 0.05); }
+  catch (e) { musBus.gain.value = VOL.mus * q; sfxBus.gain.value = VOL.sfx; ambBus.gain.value = VOL.amb * 1.4 * q; }
 }
 var VOLS = [0, 0.22, 0.5];
 var audioReady = false;
@@ -1567,7 +1570,7 @@ var AREAS = [
   { id: 'mutfak', n: { tr: 'Balıkçı Mutfağı', en: "Fishermen's Kitchen" }, x0: 0, y0: 17.5, x1: 10, y1: 23.5, locked: true, cost: 9500, rep: 350, lvl: 1, up: [0, 7500, 17000] }
 ];
 var MAXLV = 3;
-function areaNetMul(z) { return 1 + (AREAS[z].lvl - 1) * 0.18 + (slotEff(z, 'netrate') || 0) + perkSum('netrate') + perkSum('rate'); }
+function areaNetMul(z) { return (1 + (AREAS[z].lvl - 1) * 0.18 + (slotEff(z, 'netrate') || 0) + perkSum('netrate') + perkSum('rate')) * storyNetMul(); }
 function areaStock(z) { return 12 + (AREAS[z].lvl - 1) * 3 + (slotEff(z, 'stock') || 0) + Math.round(perkSum('stock') * 0.5) + servEff('stock'); }
 function areaFlow(z) { return 1 + (slotEff(z, 'flow') || 0) + (project.done ? 0.25 : 0) + perkSum('flow') + mgrEff(z, 'flow'); }
 function queueMax(z) { return Math.min(7, (AREAS[z].lvl >= 3 ? 5 : 4) + servEff('queue')); }
@@ -2401,7 +2404,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0, lvFloor: 0     /* skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0, lvFloor: 0, names: [], story: null     /* skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -2505,7 +2508,7 @@ function buildSave() {
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
     auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
-    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
+    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
     areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
@@ -2584,6 +2587,9 @@ function loadFrom(d) {
     S.hero = cleanHero(d.hero);
     S.autoMin = AUTO_OPTS.indexOf(d.autoMin) >= 0 ? d.autoMin : 0;
     S.met = Array.isArray(d.met) ? d.met.filter(function (q) { return typeof q === 'string'; }) : [];
+    /* v2.4: isimler — eski kayıtta tanışılan herkesin adı bilinir; yeni tanışılan "?????" başlar */
+    S.names = Array.isArray(d.names) ? d.names.filter(function (q) { return typeof q === 'string'; }) : S.met.slice();
+    S.story = storyLoad(d.story);
     S.mgr = Array.isArray(d.mgr) ? d.mgr.map(function (m) { return m && MGR_BUFFS[m.a] && MGR_BUFFS[m.b] ? { n: String(m.n || '').slice(0, 20), a: m.a, b: m.b, wage: +m.wage || 40, look: m.look | 0 } : null; }) : [];
     S.mgrCand = [];
     var chv = Array.isArray(d.ch) ? d.ch : [0, 0, 0];
@@ -2732,6 +2738,7 @@ function anyOverlay() {
   if (!el.askScr.classList.contains('hidden')) return true;   /* onay sorusu */
   if (fbOpen()) return true;                    /* görüş formu */
   if (retCardOpen()) return true;               /* "Sen yokken…" kartı */
+  if (storyOpenNow()) return true;              /* v2.4: hikâye ara sahnesi */
   return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') || !el.privScr.classList.contains('hidden') ||
     !el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden') ||
     !el.stallScr.classList.contains('hidden') || !el.boardScr.classList.contains('hidden') || !el.halScr.classList.contains('hidden') ||
@@ -2739,7 +2746,7 @@ function anyOverlay() {
 }
 function syncPause() {
   paused = S.started && anyOverlay();
-  el.pauseBadge.classList.toggle('hidden', !paused);
+  el.pauseBadge.classList.toggle('hidden', !paused || storyOpenNow());
   if (paused) el.pauseTxt.textContent = T('paused');
 }
 function openSettings(fromMenu) {
@@ -2935,7 +2942,7 @@ function updateKitchen(dt) {
   }
   if (kitchen.cur) {
     kitchen.t += dt * (kitchen.worker ? 1.6 : 1) * (1 + perkSum('procspeed') + perkSum('rate'));
-    if (kitchen.t >= COOK_TIME) {
+    if (kitchen.t >= COOK_TIME / (1 + 0.1 * storyBuff('muhafiz'))) {
       for (var dq = 0; dq < 2; dq++) {                          /* bir tencere = iki porsiyon */
         var dish = { k: 'fileto', f: 'guvec' };
         kitchen.mat.items.push(dish);
@@ -3517,11 +3524,11 @@ function makeOrderFor(c, type) {
   return { k: k, f: f, need: need, got: 0 };
 }
 function queueSlotPos(c, i) { return { x: 10.8 + (c.lane || 0) * 1.7, y: c.y + 0.1 + i * 1.0 }; }
-function patienceMul(z) { return (1 + decorCount() * 0.02) * (1 + mgrEff(z, 'pat')); }
+function patienceMul(z) { return (1 + decorCount() * 0.02) * (1 + mgrEff(z, 'pat')) * (1 + 0.1 * storyBuff('baris')); }
 
 function updateCounter(c, dt) {
   if (!c.open) return;                       /* v2.1: kapalı tezgâha müşteri gelmez */
-  var custMul = (event ? event.custMul : 1) * areaFlow(c.z) * dayCustMul() * (1 + envFlow() + roadFlow()) * rushMul();   /* v1.2: çevre yatırımı; v1.9.3: yol çiçeklikleri + panolar */
+  var custMul = (event ? stormMul(event) : 1) * (1 + 0.06 * storyBuff('sert')) * areaFlow(c.z) * dayCustMul() * (1 + envFlow() + roadFlow()) * rushMul();   /* v1.2: çevre yatırımı; v1.9.3: yol çiçeklikleri + panolar */
   c.spawnT -= dt * custMul;
   var qmax = queueMax(c.z), freeIdx = -1, i;
   for (i = 0; i < qmax; i++) if (!c.slots[i]) { freeIdx = i; break; }
@@ -3609,13 +3616,16 @@ function finishOrder(c, cu) {
   var happy = cu.pat / cu.patMax;
   var unit = prodValue(cu.ord.k, cu.ord.f);
   var pay = Math.round(cu.ord.need * unit * cu.type.mult * (happy > 0.5 ? 1.2 : 1) *
-    (1 + perkSum('custval') + servEff('custval') + repBonus() + (cu.type.id === 'toptanci' ? servEff('wholesale') : 0)) * (1 + mgrEff(c.z, 'value')));
+    (1 + perkSum('custval') + servEff('custval') + repBonus() + (cu.type.id === 'toptanci' ? servEff('wholesale') : 0)) * (1 + mgrEff(c.z, 'value')) * (1 + 0.04 * storyBuff('adil')));
   payout(c, pay, cu.slot);
   noteFishIncome(pay); noteDayIncome(pay); noteDaySale(cu);
   retSale(c, cu, pay);                              /* bölge gelir ortalaması + satış başarımları */
-  if (cu.spec && specById(cu.spec)) { (day.st.spec = day.st.spec || []).push(NM(specById(cu.spec).n)); }
+  if (cu.spec && specById(cu.spec)) {
+    if (S.names.indexOf(cu.spec) < 0) S.names.push(cu.spec);       /* v2.4: işi bitince kendini tanıtır: adı artık bilinir */
+    (day.st.spec = day.st.spec || []).push(NM(specById(cu.spec).n));
+  }
   cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; c.slots[cu.slot] = null; shiftQueue(c);
-  S.served++; S.rep += Math.max(1, Math.round(cu.type.rep * (1 + servEff('rep')))) + mgrEff(c.z, 'rep');
+  S.served++; S.rep += Math.max(1, Math.round(cu.type.rep * (1 + servEff('rep') + 0.05 * storyBuff('bekci')))) + mgrEff(c.z, 'rep');
   var fp = queueSlotPos(c, cu.slot);
   addFloat(fp.x, fp.y - 0.5, '+' + money(pay), '#ffe27a');
   addFloat(fp.x + 0.6, fp.y - 1.1, '+' + cu.type.rep + '*', '#ffd76a');
@@ -7545,10 +7555,11 @@ function renderTab() {
         open && canProcess('fume', L.f) ? T('mSmoked') + ' ' + money(prodValue('fume', L.f)) : '');
     }
   } else if (curTab === 'album') {                 /* v1.1: tanışılan özel müşteriler */
+    h += storyRows(row);                           /* v2.4: Dipteki Söz — ilerleme, Bereket, tanınan yüzler */
     var met = SPECIALS.filter(function (q) { return S.met.indexOf(q.id) >= 0; });
     h += row('⭐', T('albMet'), met.length ? '' : T('albNone'), met.length + '/' + SPECIALS.length);
     met.forEach(function (q) {
-      h += row('★', escH(NM(q.n)) + ' · ' + escH(NM(q.job)), escH(q.trait ? NM(q.trait) : NM(q.hi)), '', T('albFav') + ': ' + NM(FISH[q.fav].n));
+      h += row('★', escH(specName(q)) + ' · ' + escH(NM(q.job)), escH(q.trait ? NM(q.trait) : NM(q.hi)), '', T('albFav') + ': ' + NM(FISH[q.fav].n));
     });
     if (met.length && met.length < SPECIALS.length) h += '<div class="empty">' + T('albLeft', { n: SPECIALS.length - met.length }) + '</div>';
   } else {
@@ -7734,6 +7745,7 @@ function frame(ts) {
   updateMgrJokers(dt);                             /* v1.9.4: yoğun saatte müdürler tezgâhta */                              /* v1.9.2: hizmet sahası yayaları (görsel) */
   updateDay(dt);                    /* v1.2 — gün döngüsü + depo kilidi */
   updateSpecials(dt);               /* v0.9 — özel isimli müşteriler */
+  updateStory(dt);                  /* v2.4 — Dipteki Söz: hikâye ziyaretçisi */
   updateFumeMachines(dt);           /* v1.3 — tezgâh füme makinesi */
   updateChapter(dt);                /* v1.3 — Bölüm 1 hedefi */
   updateEvents(dt);
@@ -10279,7 +10291,7 @@ var SPECIALS = normSpecials(window.BT_SPECIALS);
 var SPEC_RETURN = 14;             /* v1.3: tanıdık özel müşteri kaç günde bir yeniden gelir */
 var SPEC_NORMALS = 3;              /* 1. özel müşteriden önce gelen normal müşteri sayısı */
 var SPEC2_AT = 42;                 /* 2. özel müşteri: gün bitmeden bu kadar saniye önce bildirimle */
-function specById(id) { for (var i = 0; i < SPECIALS.length; i++) if (SPECIALS[i].id === id) return SPECIALS[i]; return null; }
+function specById(id) { for (var i = 0; i < SPECIALS.length; i++) if (SPECIALS[i].id === id) return SPECIALS[i]; return (STORY_SPECS && STORY_SPECS[id]) || null; }
 /* günün iki özel müşterisini seç (dünküler tekrar gelmesin) */
 function pickSpecials() {
   if (!SPECIALS.length) { day.spec = []; day.sp = 4; day.normals = 0; day.popT = 0; return; }   /* specials.js yoksa sistem sessizce kapalı */
@@ -10396,17 +10408,129 @@ function drawSpecialTag(cu) {
     cu.fxT = (cu.fxT || 0) + 0.016;
     if (cu.fxT > 1.3) { cu.fxT = 0; addFloat(cu.x + rnd(-0.3, 0.3), cu.y - 0.6, sp.fx, sp.fxc); }
   }
-  uiLabel(cu.x, cu.y, 44, '★ ' + NM(sp.n) + ' · ' + NM(sp.job), '#ffc94a', 0.95);
+  uiLabel(cu.x, cu.y, 44, (cu.story ? '✦ ' : '★ ') + specName(sp) + ' · ' + NM(sp.job), cu.story ? '#9fe3ff' : '#ffc94a', 0.95);
   if (cu.state === 'wait' && !cu.sndHi) { cu.sndHi = true; specSfx(sp); }                                  /* v1.3: gelişte kendi sesi */
   if (cu.state === 'leave' && cu.happyLeave !== false && !cu.sndBye) { cu.sndBye = true; specSfx(sp); }
   var line = null;
-  if (specTalking(cu)) line = NM(sp.hi);
+  if (specTalking(cu) && !cu.story) line = NM(sp.hi);
   if (cu.state === 'leave' && cu.happyLeave !== false && (cu.byeT || 0) < sayDur(NM(sp.bye))) line = NM(sp.bye);
   if (line) uiLabel(cu.x, cu.y, 56, '“' + line + '”', '#f4e9d2', 0.95);
   if (specTalking(cu)) {                                                           /* söz bitene kadar küçük süre çubuğu */
     var k = clamp((cu.sayT || 0) / specHiDur(cu), 0, 1), bx = R(pX(cu.x, cu.y)) - 10, by = R(pY(cu.x, cu.y, 0)) - 36;
     px(bx, by, 20, 2, 'rgba(20,14,8,.6)'); px(bx, by, R(20 * k), 2, '#ffc94a');
   }
+}
+
+/* =========================================================
+   v2.4 — DİPTEKİ SÖZ: 12 günlük hikâye oyunun içinde.
+   Her oyun gününde (eğitimden sonra) hikâyenin o günkü karakteri koya gerçekten gelir, bir tezgâhın kuyruğuna girer.
+   Tezgâha vardığında ara sahne açılır: oyun durur, oyunun müziği ve ortam sesi susar, sahnenin kendi sesi çalar.
+   Karakterlerin adı ilk başta bilinmez ("?????"); hikâyede kendini tanıttığında açılır. Özel müşteriler de
+   ilk gelişlerinde "?????"dır; siparişi tamamlanınca adını söyler.
+   ========================================================= */
+var STORY_N = 12, STORY_AT = 22, storyVis = null;
+var STORY_SPECS = (function () {
+  var o = {}, c = window.HK_STORY && window.HK_STORY.cast;
+  if (!c) return o;
+  var list = []; for (var k in c) { var d = {}, f; for (f in c[k]) d[f] = c[k][f]; d.id = 'st_' + k; d.hi = '…'; d.bye = { tr: '…', en: '…' }; list.push(d); }
+  normSpecials(list).forEach(function (sp) { o[sp.id] = sp; });
+  return o;
+})();
+function storyOn() { return !!(window.HK_STORY && STORY_SPECS.st_a) && !window.HK_STORY_OFF; }   /* HK_STORY_OFF: yalnız eski testler (oyun durmasın) */
+function storyOpenNow() { return !!(window.HK_STORY && window.HK_STORY.isOpen()); }
+function storyFresh() { return { step: 0, last: 0, ber: 6, flags: {}, buffs: {}, items: [], pieces: [], known: [] }; }
+function stQ() { return S.story || (S.story = storyFresh()); }
+function storyLoad(d) {
+  if (!d || typeof d !== 'object') return null;
+  var o = storyFresh(), k;
+  o.step = clamp(parseInt(d.step, 10) || 0, 0, STORY_N); o.last = Math.max(0, parseInt(d.last, 10) || 0);
+  o.ber = clamp(parseInt(d.ber, 10) || 6, 3, 10);
+  if (d.flags && typeof d.flags === 'object') for (k in d.flags) if (/^[a-z]+$/.test(k) && (typeof d.flags[k] === 'string' || typeof d.flags[k] === 'number')) o.flags[k] = d.flags[k];
+  if (d.buffs && typeof d.buffs === 'object') for (k in d.buffs) if (/^[a-z]+$/.test(k)) o.buffs[k] = clamp(+d.buffs[k] || 0, 0, 1);
+  ['items', 'pieces', 'known'].forEach(function (f) { if (Array.isArray(d[f])) o[f] = d[f].filter(function (x) { return typeof x === 'string' && x.length < 20; }); });
+  return o;
+}
+function storyBuff(id) { var b = S.story && S.story.buffs; return b && b[id] ? b[id] : 0; }
+/* Bereket Ölçeri: 6 nötr; her çizgi ağları %3 hızlandırır/yavaşlatır. Altın Ok ve Deniz Sözü: ağlar %3'er hızlı. */
+function storyNetMul() { var st = S.story; if (!st) return 1; return (1 + (st.ber - 6) * 0.03) * (1 + 0.03 * storyBuff('altinok') + 0.03 * storyBuff('denizsozu')); }
+/* Koy Muhafızı: fırtınadaki müşteri kaybı yarıya iner */
+function stormMul(ev) { return ev.id === 'kar' ? 1 - (1 - ev.custMul) * (1 - 0.5 * storyBuff('muhafiz')) : ev.custMul; }
+function specName(sp) {
+  if (!sp) return '';
+  if (sp.id.indexOf('st_') === 0) return stQ().known.indexOf(sp.id.slice(3)) >= 0 ? NM(sp.n) : '?????';
+  return (S.names || []).indexOf(sp.id) >= 0 ? NM(sp.n) : '?????';
+}
+function storySpawn() {
+  var n = stQ().step + 1, sp = STORY_SPECS['st_' + window.HK_STORY.visitor(n)];
+  if (!sp) return false;
+  var c = specStall(sp), j, slot = -1;
+  if (!c) for (j = 0; j < counters.length; j++) { var cc = counters[j]; if (!AREAS[cc.z].locked && cc.open && cc.fish && cc.slots.indexOf(null) >= 0) { c = cc; break; } }
+  if (!c) return false;
+  for (j = 0; j < c.slots.length; j++) if (!c.slots[j]) { slot = j; break; }
+  if (slot < 0) return false;
+  var type = specType(sp); type.pat = 9999; type.rep = 0;
+  var cu = mkCustomer(c, type, slot, { k: 'fileto', f: c.fish, need: 1, got: 0 }, sp);
+  cu.story = n; storyVis = cu;
+  return true;
+}
+function storyKnown() { return stQ().known.slice(); }
+function storyOpen(cu) {
+  var st = stQ(), n = cu.story;
+  ensureAudio(); storyMute = true; applyBusVol();
+  var ok = window.HK_STORY.open(n, {
+    lang: lang, ber: st.ber, flags: st.flags, known: st.known, kitchen: !AREAS[KITCHEN_Z].locked,
+    audio: AC, dst: masterGain || undefined,
+    onDone: function (r) { storyApply(r || {}, n); storyRelease(cu); }
+  });
+  if (!ok) { storyMute = false; applyBusVol(); return false; }
+  syncPause();
+  return true;
+}
+function storyRelease(cu) {
+  cu.storyDone = true;
+  if (cu.state !== 'leave') { cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; if (cu.c.slots[cu.slot] === cu) { cu.c.slots[cu.slot] = null; shiftQueue(cu.c); } }
+  storyVis = null; storyMute = false; applyBusVol(); syncPause(); save();
+}
+function storyApply(r, n) {
+  var st = stQ(), k;
+  if (typeof r.berSet === 'number') st.ber = r.berSet;
+  if (r.ber) st.ber += r.ber;
+  st.ber = clamp(Math.round(st.ber), 3, 10);
+  (r.buffs || []).forEach(function (b) { if (b && b.id) st.buffs[b.id] = Math.max(st.buffs[b.id] || 0, b.lv === undefined ? 1 : b.lv); });
+  (r.items || []).forEach(function (x) { if (st.items.indexOf(x) < 0) st.items.push(x); });
+  (r.pieces || []).forEach(function (x) { if (st.pieces.indexOf(x) < 0) st.pieces.push(x); });
+  if (r.flags) for (k in r.flags) st.flags[k] = r.flags[k];
+  if (Array.isArray(r.known)) r.known.forEach(function (x) { if (st.known.indexOf(x) < 0) st.known.push(x); });
+  if (r.rep) { S.rep += Math.round(r.rep * (1 + 0.05 * storyBuff('bekci'))); checkRepLevel(); }
+  st.step = Math.max(st.step, n); st.last = day.n || 1;
+  if (st.step >= STORY_N) toast(T('storyDone'));
+}
+function updateStory(dt) {
+  if (!storyOn()) return;
+  var st = stQ();
+  if (storyVis) {
+    if (customers.indexOf(storyVis) < 0 || (storyVis.state === 'leave' && !storyVis.storyDone)) { storyVis = null; return; }   /* tezgâh kapandı: yarın/az sonra yeniden */
+    if (storyVis.state === 'wait' && !storyVis.storyDone && !storyOpenNow()) storyOpen(storyVis);
+    return;
+  }
+  if (st.step >= STORY_N || S.tut < TUTOK.length || st.last >= (day.n || 1)) return;
+  if (day.phase !== 'play' || day.t < STORY_AT) return;
+  st.tryT = (st.tryT || 0) - dt; if (st.tryT > 0) return;
+  st.tryT = 2;
+  if (storySpawn()) sfxFrom({ x: storyVis.c.x, y: storyVis.c.y }, function () { specSfx(storyVis && specById(storyVis.spec)); });
+}
+/* Liman menüsü › Albüm: hikâye satırları */
+function storyRows(row) {
+  if (!storyOn()) return '';
+  var st = stQ(), h = '', H = window.HK_STORY;
+  var nx = st.step < STORY_N ? T('storyNext', { d: st.step + 1, t: H.title(st.step + 1, lang) }) : T('storyFin');
+  h += row('📜', T('storyName'), nx, (st.step) + '/' + STORY_N);
+  h += row('🌊', T('storyBer'), T('storyBerD', { p: Math.round((storyNetMul() - 1) * 100) }), st.ber + '/10');
+  var bf = []; for (var b in st.buffs) if (H.buffs[b]) bf.push(NM(H.buffs[b].n) + (st.buffs[b] < 1 ? ' (½)' : ''));
+  if (bf.length) h += row('★', T('storyBuffs'), escH(bf.join(', ')), '');
+  var kn = ['k', 'h', 't', 'a', 'v'].map(function (k) { var sp = STORY_SPECS['st_' + k]; return st.known.indexOf(k) >= 0 ? NM(sp.n) : '?????'; });
+  if (st.step) h += row('👥', T('storyFaces'), escH(kn.join(' · ')), '');
+  return h;
 }
 
 /* =========================================================
@@ -11244,6 +11368,7 @@ window.BT = {
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
   zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
+  story: function () { return { st: S.story, vis: storyVis, on: storyOn(), open: storyOpenNow(), mute: storyMute, netMul: storyNetMul(), name: function (id) { return specName(specById(id)); } }; }, storySet: function (o) { var st = stQ(); for (var k in o) st[k] = o[k]; },
   snd: function () { return { vol: { mus: VOL.mus, sfx: VOL.sfx, amb: VOL.amb }, buses: !!(musBus && sfxBus && ambBus), stat: { asked: sfxStat.asked, played: sfxStat.played }, musDst: !!(music.gain && musBus) }; },
   sfxFrom: sfxFrom, sfx: sfx, REP_LEVELS: REP_LEVELS, repLevel: function () { return repLevel(); }, repCapped: function () { return repCapped(); }, notifs: function () { return M ? M.notif.map(function (n) { return n.m; }) : []; },
   canProcess: canProcess, scr: function (x, y, z) { return { x: Math.round(uiX(x, y)), y: Math.round(uiY(x, y, z || 0)) }; }, kitchen: kitchen, COOK_TIME: COOK_TIME, zoneRoles: zoneRoles, customers: customers, FISH: FISH, start: start, hire: hire, toast: toast,

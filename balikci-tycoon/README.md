@@ -17,15 +17,27 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
-## Hikâye (hazırlık) — Dipteki Söz, 12 gün
+## v2.4 — Dipteki Söz oyunun içinde
 
-Oyuna henüz bağlı değil; önce günler tek tek gözden geçirilecek. Test sayfası: `story.html` (canlıda `/story.html`).
+- Eğitim bittikten sonra her oyun gününde hikâyenin o günkü karakteri koya gerçekten gelir ve bir tezgâhın kuyruğuna girer (oyun saatinde ~22. saniye). Başının üstünde "✦ ????? · meslek" yazar.
+- Tezgâha vardığında ara sahne açılır. Oyun durur; oyunun müziği ve ortam kanalı tamamen susar, yalnız sahnenin kendi sesi çalar. Sahne bitince karakter gider, ses geri gelir.
+- Ziyaretçiler: 1 Kalender · 2–3 Hacer Teyze · 4 Kalender · 5 Temel Dede · 6 Hacer Teyze · 7–8 Alp Er Tunga · 9–10 Hasta Vezir · 11 Temel Dede · 12 Alp Er Tunga.
+- İsimler: koy halkının adı ilk başta bilinmez ("?????"). Hikâyede kendini tanıttığı ya da biri adını söylediği satırda açılır (Kalender ve Hacer Gün 1, Temel Dede Gün 5, Alp Er Tunga ve Şahmeran Gün 6, Vezir Gün 9). Özel müşteriler de ilk gelişte "?????"dır; siparişi tamamlanınca adını söyler. Eski kayıtta tanışılmış olanların adı bilinir.
+- Sonuçlar kayda işlenir: itibar, Bereket Ölçeri (6 nötr; her çizgi ağları %3 hızlandırır/yavaşlatır), kalıcı etkiler, eşyalar, söz parçaları.
+- Kalıcı etkiler: Barışçı Esnaf sabır +%10 · Adil Tezgâh fiyat +%4 · Sert Tezgâh müşteri akışı +%6 · Koy Muhafızı fırtına kaybı yarıya, mutfak %10 hızlı · Altın Ok / Deniz Sözü ağlar %3'er hızlı · Dipteki Sözün Bekçisi itibar +%5.
+- Liman menüsü › ALBÜM: hikâye ilerlemesi, Bereket, kalıcı etkiler, tanınan yüzler.
+- `story.html` test sayfası da isimleri zincirde taşır.
+- Test: `test-story-game.js` (12 gün oyun içinde, isimler, ses susması, kayıt). Eski testler oyunu durdurmasın diye hikâyeyi kapatır (`HK_STORY_OFF`).
+
+## Hikâye — Dipteki Söz, 12 gün (sahne motoru)
+
+Test sayfası: `story.html` (canlıda `/story.html`).
 
 - `story.js`: kendi kendine yeten sahne motoru (`window.HK_STORY`). 192×120 piksel sahne, daktilo diyalog, Bereket Ölçeri, atla düğmesi, sonuç kartı.
 - Sekiz mini oyun: seçim, zamanlama çubuğu, denge, sıralı seçim (ezberli), fırça, söyleşi, fener, ritim.
 - 12 gün TR/EN yazıldı: 1 Altın Ok Ucu · 2 Uskumru Tartısı · 3 Son Levrek · 4 Ağdaki Yunus · 5 Höyüğün Hikâyesi · 6 Bekçiye Sofra · 7 Yay ve Kemer · 8 Şahmeran · 9 Hasta Vezir · 10 Fener Gecesi · 11 Ağıt · 12 Bereket Sabahı.
 - Tek gerçek seçim Gün 10'da: söz tutulur ya da bozulur. Bozulursa Gün 11–12 telafi yoluna döner; unvan yine kazanılır, Bereket 8'de kalır.
-- Her gün bir sonuç nesnesi döner (itibar, Bereket, kalıcı etki, eşya, söz parçası, bayrak). Oyuna bağlanınca bunlar kayda işlenecek.
+- Her gün bir sonuç nesnesi döner (itibar, Bereket, kalıcı etki, eşya, söz parçası, bayrak). Oyunda bunlar kayda işlenir.
 - `story.html`: dil, Bereket, söz durumu ve mutfak ayarlanır; istenen gün açılır; sonuç kaydı görünür. "Sonuçları sonraki güne taşı" açıkken zincir sırayla oynanabilir.
 - Test: `test-story.js` 12 günü sırayla, bozulan söz dalını ve İngilizceyi oynatır; `story-bot.js` ile her mini oyunun kazanılabildiğini doğrular.
 

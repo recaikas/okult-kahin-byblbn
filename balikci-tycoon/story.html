@@ -47,7 +47,7 @@
       <label><input id="chain" type="checkbox" checked> Sonuçları sonraki güne taşı</label>
       <button class="sm" id="reset">Sıfırla</button>
     </div>
-    <div class="note">"Söz" Gün 8'de verilir, Gün 10'da tutulur ya da bozulur; Gün 11 ve 12 buna göre değişir. Zinciri açık bırakırsan oynadığın günün sonucu (Bereket, söz) bir sonraki güne aktarılır.</div>
+    <div class="note">"Söz" Gün 8'de verilir, Gün 10'da tutulur ya da bozulur; Gün 11 ve 12 buna göre değişir. Zinciri açık bırakırsan oynadığın günün sonucu (Bereket, söz, öğrenilen isimler) bir sonraki güne aktarılır. Karakterlerin adı kendini tanıtana kadar "?????" görünür; tek başına açılan bir günde isimler bilinmez.</div>
   </section>
 
   <section class="box">
@@ -64,7 +64,7 @@
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var AC = null, done = {}, logN = 0;
+  var AC = null, done = {}, logN = 0, known = [];
   function ac() {
     if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } }
     if (AC && AC.state === 'suspended') AC.resume();
@@ -88,7 +88,7 @@
     if (HK_STORY.isOpen()) return;
     var a = ac();
     HK_STORY.open(n, {
-      lang: $('lang').value, ber: +$('ber').value, flags: flags(), kitchen: $('kitchen').checked,
+      lang: $('lang').value, ber: +$('ber').value, flags: flags(), kitchen: $('kitchen').checked, known: $('chain').checked ? known : [],
       audio: a, dst: a ? a.destination : null,
       onDone: function (r) {
         done[n] = 1; log(n, r);
@@ -98,6 +98,7 @@
           if (r.ber) b += r.ber;
           b = Math.max(3, Math.min(10, b)); $('ber').value = b; $('berV').textContent = b;
           if (r.flags && r.flags.promise) $('promise').value = r.flags.promise;
+          if (r.known) known = r.known.slice();
         }
         renderDays();
       }
@@ -106,7 +107,7 @@
   $('days').addEventListener('click', function (e) { var b = e.target.closest('.day'); if (b) openDay(+b.dataset.n); });
   $('ber').addEventListener('input', function () { $('berV').textContent = this.value; });
   $('lang').addEventListener('change', renderDays);
-  $('reset').addEventListener('click', function () { done = {}; logN = 0; $('ber').value = 6; $('berV').textContent = 6; $('promise').value = ''; $('log').innerHTML = '<div class="note">Henüz gün oynanmadı.</div>'; renderDays(); });
+  $('reset').addEventListener('click', function () { done = {}; logN = 0; known = []; $('ber').value = 6; $('berV').textContent = 6; $('promise').value = ''; $('log').innerHTML = '<div class="note">Henüz gün oynanmadı.</div>'; renderDays(); });
   var q = new URLSearchParams(location.search); if (q.get('lang') === 'en') $('lang').value = 'en';
   renderDays();
   if (q.get('day')) setTimeout(function () { openDay(+q.get('day')); }, 50);
