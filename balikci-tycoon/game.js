@@ -86,6 +86,7 @@ var STR = {
     envUp1: '🌿 Liman canlanıyor: yol çakıl oldu, ağaçlar yeşeriyor', envUp2: '🪨 Yol arnavut kaldırımı oldu, sahil toparlandı',
     envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
     specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
+    custTitle: '📖 MÜŞTERİ DEFTERİ', custSub: 'Koya gelen herkes. Görmediğin kara gölge, adını söylemeyen ?????. Siparişini bitir, adını öğren.', custStory: 'HİKÂYE', custSpec: 'ÖZEL', custTypes: 'TİPLER', custTap: 'Bir karta dokun.', custNever: 'Henüz koya gelmedi.', custNoName: 'Adını henüz söylemedi. Siparişini tamamla, kendini tanıtsın.', custVisits: 'Kaç kez geldi: {n}', custServed: 'Servis edilen: {n}', custTypeD: 'Sipariş {a}–{b} · sabır {p} sn · fiyat ×{m}', custStoryD: 'Dipteki Söz hikâyesinin bir parçası.', custNewName: '📖 Deftere yazıldı: {n}',
     storyName: 'Dipteki Söz', storyNext: 'Sıradaki: Gün {d} · {t} — bir koy sakini tezgâhına gelecek', storyFin: 'Hikâye tamamlandı. Unvan: Dipteki Sözün Bekçisi', storyBer: 'Bereket Ölçeri', storyBerD: 'ağ verimi {p}%', storyBuffs: 'Kalıcı etkiler', storyFaces: 'Koyun yüzleri', storyDone: '✦ Dipteki Söz tamamlandı: Dipteki Sözün Bekçisi',
     albMet: 'Tanıştığın özel müşteriler', albLeft: 'Henüz tanışmadığın {n} kişi daha var — her gün 2 özel müşteri gelir.', albNone: 'Henüz kimseyle tanışmadın. Her gün 2 özel müşteri gelir.', albFav: 'Sevdiği',
     featDay: 'Günün müşterisi: {n}', levelUp: '⭐ Yeni seviye: {t}!', lvlN: 'SEVİYE {l}', lvShort: 'SV {l}', lvCap: 'TAVAN', lvCapHint: 'İtibarın Sv{l} tavanında birikiyor. {n} bölgesini açınca seviye atlarsın!', lvCapHintAny: 'İtibarın Sv{l} tavanında birikiyor. Yeni bölge açınca seviye atlarsın!', mCap: 'Tavan: {n} bölge açık → en çok Sv{l}', lvBonus: 'Satış primi {p}',
@@ -293,6 +294,7 @@ var STR = {
     envUp1: '🌿 The harbor comes alive: gravel road, trees turning green', envUp2: '🪨 The road is cobbled now, the shore tidied up',
     envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
     specComing: 'A special customer is coming...', daySpec: 'Special customers',
+    custTitle: '📖 CUSTOMER BOOK', custSub: 'Everyone who visits the cove. Unseen are shadows; those who haven\'t told their name are ?????. Finish their order to learn it.', custStory: 'STORY', custSpec: 'SPECIAL', custTypes: 'TYPES', custTap: 'Tap a card.', custNever: 'Hasn\'t visited the cove yet.', custNoName: 'Hasn\'t told you their name yet. Complete their order and they\'ll introduce themselves.', custVisits: 'Visits: {n}', custServed: 'Served: {n}', custTypeD: 'Order {a}–{b} · patience {p}s · price ×{m}', custStoryD: 'Part of The Promise Below.', custNewName: '📖 Added to the book: {n}',
     storyName: 'The Promise Below', storyNext: 'Next: Day {d} · {t} — someone from the cove will visit your stall', storyFin: 'Story complete. Title: Keeper of the Promise Below', storyBer: 'Bounty Gauge', storyBerD: 'net yield {p}%', storyBuffs: 'Permanent effects', storyFaces: 'Faces of the cove', storyDone: '✦ The Promise Below complete: Keeper of the Promise Below',
     albMet: 'Special customers you\'ve met', albLeft: '{n} more to meet — 2 special customers visit every day.', albNone: 'You haven\'t met anyone yet. 2 special customers visit every day.', albFav: 'Loves',
     featDay: 'Customer of the day: {n}', levelUp: '⭐ New rank: {t}!', lvlN: 'LEVEL {l}', lvShort: 'LV {l}', lvCap: 'CAP', lvCapHint: 'Your reputation is piling up at the Lv{l} cap. Open {n} to rank up!', lvCapHintAny: 'Your reputation is piling up at the Lv{l} cap. Open a new area to rank up!', mCap: 'Cap: {n} areas open → up to Lv{l}', lvBonus: 'Sales bonus {p}',
@@ -2404,7 +2406,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0, lvFloor: 0, names: [], story: null     /* skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0, lvFloor: 0, names: [], story: null, custSeen: {}, specN: {}, custNewF: false     /* skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -2508,7 +2510,7 @@ function buildSave() {
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
     auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
-    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
+    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, custSeen: S.custSeen || {}, specN: S.specN || {}, custNewF: S.custNewF ? 1 : 0, ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
     areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
@@ -2590,6 +2592,7 @@ function loadFrom(d) {
     /* v2.4: isimler — eski kayıtta tanışılan herkesin adı bilinir; yeni tanışılan "?????" başlar */
     S.names = Array.isArray(d.names) ? d.names.filter(function (q) { return typeof q === 'string'; }) : S.met.slice();
     S.story = storyLoad(d.story);
+    S.custSeen = numMap(d.custSeen); S.specN = numMap(d.specN); S.custNewF = !!d.custNewF;
     S.mgr = Array.isArray(d.mgr) ? d.mgr.map(function (m) { return m && MGR_BUFFS[m.a] && MGR_BUFFS[m.b] ? { n: String(m.n || '').slice(0, 20), a: m.a, b: m.b, wage: +m.wage || 40, look: m.look | 0 } : null; }) : [];
     S.mgrCand = [];
     var chv = Array.isArray(d.ch) ? d.ch : [0, 0, 0];
@@ -2739,6 +2742,7 @@ function anyOverlay() {
   if (fbOpen()) return true;                    /* görüş formu */
   if (retCardOpen()) return true;               /* "Sen yokken…" kartı */
   if (storyOpenNow()) return true;              /* v2.4: hikâye ara sahnesi */
+  if (el.custScr && !el.custScr.classList.contains('hidden')) return true;   /* v2.5: müşteri defteri */
   return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') || !el.privScr.classList.contains('hidden') ||
     !el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden') ||
     !el.stallScr.classList.contains('hidden') || !el.boardScr.classList.contains('hidden') || !el.halScr.classList.contains('hidden') ||
@@ -3571,6 +3575,7 @@ function updateCounter(c, dt) {
         mood: 1, hair: irnd(0, 2), tone: irnd(0, 2)
       };
       c.slots[freeIdx] = cu; customers.push(cu);
+      S.custSeen = S.custSeen || {}; if (S.custSeen[type.id] === undefined) { S.custSeen[type.id] = 0; custNew(); }   /* v2.5: defterde tip açılır */
       day.normals = (day.normals || 0) + 1;           /* v0.9: özel müşteri zamanlaması için */
       if (dist2(player.x, player.y, c.x, c.y) < 90) sfxFrom({ x: c.x, y: c.y }, function () { sfx.cust(); });
     }
@@ -3621,10 +3626,14 @@ function finishOrder(c, cu) {
   noteFishIncome(pay); noteDayIncome(pay); noteDaySale(cu);
   retSale(c, cu, pay);                              /* bölge gelir ortalaması + satış başarımları */
   if (cu.spec && specById(cu.spec)) {
-    if (S.names.indexOf(cu.spec) < 0) S.names.push(cu.spec);       /* v2.4: işi bitince kendini tanıtır: adı artık bilinir */
+    if (S.names.indexOf(cu.spec) < 0) {                              /* v2.4: işi bitince adı artık bilinir → deftere */
+      S.names.push(cu.spec); custNew();
+      toast(T('custNewName', { n: NM(specById(cu.spec).n) }));
+    }
     (day.st.spec = day.st.spec || []).push(NM(specById(cu.spec).n));
   }
   cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; c.slots[cu.slot] = null; shiftQueue(c);
+  if (!cu.spec && cu.type && cu.type.id) { S.custSeen = S.custSeen || {}; S.custSeen[cu.type.id] = (S.custSeen[cu.type.id] || 0) + 1; }
   S.served++; S.rep += Math.max(1, Math.round(cu.type.rep * (1 + servEff('rep') + 0.05 * storyBuff('bekci')))) + mgrEff(c.z, 'rep');
   var fp = queueSlotPos(c, cu.slot);
   addFloat(fp.x, fp.y - 0.5, '+' + money(pay), '#ffe27a');
@@ -6796,7 +6805,7 @@ var el = {};
  'pauseBadge', 'pauseTxt', 'saveInfo', 'setSaveInfo', 'saveBtn', 'saveQuitBtn', 'menuSave', 'newBtn', 'setSaveLbl',
  'dayChip', 'dayIcon', 'dayNum', 'dayfill', 'hDay', 'dayBanner', 'dayBannerT', 'dayBannerS',
  'dayScr', 'dayTitle', 'dayRows', 'dayNext', 'dayGo', 'dayStalls',
- 'stallScr', 'stallTitle', 'stallSub', 'stallRows', 'stallGo', 'prepScr', 'prepTitle', 'prepSub',
+ 'stallScr', 'stallTitle', 'stallSub', 'stallRows', 'stallGo', 'custScr', 'custTitle', 'custSub', 'custTabs', 'custGrid', 'custDet', 'custGo', 'prepScr', 'prepTitle', 'prepSub',
  'prepDepot', 'prepRows', 'prepGo', 'introScr', 'introCv', 'introSub', 'introNext', 'introSkip', 'introGate',
  'introDots', 'introTap', 'introTag', 'nameScr', 'nameCard', 'nameTitle', 'nameSub', 'nameSign', 'nameIn', 'nameDice', 'nameHint',
  'nameIdeasLbl', 'nameChips', 'nameGo', 'boardScr', 'boardTitle', 'boardSub', 'boardRows', 'boardNote',
@@ -6820,6 +6829,7 @@ function applyLang() {
   if (typeof barTab !== 'undefined' && barTab && typeof renderBar === 'function') renderBar();
   var ofs = document.getElementById('officeScr'); if (ofs && !ofs.classList.contains('hidden') && typeof renderOffice === 'function') renderOffice();
   if (el.prepScr && !el.prepScr.classList.contains('hidden') && typeof renderPrep === 'function') renderPrep();
+  if (el.custScr && !el.custScr.classList.contains('hidden') && typeof renderCustBook === 'function') renderCustBook();
   fbApplyLang();                                /* görüş formu etiketleri */
   el.hMoney.textContent = T('money'); el.hCarry.textContent = T('carry'); el.hRep.textContent = T('rep'); el.hRep.dataset.l = '';
   el.startTag.textContent = T('tag');
@@ -7580,12 +7590,15 @@ Array.prototype.forEach.call(document.querySelectorAll('#menuTabs .tab'), functi
 el.dpClose.onclick = closeBar;
 el.menuBtn.onclick = function () { openPauseMenu(); };
 /* v1.9.1 — Açık Tezgâhlar kısayolu ☰'ün yanında: ikinci tezgâh kurulunca görünür */
-var stallBtn = document.getElementById('stallBtn');
+var stallBtn = document.getElementById('stallBtn'), custBtn = document.getElementById('custBtn');
+custBtn.onclick = function () { sfx.tap(); openCustBook(); };
 stallBtn.onclick = function () { sfx.tap(); openStallScreen(); };
 function syncStallBtn() {
   var n = 0;
   for (var i = 0; i < counters.length; i++) if (counters[i].fish && !AREAS[counters[i].z].locked) n++;
   stallBtn.classList.toggle('hidden', !S.started || n < 2);
+  custBtn.classList.toggle('hidden', !S.started);
+  custBtn.classList.toggle('new', S.started && !!S.custNewF);
   stallBtn.classList.toggle('new', S.started && undecidedStalls().length > 0);   /* yeni tezgâh kararını bekliyor */
 }
 el.closeMenu.onclick = function () { el.menuScreen.classList.add('hidden'); syncPause(); };
@@ -7594,6 +7607,7 @@ el.menuSave.onclick = function () { manualSave(); };
 /* v1.2 — gün özeti / pazar hazırlığı */
 el.dayStalls.onclick = function () { openStallScreen(); };
 el.stallGo.onclick = function () { closeStallScreen(); };
+el.custGo.onclick = function () { sfx.tap(); closeCustBook(); };
 el.dayGo.onclick = function () {
   el.dayScr.classList.add('hidden');
   beginNextDay(false);
@@ -10279,7 +10293,7 @@ function normSpecials(list) {
       id: String(s.id), n: (function (nn) { return { tr: nn.tr.slice(0, 24), en: nn.en.slice(0, 24) }; })(specLang(s.n, { tr: String(s.id), en: String(s.id) })),
       fav: FISH[s.fav] ? s.fav : 'hamsi', sfx: SPEC_SFX[s.sfx] ? s.sfx : '',
       job: specLang(s.job, { tr: 'Müşteri', en: 'Customer' }), trait: specLang(s.trait, null),
-      hi: specLang(s.hi, { tr: 'Merhaba!', en: 'Hello!' }), bye: specLang(s.bye, { tr: 'Teşekkürler!', en: 'Thanks!' }),
+      hi: specLang(s.hi, { tr: 'Merhaba!', en: 'Hello!' }), bye: specLang(s.bye, { tr: 'Teşekkürler!', en: 'Thanks!' }), me: specLang(s.me, null),
       look: s.look && typeof s.look === 'object' ? s.look : {},
       qty: q, pat: specNum(s.pat, 150, 40, 600), tip: specNum(s.tip, 1.1, 0.5, 3), rep: specNum(s.rep, 3, 0, 20) | 0,
       fx: typeof s.fx === 'string' ? s.fx.slice(0, 2) : '', fxc: s.fxc || '#ffd76a', moon: !!s.moon, dance: !!s.dance
@@ -10346,7 +10360,15 @@ function mkCustomer(c, type, slot, ord, spec) {
     state: 'walk', slot: slot, c: c, pat: type.pat * patienceMul(c.z), patMax: type.pat * patienceMul(c.z),
     mood: 1, hair: irnd(0, 2), tone: irnd(0, 2)
   };
-  if (spec) { cu.spec = spec.id; cu.sayT = 0; }
+  if (spec) {
+    cu.spec = spec.id; cu.sayT = 0;
+    /* v2.5: adı henüz bilinmiyorsa önce kendini tanıtır, sonra siparişini söyler; adı servis bitince deftere yazılır */
+    cu.intro = !!(spec.me && spec.id.indexOf('st_') !== 0 && (S.names || []).indexOf(spec.id) < 0);
+    if (spec.id.indexOf('st_') !== 0) { S.specN = S.specN || {}; S.specN[spec.id] = (S.specN[spec.id] || 0) + 1; }
+  } else if (type && type.id) {
+    S.custSeen = S.custSeen || {};
+    if (!S.custSeen[type.id]) { S.custSeen[type.id] = 0; custNew(); }
+  }
   c.slots[slot] = cu; customers.push(cu);
   return cu;
 }
@@ -10399,7 +10421,8 @@ function specHoldsClose() { return (day.sp === 2 || day.sp === 3) && day.ph < CL
    ayrılış yarı hızda. Selam bitmeden sipariş alınmaz ve bu sürede sabrı azalmaz. */
 var SPEC_WALK = 1.3, SPEC_LEAVE = 1.7;
 function sayDur(txt) { return clamp(2.2 + (txt || '').length * 0.075, 4, 9); }
-function specHiDur(cu) { var sp = specById(cu.spec); return sp ? sayDur(NM(sp.hi)) : 0; }
+function specMeDur(cu) { var sp = specById(cu.spec); return sp && cu.intro && sp.me ? sayDur(NM(sp.me)) : 0; }
+function specHiDur(cu) { var sp = specById(cu.spec); return sp ? specMeDur(cu) + sayDur(NM(sp.hi)) : 0; }
 function specTalking(cu) { return !!cu.spec && cu.state === 'wait' && (cu.sayT || 0) < specHiDur(cu); }
 /* konuşma balonu: gelince selam, mutlu giderken teşekkür */
 function drawSpecialTag(cu) {
@@ -10412,7 +10435,7 @@ function drawSpecialTag(cu) {
   if (cu.state === 'wait' && !cu.sndHi) { cu.sndHi = true; specSfx(sp); }                                  /* v1.3: gelişte kendi sesi */
   if (cu.state === 'leave' && cu.happyLeave !== false && !cu.sndBye) { cu.sndBye = true; specSfx(sp); }
   var line = null;
-  if (specTalking(cu) && !cu.story) line = NM(sp.hi);
+  if (specTalking(cu) && !cu.story) line = (cu.sayT || 0) < specMeDur(cu) ? NM(sp.me) : NM(sp.hi);
   if (cu.state === 'leave' && cu.happyLeave !== false && (cu.byeT || 0) < sayDur(NM(sp.bye))) line = NM(sp.bye);
   if (line) uiLabel(cu.x, cu.y, 56, '“' + line + '”', '#f4e9d2', 0.95);
   if (specTalking(cu)) {                                                           /* söz bitene kadar küçük süre çubuğu */
@@ -10519,6 +10542,78 @@ function updateStory(dt) {
   st.tryT = 2;
   if (storySpawn()) sfxFrom({ x: storyVis.c.x, y: storyVis.c.y }, function () { specSfx(storyVis && specById(storyVis.spec)); });
 }
+/* =========================================================
+   v2.5 — MÜŞTERİ DEFTERİ: koya gelen herkes bir koleksiyon. Görülmeyen kara gölge "???",
+   görülen ama adı bilinmeyen "?????", tanışılan tam kart (meslek, huy, sevdiği balık, kaç kez geldi).
+   ========================================================= */
+var custTab = 'spec';
+function numMap(d) { var o = {}; if (d && typeof d === 'object') for (var k in d) if (/^[a-z0-9_]+$/.test(k) && isFinite(+d[k])) o[k] = Math.max(0, Math.min(1e7, +d[k] | 0)); return o; }
+function custNew() { S.custNewF = true; }
+function custPortrait(cv, o, sil) {
+  var g = cv.getContext('2d'), old = ctx;
+  ctx = g;
+  try {
+    g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingEnabled = false;
+    g.clearRect(0, 0, cv.width, cv.height);
+    g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), cv.height - 5);
+    drawPerson({ x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: 0, act: 0, carry: [] }, o);
+    if (sil) { g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = '#071019'; g.fillRect(0, 0, cv.width, cv.height); g.globalCompositeOperation = 'source-over'; }
+  } catch (e) { }
+  ctx = old;
+}
+function custBookData() {
+  var out = { story: [], spec: [], type: [] }, st = S.story;
+  ['k', 'h', 't', 'a', 'v'].forEach(function (k) {
+    var sp = STORY_SPECS['st_' + k]; if (!sp) return;
+    var seen = !!(st && st.step > 0 && (st.known.indexOf(k) >= 0 || STORY_FIRST[k] <= st.step)), known = !!(st && st.known.indexOf(k) >= 0);
+    out.story.push({ id: sp.id, sp: sp, seen: seen, known: known, n: NM(sp.n), job: NM(sp.job), d: known ? T('custStoryD') : '', cnt: 0 });
+  });
+  SPECIALS.forEach(function (sp) {
+    var seen = S.met.indexOf(sp.id) >= 0, known = (S.names || []).indexOf(sp.id) >= 0;
+    out.spec.push({ id: sp.id, sp: sp, seen: seen, known: known, n: NM(sp.n), job: NM(sp.job), d: known ? (sp.trait ? NM(sp.trait) : NM(sp.hi)) + ' · ' + T('albFav') + ': ' + NM(FISH[sp.fav].n) : '', cnt: (S.specN || {})[sp.id] || (seen ? 1 : 0) });
+  });
+  CUST.forEach(function (t) {
+    var c = (S.custSeen || {})[t.id], seen = c !== undefined;
+    out.type.push({ id: t.id, t: t, seen: seen, known: seen, n: NM(t.n), job: '', d: seen ? T('custTypeD', { a: t.qty[0], b: t.qty[1], p: Math.round(t.pat), m: t.mult.toFixed(2) }) : '', cnt: c || 0 });
+  });
+  return out;
+}
+var STORY_FIRST = { k: 1, h: 1, t: 5, a: 6, v: 9 };       /* karakterin hikâyede ilk göründüğü gün */
+function openCustBook() {
+  S.custNewF = false; custBtn.classList.remove('new');
+  renderCustBook(); el.custScr.classList.remove('hidden'); syncPause();
+}
+function closeCustBook() { el.custScr.classList.add('hidden'); syncPause(); save(); }
+function renderCustBook() {
+  var D = custBookData(), tabs = [['story', T('custStory'), D.story], ['spec', T('custSpec'), D.spec], ['type', T('custTypes'), D.type]];
+  if (!storyOn() && custTab === 'story') custTab = 'spec';
+  el.custTitle.textContent = T('custTitle'); el.custSub.textContent = T('custSub'); el.custGo.textContent = T('ok');
+  el.custTabs.innerHTML = tabs.filter(function (q) { return q[0] !== 'story' || storyOn(); }).map(function (q) {
+    var k = q[2].filter(function (e) { return e.known; }).length;
+    return '<button class="tab' + (q[0] === custTab ? ' on' : '') + '" data-c="' + q[0] + '">' + q[1] + ' <small>' + k + '/' + q[2].length + '</small></button>';
+  }).join('');
+  var list = D[custTab], h = '';
+  list.forEach(function (e, i) {
+    var cls = e.known ? 'ok' : e.seen ? 'unk' : 'no';
+    h += '<div class="cc ' + cls + '" data-i="' + i + '"><canvas width="40" height="46"></canvas><b>' + (e.known ? escH(e.n) : e.seen ? '?????' : '???') + '</b>' +
+      '<small>' + (e.seen ? escH(e.job || '') : '&nbsp;') + '</small>' + (e.cnt ? '<i>×' + e.cnt + '</i>' : '') + '</div>';
+  });
+  el.custGrid.innerHTML = h;
+  el.custDet.textContent = T('custTap');
+  var cvs = el.custGrid.querySelectorAll('canvas');
+  list.forEach(function (e, i) {
+    var o = e.sp ? specOutfit(e.sp, 1) : custOutfit({ type: e.t, tone: 1, hair: 0, face: 1, hs: 0, ht: 2 });
+    custPortrait(cvs[i], o, !e.seen);
+  });
+  el.custGrid.onclick = function (ev) {
+    var c = ev.target.closest('.cc'); if (!c) return;
+    var e = list[+c.dataset.i]; sfx.tap();
+    el.custDet.innerHTML = !e.seen ? escH(T('custNever')) : !e.known ? '<b>?????</b> · ' + escH(e.job) + '<br>' + escH(T('custNoName'))
+      : '<b>' + escH(e.n) + '</b>' + (e.job ? ' · ' + escH(e.job) : '') + '<br>' + escH(e.d) + (e.cnt ? '<br>' + escH(T(custTab === 'type' ? 'custServed' : 'custVisits', { n: e.cnt })) : '');
+  };
+  el.custTabs.onclick = function (ev) { var b = ev.target.closest('.tab'); if (!b) return; custTab = b.dataset.c; sfx.tap(); renderCustBook(); };
+}
+
 /* Liman menüsü › Albüm: hikâye satırları */
 function storyRows(row) {
   if (!storyOn()) return '';
@@ -11368,6 +11463,7 @@ window.BT = {
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
   zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
+  custBook: function () { return custBookData(); }, openCustBook: function () { openCustBook(); }, finishOrder: finishOrder, notifsAll: function () { return el.toast.textContent; },
   story: function () { return { st: S.story, vis: storyVis, on: storyOn(), open: storyOpenNow(), mute: storyMute, netMul: storyNetMul(), name: function (id) { return specName(specById(id)); } }; }, storySet: function (o) { var st = stQ(); for (var k in o) st[k] = o[k]; },
   snd: function () { return { vol: { mus: VOL.mus, sfx: VOL.sfx, amb: VOL.amb }, buses: !!(musBus && sfxBus && ambBus), stat: { asked: sfxStat.asked, played: sfxStat.played }, musDst: !!(music.gain && musBus) }; },
   sfxFrom: sfxFrom, sfx: sfx, REP_LEVELS: REP_LEVELS, repLevel: function () { return repLevel(); }, repCapped: function () { return repCapped(); }, notifs: function () { return M ? M.notif.map(function (n) { return n.m; }) : []; },

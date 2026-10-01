@@ -17,6 +17,19 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v2.5 — Müşteri Defteri ve kendini tanıtan özel müşteriler
+
+- **Kendini tanıtma:** 50 özel müşterinin her birine bir tanıtım sözü yazıldı (`specials.js` › `me`). Örnek: Temel, "Ben Temel! Herkes bana 'Uy uşağum' der, ben de herkese uşağum derum!"
+  - İlk gelişte (adı bilinmiyorken) önce tanıtım, sonra sipariş sözü gelir. Etikette ad "?????" kalır.
+  - Siparişi tamamlanınca ad deftere yazılır ("📖 Deftere yazıldı: Temel"); giderken etikette adı görünür.
+  - Sonraki gelişlerde tanıtım yok, doğrudan sipariş. Sipariş tamamlanmadan giderse ad öğrenilmez.
+- **Müşteri Defteri:** üst çubukta tezgâh düğmesinin yanında 📖. Yeni biri görülünce ya da adı öğrenilince düğme yanıp söner. Açıkken oyun durur.
+  - Sekmeler: Hikâye (Dipteki Söz karakterleri), Özel (50 kişi), Tipler (20 normal müşteri tipi). Her sekmede tanışılan / toplam.
+  - Görülmeyen kara gölge "???"; görülen ama adı bilinmeyen renkli, "?????"; tanışılan tam kart.
+  - Karta dokununca: meslek, huy, sevdiği balık, kaç kez geldiği; tiplerde sipariş aralığı, sabır, fiyat çarpanı ve servis sayısı.
+  - Normal tipler koya ilk geldiğinde açılır (eski kayıtta yeniden görülünce).
+- Test: `test-defter.js`.
+
 ## v2.4 — Dipteki Söz oyunun içinde
 
 - Eğitim bittikten sonra her oyun gününde hikâyenin o günkü karakteri koya gerçekten gelir ve bir tezgâhın kuyruğuna girer (oyun saatinde ~22. saniye). Başının üstünde "✦ ????? · meslek" yazar.
