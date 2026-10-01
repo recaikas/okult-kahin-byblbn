@@ -158,7 +158,7 @@ var STR = {
     zoneFull: 'Bu bölgenin kadrosu dolu', zoneOf: '{n} bölgesi',
     stallSwitch: 'AÇIK TEZGÂHLAR', stallSwitchD: '{a}/{b} tezgâh açık — aç/kapat',
     stallManage: 'AÇ / KAPAT', stallTitle: 'TEZGÂHLAR',
-    stToday: 'Bugün', stNet: 'Net', stAllToday: 'Tüm tezgâhlar bugün', stTapHint: 'Ayrıntı için tezgâha dokun. Oklar: bugün düne göre, hız bir önceki yarım dakikaya göre.', stQueue: 'kuyruk {n}', stRate: 'Gelir hızı', stExp: 'Gider', stExpD: 'bölge maaşından pay', stSales: 'Satış', stFume: '{n} füme', stLost: 'Kaçan müşteri', stAvg: 'Ortalama sepet', stItems: '{n} ürün', stTop: 'En çok gelen', stSpecials: 'Özel müşteriler', stTotal: 'Toplam gelir', stTotN: '{n} satış', stNow: 'Şu an', stVsY: 'dün {v}',
+    stToday: 'Bugün', stNetPM: 'Net', stAllToday: 'Tüm tezgâhlar bugün', stTapHint: 'Ayrıntı için tezgâha dokun. Oklar: bugün düne göre, hız bir önceki yarım dakikaya göre.', stQueue: 'kuyruk {n}', stRate: 'Gelir hızı', stExp: 'Gider', stExpD: 'bölge maaşından pay', stSales: 'Satış', stFume: '{n} füme', stLost: 'Kaçan müşteri', stAvg: 'Ortalama sepet', stItems: '{n} ürün', stTop: 'En çok gelen', stSpecials: 'Özel müşteriler', stTotal: 'Toplam gelir', stTotN: '{n} satış', stNow: 'Şu an', stVsY: 'dün {v}',
     newStallLbl: 'YENİ', newStallHint: 'Yeni tezgâh hazır — sağ üstteki 🐟 düğmesinden aç',
     howToOpen: 'SAĞ ÜSTTEKİ BALIK › AÇIK TEZGÂHLAR', stallNewN: '{n} yeni tezgâh kararını bekliyor',
     stallSub: 'Yetişemediğin tezgâhı kapat: kapalı tezgâha müşteri gelmez, ağ o türü üretmez.',
@@ -361,7 +361,7 @@ var STR = {
     zoneFull: "This zone's crew is full", zoneOf: '{n} zone',
     stallSwitch: 'OPEN STALLS', stallSwitchD: '{a}/{b} stalls open — switch on/off',
     stallManage: 'ON / OFF', stallTitle: 'STALLS',
-    stToday: 'Today', stNet: 'Net', stAllToday: 'All stalls today', stTapHint: 'Tap a stall for details. Arrows: today vs yesterday, rate vs the previous half minute.', stQueue: 'queue {n}', stRate: 'Income rate', stExp: 'Expense', stExpD: 'share of zone wages', stSales: 'Sales', stFume: '{n} smoked', stLost: 'Lost customers', stAvg: 'Average basket', stItems: '{n} items', stTop: 'Most frequent', stSpecials: 'Special customers', stTotal: 'Total income', stTotN: '{n} sales', stNow: 'Right now', stVsY: 'yesterday {v}',
+    stToday: 'Today', stNetPM: 'Net', stAllToday: 'All stalls today', stTapHint: 'Tap a stall for details. Arrows: today vs yesterday, rate vs the previous half minute.', stQueue: 'queue {n}', stRate: 'Income rate', stExp: 'Expense', stExpD: 'share of zone wages', stSales: 'Sales', stFume: '{n} smoked', stLost: 'Lost customers', stAvg: 'Average basket', stItems: '{n} items', stTop: 'Most frequent', stSpecials: 'Special customers', stTotal: 'Total income', stTotN: '{n} sales', stNow: 'Right now', stVsY: 'yesterday {v}',
     newStallLbl: 'NEW', newStallHint: 'New stall ready — open it from the 🐟 button, top right',
     howToOpen: 'TOP-RIGHT FISH › OPEN STALLS', stallNewN: '{n} new stall awaiting your call',
     stallSub: "Switch off a stall you can't keep up with: no customers arrive and its net stops.",
@@ -7489,12 +7489,12 @@ function renderStallScreen() {
       '<div class="nm">' + NM(FISH[c.fish].n) + (yeni ? ' <b style="color:var(--gold)">•</b>' : '') +
       '<small>' + NM(AREAS[c.z].n) + ' • ' + T('nowStock', { n: c.buffer.length }) + ' • ' + T('stQueue', { n: stallQueue(c) }) + '</small>' +
       '<small class="sl">' + T('stToday') + ' <b>' + money(st.inc) + '</b> ' + trendH(st.inc, st.y ? st.y.inc : null) +
-      ' • ' + T('stNet') + ' <b class="' + (net >= 0 ? 'up' : 'dn') + '">' + (net < 0 ? '−' : '') + money(Math.abs(net)) + perMin() + '</b></small></div>' +
+      ' • ' + T('stNetPM') + ' <b class="' + (net >= 0 ? 'up' : 'dn') + '">' + (net < 0 ? '−' : '') + money(Math.abs(net)) + perMin() + '</b></small></div>' +
       '<div class="stp"><button class="sw ' + (first ? 'lock' : (c.open ? 'on' : 'off')) + '" data-k="' + c.key + '"' +
       (first ? ' disabled' : '') + '>' + (first ? T('swFixed') : (c.open ? T('swOn') : T('swOff'))) + '</button></div></div>';
     if (stallOpenK === c.key) h += stallDetailH(c);
   }
-  if (list.length) h = '<div class="ssum"><span>' + T('stAllToday') + ' <b>' + money(sumT) + '</b> ' + trendH(sumT, sumY) + '</span><span>' + T('stNet') +
+  if (list.length) h = '<div class="ssum"><span>' + T('stAllToday') + ' <b>' + money(sumT) + '</b> ' + trendH(sumT, sumY) + '</span><span>' + T('stNetPM') +
     ' <b class="' + (sumNet >= 0 ? 'up' : 'dn') + '">' + (sumNet < 0 ? '−' : '') + money(Math.abs(sumNet)) + perMin() + '</b></span></div>' +
     '<div class="shint">' + T('stTapHint') + '</div>' + h;
   el.stallRows.innerHTML = PX(h || '<div class="empty">' + T('stallNone') + '</div>');
@@ -7590,7 +7590,7 @@ function stallDetailH(c) {
     cell(T('stToday'), money(st.inc), trendH(st.inc, y ? y.inc : null) + (y ? ' ' + T('stVsY', { v: money(y.inc) }) : '')) +
     cell(T('stRate'), money(c.open ? st.rate : 0) + perMin(), trendH(st.rate, st.prev)) +
     cell(T('stExp'), money(ex) + perMin(), T('stExpD')) +
-    cell(T('stNet'), ((c.open ? st.rate : 0) - ex < 0 ? '−' : '') + money(Math.abs((c.open ? st.rate : 0) - ex)) + perMin(), '') +
+    cell(T('stNetPM'), ((c.open ? st.rate : 0) - ex < 0 ? '−' : '') + money(Math.abs((c.open ? st.rate : 0) - ex)) + perMin(), '') +
     cell(T('stSales'), st.n + (st.fume ? ' <small>(' + T('stFume', { n: st.fume }) + ')</small>' : ''), y ? T('stVsY', { v: y.n }) : '') +
     cell(T('stLost'), st.lost, y ? T('stVsY', { v: y.lost }) : '') +
     cell(T('stAvg'), money(avg), T('stItems', { n: st.items })) +
