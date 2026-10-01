@@ -17,6 +17,13 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v2.8 — Meslekler de gizli
+
+- Özel müşterinin mesleği de adı gibi ilk başta bilinmez: ilk gelişte etiket "★ ????? · ?????".
+- Konuşmasını (tanıtım + sipariş sözü) bitirince mesleği açılır: "★ ????? · Kaliteci". Siparişi tamamlanınca adı da açılır: "★ Caner · Kaliteci".
+- Müşteri Defteri ve Albüm de aynı kuralı izler. Hikâye karakterlerinin mesleği, hikâyede ilk göründükleri gün geçince bilinir.
+- Eski kayıtta tanışılmış olanların mesleği bilinir.
+
 ## v2.7 — İlk kez ipuçları: her sekme kendini anlatır
 
 - Yeni oyuncu bir sekmeye ya da panele ilk kez girdiğinde o sekmenin ne işe yaradığını anlatan bir kart çıkar. Kart açıkken oyun durur; "ANLADIM" ile kapanır ve o kayıtta bir daha çıkmaz.

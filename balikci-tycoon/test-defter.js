@@ -25,7 +25,12 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
     const cu = BT.customers.find(c => c.spec === 'temel');
     const sp = BT.SPECIALS.find(s => s.id === 'temel');
     const o = { intro: cu.intro, name0: BT.story().name('temel'), dur: BT.specHiDur(cu), hiOnly: BT.sayDur(sp.hi.tr) };
+    o.job0 = BT.specJob('temel');
     cu.state = 'wait'; cu.sayT = 0.5; o.talk1 = BT.specTalking(cu);
+    await new Promise(r => setTimeout(r, 200)); o.jobMid = BT.specJob('temel');
+    /* konuşma biter → meslek açılır (ad hâlâ gizli) */
+    cu.sayT = o.dur + 0.1; await new Promise(r => setTimeout(r, 300));
+    o.job1 = BT.specJob('temel'); o.nameMid = BT.story().name('temel');
     /* sipariş bitir */
     cu.sayT = 99; cu.ord.got = cu.ord.need; BT.finishOrder(cu.c, cu);
     o.name1 = BT.story().name('temel'); o.toast = document.getElementById('toast').textContent; o.newF = BT.S.custNewF;
@@ -36,6 +41,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
     return o;
   });
   ok(R.first.intro && R.first.name0 === '?????' && R.first.dur > R.first.hiOnly && R.first.talk1, 'ilk gelişte tanıtım yok ' + JSON.stringify(R.first));
+  ok(R.first.job0 === '?????' && R.first.jobMid === '?????' && R.first.job1 === 'Karadenizli fıkra kahramanı' && R.first.nameMid === '?????', 'meslek konuşunca açılmadı ' + JSON.stringify(R.first));
   ok(R.first.name1 === 'Temel' && /Deftere yazıldı: Temel/.test(R.first.toast) && R.first.newF, 'servis sonrası ad öğrenilmedi ' + JSON.stringify(R.first));
   ok(R.first.intro2 === false && Math.abs(R.first.dur2 - R.first.hiOnly) < 0.01 && R.first.visits === 2, 'ikinci gelişte tanıtım tekrarlandı ' + JSON.stringify(R.first));
   /* defter */
