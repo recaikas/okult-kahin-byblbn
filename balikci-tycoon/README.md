@@ -17,6 +17,20 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v2.7 — İlk kez ipuçları: her sekme kendini anlatır
+
+- Yeni oyuncu bir sekmeye ya da panele ilk kez girdiğinde o sekmenin ne işe yaradığını anlatan bir kart çıkar. Kart açıkken oyun durur; "ANLADIM" ile kapanır ve o kayıtta bir daha çıkmaz.
+- Kapsam (27 kart):
+  - Alt çubuk: Alan, Yükseltme, Yapı, Proje, Bina
+  - Yapı alt sekmeleri: Dekor, Yükseltme, Meydan
+  - Liman menüsü: Liman, Personel, Ürünler, Albüm, Yardım, Başarımlar
+  - Ticaret Ofisi: Piyasa, Şirket, Kontrat, Portföy, Haber, Holding
+  - Paneller: Tezgâhlar, Müşteri Defteri, Balık Hali, Bölüm Hedefi, Pazar Günü, Gün Sonu, Skor Tablosu
+- Art arda gelen ipuçları sıraya girer. Menü › YARDIM'daki "Sekme ipuçlarını yeniden göster" hepsini sıfırlar.
+- Eski ve uzun oynanmış kayıtlarda (10 dk üstü) ipuçları görülmüş sayılır; yeni başlayan her şeyi görür.
+- Düzeltme: Liman menüsü › ÜRÜNLER sekmesi, Mutfak balıkları (palamut, somon) yüzünden hata verip açılmıyordu. Artık bunlar "Reis Güveci malzemesi" olarak listelenir.
+- Test: `test-ipucu.js`. Eski testler ipuçlarını kapatır (`HK_HELP_OFF`).
+
 ## v2.6 — Tezgâh paneli: istatistik, gelir/gider, artış/azalış
 
 - Tezgâh paneli (üst sağdaki 🐟) artık tek tezgâhta da görünür; başlık "TEZGÂHLAR".

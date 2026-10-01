@@ -204,6 +204,11 @@
   .newsr{font-size:11px;padding:5px 7px;border-left:3px solid var(--edge);background:rgba(255,255,255,.03);margin-bottom:3px}
   .newsr b{color:var(--ink)}
 
+  /* v2.7 — ilk kez ipucu kartı: diğer panellerin üstünde */
+  #helpScr{z-index:40;background:rgba(6,18,28,.72)}
+  .helpc{max-width:380px;border-color:var(--gold)}
+  .helpc h2{font-size:17px}
+  #helpB p{text-align:left;font-size:13px;line-height:1.5;color:var(--ink);margin-bottom:8px}
   /* v2.5 — müşteri defteri */
   .ctabs{display:flex;gap:4px;margin-bottom:8px}
   .ctabs .tab{flex:1;font:inherit;font-size:11px;padding:6px 2px;background:#0f2231;color:var(--ink2);border:2px solid var(--edge);cursor:pointer}
@@ -610,7 +615,7 @@
   <div class="card">
     <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v2.6</div>
+    <div class="ver">v2.7</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -696,6 +701,14 @@
     <p id="stallSub">Yetişemediğin tezgâhı kapat; kapalı tezgâha müşteri gelmez.</p>
     <div id="stallRows"></div>
     <button class="go" id="stallGo">TAMAM</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="helpScr">
+  <div class="card helpc">
+    <h2 id="helpT">💡</h2>
+    <div id="helpB"></div>
+    <button class="go" id="helpGo">ANLADIM</button>
   </div>
 </div>
 
