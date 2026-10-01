@@ -17,6 +17,12 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v2.5.1 — Mobilde ekran taşması
+
+- iPhone'da üst şeritte bir olay kutusu (Balık Sürüsü, Gemi, Fırtına) çıkınca şerit ekrana sığmıyordu. Safari sayfayı yakınlaştırıp kaydırıyor; PARA kutusu ve ☰ kesiliyor, alt sekmeler tarayıcı çubuğunun altında kalıyordu.
+- Dar ekranda (≤540 px) olay kutusu şeridin altına, sağa iner; kuyruk uyarısı onun altına kayar. Üst şerit hiçbir durumda ekranı yana taşırmaz.
+- İki parmakla sıkıştırma yakınlaştırması engellendi. Yazı kutusundan çıkınca ölçek ve kaydırma sıfırlanır. Görüş formu yazısı 16 px (iOS'un odakta otomatik yakınlaştırması tetiklenmez).
+
 ## v2.5 — Müşteri Defteri ve kendini tanıtan özel müşteriler
 
 - **Kendini tanıtma:** 50 özel müşterinin her birine bir tanıtım sözü yazıldı (`specials.js` › `me`). Örnek: Temel, "Ben Temel! Herkes bana 'Uy uşağum' der, ben de herkese uşağum derum!"

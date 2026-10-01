@@ -576,6 +576,21 @@ var TW = 24, TH = 12;
 function pX(x, y) { return (x - y) * (TW / 2); }
 function pY(x, y, z) { return (x + y) * (TH / 2) - (z || 0); }
 
+/* v2.5.1 — iPhone: iki parmak sıkıştırma ya da yazı kutusu odağı sayfayı yakınlaştırıp kaydırınca üst şerit ve alt
+   sekmeler ekrandan taşıyordu. Sıkıştırma engellenir; yazı kutusundan çıkınca ölçek ve kaydırma sıfırlanır. */
+(function () {
+  ['gesturestart', 'gesturechange'].forEach(function (e) { document.addEventListener(e, function (ev) { ev.preventDefault(); }, { passive: false }); });
+  function typing() { var a = document.activeElement; return !!(a && /INPUT|TEXTAREA/.test(a.tagName) && a.type !== 'range'); }
+  function resetZoom() {
+    var m = document.querySelector('meta[name=viewport]');
+    if (m) { var c = m.getAttribute('content'); m.setAttribute('content', c.replace(/,?\s*x=1$/, '') + ',x=1'); setTimeout(function () { m.setAttribute('content', c); }, 60); }
+    if (window.scrollX || window.scrollY) window.scrollTo(0, 0);
+  }
+  document.addEventListener('focusout', function (ev) { if (ev.target && /INPUT|TEXTAREA/.test(ev.target.tagName)) setTimeout(function () { if (!typing()) resetZoom(); }, 80); });
+  window.addEventListener('scroll', function () { if (!typing() && (window.scrollX || window.scrollY)) window.scrollTo(0, 0); });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', function () { if (window.visualViewport.scale > 1.01 && !typing()) resetZoom(); });
+})();
+
 /* ---------------- girdi ---------------- */
 var keys = {};
 /* v0.3 — hareket göstergesi + kontrol eğitimi */

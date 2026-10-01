@@ -66,7 +66,14 @@
     #dayChip .bar{display:none}
     .hud .btn{min-width:32px;height:32px}
     body #objective{white-space:normal;max-width:94vw;font-size:11px}
+    /* v2.5.1: olay kutusu (Balık Sürüsü vb.) dar ekranda üst şeridi taşırıp iPhone'da sayfayı kaydırıyordu:
+       şeridin altına, sağa iner; kuyruk uyarısı onun altına kayar */
+    #eventChip{position:fixed;right:4px;top:calc(84px + env(safe-area-inset-top,0px));z-index:5}
+    #queueHint{top:calc(122px + env(safe-area-inset-top,0px))}
   }
+  /* hiçbir şey ekranı yana taşırmasın */
+  .hud{max-width:100vw;overflow:hidden}
+  .hud .chip{flex-shrink:1}
 
   #objective{position:fixed;left:50%;transform:translateX(-50%);
     top:calc(46px + env(safe-area-inset-top,0px));z-index:5;pointer-events:none;
@@ -527,7 +534,7 @@
   .fbstars button:active{transform:translate(1px,1px)}
   #fbCats button{font-size:12.5px;padding:9px 2px}
   #fbText{display:block;width:100%;margin-top:6px;min-height:92px;resize:none;background:#0a1a27;border:3px solid var(--edge);
-    color:var(--ink);font-family:inherit;font-size:15px;line-height:1.35;padding:8px;outline:none;
+    color:var(--ink);font-family:inherit;font-size:16px;line-height:1.35;padding:8px;outline:none;
     user-select:text;-webkit-user-select:text;touch-action:pan-y}
   #fbText:focus{border-color:var(--gold)}
   .fberr{font-size:12.5px !important;color:#ff9b8a !important;margin:6px 0 0 !important}
@@ -588,7 +595,7 @@
   <div class="card">
     <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v2.5</div>
+    <div class="ver">v2.5.1</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
