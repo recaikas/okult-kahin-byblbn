@@ -9,7 +9,7 @@
      • BT_NATIVE.review(): mağazanın uygulama içi değerlendirme penceresi (InAppReview eklentisi).
    ===================================================================== */
 (function () {
-  var FILES = ['config.js', 'specials.js', 'game.js'], PREFIX = 'balikci_', MUST = 'game.js', tries = 0;
+  var FILES = ['config.js', 'specials.js', 'story.js', 'game.js'], PREFIX = 'balikci_', MUST = 'game.js', tries = 0;
   /* v1.9.7 — game.js zorunlu: yüklenemezse (mobil ağda kopma) önbelleği atlayarak 2 kez daha dener; yine olmazsa
      sessiz ölü ekran yerine oyuncunun dilinde hata + "Tekrar dene". config.js / specials.js isteğe bağlı (atlanır). */
   function failScreen() {

@@ -150,7 +150,10 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
     }
     await closeBar();
   };
-  const hireMgr = async (z) => {
+  const hireMgr = async (z, topUp) => {
+    /* son tamamlama turunda: müdür ücreti rastgele (≈8–19 bin), bütçe şansa kalmasın, eksikse tamamlanır (kayda yazılır) */
+    const top = !topUp ? 0 : await p.evaluate(() => { const need = 20000 - BT.S.cash; if (need > 0) BT.S.cash += need; return Math.max(0, Math.round(need)); });
+    if (top) log('  (müdür bütçesi +' + top + ')');
     await openTab('level');
     let cs = await cards(); const mc = cs.find(c => /Müdür gerekli/.test(c.t) && c.t.includes(['İskelesi', 'Pazarı', 'Fümehane', 'Mutfağı'][z]));
     if (!mc) { log('  ! müdür kartı yok z' + z, cs.map(c => c.t).filter(t => /Müdür|Devret|OTOMAT/.test(t))); await closeBar(); return; }
@@ -250,7 +253,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
     await buyAll('build', 'meydan', null, 8);
     await investProject();
     await buyAll('level', null, /Füme Makinesi/, 2);
-    for (const z of [0, 1, 2, 3]) if (!(await p.evaluate(z => BT.mgr(z), z))) { await hireZone(z); await hireMgr(z); }
+    for (const z of [0, 1, 2, 3]) if (!(await p.evaluate(z => BT.mgr(z), z))) { await hireZone(z); await hireMgr(z, true); }
   } catch (e) { if (e.message !== 'INTRO') throw e; log('  (sayaç doldu, gazete açıldı)'); } });
   let c = await chapter();
   if (c.d < c.n) {
