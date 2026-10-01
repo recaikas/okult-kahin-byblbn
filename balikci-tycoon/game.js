@@ -86,7 +86,7 @@ var STR = {
     envUp1: '🌿 Liman canlanıyor: yol çakıl oldu, ağaçlar yeşeriyor', envUp2: '🪨 Yol arnavut kaldırımı oldu, sahil toparlandı',
     envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
     specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
-    custTitle: '📖 MÜŞTERİ DEFTERİ', custSub: 'Koya gelen herkes. Görmediğin kara gölge, adını söylemeyen ?????. Siparişini bitir, adını öğren.', custStory: 'HİKÂYE', custSpec: 'ÖZEL', custTypes: 'TİPLER', custTap: 'Bir karta dokun.', custNever: 'Henüz koya gelmedi.', custNoName: 'Adını henüz söylemedi. Siparişini tamamla, kendini tanıtsın.', custVisits: 'Kaç kez geldi: {n}', custServed: 'Servis edilen: {n}', custTypeD: 'Sipariş {a}–{b} · sabır {p} sn · fiyat ×{m}', custStoryD: 'Dipteki Söz hikâyesinin bir parçası.', custNewName: '📖 Deftere yazıldı: {n}',
+    custTitle: '📖 MÜŞTERİ DEFTERİ', custSub: 'Koya gelen herkes. Görmediğin kara gölge, adını söylemeyen ?????. Siparişini bitir, adını öğren.', custStory: 'HİKÂYE', custSpec: 'ÖZEL', custTypes: 'TİPLER', custTap: 'Bir karta dokun.', custNever: 'Henüz koya gelmedi.', custNoName: 'Adını henüz söylemedi. Siparişini tamamla, kendini tanıtsın. Mesleği, konuşmasını bitirince belli olur.', custVisits: 'Kaç kez geldi: {n}', custServed: 'Servis edilen: {n}', custTypeD: 'Sipariş {a}–{b} · sabır {p} sn · fiyat ×{m}', custStoryD: 'Dipteki Söz hikâyesinin bir parçası.', custNewName: '📖 Deftere yazıldı: {n}',
     lineIng: '{d} malzemesi (tezgâhta satılmaz, mutfağa gider)', helpGot: 'ANLADIM', helpReset: '💡 Sekme ipuçlarını yeniden göster', helpResetD: 'İpuçları sıfırlandı: her sekme ilk açılışta yeniden anlatılacak',
     storyName: 'Dipteki Söz', storyNext: 'Sıradaki: Gün {d} · {t} — bir koy sakini tezgâhına gelecek', storyFin: 'Hikâye tamamlandı. Unvan: Dipteki Sözün Bekçisi', storyBer: 'Bereket Ölçeri', storyBerD: 'ağ verimi {p}%', storyBuffs: 'Kalıcı etkiler', storyFaces: 'Koyun yüzleri', storyDone: '✦ Dipteki Söz tamamlandı: Dipteki Sözün Bekçisi',
     albMet: 'Tanıştığın özel müşteriler', albLeft: 'Henüz tanışmadığın {n} kişi daha var — her gün 2 özel müşteri gelir.', albNone: 'Henüz kimseyle tanışmadın. Her gün 2 özel müşteri gelir.', albFav: 'Sevdiği',
@@ -296,7 +296,7 @@ var STR = {
     envUp1: '🌿 The harbor comes alive: gravel road, trees turning green', envUp2: '🪨 The road is cobbled now, the shore tidied up',
     envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
     specComing: 'A special customer is coming...', daySpec: 'Special customers',
-    custTitle: '📖 CUSTOMER BOOK', custSub: 'Everyone who visits the cove. Unseen are shadows; those who haven\'t told their name are ?????. Finish their order to learn it.', custStory: 'STORY', custSpec: 'SPECIAL', custTypes: 'TYPES', custTap: 'Tap a card.', custNever: 'Hasn\'t visited the cove yet.', custNoName: 'Hasn\'t told you their name yet. Complete their order and they\'ll introduce themselves.', custVisits: 'Visits: {n}', custServed: 'Served: {n}', custTypeD: 'Order {a}–{b} · patience {p}s · price ×{m}', custStoryD: 'Part of The Promise Below.', custNewName: '📖 Added to the book: {n}',
+    custTitle: '📖 CUSTOMER BOOK', custSub: 'Everyone who visits the cove. Unseen are shadows; those who haven\'t told their name are ?????. Finish their order to learn it.', custStory: 'STORY', custSpec: 'SPECIAL', custTypes: 'TYPES', custTap: 'Tap a card.', custNever: 'Hasn\'t visited the cove yet.', custNoName: 'Hasn\'t told you their name yet. Complete their order and they\'ll introduce themselves. Their job shows once they finish talking.', custVisits: 'Visits: {n}', custServed: 'Served: {n}', custTypeD: 'Order {a}–{b} · patience {p}s · price ×{m}', custStoryD: 'Part of The Promise Below.', custNewName: '📖 Added to the book: {n}',
     lineIng: 'ingredient for {d} (not sold at a stall, goes to the kitchen)', helpGot: 'GOT IT', helpReset: '💡 Show tab tips again', helpResetD: 'Tips reset: each tab will explain itself again on first open',
     storyName: 'The Promise Below', storyNext: 'Next: Day {d} · {t} — someone from the cove will visit your stall', storyFin: 'Story complete. Title: Keeper of the Promise Below', storyBer: 'Bounty Gauge', storyBerD: 'net yield {p}%', storyBuffs: 'Permanent effects', storyFaces: 'Faces of the cove', storyDone: '✦ The Promise Below complete: Keeper of the Promise Below',
     albMet: 'Special customers you\'ve met', albLeft: '{n} more to meet — 2 special customers visit every day.', albNone: 'You haven\'t met anyone yet. 2 special customers visit every day.', albFav: 'Loves',
@@ -2426,7 +2426,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0, lvFloor: 0, names: [], story: null, custSeen: {}, specN: {}, custNewF: false, stallSt: {}, help: {}     /* skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0, lvFloor: 0, names: [], story: null, custSeen: {}, specN: {}, custNewF: false, stallSt: {}, help: {}, jobs: []     /* skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -2530,7 +2530,7 @@ function buildSave() {
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
     auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
-    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, custSeen: S.custSeen || {}, specN: S.specN || {}, custNewF: S.custNewF ? 1 : 0, stallSt: S.stallSt || {}, help: S.help || {}, ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
+    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, custSeen: S.custSeen || {}, specN: S.specN || {}, custNewF: S.custNewF ? 1 : 0, stallSt: S.stallSt || {}, help: S.help || {}, jobs: S.jobs || [], ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
     areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
@@ -2611,6 +2611,7 @@ function loadFrom(d) {
     S.met = Array.isArray(d.met) ? d.met.filter(function (q) { return typeof q === 'string'; }) : [];
     /* v2.4: isimler — eski kayıtta tanışılan herkesin adı bilinir; yeni tanışılan "?????" başlar */
     S.names = Array.isArray(d.names) ? d.names.filter(function (q) { return typeof q === 'string'; }) : S.met.slice();
+    S.jobs = Array.isArray(d.jobs) ? d.jobs.filter(function (q) { return typeof q === 'string'; }) : S.met.slice();   /* v2.8: eski kayıtta tanışılanın mesleği bilinir */
     S.story = storyLoad(d.story);
     S.custSeen = numMap(d.custSeen); S.specN = numMap(d.specN); S.custNewF = !!d.custNewF;
     S.stallSt = stallLoad(d.stallSt);
@@ -3729,6 +3730,9 @@ function updateCustomers(dt) {
       cu.x = lerp(cu.x, q.x, 1 - Math.pow(0.001, dt));
       cu.y = lerp(cu.y, q.y, 1 - Math.pow(0.001, dt));
       if (cu.spec) cu.sayT = (cu.sayT || 0) + dt;
+      if (cu.spec && !cu.jobK && cu.spec.indexOf('st_') !== 0 && cu.sayT >= specHiDur(cu)) {    /* v2.8: konuştu → mesleği bilinir */
+        cu.jobK = true; S.jobs = S.jobs || []; if (S.jobs.indexOf(cu.spec) < 0) { S.jobs.push(cu.spec); custNew(); }
+      }
       if (!specTalking(cu)) cu.pat -= dt;            /* konuşurken sabrı azalmaz */
       cu.mood = clamp(cu.pat / cu.patMax, 0, 1);
       if (cu.pat <= 0) {
@@ -7684,7 +7688,7 @@ function renderTab() {
     var met = SPECIALS.filter(function (q) { return S.met.indexOf(q.id) >= 0; });
     h += row('⭐', T('albMet'), met.length ? '' : T('albNone'), met.length + '/' + SPECIALS.length);
     met.forEach(function (q) {
-      h += row('★', escH(specName(q)) + ' · ' + escH(NM(q.job)), escH(q.trait ? NM(q.trait) : NM(q.hi)), '', T('albFav') + ': ' + NM(FISH[q.fav].n));
+      h += row('★', escH(specName(q)) + ' · ' + escH(specJob(q)), escH(q.trait ? NM(q.trait) : NM(q.hi)), '', T('albFav') + ': ' + NM(FISH[q.fav].n));
     });
     if (met.length && met.length < SPECIALS.length) h += '<div class="empty">' + T('albLeft', { n: SPECIALS.length - met.length }) + '</div>';
   } else {
@@ -10551,7 +10555,7 @@ function drawSpecialTag(cu) {
     cu.fxT = (cu.fxT || 0) + 0.016;
     if (cu.fxT > 1.3) { cu.fxT = 0; addFloat(cu.x + rnd(-0.3, 0.3), cu.y - 0.6, sp.fx, sp.fxc); }
   }
-  uiLabel(cu.x, cu.y, 44, (cu.story ? '✦ ' : '★ ') + specName(sp) + ' · ' + NM(sp.job), cu.story ? '#9fe3ff' : '#ffc94a', 0.95);
+  uiLabel(cu.x, cu.y, 44, (cu.story ? '✦ ' : '★ ') + specName(sp) + ' · ' + specJob(sp), cu.story ? '#9fe3ff' : '#ffc94a', 0.95);
   if (cu.state === 'wait' && !cu.sndHi) { cu.sndHi = true; specSfx(sp); }                                  /* v1.3: gelişte kendi sesi */
   if (cu.state === 'leave' && cu.happyLeave !== false && !cu.sndBye) { cu.sndBye = true; specSfx(sp); }
   var line = null;
@@ -10598,6 +10602,13 @@ function storyBuff(id) { var b = S.story && S.story.buffs; return b && b[id] ? b
 function storyNetMul() { var st = S.story; if (!st) return 1; return (1 + (st.ber - 6) * 0.03) * (1 + 0.03 * storyBuff('altinok') + 0.03 * storyBuff('denizsozu')); }
 /* Koy Muhafızı: fırtınadaki müşteri kaybı yarıya iner */
 function stormMul(ev) { return ev.id === 'kar' ? 1 - (1 - ev.custMul) * (1 - 0.5 * storyBuff('muhafiz')) : ev.custMul; }
+/* v2.8: meslek de ilk başta gizli; özel müşteri konuşmasını (tanıtım + sipariş) bitirince açılır.
+   Hikâye karakterinin mesleği, hikâyede ilk göründüğü gün geçince bilinir. */
+function specJob(sp) {
+  if (!sp) return '';
+  if (sp.id.indexOf('st_') === 0) { var st = S.story, k = sp.id.slice(3); return st && (st.known.indexOf(k) >= 0 || (STORY_FIRST[k] && st.step >= STORY_FIRST[k])) ? NM(sp.job) : '?????'; }
+  return (S.jobs || []).indexOf(sp.id) >= 0 || (S.names || []).indexOf(sp.id) >= 0 ? NM(sp.job) : '?????';
+}
 function specName(sp) {
   if (!sp) return '';
   if (sp.id.indexOf('st_') === 0) return stQ().known.indexOf(sp.id.slice(3)) >= 0 ? NM(sp.n) : '?????';
@@ -10746,11 +10757,11 @@ function custBookData() {
   ['k', 'h', 't', 'a', 'v'].forEach(function (k) {
     var sp = STORY_SPECS['st_' + k]; if (!sp) return;
     var seen = !!(st && st.step > 0 && (st.known.indexOf(k) >= 0 || STORY_FIRST[k] <= st.step)), known = !!(st && st.known.indexOf(k) >= 0);
-    out.story.push({ id: sp.id, sp: sp, seen: seen, known: known, n: NM(sp.n), job: NM(sp.job), d: known ? T('custStoryD') : '', cnt: 0 });
+    out.story.push({ id: sp.id, sp: sp, seen: seen, known: known, n: NM(sp.n), job: specJob(sp), d: known ? T('custStoryD') : '', cnt: 0 });
   });
   SPECIALS.forEach(function (sp) {
     var seen = S.met.indexOf(sp.id) >= 0, known = (S.names || []).indexOf(sp.id) >= 0;
-    out.spec.push({ id: sp.id, sp: sp, seen: seen, known: known, n: NM(sp.n), job: NM(sp.job), d: known ? (sp.trait ? NM(sp.trait) : NM(sp.hi)) + ' · ' + T('albFav') + ': ' + NM(FISH[sp.fav].n) : '', cnt: (S.specN || {})[sp.id] || (seen ? 1 : 0) });
+    out.spec.push({ id: sp.id, sp: sp, seen: seen, known: known, n: NM(sp.n), job: specJob(sp), d: known ? (sp.trait ? NM(sp.trait) : NM(sp.hi)) + ' · ' + T('albFav') + ': ' + NM(FISH[sp.fav].n) : '', cnt: (S.specN || {})[sp.id] || (seen ? 1 : 0) });
   });
   CUST.forEach(function (t) {
     var c = (S.custSeen || {})[t.id], seen = c !== undefined;
@@ -11645,6 +11656,7 @@ window.BT = {
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
   help: function () { return { seen: Object.keys(S.help || {}), open: !el.helpScr.classList.contains('hidden'), title: el.helpT.textContent, keys: Object.keys(HELP) }; },
   stallSt: function (k) { var c = counterByKey(k); return c ? stSt(c) : null; }, stallExpPM: function (k) { var c = counterByKey(k); return c ? stallExpPM(c) : 0; }, stallTick: stallTick, stallNewDay: stallNewDay,
+  specJob: function (id) { return specJob(specById(id)); },
   custBook: function () { return custBookData(); }, openCustBook: function () { openCustBook(); }, finishOrder: finishOrder, notifsAll: function () { return el.toast.textContent; },
   story: function () { return { st: S.story, vis: storyVis, on: storyOn(), open: storyOpenNow(), mute: storyMute, netMul: storyNetMul(), name: function (id) { return specName(specById(id)); } }; }, storySet: function (o) { var st = stQ(); for (var k in o) st[k] = o[k]; },
   snd: function () { return { vol: { mus: VOL.mus, sfx: VOL.sfx, amb: VOL.amb }, buses: !!(musBus && sfxBus && ambBus), stat: { asked: sfxStat.asked, played: sfxStat.played }, musDst: !!(music.gain && musBus) }; },
