@@ -313,6 +313,21 @@
   .trow .tv{font-size:12.5px;min-width:44px;text-align:center;color:var(--gold)}
   .trow .pz{min-width:62px;font-size:10px;letter-spacing:.5px}
   .pz.p0{color:var(--ink2)} .pz.p1{color:var(--ink)} .pz.p2{color:var(--green);border-color:#17532a}
+  /* v2.6 — tezgâh istatistiği */
+  .srow{flex-wrap:nowrap;cursor:pointer}
+  .srow.open{border-color:var(--gold);margin-bottom:0}
+  .srow .sl{color:var(--ink)!important;margin-top:2px}
+  .srow b,.ssum b{color:var(--gold)}
+  .srow i,.sdet i,.ssum i{font-style:normal;font-size:10px;margin-left:2px}
+  .up{color:var(--green)!important} .dn{color:#ff8a7a!important}
+  .ssum{display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;font-size:12px;padding:6px 8px;background:#0f2231;border:3px solid var(--edge);margin-bottom:4px}
+  .shint{font-size:10px;color:var(--ink2);margin:0 0 6px;text-align:center}
+  .sdet{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:#0f2231;border:3px solid var(--gold);border-top:0;padding:6px;margin-bottom:6px}
+  .sdet div{background:rgba(255,255,255,.04);padding:4px 6px;min-width:0}
+  .sdet small{display:block;font-size:9px;color:var(--ink2);letter-spacing:.5px}
+  .sdet b{display:block;font-size:13px;color:var(--ink)}
+  .sdet b small{display:inline;font-size:9px}
+  .sdet em{display:block;font-style:normal;font-size:9.5px;color:var(--ink2)}
   /* tezgâh aç/kapat anahtarı */
   .sw{min-width:64px;font-size:11px;letter-spacing:1px;padding:0 6px}
   .sw.on{background:var(--green);border-color:#17532a;color:#062f14}
@@ -595,7 +610,7 @@
   <div class="card">
     <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v2.5.1</div>
+    <div class="ver">v2.6</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -677,7 +692,7 @@
 
 <div class="overlay hidden" id="stallScr">
   <div class="card">
-    <h2 id="stallTitle">AÇIK TEZGÂHLAR</h2>
+    <h2 id="stallTitle">TEZGÂHLAR</h2>
     <p id="stallSub">Yetişemediğin tezgâhı kapat; kapalı tezgâha müşteri gelmez.</p>
     <div id="stallRows"></div>
     <button class="go" id="stallGo">TAMAM</button>
