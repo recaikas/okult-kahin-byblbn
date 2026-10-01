@@ -66,7 +66,14 @@
     #dayChip .bar{display:none}
     .hud .btn{min-width:32px;height:32px}
     body #objective{white-space:normal;max-width:94vw;font-size:11px}
+    /* v2.5.1: olay kutusu (Balık Sürüsü vb.) dar ekranda üst şeridi taşırıp iPhone'da sayfayı kaydırıyordu:
+       şeridin altına, sağa iner; kuyruk uyarısı onun altına kayar */
+    #eventChip{position:fixed;right:4px;top:calc(84px + env(safe-area-inset-top,0px));z-index:5}
+    #queueHint{top:calc(122px + env(safe-area-inset-top,0px))}
   }
+  /* hiçbir şey ekranı yana taşırmasın */
+  .hud{max-width:100vw;overflow:hidden}
+  .hud .chip{flex-shrink:1}
 
   #objective{position:fixed;left:50%;transform:translateX(-50%);
     top:calc(46px + env(safe-area-inset-top,0px));z-index:5;pointer-events:none;
@@ -197,6 +204,26 @@
   .newsr{font-size:11px;padding:5px 7px;border-left:3px solid var(--edge);background:rgba(255,255,255,.03);margin-bottom:3px}
   .newsr b{color:var(--ink)}
 
+  /* v2.5 — müşteri defteri */
+  .ctabs{display:flex;gap:4px;margin-bottom:8px}
+  .ctabs .tab{flex:1;font:inherit;font-size:11px;padding:6px 2px;background:#0f2231;color:var(--ink2);border:2px solid var(--edge);cursor:pointer}
+  .ctabs .tab.on{background:#2a4a5e;color:var(--gold)}
+  .ctabs .tab small{opacity:.8}
+  #custGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:5px;margin-bottom:8px}
+  .cc{position:relative;background:#0f2231;border:2px solid #2a4a5e;padding:3px 2px 4px;text-align:center;cursor:pointer;min-width:0}
+  .cc canvas{display:block;margin:0 auto;width:60px;height:69px;image-rendering:pixelated}
+  .cc b{display:block;font-size:10px;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cc small{display:block;font-size:9px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cc i{position:absolute;top:2px;right:3px;font-style:normal;font-size:9px;color:#9fd3b0}
+  .cc.unk b{color:#9fe3ff}
+  .cc.no{background:#0a1822;border-color:#1c3242}
+  .cc.no b{color:#4a5e6c}
+  #custDet{min-height:40px;font-size:12px;line-height:1.45;padding:7px;background:rgba(255,255,255,.04);border-left:3px solid var(--edge);margin-bottom:8px;color:var(--ink2)}
+  #custDet b{color:var(--gold)}
+  #custBtn{font-size:16px}
+  #custBtn.new{animation:custPulse 1s infinite}
+  @keyframes custPulse{50%{box-shadow:0 0 0 3px #ffc94a}}
+
   /* ---------- tam ekranlar ---------- */
   .overlay{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
     padding:14px;background:rgba(6,18,28,.9)}
@@ -286,6 +313,21 @@
   .trow .tv{font-size:12.5px;min-width:44px;text-align:center;color:var(--gold)}
   .trow .pz{min-width:62px;font-size:10px;letter-spacing:.5px}
   .pz.p0{color:var(--ink2)} .pz.p1{color:var(--ink)} .pz.p2{color:var(--green);border-color:#17532a}
+  /* v2.6 — tezgâh istatistiği */
+  .srow{flex-wrap:nowrap;cursor:pointer}
+  .srow.open{border-color:var(--gold);margin-bottom:0}
+  .srow .sl{color:var(--ink)!important;margin-top:2px}
+  .srow b,.ssum b{color:var(--gold)}
+  .srow i,.sdet i,.ssum i{font-style:normal;font-size:10px;margin-left:2px}
+  .up{color:var(--green)!important} .dn{color:#ff8a7a!important}
+  .ssum{display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;font-size:12px;padding:6px 8px;background:#0f2231;border:3px solid var(--edge);margin-bottom:4px}
+  .shint{font-size:10px;color:var(--ink2);margin:0 0 6px;text-align:center}
+  .sdet{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:#0f2231;border:3px solid var(--gold);border-top:0;padding:6px;margin-bottom:6px}
+  .sdet div{background:rgba(255,255,255,.04);padding:4px 6px;min-width:0}
+  .sdet small{display:block;font-size:9px;color:var(--ink2);letter-spacing:.5px}
+  .sdet b{display:block;font-size:13px;color:var(--ink)}
+  .sdet b small{display:inline;font-size:9px}
+  .sdet em{display:block;font-style:normal;font-size:9.5px;color:var(--ink2)}
   /* tezgâh aç/kapat anahtarı */
   .sw{min-width:64px;font-size:11px;letter-spacing:1px;padding:0 6px}
   .sw.on{background:var(--green);border-color:#17532a;color:#062f14}
@@ -507,7 +549,7 @@
   .fbstars button:active{transform:translate(1px,1px)}
   #fbCats button{font-size:12.5px;padding:9px 2px}
   #fbText{display:block;width:100%;margin-top:6px;min-height:92px;resize:none;background:#0a1a27;border:3px solid var(--edge);
-    color:var(--ink);font-family:inherit;font-size:15px;line-height:1.35;padding:8px;outline:none;
+    color:var(--ink);font-family:inherit;font-size:16px;line-height:1.35;padding:8px;outline:none;
     user-select:text;-webkit-user-select:text;touch-action:pan-y}
   #fbText:focus{border-color:var(--gold)}
   .fberr{font-size:12.5px !important;color:#ff9b8a !important;margin:6px 0 0 !important}
@@ -532,6 +574,7 @@
   <div class="chip" id="dayChip"><i class="ci" id="dayIcon" data-i="gun"></i><span><small id="hDay">GÜN</small><span id="dayNum">1</span></span><span class="bar"><i id="dayfill"></i></span></div>
   <div class="spacer"></div>
   <div class="chip hidden" id="eventChip"><i class="ci" id="eventIcon" data-i="hamsi"></i><span><small id="eventName">OLAY</small><span id="eventT">0s</span></span></div>
+  <button class="btn hidden" id="custBtn" aria-label="Müşteri Defteri">📖</button>
   <button class="btn hidden" id="stallBtn" aria-label="Açık tezgâhlar"><i class="ci" data-i="hamsi"></i></button>
   <button class="btn" id="menuBtn">☰</button>
 </div>
@@ -567,7 +610,7 @@
   <div class="card">
     <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v2.4</div>
+    <div class="ver">v2.6</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -649,10 +692,21 @@
 
 <div class="overlay hidden" id="stallScr">
   <div class="card">
-    <h2 id="stallTitle">AÇIK TEZGÂHLAR</h2>
+    <h2 id="stallTitle">TEZGÂHLAR</h2>
     <p id="stallSub">Yetişemediğin tezgâhı kapat; kapalı tezgâha müşteri gelmez.</p>
     <div id="stallRows"></div>
     <button class="go" id="stallGo">TAMAM</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="custScr">
+  <div class="card">
+    <h2 id="custTitle">📖 MÜŞTERİ DEFTERİ</h2>
+    <p id="custSub"></p>
+    <div id="custTabs" class="ctabs"></div>
+    <div id="custGrid"></div>
+    <div id="custDet"></div>
+    <button class="go" id="custGo">TAMAM</button>
   </div>
 </div>
 

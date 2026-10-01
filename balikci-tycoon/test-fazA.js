@@ -26,9 +26,9 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   ok(!R.up.some(t => /Devret|Eksik rol/i.test(t)), 'personel yokken devret kartı çıktı ' + JSON.stringify(R.up));
   await p.click('.dtab[data-t="level"]'); await sleep(200);
 
-  /* 3) tezgâh düğmesi: tek tezgâhta gizli */
-  R.btn0 = await p.evaluate(() => document.getElementById('stallBtn').classList.contains('hidden'));
-  ok(R.btn0, 'tek tezgâhta tezgâh düğmesi görünüyor');
+  /* 3) tezgâh düğmesi: v2.6'dan beri tek tezgâhta da görünür (istatistik paneli) */
+  R.btn0 = await p.evaluate(() => !document.getElementById('stallBtn').classList.contains('hidden'));
+  ok(R.btn0, 'tek tezgâhta tezgâh düğmesi görünmüyor');
 
   /* 1) üç bölge, üç tahsildar */
   R.col = await p.evaluate(async () => {

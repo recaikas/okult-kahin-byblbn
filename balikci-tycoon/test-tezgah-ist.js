@@ -1,0 +1,60 @@
+/* v2.6 — tezgâh paneli + istatistik:
+   1) tek tezgâhta da 🐟 düğmesi görünür; panelde özet (bugün, net/dk) ve her tezgâhta bugün/net satırı;
+   2) satış ve kaçan müşteri tezgâha işlenir; gelir hızı 30 sn pencereyle hesaplanır, gider bölge maaşından pay;
+   3) tezgâha dokununca ayrıntı açılır (bugün, hız, gider, net, satış, kaçan, sepet, en çok gelen, toplam);
+   4) yeni günde bugün → dün, ok dünle karşılaştırır; kayıt/yükleme korur; aç/kapat düğmesi ayrıntıyı açmaz. */
+const { chromium } = require('./test-offline');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const URL = process.env.URL || 'http://localhost:8099/index.html';
+(async () => {
+  const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+  const errs = [], fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
+  p.on('pageerror', e => errs.push(e.message));
+  await p.goto(URL); await sleep(900);
+  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
+  await p.click('#heroGo'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(600);
+  R.btn = await p.evaluate(() => !document.getElementById('stallBtn').classList.contains('hidden'));
+  ok(R.btn, 'tek tezgâhta düğme yok');
+  R.rec = await p.evaluate(async () => {
+    BT.S.tut = 99; BT.S.ctrl = 2; BT.day.phase = 'play'; BT.day.t = 10;
+    for (let i = 0; i < 80 && !BT.customers.some(c => !c.spec); i++) await new Promise(r => setTimeout(r, 150));
+    const cu = BT.customers.find(c => !c.spec); if (!cu) return { none: 1 };
+    const key = cu.c.key, cash0 = BT.S.cash;
+    cu.state = 'wait'; cu.ord.got = cu.ord.need; BT.finishOrder(cu.c, cu);
+    const st = BT.stallSt(key);
+    BT.stallTick(31);
+    return { key, inc: st.inc, n: st.n, rate: Math.round(st.rate), by: Object.keys(st.by), exp: BT.stallExpPM(key) };
+  });
+  ok(!R.rec.none && R.rec.inc > 0 && R.rec.n === 1 && R.rec.rate > 0 && R.rec.by.length === 1, 'satış tezgâha işlenmedi ' + JSON.stringify(R.rec));
+  await p.click('#stallBtn'); await sleep(300);
+  R.pan = await p.evaluate(() => ({ title: document.getElementById('stallTitle').textContent, sum: !!document.querySelector('#stallRows .ssum'), rows: document.querySelectorAll('#stallRows .srow').length, line: (document.querySelector('#stallRows .srow .sl') || {}).textContent }));
+  ok(R.pan.sum && R.pan.rows >= 1 && /Bugün \$/.test(R.pan.line) && /Net/.test(R.pan.line), 'panel özeti yok ' + JSON.stringify(R.pan));
+  await p.click('#stallRows .srow .nm'); await sleep(200);
+  R.det = await p.evaluate(() => { const d = document.querySelector('#stallRows .sdet'); return d ? d.innerText : null; });
+  ok(R.det && /Gelir hızı/.test(R.det) && /Gider/.test(R.det) && /Kaçan müşteri/.test(R.det) && /Toplam gelir/.test(R.det), 'ayrıntı açılmadı ' + R.det);
+  await p.click('#stallRows .srow .nm'); await sleep(200);
+  R.closed = await p.evaluate(() => !document.querySelector('#stallRows .sdet'));
+  ok(R.closed, 'ikinci dokunuşta ayrıntı kapanmadı');
+  await p.click('#stallGo'); await sleep(200);
+  R.day = await p.evaluate(key => {
+    const st = BT.stallSt(key), inc = st.inc;
+    BT.stallNewDay();
+    const a = { y: st.y && st.y.inc, today: st.inc };
+    st.inc = inc * 2;
+    const d = BT.buildSave(); BT.loadFrom(JSON.parse(JSON.stringify(d)));
+    const s2 = BT.stallSt(key);
+    return { a, saved: s2.inc === inc * 2 && s2.y && s2.y.inc === inc, tot: s2.tot };
+  }, R.rec.key);
+  ok(R.day.a.y > 0 && R.day.a.today === 0 && R.day.saved, 'gün devri/kayıt yanlış ' + JSON.stringify(R.day));
+  await p.click('#stallBtn'); await sleep(300);
+  R.arrow = await p.evaluate(() => (document.querySelector('#stallRows .srow .sl') || {}).innerHTML || '');
+  ok(/▲100%/.test(R.arrow), 'dünle karşılaştırma oku yok ' + R.arrow);
+  R.en = await p.evaluate(async () => { BT.setLang('en'); await new Promise(r => setTimeout(r, 200)); const t = document.getElementById('stallRows').innerText; BT.setLang('tr'); return t; });
+  ok(/Today/.test(R.en) && /All stalls today/.test(R.en), 'İngilizce yok ' + R.en.slice(0, 120));
+  if (errs.length) fail.push('sayfa hatası: ' + [...new Set(errs)].join(' | '));
+  await p.screenshot({ path: process.env.SHOT || '/tmp/st.png' });
+  await b.close();
+  console.log(JSON.stringify(R));
+  console.log(fail.length ? 'TEZGAH_FAIL\n - ' + fail.join('\n - ') : 'TAMAM: tezgâh istatistiği testi geçti');
+  process.exit(fail.length ? 1 : 0);
+})();

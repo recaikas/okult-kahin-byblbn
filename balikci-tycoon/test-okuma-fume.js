@@ -41,10 +41,11 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
     BT.day.spec = [BT.SPECIALS.find(s => s.fav === c.fish).id, BT.day.spec[1]];
     const okS = BT.spawnSpecial(0), cu = BT.customers.find(q => q.spec);
     /* aynı yerden bir normal müşteri: kıyas için */
-    return { okS, fish: c.fish, dur: cu ? BT.specHiDur(cu) : 0, start: cu ? [cu.x, cu.y] : null };
+    return { okS, fish: c.fish, dur: cu ? BT.specHiDur(cu) - BT.specMeDur(cu) : 0, me: cu ? BT.specMeDur(cu) : 0, start: cu ? [cu.x, cu.y] : null };
   });
   ok(setup.okS, 'özel müşteri doğmadı');
   ok(setup.dur >= 4 && setup.dur <= 9, 'söz süresi aralık dışında ' + setup.dur);
+  ok(setup.me === 0 || (setup.me >= 4 && setup.me <= 9), 'tanıtım süresi aralık dışında ' + setup.me);   /* v2.5: ilk gelişte önce tanıtım */
   /* yürüyüş: özel müşteri normalden yavaş */
   const speeds = await p.evaluate(async () => {
     const cu = BT.customers.find(q => q.spec), x0 = cu.x, y0 = cu.y;

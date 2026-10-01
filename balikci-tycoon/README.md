@@ -17,6 +17,38 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v2.6 — Tezgâh paneli: istatistik, gelir/gider, artış/azalış
+
+- Tezgâh paneli (üst sağdaki 🐟) artık tek tezgâhta da görünür; başlık "TEZGÂHLAR".
+- Üstte özet: tüm tezgâhların bugünkü geliri (düne göre ▲/▼ yüzde) ve toplam net hız ($/dk).
+- Her tezgâh satırı: bölge, stok, kuyruk; bugünkü gelir (düne göre ok) ve net $/dk (yeşil kâr, kırmızı zarar). Aç/kapat anahtarı aynı yerde.
+- Tezgâha dokununca ayrıntı açılır, tekrar dokununca kapanır:
+  - Bugün (dün kaç), gelir hızı $/dk (bir önceki yarım dakikaya göre ok), gider $/dk, net $/dk
+  - Satış sayısı (füme kaçı), kaçan müşteri (dün kaç), ortalama sepet ve ürün sayısı
+  - En çok gelen müşteri tipi, toplam gelir ve toplam satış, şu anki stok ve kuyruk
+- Gelir hızı 30 sn'lik pencerelerle, kayan ortalamayla hesaplanır. Gider: bölgenin dakikalık maaşı (personel + müdür), o bölgedeki açık tezgâhlara eşit bölünür; kapalı tezgâhın gideri yok.
+- Yeni günde "bugün" rakamları "dün" olur. Hepsi kayda yazılır. Panel açıkken saniyede bir tazelenir.
+- Test: `test-tezgah-ist.js`.
+
+## v2.5.1 — Mobilde ekran taşması
+
+- iPhone'da üst şeritte bir olay kutusu (Balık Sürüsü, Gemi, Fırtına) çıkınca şerit ekrana sığmıyordu. Safari sayfayı yakınlaştırıp kaydırıyor; PARA kutusu ve ☰ kesiliyor, alt sekmeler tarayıcı çubuğunun altında kalıyordu.
+- Dar ekranda (≤540 px) olay kutusu şeridin altına, sağa iner; kuyruk uyarısı onun altına kayar. Üst şerit hiçbir durumda ekranı yana taşırmaz.
+- İki parmakla sıkıştırma yakınlaştırması engellendi. Yazı kutusundan çıkınca ölçek ve kaydırma sıfırlanır. Görüş formu yazısı 16 px (iOS'un odakta otomatik yakınlaştırması tetiklenmez).
+
+## v2.5 — Müşteri Defteri ve kendini tanıtan özel müşteriler
+
+- **Kendini tanıtma:** 50 özel müşterinin her birine bir tanıtım sözü yazıldı (`specials.js` › `me`). Örnek: Temel, "Ben Temel! Herkes bana 'Uy uşağum' der, ben de herkese uşağum derum!"
+  - İlk gelişte (adı bilinmiyorken) önce tanıtım, sonra sipariş sözü gelir. Etikette ad "?????" kalır.
+  - Siparişi tamamlanınca ad deftere yazılır ("📖 Deftere yazıldı: Temel"); giderken etikette adı görünür.
+  - Sonraki gelişlerde tanıtım yok, doğrudan sipariş. Sipariş tamamlanmadan giderse ad öğrenilmez.
+- **Müşteri Defteri:** üst çubukta tezgâh düğmesinin yanında 📖. Yeni biri görülünce ya da adı öğrenilince düğme yanıp söner. Açıkken oyun durur.
+  - Sekmeler: Hikâye (Dipteki Söz karakterleri), Özel (50 kişi), Tipler (20 normal müşteri tipi). Her sekmede tanışılan / toplam.
+  - Görülmeyen kara gölge "???"; görülen ama adı bilinmeyen renkli, "?????"; tanışılan tam kart.
+  - Karta dokununca: meslek, huy, sevdiği balık, kaç kez geldiği; tiplerde sipariş aralığı, sabır, fiyat çarpanı ve servis sayısı.
+  - Normal tipler koya ilk geldiğinde açılır (eski kayıtta yeniden görülünce).
+- Test: `test-defter.js`.
+
 ## v2.4 — Dipteki Söz oyunun içinde
 
 - Eğitim bittikten sonra her oyun gününde hikâyenin o günkü karakteri koya gerçekten gelir ve bir tezgâhın kuyruğuna girer (oyun saatinde ~22. saniye). Başının üstünde "✦ ????? · meslek" yazar.
