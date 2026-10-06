@@ -17,6 +17,13 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v2.10 — Personel sırası
+
+- Bir bölgede bir rolün ikincisi, o bölgenin bütün rolleri (hamal, filetocu, tezgâhtar, tahsildar; Mutfakta aşçı da) birer tane olmadan alınamaz. Üçüncüsü için hepsi ikişer olmalı.
+- Oyuncular yanlışlıkla aynı rolden iki tane alıp paralarını bitiriyordu. Kilitli kart artık "Önce eksik rolleri al: Filetocu, Tezgâhtar, Tahsildar" der. Kartın başlığında o rolden kaç kişi olduğu yazar (Hamal ×1).
+- Satın alma anında kural yeniden denetlenir. Aynı karta hızlı çift dokunuş artık iki kişi almaz.
+- Test: `test-personel.js`.
+
 ## v2.9 — Mekanikli özel müşteriler ve 6 yeni müşteri tipi (müşteri brifinginden)
 
 - **19 yeni özel müşteri** (`specials.js` sonu). Her birinin kendine özgü bir etkisi var; bütün sayılar `game.js › SPEC_CFG` içinde:

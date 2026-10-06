@@ -61,7 +61,7 @@ var STR = {
     coachAuto: 'Durman yeter: karakter ağdan kendiliğinden alır, masaya/tezgâha kendiliğinden bırakır',
     stallOfFish: '{f} tezgâhı', autoBadge: '⚙ OTOMATİK', autoCard: '{n} — Personele Devret', autoCardOn: '{n} — OTOMATİK',
     autoCardOnD: 'Ekip kendi çalışır (%20 hızlı). Gezip kontrol edebilirsin; kasayı geçerken toplarsın.',
-    autoGive: '⚙ DEVRET', autoBack: '↩ GERİ AL', autoNeed: 'Eksik rol: {n}', missShort: 'eksik: {m}', autoMissing: 'Eksik personel: {m}',
+    autoGive: '⚙ DEVRET', autoBack: '↩ GERİ AL', autoNeed: 'Eksik rol: {n}', roleOrder: 'Önce eksik rolleri al: {m}', missShort: 'eksik: {m}', autoMissing: 'Eksik personel: {m}',
     autoOn: '⚙ {n} personele devredildi — artık kendi kendine çalışır', autoOff: '{n} yeniden sende',
     heroTitle: 'KARAKTERİN', heroSub: 'Limanın yeni balıkçısı kim? Görünüşünü seç.', heroNameLbl: 'ADIN',
     heroRandom: '🎲 RASTGELE', heroGo: 'DEVAM ▶', hero_hs: 'Saç modeli', hero_hc: 'Saç rengi', hero_sk: 'Ten rengi',
@@ -271,7 +271,7 @@ var STR = {
     coachAuto: 'Just stand still: you pick up from the net and drop at tables/stalls automatically',
     stallOfFish: '{f} stall', autoBadge: '⚙ AUTO', autoCard: '{n} — Hand over to staff', autoCardOn: '{n} — AUTOMATED',
     autoCardOnD: 'The crew runs it (20% faster). Walk by to inspect; you still collect cash as you pass.',
-    autoGive: '⚙ HAND OVER', autoBack: '↩ TAKE BACK', autoNeed: 'Missing roles: {n}', missShort: 'missing: {m}', autoMissing: 'Missing staff: {m}',
+    autoGive: '⚙ HAND OVER', autoBack: '↩ TAKE BACK', autoNeed: 'Missing roles: {n}', roleOrder: 'Hire the missing roles first: {m}', missShort: 'missing: {m}', autoMissing: 'Missing staff: {m}',
     autoOn: '⚙ {n} handed to staff — it now runs itself', autoOff: '{n} is back in your hands',
     heroTitle: 'YOUR CHARACTER', heroSub: 'Who is the harbor\'s new fisher? Pick a look.', heroNameLbl: 'YOUR NAME',
     heroRandom: '🎲 RANDOM', heroGo: 'NEXT ▶', hero_hs: 'Hair style', hero_hc: 'Hair colour', hero_sk: 'Skin tone',
@@ -1684,6 +1684,15 @@ function staffCap() {
   var n = 0;
   for (var z = 0; z < zoneCount(); z++) n += zoneStaffCap(z);
   return n;
+}
+/* v2.10: bir bölgede bir rolün ikincisi, bölgenin bütün rolleri birer tane olmadan alınamaz (üçüncüsü ikişer olmadan…).
+   Oyuncular yanlışlıkla aynı rolden iki tane alıp parasını bitiriyordu. Dönen değer: önce alınması gereken roller (yoksa ''). */
+function roleCount(z, r) { var n = 0; for (var i = 0; i < workers.length; i++) if (workers[i].zone === z && workers[i].role === r) n++; return n; }
+function roleBlock(z, r) {
+  var rl = zoneRoles(z), mn = Infinity, i;
+  for (i = 0; i < rl.length; i++) mn = Math.min(mn, roleCount(z, rl[i]));
+  if (roleCount(z, r) <= mn) return '';
+  return rl.filter(function (q) { return roleCount(z, q) === mn; }).map(function (q) { return NM(ROLES[q].n); }).join(', ');
 }
 function hireCost(role, z) {
   var base = ROLES[role].price || 500;
@@ -7100,11 +7109,14 @@ function barList() {
       out.push({ id: 'back', ic: '↩', t: T('back'), s: NM(AREAS[zn].n) + ' ' + zoneStaff(zn) + '/' + zoneStaffCap(zn), back: true });
       var zrl = zoneRoles(zn);
       for (i = 0; i < zrl.length; i++) (function (r) {
-        var full = zoneFree(zn) <= 0;
-        out.push({ id: 'zr' + r + zn, ic: ROLES[r].icon, t: NM(ROLES[r].n),
+        var full = zoneFree(zn) <= 0, rb = roleBlock(zn, r), have = roleCount(zn, r);
+        out.push({ id: 'zr' + r + zn, ic: ROLES[r].icon, t: NM(ROLES[r].n) + (have ? ' ×' + have : ''),
           s: NM(ROLES[r].d) + ' • ' + money(ROLES[r].wage) + perMin(),
-          cost: hireCost(r, zn), blocked: full, why: T('zoneFull'),
-          go: function () { hire(r, false, zn); barZone = null; save(); renderBar(); } });
+          cost: hireCost(r, zn), blocked: full || !!rb, why: full ? T('zoneFull') : T('roleOrder', { m: rb }),
+          go: function () {
+            /* v2.10: eski karta hızlı ikinci dokunuş kuralı atlamasın — alım anında yeniden denetle */
+            if (zoneFree(zn) <= 0 || roleBlock(zn, r)) { sfx.bad(); toast(zoneFree(zn) <= 0 ? T('zoneFull') : T('roleOrder', { m: roleBlock(zn, r) })); barZone = null; renderBar(); return; }
+            hire(r, false, zn); barZone = null; save(); renderBar(); } });
       })(zrl[i]);
       return out;
     }
@@ -11833,6 +11845,7 @@ window.BT = {
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
   help: function () { return { seen: Object.keys(S.help || {}), open: !el.helpScr.classList.contains('hidden'), title: el.helpT.textContent, keys: Object.keys(HELP) }; },
   stallSt: function (k) { var c = counterByKey(k); return c ? stSt(c) : null; }, stallExpPM: function (k) { var c = counterByKey(k); return c ? stallExpPM(c) : 0; }, stallTick: stallTick, stallNewDay: stallNewDay,
+  roleBlock: roleBlock, roleCount: roleCount,
   mx: function () { return { cfg: SPEC_CFG, st: S.mx, horonT: horonT, liveT: liveT, force: S.specForce, insp: day.insp, mxRep: day.mxRep || 0 }; }, mxInspect: mxInspect, mxNewDay: mxNewDay, custDrain: custDrain, specArrive: specArrive,
   specJob: function (id) { return specJob(specById(id)); },
   custBook: function () { return custBookData(); }, openCustBook: function () { openCustBook(); }, finishOrder: finishOrder, notifsAll: function () { return el.toast.textContent; },
