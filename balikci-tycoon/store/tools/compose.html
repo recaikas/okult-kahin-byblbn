@@ -1,0 +1,38 @@
+<!doctype html><html><head><meta charset="utf-8"><link href="../../fonts/fonts.css" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;font-family:"Pixelify Sans",monospace;-webkit-font-smoothing:none}
+  #c{position:relative;width:100vw;height:100vh;overflow:hidden;
+     background:linear-gradient(180deg,#0f2f45 0%,#16506d 45%,#1d6c8f 100%)}
+  .kilim{position:absolute;left:0;right:0;top:0;height:2.2vw;
+     background:repeating-linear-gradient(90deg,#a83d2b 0 2.2vw,#d9a441 2.2vw 4.4vw,#2a4c7d 4.4vw 6.6vw,#d9a441 6.6vw 8.8vw)}
+  .waves{position:absolute;left:0;right:0;bottom:0;height:22%;opacity:.35;
+     background:repeating-linear-gradient(0deg,transparent 0 3.2vw,#2f8aad 3.2vw 4vw)}
+  .cap{position:absolute;left:5%;right:5%;text-align:center;color:#fff1c9;line-height:1.02;letter-spacing:.02em;
+     text-shadow:.45vw .45vw 0 #3d2413,-.2vw -.2vw 0 #3d2413,.2vw -.2vw 0 #3d2413,-.2vw .2vw 0 #3d2413,.7vw .9vw 0 rgba(0,0,0,.35)}
+  .sub{position:absolute;left:7%;right:7%;text-align:center;color:#bfe9ff;line-height:1.25}
+  .shot{position:absolute;left:50%;transform:translateX(-50%);border:1.4vw solid #0a1a27;border-radius:5.5vw;overflow:hidden;
+     box-shadow:0 2vw 0 rgba(4,12,20,.45),0 0 0 .6vw #d9a441}
+  .shot img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;image-rendering:pixelated}
+  .badge{position:absolute;color:#3a2605;background:#ffd166;border:.6vw solid #3d2413;font-weight:700;letter-spacing:.04em}
+</style></head><body><div id="c">
+<div class="kilim"></div><div class="waves"></div>
+<div class="cap" id="cap"></div><div class="sub" id="sub"></div>
+<div class="shot" id="shot"><img id="img"></div>
+</div>
+<script>
+/* ?img=..&cap=..&sub=..  — başlık üstte, oyun ekranı altta telefon çerçevesinde */
+const q = new URLSearchParams(location.search), W = innerWidth, H = innerHeight;
+document.getElementById('cap').textContent = q.get('cap') || '';
+document.getElementById('sub').textContent = q.get('sub') || '';
+document.getElementById('img').src = q.get('img');
+const cap = document.getElementById('cap'), sub = document.getElementById('sub'), shot = document.getElementById('shot');
+const fs = W * 0.085; cap.style.fontSize = fs + 'px'; cap.style.top = (H * 0.045) + 'px';
+sub.style.fontSize = (W * 0.042) + 'px';
+window.layout = function () {
+  const ch = cap.getBoundingClientRect().bottom; sub.style.top = (ch + H * 0.012) + 'px';
+  const top = Math.max(sub.getBoundingClientRect().bottom + H * 0.03, H * (W / H > 0.5 ? 0.235 : 0.215));   /* çerçeve her görselde aynı hizada */
+  const sw = W * 0.80, sh = Math.min(H - top + W * 0.06, sw * 2868 / 1320);
+  shot.style.top = top + 'px'; shot.style.width = sw + 'px'; shot.style.height = sh + 'px';
+};
+</script></body></html>
