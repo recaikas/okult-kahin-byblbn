@@ -17,6 +17,51 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v2.9 — Mekanikli özel müşteriler ve 6 yeni müşteri tipi (müşteri brifinginden)
+
+- **19 yeni özel müşteri** (`specials.js` sonu). Her birinin kendine özgü bir etkisi var; bütün sayılar `game.js › SPEC_CFG` içinde:
+  - **Fırtına Kaptanı Nuri** (forecast): yarının olayını söyler; ertesi gün ağlar %5 hızlı.
+  - **Reis Dede** (aura): aynı kuyruktakilerin sabrı yarı hızla azalır.
+  - **Gizli Müfettiş** (inspect, gizli): sıradan müşteri gibi görünür. Gün sonu raporu verir: kaçan %15 altıysa +$450 ve +2 itibar, değilse $300 ceza. Deftere ancak raporla girer.
+  - **Gurme Sedef Hanım** (review): memnunsa ertesi gün müşteri akışı ×1.15, kızarsa ×0.9.
+  - **Rehber Selma** ve **Düğüncü Sevim** (partial): dev sipariş verirler. Süre biterse teslim edilen kadarını öderler ve kaçan sayılmazlar.
+  - **Fotoğrafçı Çift** (selfie): koydaki her süs ödemeyi %5 artırır (en çok %50).
+  - **Horon Ekibi** (horon): gelince müzik horona döner; 15 sn bütün kuyruklarda sabır donar.
+  - **Muhtar Kâzım** (credit): veresiye alır, ertesi sabah ×1.2 öder.
+  - **Muhabir Defne** (live): 30 sn canlı yayın açar. Her satış +1, kaçan her müşteri −1 itibar.
+  - **Küçük Mert** (chain): mutlu giderse ertesi gün babası **Reis Hüseyin** gelir. Hüseyin yalnız bu zincirle gelir.
+  - **Bay Hesapçı** (strict): çabuk servise ×2 öder; bekletirsen ×0.7 öder ve −2 itibar.
+  - **Nöbetçi Dr. Aylin** (rush): 25 sn içinde servis edilirse ×3 öder.
+  - **Cevdet Hoca** (calm): aynı kuyruğun sabrı ×0.75 hızla azalır.
+  - **Gece Taksicileri** (night): yalnız kapanış müşterisi olarak gelir; kapanışta servis edilirse ×1.5 öder.
+  - **Gurbetçi Mehmet Amca** (souvenir): memnun giderse koya ücretsiz bir süs bırakır.
+  - **Plakçı Hayri Usta** (records): çalan müziği beğenirse ×1.5 öder. Rock çalıyorsa sabrı hızla biter; sözü de buna göre değişir.
+  - **Çaycı Ali** (tea): bölgesindeki bütün kuyrukların sabrı ×0.8 hızla azalır.
+- Seçim kuralları:
+  - `minLv`: seviye şartı.
+  - `slot`: gündüz ya da kapanış müşterisi.
+  - `rare`: seçilme ağırlığı.
+  - `only`: yalnız zincirle gelir.
+  - `hidden`: kendini belli etmez (etiket, söz ve bildirim yok).
+- Yeni `mad` sözü: kızgın giderken söylenir.
+- İtibar küçük tutuldu: mekaniklerden gelen itibar günde en çok +6 (`repDayCap`).
+- **6 yeni standart tip:**
+  - **Ev Hanımı:** sabah gelir, çok alır.
+  - **Genç Anne:** gündüz gelir.
+  - **Bisikletli Gezgin:** gündüz gelir, az alır.
+  - **Lokanta Garsonu:** öğle ve akşam gelir, toplu alır, aceleci.
+  - **Köpekli Komşu:** akşamüstü gelir, az alır.
+  - **Vardiya Hemşiresi:** akşam gelir, beklerken sabrı ×0.7 hızla azalır.
+  - Saatine uymayan tip seyrek gelir. Defterde her tipin notu var.
+- Brifingden alınmayanlar:
+  - Zaten var olduğu için: Martı Dostu (Mahmut), Kedi Teyzesi (Mırıl Bey), Falcı (Bedia Abla), Ressam (Fırça Ferit), Hamsi Şampiyonu ve Palavracı (Tahsin ve Selim adları dolu), Lokanta Şefi (Kemal), Pazarlıkçı Hacer (hikâyedeki Hacer Teyze ile çakışıyor).
+  - Kapsam dışı bırakıldığı için:
+    - Gezgin Âşık ve Kapüşonlu Yabancı: Dipteki Söz'e bağlanmalı.
+    - Sahte Turist: dokunarak yakalama arayüzü gerekiyor.
+    - Sahil Güvenlik: müfettişle örtüşüyor.
+  - Standart tiplerden Öğrenci, Emekli ve Koşucu zaten vardı. Öğle Arası İşçisi de İşçi ile aynı.
+- Test: `test-mekanik.js`.
+
 ## v2.8 — Meslekler de gizli
 
 - Özel müşterinin mesleği de adı gibi ilk başta bilinmez: ilk gelişte etiket "★ ????? · ?????".
