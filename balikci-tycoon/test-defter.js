@@ -1,5 +1,5 @@
 /* v2.5 — Müşteri Defteri + özel müşterinin kendini tanıtması:
-   1) 50 özel müşterinin hepsinin TR/EN tanıtım sözü var;
+   1) 69 özel müşterinin hepsinin TR/EN tanıtım sözü var;
    2) adı bilinmeyen özel müşteri önce kendini tanıtır, sonra siparişini söyler; etiket "?????";
    3) siparişi bitince adı deftere yazılır, bildirim çıkar; ikinci gelişte tanıtım yok, doğrudan sipariş;
    4) defter: üst çubukta 📖, açınca oyun durur; görülmeyen ???, adı bilinmeyen ?????, tanışılan tam ad;
@@ -14,7 +14,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   await p.goto(URL); await sleep(900);
   await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
   await p.click('#heroGo'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(600);
-  R.me = await p.evaluate(() => BT.SPECIALS.filter(s => !(s.me && s.me.tr && s.me.en && s.me.tr !== s.hi.tr)).map(s => s.id));
+  R.me = await p.evaluate(() => BT.SPECIALS.filter(s => !s.hidden && !(s.me && s.me.tr && s.me.en && s.me.tr !== s.hi.tr)).map(s => s.id));
   ok(R.me.length === 0, 'tanıtım sözü eksik: ' + R.me);
   R.btn = await p.evaluate(() => !document.getElementById('custBtn').classList.contains('hidden'));
   ok(R.btn, 'defter düğmesi görünmüyor');
@@ -52,7 +52,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
       unk: d.spec.filter(e => e.seen && !e.known).length, tabs: document.getElementById('custTabs').innerText, newBtn: document.getElementById('custBtn').classList.contains('new'),
       types: d.type.filter(e => e.seen).map(e => e.id + ':' + e.cnt) };
   });
-  ok(R.book.paused && R.book.n === 50 && R.book.known.indexOf('Temel') >= 0 && !R.book.newBtn, 'defter yanlış ' + JSON.stringify(R.book));
+  ok(R.book.paused && R.book.n === 69 && R.book.known.indexOf('Temel') >= 0 && !R.book.newBtn, 'defter yanlış ' + JSON.stringify(R.book));
   await p.click('#custTabs .tab[data-c="type"]'); await sleep(200);
   R.types = await p.evaluate(() => ({ n: document.querySelectorAll('#custGrid .cc').length, no: document.querySelectorAll('#custGrid .cc.no').length }));
   ok(R.types.n > 15 && R.types.no >= R.types.n - 3, 'tipler sekmesi yanlış ' + JSON.stringify(R.types));

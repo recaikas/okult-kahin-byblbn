@@ -87,7 +87,7 @@ var STR = {
     envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
     specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
     custTitle: '📖 MÜŞTERİ DEFTERİ', custSub: 'Koya gelen herkes. Görmediğin kara gölge, adını söylemeyen ?????. Siparişini bitir, adını öğren.', custStory: 'HİKÂYE', custSpec: 'ÖZEL', custTypes: 'TİPLER', custTap: 'Bir karta dokun.', custNever: 'Henüz koya gelmedi.', custNoName: 'Adını henüz söylemedi. Siparişini tamamla, kendini tanıtsın. Mesleği, konuşmasını bitirince belli olur.', custVisits: 'Kaç kez geldi: {n}', custServed: 'Servis edilen: {n}', custTypeD: 'Sipariş {a}–{b} · sabır {p} sn · fiyat ×{m}', custStoryD: 'Dipteki Söz hikâyesinin bir parçası.', custNewName: '📖 Deftere yazıldı: {n}',
-    lineIng: '{d} malzemesi (tezgâhta satılmaz, mutfağa gider)', helpGot: 'ANLADIM', helpReset: '💡 Sekme ipuçlarını yeniden göster', helpResetD: 'İpuçları sıfırlandı: her sekme ilk açılışta yeniden anlatılacak',
+    lineIng: '{d} malzemesi (tezgâhta satılmaz, mutfağa gider)', mxCreditF: 'veresiye', mxCredit: 'Muhtar veresiye aldı: yarın sabah {v} ödeyecek', mxCreditPay: 'Muhtar borcunu ödedi: +{v}', mxHoron: '🎻 Horon başladı! 15 sn kimse sabırsızlanmıyor', mxLive: '🎥 Canlı yayın! 30 sn: her satış itibar, kaçan müşteri kayıp', mxFcast: '⚓ Kaptan: "Yarın {e} var, hazırlıklı ol." Yarın ağlar biraz daha hızlı dolar', mxReviewUp: '📝 Sedef Hanım beğendi: yarın daha çok müşteri gelecek', mxStrict: '🧐 Bay Hesapçı şikâyet etti', mxSouv: '🧳 Mehmet Amca bir hatıra bıraktı: {n}', mxSouvCash: '🧳 Mehmet Amca döviz bıraktı: +{v}', dayInsp: 'Gizli müfettiş', inspGood: 'Temiz rapor (kaçan %{r}): +{v}', inspBad: 'Olumsuz rapor (kaçan %{r}): −{v} ceza', helpGot: 'ANLADIM', helpReset: '💡 Sekme ipuçlarını yeniden göster', helpResetD: 'İpuçları sıfırlandı: her sekme ilk açılışta yeniden anlatılacak',
     storyName: 'Dipteki Söz', storyNext: 'Sıradaki: Gün {d} · {t} — bir koy sakini tezgâhına gelecek', storyFin: 'Hikâye tamamlandı. Unvan: Dipteki Sözün Bekçisi', storyBer: 'Bereket Ölçeri', storyBerD: 'ağ verimi {p}%', storyBuffs: 'Kalıcı etkiler', storyFaces: 'Koyun yüzleri', storyDone: '✦ Dipteki Söz tamamlandı: Dipteki Sözün Bekçisi',
     albMet: 'Tanıştığın özel müşteriler', albLeft: 'Henüz tanışmadığın {n} kişi daha var — her gün 2 özel müşteri gelir.', albNone: 'Henüz kimseyle tanışmadın. Her gün 2 özel müşteri gelir.', albFav: 'Sevdiği',
     featDay: 'Günün müşterisi: {n}', levelUp: '⭐ Yeni seviye: {t}!', lvlN: 'SEVİYE {l}', lvShort: 'SV {l}', lvCap: 'TAVAN', lvCapHint: 'İtibarın Sv{l} tavanında birikiyor. {n} bölgesini açınca seviye atlarsın!', lvCapHintAny: 'İtibarın Sv{l} tavanında birikiyor. Yeni bölge açınca seviye atlarsın!', mCap: 'Tavan: {n} bölge açık → en çok Sv{l}', lvBonus: 'Satış primi {p}',
@@ -297,7 +297,7 @@ var STR = {
     envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
     specComing: 'A special customer is coming...', daySpec: 'Special customers',
     custTitle: '📖 CUSTOMER BOOK', custSub: 'Everyone who visits the cove. Unseen are shadows; those who haven\'t told their name are ?????. Finish their order to learn it.', custStory: 'STORY', custSpec: 'SPECIAL', custTypes: 'TYPES', custTap: 'Tap a card.', custNever: 'Hasn\'t visited the cove yet.', custNoName: 'Hasn\'t told you their name yet. Complete their order and they\'ll introduce themselves. Their job shows once they finish talking.', custVisits: 'Visits: {n}', custServed: 'Served: {n}', custTypeD: 'Order {a}–{b} · patience {p}s · price ×{m}', custStoryD: 'Part of The Promise Below.', custNewName: '📖 Added to the book: {n}',
-    lineIng: 'ingredient for {d} (not sold at a stall, goes to the kitchen)', helpGot: 'GOT IT', helpReset: '💡 Show tab tips again', helpResetD: 'Tips reset: each tab will explain itself again on first open',
+    lineIng: 'ingredient for {d} (not sold at a stall, goes to the kitchen)', mxCreditF: 'on credit', mxCredit: 'The headman bought on credit: he\'ll pay {v} tomorrow morning', mxCreditPay: 'The headman paid his debt: +{v}', mxHoron: '🎻 Horon time! For 15 s nobody gets impatient', mxLive: '🎥 Live broadcast! 30 s: each sale earns reputation, each lost customer costs', mxFcast: '⚓ The captain: "Tomorrow brings {e}, be ready." Nets fill a little faster tomorrow', mxReviewUp: '📝 Critic Sedef liked it: more customers tomorrow', mxStrict: '🧐 Mr. Tally filed a complaint', mxSouv: '🧳 Uncle Mehmet left a keepsake: {n}', mxSouvCash: '🧳 Uncle Mehmet left some foreign cash: +{v}', dayInsp: 'Secret inspector', inspGood: 'Clean report ({r}% lost): +{v}', inspBad: 'Bad report ({r}% lost): −{v} fine', helpGot: 'GOT IT', helpReset: '💡 Show tab tips again', helpResetD: 'Tips reset: each tab will explain itself again on first open',
     storyName: 'The Promise Below', storyNext: 'Next: Day {d} · {t} — someone from the cove will visit your stall', storyFin: 'Story complete. Title: Keeper of the Promise Below', storyBer: 'Bounty Gauge', storyBerD: 'net yield {p}%', storyBuffs: 'Permanent effects', storyFaces: 'Faces of the cove', storyDone: '✦ The Promise Below complete: Keeper of the Promise Below',
     albMet: 'Special customers you\'ve met', albLeft: '{n} more to meet — 2 special customers visit every day.', albNone: 'You haven\'t met anyone yet. 2 special customers visit every day.', albFav: 'Loves',
     featDay: 'Customer of the day: {n}', levelUp: '⭐ New rank: {t}!', lvlN: 'LEVEL {l}', lvShort: 'LV {l}', lvCap: 'CAP', lvCapHint: 'Your reputation is piling up at the Lv{l} cap. Open {n} to rank up!', lvCapHintAny: 'Your reputation is piling up at the Lv{l} cap. Open a new area to rank up!', mCap: 'Cap: {n} areas open → up to Lv{l}', lvBonus: 'Sales bonus {p}',
@@ -1552,7 +1552,20 @@ var CUST = [
   { id: 'ressam',   n: { tr: 'Ressam', en: 'Painter' },            coat: '#b05a8a', coat2: '#c874a2', qty: [1, 3],  pat: 110, mult: 1.30, rep: 2, lvl: 3, tag: 'rich' },
   { id: 'dalgic',   n: { tr: 'Dalgıç', en: 'Diver' },              coat: '#1a1f26', coat2: '#2a323c', qty: [2, 4],  pat: 65,  mult: 1.20, rep: 2, lvl: 3, tag: 'any' },
   { id: 'muhtar',   n: { tr: 'Muhtar', en: 'Village Head' },       coat: '#4a3a2a', coat2: '#624f3a', qty: [3, 5],  pat: 90,  mult: 1.35, rep: 3, lvl: 4, tag: 'rich' },
-  { id: 'otelci',   n: { tr: 'Otel Aşçıbaşı', en: 'Hotel Head Chef' }, coat: '#e8e2d2', coat2: '#f4efe4', qty: [6, 10], pat: 80, mult: 1.50, rep: 3, lvl: 4, tag: 'premium' }
+  { id: 'otelci',   n: { tr: 'Otel Aşçıbaşı', en: 'Hotel Head Chef' }, coat: '#e8e2d2', coat2: '#f4efe4', qty: [6, 10], pat: 80, mult: 1.50, rep: 3, lvl: 4, tag: 'premium' },
+  /* v2.9 — günün saatine göre gelen tipler (tod: gün içindeki pay aralığı; dışında seyrek gelir), drain: sabrın azalma hızı */
+  { id: 'evhanimi', n: { tr: 'Ev Hanımı', en: 'Homemaker' },        coat: '#5a8a6a', coat2: '#6fa07f', qty: [6, 10], pat: 120, mult: 1.40, rep: 1, lvl: 1, tag: 'any', tod: [0, 0.4],
+    note: { tr: 'Sabah haftalık alışverişe çıkar; çok alır, sabırlıdır.', en: 'Does the weekly shop in the morning; buys a lot, patient.' } },
+  { id: 'gencanne', n: { tr: 'Genç Anne', en: 'Young Mum' },        coat: '#d97aa0', coat2: '#e894b6', qty: [2, 4],  pat: 80,  mult: 1.00, rep: 1, lvl: 1, tag: 'any', tod: [0.2, 0.7],
+    note: { tr: 'Bebek arabasıyla gündüz gelir; ölçülü alır.', en: 'Comes by day with a pram; buys sensibly.' } },
+  { id: 'bisiklet', n: { tr: 'Bisikletli Gezgin', en: 'Cyclist' },  coat: '#e8762b', coat2: '#f5914a', qty: [1, 3],  pat: 70,  mult: 1.10, rep: 1, lvl: 2, tag: 'any', tod: [0.2, 0.8],
+    note: { tr: 'Sahil yolundan geçerken "yol için" az ama taze alır.', en: 'Passing along the coast road, buys a little "for the road".' } },
+  { id: 'garson',   n: { tr: 'Lokanta Garsonu', en: 'Restaurant Waiter' }, coat: '#2a2a2a', coat2: '#3a3a3a', qty: [8, 12], pat: 45, mult: 1.30, rep: 2, lvl: 3, tag: 'rich', tod: [0.35, 0.95],
+    note: { tr: 'Lokantası için aynı balıktan toplu alır; acelesi vardır.', en: 'Buys one fish in bulk for the restaurant; always in a hurry.' } },
+  { id: 'kopekli',  n: { tr: 'Köpekli Komşu', en: 'Dog Walker' },   coat: '#7a6a4a', coat2: '#94835e', qty: [1, 3],  pat: 110, mult: 0.80, rep: 1, lvl: 1, tag: 'cheap', tod: [0.6, 1],
+    note: { tr: 'Akşamüstü köpeğini gezdirirken uğrar; az alır.', en: 'Stops by in the evening while walking the dog; buys a little.' } },
+  { id: 'hemsire',  n: { tr: 'Vardiya Hemşiresi', en: 'Shift Nurse' }, coat: '#7ab0d8', coat2: '#94c4e6', qty: [2, 4], pat: 70, mult: 1.10, rep: 1, lvl: 2, tag: 'any', tod: [0.7, 1], drain: 0.7,
+    note: { tr: 'Vardiya çıkışı yorgundur; beklerken sabrı yavaş azalır.', en: 'Tired after a shift; her patience drains slowly while she waits.' } }
 ];
 
 var EVENTS = [
@@ -1591,7 +1604,7 @@ var AREAS = [
   { id: 'mutfak', n: { tr: 'Balıkçı Mutfağı', en: "Fishermen's Kitchen" }, x0: 0, y0: 17.5, x1: 10, y1: 23.5, locked: true, cost: 9500, rep: 350, lvl: 1, up: [0, 7500, 17000] }
 ];
 var MAXLV = 3;
-function areaNetMul(z) { return (1 + (AREAS[z].lvl - 1) * 0.18 + (slotEff(z, 'netrate') || 0) + perkSum('netrate') + perkSum('rate')) * storyNetMul(); }
+function areaNetMul(z) { return (1 + (AREAS[z].lvl - 1) * 0.18 + (slotEff(z, 'netrate') || 0) + perkSum('netrate') + perkSum('rate')) * storyNetMul() * mxNetMul(); }
 function areaStock(z) { return 12 + (AREAS[z].lvl - 1) * 3 + (slotEff(z, 'stock') || 0) + Math.round(perkSum('stock') * 0.5) + servEff('stock'); }
 function areaFlow(z) { return 1 + (slotEff(z, 'flow') || 0) + (project.done ? 0.25 : 0) + perkSum('flow') + mgrEff(z, 'flow'); }
 function queueMax(z) { return Math.min(7, (AREAS[z].lvl >= 3 ? 5 : 4) + servEff('queue')); }
@@ -2067,7 +2080,7 @@ day.st = newDayStats();
 function isMarketDay(n) { return n > 1 && n % MARKET_EVERY === 0; }
 function dayNext() { return isMarketDay(day.n + 1); }
 function daySpawnOK() { return day.phase === 'play'; }
-function dayCustMul() { return day.market ? 2.2 : 1; }
+function dayCustMul() { return (day.market ? 2.2 : 1) * mxFlowMul(); }
 function noteDayIncome(v) { day.st.inc += v; }
 function noteDaySale(cu) {
   day.st.served++;
@@ -2173,7 +2186,9 @@ function custById(id) { for (var i = 0; i < CUST.length; i++) if (CUST[i].id ===
 function endDay() {
   dismissCustomers();
   var auc = runAuction();
+  var insp = mxInspect();                         /* v2.9: gizli müfettiş raporu */
   day.last = {
+    insp: insp,
     n: day.n, market: day.market, inc: day.st.inc, served: day.st.served,
     lost: day.st.lost, fish: day.st.fish, top: topSeller(), out: worstOut(), spec: (day.st.spec || []).slice(),
     next: isMarketDay(day.n + 1), auc: auc
@@ -2188,7 +2203,8 @@ function endDay() {
 /* kart kapatılınca: yeni güne geç (pazar günüyse hazırlık ekranı) */
 function beginNextDay(skipPrep) {
   day.n++;
-  stallNewDay();                                   /* v2.6: bugünkü tezgâh rakamları "dün" olur */
+  stallNewDay();
+  mxNewDay();                                      /* v2.9: veresiye ödemesi, günlük sayaçlar */                                   /* v2.6: bugünkü tezgâh rakamları "dün" olur */
   if ([2, 3, 5, 7, 10, 14, 21, 30].indexOf(day.n) >= 0) progEv('gun' + day.n);
   pickFeatured();
   pickSpecials();
@@ -2426,7 +2442,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0, lvFloor: 0, names: [], story: null, custSeen: {}, specN: {}, custNewF: false, stallSt: {}, help: {}, jobs: []     /* skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0, lvFloor: 0, names: [], story: null, custSeen: {}, specN: {}, custNewF: false, stallSt: {}, help: {}, jobs: [], mx: null, specForce: null     /* skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -2530,7 +2546,7 @@ function buildSave() {
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
     auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
-    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, custSeen: S.custSeen || {}, specN: S.specN || {}, custNewF: S.custNewF ? 1 : 0, stallSt: S.stallSt || {}, help: S.help || {}, jobs: S.jobs || [], ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
+    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, custSeen: S.custSeen || {}, specN: S.specN || {}, custNewF: S.custNewF ? 1 : 0, stallSt: S.stallSt || {}, help: S.help || {}, jobs: S.jobs || [], mx: S.mx || null, specForce: S.specForce || null, ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
     areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
@@ -2611,6 +2627,7 @@ function loadFrom(d) {
     S.met = Array.isArray(d.met) ? d.met.filter(function (q) { return typeof q === 'string'; }) : [];
     /* v2.4: isimler — eski kayıtta tanışılan herkesin adı bilinir; yeni tanışılan "?????" başlar */
     S.names = Array.isArray(d.names) ? d.names.filter(function (q) { return typeof q === 'string'; }) : S.met.slice();
+    S.mx = mxLoad(d.mx); S.specForce = typeof d.specForce === 'string' && d.specForce.length < 30 ? d.specForce : null;
     S.jobs = Array.isArray(d.jobs) ? d.jobs.filter(function (q) { return typeof q === 'string'; }) : S.met.slice();   /* v2.8: eski kayıtta tanışılanın mesleği bilinir */
     S.story = storyLoad(d.story);
     S.custSeen = numMap(d.custSeen); S.specN = numMap(d.specN); S.custNewF = !!d.custNewF;
@@ -3580,6 +3597,8 @@ function updateCounter(c, dt) {
     var lvl = repLevel();
     var pool = CUST.filter(function (t) { return t.lvl <= lvl && (!t.serv || servUnlock(t.serv)) && custFits(t, c); });
     if (!pool.length) return;
+    var todP = pool.filter(function (t) { return !t.tod || todIn(t.tod) || Math.random() < 0.25; });   /* v2.9: saatine uymayan tip seyrek gelir */
+    if (todP.length) pool = todP;
     var prem = perkSum('premium') + perkSum('vip');
     if (prem > 0 && Math.random() < prem * 2) {
       var hi = pool.filter(function (t) { return t.mult >= 1.8; });
@@ -3648,11 +3667,14 @@ function finishOrder(c, cu) {
   var unit = prodValue(cu.ord.k, cu.ord.f);
   var pay = Math.round(cu.ord.need * unit * cu.type.mult * (happy > 0.5 ? 1.2 : 1) *
     (1 + perkSum('custval') + servEff('custval') + repBonus() + (cu.type.id === 'toptanci' ? servEff('wholesale') : 0)) * (1 + mgrEff(c.z, 'value')) * (1 + 0.04 * storyBuff('adil')));
-  payout(c, pay, cu.slot);
+  pay = specPay(cu, c, pay, happy);                 /* v2.9: özel müşteri mekaniği (selfie, acele, cimri, gece, plak, veresiye) */
+  if (pay > 0) payout(c, pay, cu.slot);
   noteFishIncome(pay); noteDayIncome(pay); noteDaySale(cu);
   retSale(c, cu, pay);                              /* bölge gelir ortalaması + satış başarımları */
   stallSale(c, cu, pay);                            /* v2.6: tezgâh istatistiği */
-  if (cu.spec && specById(cu.spec)) {
+  mxSale();                                         /* v2.9: canlı yayın sırasında satış */
+  if (cu.spec && specById(cu.spec)) specDone(cu, c, happy);
+  if (cu.spec && specById(cu.spec) && !specById(cu.spec).hidden) {
     if (S.names.indexOf(cu.spec) < 0) {                              /* v2.4: işi bitince adı artık bilinir → deftere */
       S.names.push(cu.spec); custNew();
       toast(T('custNewName', { n: NM(specById(cu.spec).n) }));
@@ -3663,7 +3685,7 @@ function finishOrder(c, cu) {
   if (!cu.spec && cu.type && cu.type.id) { S.custSeen = S.custSeen || {}; S.custSeen[cu.type.id] = (S.custSeen[cu.type.id] || 0) + 1; }
   S.served++; S.rep += Math.max(1, Math.round(cu.type.rep * (1 + servEff('rep') + 0.05 * storyBuff('bekci')))) + mgrEff(c.z, 'rep');
   var fp = queueSlotPos(c, cu.slot);
-  addFloat(fp.x, fp.y - 0.5, '+' + money(pay), '#ffe27a');
+  addFloat(fp.x, fp.y - 0.5, pay > 0 ? '+' + money(pay) : T('mxCreditF'), '#ffe27a');
   addFloat(fp.x + 0.6, fp.y - 1.1, '+' + cu.type.rep + '*', '#ffd76a');
   sfxFrom({ x: c.x, y: c.y }, function () { sfx.coin(); }); checkRepLevel();
 }
@@ -3723,21 +3745,23 @@ function updateCustomers(dt) {
       var p = queueSlotPos(cu.c, cu.slot);
       var dx = p.x - cu.x, dy = p.y - cu.y, L = Math.hypot(dx, dy);
       var wv = cu.spec ? SPEC_WALK : 2.1;             /* v1.3.3: özel müşteri ağır adımlarla gelir */
-      if (L < 0.14) cu.state = 'wait';
+      if (L < 0.14) { cu.state = 'wait'; if (cu.spec) specArrive(cu); }
       else { cu.x += dx / L * wv * dt; cu.y += dy / L * wv * dt; cu.bob += dt * (cu.spec ? 5 : 8); }
     } else if (cu.state === 'wait') {
       var q = queueSlotPos(cu.c, cu.slot);
       cu.x = lerp(cu.x, q.x, 1 - Math.pow(0.001, dt));
       cu.y = lerp(cu.y, q.y, 1 - Math.pow(0.001, dt));
       if (cu.spec) cu.sayT = (cu.sayT || 0) + dt;
-      if (cu.spec && !cu.jobK && cu.spec.indexOf('st_') !== 0 && cu.sayT >= specHiDur(cu)) {    /* v2.8: konuştu → mesleği bilinir */
+      if (cu.spec) cu.waitT = (cu.waitT || 0) + dt;
+      if (cu.spec && !cu.jobK && cu.spec.indexOf('st_') !== 0 && !(specById(cu.spec) || {}).hidden && cu.sayT >= specHiDur(cu)) {    /* v2.8: konuştu → mesleği bilinir */
         cu.jobK = true; S.jobs = S.jobs || []; if (S.jobs.indexOf(cu.spec) < 0) { S.jobs.push(cu.spec); custNew(); }
       }
-      if (!specTalking(cu)) cu.pat -= dt;            /* konuşurken sabrı azalmaz */
+      if (!specTalking(cu)) cu.pat -= dt * custDrain(cu);   /* konuşurken sabrı azalmaz; v2.9: aura, horon, yorgunluk */
       cu.mood = clamp(cu.pat / cu.patMax, 0, 1);
       if (cu.pat <= 0) {
         cu.state = 'leave'; cu.happyLeave = false; cu.leaveT = 0; cu.c.slots[cu.slot] = null; shiftQueue(cu.c);
-        S.lost++; noteDayLost(); stallLost(cu.c);
+        if (specBad(cu)) continue;                    /* v2.9: kısmi teslimle ödeyip gitti — kaçan sayılmaz */
+        S.lost++; noteDayLost(); stallLost(cu.c); mxLost();
         var pen = cu.type.pen || 0;
         if (pen) { S.rep = Math.max(0, S.rep - pen); addFloat(cu.x, cu.y - 0.6, '-' + pen + '*', '#ff8a7a'); }
         else addFloat(cu.x, cu.y - 0.6, ':(', '#ff8a7a');
@@ -3829,7 +3853,7 @@ function investProject(amount) {
 function updateEvents(dt) {
   if (event) { eventT -= dt; if (eventT <= 0) { event = null; nextEvent = rnd(70, 110); } return; }
   nextEvent -= dt;
-  if (nextEvent <= 0 && S.tut >= 5) { event = pick(EVENTS); eventT = event.dur; toast(T(event.msg)); }
+  if (nextEvent <= 0 && S.tut >= 5) { event = mxForecastEvent() || pick(EVENTS); eventT = event.dur; toast(T(event.msg)); }
 }
 var TUTOK = [
   function () { return spots[0].stock.length > 0; },
@@ -4571,7 +4595,13 @@ var CUST_FIT = {
   ressam:   { beanie: '#c0282a', beard: true, scarf: null, apron: '#e8dcc0', pants: '#3a2a3a' },
   dalgic:   { shades: true, tall: 1, pants: '#1a1f26', boot: '#1a1f26' },
   muhtar:   { cap: '#2a2018', vest: '#2a2018', thickMust: true, belly: 1, sash: '#8a6a3a', pants: '#2a2018' },
-  otelci:   { chefHat: true, apron: '#f7f7f2', notebook: true, must: true, pants: '#2a2724' }
+  otelci:   { chefHat: true, apron: '#f7f7f2', notebook: true, must: true, pants: '#2a2724' },
+  evhanimi: { scarf: '#3a6a4a', bigBag: '#6b4a2a', belly: 1, skirt: '#3a3a5a' },
+  gencanne: { hairStyle: 3, bag: true, skirt: '#5a4a7a' },
+  bisiklet: { cap: '#2a4a6a', shades: true, bag: true, tall: 1, pants: '#2a3a4a' },
+  garson:   { vest: '#1a1a1a', bowtie: '#1a1a1a', apron: '#f4f0e6', must: true, pants: '#1a1a1a' },
+  kopekli:  { beanie: '#5a7a4a', knit: '#e8dcc0', pants: '#3a3226' },
+  hemsire:  { hairStyle: 6, glasses: true, pants: '#5a8ab0' }
 };
 function custOutfit(cu) {
   if (cu.spec && specById(cu.spec)) return specOutfit(specById(cu.spec), cu.face);
@@ -7430,6 +7460,7 @@ function showDayCard() {
   if (L.out) h += dayRow('⚠️', T('dayOut'), NM(FISH[L.out.f].n) + ' ' + fmtDur(L.out.t));
   if (L.auc) h += dayRow('🔔', T('dayAuction'), L.auc.n + ' × ' + money(L.auc.v));
   if (L.spec && L.spec.length) h += dayRow('⭐', T('daySpec'), escH(L.spec.join(', ')));
+  if (L.insp) h += dayRow('🕵️', T('dayInsp'), T(L.insp.good ? 'inspGood' : 'inspBad', { v: money(L.insp.v), r: L.insp.r }));
   if (S.company) {
     submitScore(true);
     var rk = myRank(Board.sort(Board.read()));
@@ -7884,6 +7915,7 @@ function frame(ts) {
   updateSpecials(dt);               /* v0.9 — özel isimli müşteriler */
   updateStory(dt);                  /* v2.4 — Dipteki Söz: hikâye ziyaretçisi */
   stallTick(dt);                    /* v2.6 — tezgâh gelir hızı */
+  mxTick(dt);                       /* v2.9 — horon, canlı yayın */
   updateFumeMachines(dt);           /* v1.3 — tezgâh füme makinesi */
   updateChapter(dt);                /* v1.3 — Bölüm 1 hedefi */
   updateEvents(dt);
@@ -10420,7 +10452,11 @@ function normSpecials(list) {
       hi: specLang(s.hi, { tr: 'Merhaba!', en: 'Hello!' }), bye: specLang(s.bye, { tr: 'Teşekkürler!', en: 'Thanks!' }), me: specLang(s.me, null),
       look: s.look && typeof s.look === 'object' ? s.look : {},
       qty: q, pat: specNum(s.pat, 150, 40, 600), tip: specNum(s.tip, 1.1, 0.5, 3), rep: specNum(s.rep, 3, 0, 20) | 0,
-      fx: typeof s.fx === 'string' ? s.fx.slice(0, 2) : '', fxc: s.fxc || '#ffd76a', moon: !!s.moon, dance: !!s.dance
+      fx: typeof s.fx === 'string' ? s.fx.slice(0, 2) : '', fxc: s.fxc || '#ffd76a', moon: !!s.moon, dance: !!s.dance,
+      /* v2.9 — mekanik alanları */
+      mech: typeof s.mech === 'string' ? s.mech : '', minLv: specNum(s.minLv, 0, 0, 10) | 0, slot: s.slot === 'day' || s.slot === 'eve' ? s.slot : '',
+      rare: specNum(s.rare, 1, 0.05, 3), hidden: !!s.hidden, only: !!s.only, chain: typeof s.chain === 'string' ? s.chain : '',
+      mad: specLang(s.mad, null), hi2: specLang(s.hi2, null), hi3: specLang(s.hi3, null)
     });
   });
   return out;
@@ -10435,21 +10471,31 @@ function pickSpecials() {
   if (!SPECIALS.length) { day.spec = []; day.sp = 4; day.normals = 0; day.popT = 0; return; }   /* specials.js yoksa sistem sessizce kapalı */
   /* v1.3: tanıdıklar 2 haftada bir (14 gün) yeniden uğrar; öbür yer hep yeni bir yüze ayrılır.
      Gün başına: 1 "dönen tanıdık" (vadesi gelmişse) + 1 hiç gelmemiş kişi; biri yoksa öbür havuzdan. */
-  var last = S.specLast || (S.specLast = {}), dn = day.n || 1, prev = day.spec || [];
-  var fresh = SPECIALS.filter(function (s) { return last[s.id] === undefined && prev.indexOf(s.id) < 0; });
-  var due = SPECIALS.filter(function (s) { return last[s.id] !== undefined && dn - last[s.id] >= SPEC_RETURN && prev.indexOf(s.id) < 0; });
-  due.sort(function (x, y) { return last[x.id] - last[y.id]; });              /* en uzun süredir gelmeyen önce */
-  var chosen = [];
-  if (due.length) chosen.push(due[0]);
-  var f2 = fresh.filter(function (s) { return chosen.indexOf(s) < 0; });
-  while (chosen.length < 2 && f2.length) { var q = pick(f2); chosen.push(q); f2.splice(f2.indexOf(q), 1); }
-  for (var di = 1; chosen.length < 2 && di < due.length; di++) chosen.push(due[di]);
-  if (chosen.length < 2) {                                                    /* herkes son 14 günde geldiyse: en eskiler */
-    var rest = SPECIALS.filter(function (s) { return chosen.indexOf(s) < 0 && prev.indexOf(s.id) < 0; });
-    rest.sort(function (x, y) { return (last[x.id] || 0) - (last[y.id] || 0); });
-    while (chosen.length < 2 && rest.length) chosen.push(rest.shift());
+  /* v2.9: 1. sıra gündüz, 2. sıra kapanış müşterisi. Seviye şartı (minLv), sıra şartı (slot), ağırlık (rare),
+     yalnız zincirle gelenler (only) ve dünkü zincirin sözü (S.specForce) dikkate alınır. */
+  var last = S.specLast || (S.specLast = {}), dn = day.n || 1, prev = day.spec || [], lv = repLevel();
+  var ok = function (s, pos) { return !s.only && !(s.minLv && lv < s.minLv) && !(pos === 0 && s.slot === 'eve') && !(pos === 1 && s.slot === 'day') && prev.indexOf(s.id) < 0; };
+  var wpick = function (list) { var t = 0, i; for (i = 0; i < list.length; i++) t += list[i].rare || 1; var r = Math.random() * t; for (i = 0; i < list.length; i++) { r -= list[i].rare || 1; if (r <= 0) return list[i]; } return list[list.length - 1]; };
+  var chosen = [null, null];
+  if (S.specForce && specById(S.specForce)) { chosen[0] = specById(S.specForce); }
+  S.specForce = null;
+  for (var pos = 0; pos < 2; pos++) {
+    if (chosen[pos]) continue;
+    var taken = function (s) { return chosen.indexOf(s) >= 0; };
+    var due = SPECIALS.filter(function (s) { return ok(s, pos) && !taken(s) && last[s.id] !== undefined && dn - last[s.id] >= SPEC_RETURN; });
+    due.sort(function (x, y) { return last[x.id] - last[y.id]; });            /* en uzun süredir gelmeyen önce */
+    var fresh = SPECIALS.filter(function (s) { return ok(s, pos) && !taken(s) && last[s.id] === undefined; });
+    if (pos === 0 && due.length) chosen[pos] = due[0];
+    else if (fresh.length) chosen[pos] = wpick(fresh);
+    else if (due.length) chosen[pos] = due[0];
+    else {                                                                    /* herkes son 14 günde geldiyse: en eskiler */
+      var rest = SPECIALS.filter(function (s) { return ok(s, pos) && !taken(s); });
+      rest.sort(function (x, y) { return (last[x.id] || 0) - (last[y.id] || 0); });
+      chosen[pos] = rest[0] || null;
+    }
   }
-  if (chosen.length < 2) chosen.push(chosen[0] || SPECIALS[0]);
+  if (!chosen[0]) chosen[0] = chosen[1] || SPECIALS[0];
+  if (!chosen[1]) chosen[1] = chosen[0];
   chosen.forEach(function (q2) { last[q2.id] = dn; });
   day.spec = [chosen[0].id, chosen[1].id]; day.sp = 0; day.normals = 0; day.popT = 0;
 }
@@ -10487,7 +10533,7 @@ function mkCustomer(c, type, slot, ord, spec) {
   if (spec) {
     cu.spec = spec.id; cu.sayT = 0;
     /* v2.5: adı henüz bilinmiyorsa önce kendini tanıtır, sonra siparişini söyler; adı servis bitince deftere yazılır */
-    cu.intro = !!(spec.me && spec.id.indexOf('st_') !== 0 && (S.names || []).indexOf(spec.id) < 0);
+    cu.intro = !!(spec.me && !spec.hidden && spec.id.indexOf('st_') !== 0 && (S.names || []).indexOf(spec.id) < 0);
     if (spec.id.indexOf('st_') !== 0) { S.specN = S.specN || {}; S.specN[spec.id] = (S.specN[spec.id] || 0) + 1; }
   } else if (type && type.id) {
     S.custSeen = S.custSeen || {};
@@ -10506,7 +10552,7 @@ function spawnSpecial(idx) {
   var type = specType(sp), ord = makeOrderFor(c, type);
   if (!ord || !canProduce(ord.f) || !canProcess(ord.k, ord.f) || !canSell(ord.f)) return false;
   mkCustomer(c, type, slot, ord, sp);
-  if (S.met.indexOf(sp.id) < 0) S.met.push(sp.id);
+  if (S.met.indexOf(sp.id) < 0 && !sp.hidden) S.met.push(sp.id);     /* v2.9: gizli müfettiş deftere raporla girer */
   return true;
 }
 function specActive(idx) {
@@ -10539,6 +10585,136 @@ function updateSpecials(dt) {
   }
   if (day.sp === 3 && !specActive(1)) day.sp = 4;  /* işi bitti → kapanış serbest */
 }
+/* =========================================================
+   v2.9 — ÖZEL MÜŞTERİ MEKANİKLERİ. Her özel müşterinin specials.js › mech alanı bir etki seçer;
+   bütün sayılar SPEC_CFG'de. İtibar etkileri küçük ve günlük tavanlı (repDayCap); büyük ödül para/süs.
+   ========================================================= */
+var SPEC_CFG = {
+  repDayCap: 6,                    /* mekaniklerden gelen günlük en çok itibar */
+  auraDede: 0.5, auraCalm: 0.75, auraTea: 0.8,   /* aynı kuyrukta / bölgede sabrın azalma çarpanı */
+  horonSec: 15,                    /* horon: bütün kuyruklarda sabır donar */
+  liveSec: 30, liveRep: 1,         /* canlı yayın: satış başına +1, kaçan başına −1 (tavanlı) */
+  reviewUp: 1.15, reviewDown: 0.9, /* eleştirmen: ertesi gün müşteri akışı */
+  creditMul: 1.2,                  /* veresiye: ertesi sabah bu kadarı ödenir */
+  selfiePer: 0.05, selfieMax: 0.5, /* süs başına ödeme artışı ve tavanı */
+  rushSec: 25, rushMul: 3,         /* acele: bu sürede servis → çarpan */
+  strictGood: 2, strictBad: 0.7, strictRep: 2,   /* cimri: hızlıysa ×2, değilse ×0.7 ve itibar −2 */
+  nightMul: 1.5,                   /* gece taksicileri: kapanışta servis */
+  recLike: 1.5, recHateDrain: 1.7, /* plakçı: sevdiği müzik / rock */
+  recLikes: ['iskele', 'yesilcam', 'tango', 'arabesk', 'shanty', 'karadeniz', 'zeybek'], recHates: ['rock'],
+  fcastNet: 0.05,                  /* kaptan: ertesi gün ağlar */
+  souvCash: 600,                   /* gurbetçi: verilecek süs kalmadıysa para */
+  inspLostOk: 0.15, inspCash: 450, inspRep: 2, inspFine: 300   /* müfettiş: kaçan oranı, ödül, ceza */
+};
+var horonT = 0, horonPrev = -1, liveT = 0;
+function mxQ() { return S.mx || (S.mx = { owed: 0, fc: null, rv: null }); }
+function mxLoad(d) {
+  if (!d || typeof d !== 'object') return null;
+  var o = { owed: Math.max(0, Math.min(1e9, +d.owed || 0)), fc: null, rv: null };
+  if (d.fc && isFinite(+d.fc.d) && isFinite(+d.fc.ev)) o.fc = { d: +d.fc.d | 0, ev: clamp(+d.fc.ev | 0, 0, EVENTS.length - 1), used: !!d.fc.used };
+  if (d.rv && isFinite(+d.rv.d) && isFinite(+d.rv.m)) o.rv = { d: +d.rv.d | 0, m: clamp(+d.rv.m, 0.5, 1.5) };
+  return o;
+}
+function todIn(w) { var f = clamp((day.t || 0) / DAY_LEN, 0, 1); return f >= w[0] && f <= w[1]; }
+function mxRep(n, x, y) {
+  if (!n) return;
+  if (n > 0) { n = Math.min(n, SPEC_CFG.repDayCap - (day.mxRep || 0)); if (n <= 0) return; day.mxRep = (day.mxRep || 0) + n; }
+  S.rep = Math.max(0, S.rep + n);
+  if (x !== undefined) addFloat(x, y - 1.1, (n > 0 ? '+' : '') + n + '*', n > 0 ? '#ffd76a' : '#ff8a7a');
+  if (n > 0) checkRepLevel();
+}
+function specHiLine(cu, sp) { return cu.recMood > 0 && sp.hi2 ? sp.hi2 : cu.recMood < 0 && sp.hi3 ? sp.hi3 : sp.hi; }
+/* sabrın azalma hızı: tip yorgunluğu × aynı kuyruktaki/bölgedeki özel müşteri auraları; horonda donar */
+function custDrain(cu) {
+  if (horonT > 0) return 0;
+  var m = cu.type.drain || 1;
+  if (cu.recMood < 0) m *= SPEC_CFG.recHateDrain;
+  for (var i = 0; i < customers.length; i++) {
+    var o = customers[i]; if (o === cu || !o.spec || o.state !== 'wait') continue;
+    var sp = specById(o.spec); if (!sp || !sp.mech) continue;
+    if (sp.mech === 'aura' && o.c === cu.c) m *= SPEC_CFG.auraDede;
+    else if (sp.mech === 'calm' && o.c === cu.c) m *= SPEC_CFG.auraCalm;
+    else if (sp.mech === 'tea' && o.c.z === cu.c.z) m *= SPEC_CFG.auraTea;
+  }
+  return m;
+}
+function specArrive(cu) {
+  var sp = specById(cu.spec); if (!sp || !sp.mech) return;
+  if (sp.mech === 'horon') {
+    horonT = SPEC_CFG.horonSec; toast(T('mxHoron'));
+    var kd = -1; for (var i = 0; i < SONGS.length; i++) if (SONGS[i].style === 'karadeniz') kd = i;
+    if (kd >= 0 && music.on && music.si !== kd) { horonPrev = music.si; musicPlay(music.mode, kd); }
+  } else if (sp.mech === 'live') { liveT = SPEC_CFG.liveSec; toast(T('mxLive')); }
+  else if (sp.mech === 'records') {
+    var st = music.on && SONGS[music.si] ? SONGS[music.si].style : '';
+    cu.recMood = SPEC_CFG.recLikes.indexOf(st) >= 0 ? 1 : SPEC_CFG.recHates.indexOf(st) >= 0 ? -1 : 0;
+  }
+}
+function mxTick(dt) {
+  if (horonT > 0) { horonT -= dt; if (horonT <= 0 && horonPrev >= 0) { if (music.on) musicPlay(music.mode, horonPrev); horonPrev = -1; } }
+  if (liveT > 0) liveT -= dt;
+}
+function mxSale() { if (liveT > 0) mxRep(SPEC_CFG.liveRep); }
+function mxLost() { if (liveT > 0) mxRep(-SPEC_CFG.liveRep); }
+function specPay(cu, c, pay, happy) {
+  var sp = specById(cu.spec); if (!sp || !sp.mech) return pay;
+  var m = sp.mech;
+  if (m === 'selfie') return Math.round(pay * (1 + Math.min(SPEC_CFG.selfieMax, decorCount() * SPEC_CFG.selfiePer)));
+  if (m === 'rush') return (cu.waitT || 0) <= SPEC_CFG.rushSec ? Math.round(pay * SPEC_CFG.rushMul) : pay;
+  if (m === 'strict') return Math.round(pay * (happy >= 0.5 ? SPEC_CFG.strictGood : SPEC_CFG.strictBad));
+  if (m === 'night') return day.phase === 'closing' ? Math.round(pay * SPEC_CFG.nightMul) : pay;
+  if (m === 'records') return cu.recMood > 0 ? Math.round(pay * SPEC_CFG.recLike) : pay;
+  if (m === 'credit') { mxQ().owed += Math.round(pay * SPEC_CFG.creditMul); toast(T('mxCredit', { v: money(Math.round(pay * SPEC_CFG.creditMul)) })); return 0; }
+  return pay;
+}
+function specDone(cu, c, happy) {
+  var sp = specById(cu.spec); if (!sp || !sp.mech) return;
+  var m = sp.mech, q = queueSlotPos(c, cu.slot);
+  if (m === 'forecast') {
+    var ev = Math.floor(Math.random() * EVENTS.length);
+    mxQ().fc = { d: (day.n || 1) + 1, ev: ev, used: false };
+    toast(T('mxFcast', { e: T(EVENTS[ev].name) }));
+  } else if (m === 'review') { mxQ().rv = { d: (day.n || 1) + 1, m: happy >= 0.5 ? SPEC_CFG.reviewUp : 1 }; if (happy >= 0.5) toast(T('mxReviewUp')); }
+  else if (m === 'chain' && sp.chain && specById(sp.chain)) { S.specForce = sp.chain; }
+  else if (m === 'strict' && happy < 0.5) { mxRep(-SPEC_CFG.strictRep, q.x, q.y); toast(T('mxStrict')); }
+  else if (m === 'souvenir') {
+    var lv = repLevel(), free = DECOR.filter(function (d) { return !d.got && (!d.lv || d.lv <= lv); });
+    if (free.length) { var d = pick(free); d.got = true; toast(T('mxSouv', { n: NM(d.n) })); }
+    else { S.cash += SPEC_CFG.souvCash; toast(T('mxSouvCash', { v: money(SPEC_CFG.souvCash) })); }
+  } else if (m === 'inspect') day.insp = 1;
+}
+/* sabrı biten özel müşteri: kısmi teslim ödemesi, eleştirmen/müfettiş kaydı. true → kaçan sayılmaz */
+function specBad(cu) {
+  var sp = cu.spec ? specById(cu.spec) : null; if (!sp || !sp.mech) return false;
+  if (sp.mech === 'review') mxQ().rv = { d: (day.n || 1) + 1, m: SPEC_CFG.reviewDown };
+  if (sp.mech === 'inspect') day.insp = day.insp || 2;
+  if (sp.mech === 'strict') mxRep(-SPEC_CFG.strictRep, cu.x, cu.y);
+  if (sp.mech === 'partial' && cu.ord.got > 0) {
+    var pay = Math.round(cu.ord.got * prodValue(cu.ord.k, cu.ord.f) * cu.type.mult);
+    payout(cu.c, pay, cu.slot); noteFishIncome(pay); noteDayIncome(pay); stallSale(cu.c, cu, pay);
+    addFloat(cu.x, cu.y - 0.6, '+' + money(pay) + ' (' + cu.ord.got + '/' + cu.ord.need + ')', '#ffe27a');
+    return true;
+  }
+  return false;
+}
+function mxNetMul() { var f = S.mx && S.mx.fc; return f && f.d === day.n ? 1 + SPEC_CFG.fcastNet : 1; }
+function mxFlowMul() { var r = S.mx && S.mx.rv; return r && r.d === day.n ? r.m : 1; }
+function mxForecastEvent() { var f = S.mx && S.mx.fc; if (!f || f.d !== day.n || f.used) return null; f.used = true; return EVENTS[f.ev] || null; }
+function mxNewDay() {
+  day.mxRep = 0; day.insp = 0; horonT = 0; liveT = 0;
+  var q = S.mx; if (q && q.owed > 0) { S.cash += q.owed; toast(T('mxCreditPay', { v: money(q.owed) })); q.owed = 0; }
+}
+/* gün sonu: müfettiş bugün geldiyse rapor (kaçan oranı düşükse ödül, yüksekse ceza); deftere ancak şimdi girer */
+function mxInspect() {
+  if (!day.insp) return null;
+  var tot = (day.st.served || 0) + (day.st.lost || 0), ratio = tot ? (day.st.lost || 0) / tot : 0;
+  var good = day.insp === 1 && ratio <= SPEC_CFG.inspLostOk, o = { good: good, v: good ? SPEC_CFG.inspCash : SPEC_CFG.inspFine, r: Math.round(ratio * 100) };
+  if (good) { S.cash += o.v; mxRep(SPEC_CFG.inspRep); } else S.cash = Math.max(0, S.cash - o.v);
+  ['met', 'names', 'jobs'].forEach(function (f) { S[f] = S[f] || []; if (S[f].indexOf('mufettis') < 0) S[f].push('mufettis'); });
+  custNew(); day.insp = 0;
+  return o;
+}
+
 /* kapanış 2. özel müşteriyi bekler (en fazla CLOSE_MAX + 30 sn; servis edilemezse gün yine kapanır) */
 function specHoldsClose() { return (day.sp === 2 || day.sp === 3) && day.ph < CLOSE_MAX + 30; }
 /* v1.3.3: özel müşteriler okunabilsin — söz süresi metnin uzunluğuna göre (4–9 sn), yürüyüş normalin ~%60'ı,
@@ -10546,11 +10722,11 @@ function specHoldsClose() { return (day.sp === 2 || day.sp === 3) && day.ph < CL
 var SPEC_WALK = 1.3, SPEC_LEAVE = 1.7;
 function sayDur(txt) { return clamp(2.2 + (txt || '').length * 0.075, 4, 9); }
 function specMeDur(cu) { var sp = specById(cu.spec); return sp && cu.intro && sp.me ? sayDur(NM(sp.me)) : 0; }
-function specHiDur(cu) { var sp = specById(cu.spec); return sp ? specMeDur(cu) + sayDur(NM(sp.hi)) : 0; }
+function specHiDur(cu) { var sp = specById(cu.spec); return sp && !sp.hidden ? specMeDur(cu) + sayDur(NM(specHiLine(cu, sp))) : 0; }
 function specTalking(cu) { return !!cu.spec && cu.state === 'wait' && (cu.sayT || 0) < specHiDur(cu); }
 /* konuşma balonu: gelince selam, mutlu giderken teşekkür */
 function drawSpecialTag(cu) {
-  var sp = specById(cu.spec); if (!sp) return;
+  var sp = specById(cu.spec); if (!sp || sp.hidden) return;              /* v2.9: gizli müşteri kendini belli etmez */
   if (sp.fx && cu.state !== 'leave' && !paused) {                                 /* v1.1: karakter işareti uçuşur */
     cu.fxT = (cu.fxT || 0) + 0.016;
     if (cu.fxT > 1.3) { cu.fxT = 0; addFloat(cu.x + rnd(-0.3, 0.3), cu.y - 0.6, sp.fx, sp.fxc); }
@@ -10559,7 +10735,8 @@ function drawSpecialTag(cu) {
   if (cu.state === 'wait' && !cu.sndHi) { cu.sndHi = true; specSfx(sp); }                                  /* v1.3: gelişte kendi sesi */
   if (cu.state === 'leave' && cu.happyLeave !== false && !cu.sndBye) { cu.sndBye = true; specSfx(sp); }
   var line = null;
-  if (specTalking(cu) && !cu.story) line = (cu.sayT || 0) < specMeDur(cu) ? NM(sp.me) : NM(sp.hi);
+  if (specTalking(cu) && !cu.story) line = (cu.sayT || 0) < specMeDur(cu) ? NM(sp.me) : NM(specHiLine(cu, sp));
+  if (cu.state === 'leave' && cu.happyLeave === false && sp.mad && (cu.byeT || 0) < sayDur(NM(sp.mad))) line = NM(sp.mad);   /* v2.9: kızgın giderken */
   if (cu.state === 'leave' && cu.happyLeave !== false && (cu.byeT || 0) < sayDur(NM(sp.bye))) line = NM(sp.bye);
   if (line) uiLabel(cu.x, cu.y, 56, '“' + line + '”', '#f4e9d2', 0.95);
   if (specTalking(cu)) {                                                           /* söz bitene kadar küçük süre çubuğu */
@@ -10765,7 +10942,7 @@ function custBookData() {
   });
   CUST.forEach(function (t) {
     var c = (S.custSeen || {})[t.id], seen = c !== undefined;
-    out.type.push({ id: t.id, t: t, seen: seen, known: seen, n: NM(t.n), job: '', d: seen ? T('custTypeD', { a: t.qty[0], b: t.qty[1], p: Math.round(t.pat), m: t.mult.toFixed(2) }) : '', cnt: c || 0 });
+    out.type.push({ id: t.id, t: t, seen: seen, known: seen, n: NM(t.n), job: '', d: seen ? T('custTypeD', { a: t.qty[0], b: t.qty[1], p: Math.round(t.pat), m: t.mult.toFixed(2) }) + (t.note ? ' · ' + NM(t.note) : '') : '', cnt: c || 0 });
   });
   return out;
 }
@@ -11656,6 +11833,7 @@ window.BT = {
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
   help: function () { return { seen: Object.keys(S.help || {}), open: !el.helpScr.classList.contains('hidden'), title: el.helpT.textContent, keys: Object.keys(HELP) }; },
   stallSt: function (k) { var c = counterByKey(k); return c ? stSt(c) : null; }, stallExpPM: function (k) { var c = counterByKey(k); return c ? stallExpPM(c) : 0; }, stallTick: stallTick, stallNewDay: stallNewDay,
+  mx: function () { return { cfg: SPEC_CFG, st: S.mx, horonT: horonT, liveT: liveT, force: S.specForce, insp: day.insp, mxRep: day.mxRep || 0 }; }, mxInspect: mxInspect, mxNewDay: mxNewDay, custDrain: custDrain, specArrive: specArrive,
   specJob: function (id) { return specJob(specById(id)); },
   custBook: function () { return custBookData(); }, openCustBook: function () { openCustBook(); }, finishOrder: finishOrder, notifsAll: function () { return el.toast.textContent; },
   story: function () { return { st: S.story, vis: storyVis, on: storyOn(), open: storyOpenNow(), mute: storyMute, netMul: storyNetMul(), name: function (id) { return specName(specById(id)); } }; }, storySet: function (o) { var st = stQ(); for (var k in o) st[k] = o[k]; },
