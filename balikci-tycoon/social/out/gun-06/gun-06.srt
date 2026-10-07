@@ -1,0 +1,25 @@
+1
+00:00:00,800 --> 00:00:04,500
+Tezgâh çoğalınca
+hangisi kazandırıyor?
+
+2
+00:00:04,500 --> 00:00:07,900
+Her tezgâhın karnesi var:
+
+3
+00:00:07,900 --> 00:00:11,500
+gelir, gider ve
+dünden farkı ↑↓
+
+4
+00:00:11,500 --> 00:00:14,500
+Dokun: ayrıntı.
+
+5
+00:00:14,500 --> 00:00:17,500
+Yetişemediğini kapat.
+
+6
+00:00:17,500 --> 00:00:23,000
+Sence hangi tezgâh en çok kazandırır?

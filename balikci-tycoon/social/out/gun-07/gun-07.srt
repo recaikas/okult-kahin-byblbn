@@ -1,0 +1,33 @@
+1
+00:00:00,800 --> 00:00:04,500
+Her şeyi tek başına
+taşımak yoruyor.
+
+2
+00:00:04,500 --> 00:00:07,700
+İlk çalışanını seç:
+4 rol var.
+
+3
+00:00:07,700 --> 00:00:11,500
+Hamal, Filetocu,
+Tezgâhtar, Tahsildar
+
+4
+00:00:11,500 --> 00:00:14,700
+İlk çalışan:
+Hamal ($15/dk)
+
+5
+00:00:14,700 --> 00:00:18,000
+Ağdan kesime
+artık o taşıyor.
+
+6
+00:00:18,000 --> 00:00:23,000
+Sen de tezgâha
+yetişirsin.
+
+7
+00:00:23,000 --> 00:00:28,500
+İlk kimi işe alırdın?

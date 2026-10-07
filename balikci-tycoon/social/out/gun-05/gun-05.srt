@@ -1,0 +1,26 @@
+1
+00:00:00,800 --> 00:00:04,500
+Akşam olunca
+liman kapanır.
+
+2
+00:00:04,500 --> 00:00:07,700
+Gün sonu hesabı:
+
+3
+00:00:07,700 --> 00:00:11,000
+satış, kaçan müşteri,
+günün kazancı.
+
+4
+00:00:11,000 --> 00:00:13,700
+Yeni gün:
+yeni müşteriler,
+
+5
+00:00:13,700 --> 00:00:16,500
+yeni kararlar.
+
+6
+00:00:16,500 --> 00:00:22,000
+Günün kazancını ilk neye yatırırdın?

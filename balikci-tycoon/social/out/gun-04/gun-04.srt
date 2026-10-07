@@ -1,0 +1,35 @@
+1
+00:00:00,800 --> 00:00:04,500
+Müşteriler sonsuza kadar
+beklemez.
+
+2
+00:00:04,500 --> 00:00:07,500
+Tezgâh boşsa
+sabır çubuğu erir.
+
+3
+00:00:07,500 --> 00:00:10,500
+Biterse müşteri kaçar,
+satış elinden gider.
+
+4
+00:00:10,500 --> 00:00:13,500
+Herkesin sabrı farklı:
+
+5
+00:00:13,500 --> 00:00:16,500
+kimi yarım dakika bekler,
+kimi iki dakika.
+
+6
+00:00:16,500 --> 00:00:19,200
+Yetiş, filetoyu diz…
+
+7
+00:00:19,200 --> 00:00:22,000
+…kuyruk erisin.
+
+8
+00:00:22,000 --> 00:00:27,500
+Sen sırada kaç dakika beklersin?
