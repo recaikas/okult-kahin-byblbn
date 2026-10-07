@@ -1,0 +1,33 @@
+1
+00:00:00,800 --> 00:00:04,500
+Sırtında en fazla
+8 balık taşıyabilirsin.
+
+2
+00:00:04,500 --> 00:00:07,300
+Ağda balık kalsa da
+sırt dolunca alamazsın.
+
+3
+00:00:07,300 --> 00:00:10,000
+Her tur yürümek
+zaman demek.
+
+4
+00:00:10,000 --> 00:00:13,200
+İlk 120$ ile:
+KAPASİTE yükseltmesi
+
+5
+00:00:13,200 --> 00:00:16,500
++3 taşıma.
+Artık sırtta 11 balık.
+
+6
+00:00:16,500 --> 00:00:21,500
+Daha az yürüyüş,
+daha çok satış.
+
+7
+00:00:21,500 --> 00:00:27,000
+İlk paranı neye harcardın: kapasite mi, hız mı?
