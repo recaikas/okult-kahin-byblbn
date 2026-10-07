@@ -36,7 +36,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   await p.evaluate(() => BT.setLang('tr')); await sleep(100);
   /* 2) yeni oyun + ilerleme olayları + eğitim rehberi */
   await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
-  await p.click('#heroGo'); await p.fill('#nameIn', 'Rehber Limanı'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(700);
+  await p.click('#heroGo'); await p.fill('#nameIn', 'Rehber Limanı'); await p.evaluate(() => { const c = document.getElementById('termsChk'); if (c && c.offsetParent) c.checked = true; }); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(700);
   ok(await p.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'açılışta bilgilendirme penceresi çıktı');
   await sleep(700);
   const ev1 = calls.filter(c => c.name === 'bt_event').map(c => c.body.p_ev);

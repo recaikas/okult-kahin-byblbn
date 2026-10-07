@@ -11,7 +11,7 @@ Her alanın yanında karakter sayısı / sınır var. Kopyala-yapıştır için 
 | Yaş derecelendirmesi | 4+ (şiddet, korku, kumar, cinsellik yok; bütün sorulara "Yok/None") |
 | Fiyat | Ücretsiz · Uygulama içi satın alma yok |
 | Gizlilik politikası URL | https://recaikas.github.io/okult-kahin-byblbn/privacy.html |
-| Destek URL | https://recaikas.github.io/okult-kahin-byblbn/about.html |
+| Destek URL | https://recaikas.github.io/okult-kahin-byblbn/support.html |
 | Pazarlama URL | https://recaikas.github.io/okult-kahin-byblbn/ |
 | Telif hakkı | 2026 recaikas |
 | Cihaz | Yalnız iPhone (iPad desteği kapalı: TARGETED_DEVICE_FAMILY = 1) |
@@ -23,6 +23,24 @@ Her alanın yanında karakter sayısı / sınır var. Kopyala-yapıştır için 
   - **Kullanıcı İçeriği › Oyun içeriği / Diğer kullanıcı içeriği:** işletme adı, karakter adı, oyun istatistikleri (skor tablosu); görüş formu metni.
   - **Tanımlayıcılar › Kullanıcı kimliği:** rastgele üretilmiş anonim oyuncu kimliği.
   - **Kullanım verileri › Ürün etkileşimi:** oyun içi ilerleme adımları (eğitim, gün, açılan bölge).
+  - Skor tablosunda "Bildir" kullanılırsa bildirilen satır ve bildirenin anonim kimliği (Kullanıcı İçeriği / Tanımlayıcı kapsamında).
+
+## Kullanıcı içeriği (Guideline 1.2) — skor tablosu adları
+
+- Oyuncu adının görünmesi için **Topluluk Kuralları ve Kullanım Koşulları** kabul edilir (https://recaikas.github.io/okult-kahin-byblbn/terms.html).
+- Uygunsuz kelimeler istemcide ve sunucuda otomatik reddedilir.
+- Her satırda **⋮ › Bildir ve gizle / Yalnız gizle**. 3 farklı bildirimde satır otomatik gizlenir; yönetim panelinde incelenir.
+- İletişim: destek sayfası ve recaizade3145@gmail.com.
+
+## App Review notları (İngilizce, "Notes" alanına)
+
+```
+Hamsi Koyu is a single-player fishing business game in Turkish and English. No account or sign-in is required. To start: choose a language, tap New Game, pick an empty slot, customise the character, name the business (the first time you must accept the Community Rules shown below the name field) and choose an autosave interval. The tutorial then guides you.
+
+User-generated content: the only shared content is the business/character name on the online leaderboard (start screen or menu > Leaderboard). Names are filtered on device and on the server, users must accept the Community Rules before their name is shown, and every row has a ⋮ menu to Report (sent to the developer, auto-hidden after 3 reports) or Hide it on the device. Rules: https://recaikas.github.io/okult-kahin-byblbn/terms.html
+
+Settings contains the Privacy Policy and "Delete my online data". There are no ads, no in-app purchases and no tracking. The optional in-game feedback reward does not depend on the star rating and is unrelated to App Store reviews.
+```
 
 ## Türkçe (tr)
 

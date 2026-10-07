@@ -21,6 +21,12 @@
 - **Cihaz veya diğer kimlikler:** rastgele anonim oyuncu kimliği — Uygulama işlevi, Analiz.
 - Konum, kişisel bilgi (ad, e-posta), finans, sağlık, fotoğraf, rehber: **toplanmıyor**.
 
+## Kullanıcı tarafından oluşturulan içerik (UGC) beyanı
+
+- Kullanıcı içeriği: **Evet** — yalnız skor tablosundaki işletme/karakter adı. Kullanıcılar birbiriyle mesajlaşamaz.
+- Kurallar kabulü: ad ilk kez girilirken Topluluk Kuralları onay kutusu (https://recaikas.github.io/okult-kahin-byblbn/terms.html).
+- Bildirme ve engelleme: her satırda ⋮ › Bildir ve gizle / Yalnız gizle. Otomatik kelime filtresi (istemci + sunucu), 3 bildirimde otomatik gizleme, yönetim panelinde inceleme.
+
 ## Türkçe (tr)
 
 ### Uygulama adı / App name  (26 / 30)

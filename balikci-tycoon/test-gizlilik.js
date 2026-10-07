@@ -18,7 +18,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   });
   await p.goto(URL); await sleep(900);
   await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
-  await p.click('#heroGo'); await p.fill('#nameIn', 'Gizli Liman'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(800);
+  await p.click('#heroGo'); await p.fill('#nameIn', 'Gizli Liman'); await p.evaluate(() => { const c = document.getElementById('termsChk'); if (c && c.offsetParent) c.checked = true; }); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(800);
   /* 0) v1.9: skor tablosu zorunlu; bilgilendirme açılışta ekrana çıkmaz — menüdeki "Veriler & Gizlilik"te okunur */
   ok(await p.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'açılışta bilgilendirme penceresi çıktı');
   await sleep(300);
@@ -77,7 +77,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   await p2.route('https://sahte.supabase.co/**', r => { calls2.push(r.request().url().split('/rpc/')[1]); r.fulfill({ contentType: 'application/json', body: r.request().url().includes('bt_board') ? '{"top":[],"me":null,"stats":{}}' : '"ok"' }); });
   await p2.goto(URL); await sleep(900);
   await p2.click('#introSkip'); await p2.click('#playBtn'); await p2.click('#slotRows .sb[data-n="1"]');
-  await p2.click('#heroGo'); await p2.fill('#nameIn', 'Onaylı Liman'); await p2.click('#nameGo'); await p2.click('#autoOpts button[data-m="10"]'); await sleep(800);
+  await p2.click('#heroGo'); await p2.fill('#nameIn', 'Onaylı Liman'); await p2.evaluate(() => { const c = document.getElementById('termsChk'); if (c && c.offsetParent) c.checked = true; }); await p2.click('#nameGo'); await p2.click('#autoOpts button[data-m="10"]'); await sleep(800);
   await p2.evaluate(() => { document.getElementById('menuBtn').click(); }); await sleep(200);
   await sleep(400);
   ok(calls2.includes('bt_submit') && calls2.includes('bt_play') && await p2.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'temiz sayfada gönderim yok / pencere çıktı ' + JSON.stringify(calls2));

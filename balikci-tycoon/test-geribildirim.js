@@ -29,7 +29,7 @@ const NATIVE = () => {
 };
 const newGame = async (p, name) => {
   await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
-  await p.click('#heroGo'); await p.fill('#nameIn', name); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(800);
+  await p.click('#heroGo'); await p.fill('#nameIn', name); await p.evaluate(() => { const c = document.getElementById('termsChk'); if (c && c.offsetParent) c.checked = true; }); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(800);
   if (await p.isVisible('#askScr')) { await p.click('#askYes'); await sleep(300); }   /* v1.8 KVKK bilgilendirmesi (sahte Supabase varken) */
 };
 const resume = async p => {
