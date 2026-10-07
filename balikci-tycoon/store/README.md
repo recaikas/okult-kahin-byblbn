@@ -55,6 +55,19 @@ Videoda başka platform adı geçmez (Apple önizleme kuralı). Müzik `tools/mu
 4. Veri güvenliği ve içerik derecelendirmesi cevapları `text/googleplay.md` içinde.
 5. AAB'yi (mobile/ › Android Studio › Generate Signed Bundle) **Dahili test** kanalına yükle, testerları e-postayla ekle.
 
+## 5b. Dil eşleştirmesi (her iki mağaza TR + EN)
+Her dilin kendi metni, ekranları, videosu ve öne çıkan grafiği var; karıştırma. Oyun cihaz diline göre kendiliğinden TR/EN açılır.
+
+| Mağaza dili | Metin | Görseller | URL'ler (aynı sayfa, dil bölümü) |
+|---|---|---|---|
+| App Store **Türkçe** (birincil) · Play **tr-TR** (varsayılan) | `text/*.md` › Türkçe | `…/tr/`, `*-tr.png`, `*-tr.mp4` | `privacy.html#tr`, `support.html#tr`, `terms.html#tr` |
+| App Store **English (U.S.)** + **English (U.K.)** · Play **en-US** (+ isteğe bağlı en-GB) | `text/*.md` › English | `…/en/`, `*-en.png`, `*-en.mp4` | `privacy.html#en`, `support.html#en`, `terms.html#en` |
+
+- App Store: İngilizceyi ekledikten sonra en-GB için "English (U.S.)" metnini kopyala; ekranlar/önizleme de dil başına ayrı yüklenir.
+- Play: Mağaza girişi › Çevirileri yönet › Kendi çevirilerini ekle › İngilizce; öne çıkan grafik ve ekranlar dil başına yüklenir, tanıtım videosu linki dil başına ayrı olabilir (TR ve EN YouTube videoları).
+- App Privacy / Veri güvenliği ve App Review notları dile bağlı değil, bir kez girilir.
+- Veri izni kartı, gizlilik politikası, kullanım koşulları ve destek sayfası iki dilde; oyun hangi dildeyse o dil açılır.
+
 ## 6. Yeniden üretmek
 Oyun klasöründe sunucu: `cd balikci-tycoon && python3 -m http.server 8099`
 ```

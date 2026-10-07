@@ -27,7 +27,7 @@ Her alanın yanında karakter sayısı / sınır var. Kopyala-yapıştır için 
 
 ## Kullanıcı içeriği (Guideline 1.2) — skor tablosu adları
 
-- Oyuncu adının görünmesi için **Topluluk Kuralları ve Kullanım Koşulları** kabul edilir (https://recaikas.github.io/okult-kahin-byblbn/terms.html).
+- İlk oyundan önce **veri izni kartı**: Topluluk Kuralları ve veri kullanımı kabul edilmeden hiçbir şey gönderilmez, ad görünmez; "Çevrimdışı oyna" seçilebilir (https://recaikas.github.io/okult-kahin-byblbn/terms.html).
 - Uygunsuz kelimeler istemcide ve sunucuda otomatik reddedilir.
 - Her satırda **⋮ › Bildir ve gizle / Yalnız gizle**. 3 farklı bildirimde satır otomatik gizlenir; yönetim panelinde incelenir.
 - İletişim: destek sayfası ve recaizade3145@gmail.com.
@@ -35,9 +35,9 @@ Her alanın yanında karakter sayısı / sınır var. Kopyala-yapıştır için 
 ## App Review notları (İngilizce, "Notes" alanına)
 
 ```
-Hamsi Koyu is a single-player fishing business game in Turkish and English. No account or sign-in is required. To start: choose a language, tap New Game, pick an empty slot, customise the character, name the business (the first time you must accept the Community Rules shown below the name field) and choose an autosave interval. The tutorial then guides you.
+Hamsi Koyu is a single-player fishing business game in Turkish and English. No account or sign-in is required. To start: choose a language and tap New Game. The first time, a data consent card explains in detail what is sent to the leaderboard server (public names and stats, a random player ID, progress milestones, feedback, reports), what is never collected, where it is stored (Supabase, EU/Frankfurt), retention, deletion and the Community Rules. "I have read it and accept" enables the online leaderboard; "Play offline" sends nothing at all and the whole game remains playable. The choice can be changed in Settings > Data consent & Rules. Then pick an empty slot, customise the character, pick an empty slot, customise the character, name the business and choose an autosave interval. The tutorial then guides you.
 
-User-generated content: the only shared content is the business/character name on the online leaderboard (start screen or menu > Leaderboard). Names are filtered on device and on the server, users must accept the Community Rules before their name is shown, and every row has a ⋮ menu to Report (sent to the developer, auto-hidden after 3 reports) or Hide it on the device. Rules: https://recaikas.github.io/okult-kahin-byblbn/terms.html
+User-generated content: the only shared content is the business/character name on the online leaderboard (start screen or menu > Leaderboard). Names are filtered on device and on the server, users must accept the Community Rules on the data consent card before anything is sent or their name is shown, and every row has a ⋮ menu to Report (sent to the developer, auto-hidden after 3 reports) or Hide it on the device. Rules: https://recaikas.github.io/okult-kahin-byblbn/terms.html
 
 Settings contains the Privacy Policy and "Delete my online data". There are no ads, no in-app purchases and no tracking. The optional in-game feedback reward does not depend on the star rating and is unrelated to App Store reviews.
 ```

@@ -83,10 +83,13 @@ GP = {
     notes='First release. Welcome to the cove! Send us your thoughts with the in-game feedback form.')
 }
 REVIEW = ('Hamsi Koyu is a single-player fishing business game in Turkish and English. No account or sign-in is required. '
-  'To start: choose a language, tap New Game, pick an empty slot, customise the character, name the business (the first time you must accept '
-  'the Community Rules shown below the name field) and choose an autosave interval. The tutorial then guides you.\n\n'
+  'To start: choose a language and tap New Game. The first time, a data consent card explains in detail what is sent to the leaderboard '
+  'server (public names and stats, a random player ID, progress milestones, feedback, reports), what is never collected, where it is stored '
+  '(Supabase, EU/Frankfurt), retention, deletion and the Community Rules. "I have read it and accept" enables the online leaderboard; '
+  '"Play offline" sends nothing at all and the whole game remains playable. The choice can be changed in Settings > Data consent & Rules. '
+  'Then pick an empty slot, customise the character, pick an empty slot, customise the character, name the business and choose an autosave interval. The tutorial then guides you.\n\n'
   'User-generated content: the only shared content is the business/character name on the online leaderboard (start screen or menu > Leaderboard). '
-  'Names are filtered on device and on the server, users must accept the Community Rules before their name is shown, and every row has a ⋮ menu '
+  'Names are filtered on device and on the server, users must accept the Community Rules on the data consent card before anything is sent or their name is shown, and every row has a ⋮ menu '
   'to Report (sent to the developer, auto-hidden after 3 reports) or Hide it on the device. Rules: ' + TERMS + '\n\n'
   'Settings contains the Privacy Policy and "Delete my online data". There are no ads, no in-app purchases and no tracking. '
   'The optional in-game feedback reward does not depend on the star rating and is unrelated to App Store reviews.')
@@ -121,7 +124,7 @@ a = ['# App Store Connect — mağaza metinleri\n\nHer alanın yanında karakter
      '  - **Kullanım verileri › Ürün etkileşimi:** oyun içi ilerleme adımları (eğitim, gün, açılan bölge).\n',
      '  - Skor tablosunda "Bildir" kullanılırsa bildirilen satır ve bildirenin anonim kimliği (Kullanıcı İçeriği / Tanımlayıcı kapsamında).\n\n',
      '## Kullanıcı içeriği (Guideline 1.2) — skor tablosu adları\n\n',
-     '- Oyuncu adının görünmesi için **Topluluk Kuralları ve Kullanım Koşulları** kabul edilir (%s).\n' % TERMS,
+     '- İlk oyundan önce **veri izni kartı**: Topluluk Kuralları ve veri kullanımı kabul edilmeden hiçbir şey gönderilmez, ad görünmez; "Çevrimdışı oyna" seçilebilir (%s).\n' % TERMS,
      '- Uygunsuz kelimeler istemcide ve sunucuda otomatik reddedilir.\n',
      '- Her satırda **⋮ › Bildir ve gizle / Yalnız gizle**. 3 farklı bildirimde satır otomatik gizlenir; yönetim panelinde incelenir.\n',
      '- İletişim: destek sayfası ve recaizade3145@gmail.com.\n\n',
@@ -141,14 +144,15 @@ g = ['# Google Play Console — mağaza metinleri\n\n',
      '| Hedef kitle | 13 yaş ve üzeri önerilir (skor tablosunda herkese açık ad görünür) |\n',
      '| Gizlilik politikası | %s |\n| Web sitesi | %s |\n\n' % (PRIVACY, SITE),
      '## Veri güvenliği (Data safety) — privacy.html ile aynı\n\n',
-     '- Veri toplanıyor: **Evet**. Üçüncü taraflarla paylaşılıyor: **Hayır**. Aktarımda şifreleme: **Evet (HTTPS)**. Silme isteği: **Evet (e-posta ile)**.\n',
-     '- **Uygulama etkinliği › Uygulama içi işlemler:** ilerleme adımları — Analiz, isteğe bağlı değil.\n',
+     '- Veri toplanıyor: **Evet**. Üçüncü taraflarla paylaşılıyor: **Hayır**. Aktarımda şifreleme: **Evet (HTTPS)**. Silme isteği: **Evet (oyun içi "Çevrimiçi verilerimi sil" + e-posta)**.\n',
+     '- Toplama **isteğe bağlı: Evet** — ilk oyundan önceki veri izni kartında "Çevrimdışı oyna" seçilirse hiçbir veri gönderilmez.\n',
+     '- **Uygulama etkinliği › Uygulama içi işlemler:** ilerleme adımları — Analiz, isteğe bağlı.\n',
      '- **Uygulama etkinliği › Kullanıcı tarafından oluşturulan diğer içerik:** işletme/karakter adı (skor tablosu), görüş metni — Uygulama işlevi.\n',
      '- **Cihaz veya diğer kimlikler:** rastgele anonim oyuncu kimliği — Uygulama işlevi, Analiz.\n',
      '- Konum, kişisel bilgi (ad, e-posta), finans, sağlık, fotoğraf, rehber: **toplanmıyor**.\n\n',
      '## Kullanıcı tarafından oluşturulan içerik (UGC) beyanı\n\n',
      '- Kullanıcı içeriği: **Evet** — yalnız skor tablosundaki işletme/karakter adı. Kullanıcılar birbiriyle mesajlaşamaz.\n',
-     '- Kurallar kabulü: ad ilk kez girilirken Topluluk Kuralları onay kutusu (%s).\n' % TERMS,
+     '- Kurallar kabulü: ilk oyundan önce veri izni kartında Topluluk Kuralları + veri kullanımı onayı; reddedilirse hiçbir şey gönderilmez (%s).\n' % TERMS,
      '- Bildirme ve engelleme: her satırda ⋮ › Bildir ve gizle / Yalnız gizle. Otomatik kelime filtresi (istemci + sunucu), 3 bildirimde otomatik gizleme, yönetim panelinde inceleme.\n\n']
 for L in ('tr', 'en'):
     d = GP[L]; g.append('## %s\n\n' % LN[L])
