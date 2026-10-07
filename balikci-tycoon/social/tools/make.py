@@ -28,7 +28,13 @@ silent = os.path.join(OUT, did + '-muziksiz.mp4')
 run('-framerate', '30', '-i', frames, '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p',
     '-vf', 'scale=1080:1920:flags=lanczos', '-movflags', '+faststart', silent)
 final = os.path.join(OUT, did + '.mp4')
-run('-i', silent, '-i', mus, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', final)
+# efekt izi (pop/whoosh/para/vuruş) + müzik; müzik efektlerin altında biraz kısılır
+fx = os.path.join(OUT, 'efekt.wav')
+subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'sfx.py'), os.path.join(OUT, 'sure.json'), fx], check=True, capture_output=True)
+mix = os.path.join(OUT, 'ses.wav')
+run('-i', mus, '-i', fx, '-filter_complex', '[0:a]volume=0.75[m];[1:a]volume=1.0[f];[m][f]amix=inputs=2:normalize=0,alimiter=limit=0.95', mix)
+run('-i', silent, '-i', mix, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', final)
+os.remove(mix)
 
 # 3) kapak: 1080×1920 PNG zaten devlog.js'den (kapak.png); JPG kopyası (Instagram kapak yüklemesi)
 cov = os.path.join(OUT, 'kapak.png')

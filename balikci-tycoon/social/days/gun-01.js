@@ -3,13 +3,13 @@
 module.exports = {
   id: 'gun-01',
   lang: 'tr',
-  series: 'GELİŞTİRME GÜNLÜĞÜ · GÜN 1',
+  series: 'GELİŞTİRME GÜNLÜĞÜ · GÜN 1', sting: 'GÜN 1',
   hero: 'Recai',
   company: 'Recai Balıkçılık',
   segs: [
     { /* 1) kanca: yeni açılmış oyun, küçücük iskele */
       len: 4.5,
-      caps: [[0.1, 2.2, 'Bir balıkçı oyunu yapıyorum.'], [2.2, 4.5, 'Her şey bu küçük<br>iskelede başlıyor.']],
+      caps: [[0.8, 2.4, 'Bir balıkçı oyunu yapıyorum.'], [2.4, 4.5, 'Her şey bu küçük<br>iskelede başlıyor.']],
       prep: () => {
         window.__zoom(3);
         window.__plan = [{ until: true, max: 3.2 }, { to: [BT.spots[0].x, BT.spots[0].y + 0.9] },
@@ -57,17 +57,8 @@ module.exports = {
       }
     },
     { /* 5) tek soru */
-      len: 5.5,
-      caps: [[0, 5.5, 'Sen bu dükkânın tabelasına ne yazardın?', true]],
-      prep: () => {
-        window.__plan = [{ until: true, max: 99 }];
-        document.getElementById('dlQ').innerHTML = 'Sen bu dükkânın<br>tabelasına ne yazardın?';
-        document.getElementById('dlSm').textContent = 'YORUMLARA YAZ · YARIN: GÜN 2';
-        document.getElementById('dlEnd').style.display = 'flex';
-      },
-      frame: `const s = document.getElementById('dlSign'), e = document.getElementById('dlEnd');
-        e.style.opacity = Math.min(1, u * 5.5 / 0.4);
-        const n = Math.min(5, Math.floor(u * 5.5 / 0.35)); s.textContent = '?'.repeat(n) + (Math.floor(u * 5.5 * 2.5) % 2 ? '_' : '\\u00a0');`
+      len: 5.5, end: { sign: '?????', typeSec: 0.35, q: 'Sen bu dükkânın<br>tabelasına ne yazardın?', sm: 'YORUMLARA YAZ · YARIN: GÜN 2' },
+      caps: [[0, 5.5, 'Sen bu dükkânın tabelasına ne yazardın?', true]]
     }
   ],
   /* kapak (dikey 1080×1920): büyümüş koy + başlık */
