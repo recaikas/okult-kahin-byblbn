@@ -17,8 +17,8 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
     r.fulfill({ contentType: 'application/json', body: JSON.stringify(reply) });
   });
   await p.goto(URL); await sleep(900);
-  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
-  await p.click('#heroGo'); await p.fill('#nameIn', 'Gizli Liman'); await p.evaluate(() => { const c = document.getElementById('termsChk'); if (c && c.offsetParent) c.checked = true; }); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(800);
+  await p.click('#introSkip'); await p.click('#playBtn'); if (await p.isVisible('#consentScr')) { await p.click('#cnsYes'); await sleep(200); } await p.click('#slotRows .sb[data-n="1"]');
+  await p.click('#heroGo'); await p.fill('#nameIn', 'Gizli Liman'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(800);
   /* 0) v1.9: skor tablosu zorunlu; bilgilendirme açılışta ekrana çıkmaz — menüdeki "Veriler & Gizlilik"te okunur */
   ok(await p.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'açılışta bilgilendirme penceresi çıktı');
   await sleep(300);
@@ -37,11 +37,11 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   ok(await p.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'bilgilendirme ikinci kez çıktı');
   await p.evaluate(() => BT.back()); await sleep(200);
   await p.evaluate(() => { if (!document.getElementById('menuScreen').classList.contains('hidden')) BT.back(); }); await sleep(200);
-  /* 1) ayarlarda aç/kapa yok; "her zaman açık" notu var */
+  /* 1) v2.12: ayarlarda aç/kapa düğmesi yok; durum notu oyuncunun veri iznini gösterir (kabul ettiyse AÇIK) */
   await p.evaluate(() => { document.getElementById('menuBtn').click(); }); await sleep(200);
   await p.click('#menuSet'); await sleep(200);
   const lbl = await p.evaluate(() => [document.getElementById('setOnline').textContent, document.getElementById('forgetBtn').textContent, document.getElementById('privBtn').textContent, document.getElementById('onlineFixed').textContent, !!document.getElementById('onlineSeg')]);
-  ok(lbl[0] === 'ÇEVRİMİÇİ SKOR TABLOSU' && /SİL/.test(lbl[1]) && /GİZLİLİK/.test(lbl[2]) && /HER ZAMAN AÇIK/.test(lbl[3]) && !lbl[4], 'ayar etiketleri yanlış ' + JSON.stringify(lbl));
+  ok(lbl[0] === 'ÇEVRİMİÇİ SKOR TABLOSU' && /SİL/.test(lbl[1]) && /GİZLİLİK/.test(lbl[2]) && /^AÇIK/.test(lbl[3]) && /Veri izni/.test(lbl[3]) && !lbl[4], 'ayar etiketleri yanlış ' + JSON.stringify(lbl));
   await p.evaluate(() => { BT.S.caught = 120; BT.submitScore(true); }); await sleep(400);
   ok(calls.some(c => c.name === 'bt_submit' && c.body.p_fish === 120), 'skor gitmedi');
   /* 2) çevrimiçi verilerimi sil: eski kimlikle silinir, yeni kimlik; paylaşım sürer ve yeni kimlikle gider */
@@ -76,8 +76,8 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   await p2.route('**/config.js', r => r.fulfill({ contentType: 'application/javascript', body: "window.BT_ONLINE = { url: 'https://sahte.supabase.co', key: 'anon' };" }));
   await p2.route('https://sahte.supabase.co/**', r => { calls2.push(r.request().url().split('/rpc/')[1]); r.fulfill({ contentType: 'application/json', body: r.request().url().includes('bt_board') ? '{"top":[],"me":null,"stats":{}}' : '"ok"' }); });
   await p2.goto(URL); await sleep(900);
-  await p2.click('#introSkip'); await p2.click('#playBtn'); await p2.click('#slotRows .sb[data-n="1"]');
-  await p2.click('#heroGo'); await p2.fill('#nameIn', 'Onaylı Liman'); await p2.evaluate(() => { const c = document.getElementById('termsChk'); if (c && c.offsetParent) c.checked = true; }); await p2.click('#nameGo'); await p2.click('#autoOpts button[data-m="10"]'); await sleep(800);
+  await p2.click('#introSkip'); await p2.click('#playBtn'); if (await p2.isVisible('#consentScr')) { await p2.click('#cnsYes'); await sleep(200); } await p2.click('#slotRows .sb[data-n="1"]');
+  await p2.click('#heroGo'); await p2.fill('#nameIn', 'Onaylı Liman'); await p2.click('#nameGo'); await p2.click('#autoOpts button[data-m="10"]'); await sleep(800);
   await p2.evaluate(() => { document.getElementById('menuBtn').click(); }); await sleep(200);
   await sleep(400);
   ok(calls2.includes('bt_submit') && calls2.includes('bt_play') && await p2.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'temiz sayfada gönderim yok / pencere çıktı ' + JSON.stringify(calls2));

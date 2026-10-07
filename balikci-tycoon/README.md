@@ -17,6 +17,20 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v2.12 — Girişte veri izni (KVKK aydınlatma + açık rıza)
+
+- **Veri izni kartı:** çevrimiçi sürümde "YENİ OYUN / DEVAM" ya da "SKOR TABLOSU"na ilk basışta ayrıntılı bir kart çıkar:
+  herkese açık görünenler, yalnız geliştiricinin gördükleri, hiç alınmayanlar, Supabase / Almanya (yurt dışı aktarım),
+  saklama süresi (skor satırı silinene kadar, diğerleri en çok 24 ay), silme hakkı ve Topluluk Kuralları.
+  Gizlilik Politikası ve Kurallar sayfaları kartın içinden açılır.
+- **✓ OKUDUM, KABUL EDİYORUM** → skor, açılış, ilerleme ve görüş gönderimi başlar.
+  **ÇEVRİMDIŞI OYNA** → sunucuya hiçbir istek gitmez (`netOn()` onaya bağlı); tablo yalnız bu cihazı gösterir ve
+  "🌍 Çevrimiçi tabloya katıl" düğmesi çıkar. Karar kaydedilir (`cns`, `cnsV`), her açılışta sorulmaz.
+- Ayarlar › **📜 Veri izni & Kurallar** kartı yeniden açar; durum satırı AÇIK/KAPALI gösterir.
+- Ad ekranındaki v2.11 onay kutusu kaldırıldı (onay artık kartta). `CONSENT_VER` artırılırsa herkese kart yeniden sorulur.
+- Gizlilik Politikası 2.12: hukuki sebebe ve yurt dışı aktarıma açık rıza eklendi.
+- Test: `test-ugc.js` kartı, çevrimdışı seçimini (sıfır istek), ayarlardan kabulü, bildir/gizle akışını doğrular.
+
 ## v2.11 — Mağaza hazırlığı: kullanıcı içeriği, iOS gizlilik bildirimi
 
 Dış inceleme raporundaki kırmızı maddeler kapatıldı:

@@ -1,10 +1,12 @@
-/* v2.11 — skor tablosu kullanıcı içeriği (App Store 1.2 / Google Play UGC):
-   1) çevrimiçiyken ad ekranında Topluluk Kuralları onay kutusu; işaretlenmeden oyun başlamaz;
-   2) onaydan sonra kutu bir daha çıkmaz; kurallar sayfası açılır (terms.html);
-   3) skor tablosunda başkasının satırında ⋮ var, kendi satırında yok;
-   4) "Bildir ve gizle" → bt_report çağrılır, satır bu cihazda kaybolur; "Yalnız gizle" sunucuya gitmez;
-   5) "N oyuncu gizli · göster" gizlenenleri geri getirir; onaysız eski oyuncunun skoru sunucuya gitmez;
-   6) çevrimdışı (boş config) iken onay kutusu hiç görünmez. */
+/* v2.12 — veri izni ve skor tablosu kullanıcı içeriği (KVKK aydınlatma + App Store 1.2 / Google Play UGC):
+   1) çevrimiçiyken "YENİ OYUN"a basınca ayrıntılı veri izni kartı çıkar; kabul edilmeden HİÇBİR istek gitmez;
+   2) kartta neyin gittiği / gitmediği, Almanya (yurt dışı aktarım), 24 ay, silme hakkı ve kurallar yazar;
+      gizlilik ve kurallar sayfaları kartın üstünde açılır;
+   3) "ÇEVRİMDIŞI OYNA" → oyun başlar, sunucuya hiçbir şey gitmez, tablo yereldir ve katılma düğmesi çıkar;
+      karar kaydedilir, yeniden açılışta kart tekrar sorulmaz; Ayarlar'dan kart yeniden açılıp kabul edilebilir;
+   4) kabul edince gönderim başlar; skor tablosunda başkasının satırında ⋮ var;
+   5) "Bildir ve gizle" → bt_report, satır kaybolur; "Yalnız gizle" sunucuya gitmez; "N oyuncu gizli · göster" geri getirir;
+   6) çevrimdışı (boş config) iken kart hiç çıkmaz. */
 const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
@@ -13,6 +15,7 @@ const TOP = [
   { id: 'run-bbbb02', n: 'Kötü Ad Ltd', h: 'X', s: 700, m: 4000, d: 7, p: 3000 },
   { id: 'run-cccc03', n: 'Mavi Ağ', h: 'Ali', s: 500, m: 3000, d: 5, p: 2000 }
 ];
+const vis = (p, id) => p.evaluate(i => !document.getElementById(i).classList.contains('hidden'), id);
 (async () => {
   const b = await chromium.launch(); const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
   const ctx = await b.newContext({ viewport: { width: 430, height: 860 } });
@@ -27,23 +30,54 @@ const TOP = [
     r.fulfill({ contentType: 'application/json', body: '"ok"' });
   });
   await p.goto(URL); await sleep(900);
-  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo');
-  R.row = await p.evaluate(() => !document.getElementById('termsRow').classList.contains('hidden'));
-  await p.click('#nameGo'); await sleep(300);
-  R.blocked = await p.evaluate(() => !document.getElementById('nameScr').classList.contains('hidden'));
-  ok(R.row && R.blocked, 'onaysız oyun başladı ' + JSON.stringify(R));
-  await p.click('#termsLink'); await sleep(400);
-  R.termsPage = await p.evaluate(() => (document.getElementById('privFrame').src || '').includes('terms.html'));
+  await p.click('#introSkip'); await p.click('#playBtn'); await sleep(300);
+  /* 1–2) kart */
+  R.card = await vis(p, 'consentScr');
+  R.slotsHidden = !(await vis(p, 'slotScr').catch(() => false));
+  const body = await p.evaluate(() => document.getElementById('cnsBody').textContent);
+  R.bodyOk = ['herkese açık', 'şletme adı', 'rastgele oyuncu kimliği', 'e-posta', 'Almanya', 'yurt dışı aktarım', '24 ay', 'Çevrimiçi verilerimi sil', 'Topluluk Kuralları', 'küfür', 'hiçbir şey gönderilmez'].filter(w => !body.toLowerCase().includes(w.toLowerCase()));
+  ok(R.card && !R.bodyOk.length, 'veri izni kartı eksik ' + JSON.stringify(R));
+  ok(calls.length === 0, 'onaydan önce istek gitti ' + JSON.stringify(calls.map(c => c[0])));
+  await p.click('#cnsPriv'); await sleep(400);
+  R.privTop = await p.evaluate(() => !document.getElementById('privScr').classList.contains('hidden') && document.getElementById('privFrame').src.includes('privacy.html'));
   await p.click('#privClose'); await sleep(200);
-  ok(R.termsPage, 'kurallar sayfası açılmadı');
-  await p.check('#termsChk'); await p.click('#nameGo'); await sleep(400);
-  await p.click('#autoOpts button[data-m="10"]').catch(() => {}); await sleep(500);
-  R.started = await p.evaluate(() => BT.S.started && BT.terms().ok);
-  ok(R.started, 'onaydan sonra oyun başlamadı');
-  /* skor tablosu */
+  await p.click('#cnsTerms'); await sleep(400);
+  R.termsTop = await p.evaluate(() => document.getElementById('privFrame').src.includes('terms.html'));
+  await p.click('#privClose'); await sleep(200);
+  ok(R.privTop && R.termsTop, 'gizlilik/kurallar sayfası açılmadı');
+  /* 3) çevrimdışı oyna */
+  await p.click('#cnsNo'); await sleep(300);
+  await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo'); await p.fill('#nameIn', 'Sessiz Liman'); await p.click('#nameGo'); await sleep(300);
+  await p.click('#autoOpts button[data-m="10"]').catch(() => {}); await sleep(800);
+  R.offStarted = await p.evaluate(() => BT.S.started && BT.terms().consent === -1);
+  await p.evaluate(() => { BT.S.caught += 30; BT.submitScore(true); }); await sleep(400);
   await p.evaluate(() => BT.ui.openPauseMenu()); await sleep(200); await p.click('#menuBoard'); await sleep(700);
-  R.board = await p.evaluate(() => ({ rows: document.querySelectorAll('#boardRows .brow').length, more: document.querySelectorAll('#boardRows .bmore').length }));
-  ok(R.board.rows >= 3 && R.board.more === 3, 'satır menüsü yok ' + JSON.stringify(R.board));
+  R.offCalls = calls.length;
+  R.joinBtn = await p.isVisible('#boardCns');
+  R.offMore = await p.evaluate(() => document.querySelectorAll('#boardRows .bmore').length);
+  ok(R.offStarted && R.offCalls === 0 && R.joinBtn && R.offMore === 0, 'çevrimdışı seçimi yanlış ' + JSON.stringify(R) + JSON.stringify(calls.map(c => c[0])));
+  await p.click('#boardClose').catch(() => {}); await sleep(200);
+  await p.evaluate(() => BT.saveNow()); await p.reload(); await sleep(900);
+  if (await vis(p, 'introScr')) await p.click('#introSkip');
+  await p.click('#playBtn'); await sleep(400);
+  R.notAgain = !(await vis(p, 'consentScr'));
+  await p.click('#autoOpts button[data-m="10"]').catch(() => {}); await sleep(500);
+  ok(R.notAgain && calls.length === 0, 'karar hatırlanmadı ' + JSON.stringify([R.notAgain, calls.length]));
+  /* Ayarlar'dan kabul */
+  await p.evaluate(() => BT.ui.openPauseMenu()); await sleep(200);
+  await p.click('#menuSet'); await sleep(300);
+  R.setLbl = await p.evaluate(() => document.getElementById('onlineFixed').textContent);
+  await p.click('#termsBtn'); await sleep(300);
+  R.state = await p.evaluate(() => document.getElementById('cnsState').textContent);
+  await p.click('#cnsYes'); await sleep(700);
+  R.onCalls = calls.map(c => c[0]);
+  R.setLbl2 = await p.evaluate(() => document.getElementById('onlineFixed').textContent);
+  ok(/KAPALI/.test(R.setLbl) && /ÇEVRİMDIŞI/.test(R.state) && R.onCalls.includes('bt_play') && R.onCalls.includes('bt_submit') && /AÇIK/.test(R.setLbl2), 'ayarlardan kabul çalışmadı ' + JSON.stringify(R));
+  await p.click('#setClose').catch(() => {}); await sleep(200);
+  /* 4–5) skor tablosu */
+  await p.evaluate(() => BT.ui.openPauseMenu()); await sleep(200); await p.click('#menuBoard'); await sleep(700);
+  R.board = await p.evaluate(() => ({ rows: document.querySelectorAll('#boardRows .brow').length, more: document.querySelectorAll('#boardRows .bmore').length, join: !!document.getElementById('boardCns') }));
+  ok(R.board.rows >= 3 && R.board.more === 3 && !R.board.join, 'satır menüsü yok ' + JSON.stringify(R.board));
   await p.click('#boardRows .bmore[data-id="run-bbbb02"]'); await sleep(200);
   R.repName = await p.evaluate(() => document.getElementById('repName').textContent);
   await p.click('#repGo'); await sleep(500);
@@ -54,27 +88,20 @@ const TOP = [
   R.hideOnly = calls.filter(c => c[0] === 'bt_report').length;
   R.hidN = await p.evaluate(() => (document.getElementById('boardUnhide') || {}).textContent || '');
   ok(R.hideOnly === 1 && /2 oyuncu gizli/.test(R.hidN), 'yalnız gizle yanlış ' + JSON.stringify([R.hideOnly, R.hidN]));
-  /* kalıcı: sayfa yenilenince de gizli */
   R.saved = await p.evaluate(() => BT.terms().hidden);
   await p.click('#boardUnhide'); await sleep(600);
   R.back = await p.evaluate(() => document.querySelectorAll('#boardRows .bmore').length);
   ok(R.saved.length === 2 && R.back === 3, 'gizlenenler geri gelmedi ' + JSON.stringify([R.saved, R.back]));
-  /* onaysız oyuncunun skoru gitmez */
-  R.noSubmit = await p.evaluate(async () => { BT.setTerms(false); const n0 = 0; BT.submitScore(true); return true; });
-  const subBefore = calls.filter(c => c[0] === 'bt_submit').length;
-  await p.evaluate(() => { BT.S.caught += 50; BT.submitScore(true); }); await sleep(400);
-  R.submitWhileNo = calls.filter(c => c[0] === 'bt_submit').length - subBefore;
-  ok(R.submitWhileNo === 0, 'onaysız skor gönderildi');
   await ctx.close();
-  /* çevrimdışı: kutu yok */
+  /* 6) çevrimdışı sürüm: kart yok */
   const p2 = await b.newPage({ viewport: { width: 430, height: 860 } });
   await p2.goto(URL); await sleep(900);
-  await p2.click('#introSkip'); await p2.click('#playBtn'); await p2.click('#slotRows .sb[data-n="1"]'); await p2.click('#heroGo');
-  R.offRow = await p2.evaluate(() => document.getElementById('termsRow').classList.contains('hidden'));
-  ok(R.offRow, 'çevrimdışında onay kutusu görünüyor');
+  await p2.click('#introSkip'); await p2.click('#playBtn'); await sleep(300);
+  R.offCard = await vis(p2, 'consentScr');
+  ok(!R.offCard, 'çevrimdışı sürümde veri izni kartı çıktı');
   if (errs.length) fail.push('sayfa hatası: ' + [...new Set(errs)].join(' | '));
   await b.close();
   console.log(JSON.stringify(R));
-  console.log(fail.length ? 'UGC_FAIL\n - ' + fail.join('\n - ') : 'TAMAM: skor tablosu kuralları/bildir/gizle testi geçti');
+  console.log(fail.length ? 'UGC_FAIL\n - ' + fail.join('\n - ') : 'TAMAM: veri izni + skor tablosu kuralları/bildir/gizle testi geçti');
   process.exit(fail.length ? 1 : 0);
 })();

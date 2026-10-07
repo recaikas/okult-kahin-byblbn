@@ -28,13 +28,13 @@ const NATIVE = () => {
   };
 };
 const newGame = async (p, name) => {
-  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
-  await p.click('#heroGo'); await p.fill('#nameIn', name); await p.evaluate(() => { const c = document.getElementById('termsChk'); if (c && c.offsetParent) c.checked = true; }); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(800);
+  await p.click('#introSkip'); await p.click('#playBtn'); if (await p.isVisible('#consentScr')) { await p.click('#cnsYes'); await sleep(200); } await p.click('#slotRows .sb[data-n="1"]');
+  await p.click('#heroGo'); await p.fill('#nameIn', name); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(800);
   if (await p.isVisible('#askScr')) { await p.click('#askYes'); await sleep(300); }   /* v1.8 KVKK bilgilendirmesi (sahte Supabase varken) */
 };
 const resume = async p => {
   if (await p.isVisible('#introSkip')) { await p.click('#introSkip'); await sleep(300); }
-  await p.click('#playBtn'); await sleep(600);
+  await p.click('#playBtn'); if (await p.isVisible('#consentScr')) { await p.click('#cnsYes'); await sleep(200); } await sleep(600);
   if (await p.isVisible('#autoOpts')) { await p.click('#autoOpts button[data-m="10"]'); await sleep(400); }
 };
 const vis = (p, id) => p.evaluate(i => !document.getElementById(i).classList.contains('hidden'), id);

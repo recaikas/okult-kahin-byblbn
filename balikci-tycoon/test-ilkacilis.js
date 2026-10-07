@@ -35,8 +35,8 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   if (await vis('introScr')) await p.click('#introSkip');
   await p.evaluate(() => BT.setLang('tr')); await sleep(100);
   /* 2) yeni oyun + ilerleme olayları + eğitim rehberi */
-  await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
-  await p.click('#heroGo'); await p.fill('#nameIn', 'Rehber Limanı'); await p.evaluate(() => { const c = document.getElementById('termsChk'); if (c && c.offsetParent) c.checked = true; }); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(700);
+  await p.click('#playBtn'); if (await p.isVisible('#consentScr')) { await p.click('#cnsYes'); await sleep(200); } await p.click('#slotRows .sb[data-n="1"]');
+  await p.click('#heroGo'); await p.fill('#nameIn', 'Rehber Limanı'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(700);
   ok(await p.evaluate(() => document.getElementById('askScr').classList.contains('hidden')), 'açılışta bilgilendirme penceresi çıktı');
   await sleep(700);
   const ev1 = calls.filter(c => c.name === 'bt_event').map(c => c.body.p_ev);
@@ -56,7 +56,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   await p.evaluate(() => BT.saveNow()); const nOyun = calls.filter(c => c.body && c.body.p_ev === 'oyun').length;
   await p.reload(); await sleep(900);
   if (await vis('introScr')) await p.click('#introSkip');
-  await p.click('#playBtn'); await sleep(900);
+  await p.click('#playBtn'); if (await p.isVisible('#consentScr')) { await p.click('#cnsYes'); await sleep(200); } await sleep(900);
   if (await p.isVisible('#autoOpts')) { await p.click('#autoOpts button[data-m="10"]'); await sleep(400); }
   ok(calls.filter(c => c.body && c.body.p_ev === 'oyun').length === nOyun && (await p.evaluate(() => BT.evs())).includes('tut1'), 'devam edince olay tekrarlandı / kayıtta yok');
   ok(errs.length === 0, 'sayfa hatası: ' + errs.join(' | '));

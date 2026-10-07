@@ -24,15 +24,16 @@
 <body>
 <main>
 <h1>Hamsi Koyu</h1>
-<div class="muted">Gizlilik Politikası · Privacy Policy — son güncelleme / last updated: 2026-10-07 · sürüm / version 2.11</div>
+<div class="muted">Gizlilik Politikası · Privacy Policy — son güncelleme / last updated: 2026-10-07 · sürüm / version 2.12</div>
 <div class="lang"><a href="#tr">Türkçe</a><a href="#en">English</a></div>
 
 <section id="tr">
 <h2>Kısaca</h2>
 <p>Hamsi Koyu bir hesap istemez; e-posta, telefon numarası, konum, rehber ya da fotoğraf gibi kişisel bilgilerinizi
-toplamaz. Oyun kaydınız yalnızca cihazınızda tutulur. Çevrimiçi skor tablosu <b>oyunun bir parçasıdır ve her zaman
-açıktır</b>: ilk oyunda ne paylaşıldığını anlatan kısa bir bilgilendirme gösterilir, sonra internet bağlantısı varken
-aşağıdaki sınırlı oyun bilgileri skor sunucusuna gönderilir. Oyun içinden görüş gönderirseniz, yazdıklarınız da aynı
+toplamaz. Oyun kaydınız yalnızca cihazınızda tutulur. Oyunda herkese açık bir çevrimiçi skor tablosu vardır. <b>İlk oyundan önce</b> neyin, nereye, ne kadar süreyle
+gönderildiğini anlatan bir <b>veri izni kartı</b> gösterilir. Kabul ederseniz internet bağlantısı varken aşağıdaki sınırlı
+oyun bilgileri skor sunucusuna gönderilir; <b>“Çevrimdışı oyna”yı seçerseniz hiçbir şey gönderilmez</b> ve oyunun tamamını
+yine oynayabilirsiniz. Kararınızı istediğiniz an Ayarlar › Veri izni &amp; Kurallar'dan değiştirebilirsiniz. Oyun içinden görüş gönderirseniz, yazdıklarınız da aynı
 sunucuya iletilir. Oyun ücretsizdir; reklam ve uygulama içi satın alma yoktur.</p>
 
 <h2>Veri sorumlusu</h2>
@@ -43,8 +44,8 @@ sunucuya iletilir. Oyun ücretsizdir; reklam ve uygulama içi satın alma yoktur
 görüşleriniz (en çok 20) cihazınızın depolama alanında saklanır. Bu veriler bize gönderilmez. Uygulamayı sildiğinizde bu veriler de silinir.</p>
 
 <h2>Çevrimiçi skor tablosu</h2>
-<p>Bilgilendirme gösterildikten sonra, internet bağlantısı olduğunda şu bilgiler skor sunucusuna (Supabase)
-gönderilir:</p>
+<p>Veri izni kartında kabul ettiyseniz, internet bağlantısı olduğunda şu bilgiler skor sunucusuna (Supabase)
+gönderilir (kabul etmediyseniz hiçbiri gönderilmez):</p>
 <table>
   <tr><th>Bilgi</th><th>Neden</th></tr>
   <tr><td>Sizin seçtiğiniz işletme adı ve karakter adı</td><td>Skor tablosunda görünmesi için</td></tr>
@@ -88,12 +89,12 @@ internet bağlantısı olmadan oynayabilir ya da uygulamayı silebilirsiniz; ayr
 kayıtlarınızın silinmesini isteyebilirsiniz.</p>
 
 <h2>Hukuki sebepler, yurt dışına aktarım ve saklama süresi</h2>
-<p><b>Hukuki sebep (KVKK m.5/2-c / GDPR m.6/1-b):</b> skor tablosu verileri, oyunun parçası olan çevrimiçi skor
+<p><b>Hukuki sebep (KVKK m.5/1 ve m.5/2-c / GDPR m.6/1-a ve b):</b> oyunun başındaki veri izni kartında verdiğiniz açık rıza ile; skor tablosu verileri ayrıca oyunun parçası olan çevrimiçi skor
 tablosunun sunulması (oyunu kullanırken kabul ettiğiniz hizmetin ifası) için; görüşler, oyunu geliştirmedeki meşru menfaatimiz için işlenir. Oyuncu kimliği, kötüye kullanımı sınırlamak ve
 silme isteklerini yerine getirmek için kullanılır.</p>
 <p><b>Yurt dışına aktarım:</b> çevrimiçi skor tablosu ve görüş formu verileri, Supabase Inc.'in Avrupa Birliği'ndeki
 (Almanya, Frankfurt) sunucularında barındırılır. Supabase bu verileri yalnız bizim adımıza, veri işleyen olarak işler.
-Türkiye'deki oyuncular için bu aktarım, KVKK m.9 uyarınca veri işleyenle imzalanan standart sözleşmeye dayanır. Supabase, hizmet güvenliği için bağlantı IP
+Türkiye'deki oyuncular için bu aktarım, veri izni kartında yurt dışı aktarım açıkça belirtilerek alınan açık rızanıza (KVKK m.9) dayanır; rızanızı Ayarlar › Veri izni &amp; Kurallar'dan geri alabilirsiniz. Supabase, hizmet güvenliği için bağlantı IP
 adreslerini kısa süreli sunucu kayıtlarında tutabilir. Web sürümü GitHub Pages'te barındırılır; GitHub da ziyaretçi
 IP adreslerini kayıt altına alabilir.</p>
 <p><b>Saklama süresi:</b> skor kayıtları, siz silene ya da skor tablosu kapatılana kadar; açılış sayımları, ilerleme adımları ve görüşler en
@@ -124,9 +125,10 @@ kullandığını düşünüyorsanız yukarıdaki silme düğmesini kullanabilir 
 <section id="en">
 <h2>In short</h2>
 <p>Hamsi Koyu does not require an account and does not collect personal information such as your email, phone
-number, location, contacts or photos. Your game saves stay on your device. The online leaderboard is <b>part of the game and always
-on</b>: the first time you play, a short notice explains what is shared; after that, while you are online, the limited
-game information below is sent to the leaderboard server. If you send feedback from inside the game, what you write is
+number, location, contacts or photos. Your game saves stay on your device. The game has a public online leaderboard. <b>Before your first game</b> a <b>data consent card</b> explains what is
+sent, where and for how long. If you accept, the limited game information below is sent to the leaderboard server while
+you are online; <b>if you choose “Play offline”, nothing is sent</b> and you can still play the whole game. You can change
+your choice at any time in Settings › Data consent &amp; Rules. If you send feedback from inside the game, what you write is
 sent to the same server. The game is free, with no ads and no in-app purchases.</p>
 
 <h2>Data controller</h2>
@@ -137,8 +139,8 @@ sent to the same server. The game is free, with no ads and no in-app purchases.<
 be sent yet (up to 20) are stored in your device's storage. They are not sent to us and are removed when you uninstall the app.</p>
 
 <h2>Online leaderboard</h2>
-<p>After the notice has been shown, the following is sent to the leaderboard server (Supabase) whenever you are
-online:</p>
+<p>If you accepted on the data consent card, the following is sent to the leaderboard server (Supabase) whenever you
+are online (if you did not accept, none of it is sent):</p>
 <table>
   <tr><th>Data</th><th>Why</th></tr>
   <tr><td>The business name and character name you chose</td><td>Shown on the leaderboard</td></tr>
@@ -179,12 +181,13 @@ score is added to the board again under the new ID. If you do not want any data 
 the app, and you can ask for your records to be deleted at the address above.</p>
 
 <h2>Legal basis, international transfer and retention</h2>
-<p><b>Legal basis (KVKK art. 5/2-c / GDPR art. 6(1)(b)):</b> leaderboard data is processed to provide the online
+<p><b>Legal basis (KVKK arts. 5/1 and 5/2-c / GDPR art. 6(1)(a) and (b)):</b> your explicit consent given on the data consent card at the start of the game; leaderboard data is also processed to provide the online
 leaderboard that is part of the game (performance of the service you use); feedback is processed for our legitimate interest in improving the game. The player ID is used to limit
 abuse and to honour deletion requests.</p>
 <p><b>International transfer:</b> leaderboard and feedback data is hosted by Supabase Inc. on servers in the European
 Union (Frankfurt, Germany). Supabase processes it only on our behalf, as a processor. For players in Türkiye this
-transfer is based on the standard contract signed with the processor under KVKK art. 9. Supabase may keep connection IP
+transfer is based on your explicit consent (KVKK art. 9), collected on the data consent card that names the transfer
+abroad; you can withdraw it in Settings › Data consent &amp; Rules. Supabase may keep connection IP
 addresses in short-lived server logs for security. The web version is hosted on GitHub Pages; GitHub may also log
 visitor IP addresses.</p>
 <p><b>Retention:</b> leaderboard entries are kept until you delete them or the leaderboard is shut down; session counts,

@@ -2508,10 +2508,34 @@ var Store = (function () {
 /* açık rıza sorusu + Hakkında ekranı metinleri */
 Object.assign(STR.tr, {
   onlineInfo: 'Hamsi Koyu\'nun çevrimiçi skor tablosu var.\n\nİşletme adın, karakter adın ve oyun istatistiklerin herkese açık tabloda görünür; görüş formundan yazdıkların ve oyundaki ilerleme adımların (eğitim, kaçıncı gün, açılan bölgeler) yalnız geliştiriciye gider. Bu bilgiler rastgele bir oyuncu kimliğiyle Avrupa Birliği\'ndeki (Almanya) Supabase sunucularında tutulur. E-posta, konum ya da rehber gibi kişisel bilgi alınmaz.\n\nAyrıntılar: Ayarlar › Gizlilik Politikası. Verilerini istediğin an Ayarlar › Çevrimiçi verilerimi sil ile silebilirsin.',
+  cnsTitle: "🔒 VERİLERİN VE SKOR TABLOSU",
+  cnsBody: "<p>Hamsi Koyu'nun <b>herkese açık bir çevrimiçi skor tablosu</b> var. Oynamaya başlamadan önce neyin nereye gittiğini bilmeni istiyoruz. Kabul edersen aşağıdakiler gönderilir; kabul etmezsen <b>hiçbir şey gönderilmez</b> ve oyunu çevrimdışı oynarsın.</p><h3>Herkese açık görünenler</h3><ul><li>Seçtiğin <b>işletme adı</b> ve <b>karakter adı</b></li><li>Oyun istatistiklerin: satılan balık, para, gün, oynama süresi</li></ul><h3>Yalnız geliştiricinin gördükleri</h3><ul><li>Cihazında üretilen <b>rastgele oyuncu kimliği</b> (adınla, hesabınla ya da cihazınla bağlantılı değil)</li><li>Oyunu açma sayısı, dil ve ilerleme adımları (eğitim, kaçıncı gün, açılan bölgeler, bölüm sonu)</li><li>Görüş formundan <b>kendi yazıp gönderdiklerin</b></li><li>Uygunsuz bir adı <b>bildirirsen</b> bildirim kaydı</li></ul><h3>Alınmayanlar</h3><ul><li>Gerçek adın, e-posta, telefon, konum, rehber, fotoğraf ya da reklam kimliği alınmaz</li><li>Reklam yok, takip yok, üçüncü taraflara satış yok</li></ul><h3>Nerede, ne kadar süre</h3><ul><li>Veriler <b>Supabase</b> altyapısında, <b>Avrupa Birliği (Almanya, Frankfurt)</b> sunucularında tutulur; bu, Türkiye dışına <b>yurt dışı aktarım</b> demektir</li><li>Skor satırın sen silene kadar durur; diğer kayıtlar en çok <b>24 ay</b> saklanır</li></ul><h3>Hakların</h3><ul><li>İstediğin an <b>Ayarlar › Çevrimiçi verilerimi sil</b> ile sunucudaki tüm kayıtların silinir</li><li>Bu kararını <b>Ayarlar › 📜 Veri izni &amp; Kurallar</b>dan değiştirebilirsin</li><li>KVKK kapsamındaki diğer talepler için Gizlilik Politikası'ndaki e-posta adresine yaz</li></ul><h3>Topluluk Kuralları</h3><ul><li>Adlarda küfür, nefret, taciz, kişisel bilgi ve reklam yasak</li><li>Uygunsuz adlar bildirilebilir; incelenip kaldırılır, kuralları çiğneyen kayıtlar silinir</li><li>Rahatsız olduğun bir adı ⋮ menüsünden kendi cihazında gizleyebilirsin</li></ul><p>Ayrıntılar aşağıdaki Gizlilik Politikası ve Kullanım Koşulları'nda.</p>",
+  cnsYes: "✓ OKUDUM, KABUL EDİYORUM",
+  cnsNo: "ÇEVRİMDIŞI OYNA (hiçbir şey gönderilmez)",
+  cnsNowOn: "Şu an: çevrimiçi AÇIK (kabul ettin)",
+  cnsNowOff: "Şu an: ÇEVRİMDIŞI (hiçbir şey gönderilmiyor)",
+  cnsSetOn: "AÇIK — kabul ettin · değiştir: 📜 Veri izni & Kurallar",
+  cnsSetOff: "KAPALI — çevrimdışı oynuyorsun · aç: 📜 Veri izni & Kurallar",
+  cnsBoard: "Çevrimdışı oynuyorsun: tablo yalnız bu cihazdaki oyunları gösteriyor.",
+  cnsBoardBtn: "🌍 Çevrimiçi tabloya katıl",
+  cnsTermsBtn: "📜 KURALLAR & KOŞULLAR",
+  termsBtn: "📜 Veri izni & Kurallar",
   onlineInfoOk: 'TAMAM', dataInfoBtn: 'ℹ️ VERİLER & GİZLİLİK', onlineFixed: 'HER ZAMAN AÇIK — gizlilik: Ayarlar › Gizlilik Politikası', aboutBtn: 'HAKKINDA & LİSANSLAR', nameBadT: 'Bu ad kullanılamaz, başka bir ad dene.'
 });
 Object.assign(STR.en, {
   onlineInfo: 'Hamsi Koyu has an online leaderboard.\n\nYour business name, character name and game stats appear on a public board; what you write in the feedback form and your in-game progress milestones (tutorial, days reached, zones opened) go only to the developer. This data is stored with a random player ID on Supabase servers in the European Union (Germany). No personal details such as email, location or contacts are collected.\n\nDetails: Settings › Privacy Policy. You can delete your data at any time with Settings › Delete my online data.',
+  cnsTitle: "🔒 YOUR DATA & THE LEADERBOARD",
+  cnsBody: "<p>Hamsi Koyu has a <b>public online leaderboard</b>. Before you play, we want you to know exactly what goes where. If you accept, the items below are sent; if you don't, <b>nothing is sent</b> and you play offline.</p><h3>Visible to everyone</h3><ul><li>The <b>business name</b> and <b>character name</b> you choose</li><li>Your game stats: fish sold, money, day, play time</li></ul><h3>Seen only by the developer</h3><ul><li>A <b>random player ID</b> created on your device (not linked to your name, account or device)</li><li>How often you open the game, language and progress milestones (tutorial, day reached, zones opened, chapter end)</li><li>Anything <b>you write and send</b> in the feedback form</li><li>A record of names <b>you report</b></li></ul><h3>Never collected</h3><ul><li>No real name, email, phone, location, contacts, photos or advertising ID</li><li>No ads, no tracking, nothing sold to third parties</li></ul><h3>Where and how long</h3><ul><li>Data is stored with <b>Supabase</b> on servers in the <b>European Union (Frankfurt, Germany)</b>, which is a <b>transfer outside Türkiye</b></li><li>Your leaderboard row stays until you delete it; other records are kept for at most <b>24 months</b></li></ul><h3>Your rights</h3><ul><li>Any time, <b>Settings › Delete my online data</b> erases all your records on the server</li><li>Change this choice in <b>Settings › 📜 Data consent &amp; Rules</b></li><li>For other requests, email the address in the Privacy Policy</li></ul><h3>Community Rules</h3><ul><li>No profanity, hate, harassment, personal information or advertising in names</li><li>Inappropriate names can be reported; they are reviewed and removed, and violating entries are deleted</li><li>Hide any name that bothers you on your own device from the ⋮ menu</li></ul><p>Full details are in the Privacy Policy and Terms of Use below.</p>",
+  cnsYes: "✓ I HAVE READ IT AND ACCEPT",
+  cnsNo: "PLAY OFFLINE (nothing is sent)",
+  cnsNowOn: "Now: online ON (you accepted)",
+  cnsNowOff: "Now: OFFLINE (nothing is being sent)",
+  cnsSetOn: "ON — you accepted · change: 📜 Data consent & Rules",
+  cnsSetOff: "OFF — playing offline · turn on: 📜 Data consent & Rules",
+  cnsBoard: "You are playing offline: the table shows games on this device only.",
+  cnsBoardBtn: "🌍 Join the online leaderboard",
+  cnsTermsBtn: "📜 RULES & TERMS",
+  termsBtn: "📜 Data consent & Rules",
   onlineInfoOk: 'OK', dataInfoBtn: 'ℹ️ DATA & PRIVACY', onlineFixed: 'ALWAYS ON — privacy: Settings › Privacy Policy', aboutBtn: 'ABOUT & LICENSES', nameBadT: 'This name can\'t be used — try another.'
 });
 var SLOT_N = 3, SLOT_PREFIX = 'balikci_slot_', LAST_KEY = 'balikci_last', OLD_KEY = 'balikci_tycoon_v3', PREF_KEY = 'balikci_pref';
@@ -2535,8 +2559,10 @@ function migrateOldSave() {
 }
 var onlineOK = true;                 /* v1.8: çevrimiçi skor tablosu oyunun sabit parçası (kapatılamaz) */
 var termsOK = false, hiddenRuns = [];  /* v2.11: topluluk kuralları kabul edildi mi; bu cihazda gizlenen skor satırları */
+/* v2.12 — giriş onayı: 0 henüz sorulmadı, 1 kabul (çevrimiçi), -1 çevrimdışı oyna. Onay yokken sunucuya hiçbir şey gitmez. */
+var consent = 0, CONSENT_VER = 1;
 var onlineAsked = false;              /* KVKK aydınlatma: bilgilendirme bir kez gösterildi mi — gösterilmeden hiçbir şey gönderilmez */
-function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, mp: musicPick, onn: onlineAsked ? 1 : 0, vol: [VOL.mus, VOL.sfx, VOL.amb], trm: termsOK ? 1 : 0, hid: hiddenRuns.slice(-200) })); }
+function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, mp: musicPick, onn: onlineAsked ? 1 : 0, vol: [VOL.mus, VOL.sfx, VOL.amb], trm: termsOK ? 1 : 0, hid: hiddenRuns.slice(-200), cns: consent, cnsV: CONSENT_VER })); }
 function loadPref() {
   try {
     var d = JSON.parse(Store.get(PREF_KEY) || 'null'); if (!d) return;
@@ -2547,7 +2573,8 @@ function loadPref() {
     if (typeof d.mp === 'number') musicPick = d.mp >= 0 && d.mp < SONGS.length ? d.mp | 0 : -1;
     if (Array.isArray(d.vol)) { VOL.mus = clamp(+d.vol[0] || 0, 0, 1); VOL.sfx = clamp(+d.vol[1] || 0, 0, 1); VOL.amb = clamp(+d.vol[2] || 0, 0, 1); applyBusVol(); }
     if (d.onn !== undefined) onlineAsked = !!d.onn;
-    termsOK = !!d.trm;
+    consent = d.cnsV === CONSENT_VER && (d.cns === 1 || d.cns === -1) ? d.cns : 0;
+    termsOK = consent === 1;
     if (Array.isArray(d.hid)) hiddenRuns = d.hid.filter(function (x) { return typeof x === 'string' && x.length < 48; }).slice(-200);       /* v1.8 bilgilendirmesi görüldü (v1.7'nin rıza cevabı 'ona' sayılmaz) */
   } catch (e) { }
 }
@@ -2797,6 +2824,7 @@ function anyOverlay() {
   if (retCardOpen()) return true;               /* "Sen yokken…" kartı */
   if (storyOpenNow()) return true;              /* v2.4: hikâye ara sahnesi */
   if (el.custScr && !el.custScr.classList.contains('hidden')) return true;   /* v2.5: müşteri defteri */
+  if (el.consentScr && !el.consentScr.classList.contains('hidden')) return true;   /* v2.12: veri izni kartı */
   if (el.helpScr && !el.helpScr.classList.contains('hidden')) return true;   /* v2.7: ilk kez ipucu */
   return !el.settingsScreen.classList.contains('hidden') || !el.menuScreen.classList.contains('hidden') || !el.privScr.classList.contains('hidden') ||
     !el.dayScr.classList.contains('hidden') || !el.prepScr.classList.contains('hidden') ||
@@ -6877,7 +6905,7 @@ var el = {};
  'pauseBadge', 'pauseTxt', 'saveInfo', 'setSaveInfo', 'saveBtn', 'saveQuitBtn', 'menuSave', 'newBtn', 'setSaveLbl',
  'dayChip', 'dayIcon', 'dayNum', 'dayfill', 'hDay', 'dayBanner', 'dayBannerT', 'dayBannerS',
  'dayScr', 'dayTitle', 'dayRows', 'dayNext', 'dayGo', 'dayStalls',
- 'stallScr', 'stallTitle', 'stallSub', 'stallRows', 'stallGo', 'helpScr', 'helpT', 'helpB', 'helpGo', 'termsRow', 'termsChk', 'termsTxt', 'termsLink', 'repScr', 'repTitle', 'repSub', 'repName', 'repGo', 'repHide', 'repNo', 'termsBtn', 'custScr', 'custTitle', 'custSub', 'custTabs', 'custGrid', 'custDet', 'custGo', 'prepScr', 'prepTitle', 'prepSub',
+ 'stallScr', 'stallTitle', 'stallSub', 'stallRows', 'stallGo', 'helpScr', 'helpT', 'helpB', 'helpGo', 'consentScr', 'cnsTitle', 'cnsBody', 'cnsState', 'cnsYes', 'cnsNo', 'cnsPriv', 'cnsTerms', 'repScr', 'repTitle', 'repSub', 'repName', 'repGo', 'repHide', 'repNo', 'termsBtn', 'custScr', 'custTitle', 'custSub', 'custTabs', 'custGrid', 'custDet', 'custGo', 'prepScr', 'prepTitle', 'prepSub',
  'prepDepot', 'prepRows', 'prepGo', 'introScr', 'introCv', 'introSub', 'introNext', 'introSkip', 'introGate',
  'introDots', 'introTap', 'introTag', 'nameScr', 'nameCard', 'nameTitle', 'nameSub', 'nameSign', 'nameIn', 'nameDice', 'nameHint',
  'nameIdeasLbl', 'nameChips', 'nameGo', 'boardScr', 'boardTitle', 'boardSub', 'boardRows', 'boardNote',
@@ -6926,7 +6954,7 @@ function applyLang() {
   if (!el.nameScr.classList.contains('hidden')) { syncNamePreview(); renderNameChips(); }
   el.setTitle.textContent = T('settings'); el.setLang.textContent = T('langLbl');
   el.setSound.textContent = T('soundLbl'); el.setZoom.textContent = T('zoomLbl');
-  el.setOnline.textContent = T('onlineLbl'); el.onlineFixed.textContent = T('onlineFixed');
+  el.setOnline.textContent = T('onlineLbl'); syncOnlineLbl();
   el.forgetBtn.textContent = T('forgetBtn'); el.privBtn.textContent = T('privBtn'); el.aboutBtn.textContent = T('aboutBtn'); el.privClose.textContent = T('privClose');
   el.setAuto.textContent = T('autoLbl'); el.setMusic.textContent = T('musicLbl'); el.musOn.textContent = T('musOn'); el.musOff.textContent = T('musOff'); var spl = document.getElementById('setPlist'); if (spl) spl.textContent = T('musList');
   el.setClose.textContent = T('resume'); el.resetBtn.textContent = T('delSlot');
@@ -6938,9 +6966,9 @@ function applyLang() {
   el.prepTitle.textContent = T('mktDayTitle'); el.prepSub.textContent = T('prepSub');
   el.stallTitle.textContent = T('stallTitle'); el.stallSub.textContent = T('stallSub');
   el.stallGo.textContent = T('ok'); el.dayStalls.textContent = T('dayStalls');
-  el.termsTxt.textContent = T('termsChk'); el.termsLink.textContent = T('termsLink'); el.repTitle.textContent = T('repTitle'); el.repSub.textContent = T('repSub');
+  el.repTitle.textContent = T('repTitle'); el.repSub.textContent = T('repSub');
   el.repGo.textContent = T('repBtn'); el.repHide.textContent = T('repHide'); el.repNo.textContent = T('cancel'); if (el.termsBtn) el.termsBtn.textContent = T('termsBtn');
-  el.termsRow.classList.toggle('hidden', termsOK || !ONLINE);
+
   if (!el.stallScr.classList.contains('hidden')) renderStallScreen();
   el.prepGo.textContent = T('goMarket');
   if (!el.dayScr.classList.contains('hidden') && day.last) showDayCard();
@@ -7780,8 +7808,11 @@ el.dayStalls.onclick = function () { openStallScreen(); };
 el.stallGo.onclick = function () { closeStallScreen(); };
 el.custGo.onclick = function () { sfx.tap(); closeCustBook(); };
 el.helpGo.onclick = function () { sfx.tap(); helpClose(); };
-el.termsLink.onclick = function (e) { e.preventDefault(); openTerms(); };
-if (el.termsBtn) el.termsBtn.onclick = function () { openTerms(); };
+if (el.termsBtn) el.termsBtn.onclick = function () { openConsent(null); };   /* v2.12: veri izni kartı (kararı değiştir, kurallar, gizlilik) */
+el.cnsYes.onclick = function () { closeConsent(1); };
+el.cnsNo.onclick = function () { closeConsent(-1); };
+el.cnsPriv.onclick = function () { el.privBtn.onclick(); };
+el.cnsTerms.onclick = function () { openTerms(); };
 el.repGo.onclick = function () { doReport(el.repScr.dataset.id); };
 el.repHide.onclick = function () { hideRun(el.repScr.dataset.id); closeReport(); renderBoard(); toast(T('repHidN', { n: 1 }).replace(/·.*/, '').trim()); };
 el.repNo.onclick = function () { closeReport(); };
@@ -8001,13 +8032,13 @@ function start() {
   el.devbar.classList.remove('hidden');
   S.started = true; paused = false; syncPause();
   ensureAudio(); applyVolume(); musicPlay('game');       /* oyunda müzik arkadan mırıldanır */
-  if (!termsOK && ONLINE) setTimeout(askTerms, 600);    /* v2.11: eski kayıtla gelen oyuncu kuralları bir kez kabul eder */
   showOnlineNotice(logPlay);
   progEv('oyun'); evFlush();
   retOnStart();                                          /* uzun ayrılıktan dönüş: "Sen yokken…" */
 }
 /* OYNA: kayıt varsa devam; yoksa işletme adı → oyun. Adı olmayan eski kayıt önce ad sorar. */
-el.playBtn.onclick = function () {
+el.playBtn.onclick = function () { needConsent(playGo); };
+function playGo() {
   var ls = lastSlot();
   if (!ls) { openSlots('new'); return; }
   if (curSlot !== ls) useSlot(ls);
@@ -8031,7 +8062,7 @@ el.heroName.addEventListener('keydown', function (e) { if (e.key === 'Enter') { 
 el.askNo.onclick = function () { closeAsk(false); };
 el.askYes.onclick = function () { closeAsk(true); };
 el.storyBtn.onclick = function () { openIntro(null); };
-el.boardBtn.onclick = function () { openBoard('start'); };
+el.boardBtn.onclick = function () { needConsent(function () { openBoard('start'); }); };
 el.menuBoard.onclick = function () { openBoard('menu'); };
 el.boardClose.onclick = closeBoard;
 el.halClose.onclick = closeHal;
@@ -8977,7 +9008,7 @@ var PLAYER_ID = (function () {                      /* Ayarlar › Skor kaydım�
   if (!v || v.length < 6) { v = 'p' + newRunId(); Store.set(k, v); }
   return v;
 })();
-function netOn() { return !!ONLINE && onlineOK && navigator.onLine !== false; }   /* çevrimdışıyken deneme bile */
+function netOn() { return !!ONLINE && onlineOK && consent === 1 && navigator.onLine !== false; }   /* v2.12: onaysız hiçbir şey gönderilmez */   /* çevrimdışıyken deneme bile */
 function rpc(name, args) {
   return fetch(ONLINE.url + '/rest/v1/rpc/' + name, {
     method: 'POST',
@@ -9093,16 +9124,40 @@ function renderBoard() {
     el.boardNote.textContent = info.src === 'online'
       ? T('boardStats', { p: fmtN(info.stats && info.stats.players), g: fmtN(info.stats && info.stats.plays), h: (info.stats && info.stats.hours) || 0 })
       : T(info.src === 'offline' ? 'boardOffline' : 'boardLocal');
+    if (ONLINE && consent !== 1) {   /* v2.12: veri iznini vermeyen oyuncu tabloyu yalnız yerel görür */
+      el.boardNote.textContent = T('cnsBoard') + ' ';
+      var cb = document.createElement('button'); cb.className = 'bhid'; cb.id = 'boardCns'; cb.textContent = T('cnsBoardBtn');
+      cb.onclick = function () { openConsent(null); }; el.boardNote.appendChild(cb);
+    }
   });
 }
 /* v2.11 — TOPLULUK KURALLARI + BİLDİR / GİZLE (App Store 1.2, Google Play kullanıcı içeriği kuralları)
    Skor tablosundaki işletme/karakter adı kullanıcı içeriğidir: kurallar kabul edilmeden gönderilmez, her satır
    bildirilebilir (sunucu: bt_report, 3 farklı bildirimle otomatik gizlenir, panelden incelenir) ve bu cihazda gizlenebilir. */
-function askTerms() {
-  if (termsOK || !S.started) return;
-  ask(T('termsAsk'), T('termsAccept'), function () { termsOK = true; savePref(); submitScore(true); toast(T('termsThanks')); }, null);
-  el.askNo.textContent = T('termsLater');
+/* v2.12 — GİRİŞ ONAYI: oyuna ilk girişte (OYNA ya da Skor Tablosu) neyin, nereye, ne kadar süreyle gönderildiği ayrıntılı
+   anlatılır; "Kabul ediyorum" ile çevrimiçi, "Çevrimdışı oyna" ile hiçbir veri göndermeden oynanır. Ayarlar'dan değiştirilebilir. */
+var consentThen = null;
+function needConsent(then) {
+  if (!ONLINE || consent !== 0) { then(); return; }
+  openConsent(then);
 }
+function openConsent(then) {
+  consentThen = then || null;
+  el.cnsTitle.textContent = T('cnsTitle'); el.cnsBody.innerHTML = T('cnsBody');
+  el.cnsYes.textContent = T('cnsYes'); el.cnsNo.textContent = T('cnsNo');
+  el.cnsPriv.textContent = T('privBtn'); el.cnsTerms.textContent = T('cnsTermsBtn');
+  el.cnsState.textContent = consent === 1 ? T('cnsNowOn') : consent === -1 ? T('cnsNowOff') : '';
+  el.consentScr.classList.remove('hidden'); syncPause(); sfx.tap();
+}
+function closeConsent(v) {
+  var was = consent; consent = v; termsOK = v === 1; savePref();
+  el.consentScr.classList.add('hidden'); syncPause();
+  if (v === 1 && was !== 1) { logPlay(); evFlush(); fbFlush(); if (S.started) submitScore(true); }
+  syncOnlineLbl();
+  if (!el.boardScr.classList.contains('hidden')) renderBoard();
+  var f = consentThen; consentThen = null; if (f) f();
+}
+function syncOnlineLbl() { if (el.onlineFixed) el.onlineFixed.textContent = !ONLINE ? T('onlineOffT') : T(consent === 1 ? 'cnsSetOn' : 'cnsSetOff'); }
 function openTerms() { el.privFrame.src = 'terms.html#' + (lang === 'en' ? 'en' : 'tr'); el.privScr.classList.remove('hidden'); syncPause(); sfx.tap(); }
 function hideRun(id) { if (hiddenRuns.indexOf(id) < 0) hiddenRuns.push(id); if (hiddenRuns.length > 200) hiddenRuns.shift(); savePref(); }
 function openReport(id, name) {
@@ -9332,18 +9387,11 @@ function openNameScreen(mode) {
   el.startScreen.classList.add('hidden');
   el.nameIn.value = nameMode === 'new' ? randomCompany() : (S.company || randomCompany());
   syncNamePreview(); renderNameChips();
-  el.termsRow.classList.toggle('hidden', termsOK || !ONLINE); el.termsChk.checked = false; el.termsRow.classList.remove('need');
   el.nameScr.classList.remove('hidden');
   el.nameCard.classList.remove('pop'); void el.nameCard.offsetWidth; el.nameCard.classList.add('pop');
 }
 function confirmName() {
   var n = cleanName(el.nameIn.value);
-  if (ONLINE && !termsOK && el.termsChk && !el.termsChk.checked) {           /* v2.11: topluluk kuralları kabul edilmeden ad skor tablosuna gitmez */
-    sfx.bad(); el.termsRow.classList.remove('need'); void el.termsRow.offsetWidth; el.termsRow.classList.add('need');
-    el.nameCard.classList.remove('shake'); void el.nameCard.offsetWidth; el.nameCard.classList.add('shake');
-    return;
-  }
-  if (ONLINE && !termsOK && el.termsChk && el.termsChk.checked) { termsOK = true; savePref(); }
   if (n.length < 2 || nameBad(n)) {
     syncNamePreview(); sfx.bad();
     el.nameCard.classList.remove('shake'); void el.nameCard.offsetWidth; el.nameCard.classList.add('shake');
@@ -11894,7 +11942,7 @@ window.BT = {
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
   help: function () { return { seen: Object.keys(S.help || {}), open: !el.helpScr.classList.contains('hidden'), title: el.helpT.textContent, keys: Object.keys(HELP) }; },
   stallSt: function (k) { var c = counterByKey(k); return c ? stSt(c) : null; }, stallExpPM: function (k) { var c = counterByKey(k); return c ? stallExpPM(c) : 0; }, stallTick: stallTick, stallNewDay: stallNewDay,
-  terms: function () { return { ok: termsOK, hidden: hiddenRuns.slice() }; }, setTerms: function (v) { termsOK = !!v; }, openReport: openReport, doReport: doReport, hideRun: hideRun,
+  terms: function () { return { ok: termsOK, consent: consent, hidden: hiddenRuns.slice() }; }, setTerms: function (v) { consent = v ? 1 : -1; termsOK = !!v; }, openReport: openReport, doReport: doReport, hideRun: hideRun,
   roleBlock: roleBlock, roleCount: roleCount,
   mx: function () { return { cfg: SPEC_CFG, st: S.mx, horonT: horonT, liveT: liveT, force: S.specForce, insp: day.insp, mxRep: day.mxRep || 0 }; }, mxInspect: mxInspect, mxNewDay: mxNewDay, custDrain: custDrain, specArrive: specArrive,
   specJob: function (id) { return specJob(specById(id)); },
