@@ -15,11 +15,18 @@
 
 ## Veri güvenliği (Data safety) — privacy.html ile aynı
 
-- Veri toplanıyor: **Evet**. Üçüncü taraflarla paylaşılıyor: **Hayır**. Aktarımda şifreleme: **Evet (HTTPS)**. Silme isteği: **Evet (e-posta ile)**.
-- **Uygulama etkinliği › Uygulama içi işlemler:** ilerleme adımları — Analiz, isteğe bağlı değil.
+- Veri toplanıyor: **Evet**. Üçüncü taraflarla paylaşılıyor: **Hayır**. Aktarımda şifreleme: **Evet (HTTPS)**. Silme isteği: **Evet (oyun içi "Çevrimiçi verilerimi sil" + e-posta)**.
+- Toplama **isteğe bağlı: Evet** — ilk oyundan önceki veri izni kartında "Çevrimdışı oyna" seçilirse hiçbir veri gönderilmez.
+- **Uygulama etkinliği › Uygulama içi işlemler:** ilerleme adımları — Analiz, isteğe bağlı.
 - **Uygulama etkinliği › Kullanıcı tarafından oluşturulan diğer içerik:** işletme/karakter adı (skor tablosu), görüş metni — Uygulama işlevi.
 - **Cihaz veya diğer kimlikler:** rastgele anonim oyuncu kimliği — Uygulama işlevi, Analiz.
 - Konum, kişisel bilgi (ad, e-posta), finans, sağlık, fotoğraf, rehber: **toplanmıyor**.
+
+## Kullanıcı tarafından oluşturulan içerik (UGC) beyanı
+
+- Kullanıcı içeriği: **Evet** — yalnız skor tablosundaki işletme/karakter adı. Kullanıcılar birbiriyle mesajlaşamaz.
+- Kurallar kabulü: ilk oyundan önce veri izni kartında Topluluk Kuralları + veri kullanımı onayı; reddedilirse hiçbir şey gönderilmez (https://recaikas.github.io/okult-kahin-byblbn/terms.html).
+- Bildirme ve engelleme: her satırda ⋮ › Bildir ve gizle / Yalnız gizle. Otomatik kelime filtresi (istemci + sunucu), 3 bildirimde otomatik gizleme, yönetim panelinde inceleme.
 
 ## Türkçe (tr)
 

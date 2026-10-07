@@ -17,6 +17,44 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## v2.12 — Girişte veri izni (KVKK aydınlatma + açık rıza)
+
+- **Veri izni kartı:** çevrimiçi sürümde "YENİ OYUN / DEVAM" ya da "SKOR TABLOSU"na ilk basışta ayrıntılı bir kart çıkar:
+  herkese açık görünenler, yalnız geliştiricinin gördükleri, hiç alınmayanlar, Supabase / Almanya (yurt dışı aktarım),
+  saklama süresi (skor satırı silinene kadar, diğerleri en çok 24 ay), silme hakkı ve Topluluk Kuralları.
+  Gizlilik Politikası ve Kurallar sayfaları kartın içinden açılır.
+- **✓ OKUDUM, KABUL EDİYORUM** → skor, açılış, ilerleme ve görüş gönderimi başlar.
+  **ÇEVRİMDIŞI OYNA** → sunucuya hiçbir istek gitmez (`netOn()` onaya bağlı); tablo yalnız bu cihazı gösterir ve
+  "🌍 Çevrimiçi tabloya katıl" düğmesi çıkar. Karar kaydedilir (`cns`, `cnsV`), her açılışta sorulmaz.
+- Ayarlar › **📜 Veri izni & Kurallar** kartı yeniden açar; durum satırı AÇIK/KAPALI gösterir.
+- Ad ekranındaki v2.11 onay kutusu kaldırıldı (onay artık kartta). `CONSENT_VER` artırılırsa herkese kart yeniden sorulur.
+- Gizlilik Politikası 2.12: hukuki sebebe ve yurt dışı aktarıma açık rıza eklendi.
+- Test: `test-ugc.js` kartı, çevrimdışı seçimini (sıfır istek), ayarlardan kabulü, bildir/gizle akışını doğrular.
+
+## v2.11 — Mağaza hazırlığı: kullanıcı içeriği, iOS gizlilik bildirimi
+
+Dış inceleme raporundaki kırmızı maddeler kapatıldı:
+- **Topluluk Kuralları:** çevrimiçi skor tablosu varken ad ilk kez girilirken "Topluluk Kuralları ve Kullanım Koşulları'nı kabul ediyorum" kutusu zorunlu. Eski kayıtla gelen oyuncuya oyun başında bir kez sorulur. Kabul edilmeden ad sunucuya gönderilmez. Kurallar `terms.html` (TR/EN); Ayarlar'da "📜 Topluluk Kuralları" düğmesi.
+- **Bildir / Gizle:** skor tablosunda başkasının her satırında ⋮ düğmesi var.
+  - "Bildir ve gizle": sunucuya `bt_report` gider, satır bu cihazda gizlenir.
+  - "Yalnız gizle": yalnız cihazda gizler.
+  - "N oyuncu gizli · göster" gizlenenleri geri getirir.
+- **Sunucu** (`online/moderation.sql`):
+  - Bildirim tablosu ve bildirim fonksiyonu. Oyuncu başına günde 20 bildirim, aynı satıra bir kez; kendini bildiremez.
+  - 3 farklı oyuncu bildirince satır otomatik gizlenir.
+  - Panel için `bt_mod`: gizle, geri aç, bildirimi sil, kaydı sil.
+  - "Çevrimiçi verilerimi sil" bildirimleri de siler.
+  - pg_cron ile aylık `bt_cleanup`.
+- **Yönetim paneli:** "Bildirilen adlar" bölümü ve işlem düğmeleri.
+- **iOS:** `mobile/ios/App/App/PrivacyInfo.xcprivacy` eklendi ve Xcode projesinin Resources adımına kaydedildi. İçeriği: takip yok, toplanan veri türleri, UserDefaults için CA92.1.
+- **Destek sayfası:** `support.html` (TR/EN). Mağaza destek URL'si artık bu sayfa.
+- **Gizlilik politikası:** bildirimler bölümü eklendi; sürüm 2.11.
+- **Metin değişikliği:** Bölüm sonundaki "DEĞERLENDİRME YAZ / WRITE A REVIEW" artık "GÖRÜŞ GÖNDER / SEND FEEDBACK". Mağaza yorumuyla karışmasın diye.
+- **Belgeler:** MAGAZA.md'de Node 22+ ve `npm ci` yazıyor.
+- **Mağaza metinleri:** App Review notları (EN), Guideline 1.2 açıklaması, Play UGC beyanı.
+- **Düzeltme:** Kurallar/gizlilik sayfası ad ekranının arkasında açılıyordu, öne alındı.
+- Test: `test-ugc.js`. Sahte sunucu kullanan testler onay kutusunu işaretler.
+
 ## v2.10 — Personel sırası
 
 - Bir bölgede bir rolün ikincisi, o bölgenin bütün rolleri (hamal, filetocu, tezgâhtar, tahsildar; Mutfakta aşçı da) birer tane olmadan alınamaz. Üçüncüsü için hepsi ikişer olmalı.

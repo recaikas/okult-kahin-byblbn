@@ -101,7 +101,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   /* 4) Bölüm 1 sonu kartı */
   await p.evaluate(() => { BT.S.ch1 = true; BT.showChapterCard(); }); await sleep(300);
   R.ch = await p.evaluate(() => ({ p: document.getElementById('chEndP').textContent, b: ['chEndFb', 'chEndFin', 'chEndGo'].map(i => document.getElementById(i).textContent) }));
-  ok(/elinize sağlık/.test(R.ch.p) && /gönül işi/.test(R.ch.p) && /DEĞERLENDİRME/.test(R.ch.b[0]) && /BİTİR/.test(R.ch.b[1]) && /DEVAM/.test(R.ch.b[2]), 'bölüm sonu kartı yanlış ' + JSON.stringify(R.ch));
+  ok(/elinize sağlık/.test(R.ch.p) && /gönül işi/.test(R.ch.p) && /GÖRÜŞ GÖNDER/.test(R.ch.b[0]) && /BİTİR/.test(R.ch.b[1]) && /DEVAM/.test(R.ch.b[2]), 'bölüm sonu kartı yanlış ' + JSON.stringify(R.ch));
   await p.click('#chEndFb'); await sleep(300);
   R.fb = { form: await vis('fbScr'), card: await vis('chEnd') };
   await p.click('#fbCancel'); await sleep(300);

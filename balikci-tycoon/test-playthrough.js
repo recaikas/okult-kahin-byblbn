@@ -56,7 +56,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
     if (sub) { await p.click('#dpSub button[data-s="' + sub + '"]'); await sleep(200); }
   };
   const introOn = () => p.evaluate(() => !document.getElementById('introScr').classList.contains('hidden'));
-  const closeBar = async () => { if (await introOn()) return; await handleScreens(); await sleep(150); await handleScreens(); if (await p.isVisible('#dpClose')) { await p.click('#dpClose'); await sleep(150); } };
+  const closeBar = async () => { if (await introOn()) return; await handleScreens(); await sleep(150); await handleScreens(); if (await p.isVisible('#dpClose')) { await p.click('#dpClose', { timeout: 3000 }).catch(() => { }); await sleep(150); } };   /* panel bu arada kendiliğinden kapanmış olabilir (ara sahne) */
   const cards = () => p.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].map((d, i) => ({ i, t: (d.querySelector('b') || {}).textContent || '', s: (d.querySelector('small') || {}).textContent || '', btn: (d.querySelector('.buy') || {}).textContent || '', cls: (d.querySelector('.buy') || {}).className || '' })));
   const clickCard = async (i, twice = true) => {
     const c0 = await p.evaluate(() => BT.S.cash);

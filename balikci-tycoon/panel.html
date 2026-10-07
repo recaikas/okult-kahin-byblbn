@@ -80,6 +80,8 @@
     <div class="card tbl" id="birakma"></div>
     <h2>Görüşler</h2>
     <div class="card tbl" id="gorusler"></div>
+    <h2>Bildirilen adlar</h2>
+    <div class="card tbl" id="raporlar"></div>
   </div>
 </div>
 <script src="config.js"></script>
@@ -143,6 +145,23 @@
     $('gorusler').innerHTML = table(d.gorusler, [['zaman', 'Zaman', when], ['yildiz', 'Yıldız', function (v) { var n = +v || 0; return '<span class="stars">' + '★★★★★'.slice(0, n) + '</span>'; }],
       ['konu', 'Konu', function (v) { return v ? '<span class="tag">' + esc(v) + '</span>' : ''; }], ['metin', 'Metin', function (v) { return esc(v).replace(/\n/g, '<br>'); }],
       ['gun', 'Gün', null, 1], ['dil', 'Dil'], ['surum', 'Sürüm']]);
+    /* v2.11: skor tablosunda bildirilen adlar — 3 farklı bildirimde kendiliğinden gizlenir; buradan karar verilir */
+    if (!d.raporlar) { $('raporlar').innerHTML = '<p class="muted" style="padding:10px">Sunucu henüz güncellenmedi: online/moderation.sql çalıştırılmalı.</p>'; return; }
+    $('raporlar').innerHTML = table(d.raporlar, [['isletme', 'İşletme'], ['karakter', 'Karakter'], ['bildiren', 'Bildiren', null, 1], ['neden', 'Neden'],
+      ['son', 'Son', when], ['gizli', 'Durum', function (v) { return v ? '<span class="tag">gizli</span>' : 'görünüyor'; }],
+      ['run_id', 'İşlem', function (v, r) {
+        return (r.gizli ? '<button data-m="show" data-r="' + esc(v) + '">Geri aç</button>' : '<button data-m="hide" data-r="' + esc(v) + '">Gizle</button>') +
+          ' <button data-m="clear" data-r="' + esc(v) + '">Bildirimi sil</button> <button data-m="delete" data-r="' + esc(v) + '">Kaydı sil</button>';
+      }]]);
+    Array.prototype.forEach.call($('raporlar').querySelectorAll('button[data-m]'), function (b) {
+      b.onclick = function () {
+        if (b.dataset.m === 'delete' && !confirm('Bu skor kaydı tamamen silinsin mi?')) return;
+        b.disabled = true;
+        fetch(CFG.url + '/rest/v1/rpc/bt_mod', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: CFG.key, Authorization: 'Bearer ' + CFG.key },
+          body: JSON.stringify({ p_token: getToken(), p_run: b.dataset.r, p_act: b.dataset.m }) })
+          .then(function () { var t = getToken(); if (t) open(t); }, function () { b.disabled = false; alert('Bağlanılamadı'); });
+      };
+    });
   }
   function open(token, rem) {
     $('err').textContent = ''; $('go').disabled = true;

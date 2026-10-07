@@ -206,7 +206,7 @@ Bunları yalnız sen yapabilirsin. Geri kalan her şey depoda hazır.
 - **Cihazlar:** iOS ilk sürümde yalnız iPhone (iPad'de uyumluluk modunda çalışır; iPad ekran görüntüsü gerekmez).
   Android telefon + tablet, dikey.
 
-Ön koşul: Node 20+, `cd balikci-tycoon/mobile && npm install`.
+Ön koşul: Node 22+ (Capacitor CLI 8 ister), `cd balikci-tycoon/mobile && npm ci`.
 
 ```bash
 npm run build       # oyun dosyalarını www/'ya kopyalar (privacy.html ve about.html dahil)
