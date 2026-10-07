@@ -1,0 +1,39 @@
+1
+00:00:00,100 --> 00:00:02,200
+Bir balıkçı oyunu yapıyorum.
+
+2
+00:00:02,200 --> 00:00:04,500
+Her şey bu küçük
+iskelede başlıyor.
+
+3
+00:00:04,500 --> 00:00:07,200
+Ağlar kendiliğinden dolar.
+
+4
+00:00:07,200 --> 00:00:10,000
+Balığı sırtlayıp
+kesim masasına taşırsın.
+
+5
+00:00:10,000 --> 00:00:13,100
+Filetoları tezgâha dizersin.
+
+6
+00:00:13,100 --> 00:00:16,500
+Müşteri sırası gelince alır,
+para kasaya girer.
+
+7
+00:00:16,500 --> 00:00:19,300
+Kazandıkça iskele büyür:
+
+8
+00:00:19,300 --> 00:00:22,500
+yeni tezgâhlar, çalışanlar,
+yeni bölgeler…
+
+9
+00:00:22,500 --> 00:00:28,000
+Sen bu dükkânın tabelasına ne yazardın?
