@@ -40,6 +40,14 @@ Uygulama yalnız iPhone (iPad kapalı), bu yüzden iPad ekranı gerekmez.
 
 Videoda başka platform adı geçmez (Apple önizleme kuralı). Müzik `tools/music.py` ile üretilen özgün parçadır, telif sorunu yoktur.
 
+### 4b. Sinematik fragman (60 sn, İngilizce, 1920×1080, 30 fps)
+`video/trailer-en-1920x1080.mp4`: oyunun gerçek görüntüsü + sinema bantları, renk geçişleri, yağmur/yıldırım, "Dipteki Söz" sahnesi ve özgün müzik. YouTube / sosyal medya / basın için.
+```
+node store/tools/capture-trailer.js              # kareler (video/frames-trailer, git'e girmez); "preview" ile hızlı kontrol
+python3 store/tools/trailer-music.py store/video/trailer-music.wav
+cd store/video && ffmpeg -framerate 30 -i frames-trailer/%05d.jpg -i trailer-music.wav -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 17 -preset slow -c:a aac -b:a 192k -ar 48000 -shortest -movflags +faststart trailer-en-1920x1080.mp4
+```
+
 ## 5. Yükleme sırası (kısa kontrol listesi)
 **App Store Connect**
 1. Yeni uygulama: ad `Hamsi Koyu: Balıkçı Tycoon` (TR) / `Hamsi Koyu: Fishing Tycoon` (EN), paket kimliği `io.github.recaikas.hamsikoyu`.
