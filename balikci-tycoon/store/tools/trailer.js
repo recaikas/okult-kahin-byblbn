@@ -3,7 +3,7 @@
    1) trailer-scenes.js — elle çizilmiş piksel sahneler (şafak, hamsi sürüsü, ağ, lodos, Şahmeran, gece limanı)
    2) gerçek oyun — game.js çekim sırasında küçük yamalarla yüklenir: kamera serbest, yakınlık 1–5, oyun içi etiketler gizli
    Oyunun saati sanaldır (rAF/performance.now/setTimeout adımlanır), her kare tek tek çekilir. Zamanlar müziğe oturur
-   (120 BPM, 1 ölçü = 2 sn, vuruş 14.0'te). Müzik: trailer-music.py.
+   (120 BPM, 1 ölçü = 2 sn, logo vuruşu 15.0'te). Müzik: trailer-music.py.
    Kullanım: node store/tools/trailer.js [preview [çekim,çekim]]   (oyun klasörü 8099'da sunulmalı)
    Çıktı: store/video/frames-trailer/NNNNN.jpg  (preview: her 10. kare → frames-trailer-preview/) */
 const { chromium } = require('../../test-offline');
@@ -44,61 +44,57 @@ function patchGame(src) {
   return src;
 }
 
-/* ---------------- zaman çizelgesi ----------------
-   kind: scene (elle çizilmiş) | game (oyun) | black
-   game çekimleri: id ile sayfadaki kurulum seçilir; cam: [[u, x, y], …] dünya koordinatı, z: yakınlık (1 geniş … 5 yakın) */
+/* ---------------- zaman çizelgesi: "Hamsi Koyu'nda bir gün" (şafaktan geceye) ----------------
+   kind: scene (elle çizilmiş) | game (oyun) | black · tr: geçiş (dissolve: önceki son kare td sn'de erir)
+   game çekimleri: id ile sayfadaki kurulum seçilir; cam: [[u, x, y], …] dünya koordinatı, z: yakınlık (1 geniş … 5 yakın)
+   push: oyun görüntüsüne yavaş yaklaşma; day: oyun saatinin gün içindeki payı (ışık ve fenerler buna göre) */
 const SHOTS = [
-  { id: 'dawn', a: 0, b: 8, kind: 'scene', scene: 'dawn' },
-  { id: 'deep', a: 8, b: 11.5, kind: 'scene', scene: 'deep' },
-  { id: 'cast', a: 11.5, b: 14, kind: 'scene', scene: 'cast' },
-  { id: 'net', a: 14, b: 16, kind: 'game', z: 5, cam: [[0, 2.9, 1.9], [1, 3.3, 2.1]], grade: 'morning' },
-  { id: 'fillet', a: 16, b: 18, kind: 'game', z: 5, cam: [[0, 4.6, 2.0], [1, 5.6, 2.3]], grade: 'morning' },
-  { id: 'sell', a: 18, b: 20, kind: 'game', z: 5, cam: [[0, 7.9, 3.2], [1, 8.6, 3.5]], grade: 'morning' },
-  { id: 'growA', a: 20, b: 21, kind: 'game', z: 2, cam: [[0, 6.6, 6.2], [1, 6.8, 6.6]] },
-  { id: 'growB', a: 21, b: 22, kind: 'game', z: 2, cam: [[0, 6.8, 6.6], [1, 7.0, 7.0]] },
-  { id: 'crew', a: 22, b: 26, kind: 'game', z: 4, cam: [[0, 3.0, 1.6], [1, 7.6, 4.2]] },
-  { id: 'zones', a: 26, b: 30, kind: 'game', z: 2, cam: [[0, 5.5, 2.5], [1, 5.5, 20.5]], grade: 'warm' },
-  { id: 'special', a: 30, b: 34, kind: 'game', z: 5, cam: [[0, 9.4, 3.4], [1, 9.8, 3.7]] },
-  { id: 'book', a: 34, b: 36, kind: 'game', z: 3, cam: [[0, 8.0, 4.0], [1, 8.2, 4.2]], panel: true },
-  { id: 'storm', a: 36, b: 38, kind: 'scene', scene: 'storm' },
-  { id: 'shoal', a: 38, b: 39, kind: 'scene', scene: 'deep', t0: 1.4 },
-  { id: 'rush', a: 39, b: 40, kind: 'game', z: 4, cam: [[0, 8.2, 10.2], [1, 8.8, 10.6]] },
-  { id: 'promise', a: 40, b: 41.5, kind: 'black' },
-  { id: 'legend', a: 41.5, b: 45.5, kind: 'scene', scene: 'legend' },
-  { id: 'story', a: 45.5, b: 50, kind: 'game', story: true },
-  { id: 'night', a: 50, b: 55, kind: 'game', z: 1, cam: [[0, 4.5, 3.5], [1, 7.5, 15.5]], grade: 'night' },
-  { id: 'end', a: 55, b: 60, kind: 'scene', scene: 'finale' }
+  { id: 'dawn', a: 0, b: 7, kind: 'scene', scene: 'dawn' },
+  { id: 'cast', a: 7, b: 11, kind: 'scene', scene: 'cast', tr: 'dissolve', td: 1.0 },
+  { id: 'deep', a: 11, b: 15, kind: 'scene', scene: 'deep', opt: { net: true } },
+  { id: 'title', a: 15, b: 17, kind: 'scene', scene: 'deep', t0: 4, opt: { net: true }, dim: 0.45 },
+  { id: 'catch', a: 17, b: 21, kind: 'game', z: 5, cam: [[0, 2.8, 1.8], [1, 3.4, 2.2]], grade: 'morning', day: 0.16, tr: 'dissolve', td: 0.5, push: 0.05 },
+  { id: 'fillet', a: 21, b: 24.5, kind: 'game', z: 5, cam: [[0, 4.6, 2.0], [1, 5.7, 2.4]], grade: 'morning', day: 0.18, tr: 'dissolve', td: 0.45, push: 0.04 },
+  { id: 'sell', a: 24.5, b: 28, kind: 'game', z: 5, cam: [[0, 7.9, 3.2], [1, 8.6, 3.5]], day: 0.3, tr: 'dissolve', td: 0.45, push: 0.04 },
+  { id: 'grow', a: 28, b: 33, kind: 'game', z: 1, cam: [[0, 4.6, 5.0], [1, 6.0, 12.5]], grade: 'gold', day: 0.45, tr: 'dissolve', td: 0.6, push: 0.03 },
+  { id: 'crew', a: 33, b: 37, kind: 'game', z: 4, cam: [[0, 3.0, 1.6], [1, 7.4, 4.0]], grade: 'gold', day: 0.62, tr: 'dissolve', td: 0.5, push: 0.03 },
+  { id: 'special', a: 37, b: 41.5, kind: 'game', z: 5, grade: 'dusk', day: 0.74, tr: 'dissolve', td: 0.5, push: 0.05 },
+  { id: 'book', a: 41.5, b: 43.5, kind: 'game', z: 3, cam: [[0, 8.0, 4.0], [1, 8.2, 4.2]], day: 0.76, panel: true, tr: 'dissolve', td: 0.4 },
+  { id: 'storm', a: 43.5, b: 46, kind: 'scene', scene: 'storm' },
+  { id: 'promise', a: 46, b: 47.5, kind: 'black' },
+  { id: 'legend', a: 47.5, b: 51.5, kind: 'scene', scene: 'legend' },
+  { id: 'story', a: 51.5, b: 55, kind: 'game', story: true, tr: 'dissolve', td: 0.6 },
+  { id: 'end', a: 55, b: 60, kind: 'scene', scene: 'finale', tr: 'dissolve', td: 0.9 }
 ];
-/* yazılar: int (ortada, ince aralıklı) · title (büyük başlık + alt satır) · stamp (çerçeveli damga) · loop (döngü şeridi) · end */
+/* yazılar: int (ortada) · title (büyük başlık + alt satır) · chip (üstte açılan bölge) · stamp (çerçeveli damga) · loop · logo · cash · legend · end */
 const TEXT = [
-  { a: 1.0, b: 3.7, kind: 'int', t: 'THE BLACK SEA' },
-  { a: 4.3, b: 7.7, kind: 'int', t: 'Every autumn, the hamsi come home.' },
-  { a: 8.5, b: 11.3, kind: 'int', t: 'Silver, by the million.' },
-  { a: 11.7, b: 13.85, kind: 'int', t: 'And every legend starts with one net.' },
-  { a: 14.05, b: 15.95, kind: 'title', t: 'CATCH', s: 'Stand by your net. The sea fills the crate.' },
-  { a: 16.05, b: 17.95, kind: 'title', t: 'FILLET', s: 'Carry the catch to the cutting table.' },
-  { a: 18.05, b: 19.95, kind: 'title', t: 'SELL', s: 'Stock the stall. Fill every order. Get paid.' },
-  { a: 20.05, b: 21.95, kind: 'title', t: 'GROW', s: 'Reinvest every coin. Upgrade. Expand.' },
-  { a: 14.0, b: 22.0, kind: 'loop' },
-  { a: 22.1, b: 25.9, kind: 'title', t: 'HIRE A CREW', s: 'Porters, filleters, stall-keepers, cashiers. Then a manager runs it all.' },
-  { a: 26.15, b: 27.1, kind: 'stamp', t: 'FISHING PIER' },
-  { a: 27.15, b: 28.1, kind: 'stamp', t: 'FISH MARKET' },
-  { a: 28.15, b: 29.1, kind: 'stamp', t: 'SMOKEHOUSE', s: 'smoked fish sells for 2.4×' },
-  { a: 29.15, b: 29.95, kind: 'stamp', t: "FISHERMEN'S KITCHEN", s: "cook Skipper's Stew" },
-  { a: 30.1, b: 33.9, kind: 'title', t: '69 QUIRKY CUSTOMERS', s: 'Every one hides a name. Serve them well to learn it.' },
-  { a: 34.05, b: 35.95, kind: 'title', t: 'THE CUSTOMER BOOK', s: 'Collect every face that visits your cove.' },
-  { a: 36.1, b: 37.9, kind: 'stamp', t: 'STORMS' },
-  { a: 38.05, b: 38.95, kind: 'stamp', t: 'SHOALS' },
-  { a: 39.05, b: 39.95, kind: 'stamp', t: 'RUSH HOURS' },
-  { a: 40.2, b: 41.4, kind: 'int', t: 'But the sea keeps a promise...' },
-  { a: 42.2, b: 45.3, kind: 'int', t: 'Beneath the cove, something ancient waits.' },
-  { a: 46.6, b: 49.8, kind: 'legend' },
-  { a: 50.6, b: 54.6, kind: 'int', t: 'From a tiny pier... to a legendary harbor.' },
-  { a: 55.3, b: 60, kind: 'end' }
+  { a: 1.4, b: 3.8, kind: 'int', t: 'THE BLACK SEA' },
+  { a: 4.1, b: 6.8, kind: 'int', t: 'Every autumn, the hamsi come home.' },
+  { a: 7.6, b: 10.7, kind: 'int', t: 'Every legend starts with a single net.' },
+  { a: 11.6, b: 14.6, kind: 'int', t: 'Silver, by the million.' },
+  { a: 15.0, b: 17.0, kind: 'logo' },
+  { a: 17.35, b: 20.85, kind: 'title', t: 'CATCH', s: 'Stand by your net. The sea fills the crate.' },
+  { a: 21.3, b: 24.35, kind: 'title', t: 'FILLET', s: 'Carry the catch to the cutting table.' },
+  { a: 24.8, b: 27.85, kind: 'title', t: 'SELL', s: 'Stock the stall. Fill every order. Get paid.' },
+  { a: 28.3, b: 32.85, kind: 'title', t: 'GROW YOUR COVE', s: 'Reinvest every coin. Open new zones. Upgrade everything.' },
+  { a: 17.0, b: 33.0, kind: 'loop' },
+  { a: 28.0, b: 33.0, kind: 'cash' },
+  { a: 28.6, b: 29.6, kind: 'chip', t: '+ FISH MARKET' },
+  { a: 29.6, b: 30.6, kind: 'chip', t: '+ SMOKEHOUSE  ·  2.4× VALUE' },
+  { a: 30.6, b: 31.6, kind: 'chip', t: "+ FISHERMEN'S KITCHEN" },
+  { a: 31.6, b: 32.9, kind: 'chip', t: '+ DECOR  ·  LANDMARKS' },
+  { a: 33.3, b: 36.85, kind: 'title', t: 'HIRE A CREW', s: 'Porters, filleters, stall-keepers, cashiers. A manager runs it all.' },
+  { a: 37.4, b: 41.35, kind: 'title', t: '69 QUIRKY CUSTOMERS', s: 'Each one hides a name. Serve them well to learn it.' },
+  { a: 41.75, b: 43.4, kind: 'title', t: 'THE CUSTOMER BOOK', s: 'Collect every face that visits your cove.' },
+  { a: 43.65, b: 45.8, kind: 'stamp', t: 'STORMS · SHOALS · RUSH HOURS' },
+  { a: 46.15, b: 47.4, kind: 'int', t: 'But the sea keeps a promise...' },
+  { a: 48.2, b: 51.3, kind: 'int', t: 'Beneath the cove, something ancient waits.' },
+  { a: 52.1, b: 54.9, kind: 'legend' },
+  { a: 55.4, b: 60, kind: 'end' }
 ];
-const FLASH = [14.0, 21.0, 36.0, 38.0, 39.0, 50.0];
-const DIPS = [[39.85, 40.0], [45.35, 45.5], [49.75, 50.0]];   /* siyaha iniş */
-const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], warm: ['#ffb36b', 'soft-light', 0.14], night: ['#14205a', 'multiply', 0.5] };
+const FLASH = [[11.0, 0.3], [15.0, 0.85], [43.5, 0.55]];
+const DIPS = [[45.7, 46.0]];   /* siyaha iniş */
+const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'soft-light', 0.3], dusk: ['#ff8a5a', 'soft-light', 0.16] };
 
 (async () => {
   fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
@@ -129,6 +125,8 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], warm: ['#ffb36b', 'so
     const st = document.createElement('style');
     st.textContent =
       'body.tbc #hud,body.tbc #devbar,body.tbc #objective,body.tbc #queueHint,body.tbc #toast,body.tbc #actBtn,body.tbc #tradeBtn,body.tbc #coach,body.tbc #dayBanner,body.tbc #lvlUp,body.tbc #eventChip,body.tbc #chBtn,body.tbc #autoBadge,body.tbc #specPop{visibility:hidden!important}' +
+      '#game,#ui{transform-origin:50% 46%}' +
+      '#tbsnap{position:fixed;inset:0;width:100vw;height:100vh;z-index:199;pointer-events:none;opacity:0}' +
       '#tbglow{position:fixed;inset:0;width:100vw;height:100vh;z-index:190;pointer-events:none;mix-blend-mode:screen}' +
       '#tbg{position:fixed;inset:0;z-index:200;pointer-events:none;font-family:"Pixelify Sans",monospace}' +
       '#tbg .tb-gr{position:absolute;inset:0;opacity:0}' +
@@ -145,7 +143,7 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], warm: ['#ffb36b', 'so
       '#tbg .tb-loop{position:absolute;left:0;right:0;bottom:76px;display:flex;justify-content:center;gap:14px;font-weight:700;font-size:15px;letter-spacing:.3em;opacity:0}' +
       '#tbg .tb-loop em{font-style:normal;color:#fff3d6;opacity:.32}#tbg .tb-loop em.on{opacity:1;color:#ffcf5a;text-shadow:0 0 12px rgba(255,190,80,.6)}#tbg .tb-loop u{text-decoration:none;color:#e4b94a;opacity:.5}' +
       '#tbg .tb-stamp{position:absolute;left:50%;top:50%;opacity:0;text-align:center}' +
-      '#tbg .tb-stamp div{padding:12px 30px 10px;border:4px solid #fff3d6;box-shadow:0 0 0 4px #2a1408,inset 0 0 0 4px #2a1408;background:rgba(8,14,24,.55);font-weight:700;font-size:46px;letter-spacing:.16em;color:#fff3d6;text-shadow:4px 4px 0 #2a1408;white-space:nowrap}' +
+      '#tbg .tb-stamp div{padding:12px 30px 10px;border:4px solid #fff3d6;box-shadow:0 0 0 4px #2a1408,inset 0 0 0 4px #2a1408;background:rgba(8,14,24,.55);font-weight:700;font-size:36px;letter-spacing:.16em;color:#fff3d6;text-shadow:4px 4px 0 #2a1408;white-space:nowrap}' +
       '#tbg .tb-stamp span{display:block;margin-top:12px;font-size:20px;letter-spacing:.08em;color:#ffcf5a;text-shadow:2px 2px 0 #2a1408}' +
       '#tbg .tb-leg{position:absolute;right:60px;top:96px;text-align:right;opacity:0}#tbg .tb-leg small{display:block;font-size:14px;font-weight:600;letter-spacing:.45em;color:#b8a8e0}' +
       '#tbg .tb-leg b{display:block;font-size:50px;font-weight:700;letter-spacing:.06em;color:#ffb454;text-shadow:3px 3px 0 #000,6px 6px 0 #7a2a2a}' +
@@ -155,6 +153,9 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], warm: ['#ffb36b', 'so
       '#tbg .tb-end .t{font-size:26px;font-weight:600;letter-spacing:.1em;color:#fff3dc;text-shadow:3px 3px 0 #10081c}' +
       '#tbg .tb-end .f{font-size:15px;font-weight:700;letter-spacing:.32em;color:#ffcf5a;text-shadow:2px 2px 0 #10081c}' +
       '#tbg .tb-end .u{font-size:14px;letter-spacing:.1em;color:#bcd2ff}' +
+      '#tbg .tb-logo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0}#tbg .tb-logo img{width:760px;image-rendering:pixelated;filter:drop-shadow(0 8px 0 rgba(0,0,0,.5)) drop-shadow(0 0 40px rgba(120,220,255,.35))}' +
+      '#tbg .tb-cash{position:absolute;right:56px;top:86px;text-align:right;opacity:0}#tbg .tb-cash small{display:block;font-size:13px;font-weight:700;letter-spacing:.4em;color:#ffcf5a;text-shadow:2px 2px 0 #2a1408}#tbg .tb-cash b{display:block;font-size:44px;font-weight:700;color:#9dff8a;letter-spacing:.04em;text-shadow:3px 3px 0 #0a2a10}' +
+      '#tbg .tb-chip{position:absolute;left:50%;top:96px;opacity:0;padding:8px 18px 6px;background:rgba(8,14,24,.7);border:3px solid #e4b94a;font-size:22px;font-weight:700;letter-spacing:.12em;color:#fff3d6;white-space:nowrap;text-shadow:2px 2px 0 #2a1408}' +
       '#tbg .tb-shine{position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,250,220,.55) 50%,transparent 60%);mix-blend-mode:overlay;opacity:0}' +
       '.tbstory .hkst{padding:0!important;background:#000!important;z-index:150!important}.tbstory .hkst .app{max-width:none!important;width:100vw;height:100vh;justify-content:center;align-items:center}' +
       '.tbstory .hkst .stage{border:0!important;box-shadow:none!important}.tbstory .hkst canvas{width:auto!important;height:100vh!important}' +
@@ -166,11 +167,15 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], warm: ['#ffb36b', 'so
       '<div class="tb-int"></div><div class="tb-title"><b></b><i></i><span></span></div>' +
       '<div class="tb-loop"><em>CATCH</em><u>›</u><em>FILLET</em><u>›</u><em>SELL</em><u>›</u><em>GROW</em></div>' +
       '<div class="tb-stamp"><div></div><span></span></div>' +
+      '<div class="tb-logo"><img src="store/logo/logo-horizontal-en.png"></div><div class="tb-cash"><small>CASH</small><b></b></div><div class="tb-chip"></div>' +
       '<div class="tb-leg"><small>A 12-DAY ANATOLIAN LEGEND</small><b>THE PROMISE BELOW</b></div>' +
       '<div class="tb-end"><img src="store/logo/logo-horizontal-en.png"><div class="t">Build your cove. Keep the promise.</div>' +
       '<div class="f">FREE · NO ADS · NO IN-APP PURCHASES</div><div class="u">English & Türkçe · recaikas.github.io/okult-kahin-byblbn</div><div class="tb-shine"></div></div>' +
       '<div class="tb-bar tb-bt"></div><div class="tb-bar tb-bb"></div><div class="tb-sub"></div><div class="tb-blk"></div><div class="tb-fl"></div>';
     document.body.appendChild(g); document.body.classList.add('tbc');
+    const snap = document.createElement('img'); snap.id = 'tbsnap'; document.body.appendChild(snap);
+    window.__snap = src => new Promise(r => { snap.onload = () => r(); snap.src = src; snap.style.opacity = 1; });
+    window.__snapA = a => { snap.style.opacity = a; };
     const gc = document.createElement('canvas'); gc.id = 'tbglow'; gc.width = 1920; gc.height = 1080; document.body.appendChild(gc);
     const gx = gc.getContext('2d');
     window.__glow = (on, tt) => {
@@ -198,6 +203,11 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], warm: ['#ffb36b', 'so
       if (o.stamp) { sp.querySelector('div').textContent = o.stamp.t; sp.querySelector('span').textContent = o.stamp.s || ''; sp.style.transform = 'translate(-50%,-50%) scale(' + o.stamp.sc + ')'; }
       $('.tb-leg').style.opacity = o.leg || 0;
       const sub = $('.tb-sub'); sub.style.opacity = o.sub ? 1 : 0; if (o.sub) sub.innerHTML = (o.sub[0] ? '<b>' + o.sub[0] + '</b>' : '') + o.sub[1];
+      const lg = $('.tb-logo'); lg.style.opacity = o.logo ? o.logo.a : 0; if (o.logo) lg.querySelector('img').style.transform = 'scale(' + o.logo.sc + ')';
+      const cs = $('.tb-cash'); cs.style.opacity = o.cash ? o.cash.a : 0; if (o.cash) cs.querySelector('b').textContent = '$ ' + Math.round(o.cash.v).toLocaleString('en-US');
+      const ch = $('.tb-chip'); ch.style.opacity = o.chip ? o.chip.a : 0; if (o.chip) { ch.textContent = o.chip.t; ch.style.transform = 'translateX(-50%) scale(' + o.chip.sc + ')'; }
+      const tbs = document.getElementById('tbs'); if (tbs) tbs.style.filter = o.dim ? 'brightness(' + (1 - o.dim) + ')' : '';
+      ['game', 'ui'].forEach(id => { const c = document.getElementById(id); if (c) c.style.transform = o.push ? 'scale(' + o.push + ')' : ''; });
       const e = $('.tb-end'); e.style.opacity = o.end ? o.end.a : 0;
       if (o.end) { e.querySelector('img').style.transform = 'scale(' + o.end.sc + ')'; e.querySelector('.t').style.opacity = o.end.t; e.querySelector('.f').style.opacity = o.end.f; e.querySelector('.u').style.opacity = o.end.f; const sh = $('.tb-shine'); sh.style.opacity = o.end.sh > 0 && o.end.sh < 1 ? 1 : 0; sh.style.transform = 'translateX(' + Math.round((o.end.sh - 0.5) * 1400) + 'px)'; }
     };
@@ -210,6 +220,7 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], warm: ['#ffb36b', 'so
     const hideOv = () => document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
     const at = (x, y) => { BT.player.x = x; BT.player.y = y; };
     const makeRich = () => {
+      if (window.__rich) return; window.__rich = 1;
       const S = BT.S; S.tut = 99; S.ctrl = 2; S.cash = 184250; S.rep = 2400; BT.M().office = true;
       for (let i = 1; i < BT.areas.length; i++) BT.areas[i].locked = false;
       BT.areas.forEach(a => { a.lvl = Math.max(a.lvl, 3); });
@@ -222,19 +233,31 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], warm: ['#ffb36b', 'so
       at(6.2, 23.0);                                   /* oyuncu kadraj dışında, Hizmet Sahası'nda */
       step(30); hideOv();
     };
-    window.__setup = (id, prev) => {
+    /* hızlandırılmış büyüme: bölgeler sırayla açılır, her adımda oyun birkaç saniye ileri sarılır */
+    window.__grow = k => {
+      const A = BT.areas;
+      if (k < 3) { A[k + 1].locked = false; A[k + 1].lvl = Math.max(A[k + 1].lvl, 2); A[k].lvl = 3; }
+      else { A.forEach(a => { a.lvl = 3; }); BT.decor.forEach(d => { d.got = true; }); BT.M().office = true; }
+      BT.rebuildCounters();
+      BT.zoneRoles(Math.min(k, 3)).forEach(r => BT.hire(r, true, Math.min(k, 3)));
+      if (k === 3) for (let z = 0; z < A.length; z++) BT.zoneRoles(z).forEach(r => BT.hire(r, true, z));
+      BT.counters.forEach(c => { c.open = true; c.seen = true; });
+      BT.reassignWorkers(); BT.S.rep = Math.max(BT.S.rep, [60, 160, 400, 2400][k]); step(4); hideOv();
+    };
+    window.__setup = (g, prev) => {
+      const id = g.id;
       window.__keepSpec = id === 'special'; window.__uiScale = id === 'special' ? 1.9 : 1;
       if (prev === 'story') { try { HK_STORY.close(); } catch (e) { } document.body.classList.remove('tbstory'); }
       if (prev === 'book') { hideOv(); document.body.classList.remove('tbpanel'); }
-      if (BT.day.t > BT.DAY_LEN * 0.55 && id !== 'night') BT.day.t = 25;
-      if (id === 'net') { at(2.6, 1.5); step(2.2); }
+      if (g.day) BT.day.t = BT.DAY_LEN * g.day;
+      if (id === 'catch') { BT.S.tut = 99; BT.S.ctrl = 2; at(2.6, 1.5); step(2.4); }
       if (id === 'fillet') { at(4.2, 1.8); }
       if (id === 'sell') { at(6.4, 2.6); step(1.4); at(7.6, 3.0); }
-      if (id === 'growA') { at(9.4, 5.2); }
-      if (id === 'growB') { makeRich(); }
-      if (id === 'crew' || id === 'zones' || id === 'rush') at(6.2, 23.0);
+      if (id === 'grow') { at(6.2, 23.0); BT.S.ctrl = 2; }
+      if (id === 'crew') { makeRich(); BT.day.t = BT.DAY_LEN * g.day; }
       if (id === 'special') {
-        at(6.2, 23.0);
+        if (!window.__rich) makeRich();
+        BT.day.t = BT.DAY_LEN * g.day; at(6.2, 23.0);
         BT.S.names = (BT.S.names || []).filter(x => x !== 'temel'); BT.S.jobs = (BT.S.jobs || []).filter(x => x !== 'temel');
         const c = BT.counters[0]; c.slots.fill(null); BT.customers.forEach(q => { if (q.c === c) q.state = 'leave'; });
         step(1.5);
@@ -246,7 +269,6 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], warm: ['#ffb36b', 'so
         const ids = BT.SPECIALS.map(x => x.id); BT.S.met = ids.slice(0, 44); BT.S.names = ids.filter((x, i) => i % 3 === 0).slice(0, 15); BT.S.jobs = ids.filter((x, i) => i % 2 === 0).slice(0, 26);
         document.body.classList.add('tbpanel'); BT.openCustBook();
       }
-      if (id === 'night') { BT.day.t = BT.DAY_LEN * 0.9; }
       if (id === 'story') {
         document.body.classList.add('tbstory'); window.HK_STORY_OFF = 0;
         HK_STORY.open(8, { lang: 'en', ber: 6, flags: {}, known: ['k', 'h', 't', 'a', 's'] }); step(0.3);
@@ -256,7 +278,7 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], warm: ['#ffb36b', 'so
   });
   await p.evaluate(async () => { await document.fonts.ready; });
 
-  const N = DUR * FPS; let cur = -1, tap = 0;
+  const N = DUR * FPS; let cur = -1, tap = 0, last = null, growK = 0;
   const eio = u => u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
   const clamp01 = v => Math.max(0, Math.min(1, v));
   const camAt = (c, u) => { let i = 0; while (i < c.length - 2 && u > c[i + 1][0]) i++; const v = eio(clamp01((u - c[i][0]) / (c[i + 1][0] - c[i][0]))); return { x: c[i][1] + (c[i + 1][1] - c[i][1]) * v, y: c[i][2] + (c[i + 1][2] - c[i][2]) * v }; };
@@ -265,27 +287,35 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], warm: ['#ffb36b', 'so
     const active = !ONLY || ONLY.includes(g.id);
     if (si !== cur) {
       const prev = cur >= 0 ? SHOTS[cur].id : null; cur = si; tap = 0;
-      if (g.kind === 'game' && (active || ['growB'].includes(g.id))) {
-        await p.evaluate(([g, prev]) => { TBS.hide(); if (g.z) window.__zoom(g.z); window.__setup(g.id, prev); }, [g, prev]);
+      if (g.kind === 'game' && active) {
+        await p.evaluate(([g, prev]) => { TBS.hide(); if (g.z) window.__zoom(g.z); window.__setup(g, prev); }, [g, prev]);
       }
+      if (g.kind === 'scene') await p.evaluate(g => TBS.opt(g.opt), g);
+      if (g.tr === 'dissolve' && last && active) await p.evaluate(src => window.__snap(src), 'data:image/jpeg;base64,' + last.toString('base64'));
+      growK = 0;
       console.log('çekim', g.id, s.toFixed(2));
     }
     if (!active) continue;
     /* katman durumu */
     const o = { bars: g.id === 'end' ? Math.round(66 * (1 - clamp01((lt - 0.2) / 1.0))) : 66, black: 0, flash: 0, grade: GRADES[g.grade] || null };
-    if (s < 1.2) o.black = 1 - clamp01(s / 1.2);
     if (g.kind === 'black') o.black = 1;
-    FLASH.forEach(t0 => { if (s >= t0 && s < t0 + 0.4) o.flash = Math.max(o.flash, 0.7 * Math.pow(1 - (s - t0) / 0.4, 2)); });
+    FLASH.forEach(([t0, k]) => { if (s >= t0 && s < t0 + 0.45) o.flash = Math.max(o.flash, k * Math.pow(1 - (s - t0) / 0.45, 2)); });
+    o.snap = g.tr === 'dissolve' ? Math.max(0, 1 - lt / g.td) : 0;
+    if (g.push) o.push = 1 + g.push * eio(u);
+    if (g.dim) o.dim = g.dim * clamp01(lt / 0.3);
     DIPS.forEach(d => { if (s >= d[0] && s < d[1]) o.black = Math.max(o.black, (s - d[0]) / (d[1] - d[0])); });
-    if (g.id === 'legend' && lt < 0.6) o.black = Math.max(o.black, 1 - lt / 0.6);
-    if (g.id === 'end' && lt < 0.5) o.black = Math.max(o.black, 1 - lt / 0.5);
+    if (g.id === 'legend' && lt < 0.9) o.black = Math.max(o.black, 1 - lt / 0.9);
+    if (g.id === 'dawn') o.black = Math.max(o.black, 1 - clamp01(lt / 1.6));
     if (s > 59.2) o.black = Math.max(o.black, (s - 59.2) / 0.8);
     TEXT.forEach(x => {
       if (s < x.a || s >= x.b) return;
       const tl = s - x.a, L = x.b - x.a, fade = clamp01(Math.min(tl / 0.35, (L - tl) / 0.3));
       if (x.kind === 'int') o.int = { t: x.t, a: fade, k: clamp01(tl / L), low: false };
       if (x.kind === 'title') { o.title = { t: x.t, s: x.s, a: clamp01(Math.min(tl / 0.12, (L - tl) / 0.15)), k: 1 - Math.pow(1 - clamp01(tl / 0.45), 3) }; o.band = Math.max(o.band || 0, o.title.a); }
-      if (x.kind === 'loop') o.loop = { i: Math.min(3, Math.floor((s - 14) / 2)) };
+      if (x.kind === 'loop') o.loop = { i: s < 21 ? 0 : s < 24.5 ? 1 : s < 28 ? 2 : 3 };
+      if (x.kind === 'logo') o.logo = { a: clamp01(Math.min(tl / 0.15, (L - tl) / 0.35)), sc: 1.0 + 0.18 * Math.pow(1 - clamp01(tl / 0.5), 3) + 0.03 * tl };
+      if (x.kind === 'cash') { const k = clamp01((tl - 0.4) / 4.2); o.cash = { a: clamp01(Math.min(tl / 0.3, (L - tl) / 0.25)), v: 80 + (184250 - 80) * Math.pow(k, 2.2) }; }
+      if (x.kind === 'chip') o.chip = { t: x.t, a: clamp01(Math.min(tl / 0.08, (L - tl) / 0.1)), sc: 1 + 0.2 * Math.pow(1 - clamp01(tl / 0.15), 2) };
       if (x.kind === 'stamp') o.stamp = { t: x.t, s: x.s, a: clamp01(Math.min(tl / 0.06, (L - tl) / 0.12)), sc: 1 + 0.25 * Math.pow(1 - clamp01(tl / 0.18), 2) };
       if (x.kind === 'legend') o.leg = fade;
       if (x.kind === 'end') { const k = clamp01(tl / 0.9); o.end = { a: clamp01(tl / 0.6), sc: 1.12 - 0.12 * (1 - Math.pow(1 - k, 3)), t: clamp01((tl - 1.0) / 0.5), f: clamp01((tl - 1.6) / 0.5), sh: clamp01((tl - 0.9) / 0.9) }; }
@@ -301,14 +331,17 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], warm: ['#ffb36b', 'so
       }
       /* oyuncu yürüyüşleri */
       if (g.id === 'fillet') { const k = Math.min(1, lt / 0.6); BT.player.x = 4.2 + 0.8 * k; BT.player.y = 1.8 + 0.2 * k; if (lt > 1.3) { const k2 = Math.min(1, (lt - 1.3) / 0.5); BT.player.x = 5.0 + 1.4 * k2; BT.player.y = 2.0 + 0.6 * k2; } }
-      if (g.id === 'special') { const cu = BT.customers.find(q => q.spec === 'temel'); if (cu) window.__cam = { x: cu.x - 0.4 - 0.3 * u, y: cu.y + 0.5 }; }
+      if (g.id === 'special') { const cu = BT.customers.find(q => q.spec === 'temel'); if (cu) window.__cam = { x: cu.x - 0.4 - 0.3 * u, y: cu.y + 0.05 }; }
       if (g.id === 'sell') { const k = Math.min(1, lt / 0.5); BT.player.x = 7.6 + 0.6 * k; BT.player.y = 3.0 + 0.2 * k; }
+      if (g.id === 'fillet' && lt > 0) { /* yürüyüş yukarıda */ }
       if (tapNow && window.HK_STORY && HK_STORY._mode() === 'dlg') HK_STORY._tap();
       window.__tb(o);
-      window.__glow(g.id === 'night', lt);
+      window.__glow(g.id === 'special', lt);
+      window.__snapA(o.snap);
       if (g.kind === 'game') window.__step(1000 / 30);
     }, [g, lt, u, o, g.story && (++tap % 40 === 0)]);
-    if (!PREVIEW || f % 10 === 0) await p.screenshot({ path: path.join(OUT, String(PREVIEW ? f / 10 : f).padStart(5, '0') + '.jpg'), type: 'jpeg', quality: PREVIEW ? 82 : 94 });
+    if (g.id === 'grow') { const ev = [0.55, 1.55, 2.55, 3.55]; while (growK < 4 && lt >= ev[growK]) { await p.evaluate(k => window.__grow(k), growK); growK++; } }
+    if (!PREVIEW || f % 10 === 0) last = await p.screenshot({ path: path.join(OUT, String(PREVIEW ? f / 10 : f).padStart(5, '0') + '.jpg'), type: 'jpeg', quality: PREVIEW ? 82 : 94 });
     if (f % 300 === 0) console.log('kare', f, '/', N);
   }
   await b.close();
