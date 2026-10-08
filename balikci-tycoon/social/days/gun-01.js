@@ -6,6 +6,14 @@ module.exports = {
   series: 'GELİŞTİRME GÜNLÜĞÜ · GÜN 1', sting: 'GÜN 1',
   hero: 'Recai',
   company: 'Recai Balıkçılık',
+  /* anlatım: [başla, en geç bitir, metin] — voice.py seslendirir, make.py müziği altına kısar */
+  vo: [
+    [0.45, 4.5, 'Bir balıkçı oyunu yapıyorum. Her şey bu küçük iskelede başlıyor.'],
+    [4.6, 10.0, 'Ağlar kendiliğinden doluyor. Balığı sırtlayıp kesim masasına taşıyorsun.'],
+    [10.1, 16.4, 'Filetoları tezgâha diziyorsun. Müşteri sırası gelince alıyor, para kasaya giriyor.'],
+    [16.6, 22.4, 'Kazandıkça iskele büyüyor: yeni tezgâhlar, çalışanlar, yeni bölgeler.'],
+    [22.6, 27.6, 'Peki sen bu dükkânın tabelasına ne yazardın? Yorumlara yaz.']
+  ],
   segs: [
     { /* 1) kanca: yeni açılmış oyun, küçücük iskele */
       len: 4.5,

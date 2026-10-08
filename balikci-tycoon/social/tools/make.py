@@ -32,8 +32,19 @@ final = os.path.join(OUT, did + '.mp4')
 fx = os.path.join(OUT, 'efekt.wav')
 subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'sfx.py'), os.path.join(OUT, 'sure.json'), fx], check=True, capture_output=True)
 mix = os.path.join(OUT, 'ses.wav')
-run('-i', mus, '-i', fx, '-filter_complex', '[0:a]volume=0.75[m];[1:a]volume=1.0[f];[m][f]amix=inputs=2:normalize=0,alimiter=limit=0.95', mix)
-run('-i', silent, '-i', mix, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', final)
+run('-i', mus, '-i', fx, '-filter_complex', '[0:a]volume=0.75[m];[1:a]volume=1.0[f];[m][f]amix=inputs=2:normalize=0,alimiter=limit=0.89:level=disabled', mix)
+vo = os.path.join(OUT, 'anlatim.wav')
+if os.path.exists(vo):
+    # anlatım varsa: anlatımsız sürüm ayrı dosya; asıl videoda müzik+efekt anlatım konuşurken kısılır (sidechain)
+    run('-i', silent, '-i', mix, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', os.path.join(OUT, did + '-anlatimsiz.mp4'))
+    duck = os.path.join(OUT, 'ses2.wav')
+    run('-i', mix, '-i', vo, '-filter_complex',
+        '[1:a]aresample=44100,pan=stereo|c0=c0|c1=c0,asplit=2[v1][v2];[0:a][v1]sidechaincompress=threshold=0.03:ratio=8:attack=15:release=350[bg];'
+        '[bg][v2]amix=inputs=2:normalize=0,alimiter=limit=0.85:level=disabled', duck)
+    run('-i', silent, '-i', duck, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', final)
+    os.remove(duck)
+else:
+    run('-i', silent, '-i', mix, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', final)
 os.remove(mix)
 
 # 3) kapak: 1080×1920 PNG zaten devlog.js'den (kapak.png); JPG kopyası (Instagram kapak yüklemesi)
