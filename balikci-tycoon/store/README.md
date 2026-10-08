@@ -40,10 +40,11 @@ Uygulama yalnız iPhone (iPad kapalı), bu yüzden iPad ekranı gerekmez.
 
 Videoda başka platform adı geçmez (Apple önizleme kuralı). Müzik `tools/music.py` ile üretilen özgün parçadır, telif sorunu yoktur.
 
-## 4b. Sinematik fragman (EN, 60 sn)
+## 4b. Sinematik fragman (EN + TR, 60 sn) — nasıl yapıldığı: [FRAGMAN.md](FRAGMAN.md)
 | Dosya | Boyut | Nereye |
 |---|---|---|
-| `video/trailer-1920x1080-en.mp4` | 1920×1080, 30 fps, H.264 + AAC | YouTube, basın, sosyal medya, mağaza tanıtım videosu |
+| `video/trailer-1920x1080-en.mp4` | 1920×1080, 30 fps, H.264 + AAC | YouTube, basın, sosyal medya, mağaza tanıtım videosu (İngilizce) |
+| `video/trailer-1920x1080-tr.mp4` | 1920×1080, 30 fps, H.264 + AAC | Aynısı, Türkçe |
 
 İki kaynak iç içe kurgulanır:
 - **Elle çizilmiş piksel sahneler** (`tools/trailer-scenes.js`, 320×180 ×6): şafakta Karadeniz köyü, hamsi sürüsü,
@@ -98,9 +99,10 @@ Videoyu kodlamak için (store/video içinde):
 ```
 ffmpeg -framerate 30 -i frames-tr/%05d.jpg -i promo-music.wav -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 18 -r 30 -c:a aac -b:a 192k -ar 48000 -shortest -movflags +faststart appstore-preview-886x1920-tr.mp4
 ```
-Sinematik fragman (`node store/tools/trailer.js preview` her 10. kareyi çeker; sona çekim adları eklenirse yalnız onları):
+Sinematik fragman (dil `en` ya da `tr`; `preview` her 10. kareyi çeker; sona çekim adları eklenirse yalnız onları):
 ```
-node store/tools/trailer.js                                   # 1800 kare → video/frames-trailer/ (sahneler: tools/trailer-scenes.js)
+node store/tools/trailer.js en                                # 1800 kare → video/frames-trailer-en/ (sahneler: tools/trailer-scenes.js)
+node store/tools/trailer.js tr                                # Türkçe → video/frames-trailer-tr/
 python3 store/tools/trailer-music.py store/video/trailer-music.wav
-cd store/video && ffmpeg -framerate 30 -i frames-trailer/%05d.jpg -i trailer-music.wav -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 18 -r 30 -c:a aac -b:a 192k -ar 48000 -shortest -movflags +faststart trailer-1920x1080-en.mp4
+cd store/video && ffmpeg -framerate 30 -i frames-trailer-tr/%05d.jpg -i trailer-music.wav -c:v libx264 -tune animation -preset slow -pix_fmt yuv420p -crf 20 -r 30 -c:a aac -b:a 224k -ar 48000 -shortest -movflags +faststart trailer-1920x1080-tr.mp4
 ```

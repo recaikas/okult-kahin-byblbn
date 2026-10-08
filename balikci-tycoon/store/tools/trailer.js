@@ -4,13 +4,14 @@
    2) gerçek oyun — game.js çekim sırasında küçük yamalarla yüklenir: kamera serbest, yakınlık 1–5, oyun içi etiketler gizli
    Oyunun saati sanaldır (rAF/performance.now/setTimeout adımlanır), her kare tek tek çekilir. Zamanlar müziğe oturur
    (120 BPM, 1 ölçü = 2 sn, logo vuruşu 15.0'te). Müzik: trailer-music.py.
-   Kullanım: node store/tools/trailer.js [preview [çekim,çekim]]   (oyun klasörü 8099'da sunulmalı)
-   Çıktı: store/video/frames-trailer/NNNNN.jpg  (preview: her 10. kare → frames-trailer-preview/) */
+   Kullanım: node store/tools/trailer.js [en|tr] [preview [çekim,çekim]]   (oyun klasörü 8099'da sunulmalı)
+   Çıktı: store/video/frames-trailer-<dil>/NNNNN.jpg  (preview: her 10. kare → frames-trailer-preview-<dil>/) */
 const { chromium } = require('../../test-offline');
 const fs = require('fs'), path = require('path');
-const FPS = 30, DUR = 60, PREVIEW = process.argv[2] === 'preview';
-const ONLY = process.argv[3] ? process.argv[3].split(',') : null;
-const OUT = path.resolve(__dirname, '..', 'video', PREVIEW ? 'frames-trailer-preview' : 'frames-trailer');
+const ARGS = process.argv.slice(2), LANG = ARGS.includes('tr') ? 'tr' : 'en';
+const FPS = 30, DUR = 60, PREVIEW = ARGS.includes('preview');
+const ONLY = ARGS.length && ARGS[ARGS.length - 1].match(/^[a-z]+(,[a-z]+)*$/) && !['tr', 'en', 'preview'].includes(ARGS[ARGS.length - 1]) ? ARGS[ARGS.length - 1].split(',') : null;
+const OUT = path.resolve(__dirname, '..', 'video', (PREVIEW ? 'frames-trailer-preview-' : 'frames-trailer-') + LANG);
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -66,29 +67,58 @@ const SHOTS = [
   { id: 'story', a: 51.5, b: 55, kind: 'game', story: true, tr: 'dissolve', td: 0.6 },
   { id: 'end', a: 55, b: 60, kind: 'scene', scene: 'finale', tr: 'dissolve', td: 0.9 }
 ];
+/* dile göre metinler */
+const L = {
+  en: {
+    i1: 'THE BLACK SEA', i2: 'Every autumn, the hamsi come home.', i3: 'Every legend starts with a single net.', i4: 'Silver, by the million.',
+    loop: ['CATCH', 'FILLET', 'SELL', 'GROW'],
+    catch: ['CATCH', 'Stand by your net. The sea fills the crate.'], fillet: ['FILLET', 'Carry the catch to the cutting table.'],
+    sell: ['SELL', 'Stock the stall. Fill every order. Get paid.'], grow: ['GROW YOUR COVE', 'Reinvest every coin. Open new zones. Upgrade everything.'],
+    chips: ['+ FISH MARKET', '+ SMOKEHOUSE  ·  2.4× VALUE', "+ FISHERMEN'S KITCHEN", '+ DECOR  ·  LANDMARKS'], cash: 'CASH', num: 'en-US',
+    crew: ['HIRE A CREW', 'Porters, filleters, stall-keepers, cashiers. A manager runs it all.'],
+    cust: ['69 QUIRKY CUSTOMERS', 'Each one hides a name. Serve them well to learn it.'], book: ['THE CUSTOMER BOOK', 'Collect every face that visits your cove.'],
+    stamp: 'STORMS · SHOALS · RUSH HOURS', i5: 'But the sea keeps a promise...', i6: 'Beneath the cove, something ancient waits.',
+    leg: ['A 12-DAY ANATOLIAN LEGEND', 'THE PROMISE BELOW'],
+    end: ['Build your cove. Keep the promise.', 'FREE · NO ADS · NO IN-APP PURCHASES', 'English & Türkçe · recaikas.github.io/okult-kahin-byblbn'],
+    firm: 'Silver Net Co.'
+  },
+  tr: {
+    i1: 'KARADENİZ', i2: 'Her sonbahar hamsi yuvasına döner.', i3: 'Her efsane tek bir ağla başlar.', i4: 'Milyonlarca gümüş pul.',
+    loop: ['AVLA', 'KES', 'SAT', 'BÜYÜT'],
+    catch: ['AVLA', 'Ağının başında bekle, deniz kasayı doldursun.'], fillet: ['KES', 'Balığı kesim masasına taşı, filetoları al.'],
+    sell: ['SAT', 'Tezgâhı doldur, her siparişi tamamla, paranı al.'], grow: ['KOYUNU BÜYÜT', 'Her kuruşu yatır. Yeni bölgeler aç. Her şeyi yükselt.'],
+    chips: ['+ BALIK PAZARI', '+ FÜMEHANE  ·  2.4× DEĞER', '+ BALIKÇI MUTFAĞI', '+ SÜSLER  ·  SİMGE YAPILAR'], cash: 'KASA', num: 'tr-TR',
+    crew: ['EKİBİNİ KUR', 'Hamal, filetocu, tezgâhtar, tahsildar. İşi bir müdür yürütsün.'],
+    cust: ['69 TUHAF MÜŞTERİ', 'Her biri adını saklar. İyi ağırla ki öğrenesin.'], book: ['MÜŞTERİ DEFTERİ', 'Koyuna uğrayan her yüzü topla.'],
+    stamp: 'LODOS · BALIK SÜRÜSÜ · YOĞUN SAAT', i5: 'Ama denizin bir sözü var...', i6: 'Koyun dibinde kadim bir şey bekliyor.',
+    leg: ['12 GÜNLÜK BİR ANADOLU EFSANESİ', 'DİPTEKİ SÖZ'],
+    end: ['Koyunu kur. Sözünü tut.', 'ÜCRETSİZ · REKLAMSIZ · SATIN ALMASIZ', 'Türkçe & English · recaikas.github.io/okult-kahin-byblbn'],
+    firm: 'Gümüş Ağ Balıkçılık'
+  }
+}[LANG];
 /* yazılar: int (ortada) · title (büyük başlık + alt satır) · chip (üstte açılan bölge) · stamp (çerçeveli damga) · loop · logo · cash · legend · end */
 const TEXT = [
-  { a: 1.4, b: 3.8, kind: 'int', t: 'THE BLACK SEA' },
-  { a: 4.1, b: 6.8, kind: 'int', t: 'Every autumn, the hamsi come home.' },
-  { a: 7.6, b: 10.7, kind: 'int', t: 'Every legend starts with a single net.' },
-  { a: 11.6, b: 14.6, kind: 'int', t: 'Silver, by the million.' },
+  { a: 1.4, b: 3.8, kind: 'int', t: L.i1 },
+  { a: 4.1, b: 6.8, kind: 'int', t: L.i2 },
+  { a: 7.6, b: 10.7, kind: 'int', t: L.i3 },
+  { a: 11.6, b: 14.6, kind: 'int', t: L.i4 },
   { a: 15.0, b: 17.0, kind: 'logo' },
-  { a: 17.35, b: 20.85, kind: 'title', t: 'CATCH', s: 'Stand by your net. The sea fills the crate.' },
-  { a: 21.3, b: 24.35, kind: 'title', t: 'FILLET', s: 'Carry the catch to the cutting table.' },
-  { a: 24.8, b: 27.85, kind: 'title', t: 'SELL', s: 'Stock the stall. Fill every order. Get paid.' },
-  { a: 28.3, b: 32.85, kind: 'title', t: 'GROW YOUR COVE', s: 'Reinvest every coin. Open new zones. Upgrade everything.' },
+  { a: 17.35, b: 20.85, kind: 'title', t: L.catch[0], s: L.catch[1] },
+  { a: 21.3, b: 24.35, kind: 'title', t: L.fillet[0], s: L.fillet[1] },
+  { a: 24.8, b: 27.85, kind: 'title', t: L.sell[0], s: L.sell[1] },
+  { a: 28.3, b: 32.85, kind: 'title', t: L.grow[0], s: L.grow[1] },
   { a: 17.0, b: 33.0, kind: 'loop' },
   { a: 28.0, b: 33.0, kind: 'cash' },
-  { a: 28.6, b: 29.6, kind: 'chip', t: '+ FISH MARKET' },
-  { a: 29.6, b: 30.6, kind: 'chip', t: '+ SMOKEHOUSE  ·  2.4× VALUE' },
-  { a: 30.6, b: 31.6, kind: 'chip', t: "+ FISHERMEN'S KITCHEN" },
-  { a: 31.6, b: 32.9, kind: 'chip', t: '+ DECOR  ·  LANDMARKS' },
-  { a: 33.3, b: 36.85, kind: 'title', t: 'HIRE A CREW', s: 'Porters, filleters, stall-keepers, cashiers. A manager runs it all.' },
-  { a: 37.4, b: 41.35, kind: 'title', t: '69 QUIRKY CUSTOMERS', s: 'Each one hides a name. Serve them well to learn it.' },
-  { a: 41.75, b: 43.4, kind: 'title', t: 'THE CUSTOMER BOOK', s: 'Collect every face that visits your cove.' },
-  { a: 43.65, b: 45.8, kind: 'stamp', t: 'STORMS · SHOALS · RUSH HOURS' },
-  { a: 46.15, b: 47.4, kind: 'int', t: 'But the sea keeps a promise...' },
-  { a: 48.2, b: 51.3, kind: 'int', t: 'Beneath the cove, something ancient waits.' },
+  { a: 28.6, b: 29.6, kind: 'chip', t: L.chips[0] },
+  { a: 29.6, b: 30.6, kind: 'chip', t: L.chips[1] },
+  { a: 30.6, b: 31.6, kind: 'chip', t: L.chips[2] },
+  { a: 31.6, b: 32.9, kind: 'chip', t: L.chips[3] },
+  { a: 33.3, b: 36.85, kind: 'title', t: L.crew[0], s: L.crew[1] },
+  { a: 37.4, b: 41.35, kind: 'title', t: L.cust[0], s: L.cust[1] },
+  { a: 41.75, b: 43.4, kind: 'title', t: L.book[0], s: L.book[1] },
+  { a: 43.65, b: 45.8, kind: 'stamp', t: L.stamp },
+  { a: 46.15, b: 47.4, kind: 'int', t: L.i5 },
+  { a: 48.2, b: 51.3, kind: 'int', t: L.i6 },
   { a: 52.1, b: 54.9, kind: 'legend' },
   { a: 55.4, b: 60, kind: 'end' }
 ];
@@ -107,9 +137,9 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'so
   p.on('pageerror', e => console.log('ERR', e.message));
   await p.goto(URL); await sleep(900);
   await p.addStyleTag({ content: '#achPop,#pauseBadge{display:none!important}' });
-  await p.evaluate(() => { window.HK_STORY_OFF = 1; window.HK_HELP_OFF = 1; if (BT.setLang) BT.setLang('en'); });
+  await p.evaluate(lang => { window.HK_STORY_OFF = 1; window.HK_HELP_OFF = 1; if (BT.setLang) BT.setLang(lang); }, LANG);
   await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
-  await p.click('#heroGo'); await p.fill('#nameIn', 'Silver Net Co.').catch(() => {});
+  await p.click('#heroGo'); await p.fill('#nameIn', L.firm).catch(() => {});
   await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(500);
   await p.evaluate(() => {
     document.getElementById('settingsScreen').classList.add('hidden');
@@ -121,7 +151,7 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'so
   await p.addScriptTag({ path: path.join(__dirname, 'trailer-scenes.js') });
 
   /* ---------- sinema katmanı ---------- */
-  await p.evaluate(() => {
+  await p.evaluate(([L, LANG]) => {
     const st = document.createElement('style');
     st.textContent =
       'body.tbc #hud,body.tbc #devbar,body.tbc #objective,body.tbc #queueHint,body.tbc #toast,body.tbc #actBtn,body.tbc #tradeBtn,body.tbc #coach,body.tbc #dayBanner,body.tbc #lvlUp,body.tbc #eventChip,body.tbc #chBtn,body.tbc #autoBadge,body.tbc #specPop{visibility:hidden!important}' +
@@ -165,12 +195,12 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'so
     const g = document.createElement('div'); g.id = 'tbg';
     g.innerHTML = '<div class="tb-gr"></div><div class="tb-vg"></div><div class="tb-band"></div>' +
       '<div class="tb-int"></div><div class="tb-title"><b></b><i></i><span></span></div>' +
-      '<div class="tb-loop"><em>CATCH</em><u>›</u><em>FILLET</em><u>›</u><em>SELL</em><u>›</u><em>GROW</em></div>' +
+      '<div class="tb-loop">' + L.loop.map(w => '<em>' + w + '</em>').join('<u>›</u>') + '</div>' +
       '<div class="tb-stamp"><div></div><span></span></div>' +
-      '<div class="tb-logo"><img src="store/logo/logo-horizontal-en.png"></div><div class="tb-cash"><small>CASH</small><b></b></div><div class="tb-chip"></div>' +
-      '<div class="tb-leg"><small>A 12-DAY ANATOLIAN LEGEND</small><b>THE PROMISE BELOW</b></div>' +
-      '<div class="tb-end"><img src="store/logo/logo-horizontal-en.png"><div class="t">Build your cove. Keep the promise.</div>' +
-      '<div class="f">FREE · NO ADS · NO IN-APP PURCHASES</div><div class="u">English & Türkçe · recaikas.github.io/okult-kahin-byblbn</div><div class="tb-shine"></div></div>' +
+      '<div class="tb-logo"><img src="store/logo/logo-horizontal-' + LANG + '.png"></div><div class="tb-cash"><small>' + L.cash + '</small><b></b></div><div class="tb-chip"></div>' +
+      '<div class="tb-leg"><small>' + L.leg[0] + '</small><b>' + L.leg[1] + '</b></div>' +
+      '<div class="tb-end"><img src="store/logo/logo-horizontal-' + LANG + '.png"><div class="t">' + L.end[0] + '</div>' +
+      '<div class="f">' + L.end[1] + '</div><div class="u">' + L.end[2] + '</div><div class="tb-shine"></div></div>' +
       '<div class="tb-bar tb-bt"></div><div class="tb-bar tb-bb"></div><div class="tb-sub"></div><div class="tb-blk"></div><div class="tb-fl"></div>';
     document.body.appendChild(g); document.body.classList.add('tbc');
     const snap = document.createElement('img'); snap.id = 'tbsnap'; document.body.appendChild(snap);
@@ -204,7 +234,7 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'so
       $('.tb-leg').style.opacity = o.leg || 0;
       const sub = $('.tb-sub'); sub.style.opacity = o.sub ? 1 : 0; if (o.sub) sub.innerHTML = (o.sub[0] ? '<b>' + o.sub[0] + '</b>' : '') + o.sub[1];
       const lg = $('.tb-logo'); lg.style.opacity = o.logo ? o.logo.a : 0; if (o.logo) lg.querySelector('img').style.transform = 'scale(' + o.logo.sc + ')';
-      const cs = $('.tb-cash'); cs.style.opacity = o.cash ? o.cash.a : 0; if (o.cash) cs.querySelector('b').textContent = '$ ' + Math.round(o.cash.v).toLocaleString('en-US');
+      const cs = $('.tb-cash'); cs.style.opacity = o.cash ? o.cash.a : 0; if (o.cash) cs.querySelector('b').textContent = '$ ' + Math.round(o.cash.v).toLocaleString(L.num);
       const ch = $('.tb-chip'); ch.style.opacity = o.chip ? o.chip.a : 0; if (o.chip) { ch.textContent = o.chip.t; ch.style.transform = 'translateX(-50%) scale(' + o.chip.sc + ')'; }
       const tbs = document.getElementById('tbs'); if (tbs) tbs.style.filter = o.dim ? 'brightness(' + (1 - o.dim) + ')' : '';
       ['game', 'ui'].forEach(id => { const c = document.getElementById(id); if (c) c.style.transform = o.push ? 'scale(' + o.push + ')' : ''; });
@@ -271,11 +301,11 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'so
       }
       if (id === 'story') {
         document.body.classList.add('tbstory'); window.HK_STORY_OFF = 0;
-        HK_STORY.open(8, { lang: 'en', ber: 6, flags: {}, known: ['k', 'h', 't', 'a', 's'] }); step(0.3);
+        HK_STORY.open(8, { lang: LANG, ber: 6, flags: {}, known: ['k', 'h', 't', 'a', 's'] }); step(0.3);
       }
       if (id !== 'book' && id !== 'story') hideOv();
     };
-  });
+  }, [L, LANG]);
   await p.evaluate(async () => { await document.fonts.ready; });
 
   const N = DUR * FPS; let cur = -1, tap = 0, last = null, growK = 0;
