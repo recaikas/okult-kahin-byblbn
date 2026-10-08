@@ -51,6 +51,34 @@ Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 #HamsiKoyu #gamedev #indiegame #pixelart #devlog #shorts
 ```
 
+## TikTok
+
+Açıklama:
+
+```
+Akşam olunca liman kapanır. Gün 5 🐟 Liman kapanınca ne olur?.
+Günün kazancını ilk neye yatırırdın? Yorumlara yaz 👇
+Oyun tarayıcıda ücretsiz: link profilde.
+#HamsiKoyu #oyungeliştirme #gamedev #indiegame #pixelart #devlog #oyun #keşfet
+```
+
+Kapak: `kapak.jpg` · Profil linki: https://recaikas.github.io/okult-kahin-byblbn/
+
+## X (Twitter)
+
+140 / 280 karakter (link 23 sayılır):
+
+```
+Akşam olunca liman kapanır. Gün 5 🐟
+
+Günün kazancını ilk neye yatırırdın?
+
+▶ https://recaikas.github.io/okult-kahin-byblbn/
+#HamsiKoyu #gamedev #indiedev #pixelart
+```
+
+Videoyu doğrudan yükle (X dikey videoyu oynatır); kapak X'te seçilemez, ilk kare görünür.
+
 ## Notlar
 
 - Görüntüler gerçek oynanış: oyunu bir bot oynadı, oyunun kendi saatiyle kare kare kaydedildi. İleri sarılan yerlerde ekranda "▶▶" etiketi var.

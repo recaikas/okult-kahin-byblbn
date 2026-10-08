@@ -88,7 +88,7 @@ const PAGE_INIT = () => {
 const OVERLAY_CSS = `
   #dlTop{position:fixed;left:0;right:0;top:118px;z-index:96;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
   #dlLogo{display:flex;align-items:center;gap:7px;padding:4px 10px 4px 6px;background:rgba(10,26,39,.78);border:2px solid #d9a441;font:700 15px "Pixelify Sans";color:#fff1c9;letter-spacing:1px}
-  #dlLogo img{width:22px;height:22px;image-rendering:pixelated}
+  #dlLogo img{width:24px;height:24px}
   #dlSer{padding:3px 10px;background:#d9a441;color:#2a1a0c;font:700 13px "Pixelify Sans";letter-spacing:1.5px}
   #dlCap{position:fixed;left:50%;top:60%;transform:translate(-50%,-50%);z-index:96;width:90%;text-align:center;font:700 33px/1.22 "Pixelify Sans";color:#fff;
     text-shadow:-2px 0 #12202b,2px 0 #12202b,0 -2px #12202b,0 2px #12202b,2px 2px #12202b,-2px 2px #12202b,2px -2px #12202b,-2px -2px #12202b,3px 4px 0 rgba(0,0,0,.55);opacity:0;pointer-events:none}
@@ -98,6 +98,8 @@ const OVERLAY_CSS = `
   #dlEnd .sign{margin:0;min-width:300px;font-size:26px}
   #dlEnd b{font:700 30px/1.25 "Pixelify Sans";color:#fff;text-shadow:3px 3px 0 #12202b}
   #dlEnd em{font-style:normal;color:#ffd166}
+  #dlBrand{margin-top:18px;display:flex;align-items:center;gap:10px;font:700 22px "Pixelify Sans";color:#efe4cc;letter-spacing:1px}
+  #dlBrand img{width:44px;height:44px}
   #dlEnd small{font:700 16px "Pixelify Sans";color:#ffd166;letter-spacing:1px}
   #dlBar{position:fixed;left:0;bottom:0;height:7px;width:0;z-index:99;background:linear-gradient(90deg,#ffd166,#ff8a4c);box-shadow:0 0 8px #ffd166}
   #dlSting{position:fixed;left:50%;top:40%;z-index:99;transform:translate(-50%,-50%);padding:8px 26px;background:#d9a441;color:#2a1a0c;font:700 64px "Pixelify Sans";letter-spacing:5px;border:4px solid #2a1a0c;box-shadow:6px 6px 0 rgba(0,0,0,.45);opacity:0;white-space:nowrap}
@@ -121,10 +123,10 @@ const OVERLAY_CSS = `
   await p.evaluate(([css, d]) => {
     const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
     const top = document.createElement('div'); top.id = 'dlTop';
-    top.innerHTML = '<div id="dlLogo"><img src="icon.png" alt="">recaikas</div><div id="dlSer"></div>';
+    top.innerHTML = '<div id="dlLogo"><img src="social/assets/recaikas-logo.svg" alt="">recaikas</div><div id="dlSer"></div>';
     document.body.appendChild(top); document.getElementById('dlSer').textContent = d.series;
     ['dlCap', 'dlTag', 'dlBar', 'dlSting'].forEach(id => { const e = document.createElement('div'); e.id = id; document.body.appendChild(e); });
-    const end = document.createElement('div'); end.id = 'dlEnd'; end.innerHTML = '<div class="sign" id="dlSign"></div><b id="dlQ"></b><small id="dlSm"></small>';
+    const end = document.createElement('div'); end.id = 'dlEnd'; end.innerHTML = '<div class="sign" id="dlSign"></div><b id="dlQ"></b><small id="dlSm"></small><div id="dlBrand"><img src="social/assets/recaikas-logo.svg" alt="">recaikas</div>';
     document.body.appendChild(end);
     window.__cap = (html, a) => { const c = document.getElementById('dlCap'); if (c.__h !== html) { c.innerHTML = html; c.__h = html; } c.style.opacity = a; };
     window.__tag = (txt, a) => { const c = document.getElementById('dlTag'); c.textContent = txt; c.style.opacity = a; };

@@ -52,6 +52,34 @@ Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 #HamsiKoyu #gamedev #indiegame #pixelart #devlog #shorts
 ```
 
+## TikTok
+
+Açıklama:
+
+```
+Müşteriler sonsuza kadar beklemez. Gün 4 🐟 Sabır çubuğu ve kaçan müşteri.
+Sen sırada kaç dakika beklersin? Yorumlara yaz 👇
+Oyun tarayıcıda ücretsiz: link profilde.
+#HamsiKoyu #oyungeliştirme #gamedev #indiegame #pixelart #devlog #oyun #keşfet
+```
+
+Kapak: `kapak.jpg` · Profil linki: https://recaikas.github.io/okult-kahin-byblbn/
+
+## X (Twitter)
+
+143 / 280 karakter (link 23 sayılır):
+
+```
+Müşteriler sonsuza kadar beklemez. Gün 4 🐟
+
+Sen sırada kaç dakika beklersin?
+
+▶ https://recaikas.github.io/okult-kahin-byblbn/
+#HamsiKoyu #gamedev #indiedev #pixelart
+```
+
+Videoyu doğrudan yükle (X dikey videoyu oynatır); kapak X'te seçilemez, ilk kare görünür.
+
 ## Notlar
 
 - Görüntüler gerçek oynanış: oyunu bir bot oynadı, oyunun kendi saatiyle kare kare kaydedildi. İleri sarılan yerlerde ekranda "▶▶" etiketi var.

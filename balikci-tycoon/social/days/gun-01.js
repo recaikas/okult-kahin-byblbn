@@ -62,16 +62,5 @@ module.exports = {
     }
   ],
   /* kapak (dikey 1080×1920): büyümüş koy + başlık */
-  cover: () => {
-    document.getElementById('dlEnd').style.display = 'none';
-    window.__plan = []; BT.player.x = 6.4; BT.player.y = 6.0;
-    for (let i = 0; i < 40; i++) window.__step(1000 / 30);
-    window.__cap('', 0); window.__tag('', 0);
-    const k = document.createElement('div');
-    k.style.cssText = 'position:fixed;left:0;right:0;top:52%;z-index:98;padding:22px 18px 26px;text-align:center;background:linear-gradient(180deg,rgba(8,20,30,0),rgba(8,20,30,.88) 18%,rgba(8,20,30,.88) 82%,rgba(8,20,30,0));font-family:"Pixelify Sans"';
-    k.innerHTML = '<div style="display:inline-block;padding:4px 16px;background:#d9a441;color:#2a1a0c;font:700 34px \'Pixelify Sans\';letter-spacing:3px">GÜN 1</div>' +
-      '<div style="margin-top:14px;font:700 42px/1.15 \'Pixelify Sans\';color:#fff;text-shadow:3px 3px 0 #12202b">Bir balıkçı oyunu<br><span style="color:#ffd166">yapıyorum</span></div>' +
-      '<div style="margin-top:12px;font:700 18px \'Pixelify Sans\';color:#bfe9ff;letter-spacing:1px">Her şey küçük bir iskelede başlıyor</div>';
-    document.body.appendChild(k);
-  }
+  cover: { day: 'GÜN 1', title: 'Bir balıkçı oyunu<br><span style="color:#ffd166">yapıyorum</span>', sub: 'Her şey küçük bir iskelede başlıyor', pos: [6.4, 6.0] }
 };

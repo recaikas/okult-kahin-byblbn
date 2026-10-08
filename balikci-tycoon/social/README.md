@@ -11,7 +11,10 @@ Ekran görüntüsü canlandırması ya da oyunda olmayan bir şey yok. İleri sa
 | `days/gun-NN.js` | O günün senaryosu: sahneler, altyazılar, botun ne yapacağı, kapak |
 | `tools/devlog.js` | Oyunu açar, senaryoyu oynatır, kareleri çeker, SRT altyazıyı yazar |
 | `tools/make.py` | Kareler + özgün müzik → MP4, müziksiz MP4, kapak JPG ve otomatik kontrol |
-| `out/gun-NN/` | Teslim: `gun-NN.mp4`, `gun-NN-muziksiz.mp4`, `kapak.png/jpg`, `gun-NN.srt`, `muzik.wav`, `metinler.md` |
+| `out/gun-NN/` | Teslim: `gun-NN.mp4`, `gun-NN-muziksiz.mp4`, `kapak.png/jpg`, `gun-NN.srt`, `muzik.wav`, `metinler.md` (Instagram, YouTube, TikTok, X metinleri) |
+| `tools/texts.js` | Senaryodan `metinler.md` üretir; X metnini 280 karakter sınırına göre denetler |
+| `assets/recaikas-logo.svg` | Stüdyo logosu (videoların üstünde ve bitiş kartında) |
+| `takvim.md` | Haftalık paylaşım takvimi ve platformlarda zamanlama |
 
 `out/*/frames/` (ham kareler) git'e girmez; yeniden üretilebilir.
 

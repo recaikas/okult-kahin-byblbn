@@ -18,6 +18,9 @@ for (const g of day.segs) {
 const hook = plain(day.segs[0].caps[0][2]);
 const topic = plain(day.cover.sub || '');
 const title = plain(day.cover.title || '');
+const tweet = `${hook} Gün ${n} 🐟\n\n${question}\n\n▶ ${SITE}\n#HamsiKoyu #gamedev #indiedev #pixelart`;
+const tweetLen = [...tweet.replace(SITE, 'x'.repeat(23))].length;
+if (tweetLen > 280) { console.error('X metni uzun:', tweetLen); process.exit(1); }
 const md = `# GÜN ${n} — ${title}
 
 Süre ${t.toFixed(1).replace('.', ',')} sn · 1080×1920 · 30 fps · özgün chiptune müzik ve ses efektleri (kodla üretildi, telifsiz)
@@ -67,6 +70,29 @@ Tarayıcıda ücretsiz oyna: ${SITE}
 
 #HamsiKoyu #gamedev #indiegame #pixelart #devlog #shorts
 \`\`\`
+
+## TikTok
+
+Açıklama:
+
+\`\`\`
+${hook} Gün ${n} 🐟 ${topic}.
+${question} Yorumlara yaz 👇
+Oyun tarayıcıda ücretsiz: link profilde.
+#HamsiKoyu #oyungeliştirme #gamedev #indiegame #pixelart #devlog #oyun #keşfet
+\`\`\`
+
+Kapak: \`kapak.jpg\` · Profil linki: ${SITE}
+
+## X (Twitter)
+
+${tweetLen} / 280 karakter (link 23 sayılır):
+
+\`\`\`
+${tweet}
+\`\`\`
+
+Videoyu doğrudan yükle (X dikey videoyu oynatır); kapak X'te seçilemez, ilk kare görünür.
 
 ## Notlar
 

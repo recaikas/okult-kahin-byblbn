@@ -52,6 +52,34 @@ Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 #HamsiKoyu #gamedev #indiegame #pixelart #devlog #shorts
 ```
 
+## TikTok
+
+Açıklama:
+
+```
+Her şeyi tek başına taşımak yoruyor. Gün 7 🐟 Hamal, Filetocu, Tezgâhtar, Tahsildar.
+İlk kimi işe alırdın? Yorumlara yaz 👇
+Oyun tarayıcıda ücretsiz: link profilde.
+#HamsiKoyu #oyungeliştirme #gamedev #indiegame #pixelart #devlog #oyun #keşfet
+```
+
+Kapak: `kapak.jpg` · Profil linki: https://recaikas.github.io/okult-kahin-byblbn/
+
+## X (Twitter)
+
+134 / 280 karakter (link 23 sayılır):
+
+```
+Her şeyi tek başına taşımak yoruyor. Gün 7 🐟
+
+İlk kimi işe alırdın?
+
+▶ https://recaikas.github.io/okult-kahin-byblbn/
+#HamsiKoyu #gamedev #indiedev #pixelart
+```
+
+Videoyu doğrudan yükle (X dikey videoyu oynatır); kapak X'te seçilemez, ilk kare görünür.
+
 ## Notlar
 
 - Görüntüler gerçek oynanış: oyunu bir bot oynadı, oyunun kendi saatiyle kare kare kaydedildi. İleri sarılan yerlerde ekranda "▶▶" etiketi var.
