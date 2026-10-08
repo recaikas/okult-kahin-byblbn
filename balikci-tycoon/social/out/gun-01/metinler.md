@@ -1,4 +1,4 @@
-# GÜN 1 — Bir balıkçı oyunu yapıyorum
+# GELİŞTİRME GÜNÜ 1 — Bir balıkçı oyunu yapıyorum
 
 Süre 28,0 sn · 1080×1920 · 30 fps · özgün chiptune müzik ve ses efektleri (kodla üretildi, telifsiz)
 
@@ -18,7 +18,7 @@ Bu ortamda Türkçe seslendirme aracı yok, o yüzden videoda konuşma yok. Ekra
 ## Instagram Reels açıklaması
 
 ```
-Bir balıkçı oyunu yapıyorum. 🐟 Gün 1.
+Bir balıkçı oyunu yapıyorum. 🐟 Geliştirme günü 1.
 
 Her şey küçük bir iskelede başlıyor. Hamsi Koyu'yu tek başıma geliştiriyorum; her gün bir mekaniğini buradan gösteriyorum.
 
@@ -37,15 +37,15 @@ Kapak: `kapak.jpg`
 Başlık:
 
 ```
-Bir balıkçı oyunu yapıyorum — Gün 1 🐟 #shorts
+Bir balıkçı oyunu yapıyorum — Geliştirme Günü 1 🐟 #shorts
 ```
 
 Açıklama:
 
 ```
-Hamsi Koyu geliştirme günlüğü, Gün 1: her şey küçük bir iskelede başlıyor.
+Hamsi Koyu'yu geliştiriyorum, gün 1: her şey küçük bir iskelede başlıyor.
 
-Sen bu dükkânın tabelasına ne yazardın? Yorumlara yaz, yarın Gün 2.
+Sen bu dükkânın tabelasına ne yazardın? Yorumlara yaz, yarın geliştirme günü 2.
 
 Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 
@@ -57,7 +57,7 @@ Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 Açıklama:
 
 ```
-Bir balıkçı oyunu yapıyorum. Gün 1 🐟 Her şey küçük bir iskelede başlıyor.
+Bir balıkçı oyunu yapıyorum. Geliştirme günü 1 🐟 Her şey küçük bir iskelede başlıyor.
 Sen bu dükkânın tabelasına ne yazardın? Yorumlara yaz 👇
 Oyun tarayıcıda ücretsiz: link profilde.
 #HamsiKoyu #oyungeliştirme #gamedev #indiegame #pixelart #devlog #oyun #keşfet
@@ -67,10 +67,10 @@ Kapak: `kapak.jpg` · Profil linki: https://recaikas.github.io/okult-kahin-byblb
 
 ## X (Twitter)
 
-144 / 280 karakter (link 23 sayılır):
+161 / 280 karakter (link 23 sayılır):
 
 ```
-Bir balıkçı oyunu yapıyorum. Gün 1 🐟
+Bir balıkçı oyunu yapıyorum. Oyun geliştirme günü 1 🐟
 
 Sen bu dükkânın tabelasına ne yazardın?
 

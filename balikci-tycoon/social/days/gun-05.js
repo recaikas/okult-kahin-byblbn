@@ -25,8 +25,8 @@ module.exports = {
         [0.3, `window.__hl(null); document.getElementById('dayGo').click();`],
         [1.6, `const g = document.getElementById('prepGo'); if (g && !document.getElementById('prepScr').classList.contains('hidden')) g.click(); document.querySelectorAll('.overlay').forEach(o => { if (o.id !== 'dlEnd') o.classList.add('hidden'); }); window.__plan = [{ cycle: true }];`]
       ] },
-    { len: 5.5, end: { q: 'Günün kazancını<br>ilk <em>neye</em> yatırırdın?', sm: 'YORUMLARA YAZ · YARIN: GÜN 6' },
+    { len: 5.5, end: { q: 'Günün kazancını<br>ilk <em>neye</em> yatırırdın?', sm: 'YORUMLARA YAZ · YARIN: GELİŞTİRME GÜNÜ 6' },
       caps: [[0, 5.5, 'Günün kazancını ilk neye yatırırdın?', true]] }
   ],
-  cover: { day: 'GÜN 5', title: 'Gün sonu<br><span style="color:#ffd166">hesabı</span>', sub: 'Liman kapanınca ne olur?' }
+  cover: { day: 'GELİŞTİRME GÜNÜ 5', title: 'Gün sonu<br><span style="color:#ffd166">hesabı</span>', sub: 'Liman kapanınca ne olur?' }
 };

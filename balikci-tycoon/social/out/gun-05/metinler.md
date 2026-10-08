@@ -1,4 +1,4 @@
-# GÜN 5 — Gün sonu hesabı
+# GELİŞTİRME GÜNÜ 5 — Gün sonu hesabı
 
 Süre 22,0 sn · 1080×1920 · 30 fps · özgün chiptune müzik ve ses efektleri (kodla üretildi, telifsiz)
 
@@ -17,7 +17,7 @@ Bu ortamda Türkçe seslendirme aracı yok, o yüzden videoda konuşma yok. Ekra
 ## Instagram Reels açıklaması
 
 ```
-Akşam olunca liman kapanır. 🐟 Gün 5.
+Akşam olunca liman kapanır. 🐟 Geliştirme günü 5.
 
 Liman kapanınca ne olur?. Hamsi Koyu'yu tek başıma geliştiriyorum; her gün bir mekaniğini buradan gösteriyorum.
 
@@ -36,15 +36,15 @@ Kapak: `kapak.jpg`
 Başlık:
 
 ```
-Gün sonu hesabı — Gün 5 🐟 #shorts
+Gün sonu hesabı — Geliştirme Günü 5 🐟 #shorts
 ```
 
 Açıklama:
 
 ```
-Hamsi Koyu geliştirme günlüğü, Gün 5: liman kapanınca ne olur?.
+Hamsi Koyu'yu geliştiriyorum, gün 5: liman kapanınca ne olur?.
 
-Günün kazancını ilk neye yatırırdın? Yorumlara yaz, yarın Gün 6.
+Günün kazancını ilk neye yatırırdın? Yorumlara yaz, yarın geliştirme günü 6.
 
 Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 
@@ -56,7 +56,7 @@ Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 Açıklama:
 
 ```
-Akşam olunca liman kapanır. Gün 5 🐟 Liman kapanınca ne olur?.
+Akşam olunca liman kapanır. Geliştirme günü 5 🐟 Liman kapanınca ne olur?.
 Günün kazancını ilk neye yatırırdın? Yorumlara yaz 👇
 Oyun tarayıcıda ücretsiz: link profilde.
 #HamsiKoyu #oyungeliştirme #gamedev #indiegame #pixelart #devlog #oyun #keşfet
@@ -66,10 +66,10 @@ Kapak: `kapak.jpg` · Profil linki: https://recaikas.github.io/okult-kahin-byblb
 
 ## X (Twitter)
 
-140 / 280 karakter (link 23 sayılır):
+157 / 280 karakter (link 23 sayılır):
 
 ```
-Akşam olunca liman kapanır. Gün 5 🐟
+Akşam olunca liman kapanır. Oyun geliştirme günü 5 🐟
 
 Günün kazancını ilk neye yatırırdın?
 

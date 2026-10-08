@@ -102,7 +102,8 @@ const OVERLAY_CSS = `
   #dlBrand img{width:44px;height:44px}
   #dlEnd small{font:700 16px "Pixelify Sans";color:#ffd166;letter-spacing:1px}
   #dlBar{position:fixed;left:0;bottom:0;height:7px;width:0;z-index:99;background:linear-gradient(90deg,#ffd166,#ff8a4c);box-shadow:0 0 8px #ffd166}
-  #dlSting{position:fixed;left:50%;top:40%;z-index:99;transform:translate(-50%,-50%);padding:8px 26px;background:#d9a441;color:#2a1a0c;font:700 64px "Pixelify Sans";letter-spacing:5px;border:4px solid #2a1a0c;box-shadow:6px 6px 0 rgba(0,0,0,.45);opacity:0;white-space:nowrap}
+  #dlSting{position:fixed;left:50%;top:40%;z-index:99;transform:translate(-50%,-50%);padding:8px 26px 10px;background:#d9a441;color:#2a1a0c;font:700 64px/1 "Pixelify Sans";letter-spacing:5px;border:4px solid #2a1a0c;box-shadow:6px 6px 0 rgba(0,0,0,.45);opacity:0;white-space:nowrap;text-align:center}
+  #dlSting small{display:block;font-size:19px;letter-spacing:2px;margin-bottom:6px}
   #coach,.coach{display:none!important}
   #achPop,#pauseBadge{display:none!important}`;
 
@@ -176,7 +177,7 @@ const OVERLAY_CSS = `
       document.getElementById('dlBar').style.width = (100 * sec / total).toFixed(2) + '%';
       const st = document.getElementById('dlSting');
       if (sting && sec < 1.3) {
-        st.textContent = sting; const a = sec < 0.15 ? sec / 0.15 : sec > 1.0 ? (1.3 - sec) / 0.3 : 1;
+        if (st.__s !== sting) { st.innerHTML = '<small>OYUN GELİŞTİRİYORUM</small>' + sting; st.__s = sting; } const a = sec < 0.15 ? sec / 0.15 : sec > 1.0 ? (1.3 - sec) / 0.3 : 1;
         const sh = sec < 0.5 ? Math.sin(sec * 90) * 6 * (1 - sec / 0.5) : 0;
         st.style.opacity = a; st.style.transform = 'translate(calc(-50% + ' + sh.toFixed(1) + 'px),-50%) scale(' + (sec < 0.15 ? 1.8 - 0.8 * sec / 0.15 : 1).toFixed(3) + ') rotate(-3deg)';
       } else st.style.opacity = 0;
@@ -209,7 +210,7 @@ const OVERLAY_CSS = `
       window.__cap('', 0); window.__tag('', 0);
       const k = document.createElement('div');
       k.style.cssText = 'position:fixed;left:0;right:0;top:52%;z-index:98;padding:22px 18px 26px;text-align:center;background:linear-gradient(180deg,rgba(8,20,30,0),rgba(8,20,30,.88) 18%,rgba(8,20,30,.88) 82%,rgba(8,20,30,0))';
-      k.innerHTML = '<div style="display:inline-block;padding:4px 16px;background:#d9a441;color:#2a1a0c;font:700 34px \'Pixelify Sans\';letter-spacing:3px">' + c.day + '</div>' +
+      k.innerHTML = '<div style="display:inline-block;padding:4px 16px;background:#d9a441;color:#2a1a0c;font:700 28px \'Pixelify Sans\';letter-spacing:2px">' + c.day + '</div>' +
         '<div style="margin-top:14px;font:700 42px/1.15 \'Pixelify Sans\';color:#fff;text-shadow:3px 3px 0 #12202b">' + c.title + '</div>' +
         '<div style="margin-top:12px;font:700 18px \'Pixelify Sans\';color:#bfe9ff;letter-spacing:1px">' + (c.sub || '') + '</div>';
       document.body.appendChild(k);

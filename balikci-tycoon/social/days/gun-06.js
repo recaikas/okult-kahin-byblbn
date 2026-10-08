@@ -32,9 +32,9 @@ module.exports = {
       caps: [[0, 3, 'Dokun: <em>ayrıntı.</em>'], [3, 6, 'Yetişemediğini <em>kapat.</em>']],
       acts: [[0.3, `window.__hl(null); const r = document.querySelectorAll('#stallRows .srow'); if (r[0]) r[0].click();`],
              [3.0, `window.__hl('#stallRows', 6);`]] },
-    { len: 5.5, end: { q: 'Sence hangi tezgâh<br><em>en çok</em> kazandırır?', sm: 'YORUMLARA YAZ · YARIN: GÜN 7' },
+    { len: 5.5, end: { q: 'Sence hangi tezgâh<br><em>en çok</em> kazandırır?', sm: 'YORUMLARA YAZ · YARIN: GELİŞTİRME GÜNÜ 7' },
       prep: () => { window.__hl(null); document.querySelectorAll('.overlay').forEach(o => { if (o.id !== 'dlEnd') o.classList.add('hidden'); }); },
       caps: [[0, 5.5, 'Sence hangi tezgâh en çok kazandırır?', true]] }
   ],
-  cover: { day: 'GÜN 6', title: 'Hangi tezgâh<br><span style="color:#ffd166">kazandırıyor?</span>', sub: 'Tezgâh paneli: gelir, gider, ↑↓' }
+  cover: { day: 'GELİŞTİRME GÜNÜ 6', title: 'Hangi tezgâh<br><span style="color:#ffd166">kazandırıyor?</span>', sub: 'Tezgâh paneli: gelir, gider, ↑↓' }
 };

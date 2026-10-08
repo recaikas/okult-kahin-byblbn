@@ -37,8 +37,8 @@ module.exports = {
         window.__zoom(2); BT.player.x = 4.2; BT.player.y = 5.2;
         window.__plan = [{ to: [4.0, 12.5] }, { until: true, max: 99 }];
       } },
-    { len: 5.5, end: { q: 'Sence hangi balık<br><em>daha çok satar?</em>', sm: 'YORUMLARA YAZ · YARIN: GÜN 4' },
+    { len: 5.5, end: { q: 'Sence hangi balık<br><em>daha çok satar?</em>', sm: 'YORUMLARA YAZ · YARIN: GELİŞTİRME GÜNÜ 4' },
       caps: [[0, 5.5, 'Sence hangi balık daha çok satar?', true]] }
   ],
-  cover: { day: 'GÜN 3', title: 'Balık kesilmeden<br><span style="color:#ffd166">satılmaz</span>', sub: 'Kesim masası ve fileto', pos: [5.4, 2.6] }
+  cover: { day: 'GELİŞTİRME GÜNÜ 3', title: 'Balık kesilmeden<br><span style="color:#ffd166">satılmaz</span>', sub: 'Kesim masası ve fileto', pos: [5.4, 2.6] }
 };

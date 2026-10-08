@@ -18,10 +18,10 @@ for (const g of day.segs) {
 const hook = plain(day.segs[0].caps[0][2]);
 const topic = plain(day.cover.sub || '');
 const title = plain(day.cover.title || '');
-const tweet = `${hook} Gün ${n} 🐟\n\n${question}\n\n▶ ${SITE}\n#HamsiKoyu #gamedev #indiedev #pixelart`;
+const tweet = `${hook} Oyun geliştirme günü ${n} 🐟\n\n${question}\n\n▶ ${SITE}\n#HamsiKoyu #gamedev #indiedev #pixelart`;
 const tweetLen = [...tweet.replace(SITE, 'x'.repeat(23))].length;
 if (tweetLen > 280) { console.error('X metni uzun:', tweetLen); process.exit(1); }
-const md = `# GÜN ${n} — ${title}
+const md = `# GELİŞTİRME GÜNÜ ${n} — ${title}
 
 Süre ${t.toFixed(1).replace('.', ',')} sn · 1080×1920 · 30 fps · özgün chiptune müzik ve ses efektleri (kodla üretildi, telifsiz)
 
@@ -37,7 +37,7 @@ ${rows.join('\n')}
 ## Instagram Reels açıklaması
 
 \`\`\`
-${hook} 🐟 Gün ${n}.
+${hook} 🐟 Geliştirme günü ${n}.
 
 ${topic}. Hamsi Koyu'yu tek başıma geliştiriyorum; her gün bir mekaniğini buradan gösteriyorum.
 
@@ -56,15 +56,15 @@ Kapak: \`kapak.jpg\`
 Başlık:
 
 \`\`\`
-${title} — Gün ${n} 🐟 #shorts
+${title} — Geliştirme Günü ${n} 🐟 #shorts
 \`\`\`
 
 Açıklama:
 
 \`\`\`
-Hamsi Koyu geliştirme günlüğü, Gün ${n}: ${topic.toLowerCase()}.
+Hamsi Koyu'yu geliştiriyorum, gün ${n}: ${topic.toLowerCase()}.
 
-${question} Yorumlara yaz, yarın Gün ${n + 1}.
+${question} Yorumlara yaz, yarın geliştirme günü ${n + 1}.
 
 Tarayıcıda ücretsiz oyna: ${SITE}
 
@@ -76,7 +76,7 @@ Tarayıcıda ücretsiz oyna: ${SITE}
 Açıklama:
 
 \`\`\`
-${hook} Gün ${n} 🐟 ${topic}.
+${hook} Geliştirme günü ${n} 🐟 ${topic}.
 ${question} Yorumlara yaz 👇
 Oyun tarayıcıda ücretsiz: link profilde.
 #HamsiKoyu #oyungeliştirme #gamedev #indiegame #pixelart #devlog #oyun #keşfet

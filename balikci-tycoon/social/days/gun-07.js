@@ -32,8 +32,8 @@ module.exports = {
     { len: 5, hlw: 'BT.workers[0] ? [BT.workers[0].x, BT.workers[0].y] : null',
       caps: [[0, 5, 'Sen de <em>tezgâha</em><br>yetişirsin.']],
       prep: () => { const C = BT.counters[0]; window.__plan = [{ to: [C.x - 0.9, C.y + 0.3], tol: 0.6 }, { until: true, max: 999 }]; } },
-    { len: 5.5, end: { q: 'İlk kimi<br><em>işe alırdın?</em>', sm: 'YORUMLARA YAZ · YARIN: GÜN 8' },
+    { len: 5.5, end: { q: 'İlk kimi<br><em>işe alırdın?</em>', sm: 'YORUMLARA YAZ · YARIN: GELİŞTİRME GÜNÜ 8' },
       caps: [[0, 5.5, 'İlk kimi işe alırdın?', true]] }
   ],
-  cover: { day: 'GÜN 7', title: 'İlk<br><span style="color:#ffd166">çalışanım</span>', sub: 'Hamal, Filetocu, Tezgâhtar, Tahsildar' }
+  cover: { day: 'GELİŞTİRME GÜNÜ 7', title: 'İlk<br><span style="color:#ffd166">çalışanım</span>', sub: 'Hamal, Filetocu, Tezgâhtar, Tahsildar' }
 };

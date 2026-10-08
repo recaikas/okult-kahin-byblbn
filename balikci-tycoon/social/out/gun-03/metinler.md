@@ -1,4 +1,4 @@
-# GÜN 3 — Balık kesilmeden satılmaz
+# GELİŞTİRME GÜNÜ 3 — Balık kesilmeden satılmaz
 
 Süre 28,0 sn · 1080×1920 · 30 fps · özgün chiptune müzik ve ses efektleri (kodla üretildi, telifsiz)
 
@@ -18,7 +18,7 @@ Bu ortamda Türkçe seslendirme aracı yok, o yüzden videoda konuşma yok. Ekra
 ## Instagram Reels açıklaması
 
 ```
-Tezgâhta bütün balık satılmaz. 🐟 Gün 3.
+Tezgâhta bütün balık satılmaz. 🐟 Geliştirme günü 3.
 
 Kesim masası ve fileto. Hamsi Koyu'yu tek başıma geliştiriyorum; her gün bir mekaniğini buradan gösteriyorum.
 
@@ -37,15 +37,15 @@ Kapak: `kapak.jpg`
 Başlık:
 
 ```
-Balık kesilmeden satılmaz — Gün 3 🐟 #shorts
+Balık kesilmeden satılmaz — Geliştirme Günü 3 🐟 #shorts
 ```
 
 Açıklama:
 
 ```
-Hamsi Koyu geliştirme günlüğü, Gün 3: kesim masası ve fileto.
+Hamsi Koyu'yu geliştiriyorum, gün 3: kesim masası ve fileto.
 
-Sence hangi balık daha çok satar? Yorumlara yaz, yarın Gün 4.
+Sence hangi balık daha çok satar? Yorumlara yaz, yarın geliştirme günü 4.
 
 Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 
@@ -57,7 +57,7 @@ Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 Açıklama:
 
 ```
-Tezgâhta bütün balık satılmaz. Gün 3 🐟 Kesim masası ve fileto.
+Tezgâhta bütün balık satılmaz. Geliştirme günü 3 🐟 Kesim masası ve fileto.
 Sence hangi balık daha çok satar? Yorumlara yaz 👇
 Oyun tarayıcıda ücretsiz: link profilde.
 #HamsiKoyu #oyungeliştirme #gamedev #indiegame #pixelart #devlog #oyun #keşfet
@@ -67,10 +67,10 @@ Kapak: `kapak.jpg` · Profil linki: https://recaikas.github.io/okult-kahin-byblb
 
 ## X (Twitter)
 
-140 / 280 karakter (link 23 sayılır):
+157 / 280 karakter (link 23 sayılır):
 
 ```
-Tezgâhta bütün balık satılmaz. Gün 3 🐟
+Tezgâhta bütün balık satılmaz. Oyun geliştirme günü 3 🐟
 
 Sence hangi balık daha çok satar?
 

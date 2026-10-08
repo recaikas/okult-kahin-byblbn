@@ -1,4 +1,4 @@
-# GÜN 4 — Müşteriler beklemez
+# GELİŞTİRME GÜNÜ 4 — Müşteriler beklemez
 
 Süre 27,5 sn · 1080×1920 · 30 fps · özgün chiptune müzik ve ses efektleri (kodla üretildi, telifsiz)
 
@@ -18,7 +18,7 @@ Bu ortamda Türkçe seslendirme aracı yok, o yüzden videoda konuşma yok. Ekra
 ## Instagram Reels açıklaması
 
 ```
-Müşteriler sonsuza kadar beklemez. 🐟 Gün 4.
+Müşteriler sonsuza kadar beklemez. 🐟 Geliştirme günü 4.
 
 Sabır çubuğu ve kaçan müşteri. Hamsi Koyu'yu tek başıma geliştiriyorum; her gün bir mekaniğini buradan gösteriyorum.
 
@@ -37,15 +37,15 @@ Kapak: `kapak.jpg`
 Başlık:
 
 ```
-Müşteriler beklemez — Gün 4 🐟 #shorts
+Müşteriler beklemez — Geliştirme Günü 4 🐟 #shorts
 ```
 
 Açıklama:
 
 ```
-Hamsi Koyu geliştirme günlüğü, Gün 4: sabır çubuğu ve kaçan müşteri.
+Hamsi Koyu'yu geliştiriyorum, gün 4: sabır çubuğu ve kaçan müşteri.
 
-Sen sırada kaç dakika beklersin? Yorumlara yaz, yarın Gün 5.
+Sen sırada kaç dakika beklersin? Yorumlara yaz, yarın geliştirme günü 5.
 
 Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 
@@ -57,7 +57,7 @@ Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 Açıklama:
 
 ```
-Müşteriler sonsuza kadar beklemez. Gün 4 🐟 Sabır çubuğu ve kaçan müşteri.
+Müşteriler sonsuza kadar beklemez. Geliştirme günü 4 🐟 Sabır çubuğu ve kaçan müşteri.
 Sen sırada kaç dakika beklersin? Yorumlara yaz 👇
 Oyun tarayıcıda ücretsiz: link profilde.
 #HamsiKoyu #oyungeliştirme #gamedev #indiegame #pixelart #devlog #oyun #keşfet
@@ -67,10 +67,10 @@ Kapak: `kapak.jpg` · Profil linki: https://recaikas.github.io/okult-kahin-byblb
 
 ## X (Twitter)
 
-143 / 280 karakter (link 23 sayılır):
+160 / 280 karakter (link 23 sayılır):
 
 ```
-Müşteriler sonsuza kadar beklemez. Gün 4 🐟
+Müşteriler sonsuza kadar beklemez. Oyun geliştirme günü 4 🐟
 
 Sen sırada kaç dakika beklersin?
 

@@ -1,4 +1,4 @@
-# GÜN 7 — İlk çalışanım
+# GELİŞTİRME GÜNÜ 7 — İlk çalışanım
 
 Süre 28,5 sn · 1080×1920 · 30 fps · özgün chiptune müzik ve ses efektleri (kodla üretildi, telifsiz)
 
@@ -18,7 +18,7 @@ Bu ortamda Türkçe seslendirme aracı yok, o yüzden videoda konuşma yok. Ekra
 ## Instagram Reels açıklaması
 
 ```
-Her şeyi tek başına taşımak yoruyor. 🐟 Gün 7.
+Her şeyi tek başına taşımak yoruyor. 🐟 Geliştirme günü 7.
 
 Hamal, Filetocu, Tezgâhtar, Tahsildar. Hamsi Koyu'yu tek başıma geliştiriyorum; her gün bir mekaniğini buradan gösteriyorum.
 
@@ -37,15 +37,15 @@ Kapak: `kapak.jpg`
 Başlık:
 
 ```
-İlk çalışanım — Gün 7 🐟 #shorts
+İlk çalışanım — Geliştirme Günü 7 🐟 #shorts
 ```
 
 Açıklama:
 
 ```
-Hamsi Koyu geliştirme günlüğü, Gün 7: hamal, filetocu, tezgâhtar, tahsildar.
+Hamsi Koyu'yu geliştiriyorum, gün 7: hamal, filetocu, tezgâhtar, tahsildar.
 
-İlk kimi işe alırdın? Yorumlara yaz, yarın Gün 8.
+İlk kimi işe alırdın? Yorumlara yaz, yarın geliştirme günü 8.
 
 Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 
@@ -57,7 +57,7 @@ Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 Açıklama:
 
 ```
-Her şeyi tek başına taşımak yoruyor. Gün 7 🐟 Hamal, Filetocu, Tezgâhtar, Tahsildar.
+Her şeyi tek başına taşımak yoruyor. Geliştirme günü 7 🐟 Hamal, Filetocu, Tezgâhtar, Tahsildar.
 İlk kimi işe alırdın? Yorumlara yaz 👇
 Oyun tarayıcıda ücretsiz: link profilde.
 #HamsiKoyu #oyungeliştirme #gamedev #indiegame #pixelart #devlog #oyun #keşfet
@@ -67,10 +67,10 @@ Kapak: `kapak.jpg` · Profil linki: https://recaikas.github.io/okult-kahin-byblb
 
 ## X (Twitter)
 
-134 / 280 karakter (link 23 sayılır):
+151 / 280 karakter (link 23 sayılır):
 
 ```
-Her şeyi tek başına taşımak yoruyor. Gün 7 🐟
+Her şeyi tek başına taşımak yoruyor. Oyun geliştirme günü 7 🐟
 
 İlk kimi işe alırdın?
 

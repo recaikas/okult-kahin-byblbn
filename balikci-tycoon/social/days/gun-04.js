@@ -34,8 +34,8 @@ module.exports = {
         window.__plan = [{ to: [C.x - 0.9, C.y + 0.3], tol: 0.6 }, { until: 'BT.player.carry.length === 0', max: 3 }, { until: true, max: 99 }];
         document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
       } },
-    { len: 5.5, end: { q: 'Sen sırada<br><em>kaç dakika</em> beklersin?', sm: 'YORUMLARA YAZ · YARIN: GÜN 5' },
+    { len: 5.5, end: { q: 'Sen sırada<br><em>kaç dakika</em> beklersin?', sm: 'YORUMLARA YAZ · YARIN: GELİŞTİRME GÜNÜ 5' },
       caps: [[0, 5.5, 'Sen sırada kaç dakika beklersin?', true]] }
   ],
-  cover: { day: 'GÜN 4', title: 'Müşteriler<br><span style="color:#ffd166">beklemez</span>', sub: 'Sabır çubuğu ve kaçan müşteri' }
+  cover: { day: 'GELİŞTİRME GÜNÜ 4', title: 'Müşteriler<br><span style="color:#ffd166">beklemez</span>', sub: 'Sabır çubuğu ve kaçan müşteri' }
 };

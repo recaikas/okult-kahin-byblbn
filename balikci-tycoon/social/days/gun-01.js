@@ -65,10 +65,10 @@ module.exports = {
       }
     },
     { /* 5) tek soru */
-      len: 5.5, end: { sign: '?????', typeSec: 0.35, q: 'Sen bu dükkânın<br>tabelasına ne yazardın?', sm: 'YORUMLARA YAZ · YARIN: GÜN 2' },
+      len: 5.5, end: { sign: '?????', typeSec: 0.35, q: 'Sen bu dükkânın<br>tabelasına ne yazardın?', sm: 'YORUMLARA YAZ · YARIN: GELİŞTİRME GÜNÜ 2' },
       caps: [[0, 5.5, 'Sen bu dükkânın tabelasına ne yazardın?', true]]
     }
   ],
   /* kapak (dikey 1080×1920): büyümüş koy + başlık */
-  cover: { day: 'GÜN 1', title: 'Bir balıkçı oyunu<br><span style="color:#ffd166">yapıyorum</span>', sub: 'Her şey küçük bir iskelede başlıyor', pos: [6.4, 6.0] }
+  cover: { day: 'GELİŞTİRME GÜNÜ 1', title: 'Bir balıkçı oyunu<br><span style="color:#ffd166">yapıyorum</span>', sub: 'Her şey küçük bir iskelede başlıyor', pos: [6.4, 6.0] }
 };

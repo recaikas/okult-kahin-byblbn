@@ -1,4 +1,4 @@
-# GÜN 6 — Hangi tezgâh kazandırıyor?
+# GELİŞTİRME GÜNÜ 6 — Hangi tezgâh kazandırıyor?
 
 Süre 23,0 sn · 1080×1920 · 30 fps · özgün chiptune müzik ve ses efektleri (kodla üretildi, telifsiz)
 
@@ -17,7 +17,7 @@ Bu ortamda Türkçe seslendirme aracı yok, o yüzden videoda konuşma yok. Ekra
 ## Instagram Reels açıklaması
 
 ```
-Tezgâh çoğalınca hangisi kazandırıyor? 🐟 Gün 6.
+Tezgâh çoğalınca hangisi kazandırıyor? 🐟 Geliştirme günü 6.
 
 Tezgâh paneli: gelir, gider, ↑↓. Hamsi Koyu'yu tek başıma geliştiriyorum; her gün bir mekaniğini buradan gösteriyorum.
 
@@ -36,15 +36,15 @@ Kapak: `kapak.jpg`
 Başlık:
 
 ```
-Hangi tezgâh kazandırıyor? — Gün 6 🐟 #shorts
+Hangi tezgâh kazandırıyor? — Geliştirme Günü 6 🐟 #shorts
 ```
 
 Açıklama:
 
 ```
-Hamsi Koyu geliştirme günlüğü, Gün 6: tezgâh paneli: gelir, gider, ↑↓.
+Hamsi Koyu'yu geliştiriyorum, gün 6: tezgâh paneli: gelir, gider, ↑↓.
 
-Sence hangi tezgâh en çok kazandırır? Yorumlara yaz, yarın Gün 7.
+Sence hangi tezgâh en çok kazandırır? Yorumlara yaz, yarın geliştirme günü 7.
 
 Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 
@@ -56,7 +56,7 @@ Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 Açıklama:
 
 ```
-Tezgâh çoğalınca hangisi kazandırıyor? Gün 6 🐟 Tezgâh paneli: gelir, gider, ↑↓.
+Tezgâh çoğalınca hangisi kazandırıyor? Geliştirme günü 6 🐟 Tezgâh paneli: gelir, gider, ↑↓.
 Sence hangi tezgâh en çok kazandırır? Yorumlara yaz 👇
 Oyun tarayıcıda ücretsiz: link profilde.
 #HamsiKoyu #oyungeliştirme #gamedev #indiegame #pixelart #devlog #oyun #keşfet
@@ -66,10 +66,10 @@ Kapak: `kapak.jpg` · Profil linki: https://recaikas.github.io/okult-kahin-byblb
 
 ## X (Twitter)
 
-152 / 280 karakter (link 23 sayılır):
+169 / 280 karakter (link 23 sayılır):
 
 ```
-Tezgâh çoğalınca hangisi kazandırıyor? Gün 6 🐟
+Tezgâh çoğalınca hangisi kazandırıyor? Oyun geliştirme günü 6 🐟
 
 Sence hangi tezgâh en çok kazandırır?
 

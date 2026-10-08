@@ -1,4 +1,4 @@
-# GÜN 2 — Sırtında kaç balık taşırsın?
+# GELİŞTİRME GÜNÜ 2 — Sırtında kaç balık taşırsın?
 
 Süre 27,0 sn · 1080×1920 · 30 fps · özgün chiptune müzik ve ses efektleri (kodla üretildi, telifsiz)
 
@@ -18,7 +18,7 @@ Bu ortamda Türkçe seslendirme aracı yok, o yüzden videoda konuşma yok. Ekra
 ## Instagram Reels açıklaması
 
 ```
-Sırtında en fazla 8 balık taşıyabilirsin. 🐟 Gün 2.
+Sırtında en fazla 8 balık taşıyabilirsin. 🐟 Geliştirme günü 2.
 
 Taşıma sınırı ve ilk yükseltme. Hamsi Koyu'yu tek başıma geliştiriyorum; her gün bir mekaniğini buradan gösteriyorum.
 
@@ -37,15 +37,15 @@ Kapak: `kapak.jpg`
 Başlık:
 
 ```
-Sırtında kaç balık taşırsın? — Gün 2 🐟 #shorts
+Sırtında kaç balık taşırsın? — Geliştirme Günü 2 🐟 #shorts
 ```
 
 Açıklama:
 
 ```
-Hamsi Koyu geliştirme günlüğü, Gün 2: taşıma sınırı ve ilk yükseltme.
+Hamsi Koyu'yu geliştiriyorum, gün 2: taşıma sınırı ve ilk yükseltme.
 
-İlk paranı neye harcardın: kapasite mi, hız mı? Yorumlara yaz, yarın Gün 3.
+İlk paranı neye harcardın: kapasite mi, hız mı? Yorumlara yaz, yarın geliştirme günü 3.
 
 Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 
@@ -57,7 +57,7 @@ Tarayıcıda ücretsiz oyna: https://recaikas.github.io/okult-kahin-byblbn/
 Açıklama:
 
 ```
-Sırtında en fazla 8 balık taşıyabilirsin. Gün 2 🐟 Taşıma sınırı ve ilk yükseltme.
+Sırtında en fazla 8 balık taşıyabilirsin. Geliştirme günü 2 🐟 Taşıma sınırı ve ilk yükseltme.
 İlk paranı neye harcardın: kapasite mi, hız mı? Yorumlara yaz 👇
 Oyun tarayıcıda ücretsiz: link profilde.
 #HamsiKoyu #oyungeliştirme #gamedev #indiegame #pixelart #devlog #oyun #keşfet
@@ -67,10 +67,10 @@ Kapak: `kapak.jpg` · Profil linki: https://recaikas.github.io/okult-kahin-byblb
 
 ## X (Twitter)
 
-165 / 280 karakter (link 23 sayılır):
+182 / 280 karakter (link 23 sayılır):
 
 ```
-Sırtında en fazla 8 balık taşıyabilirsin. Gün 2 🐟
+Sırtında en fazla 8 balık taşıyabilirsin. Oyun geliştirme günü 2 🐟
 
 İlk paranı neye harcardın: kapasite mi, hız mı?
 

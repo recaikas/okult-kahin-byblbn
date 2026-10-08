@@ -37,8 +37,8 @@ module.exports = {
         window.__hl('#hud .chip:nth-child(2)');
         window.__plan = [{ to: [BT.spots[0].x, BT.spots[0].y + 0.9] }, { until: 'BT.player.carry.length >= 11', max: 9 }, { until: true, max: 99 }];
       } },
-    { len: 5.5, end: { q: 'İlk paranı neye harcardın:<br><em>kapasite</em> mi, <em>hız</em> mı?', sm: 'YORUMLARA YAZ · YARIN: GÜN 3' },
+    { len: 5.5, end: { q: 'İlk paranı neye harcardın:<br><em>kapasite</em> mi, <em>hız</em> mı?', sm: 'YORUMLARA YAZ · YARIN: GELİŞTİRME GÜNÜ 3' },
       caps: [[0, 5.5, 'İlk paranı neye harcardın: kapasite mi, hız mı?', true]] }
   ],
-  cover: { day: 'GÜN 2', title: 'Sırtında kaç<br><span style="color:#ffd166">balık taşırsın?</span>', sub: 'Taşıma sınırı ve ilk yükseltme' }
+  cover: { day: 'GELİŞTİRME GÜNÜ 2', title: 'Sırtında kaç<br><span style="color:#ffd166">balık taşırsın?</span>', sub: 'Taşıma sınırı ve ilk yükseltme' }
 };
