@@ -40,6 +40,16 @@ Uygulama yalnız iPhone (iPad kapalı), bu yüzden iPad ekranı gerekmez.
 
 Videoda başka platform adı geçmez (Apple önizleme kuralı). Müzik `tools/music.py` ile üretilen özgün parçadır, telif sorunu yoktur.
 
+## 4b. Sinematik fragman (EN, 60 sn)
+| Dosya | Boyut | Nereye |
+|---|---|---|
+| `video/trailer-1920x1080-en.mp4` | 1920×1080, 30 fps, H.264 + AAC | YouTube, Steam/itch sayfası, basın, sosyal medya |
+
+Akış: soğuk açılış (Karadeniz kıyısı, küçük iskele) → vuruş → 10 mekanik başlığı (ağ, kesim, tezgâh, personel ve müdür,
+fümehane 2.4×, Reis Güveci, 69 özel müşteri, Müşteri Defteri, Ticaret Ofisi, olaylar) → Dipteki Söz ara sahnesi →
+geniş liman planı → logo kartı. Görüntülerin hepsi oyunun kendisi; üstüne sinema şeridi, renk tonu ve piksel yazı biner.
+Müzik `tools/trailer-music.py` ile üretilen özgün parçadır (deniz ambiyansı, horon teması, hicaz kesiği).
+
 ## 5. Yükleme sırası (kısa kontrol listesi)
 **App Store Connect**
 1. Yeni uygulama: ad `Hamsi Koyu: Balıkçı Tycoon` (TR) / `Hamsi Koyu: Fishing Tycoon` (EN), paket kimliği `io.github.recaikas.hamsikoyu`.
@@ -81,4 +91,10 @@ python3 store/tools/texts.py           # metinler + sınır denetimi
 Videoyu kodlamak için (store/video içinde):
 ```
 ffmpeg -framerate 30 -i frames-tr/%05d.jpg -i promo-music.wav -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 18 -r 30 -c:a aac -b:a 192k -ar 48000 -shortest -movflags +faststart appstore-preview-886x1920-tr.mp4
+```
+Sinematik fragman (`node store/tools/trailer.js preview` her 10. kareyi çeker; sona çekim adları eklenirse yalnız onları):
+```
+node store/tools/trailer.js                                   # 1800 kare → video/frames-trailer/
+python3 store/tools/trailer-music.py store/video/trailer-music.wav
+cd store/video && ffmpeg -framerate 30 -i frames-trailer/%05d.jpg -i trailer-music.wav -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 18 -r 30 -c:a aac -b:a 192k -ar 48000 -shortest -movflags +faststart trailer-1920x1080-en.mp4
 ```
