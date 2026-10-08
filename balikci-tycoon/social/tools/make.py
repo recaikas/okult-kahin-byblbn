@@ -39,8 +39,8 @@ if os.path.exists(vo):
     run('-i', silent, '-i', mix, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', os.path.join(OUT, did + '-anlatimsiz.mp4'))
     duck = os.path.join(OUT, 'ses2.wav')
     run('-i', mix, '-i', vo, '-filter_complex',
-        '[1:a]aresample=44100,pan=stereo|c0=c0|c1=c0,asplit=2[v1][v2];[0:a][v1]sidechaincompress=threshold=0.03:ratio=8:attack=15:release=350[bg];'
-        '[bg][v2]amix=inputs=2:normalize=0,alimiter=limit=0.85:level=disabled', duck)
+        '[1:a]aresample=44100,pan=stereo|c0=c0|c1=c0,volume=1.6,asplit=2[v1][v2];[0:a]volume=0.55[b0];[b0][v1]sidechaincompress=threshold=0.02:ratio=12:attack=10:release=400:makeup=1[bg];'
+        '[bg][v2]amix=inputs=2:normalize=0,alimiter=limit=0.89:level=disabled', duck)
     run('-i', silent, '-i', duck, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', final)
     os.remove(duck)
 else:
