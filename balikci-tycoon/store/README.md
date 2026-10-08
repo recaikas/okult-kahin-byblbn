@@ -40,13 +40,19 @@ Uygulama yalnız iPhone (iPad kapalı), bu yüzden iPad ekranı gerekmez.
 
 Videoda başka platform adı geçmez (Apple önizleme kuralı). Müzik `tools/music.py` ile üretilen özgün parçadır, telif sorunu yoktur.
 
-### 4b. Sinematik fragman (60 sn, İngilizce, 1920×1080, 30 fps)
-`video/trailer-en-1920x1080.mp4`: oyunun gerçek görüntüsü + sinema bantları, renk geçişleri, yağmur/yıldırım, "Dipteki Söz" sahnesi ve özgün müzik. YouTube / sosyal medya / basın için.
+### 4b. Sinematik fragman (60 sn, İngilizce, 1920×1080, 30 fps, 2.39:1 sinema bantlı)
+`video/trailer-cinematic-en-1920x1080.mp4`. Özel çizilmiş piksel sanat sahneleri (şafak, ağ atma, su altı, Şahmeran, fırtına), arayüzsüz oyun içi çekimler, karakter kartları ve oyunun **kendi müziği** (Yeşilçam Hatırası + Yayla Horonu; Web Audio çıkışından kaydedilir). Her şey `tools/trailer2/` altında; zaman çizelgesi `timeline.json`.
 ```
-node store/tools/capture-trailer.js              # kareler (video/frames-trailer, git'e girmez); "preview" ile hızlı kontrol
-python3 store/tools/trailer-music.py store/video/trailer-music.wav
-cd store/video && ffmpeg -framerate 30 -i frames-trailer/%05d.jpg -i trailer-music.wav -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 17 -preset slow -c:a aac -b:a 192k -ar 48000 -shortest -movflags +faststart trailer-en-1920x1080.mp4
+cd balikci-tycoon && python3 -m http.server 8099 &            # oyun 8099'da sunulmalı
+node store/tools/trailer2/sprites.js                          # oyun sprite'ları → sprites.json
+node store/tools/trailer2/record-music.js 2 50 song2.webm     # müzik kaydı (2 yeşilçam, 4 horon); ffmpeg ile wav'a çevir
+node store/tools/trailer2/capture-game.js g1 && ...g2 && ...g3   # temiz oyun çekimleri
+node store/tools/trailer2/render-engine.js all                # özel sahneler (engine.html)
+node store/tools/trailer2/render-overlay.js                   # yazılar, balonlar, logo, geçişler
+python3 store/tools/trailer2/audio2.py <wav_dizini> store/video/trailer2/audio.wav
+python3 store/tools/trailer2/assemble.py 19                   # birleştir → mp4
 ```
+Ara kareler `video/trailer2/` altındadır ve git'e girmez.
 
 ## 5. Yükleme sırası (kısa kontrol listesi)
 **App Store Connect**

@@ -1,0 +1,46 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Fragman yazı katmanı</title>
+<style>
+  @font-face{font-family:"Pixelify Sans";src:url("../../../fonts/pixelify-latin.woff2") format("woff2");font-weight:400 700}
+  @font-face{font-family:"Pixelify Sans";src:url("../../../fonts/pixelify-latin-ext.woff2") format("woff2");font-weight:400 700;unicode-range:U+0100-02AF,U+1E00-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF}
+  html,body{margin:0;background:transparent;width:1920px;height:1080px;overflow:hidden;font-family:"Pixelify Sans",monospace}
+  .t{position:absolute;left:0;right:0;text-align:center;white-space:nowrap;color:#fff1c9;text-shadow:4px 4px 0 #1a0f08,-2px 0 0 #1a0f08,2px 0 0 #1a0f08,0 -2px 0 #1a0f08}
+  #flash,#black{position:absolute;inset:0;opacity:0}#flash{background:#fff}#black{background:#000}
+  #bub{position:absolute;left:800px;top:250px;width:1000px;opacity:0;transform-origin:0 100%}
+  #bub .nm{display:inline-block;background:#d9a441;color:#2a1b44;font:700 34px "Pixelify Sans";letter-spacing:6px;padding:6px 22px;margin-left:30px;box-shadow:6px 6px 0 rgba(0,0,0,.4)}
+  #bub .bx{background:#fff1c9;color:#2a1b44;border:10px solid #2a1b44;font:700 54px/1.25 "Pixelify Sans";padding:30px 38px;min-height:130px;box-shadow:10px 10px 0 rgba(0,0,0,.4);clip-path:polygon(0 14px,14px 14px,14px 0,calc(100% - 14px) 0,calc(100% - 14px) 14px,100% 14px,100% calc(100% - 14px),calc(100% - 14px) calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,14px calc(100% - 14px),0 calc(100% - 14px))}
+  #bub .tail{position:absolute;left:-34px;bottom:70px;width:0;height:0;border-style:solid;border-width:22px 38px 22px 0;border-color:transparent #2a1b44 transparent transparent}
+  #logo{position:absolute;left:360px;top:150px;width:1200px;opacity:0;image-rendering:pixelated;filter:drop-shadow(0 0 40px rgba(255,190,90,.55))}
+</style></head><body>
+<img id="logo" src="../../logo/logo-horizontal-en.png">
+<div id="tx"></div>
+<div id="bub"><div class="nm"></div><div class="bx"></div><div class="tail"></div></div>
+<div id="flash"></div><div id="black"></div>
+<script>
+const TL = fetch('timeline.json').then(r => r.json());
+const cl = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x)), sm = x => x * x * (3 - 2 * x);
+const pw = (arr, t) => { if (t <= arr[0][0]) return arr[0][1]; for (let i = 1; i < arr.length; i++) if (t <= arr[i][0]) { const [a, va] = arr[i - 1], [b, vb] = arr[i]; return b === a ? vb : va + (vb - va) * (t - a) / (b - a); } return arr[arr.length - 1][1]; };
+const POS = { bar: 1012, bar1: 972, bar2: 1022, mid: 470, mid2: 575, tag: 735, tag2: 800 };
+let T = null, sig = '';
+window.ready = (async () => { T = await TL; await document.fonts.load('700 40px "Pixelify Sans"'); await new Promise(r => { const i = document.getElementById('logo'); i.complete ? r() : i.onload = r; }); return true; })();
+window.setT = t => {
+  const tx = document.getElementById('tx'); let html = '';
+  T.texts.forEach(o => { const fi = o.fi || 0.45, fo = o.fo || 0.45, a = cl(Math.min((t - o.a) / fi, (o.b - t) / fo)); if (a <= 0) return;
+    let s = o.s; if (o.typed) s = s.slice(0, Math.ceil(s.length * cl((t - o.a) / o.typed)));
+    const slam = o.slam ? cl(1 - (t - o.a) / 0.22) : 0;
+    html += `<div class="t" style="top:${POS[o.pos] - o.size * 0.7}px;font:700 ${Math.round(o.size * 1.25)}px 'Pixelify Sans';letter-spacing:${o.track}px;color:${o.col || '#fff1c9'};opacity:${a};transform:translateY(${(1 - a) * 10}px) scale(${1 + slam * 0.35})">${s}</div>`; });
+  tx.innerHTML = html;
+  /* karakter kartı balonu */
+  const cs = T.clips.find(c => c.id === 'cards'), bub = document.getElementById('bub'), per = 4 * T.BEAT * 4 / 4;
+  if (t >= cs.at && t < cs.at + cs.len) {
+    const k = Math.min(T.cards.length - 1, Math.floor((t - cs.at) / (4 * T.BEAT))), c = T.cards[k], lt = t - cs.at - k * 4 * T.BEAT, a = sm(cl((lt - 0.2) / 0.18)) * cl((4 * T.BEAT - 0.04 - lt) / 0.1);
+    bub.style.opacity = a; bub.style.transform = `scale(${0.85 + 0.15 * sm(cl((lt - 0.2) / 0.25))})`;
+    bub.querySelector('.nm').textContent = c.name; bub.querySelector('.bx').textContent = c.q.slice(0, Math.ceil(c.q.length * cl((lt - 0.38) / 0.75)));
+  } else bub.style.opacity = 0;
+  /* logo */
+  const lg = document.getElementById('logo'); lg.style.opacity = sm(cl((t - T.logo.a) / 0.9)) * cl((T.logo.b - t) / 0.4);
+  lg.style.transform = `translateY(${(1 - sm(cl((t - T.logo.a) / 1.2))) * 24}px)`;
+  document.getElementById('flash').style.opacity = Math.max(0, pw(T.flash, t));
+  document.getElementById('black').style.opacity = Math.max(0, pw(T.black, t));
+};
+</script></body></html>

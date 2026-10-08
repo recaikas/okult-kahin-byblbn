@@ -1,2 +1,4 @@
 video/frames-*/
 video/*.wav
+video/trailer2/
+__pycache__/
