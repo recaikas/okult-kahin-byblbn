@@ -33,6 +33,8 @@ const CLIPS = {
   g3: [SH('full', 3, [2.4, 1.8], [3.2, 2.2], 2, { warm: 40 }), SH('full', 3, [5.4, 2.2], [5.8, 2.8], 2), SH('full', 2, [8.2, 3.4], [8.8, 3.6], 2), SH('full', 3, [3.6, 12.6], [4.2, 13.2], 2), SH('full', 3, [6.4, 20.4], [6.8, 21.0], 2),
          SH('full', 3, [8.4, 18.6], [8.8, 19.0], 2), SH('full', 2, [5, 8], [5, 11], 2), SH('full', 1, [5, 12], [5, 16], 2), SH('full', 1, [5, 20], [5, 8], 2)]
 };
+['g2', 'g3'].forEach(c => CLIPS[c].forEach((s, i) => { if (i) { s.dis = 1; s.disLen = 0.22; } }));   /* vuruşta kesme yerine kısa piksel çözülme */
+const POST = 24;                                                                                            /* sonraki klibe çapraz geçiş için kuyruk kareleri */
 (async () => {
   fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
   const b = await chromium.launch();
@@ -59,7 +61,7 @@ const CLIPS = {
     if (s.state !== cur) { await p.evaluate(st => window.__STATES[st](), s.state); cur = s.state; }
     if (s.z !== curZoom) { await p.evaluate(z => window.__zoom(z), s.z); curZoom = s.z; }
     await p.evaluate(([a, w]) => { window.__place(a[0], a[1]); window.__ff(w); }, [s.a, s.warm || 90]);
-    const DIS = Math.round(0.55 * FPS);
+    const DIS = Math.round((s.disLen || 0.55) * FPS);
     for (let k = 0; k < s.n; k++) {
       const u = k / s.n, x = s.a[0] + (s.b[0] - s.a[0]) * u, y = s.a[1] + (s.b[1] - s.a[1]) * u;
       await p.evaluate(([x, y, d]) => { window.__place(x, y); window.__step(1000 / 30); window.__dissolve(d); }, [x, y, s.dis ? Math.min(1, k / DIS) : 1]);
@@ -68,6 +70,14 @@ const CLIPS = {
       f++;
     }
     console.log(CLIP, 'çekim', si + 1, '/', shots.length, 'kare', f);
+  }
+  if (MODE !== 'preview') {
+    const s = shots[shots.length - 1];
+    for (let k = 0; k < POST; k++) {
+      const u = 1 + k / s.n, x = s.a[0] + (s.b[0] - s.a[0]) * u, y = s.a[1] + (s.b[1] - s.a[1]) * u;
+      await p.evaluate(([x, y]) => { window.__place(x, y); window.__step(1000 / 30); window.__dissolve(1); }, [x, y]);
+      await p.screenshot({ path: path.join(OUT, String(f).padStart(5, '0') + '.png') }); f++;
+    }
   }
   await b.close();
 })();
