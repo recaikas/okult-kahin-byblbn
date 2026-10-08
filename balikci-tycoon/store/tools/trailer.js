@@ -1,13 +1,19 @@
-/* Sinematik fragman (EN, 60 sn, 1920×1080, 30 fps): gerçek oyun, sanal saatle kare kare çekilir; üstüne sinema
-   şeritleri, renk tonu, vinyet ve piksel yazılar bindirilir. Çekim zamanları trailer-music.py'deki vuruşlara oturur.
-   Kullanım: node store/tools/trailer.js [preview]   (oyun klasörü 8099'da sunulmalı)
-   Çıktı: store/video/frames-trailer/NNNNN.jpg  (preview: her 10. kare, frames-trailer-preview/) */
-const { chromium, openGame } = require('./scene');
+/* Sinematik fragman (EN, 60 sn, 1920×1080, 30 fps).
+   İki kaynak iç içe kurgulanır:
+   1) trailer-scenes.js — elle çizilmiş piksel sahneler (şafak, hamsi sürüsü, ağ, lodos, Şahmeran, gece limanı)
+   2) gerçek oyun — game.js çekim sırasında küçük yamalarla yüklenir: kamera serbest, yakınlık 1–5, oyun içi etiketler gizli
+   Oyunun saati sanaldır (rAF/performance.now/setTimeout adımlanır), her kare tek tek çekilir. Zamanlar müziğe oturur
+   (120 BPM, 1 ölçü = 2 sn, vuruş 14.0'te). Müzik: trailer-music.py.
+   Kullanım: node store/tools/trailer.js [preview [çekim,çekim]]   (oyun klasörü 8099'da sunulmalı)
+   Çıktı: store/video/frames-trailer/NNNNN.jpg  (preview: her 10. kare → frames-trailer-preview/) */
+const { chromium } = require('../../test-offline');
 const fs = require('fs'), path = require('path');
 const FPS = 30, DUR = 60, PREVIEW = process.argv[2] === 'preview';
-const ONLY = process.argv[3] ? process.argv[3].split(',') : null;          /* preview: yalnız bu çekimler */
+const ONLY = process.argv[3] ? process.argv[3].split(',') : null;
 const OUT = path.resolve(__dirname, '..', 'video', PREVIEW ? 'frames-trailer-preview' : 'frames-trailer');
-const BAR = 4 * 60 / 138, T0 = 10, at = k => +(T0 + k * BAR).toFixed(3);  /* ölçü ızgarası */
+const URL = process.env.URL || 'http://localhost:8099/index.html';
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
 const VCLOCK = () => {
   let t = 0, q = [], timers = [], tid = 1;
   window.requestAnimationFrame = cb => { q.push(cb); return q.length; };
@@ -26,119 +32,185 @@ const VCLOCK = () => {
   window.__pumpOn();
 };
 
-/* ---------- çekim listesi ----------
-   a/b: başlangıç-bitiş (sn) · st: oyun durumu (fresh | rich) · z: yakınlık (1 geniş, 3 yakın) · from/to: oyuncu yolu
-   pre: çekimden önce sessizce akan oyun süresi (kamera otursun, sahne canlansın) · grade: renk tonu
-   card: siyah üstüne orta yazı · low: alt başlık [no, başlık, alt satır] · mid: görüntü üstüne orta-alt yazı */
-const SHOTS = [
-  { id: 'cold', a: 0, b: 3.2, card: ['ON THE BLACK SEA COAST...'], black: true },
-  { id: 'pier', a: 3.2, b: 7.0, st: 'fresh', z: 1, from: [4.0, 4.6], to: [5.2, 3.6], pre: 2, grade: 'dawn', mid: '...a tiny pier waits for its first catch.', barsIn: true },
-  { id: 'onenet', a: 7.0, b: 10.0, st: 'fresh', z: 3, from: [3.4, 2.2], to: [2.7, 1.6], pre: 1.5, grade: 'dawn', mid: 'Every harbor starts with one net.', flashOut: true },
-  { id: 'net', a: at(0), b: at(2), st: 'fresh', z: 3, from: [2.6, 1.5], to: [2.6, 1.5], pre: 1.2, low: ['01', 'CAST YOUR NET', 'Stand by the net and the catch piles up.'] },
-  { id: 'fillet', a: at(2), b: at(4), st: 'fresh', z: 3, path: [[0, 3.2, 1.9], [0.35, 5.0, 2.0], [0.75, 5.0, 2.0], [1, 6.4, 2.6]], pre: 0.3, low: ['02', 'FILLET THE CATCH', 'Carry it to the cutting table. Grab the fillets.'] },
-  { id: 'sell', a: at(4), b: at(6), st: 'fresh', z: 3, path: [[0, 6.6, 2.7], [0.3, 8.2, 3.2], [1, 8.2, 3.2]], pre: 0.2, low: ['03', 'SERVE & GET PAID', 'Fill every order at the stall. Coins in the till.'] },
-  { id: 'crew', a: at(6), b: at(8), st: 'rich', z: 2, from: [6.0, 3.2], to: [6.8, 6.4], pre: 2, low: ['04', 'HIRE A CREW', 'Porter · filleter · stall-keeper · cashier. Then a manager.'] },
-  { id: 'smoke', a: at(8), b: at(10), st: 'rich', z: 3, from: [5.6, 13.2], to: [6.6, 15.4], pre: 1.5, grade: 'warm', low: ['05', 'SMOKE IT', 'The smokehouse turns fish into 2.4× the value.'] },
-  { id: 'kitchen', a: at(10), b: at(12), st: 'rich', z: 3, from: [5.2, 18.6], to: [6.6, 20.2], pre: 1.5, grade: 'warm', low: ['06', "COOK SKIPPER'S STEW", 'Bonito + salmon on the stove. 4 zones, one harbor.'] },
-  { id: 'special', a: at(12), b: at(15), st: 'rich', z: 3, special: true, from: [8.9, 3.2], to: [8.9, 3.2], pre: 0.2, low: ['07', '69 QUIRKY CUSTOMERS', 'Each one has a secret. Finish the order to learn the name.'] },
-  { id: 'book', a: at(15), b: at(17), st: 'rich', z: 3, from: [8.9, 3.2], to: [8.9, 3.2], book: true, low: ['08', 'FILL THE CUSTOMER BOOK', 'Shadows become faces. ????? becomes a friend.'] },
-  { id: 'office', a: at(17), b: at(18), st: 'rich', z: 3, from: [8.9, 3.2], to: [8.9, 3.2], office: true, low: ['09', 'PLAY THE MARKET', 'Shares, contracts, a holding.'] },
-  { id: 'events', a: at(18), b: at(19), st: 'rich', z: 1, from: [6.0, 8.0], to: [6.6, 10.5], pre: 1.5, ev: 'gemi', grade: 'cool', low: ['10', 'SHOALS · FERRIES · STORMS', 'The sea never plays the same day twice.'] },
-  { id: 'promise', a: at(19), b: 44.6, card: ['But the sea keeps', 'an old promise...'], black: true },
-  { id: 'story', a: 44.6, b: at(24), st: 'rich', story: true, grade: 'night' },
-  { id: 'harbor', a: at(24), b: 56.0, st: 'rich', z: 1, from: [6.0, 2.0], to: [6.4, 19.0], pre: 1.5, grade: 'gold', mid: 'From a tiny pier... to a grand harbor.' },
-  { id: 'end', a: 56.0, b: 60.0, end: true, black: true }
-];
+/* game.js çekim yamaları (dosyanın kendisi değişmez; yalnız bu tarayıcıya böyle sunulur) */
+function patchGame(src) {
+  const rep = (a, b) => { if (!src.includes(a)) throw new Error('yama bulunamadı: ' + a.slice(0, 60)); src = src.replace(a, b); };
+  rep('function updateCamera(dt) {', 'function updateCamera(dt) {\n  if (window.__cam) { camTX = camX = pX(window.__cam.x, window.__cam.y); camTY = camY = pY(window.__cam.x, window.__cam.y, 0); return; }');
+  rep('function renderUI() {\n  trimLabels();', 'function renderUI() {\n  trimLabels();\n  if (window.__uiKeep) uiQ = uiQ.filter(window.__uiKeep);');
+  rep('var fs = q.t === 1 ? 10 : 9.5;', 'var fs = (q.t === 1 ? 10 : 9.5) * (window.__uiScale || 1);');
+  rep('function drawRoleTag(w) {', 'function drawRoleTag(w) {\n  if (window.__noTags) return;');
+  rep('ctx.save(); ctx.globalAlpha = 0.55 + (Math.sin(gameT * 4) > 0 ? 0.15 : 0);', 'ctx.save(); ctx.globalAlpha = window.__noTags ? 0 : 0.55 + (Math.sin(gameT * 4) > 0 ? 0.15 : 0);');
+  rep('function resize() {', 'window.__zoom = function (z) { zoomLvl = z; resize(); };\nfunction resize() {');
+  return src;
+}
 
-const GRADES = {   /* [renk, karışım, güç] */
-  dawn: ['#ff8a4c', 'soft-light', 0.3], warm: ['#ffb36b', 'soft-light', 0.18], cool: ['#3b6fa8', 'soft-light', 0.3],
-  night: ['#2a1650', 'multiply', 0.25], gold: ['#ffc46b', 'soft-light', 0.22]
-};
+/* ---------------- zaman çizelgesi ----------------
+   kind: scene (elle çizilmiş) | game (oyun) | black
+   game çekimleri: id ile sayfadaki kurulum seçilir; cam: [[u, x, y], …] dünya koordinatı, z: yakınlık (1 geniş … 5 yakın) */
+const SHOTS = [
+  { id: 'dawn', a: 0, b: 8, kind: 'scene', scene: 'dawn' },
+  { id: 'deep', a: 8, b: 11.5, kind: 'scene', scene: 'deep' },
+  { id: 'cast', a: 11.5, b: 14, kind: 'scene', scene: 'cast' },
+  { id: 'net', a: 14, b: 16, kind: 'game', z: 5, cam: [[0, 2.9, 1.9], [1, 3.3, 2.1]], grade: 'morning' },
+  { id: 'fillet', a: 16, b: 18, kind: 'game', z: 5, cam: [[0, 4.6, 2.0], [1, 5.6, 2.3]], grade: 'morning' },
+  { id: 'sell', a: 18, b: 20, kind: 'game', z: 5, cam: [[0, 7.9, 3.2], [1, 8.6, 3.5]], grade: 'morning' },
+  { id: 'growA', a: 20, b: 21, kind: 'game', z: 2, cam: [[0, 6.6, 6.2], [1, 6.8, 6.6]] },
+  { id: 'growB', a: 21, b: 22, kind: 'game', z: 2, cam: [[0, 6.8, 6.6], [1, 7.0, 7.0]] },
+  { id: 'crew', a: 22, b: 26, kind: 'game', z: 4, cam: [[0, 3.0, 1.6], [1, 7.6, 4.2]] },
+  { id: 'zones', a: 26, b: 30, kind: 'game', z: 2, cam: [[0, 5.5, 2.5], [1, 5.5, 20.5]], grade: 'warm' },
+  { id: 'special', a: 30, b: 34, kind: 'game', z: 5, cam: [[0, 9.4, 3.4], [1, 9.8, 3.7]] },
+  { id: 'book', a: 34, b: 36, kind: 'game', z: 3, cam: [[0, 8.0, 4.0], [1, 8.2, 4.2]], panel: true },
+  { id: 'storm', a: 36, b: 38, kind: 'scene', scene: 'storm' },
+  { id: 'shoal', a: 38, b: 39, kind: 'scene', scene: 'deep', t0: 1.4 },
+  { id: 'rush', a: 39, b: 40, kind: 'game', z: 4, cam: [[0, 8.2, 10.2], [1, 8.8, 10.6]] },
+  { id: 'promise', a: 40, b: 41.5, kind: 'black' },
+  { id: 'legend', a: 41.5, b: 45.5, kind: 'scene', scene: 'legend' },
+  { id: 'story', a: 45.5, b: 50, kind: 'game', story: true },
+  { id: 'night', a: 50, b: 55, kind: 'game', z: 1, cam: [[0, 4.5, 3.5], [1, 7.5, 15.5]], grade: 'night' },
+  { id: 'end', a: 55, b: 60, kind: 'scene', scene: 'finale' }
+];
+/* yazılar: int (ortada, ince aralıklı) · title (büyük başlık + alt satır) · stamp (çerçeveli damga) · loop (döngü şeridi) · end */
+const TEXT = [
+  { a: 1.0, b: 3.7, kind: 'int', t: 'THE BLACK SEA' },
+  { a: 4.3, b: 7.7, kind: 'int', t: 'Every autumn, the hamsi come home.' },
+  { a: 8.5, b: 11.3, kind: 'int', t: 'Silver, by the million.' },
+  { a: 11.7, b: 13.85, kind: 'int', t: 'And every legend starts with one net.' },
+  { a: 14.05, b: 15.95, kind: 'title', t: 'CATCH', s: 'Stand by your net. The sea fills the crate.' },
+  { a: 16.05, b: 17.95, kind: 'title', t: 'FILLET', s: 'Carry the catch to the cutting table.' },
+  { a: 18.05, b: 19.95, kind: 'title', t: 'SELL', s: 'Stock the stall. Fill every order. Get paid.' },
+  { a: 20.05, b: 21.95, kind: 'title', t: 'GROW', s: 'Reinvest every coin. Upgrade. Expand.' },
+  { a: 14.0, b: 22.0, kind: 'loop' },
+  { a: 22.1, b: 25.9, kind: 'title', t: 'HIRE A CREW', s: 'Porters, filleters, stall-keepers, cashiers. Then a manager runs it all.' },
+  { a: 26.15, b: 27.1, kind: 'stamp', t: 'FISHING PIER' },
+  { a: 27.15, b: 28.1, kind: 'stamp', t: 'FISH MARKET' },
+  { a: 28.15, b: 29.1, kind: 'stamp', t: 'SMOKEHOUSE', s: 'smoked fish sells for 2.4×' },
+  { a: 29.15, b: 29.95, kind: 'stamp', t: "FISHERMEN'S KITCHEN", s: "cook Skipper's Stew" },
+  { a: 30.1, b: 33.9, kind: 'title', t: '69 QUIRKY CUSTOMERS', s: 'Every one hides a name. Serve them well to learn it.' },
+  { a: 34.05, b: 35.95, kind: 'title', t: 'THE CUSTOMER BOOK', s: 'Collect every face that visits your cove.' },
+  { a: 36.1, b: 37.9, kind: 'stamp', t: 'STORMS' },
+  { a: 38.05, b: 38.95, kind: 'stamp', t: 'SHOALS' },
+  { a: 39.05, b: 39.95, kind: 'stamp', t: 'RUSH HOURS' },
+  { a: 40.2, b: 41.4, kind: 'int', t: 'But the sea keeps a promise...' },
+  { a: 42.2, b: 45.3, kind: 'int', t: 'Beneath the cove, something ancient waits.' },
+  { a: 46.6, b: 49.8, kind: 'legend' },
+  { a: 50.6, b: 54.6, kind: 'int', t: 'From a tiny pier... to a legendary harbor.' },
+  { a: 55.3, b: 60, kind: 'end' }
+];
+const FLASH = [14.0, 21.0, 36.0, 38.0, 39.0, 50.0];
+const DIPS = [[39.85, 40.0], [45.35, 45.5], [49.75, 50.0]];   /* siyaha iniş */
+const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], warm: ['#ffb36b', 'soft-light', 0.14], night: ['#14205a', 'multiply', 0.5] };
 
 (async () => {
   fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
+  const gameSrc = patchGame(fs.readFileSync(path.resolve(__dirname, '..', '..', 'game.js'), 'utf8'));
   const b = await chromium.launch();
-  const { p } = await openGame(b, 'en', { width: 960, height: 540 }, 2, VCLOCK);
+  const ctx = await b.newContext({ viewport: { width: 960, height: 540 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await ctx.addInitScript(VCLOCK);
+  await ctx.route('**/game.js', r => r.fulfill({ contentType: 'application/javascript', body: gameSrc }));
+  const p = await ctx.newPage();
   p.on('pageerror', e => console.log('ERR', e.message));
-  p.on('console', m => { if (m.type() === 'error') console.log('console', m.text().slice(0, 160)); });
+  await p.goto(URL); await sleep(900);
+  await p.addStyleTag({ content: '#achPop,#pauseBadge{display:none!important}' });
+  await p.evaluate(() => { window.HK_STORY_OFF = 1; window.HK_HELP_OFF = 1; if (BT.setLang) BT.setLang('en'); });
+  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
+  await p.click('#heroGo'); await p.fill('#nameIn', 'Silver Net Co.').catch(() => {});
+  await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(500);
   await p.evaluate(() => {
     document.getElementById('settingsScreen').classList.add('hidden');
     document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
-    BT.S.tut = 99;                                          /* eğitim ipuçları ve halkalar görünmesin */
+    BT.S.tut = 99; window.__noTags = 1;
+    window.__uiKeep = q => window.__keepSpec && typeof q.s === 'string' && /^[★“]/.test(q.s);     /* yalnız özel müşteri çekiminde: adı ve sözü */
+    window.__pumpOff();
   });
-  await p.evaluate(() => window.__pumpOff());
+  await p.addScriptTag({ path: path.join(__dirname, 'trailer-scenes.js') });
 
-  /* sinema katmanı */
+  /* ---------- sinema katmanı ---------- */
   await p.evaluate(() => {
     const st = document.createElement('style');
     st.textContent =
-      'body.tbc #hud,body.tbc #devbar,body.tbc #objective,body.tbc #queueHint,body.tbc #toast,body.tbc #actBtn,body.tbc #tradeBtn,body.tbc #coach,body.tbc #dayBanner,body.tbc #lvlUp,body.tbc #eventChip{visibility:hidden!important}' +
-      'body.tbev #eventChip{visibility:visible!important;position:fixed!important;left:50%!important;top:96px!important;right:auto!important;transform:translateX(-50%) scale(1.7);transform-origin:50% 0;z-index:150}' +
-      '#tbg{position:fixed;inset:0;z-index:200;pointer-events:none}' +
+      'body.tbc #hud,body.tbc #devbar,body.tbc #objective,body.tbc #queueHint,body.tbc #toast,body.tbc #actBtn,body.tbc #tradeBtn,body.tbc #coach,body.tbc #dayBanner,body.tbc #lvlUp,body.tbc #eventChip,body.tbc #chBtn,body.tbc #autoBadge,body.tbc #specPop{visibility:hidden!important}' +
+      '#tbglow{position:fixed;inset:0;width:100vw;height:100vh;z-index:190;pointer-events:none;mix-blend-mode:screen}' +
+      '#tbg{position:fixed;inset:0;z-index:200;pointer-events:none;font-family:"Pixelify Sans",monospace}' +
       '#tbg .tb-gr{position:absolute;inset:0;opacity:0}' +
-      '#tbg .tb-vg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 46%,transparent 55%,rgba(0,0,0,.55) 100%)}' +
-      '#tbg .tb-bar{position:absolute;left:0;right:0;height:0;background:#000}#tbg .tb-bt{top:0}#tbg .tb-bb{bottom:0}' +
-      '#tbg .tb-blk{position:absolute;inset:0;background:#000;opacity:0}#tbg .tb-fl{position:absolute;inset:0;background:#fff8e6;opacity:0}' +
-      '#tbg .tb-card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font:700 34px "Pixelify Sans";letter-spacing:.14em;color:#fff1c9;text-shadow:3px 3px 0 #3d2413;opacity:0}' +
-      '#tbg .tb-mid{position:absolute;left:0;right:0;bottom:92px;text-align:center;font:600 26px "Pixelify Sans";letter-spacing:.06em;color:#fff6dc;text-shadow:2px 2px 0 #10202c,0 0 18px rgba(0,0,0,.6);opacity:0}' +
-      '#tbg .tb-low{position:absolute;left:52px;bottom:88px;opacity:0}' +
-      '#tbg .tb-low .k{display:flex;align-items:center;gap:10px;font:700 15px "Pixelify Sans";letter-spacing:.3em;color:#d9a441;margin-bottom:4px}' +
-      '#tbg .tb-low .k i{display:block;width:46px;height:3px;background:#d9a441}' +
-      '#tbg .tb-low .h{font:700 40px "Pixelify Sans";letter-spacing:.08em;color:#fff1c9;text-shadow:3px 3px 0 #3d2413,0 0 22px rgba(0,0,0,.55);white-space:nowrap}' +
-      '#tbg .tb-low .s{font:500 18px "Pixelify Sans";color:#bfe9ff;text-shadow:2px 2px 0 #0a1a27;margin-top:2px;white-space:nowrap}' +
-      '#tbg .tb-sub{position:absolute;left:0;right:0;bottom:14px;text-align:center;font:500 19px "Pixelify Sans";color:#f6e9d3;opacity:0}#tbg .tb-sub b{color:#ffb454;letter-spacing:.12em;font-size:14px;margin-right:10px}' +
-      '#tbg .tb-ttl{position:absolute;right:56px;top:96px;text-align:right;opacity:0}#tbg .tb-ttl small{display:block;font:600 14px "Pixelify Sans";letter-spacing:.4em;color:#a898c4}' +
-      '#tbg .tb-ttl b{display:block;font:700 44px "Pixelify Sans";letter-spacing:.06em;color:#ffb454;text-shadow:3px 3px 0 #000,5px 5px 0 #7a2a2a}' +
-      '#tbg .tb-end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;opacity:0;background:radial-gradient(ellipse at 50% 40%,#16506d,#0a1a27 75%)}' +
-      '#tbg .tb-end img{width:600px;image-rendering:pixelated}#tbg .tb-end .t{font:700 26px "Pixelify Sans";letter-spacing:.1em;color:#fff1c9;text-shadow:3px 3px 0 #3d2413}' +
-      '#tbg .tb-end .f{font:600 16px "Pixelify Sans";letter-spacing:.3em;color:#d9a441}#tbg .tb-end .u{font:500 15px "Pixelify Sans";letter-spacing:.08em;color:#bfe9ff}' +
-      '#tbg .tb-end .tb-rug{position:absolute;bottom:0;left:0;right:0;height:10px;background:repeating-linear-gradient(90deg,#a83d2b 0 10px,#d9a441 10px 20px,#2a4c7d 20px 30px,#d9a441 30px 40px)}' +
-      /* hikâye sahnesi tam ekran: yalnız sahne tuvali, yazı bizim altyazıda */
-      '.tbstory .hkst{padding:0!important;background:#000!important}.tbstory .hkst .app{max-width:none!important;width:100vw;height:100vh;justify-content:center;align-items:center}' +
+      '#tbg .tb-vg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,transparent 58%,rgba(0,0,0,.5) 100%)}' +
+      '#tbg .tb-bar{position:absolute;left:0;right:0;height:66px;background:#000}#tbg .tb-bt{top:0}#tbg .tb-bb{bottom:0}' +
+      '#tbg .tb-blk{position:absolute;inset:0;background:#000;opacity:0}#tbg .tb-fl{position:absolute;inset:0;background:#fff6e0;opacity:0}' +
+      '#tbg .tb-band{position:absolute;left:0;right:0;bottom:66px;height:190px;background:linear-gradient(transparent,rgba(4,8,16,.62));opacity:0}' +
+      '#tbg .tb-int{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-weight:600;font-size:30px;color:#fff3dc;text-shadow:3px 3px 0 rgba(20,8,20,.85),0 0 24px rgba(0,0,0,.55);opacity:0;white-space:nowrap}' +
+      '#tbg .tb-int.low{top:auto;bottom:96px;transform:none}' +
+      '#tbg .tb-title{position:absolute;left:0;right:0;bottom:100px;text-align:center;opacity:0}' +
+      '#tbg .tb-title b{display:block;font-weight:700;font-size:58px;letter-spacing:.14em;color:#fff3d6;text-shadow:4px 4px 0 #2a1408,0 0 30px rgba(0,0,0,.5);white-space:nowrap}' +
+      '#tbg .tb-title i{display:block;margin:6px auto 0;height:4px;background:#e4b94a;box-shadow:0 2px 0 #7a4a10}' +
+      '#tbg .tb-title span{display:block;margin-top:10px;font-weight:500;font-size:19px;letter-spacing:.05em;color:#d8ecff;text-shadow:2px 2px 0 #08121c;white-space:nowrap}' +
+      '#tbg .tb-loop{position:absolute;left:0;right:0;bottom:76px;display:flex;justify-content:center;gap:14px;font-weight:700;font-size:15px;letter-spacing:.3em;opacity:0}' +
+      '#tbg .tb-loop em{font-style:normal;color:#fff3d6;opacity:.32}#tbg .tb-loop em.on{opacity:1;color:#ffcf5a;text-shadow:0 0 12px rgba(255,190,80,.6)}#tbg .tb-loop u{text-decoration:none;color:#e4b94a;opacity:.5}' +
+      '#tbg .tb-stamp{position:absolute;left:50%;top:50%;opacity:0;text-align:center}' +
+      '#tbg .tb-stamp div{padding:12px 30px 10px;border:4px solid #fff3d6;box-shadow:0 0 0 4px #2a1408,inset 0 0 0 4px #2a1408;background:rgba(8,14,24,.55);font-weight:700;font-size:46px;letter-spacing:.16em;color:#fff3d6;text-shadow:4px 4px 0 #2a1408;white-space:nowrap}' +
+      '#tbg .tb-stamp span{display:block;margin-top:12px;font-size:20px;letter-spacing:.08em;color:#ffcf5a;text-shadow:2px 2px 0 #2a1408}' +
+      '#tbg .tb-leg{position:absolute;right:60px;top:96px;text-align:right;opacity:0}#tbg .tb-leg small{display:block;font-size:14px;font-weight:600;letter-spacing:.45em;color:#b8a8e0}' +
+      '#tbg .tb-leg b{display:block;font-size:50px;font-weight:700;letter-spacing:.06em;color:#ffb454;text-shadow:3px 3px 0 #000,6px 6px 0 #7a2a2a}' +
+      '#tbg .tb-sub{position:absolute;left:0;right:0;bottom:18px;text-align:center;font-size:19px;color:#f6e9d3;opacity:0}#tbg .tb-sub b{color:#ffb454;letter-spacing:.14em;font-size:14px;margin-right:12px}' +
+      '#tbg .tb-end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;opacity:0;padding-bottom:150px}' +
+      '#tbg .tb-end img{width:560px;image-rendering:pixelated;filter:drop-shadow(0 6px 0 rgba(0,0,0,.45))}' +
+      '#tbg .tb-end .t{font-size:26px;font-weight:600;letter-spacing:.1em;color:#fff3dc;text-shadow:3px 3px 0 #10081c}' +
+      '#tbg .tb-end .f{font-size:15px;font-weight:700;letter-spacing:.32em;color:#ffcf5a;text-shadow:2px 2px 0 #10081c}' +
+      '#tbg .tb-end .u{font-size:14px;letter-spacing:.1em;color:#bcd2ff}' +
+      '#tbg .tb-shine{position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,250,220,.55) 50%,transparent 60%);mix-blend-mode:overlay;opacity:0}' +
+      '.tbstory .hkst{padding:0!important;background:#000!important;z-index:150!important}.tbstory .hkst .app{max-width:none!important;width:100vw;height:100vh;justify-content:center;align-items:center}' +
       '.tbstory .hkst .stage{border:0!important;box-shadow:none!important}.tbstory .hkst canvas{width:auto!important;height:100vh!important}' +
       '.tbstory .hkst .panel,.tbstory .hkst .skip,.tbstory .hkst .hud{display:none!important}' +
-      /* paneller sinema şeridine sığsın */
-      '.tbpanel .overlay:not(.hidden){transform:scale(.8);transform-origin:50% 50%}';
+      '.tbpanel #custScr:not(.hidden){transform:scale(.78);transform-origin:50% 46%}';
     document.head.appendChild(st);
     const g = document.createElement('div'); g.id = 'tbg';
-    g.innerHTML = '<div class="tb-gr"></div><div class="tb-vg"></div><div class="tb-mid"></div>' +
-      '<div class="tb-low"><div class="k"><span></span><i></i></div><div class="h"></div><div class="s"></div></div>' +
-      '<div class="tb-ttl"><small>A 12-DAY LEGEND</small><b>THE PROMISE BELOW</b></div>' +
-      '<div class="tb-bar tb-bt"></div><div class="tb-bar tb-bb"></div><div class="tb-sub"></div><div class="tb-blk"></div><div class="tb-card"></div>' +
+    g.innerHTML = '<div class="tb-gr"></div><div class="tb-vg"></div><div class="tb-band"></div>' +
+      '<div class="tb-int"></div><div class="tb-title"><b></b><i></i><span></span></div>' +
+      '<div class="tb-loop"><em>CATCH</em><u>›</u><em>FILLET</em><u>›</u><em>SELL</em><u>›</u><em>GROW</em></div>' +
+      '<div class="tb-stamp"><div></div><span></span></div>' +
+      '<div class="tb-leg"><small>A 12-DAY ANATOLIAN LEGEND</small><b>THE PROMISE BELOW</b></div>' +
       '<div class="tb-end"><img src="store/logo/logo-horizontal-en.png"><div class="t">Build your cove. Keep the promise.</div>' +
-      '<div class="f">FREE · NO ADS · NO IN-APP PURCHASES</div><div class="u">recaikas.github.io/okult-kahin-byblbn</div><div class="tb-rug"></div></div><div class="tb-fl"></div>';
+      '<div class="f">FREE · NO ADS · NO IN-APP PURCHASES</div><div class="u">English & Türkçe · recaikas.github.io/okult-kahin-byblbn</div><div class="tb-shine"></div></div>' +
+      '<div class="tb-bar tb-bt"></div><div class="tb-bar tb-bb"></div><div class="tb-sub"></div><div class="tb-blk"></div><div class="tb-fl"></div>';
     document.body.appendChild(g); document.body.classList.add('tbc');
+    const gc = document.createElement('canvas'); gc.id = 'tbglow'; gc.width = 1920; gc.height = 1080; document.body.appendChild(gc);
+    const gx = gc.getContext('2d');
+    window.__glow = (on, tt) => {
+      gx.clearRect(0, 0, 1920, 1080); if (!on) return;
+      BT.AREA_LAMPS.flat().forEach((l, i) => {
+        const p = BT.scr(l.x, l.y, 30), r = 95 + 8 * Math.sin(tt * 3 + i);
+        const gr = gx.createRadialGradient(p.x * 2, p.y * 2, 0, p.x * 2, p.y * 2, r * 2);
+        gr.addColorStop(0, 'rgba(255,214,140,0.85)'); gr.addColorStop(0.25, 'rgba(255,180,90,0.35)'); gr.addColorStop(1, 'rgba(255,160,60,0)');
+        gx.fillStyle = gr; gx.fillRect(p.x * 2 - r * 2, p.y * 2 - r * 2, r * 4, r * 4);
+      });
+    };
     const $ = s => g.querySelector(s);
-    const tw = (txt, u) => txt.slice(0, Math.round(txt.length * Math.min(1, u)));
     window.__tb = o => {
       const gr = $('.tb-gr');
       if (o.grade) { gr.style.background = o.grade[0]; gr.style.mixBlendMode = o.grade[1]; gr.style.opacity = o.grade[2]; } else gr.style.opacity = 0;
       g.querySelectorAll('.tb-bar').forEach(x => { x.style.height = o.bars + 'px'; });
       $('.tb-blk').style.opacity = o.black; $('.tb-fl').style.opacity = o.flash;
-      const c = $('.tb-card'); c.style.opacity = o.card ? o.cardA : 0;
-      if (o.card) c.innerHTML = o.card.map((l, i) => '<div>' + (tw(l, o.cardT * o.card.length - i) || '&nbsp;') + '</div>').join('');
-      const m = $('.tb-mid'); m.style.opacity = o.mid ? o.midA : 0; if (o.mid) m.textContent = tw(o.mid, o.midT);
-      const l = $('.tb-low'); l.style.opacity = o.low ? o.lowA : 0;
-      if (o.low) { $('.tb-low .k span').textContent = o.low[0]; $('.tb-low .h').textContent = tw(o.low[1], o.lowT); $('.tb-low .s').textContent = o.low[2]; $('.tb-low .s').style.opacity = Math.min(1, Math.max(0, o.lowT * 2 - 1)); l.style.transform = 'translateX(' + Math.round((1 - o.lowA) * -24) + 'px)'; }
-      $('.tb-ttl').style.opacity = o.ttl || 0;
+      $('.tb-band').style.opacity = o.band || 0;
+      const it = $('.tb-int'); it.style.opacity = o.int ? o.int.a : 0;
+      if (o.int) { it.textContent = o.int.t; it.style.letterSpacing = (0.06 + 0.06 * o.int.k) + 'em'; it.classList.toggle('low', !!o.int.low); }
+      const ti = $('.tb-title'); ti.style.opacity = o.title ? o.title.a : 0;
+      if (o.title) { ti.querySelector('b').textContent = o.title.t; ti.querySelector('span').textContent = o.title.s || ''; ti.querySelector('i').style.width = Math.round(o.title.k * 120) + 'px'; ti.style.transform = 'translateY(' + Math.round((1 - o.title.k) * 10) + 'px)'; ti.querySelector('span').style.opacity = Math.max(0, Math.min(1, o.title.k * 2 - 0.6)); }
+      const lp = $('.tb-loop'); lp.style.opacity = o.loop ? 1 : 0; if (o.loop) lp.querySelectorAll('em').forEach((e, i) => e.classList.toggle('on', i === o.loop.i));
+      const sp = $('.tb-stamp'); sp.style.opacity = o.stamp ? o.stamp.a : 0;
+      if (o.stamp) { sp.querySelector('div').textContent = o.stamp.t; sp.querySelector('span').textContent = o.stamp.s || ''; sp.style.transform = 'translate(-50%,-50%) scale(' + o.stamp.sc + ')'; }
+      $('.tb-leg').style.opacity = o.leg || 0;
       const sub = $('.tb-sub'); sub.style.opacity = o.sub ? 1 : 0; if (o.sub) sub.innerHTML = (o.sub[0] ? '<b>' + o.sub[0] + '</b>' : '') + o.sub[1];
-      const e = $('.tb-end'); e.style.opacity = o.end || 0;
+      const e = $('.tb-end'); e.style.opacity = o.end ? o.end.a : 0;
+      if (o.end) { e.querySelector('img').style.transform = 'scale(' + o.end.sc + ')'; e.querySelector('.t').style.opacity = o.end.t; e.querySelector('.f').style.opacity = o.end.f; e.querySelector('.u').style.opacity = o.end.f; const sh = $('.tb-shine'); sh.style.opacity = o.end.sh > 0 && o.end.sh < 1 ? 1 : 0; sh.style.transform = 'translateX(' + Math.round((o.end.sh - 0.5) * 1400) + 'px)'; }
     };
     window.__storyLine = () => {
       const w = document.querySelector('.hkst .who'), t = document.querySelector('.hkst .txt');
-      return t ? [w ? w.textContent.trim() : '', t.textContent.trim()] : null;
+      return t && t.textContent.trim() ? [w ? w.textContent.trim() : '', t.textContent.trim()] : null;
     };
-  });
-  await p.evaluate(async () => { await document.fonts.ready; });
-
-  /* durum kurucular */
-  const setup = async (s, prev) => p.evaluate(([s, prev]) => {
+    /* çekim kurulumları */
     const step = sec => { for (let i = 0; i < Math.round(sec * 30); i++) window.__step(1000 / 30); };
-    if (prev && prev.story) { try { HK_STORY.close(); } catch (e) { } document.body.classList.remove('tbstory'); }
-    if (prev && (prev.book || prev.office)) { document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden')); document.body.classList.remove('tbpanel'); }
-    if (s.st === 'rich' && !window.__rich) {
-      window.__rich = 1;
-      const S = BT.S; S.tut = 99; BT.M().office = true; S.ctrl = 2; S.cash = 184250; S.rep = 2400;
+    const hideOv = () => document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
+    const at = (x, y) => { BT.player.x = x; BT.player.y = y; };
+    const makeRich = () => {
+      const S = BT.S; S.tut = 99; S.ctrl = 2; S.cash = 184250; S.rep = 2400; BT.M().office = true;
       for (let i = 1; i < BT.areas.length; i++) BT.areas[i].locked = false;
       BT.areas.forEach(a => { a.lvl = Math.max(a.lvl, 3); });
       BT.rebuildCounters();
@@ -146,80 +218,98 @@ const GRADES = {   /* [renk, karışım, güç] */
       BT.decor.forEach(d => { d.got = true; });
       BT.counters.forEach(c => { c.open = true; c.seen = true; });
       BT.reassignWorkers();
-      BT.day.phase = 'play'; BT.day.t = 30;
-      BT.player.x = 6; BT.player.y = 8;
-      step(30);                                                /* koy dolsun, kuyruklar kurulsun */
-      document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
-    }
-    if (BT.day.t > BT.DAY_LEN * 0.6) BT.day.t = 30;            /* gün sonu raporu çekime düşmesin */
-    if (s.z) { const z = document.querySelector('#zoomSeg button[data-z="' + s.z + '"]'); if (z) z.click(); document.getElementById('settingsScreen').classList.add('hidden'); }
-    document.body.classList.toggle('tbev', !!s.ev);
-    if (s.ev) BT.setEvent(s.ev);
-    if (s.from) { BT.player.x = s.from[0]; BT.player.y = s.from[1]; }
-    if (s.path) { BT.player.x = s.path[0][1]; BT.player.y = s.path[0][2]; }
-    if (s.special) {
-      BT.S.names = (BT.S.names || []).filter(id => id !== 'temel'); BT.S.jobs = (BT.S.jobs || []).filter(id => id !== 'temel');
-      const c = BT.counters[0]; c.slots.fill(null); BT.customers.forEach(q => { if (q.c === c) q.state = 'leave'; });
-      BT.day.spec = ['temel', 'caner']; BT.spawnSpecial(0);
-      const cu = BT.customers.find(q => q.spec === 'temel'); if (cu) { cu.x = 11.2; cu.y = c.y + 0.9; }
-    }
-    step(s.pre || 0.6);
-    document.querySelectorAll('#toast,#achPop').forEach(x => { x.classList.remove('show'); });
-    if (s.book) { document.body.classList.add('tbpanel'); BT.openCustBook(); }
-    if (s.office) { document.body.classList.add('tbpanel'); BT.openOffice(); }
-    if (s.story) {
-      document.body.classList.add('tbstory');
-      window.HK_STORY_OFF = 0;
-      HK_STORY.open(8, { lang: 'en', ber: 6, flags: {}, known: ['k', 'h', 't', 'a', 's'] });
-      step(0.4);
-    }
-  }, [s, prev || null]);
+      BT.day.phase = 'play'; BT.day.t = 25;
+      at(6.2, 23.0);                                   /* oyuncu kadraj dışında, Hizmet Sahası'nda */
+      step(30); hideOv();
+    };
+    window.__setup = (id, prev) => {
+      window.__keepSpec = id === 'special'; window.__uiScale = id === 'special' ? 1.9 : 1;
+      if (prev === 'story') { try { HK_STORY.close(); } catch (e) { } document.body.classList.remove('tbstory'); }
+      if (prev === 'book') { hideOv(); document.body.classList.remove('tbpanel'); }
+      if (BT.day.t > BT.DAY_LEN * 0.55 && id !== 'night') BT.day.t = 25;
+      if (id === 'net') { at(2.6, 1.5); step(2.2); }
+      if (id === 'fillet') { at(4.2, 1.8); }
+      if (id === 'sell') { at(6.4, 2.6); step(1.4); at(7.6, 3.0); }
+      if (id === 'growA') { at(9.4, 5.2); }
+      if (id === 'growB') { makeRich(); }
+      if (id === 'crew' || id === 'zones' || id === 'rush') at(6.2, 23.0);
+      if (id === 'special') {
+        at(6.2, 23.0);
+        BT.S.names = (BT.S.names || []).filter(x => x !== 'temel'); BT.S.jobs = (BT.S.jobs || []).filter(x => x !== 'temel');
+        const c = BT.counters[0]; c.slots.fill(null); BT.customers.forEach(q => { if (q.c === c) q.state = 'leave'; });
+        step(1.5);
+        BT.day.spec = ['temel', 'caner']; BT.spawnSpecial(0);
+        const cu = BT.customers.find(q => q.spec === 'temel'); if (cu) { cu.x = 10.6; cu.y = c.y + 0.9; }
+        step(0.3);
+      }
+      if (id === 'book') {
+        const ids = BT.SPECIALS.map(x => x.id); BT.S.met = ids.slice(0, 44); BT.S.names = ids.filter((x, i) => i % 3 === 0).slice(0, 15); BT.S.jobs = ids.filter((x, i) => i % 2 === 0).slice(0, 26);
+        document.body.classList.add('tbpanel'); BT.openCustBook();
+      }
+      if (id === 'night') { BT.day.t = BT.DAY_LEN * 0.9; }
+      if (id === 'story') {
+        document.body.classList.add('tbstory'); window.HK_STORY_OFF = 0;
+        HK_STORY.open(8, { lang: 'en', ber: 6, flags: {}, known: ['k', 'h', 't', 'a', 's'] }); step(0.3);
+      }
+      if (id !== 'book' && id !== 'story') hideOv();
+    };
+  });
+  await p.evaluate(async () => { await document.fonts.ready; });
 
-  const N = DUR * FPS; let cur = -1, storyTap = 0;
-  const ease = u => u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
-  const fadeIO = (s, u, len, fin, fout) => Math.max(0, Math.min(1, (s * 0 + u * len) / fin, ((1 - u) * len) / fout));
+  const N = DUR * FPS; let cur = -1, tap = 0;
+  const eio = u => u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+  const camAt = (c, u) => { let i = 0; while (i < c.length - 2 && u > c[i + 1][0]) i++; const v = eio(clamp01((u - c[i][0]) / (c[i + 1][0] - c[i][0]))); return { x: c[i][1] + (c[i + 1][1] - c[i][1]) * v, y: c[i][2] + (c[i + 1][2] - c[i][2]) * v }; };
   for (let f = 0; f < N; f++) {
-    const s = f / FPS, si = SHOTS.findIndex(g => s >= g.a && s < g.b), g = SHOTS[si], len = g.b - g.a, u = (s - g.a) / len;
-    const want = !PREVIEW || f % 10 === 0;
+    const s = f / FPS, si = SHOTS.findIndex(g => s >= g.a && s < g.b), g = SHOTS[si], len = g.b - g.a, u = (s - g.a) / len, lt = s - g.a;
     const active = !ONLY || ONLY.includes(g.id);
     if (si !== cur) {
-      if (!active) { cur = si; continue; }
-      if (!g.black || g.end) await setup(g, SHOTS[cur]);
-      cur = si; storyTap = 0;
-      console.log('shot', g.id, s.toFixed(2));
+      const prev = cur >= 0 ? SHOTS[cur].id : null; cur = si; tap = 0;
+      if (g.kind === 'game' && (active || ['growB'].includes(g.id))) {
+        await p.evaluate(([g, prev]) => { TBS.hide(); if (g.z) window.__zoom(g.z); window.__setup(g.id, prev); }, [g, prev]);
+      }
+      console.log('çekim', g.id, s.toFixed(2));
     }
     if (!active) continue;
-    /* sinema katmanı durumu */
-    const o = { bars: 66, black: 0, flash: 0, grade: GRADES[g.grade] || null };
-    if (g.barsIn) o.bars = Math.round(66 * Math.min(1, ease(u * len / 1.4)));
-    if (g.black) o.black = 1;
-    if (si > 0 && SHOTS[si - 1].black && !g.black) o.black = Math.max(0, 1 - u * len / 0.8);     /* siyahtan açılış */
-    if (g.flashOut) o.flash = Math.max(0, (u * len - (len - 0.35)) / 0.35);
-    if (g.a === T0 || g.a === at(24)) o.flash = Math.max(0, 1 - u * len / 0.45);                 /* vuruşta beyaz patlama */
-    else if (!g.black && si > 0 && !SHOTS[si - 1].black && !g.story) o.flash = Math.max(o.flash, 0.35 * Math.max(0, 1 - u * len / 0.12));
-    if (g.id === 'events') o.black = Math.max(o.black, Math.max(0, (u * len - (len - 0.25)) / 0.25));
-    if (g.card) { o.card = g.card; o.cardT = Math.min(1, u * len / (len * 0.55)); o.cardA = fadeIO(s, u, len, 0.25, 0.4); }
-    if (g.mid) { o.mid = g.mid; o.midT = Math.min(1, (u * len - 0.5) / 1.4); o.midA = fadeIO(s, u, len, 0.5, 0.4); }
-    if (g.low) { o.low = g.low; o.lowT = Math.min(1, (u * len - 0.15) / 0.7); o.lowA = Math.min(1, Math.max(0, (u * len - 0.1) / 0.3), (len - u * len) / 0.2); }
-    if (g.story) {
-      o.sub = await p.evaluate(() => window.__storyLine());
-      o.ttl = Math.min(1, Math.max(0, (u * len - (len - 3.4)) / 0.5));
-      o.black = Math.max(o.black, Math.max(0, (u * len - (len - 0.3)) / 0.3));
-    }
-    if (g.end) { o.end = Math.min(1, u * len / 0.6); o.black = 0; o.bars = 0; o.flash = Math.max(0, 1 - u * len / 0.5); }
-    await p.evaluate(([g, u, o, tap]) => {
-      window.__tb(o);
-      if (g.from) { const k = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; BT.player.x = g.from[0] + (g.to[0] - g.from[0]) * k; BT.player.y = g.from[1] + (g.to[1] - g.from[1]) * k; }
-      if (g.path) {
-        const P = g.path; let i = 0; while (i < P.length - 2 && u > P[i + 1][0]) i++;
-        const v = Math.max(0, Math.min(1, (u - P[i][0]) / (P[i + 1][0] - P[i][0])));
-        BT.player.x = P[i][1] + (P[i + 1][1] - P[i][1]) * v; BT.player.y = P[i][2] + (P[i + 1][2] - P[i][2]) * v;
+    /* katman durumu */
+    const o = { bars: g.id === 'end' ? Math.round(66 * (1 - clamp01((lt - 0.2) / 1.0))) : 66, black: 0, flash: 0, grade: GRADES[g.grade] || null };
+    if (s < 1.2) o.black = 1 - clamp01(s / 1.2);
+    if (g.kind === 'black') o.black = 1;
+    FLASH.forEach(t0 => { if (s >= t0 && s < t0 + 0.4) o.flash = Math.max(o.flash, 0.7 * Math.pow(1 - (s - t0) / 0.4, 2)); });
+    DIPS.forEach(d => { if (s >= d[0] && s < d[1]) o.black = Math.max(o.black, (s - d[0]) / (d[1] - d[0])); });
+    if (g.id === 'legend' && lt < 0.6) o.black = Math.max(o.black, 1 - lt / 0.6);
+    if (g.id === 'end' && lt < 0.5) o.black = Math.max(o.black, 1 - lt / 0.5);
+    if (s > 59.2) o.black = Math.max(o.black, (s - 59.2) / 0.8);
+    TEXT.forEach(x => {
+      if (s < x.a || s >= x.b) return;
+      const tl = s - x.a, L = x.b - x.a, fade = clamp01(Math.min(tl / 0.35, (L - tl) / 0.3));
+      if (x.kind === 'int') o.int = { t: x.t, a: fade, k: clamp01(tl / L), low: false };
+      if (x.kind === 'title') { o.title = { t: x.t, s: x.s, a: clamp01(Math.min(tl / 0.12, (L - tl) / 0.15)), k: 1 - Math.pow(1 - clamp01(tl / 0.45), 3) }; o.band = Math.max(o.band || 0, o.title.a); }
+      if (x.kind === 'loop') o.loop = { i: Math.min(3, Math.floor((s - 14) / 2)) };
+      if (x.kind === 'stamp') o.stamp = { t: x.t, s: x.s, a: clamp01(Math.min(tl / 0.06, (L - tl) / 0.12)), sc: 1 + 0.25 * Math.pow(1 - clamp01(tl / 0.18), 2) };
+      if (x.kind === 'legend') o.leg = fade;
+      if (x.kind === 'end') { const k = clamp01(tl / 0.9); o.end = { a: clamp01(tl / 0.6), sc: 1.12 - 0.12 * (1 - Math.pow(1 - k, 3)), t: clamp01((tl - 1.0) / 0.5), f: clamp01((tl - 1.6) / 0.5), sh: clamp01((tl - 0.9) / 0.9) }; }
+    });
+    if (g.story) o.sub = await p.evaluate(() => window.__storyLine());
+    await p.evaluate(([g, lt, u, o, tapNow]) => {
+      if (g.kind === 'scene') TBS.draw(g.scene, (g.t0 || 0) + lt, u);
+      if (g.kind === 'black') TBS.hide();
+      if (g.kind === 'game' && g.cam) {
+        const c = g.cam; let i = 0; while (i < c.length - 2 && u > c[i + 1][0]) i++;
+        const v0 = Math.max(0, Math.min(1, (u - c[i][0]) / (c[i + 1][0] - c[i][0]))), v = v0 < 0.5 ? 2 * v0 * v0 : 1 - Math.pow(-2 * v0 + 2, 2) / 2;
+        window.__cam = { x: c[i][1] + (c[i + 1][1] - c[i][1]) * v, y: c[i][2] + (c[i + 1][2] - c[i][2]) * v };
       }
-      if (tap && HK_STORY._mode() === 'dlg') HK_STORY._tap();
-      if (!g.black || g.end) window.__step(1000 / 30);
-    }, [g, u, o, g.story && (++storyTap % 52 === 0)]);
-    if (want) await p.screenshot({ path: path.join(OUT, String(PREVIEW ? f / 10 : f).padStart(5, '0') + '.jpg'), type: 'jpeg', quality: PREVIEW ? 80 : 93 });
-    if (f % 150 === 0) console.log('kare', f, '/', N);
+      /* oyuncu yürüyüşleri */
+      if (g.id === 'fillet') { const k = Math.min(1, lt / 0.6); BT.player.x = 4.2 + 0.8 * k; BT.player.y = 1.8 + 0.2 * k; if (lt > 1.3) { const k2 = Math.min(1, (lt - 1.3) / 0.5); BT.player.x = 5.0 + 1.4 * k2; BT.player.y = 2.0 + 0.6 * k2; } }
+      if (g.id === 'special') { const cu = BT.customers.find(q => q.spec === 'temel'); if (cu) window.__cam = { x: cu.x - 0.4 - 0.3 * u, y: cu.y + 0.5 }; }
+      if (g.id === 'sell') { const k = Math.min(1, lt / 0.5); BT.player.x = 7.6 + 0.6 * k; BT.player.y = 3.0 + 0.2 * k; }
+      if (tapNow && window.HK_STORY && HK_STORY._mode() === 'dlg') HK_STORY._tap();
+      window.__tb(o);
+      window.__glow(g.id === 'night', lt);
+      if (g.kind === 'game') window.__step(1000 / 30);
+    }, [g, lt, u, o, g.story && (++tap % 40 === 0)]);
+    if (!PREVIEW || f % 10 === 0) await p.screenshot({ path: path.join(OUT, String(PREVIEW ? f / 10 : f).padStart(5, '0') + '.jpg'), type: 'jpeg', quality: PREVIEW ? 82 : 94 });
+    if (f % 300 === 0) console.log('kare', f, '/', N);
   }
   await b.close();
 })();

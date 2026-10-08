@@ -43,12 +43,18 @@ Videoda başka platform adı geçmez (Apple önizleme kuralı). Müzik `tools/mu
 ## 4b. Sinematik fragman (EN, 60 sn)
 | Dosya | Boyut | Nereye |
 |---|---|---|
-| `video/trailer-1920x1080-en.mp4` | 1920×1080, 30 fps, H.264 + AAC | YouTube, Steam/itch sayfası, basın, sosyal medya |
+| `video/trailer-1920x1080-en.mp4` | 1920×1080, 30 fps, H.264 + AAC | YouTube, basın, sosyal medya, mağaza tanıtım videosu |
 
-Akış: soğuk açılış (Karadeniz kıyısı, küçük iskele) → vuruş → 10 mekanik başlığı (ağ, kesim, tezgâh, personel ve müdür,
-fümehane 2.4×, Reis Güveci, 69 özel müşteri, Müşteri Defteri, Ticaret Ofisi, olaylar) → Dipteki Söz ara sahnesi →
-geniş liman planı → logo kartı. Görüntülerin hepsi oyunun kendisi; üstüne sinema şeridi, renk tonu ve piksel yazı biner.
-Müzik `tools/trailer-music.py` ile üretilen özgün parçadır (deniz ambiyansı, horon teması, hicaz kesiği).
+İki kaynak iç içe kurgulanır:
+- **Elle çizilmiş piksel sahneler** (`tools/trailer-scenes.js`, 320×180 ×6): şafakta Karadeniz köyü, hamsi sürüsü,
+  kayıktan ağ atma, lodos gecesi, dipteki Şahmeran, gece limanı (logo zemini).
+- **Gerçek oyun**: `game.js` çekim sırasında tarayıcıya küçük yamalarla sunulur (dosya değişmez): serbest kamera,
+  yakın plan (yakınlık 1–5), oyun içi etiketler gizli.
+
+Akış: Karadeniz ve hamsi → ağ → vuruş → CATCH › FILLET › SELL › GROW → personel ve müdür → dört bölge
+(fümehane 2.4×, Reis Güveci) → 69 özel müşteri → Müşteri Defteri → lodos, sürü, yoğun saat → Dipteki Söz →
+gece limanı → logo. Müzik `tools/trailer-music.py`: deniz, martılar, kemençe, davul ve tef ile horon, hicaz ney ve koro,
+çekimlere oturan ses efektleri (ağ, suya düşüş, sikke, gök gürültüsü); yankı ve stereo miks.
 
 ## 5. Yükleme sırası (kısa kontrol listesi)
 **App Store Connect**
@@ -94,7 +100,7 @@ ffmpeg -framerate 30 -i frames-tr/%05d.jpg -i promo-music.wav -c:v libx264 -prof
 ```
 Sinematik fragman (`node store/tools/trailer.js preview` her 10. kareyi çeker; sona çekim adları eklenirse yalnız onları):
 ```
-node store/tools/trailer.js                                   # 1800 kare → video/frames-trailer/
+node store/tools/trailer.js                                   # 1800 kare → video/frames-trailer/ (sahneler: tools/trailer-scenes.js)
 python3 store/tools/trailer-music.py store/video/trailer-music.wav
 cd store/video && ffmpeg -framerate 30 -i frames-trailer/%05d.jpg -i trailer-music.wav -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 18 -r 30 -c:a aac -b:a 192k -ar 48000 -shortest -movflags +faststart trailer-1920x1080-en.mp4
 ```
