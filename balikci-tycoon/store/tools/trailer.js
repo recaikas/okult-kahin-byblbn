@@ -4,14 +4,14 @@
    2) gerçek oyun — game.js çekim sırasında küçük yamalarla yüklenir: kamera serbest, yakınlık 1–5, oyun içi etiketler gizli
    Oyunun saati sanaldır (rAF/performance.now/setTimeout adımlanır), her kare tek tek çekilir. Zamanlar müziğe oturur
    (120 BPM, 1 ölçü = 2 sn, logo vuruşu 15.0'te). Müzik: trailer-music.py.
-   Kullanım: node store/tools/trailer.js [en|tr] [preview [çekim,çekim]]   (oyun klasörü 8099'da sunulmalı)
+   Kullanım: node store/tools/trailer.js [en|tr] [v] [preview [çekim,çekim]]   (v: dikey 1080×1920)   (oyun klasörü 8099'da sunulmalı)
    Çıktı: store/video/frames-trailer-<dil>/NNNNN.jpg  (preview: her 10. kare → frames-trailer-preview-<dil>/) */
 const { chromium } = require('../../test-offline');
 const fs = require('fs'), path = require('path');
-const ARGS = process.argv.slice(2), LANG = ARGS.includes('tr') ? 'tr' : 'en';
+const ARGS = process.argv.slice(2), LANG = ARGS.includes('tr') ? 'tr' : 'en', V = ARGS.includes('v');   /* v: dikey 1080×1920 */
 const FPS = 30, DUR = 60, PREVIEW = ARGS.includes('preview');
-const ONLY = ARGS.length && ARGS[ARGS.length - 1].match(/^[a-z]+(,[a-z]+)*$/) && !['tr', 'en', 'preview'].includes(ARGS[ARGS.length - 1]) ? ARGS[ARGS.length - 1].split(',') : null;
-const OUT = path.resolve(__dirname, '..', 'video', (PREVIEW ? 'frames-trailer-preview-' : 'frames-trailer-') + LANG);
+const ONLY = ARGS.length && ARGS[ARGS.length - 1].match(/^[a-z]+(,[a-z]+)*$/) && !['tr', 'en', 'preview', 'v'].includes(ARGS[ARGS.length - 1]) ? ARGS[ARGS.length - 1].split(',') : null;
+const OUT = path.resolve(__dirname, '..', 'video', (PREVIEW ? 'frames-trailer-preview-' : 'frames-trailer-') + LANG + (V ? '-v' : ''));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -130,7 +130,7 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'so
   fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
   const gameSrc = patchGame(fs.readFileSync(path.resolve(__dirname, '..', '..', 'game.js'), 'utf8'));
   const b = await chromium.launch();
-  const ctx = await b.newContext({ viewport: { width: 960, height: 540 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  const ctx = await b.newContext({ viewport: V ? { width: 540, height: 960 } : { width: 960, height: 540 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   await ctx.addInitScript(VCLOCK);
   await ctx.route('**/game.js', r => r.fulfill({ contentType: 'application/javascript', body: gameSrc }));
   const p = await ctx.newPage();
@@ -148,6 +148,7 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'so
     window.__uiKeep = q => window.__keepSpec && typeof q.s === 'string' && /^[★“]/.test(q.s);     /* yalnız özel müşteri çekiminde: adı ve sözü */
     window.__pumpOff();
   });
+  if (V) await p.evaluate(() => { window.TBS_V = 1; document.body.classList.add('tbv'); });
   await p.addScriptTag({ path: path.join(__dirname, 'trailer-scenes.js') });
 
   /* ---------- sinema katmanı ---------- */
@@ -190,7 +191,20 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'so
       '.tbstory .hkst{padding:0!important;background:#000!important;z-index:150!important}.tbstory .hkst .app{max-width:none!important;width:100vw;height:100vh;justify-content:center;align-items:center}' +
       '.tbstory .hkst .stage{border:0!important;box-shadow:none!important}.tbstory .hkst canvas{width:auto!important;height:100vh!important}' +
       '.tbstory .hkst .panel,.tbstory .hkst .skip,.tbstory .hkst .hud{display:none!important}' +
-      '.tbpanel #custScr:not(.hidden){transform:scale(.78);transform-origin:50% 46%}';
+      '.tbpanel #custScr:not(.hidden){transform:scale(.78);transform-origin:50% 46%}' +
+      /* dikey: telefon ekranı, sosyal medya arayüzlerinin kapatmadığı orta alan */
+      'body.tbv #tbg .tb-int{top:19%;transform:none;font-size:21px;white-space:normal;padding:0 30px;line-height:1.4}' +
+      'body.tbv #tbg .tb-title{bottom:215px;padding:0 24px}body.tbv #tbg .tb-title b{font-size:40px;letter-spacing:.1em;white-space:normal;line-height:1.12}' +
+      'body.tbv #tbg .tb-title span{font-size:15px;white-space:normal;line-height:1.45;padding:0 10px}body.tbv #tbg .tb-band{bottom:0;height:470px}' +
+      'body.tbv #tbg .tb-loop{bottom:172px;font-size:12px;gap:8px;letter-spacing:.2em}' +
+      'body.tbv #tbg .tb-stamp div{font-size:24px;white-space:normal;padding:10px 18px 8px;width:400px;line-height:1.35}' +
+      'body.tbv #tbg .tb-leg{left:0;right:0;text-align:center;top:150px}body.tbv #tbg .tb-leg small{font-size:11px;letter-spacing:.3em}body.tbv #tbg .tb-leg b{font-size:38px}' +
+      'body.tbv #tbg .tb-sub{bottom:150px;padding:0 26px;font-size:16px;line-height:1.45}' +
+      'body.tbv #tbg .tb-end{padding-bottom:300px;padding-left:24px;padding-right:24px;text-align:center}body.tbv #tbg .tb-end img{width:430px}' +
+      'body.tbv #tbg .tb-end .t{font-size:21px}body.tbv #tbg .tb-end .f{font-size:12px;letter-spacing:.2em}body.tbv #tbg .tb-end .u{font-size:11px;line-height:1.5}' +
+      'body.tbv #tbg .tb-logo img{width:470px}' +
+      'body.tbv #tbg .tb-chip{top:140px;font-size:16px}body.tbv #tbg .tb-cash{left:0;right:0;text-align:center;top:190px}body.tbv #tbg .tb-cash b{font-size:34px}' +
+      'body.tbv.tbstory .hkst canvas{width:100vw!important;height:auto!important}';
     document.head.appendChild(st);
     const g = document.createElement('div'); g.id = 'tbg';
     g.innerHTML = '<div class="tb-gr"></div><div class="tb-vg"></div><div class="tb-band"></div>' +
@@ -206,10 +220,10 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'so
     const snap = document.createElement('img'); snap.id = 'tbsnap'; document.body.appendChild(snap);
     window.__snap = src => new Promise(r => { snap.onload = () => r(); snap.src = src; snap.style.opacity = 1; });
     window.__snapA = a => { snap.style.opacity = a; };
-    const gc = document.createElement('canvas'); gc.id = 'tbglow'; gc.width = 1920; gc.height = 1080; document.body.appendChild(gc);
+    const GW = innerWidth * 2, GH = innerHeight * 2, gc = document.createElement('canvas'); gc.id = 'tbglow'; gc.width = GW; gc.height = GH; document.body.appendChild(gc);
     const gx = gc.getContext('2d');
     window.__glow = (on, tt) => {
-      gx.clearRect(0, 0, 1920, 1080); if (!on) return;
+      gx.clearRect(0, 0, GW, GH); if (!on) return;
       BT.AREA_LAMPS.flat().forEach((l, i) => {
         const p = BT.scr(l.x, l.y, 30), r = 95 + 8 * Math.sin(tt * 3 + i);
         const gr = gx.createRadialGradient(p.x * 2, p.y * 2, 0, p.x * 2, p.y * 2, r * 2);
@@ -276,7 +290,7 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'so
     };
     window.__setup = (g, prev) => {
       const id = g.id;
-      window.__keepSpec = id === 'special'; window.__uiScale = id === 'special' ? 1.9 : 1;
+      window.__keepSpec = id === 'special'; window.__uiScale = id === 'special' ? (document.body.classList.contains('tbv') ? 1.3 : 1.9) : 1;
       if (prev === 'story') { try { HK_STORY.close(); } catch (e) { } document.body.classList.remove('tbstory'); }
       if (prev === 'book') { hideOv(); document.body.classList.remove('tbpanel'); }
       if (g.day) BT.day.t = BT.DAY_LEN * g.day;
@@ -318,7 +332,7 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'so
     if (si !== cur) {
       const prev = cur >= 0 ? SHOTS[cur].id : null; cur = si; tap = 0;
       if (g.kind === 'game' && active) {
-        await p.evaluate(([g, prev]) => { TBS.hide(); if (g.z) window.__zoom(g.z); window.__setup(g, prev); }, [g, prev]);
+        await p.evaluate(([g, prev, V]) => { TBS.hide(); if (g.z) window.__zoom(g.z + (V ? 1 : 0)); window.__setup(g, prev); }, [g, prev, V]);
       }
       if (g.kind === 'scene') await p.evaluate(g => TBS.opt(g.opt), g);
       if (g.tr === 'dissolve' && last && active) await p.evaluate(src => window.__snap(src), 'data:image/jpeg;base64,' + last.toString('base64'));
@@ -327,7 +341,7 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'so
     }
     if (!active) continue;
     /* katman durumu */
-    const o = { bars: g.id === 'end' ? Math.round(66 * (1 - clamp01((lt - 0.2) / 1.0))) : 66, black: 0, flash: 0, grade: GRADES[g.grade] || null };
+    const o = { bars: V ? 0 : g.id === 'end' ? Math.round(66 * (1 - clamp01((lt - 0.2) / 1.0))) : 66, black: 0, flash: 0, grade: GRADES[g.grade] || null };
     if (g.kind === 'black') o.black = 1;
     FLASH.forEach(([t0, k]) => { if (s >= t0 && s < t0 + 0.45) o.flash = Math.max(o.flash, k * Math.pow(1 - (s - t0) / 0.45, 2)); });
     o.snap = g.tr === 'dissolve' ? Math.max(0, 1 - lt / g.td) : 0;

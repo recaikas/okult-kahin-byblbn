@@ -1,13 +1,36 @@
 /* Fragmanın elle çizilmiş sinematik sahneleri. 320×180 piksel, ×6 büyütülür (1920×1080). Tarayıcıda çalışır: window.TBS.
    Katmanlar çıkış tuvaline kesirli kaydırmayla basılır: pikseller keskin kalır, kamera akıcı kayar.
    Sahneler: dawn (şafak), deep (hamsi sürüsü), cast (ağ atma), storm (lodos), legend (Şahmeran), finale (gece limanı)
-   TBS.draw(ad, t, u) — t: sahnenin saniyesi, u: 0..1 ilerleme */
+   TBS.draw(ad, t, u) — t: sahnenin saniyesi, u: 0..1 ilerleme
+   Dikey mod (window.TBS_V = 1, yüklemeden önce): sahne yine yatay çizilir; 135 piksel genişliğinde bir dilim ×8 büyütülüp
+   1080×1440 olarak ortaya konur, dilim sahne içinde yavaşça kayar (CROP). Üst ve alt 240 px sahnenin kenar renkleriyle,
+   karanlığa doğru yumuşakça doldurulur (yazılar oraya oturur). */
 (function () {
   'use strict';
   var W = 320, H = 180, K = 6;
-  var out = document.createElement('canvas'); out.id = 'tbs'; out.width = W * K; out.height = H * K;
-  out.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:180;image-rendering:pixelated;display:none;background:#000';
-  document.body.appendChild(out);
+  var VERT = !!window.TBS_V;
+  var out = document.createElement('canvas'); out.width = W * K; out.height = H * K;
+  var shown = out;
+  if (VERT) { shown = document.createElement('canvas'); shown.width = 1080; shown.height = 1920; }
+  shown.id = 'tbs';
+  shown.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:180;image-rendering:pixelated;display:none;background:#000';
+  document.body.appendChild(shown);
+  var PV = VERT ? shown.getContext('2d') : null, PAD = layer(16, 1);
+  /* dikey kadraj: sahne başında ve sonunda dilimin ortası (sahne pikseli) */
+  var CROP = { dawn: [104, 196], cast: [150, 192], deep: [162, 150], storm: [150, 196], legend: [160, 160], finale: [196, 214] };
+  function compose(name, u) {
+    var c = CROP[name] || [160, 160], e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2, cw = 135;
+    var cx = Math.max(cw / 2, Math.min(W - cw / 2, c[0] + (c[1] - c[0]) * e)), sx = Math.round((cx - cw / 2) * K);
+    PV.setTransform(1, 0, 0, 1, 0, 0); PV.fillStyle = '#000'; PV.fillRect(0, 0, 1080, 1920);
+    [[0, 0], [H * K - K * 2, 1680]].forEach(function (q, i) {          /* kenar rengiyle dolgu */
+      PAD.g.imageSmoothingEnabled = true; PAD.g.clearRect(0, 0, 16, 1); PAD.g.drawImage(out, sx, q[0], cw * K, K * 2, 0, 0, 16, 1);
+      PV.imageSmoothingEnabled = true; PV.drawImage(PAD.c, 0, 0, 16, 1, 0, q[1], 1080, 240);
+      var gr = PV.createLinearGradient(0, q[1], 0, q[1] + 240);
+      gr.addColorStop(i ? 0 : 1, 'rgba(0,0,0,0)'); gr.addColorStop(i ? 1 : 0, 'rgba(0,0,0,0.78)');
+      PV.fillStyle = gr; PV.fillRect(0, q[1], 1080, 240);
+    });
+    PV.imageSmoothingEnabled = false; PV.drawImage(out, sx, 0, cw * K, H * K, 0, 240, 1080, 1440);
+  }
   var O = out.getContext('2d'); O.imageSmoothingEnabled = false;
 
   /* ---------- yardımcılar ---------- */
@@ -532,7 +555,7 @@
   var SC = { dawn: drawDawn, deep: drawDeep, cast: drawCast, storm: drawStorm, legend: drawLegend, finale: drawFinale };
   window.TBS = {
     opt: function (o) { OPT = o || {}; },
-    draw: function (name, t, u) { out.style.display = 'block'; O.setTransform(1, 0, 0, 1, 0, 0); O.globalAlpha = 1; O.fillStyle = '#000'; O.fillRect(0, 0, out.width, out.height); SC[name](t, u); },
-    hide: function () { out.style.display = 'none'; }
+    draw: function (name, t, u) { shown.style.display = 'block'; O.setTransform(1, 0, 0, 1, 0, 0); O.globalAlpha = 1; O.fillStyle = '#000'; O.fillRect(0, 0, out.width, out.height); SC[name](t, u); if (VERT) compose(name, u); },
+    hide: function () { shown.style.display = 'none'; }
   };
 })();

@@ -1,6 +1,6 @@
 # Hamsi Koyu sinematik fragmanı: nasıl yapıldı?
 
-60 saniyelik, 1920×1080, piksel sanatlı, sinematik bir oyun fragmanı. İngilizce (`video/trailer-1920x1080-en.mp4`) ve Türkçe (`video/trailer-1920x1080-tr.mp4`) iki sürümü var.
+60 saniyelik, 1920×1080, piksel sanatlı, sinematik bir oyun fragmanı. İngilizce ve Türkçe, yatay (`video/trailer-1920x1080-{en,tr}.mp4`) ve dikey (`video/trailer-1080x1920-{en,tr}.mp4`) dört sürümü var.
 Hiçbir hazır görüntü, stok müzik ya da video düzenleme programı kullanılmadı. Her şey kodla üretildi:
 
 | Parça | Dosya | Ne yapar |
@@ -118,6 +118,17 @@ Numpy ile sentezlenir, hiçbir örnek ses kullanılmaz.
 - **Miks:** kuru kanal ve yankı gönderimi (2,6 sn yapay oda, sol ve sağ ayrı), hafif stereo genişlik, yumuşak sınırlayıcı.
   Bölümler arasında bilinçli ses farkı var: giriş sessiz, logo ve final yüksek, kesik anı neredeyse sessiz.
 
+## 6b. Dikey sürüm (1080×1920)
+
+Yatay video kırpılmaz; dikey ekranda baştan çekilir.
+- **Oyun:** tarayıcı penceresi dikeydir (540×960 @2x). Oyun mobilde zaten dikey çalıştığı için kadraj doğaldır.
+  Yakınlık bir kademe artırılır; böylece piksel büyüklüğü yatay sürümle aynı kalır.
+- **Çizilmiş sahneler:** sahne yine yatay çizilir. 135 piksel genişliğinde bir dilim ×8 büyütülerek ortaya konur ve dilim sahne
+  içinde yavaşça kayar: şafakta köyden güneşe, ağda balıkçıdan ağın düştüğü yere. Üst ve alt boşluklar sahnenin kenar renkleriyle,
+  karanlığa doğru yumuşakça doldurulur.
+- **Yazılar:** sinema şeritleri yok. Yazılar küçülür, satıra bölünür ve sosyal medya arayüzlerinin kapatmadığı orta alana
+  oturur: ara yazılar üstte, başlıklar alt üçte birlikte.
+
 ## 7. Süreçte öğrenilenler
 
 | Deneme | Sorun | Çözüm |
@@ -134,6 +145,7 @@ En büyük farkı yaratanlar: (1) sahneleri bağlayan hikâye, (2) oyun sahneler
 cd balikci-tycoon && python3 -m http.server 8099          # ayrı bir terminalde
 node store/tools/trailer.js en                              # 1800 kare → store/video/frames-trailer-en/
 node store/tools/trailer.js tr                              # Türkçe     → store/video/frames-trailer-tr/
+node store/tools/trailer.js tr v                            # dikey 1080×1920 → store/video/frames-trailer-tr-v/
 node store/tools/trailer.js tr preview grow,special         # hızlı önizleme: her 10. kare, yalnız seçilen çekimler
 python3 store/tools/trailer-music.py store/video/trailer-music.wav
 cd store/video && ffmpeg -framerate 30 -i frames-trailer-tr/%05d.jpg -i trailer-music.wav \
