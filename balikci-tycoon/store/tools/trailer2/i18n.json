@@ -1,0 +1,31 @@
+{
+  "tr": {
+    "texts": {
+      "THE BLACK SEA. BEFORE DAWN.": "KARADENİZ. GÜN DOĞMADAN.",
+      "A TINY PIER.": "KÜÇÜCÜK BİR İSKELE.",
+      "ONE OLD NET.": "ESKİ BİR AĞ.",
+      "AND A DREAM TOO BIG FOR IT.": "VE İSKELEYE SIĞMAYAN BİR HAYAL.",
+      "CATCH.": "TUT.",
+      "FILLET.": "KES.",
+      "SELL.": "SAT.",
+      "GROW.": "BÜYÜT.",
+      "69 QUIRKY CUSTOMERS.": "69 TUHAF MÜŞTERİ.",
+      "4 DISTRICTS. 6 FISH. ONE STEW.": "4 BÖLGE. 6 BALIK. 1 GÜVEÇ.",
+      "BUT THE SEA REMEMBERS.": "AMA DENİZ UNUTMAZ.",
+      "BENEATH THE WAVES…": "DALGALARIN ALTINDA…",
+      "SHAHMERAN": "ŞAHMERAN",
+      "“Do not hurry. At the bottom of the sea, time flows slowly.”": "“Acele etme. Denizin dibinde zaman ağır akar.”",
+      "THE PROMISE BELOW": "DİPTEKİ SÖZ",
+      "A 12-DAY ANATOLIAN LEGEND": "12 GÜNLÜK ANADOLU EFSANESİ",
+      "YOUR COVE AWAITS.": "KOYUN SENİ BEKLİYOR.",
+      "FREE  •  NO ADS  •  NO PURCHASES": "ÜCRETSİZ  •  REKLAMSIZ  •  SATIN ALMA YOK"
+    },
+    "cards": [
+      {"name": "KORO KEREM", "q": "Ben “hoop” derim, liman “la” der!"},
+      {"name": "ÖFKELİ ÖMER", "q": "ÖFKELİ DEĞİLİM! …Biraz."},
+      {"name": "SESSİZ SUAT", "q": "…Bu da Vak."},
+      {"name": "MIRIL BEY", "q": "Kedi Sendikası başkanıyım. Kırkı da aç."},
+      {"name": "BEDİA ABLA", "q": "Pula bakarım, kısmet çıkar."}
+    ]
+  }
+}

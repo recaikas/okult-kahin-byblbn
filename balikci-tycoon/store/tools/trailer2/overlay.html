@@ -11,16 +11,30 @@
   #bub .bx{background:#fff1c9;color:#2a1b44;border:10px solid #2a1b44;font:700 54px/1.25 "Pixelify Sans";padding:30px 38px;min-height:130px;box-shadow:10px 10px 0 rgba(0,0,0,.4);clip-path:polygon(0 14px,14px 14px,14px 0,calc(100% - 14px) 0,calc(100% - 14px) 14px,100% 14px,100% calc(100% - 14px),calc(100% - 14px) calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,14px calc(100% - 14px),0 calc(100% - 14px))}
   #bub .tail{position:absolute;left:-34px;bottom:70px;width:0;height:0;border-style:solid;border-width:22px 38px 22px 0;border-color:transparent #2a1b44 transparent transparent}
   #logo{position:absolute;left:360px;top:150px;width:1200px;opacity:0;image-rendering:pixelated;filter:drop-shadow(0 0 40px rgba(255,190,90,.55))}
+  body.v{width:1080px;height:1920px}
+  body.v .t{white-space:normal;padding:0 70px;box-sizing:border-box}
+  body.v #bub{left:50px;top:1020px;width:980px}body.v #bub .bx{font-size:50px}
+  body.v #bub .tail{left:auto;right:auto;left:150px;top:-44px;bottom:auto;border-width:0 22px 38px 22px;border-color:transparent transparent #2a1b44 transparent}
+  body.v #logo{left:90px;top:330px;width:900px}
+  body.v #flash{top:0;bottom:0}
+  body.v::before{content:"";position:absolute;left:0;right:0;bottom:0;height:700px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.6))}
 </style></head><body>
-<img id="logo" src="../../logo/logo-horizontal-en.png">
+<img id="logo" src="">
 <div id="tx"></div>
 <div id="bub"><div class="nm"></div><div class="bx"></div><div class="tail"></div></div>
 <div id="flash"></div><div id="black"></div>
 <script>
-const TL = fetch('timeline.json').then(r => r.json());
+const Q = new URLSearchParams(location.search), LANG = Q.get('lang') || 'en', V = Q.get('o') === 'v';
+if (V) document.body.className = 'v';
+const TL = (async () => {
+  const t = await (await fetch('timeline.json')).json();
+  if (LANG !== 'en') { const i = (await (await fetch('i18n.json')).json())[LANG]; t.texts.forEach(o => { if (i.texts[o.s]) o.s = i.texts[o.s]; }); t.cards.forEach((c, k) => Object.assign(c, i.cards[k])); }
+  document.getElementById('logo').src = V ? `../../logo/logo-stacked-${LANG}.png` : `../../logo/logo-horizontal-${LANG}.png`;
+  return t;
+})();
 const cl = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x)), sm = x => x * x * (3 - 2 * x);
 const pw = (arr, t) => { if (t <= arr[0][0]) return arr[0][1]; for (let i = 1; i < arr.length; i++) if (t <= arr[i][0]) { const [a, va] = arr[i - 1], [b, vb] = arr[i]; return b === a ? vb : va + (vb - va) * (t - a) / (b - a); } return arr[arr.length - 1][1]; };
-const POS = { bar: 1012, bar1: 972, bar2: 1022, mid: 470, mid2: 575, tag: 735, tag2: 800 };
+const POS = V ? { bar: 1530, bar1: 1470, bar2: 1545, mid: 930, mid2: 1050, tag: 1330, tag2: 1405 } : { bar: 1012, bar1: 972, bar2: 1022, mid: 470, mid2: 575, tag: 735, tag2: 800 }, SZ = V ? 0.8 : 1;
 let T = null, sig = '';
 window.ready = (async () => { T = await TL; await document.fonts.load('700 40px "Pixelify Sans"'); await new Promise(r => { const i = document.getElementById('logo'); i.complete ? r() : i.onload = r; }); return true; })();
 window.setT = t => {
@@ -28,7 +42,7 @@ window.setT = t => {
   T.texts.forEach(o => { const fi = o.fi || 0.45, fo = o.fo || 0.45, a = cl(Math.min((t - o.a) / fi, (o.b - t) / fo)); if (a <= 0) return;
     let s = o.s; if (o.typed) s = s.slice(0, Math.ceil(s.length * cl((t - o.a) / o.typed)));
     const slam = o.slam ? cl(1 - (t - o.a) / 0.22) : 0;
-    html += `<div class="t" style="top:${POS[o.pos] - o.size * 0.7}px;font:700 ${Math.round(o.size * 1.25)}px 'Pixelify Sans';letter-spacing:${o.track}px;color:${o.col || '#fff1c9'};opacity:${a};transform:translateY(${(1 - a) * 10}px) scale(${1 + slam * 0.35})">${s}</div>`; });
+    html += `<div class="t" style="top:${POS[o.pos] - o.size * 0.7 * SZ}px;font:700 ${Math.round(o.size * 1.25 * SZ)}px 'Pixelify Sans';letter-spacing:${o.track}px;color:${o.col || '#fff1c9'};opacity:${a};transform:translateY(${(1 - a) * 10}px) scale(${1 + slam * 0.35})">${s}</div>`; });
   tx.innerHTML = html;
   /* karakter kartı balonu */
   const cs = T.clips.find(c => c.id === 'cards'), bub = document.getElementById('bub'), per = 4 * T.BEAT * 4 / 4;

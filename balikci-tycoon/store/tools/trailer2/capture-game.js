@@ -3,9 +3,9 @@
    Zamanlama ritme göre: 1 vuruş = 60/152 sn (oyunun "Yayla Horonu" parçası). */
 const { chromium, openGame, sleep } = require('../scene');
 const fs = require('fs'), path = require('path');
-const [CLIP, MODE] = [process.argv[2] || 'g1', process.argv[3] || 'full'];
-const FPS = 30, BEAT = 60 / 152, W = 960, H = 404;
-const OUT = path.resolve(__dirname, '..', '..', 'video', 'trailer2', (MODE === 'preview' ? 'prev-' : 'frames-') + CLIP);
+const [CLIP, MODE] = [process.argv[2] || 'g1', process.argv[3] || 'full'], VERT = process.argv[4] === 'v';
+const FPS = 30, BEAT = 60 / 152, W = VERT ? 270 : 960, H = VERT ? 480 : 404, DSF = VERT ? 4 : 2;   /* dikey: 270×480 @4x = 1080×1920 (zoom1=4px, zoom2=8px, zoom3=12px oyun pikseli) */
+const OUT = path.resolve(__dirname, '..', '..', 'video', 'trailer2', (MODE === 'preview' ? 'prev-' : VERT ? 'frames-v-' : 'frames-') + CLIP);
 const VCLOCK = () => {
   let t = 0, q = [], timers = [], tid = 1;
   window.requestAnimationFrame = cb => { q.push(cb); return q.length; }; window.cancelAnimationFrame = () => {};
@@ -38,7 +38,7 @@ const POST = 24;                                                                
 (async () => {
   fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
   const b = await chromium.launch();
-  const { p } = await openGame(b, 'en', { width: W, height: H }, 2, VCLOCK);
+  const { p } = await openGame(b, 'en', { width: W, height: H }, DSF, VCLOCK);
   await p.evaluate(() => clearInterval(window.__pump));
   await p.addStyleTag({ content: '#ui,#hud,#objective,#toast,#coach,#devbar,#queueHint,#dayBanner,#actBtn,#tradeBtn,#devpanel,#lvlUp,#achPop,#pauseBadge,#specPop{display:none!important}' +
     '#vg{position:fixed;inset:0;z-index:50;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,12,.55) 100%)}#dz{position:fixed;inset:0;width:100%;height:100%;z-index:49;pointer-events:none;image-rendering:pixelated}' });
@@ -46,14 +46,14 @@ const POST = 24;                                                                
     const v = document.createElement('div'); v.id = 'vg'; document.body.appendChild(v);
     const dz = document.createElement('canvas'); dz.id = 'dz'; document.body.appendChild(dz); window.__dz = { c: dz, old: null };
     const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v + 0.5) / 16);
-    window.__snap = () => { const g = document.getElementById('game'); const o = document.createElement('canvas'); o.width = dz.width = 480; o.height = dz.height = 202; o.getContext('2d').drawImage(g, 0, 0, 480, 202); window.__dz.old = o.getContext('2d').getImageData(0, 0, 480, 202); };
-    window.__dissolve = u => { const c = dz.getContext('2d'); c.clearRect(0, 0, 480, 202); if (!window.__dz.old || u >= 1) return; const im = c.createImageData(480, 202), s = window.__dz.old.data; for (let y = 0; y < 202; y++) for (let x = 0; x < 480; x++) if (BAYER[((y & 3) << 2) | (x & 3)] > u) { const i = (y * 480 + x) * 4; im.data[i] = s[i]; im.data[i + 1] = s[i + 1]; im.data[i + 2] = s[i + 2]; im.data[i + 3] = 255; } c.putImageData(im, 0, 0); };
+    window.__snap = () => { const g = document.getElementById('game'); const o = document.createElement('canvas'); o.width = dz.width = g.width * 2; o.height = dz.height = g.height * 2; o.getContext('2d').drawImage(g, 0, 0, o.width, o.height); window.__dz.old = o.getContext('2d').getImageData(0, 0, o.width, o.height); };
+    window.__dissolve = u => { const c = dz.getContext('2d'); const DW = dz.width, DH = dz.height; c.clearRect(0, 0, DW, DH); if (!window.__dz.old || u >= 1) return; const im = c.createImageData(DW, DH), s = window.__dz.old.data; for (let y = 0; y < DH; y++) for (let x = 0; x < DW; x++) if (BAYER[((y & 3) << 2) | (x & 3)] > u) { const i = (y * DW + x) * 4; im.data[i] = s[i]; im.data[i + 1] = s[i + 1]; im.data[i + 2] = s[i + 2]; im.data[i + 3] = 255; } c.putImageData(im, 0, 0); };
     window.__zoom = z => { const b = document.querySelector('#zoomSeg button[data-z="' + z + '"]'); if (b) b.click(); document.getElementById('settingsScreen').classList.add('hidden'); };
     window.__ff = n => { for (let i = 0; i < n; i++) window.__step(1000 / 30); };
     window.__place = (x, y) => { BT.player.x = x; BT.player.y = y; };
   });
   await p.evaluate('window.__STATES = (' + MK_STATES.toString() + ')()');
-  const shots = CLIPS[CLIP]; let f = 0, cur = '', curZoom = 0;
+  const shots = CLIPS[CLIP].map(x => VERT ? { ...x, z: x.z === 3 ? 2 : x.z } : x); let f = 0, cur = '', curZoom = 0;
   await p.evaluate(() => { document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden')); BT.S.tut = 99; BT.day.phase = 'play'; BT.day.t = 40; });
   for (let si = 0; si < shots.length; si++) {
     const s = shots[si];

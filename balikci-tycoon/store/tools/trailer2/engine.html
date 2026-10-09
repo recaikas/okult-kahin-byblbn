@@ -4,6 +4,7 @@
   @font-face{font-family:"Pixelify Sans";src:url("../../../fonts/pixelify-latin.woff2") format("woff2");font-weight:400 700}
   html,body{margin:0;background:#000;overflow:hidden;width:1920px;height:1080px}
   #c{position:absolute;left:0;top:136px;width:1920px;height:808px;image-rendering:pixelated}
+  html.v,html.v body{width:1080px;height:1920px}html.v #c{top:0;width:1080px;height:1920px}
   #ov{position:absolute;inset:0;font-family:"Pixelify Sans",monospace}
   .t{position:absolute;left:0;right:0;text-align:center;color:#fff1c9;white-space:nowrap;text-shadow:4px 4px 0 #1a0f08,-2px 0 0 #1a0f08,2px 0 0 #1a0f08,0 -2px 0 #1a0f08}
   #black{position:absolute;inset:0;background:#000;opacity:0}
@@ -13,8 +14,12 @@
 <div id="ov"><div id="tx"></div><div id="flash"></div><div id="black"></div></div>
 <script>
 'use strict';
-const W = 480, H = 202, HOR = 105, WL = 150;           /* ufuk çizgisi, su yüzeyi (kesit) */
-const cv = document.getElementById('c'), g = cv.getContext('2d'), img = g.createImageData(W, H), B = img.data;
+const V = new URLSearchParams(location.search).get('o') === 'v';     /* dikey (9:16) kadraj: aynı dünya, daha uzun görüş */
+if (V) document.documentElement.className = 'v';
+const W = V ? 270 : 480, H = V ? 480 : 202, HOR = 105, WL = 150;           /* ufuk çizgisi, su yüzeyi (kesit) */
+const SY = V ? 139 : 0; let SHIFT = 0;                                       /* ekran-uzayı katmanlarının (gökyüzü, dağ, uzak deniz) dikey kayması */
+const SX = v => V ? 185 + cam.x * 0.15 : v;                                  /* güneşin ekrandaki yeri */
+const cv = document.getElementById('c'); cv.width = W; cv.height = H; const g = cv.getContext('2d'), img = g.createImageData(W, H), B = img.data;
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x)), mix = (a, b, u) => a + (b - a) * u, sm = x => x * x * (3 - 2 * x);
 const mixC = (a, b, u) => [mix(a[0], b[0], u), mix(a[1], b[1], u), mix(a[2], b[2], u)];
 const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
@@ -27,7 +32,7 @@ const fbm = (x, y) => vnoise(x, y) * 0.55 + vnoise(x * 2.1, y * 2.1) * 0.3 + vno
 /* ---------- piksel ilkelleri (kamera: cam.x, cam.y dünya → ekran; s tam sayı ölçek) ---------- */
 let cam = { x: 0, y: 0, s: 1 };
 function put(x, y, c, a = 1) {
-  x |= 0; y |= 0; if (x < 0 || y < 0 || x >= W || y >= H) return;
+  x |= 0; y = (y | 0) + SHIFT; if (x < 0 || y < 0 || x >= W || y >= H) return;
   const i = (y * W + x) * 4;
   if (a >= 1) { B[i] = c[0]; B[i + 1] = c[1]; B[i + 2] = c[2]; B[i + 3] = 255; }
   else { B[i] = B[i] + (c[0] - B[i]) * a; B[i + 1] = B[i + 1] + (c[1] - B[i + 1]) * a; B[i + 2] = B[i + 2] + (c[2] - B[i + 2]) * a; B[i + 3] = 255; }
@@ -60,8 +65,8 @@ const GULLS = Array.from({ length: 6 }, (_, i) => ({ x: hash(i, 5) * 700 - 100, 
 
 function drawSky(t, S) {
   const pal = skyPal(S.d, S.storm), cx = S.sunX, sunY = S.sunY;
-  for (let j = 0; j < HOR; j++) {
-    const v = j / HOR;
+  for (let j = -SY; j < HOR; j++) {
+    const v = Math.max(0, j) / HOR;
     for (let i = 0; i < W; i++) {
       let c = v < 0.55 ? mixC(pal[0], pal[1], sm(v / 0.55)) : mixC(pal[1], pal[2], sm((v - 0.55) / 0.45));
       /* güneş halesi */
@@ -82,7 +87,7 @@ function drawSky(t, S) {
   }
   /* yıldızlar */
   const sa = clamp(1 - S.d * 1.4) * (1 - S.storm);
-  if (sa > 0) STARS.forEach(s => { const tw = 0.55 + 0.45 * Math.sin(t * (1.5 + s.r * 3) + s.r * 20); const x = ((s.x - cam.x * 0.08) % 480 + 480) % 480; dput(x, s.y, [255, 244, 214], sa * tw); if (s.r > 0.85) { dput(x + 1, s.y, [255, 244, 214], sa * tw * 0.7); dput(x, s.y + 1, [255, 244, 214], sa * tw * 0.7); } });
+  if (sa > 0) STARS.forEach(s => { const tw = 0.55 + 0.45 * Math.sin(t * (1.5 + s.r * 3) + s.r * 20); const x = ((s.x - cam.x * 0.08) % 480 + 480) % 480, sy0 = s.y / (HOR - 8) * (HOR - 8 + SY) - SY; dput(x, sy0, [255, 244, 214], sa * tw); if (s.r > 0.85) { dput(x + 1, sy0, [255, 244, 214], sa * tw * 0.7); dput(x, sy0 + 1, [255, 244, 214], sa * tw * 0.7); } });
   /* güneş diski */
   if (S.sunVis) { const X = cx - cam.x * 0.15; for (let j = -16; j <= 16; j++) for (let i = -16; i <= 16; i++) if (i * i + j * j <= 15 * 15) { const y = sunY + j; if (y < HOR - 0) put(X + i, y, mixC(hex('#ffe9a8'), hex('#fff6d8'), clamp(1 - Math.hypot(i, j) / 15))); } }
 }
@@ -113,7 +118,7 @@ function drawMountains(t, S) {
     if (winOn > 0.02 && hash(k, 5) > 0.55) put(hx + hw - 3, hy + 2, hex('#ffd98a'), winOn * 0.8);
   }
   /* fener: sağ burun, gece dönen ışık huzmesi */
-  const lx = 420 - cam.x * 0.4, ly = 70;
+  const lx = V ? 245 - (cam.x - 250) * 0.4 : 420 - cam.x * 0.4, ly = 70;
   for (let j = 0; j < 22; j++) for (let i = -3; i <= 3; i++) { const w = 3 - j * 0.05; if (Math.abs(i) <= w) put(lx + i, ly + j, (j % 6 < 3) ? hex('#d9d4c4') : hex('#a83d2b')); }
   rect2(lx - 4, ly - 4, 9, 4, hex('#2b3340')); put(lx, ly - 2, hex('#ffe9a8'));
   const beam = clamp(1 - S.d * 1.2) * (1 - S.storm * 0.2) + S.storm * 0.8;
@@ -153,7 +158,7 @@ function drawBoats(t, S) {
 }
 function drawGulls(t, S) {
   if (S.gulls <= 0) return;
-  GULLS.forEach((gl, i) => { const x = ((gl.x + t * gl.v * 3) % 760) - 140 - cam.x * 0.5, y = gl.y + Math.sin(t * 0.8 + gl.ph) * 6, f = Math.sin(t * 7 + gl.ph) > 0 ? 1 : -1; const c = mixC(hex('#1a1d2c'), hex('#f4f0e6'), clamp(S.d / 1.8)); for (let k = 0; k < 5; k++) { put(x - k, y - (k > 1 ? (k - 1) * 0.6 * f : 0) + (f > 0 ? 0 : k * 0.3), c); put(x + k, y - (k > 1 ? (k - 1) * 0.6 * f : 0) + (f > 0 ? 0 : k * 0.3), c); } put(x, y + 1, c); });
+  GULLS.forEach((gl, i) => { const x = ((gl.x + t * gl.v * 3) % 760) - 140 - cam.x * 0.5, y = gl.y - (V ? 90 : 0) + Math.sin(t * 0.8 + gl.ph) * 6, f = Math.sin(t * 7 + gl.ph) > 0 ? 1 : -1; const c = mixC(hex('#1a1d2c'), hex('#f4f0e6'), clamp(S.d / 1.8)); for (let k = 0; k < 5; k++) { put(x - k, y - (k > 1 ? (k - 1) * 0.6 * f : 0) + (f > 0 ? 0 : k * 0.3), c); put(x + k, y - (k > 1 ? (k - 1) * 0.6 * f : 0) + (f > 0 ? 0 : k * 0.3), c); } put(x, y + 1, c); });
 }
 
 /* ---------- kesit: su altı + iskele ---------- */
@@ -237,12 +242,12 @@ function drawCave(t, S) {      /* Şahmeran'ın mağarası: kenarlarda kaya + pa
 }
 function drawShahmeran(t, S) {
   const m = S.shah; if (!m) return;
-  const cx = 250, cy = 470, glow = m.glow;
+  const cx = 250, cy = 470, glow = m.glow, KV = V ? 0.72 : 1;
   /* yeşil ışık küresi */
   for (let j = -110; j <= 110; j++) for (let i = -170; i <= 170; i++) { const d = Math.hypot(i * 0.65, j); if (d < 110) dput(wx(cx) + i, wy(cy) + j, [60, 230, 150], (1 - d / 110) ** 1.6 * 0.55 * glow); }
   /* gövde: sarmal, yarıçap küçülerek içe doğru */
   const pts = [];
-  for (let k = 0; k <= 260; k++) { const u = k / 260, a = u * 9.4 + Math.sin(t * 0.4) * 0.15, r = mix(120, 14, u ** 0.8); pts.push({ x: cx + Math.cos(a) * r * 1.35, y: cy + 8 + Math.sin(a) * r * 0.42, w: mix(14, 3, u), u }); }
+  for (let k = 0; k <= 260; k++) { const u = k / 260, a = u * 9.4 + Math.sin(t * 0.4) * 0.15, r = mix(120, 14, u ** 0.8); pts.push({ x: cx + Math.cos(a) * r * 1.35 * KV, y: cy + 8 + Math.sin(a) * r * 0.42, w: mix(14, 3, u), u }); }
   pts.forEach((p, k) => { const behind = Math.sin(p.u * 9.4) > 0;                        /* arka yarı */
     for (let j = -p.w; j <= p.w; j++) for (let i = -p.w; i <= p.w; i++) if (i * i + j * j <= p.w * p.w) { const sh = (j + p.w) / (2 * p.w), scale = ((Math.floor((i + k * 2) / 3) + Math.floor(j / 3)) & 1) ? 0.9 : 1.08; const c = mixC(hex('#0f3b34'), hex('#3fe0a0'), (1 - sh) * 0.75 * glow + (behind ? 0 : 0.12)); put(wx(p.x) + i, wy(p.y) + j, [c[0] * scale, c[1] * scale, c[2] * scale]); } });
   /* gövde üstü: saçlı, taçlı Şahmeran — oyundaki portresinin renkleri (yeşil elbise, altın noktalar) */
@@ -258,7 +263,7 @@ function drawShahmeran(t, S) {
   [[-6, 0], [-3, 3], [0, 5], [3, 3], [6, 0]].forEach(([dx, dy], q) => rect(hx + dx - 1, hy - 84 - (5 - dy) * 0.6 + 4, 2, 3 + (q % 2 ? 0 : 2), gold));      /* taç */
   rect(hx - 7, hy - 80, 15, 2, [217, 164, 65]); rect(hx - 1, hy - 82, 2, 2, [105, 255, 208]);
   /* yüzen ışık tozu */
-  for (let n = 0; n < 50; n++) { const a = hash(n, 41) * 6.28 + t * (0.1 + hash(n, 42) * 0.2), r = 20 + hash(n, 43) * 150; dput(wx(cx + Math.cos(a) * r * 1.4), wy(cy - 20 + Math.sin(a * 1.7) * r * 0.5), [150, 255, 210], 0.35 + 0.35 * Math.sin(t * 3 + n)); }
+  for (let n = 0; n < 50; n++) { const a = hash(n, 41) * 6.28 + t * (0.1 + hash(n, 42) * 0.2), r = 20 + hash(n, 43) * 150; dput(wx(cx + Math.cos(a) * r * 1.4 * KV), wy(cy - 20 + Math.sin(a * 1.7) * r * 0.5), [150, 255, 210], 0.35 + 0.35 * Math.sin(t * 3 + n)); }
 }
 
 /* ---------- balıkçı: sprite + ağ atma ---------- */
@@ -299,8 +304,8 @@ function drawSplash(t, S) {
 /* ---------- altın saatte limanı ve ışık patlamasını için parçacıklar ---------- */
 function drawRain(t, S) {
   if (S.rain <= 0) return;
-  const n = Math.floor(260 * S.rain);
-  for (let k = 0; k < n; k++) { const sp = 280 + hash(k, 61) * 140, x = ((hash(k, 62) * 640 - t * 70 * 0 + k * 3.7) % 520) - 20 - ((t * 50) % 40), y = ((hash(k, 63) * 400 + t * sp) % 260) - 20; const len = 4 + (k % 3); for (let q = 0; q < len; q++) dput(x + q * -0.4, y + q, [190, 215, 235], 0.85 - q * 0.15); }
+  const n = Math.floor((V ? 330 : 260) * S.rain);
+  for (let k = 0; k < n; k++) { const sp = 280 + hash(k, 61) * 140, x = ((hash(k, 62) * 640 - t * 70 * 0 + k * 3.7) % (W + 40)) - 20 - ((t * 50) % 40), y = ((hash(k, 63) * 400 + t * sp) % (H + 58)) - 20; const len = 4 + (k % 3); for (let q = 0; q < len; q++) dput(x + q * -0.4, y + q, [190, 215, 235], 0.85 - q * 0.15); }
 }
 function drawVignette() { for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) { const dx = (i - W / 2) / (W / 2), dy = (j - H / 2) / (H / 2), d = dx * dx * 0.7 + dy * dy * 0.9; if (d > 0.55) dput(i, j, [0, 0, 6], clamp((d - 0.55) * 0.9)); } }
 
@@ -308,37 +313,37 @@ function drawVignette() { for (let j = 0; j < H; j++) for (let i = 0; i < W; i++
 const E = {};   /* ad → (t) → S durumu + kamera */
 E.dawn = t => {              /* 0-9 sn: gece → şafak → güneş doğuyor; yavaş kayma */
   const u = clamp(t / 9), d = sm(clamp((t - 1.5) / 7)) * 1.15;
-  cam = { x: mix(60, 150, sm(u)), y: mix(100, 100, 0), s: 1 };
-  return { d, storm: 0, glow: clamp(0.35 + d * 0.7), glowR: 0, glowCol: mixC(hex('#ff7a45'), hex('#ffd27a'), clamp(d - 0.4)), cloudLit: hex('#ffc78a'), cloud: 0.5, sunX: 300, sunY: mix(HOR + 22, HOR - 20, sm(clamp((t - 2.5) / 6.5))), sunVis: t > 2.0, glint: clamp((t - 4) / 4), gulls: u > 0.45 ? 1 : 0, rays: 0.8, rain: 0 };
+  cam = { x: V ? mix(200, 262, sm(u)) : mix(60, 150, sm(u)), y: 100, s: 1 };
+  return { d, storm: 0, glow: clamp(0.35 + d * 0.7), glowR: 0, glowCol: mixC(hex('#ff7a45'), hex('#ffd27a'), clamp(d - 0.4)), cloudLit: hex('#ffc78a'), cloud: 0.5, sunX: SX(300), sunY: mix(HOR + 22, HOR - 20, sm(clamp((t - 2.5) / 6.5))), sunVis: t > 2.0, glint: clamp((t - 4) / 4), gulls: u > 0.45 ? 1 : 0, rays: 0.8, rain: 0, shoal: V ? { x: 300, y: 215, tight: 1.1, glow: 0.8 } : null };
 };
 E.pier = t => {              /* iskele, balıkçı, ağ atma, sürü: kesit görünüm */
-  cam = { x: 150 + Math.sin(t * 0.3) * 2, y: 108, s: 1 };
+  cam = { x: (V ? 262 : 150) + Math.sin(t * 0.3) * 2, y: 108, s: 1 };
   const fly = clamp((t - 1.6) / 1.0), sink = clamp((t - 2.6) / 1.8), haul = clamp((t - 4.9) / 1.8);
-  const S = { d: 1.25, storm: 0, glow: 0.85, glowR: 12, glowCol: hex('#ffc27a'), cloudLit: hex('#ffd9a8'), cloud: 0.5, sunX: 330, sunY: HOR - 6, sunVis: true, glint: 1, gulls: 1, rays: 1, rain: 0, pierEnd: 290,
+  const S = { d: 1.25, storm: 0, glow: 0.85, glowR: 12, glowCol: hex('#ffc27a'), cloudLit: hex('#ffd9a8'), cloud: 0.5, sunX: SX(330), sunY: HOR - 6, sunVis: true, glint: 1, gulls: 1, rays: 1, rain: 0, pierEnd: 290,
     shoal: { x: 332, y: 164 + sink * 4, tight: (t > 2.6 && t < 4.6 ? 0.55 : 0.95) + 0.05 * Math.sin(t), glow: 1 }, splash: t > 2.6 && t < 4.0 ? { x: 326, u: (t - 2.6) / 1.4 } : null, fisher: { t } };
   if (t < 2.7) S.net = (t > 1.6) ? { x0: 285, y0: 131, x1: 326, y1: WL, u: fly, arc: 30, r: 21, open: sm(clamp((t - 1.8) / 0.7)), line: [283, 133] } : null;
   else if (t < 4.9) S.net = { x0: 326, y0: WL + sink * 16, x1: 326, y1: WL + sink * 16, u: 0, arc: 0, r: 21 - sink * 2, open: 1, line: [284, 132], under: true };
   else if (t < 6.7) S.net = { x0: 326, y0: WL + 16, x1: 290, y1: 129, u: haul, arc: 6, r: mix(19, 8, haul), open: 1, line: [284, 132], fish: true };
   return S;
 };
-E.pierclose = t => { const S = E.pier(t); S.shoal.n = 90; S.zoom = { cx: 372, cy: 138, k: 3 }; return S; };
+E.pierclose = t => { const S = E.pier(t); S.shoal.n = 90; S.zoom = V ? { cx: 170, cy: 285, k: 2 } : { cx: 372, cy: 138, k: 3 }; return S; };
 E.deep = t => {              /* su altına iniş: yüzeyden Şahmeran'a */
-  const u = sm(clamp(t / 8)); cam = { x: mix(260, 250, u), y: mix(108, 425, u), s: 1 };
-  return { d: 1.25, storm: 0, glow: 0.8, glowR: 12, glowCol: hex('#ffc27a'), cloudLit: hex('#ffd9a8'), cloud: 0.5, sunX: 330, sunY: HOR - 8, sunVis: true, glint: 1, gulls: 0, rays: 1 - u * 0.7, rain: 0, pierEnd: 290, deepY: 1, shoal: { x: 330, y: 190, tight: 1.2, glow: 0.8 }, shah: { glow: clamp((t - 3) / 4) } };
+  const u = sm(clamp(t / 8)); cam = { x: mix(260, 250, u), y: mix(108, V ? 410 : 425, u), s: 1 };
+  return { d: 1.25, storm: 0, glow: 0.8, glowR: 12, glowCol: hex('#ffc27a'), cloudLit: hex('#ffd9a8'), cloud: 0.5, sunX: SX(330), sunY: HOR - 8, sunVis: true, glint: 1, gulls: 0, rays: 1 - u * 0.7, rain: 0, pierEnd: 290, deepY: 1, shoal: { x: 330, y: 190, tight: 1.2, glow: 0.8 }, shah: { glow: clamp((t - 3) / 4) } };
 };
 E.storm = t => {             /* fırtına: karanlık, yağmur, yıldırım */
-  cam = { x: 150 + Math.sin(t * 0.4) * 6, y: 104 + Math.sin(t * 0.8) * 1.5, s: 1 };
+  cam = { x: (V ? 215 : 150) + Math.sin(t * 0.4) * 6, y: 104 + Math.sin(t * 0.8) * 1.5, s: 1 };
   const bolt = (t > 0.9 && t < 1.04) || (t > 1.2 && t < 1.4) || (t > 3.2 && t < 3.3);
-  return { d: 0.55, storm: 1, glow: 0.2, glowR: 0, glowCol: bolt ? [200, 215, 255] : hex('#41546c'), cloudLit: hex('#6d86a5'), cloud: 1.3, sunX: 300, sunY: HOR - 30, sunVis: false, glint: 0.0, gulls: 0, rays: 0.3, rain: 1, pierEnd: 290, bolt };
+  return { d: 0.55, storm: 1, glow: 0.2, glowR: 0, glowCol: bolt ? [200, 215, 255] : hex('#41546c'), cloudLit: hex('#6d86a5'), cloud: 1.3, sunX: SX(300), sunY: HOR - 30, sunVis: false, glint: 0.0, gulls: 0, rays: 0.3, rain: 1, pierEnd: 290, bolt };
 };
 let CARD = null;
 E.card = t => {              /* karakter kartı: akşamüstü liman + büyük sprite (balıkçı sahnesi çizilmez) */
-  cam = { x: 190, y: 104, s: 1 };
-  return { d: 1.45, storm: 0, glow: 0.9, glowR: 14, glowCol: hex('#ff9a58'), cloudLit: hex('#ffc79a'), cloud: 0.7, sunX: 360, sunY: HOR - 4, sunVis: true, glint: 1, gulls: 1, rays: 1, rain: 0, pierEnd: 290, card: CARD || { id: 'sp_ferdi', tint: '#ff7a45' } };
+  cam = { x: V ? 250 : 190, y: 104, s: 1 };
+  return { d: 1.45, storm: 0, glow: 0.9, glowR: 14, glowCol: hex('#ff9a58'), cloudLit: hex('#ffc79a'), cloud: 0.7, sunX: SX(360), sunY: HOR - 4, sunVis: true, glint: 1, gulls: 1, rays: 1, rain: 0, pierEnd: 290, card: CARD || { id: 'sp_ferdi', tint: '#ff7a45' } };
 };
 E.golden = t => {            /* final: altın saat, sakin deniz */
-  const u = clamp(t / 6); cam = { x: mix(210, 120, sm(u)), y: 104, s: 1 };
-  return { d: 1.6, storm: 0, glow: 0.95, glowR: 22, glowCol: hex('#ffcf7a'), cloudLit: hex('#ffd9a8'), cloud: 0.6, sunX: 330, sunY: HOR - 6, sunVis: true, glint: 1, gulls: 1, rays: 1, rain: 0, pierEnd: 290, shoal: { x: 330, y: 178, tight: 1, glow: 1 } };
+  const u = clamp(t / 6); cam = { x: V ? mix(270, 225, sm(u)) : mix(210, 120, sm(u)), y: 104, s: 1 };
+  return { d: 1.6, storm: 0, glow: 0.95, glowR: 22, glowCol: hex('#ffcf7a'), cloudLit: hex('#ffd9a8'), cloud: 0.6, sunX: SX(330), sunY: HOR - 6, sunVis: true, glint: 1, gulls: 1, rays: 1, rain: 0, pierEnd: 290, shoal: { x: 330, y: 178, tight: 1, glow: 1 } };
 };
 
 function zoomCrop(cx, cy, k) {
@@ -347,7 +352,7 @@ function zoomCrop(cx, cy, k) {
 }
 function compose(scene, t) {
   const S = E[scene](t);
-  drawSky(t, S); drawMountains(t, S); drawSea(t, S); drawBoats(t, S); drawGulls(t, S);
+  SHIFT = SY; drawSky(t, S); drawMountains(t, S); drawSea(t, S); SHIFT = 0; drawBoats(t, S); SHIFT = SY; drawGulls(t, S); SHIFT = 0;
   drawWater(t, S); drawCave(t, S); drawBubbles(t, S); drawShoal(t, S); drawShahmeran(t, S);
   if (scene !== 'deep' || cam.y < 220) drawPier(t, S);
   /* balıkçı */
@@ -357,11 +362,11 @@ function compose(scene, t) {
     const tint = hex(S.card.tint || '#ff7a45'); for (let n = 0; n < W * H; n++) { const q = n * 4, f = 0.5 + 0.12 * (1 - Math.floor(n / W) / H); B[q] = B[q] * f + tint[0] * 0.06; B[q + 1] = B[q + 1] * f + tint[1] * 0.06; B[q + 2] = B[q + 2] * f + tint[2] * 0.06; }
 
     /* zemin tahtası */
-    for (let j = 176; j < H; j++) for (let i = 0; i < W; i++) put(i, j, j === 176 ? hex('#d9a441') : mixC(hex('#4a2f1c'), hex('#2a190f'), (j - 177) / 26 + ((i + (j >> 2) * 7) % 23 === 0 ? 0.25 : 0)));
+    const GY = V ? 230 : 176; for (let j = GY; j < H; j++) for (let i = 0; i < W; i++) { const seam = (j - GY) % 16 === 0 || ((i + Math.floor((j - GY) / 16) * 37) % 90 === 0); put(i, j, j === GY ? hex('#d9a441') : mixC(seam ? hex('#1c1109') : hex('#5a3a22'), hex('#2a190f'), Math.min(1, (j - GY - 1) / (V ? 160 : 26)) + (hash(i >> 1, j >> 2) * 0.12))); }
     const e = sm(clamp((t - 0.05) / 0.35)), bob = Math.round(Math.sin(t * 3.2) * 0.6 + 0.6), im = SPRI[S.card.id];
-    if (im) { const k = 4, sw = im.width, sh = im.height, X = Math.round(120 - sw * k / 2 - (1 - e) * 140), Y = 176 - (sh - 3) * k - bob; if (!SPRI[S.card.id + '_d']) { const c = document.createElement('canvas'); c.width = sw; c.height = sh; const gx = c.getContext('2d'); gx.drawImage(im, 0, 0); SPRI[S.card.id + '_d'] = gx.getImageData(0, 0, sw, sh); } const d = SPRI[S.card.id + '_d'].data;
+    if (im) { const k = V ? 6 : 4, sw = im.width, sh = im.height, X = Math.round((V ? W / 2 : 120) - sw * k / 2 - (1 - e) * 140), Y = GY - (sh - 3) * k - bob; if (!SPRI[S.card.id + '_d']) { const c = document.createElement('canvas'); c.width = sw; c.height = sh; const gx = c.getContext('2d'); gx.drawImage(im, 0, 0); SPRI[S.card.id + '_d'] = gx.getImageData(0, 0, sw, sh); } const d = SPRI[S.card.id + '_d'].data;
       for (let j = 0; j < sh * k; j++) for (let i = 0; i < sw * k; i++) { const si = ((j / k | 0) * sw + (i / k | 0)) * 4; if (d[si + 3] > 40) put(X + i, Y + j, [d[si], d[si + 1], d[si + 2]]); }
-      for (let i = 0; i < 26 * k; i++) for (let j = 0; j < 3; j++) dput(X + 6 * k + i, 176 + j, [0, 0, 0], 0.5 - j * 0.15); }
+      for (let i = 0; i < 26 * k; i++) for (let j = 0; j < 3; j++) dput(X + 6 * k + i, GY + j, [0, 0, 0], 0.5 - j * 0.15); }
   }
   drawNet(t, S); drawSplash(t, S);
   if (S.bolt) for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) dput(i, j, [215, 228, 255], 0.22);
