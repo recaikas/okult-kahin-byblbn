@@ -4,9 +4,9 @@
    - oyunun saatini sanal tutar, her kareyi tek tek çeker (akıcı 30 fps)
    - elle çizilmiş sahneleri (scenes.js) ve oyun çekimlerini aynı zaman çizelgesinde kurgular
    - sinema katmanı: şeritler, vinyet, renk tonu, çözülerek geçiş, beyaz patlama, siyaha iniş, yavaş yaklaşma
-   - yazı türleri (aşağıda), yatay 1920×1080 ya da dikey 1080×1920, EN/TR
+   - yazı türleri (aşağıda), dikey 1080×1920 (varsayılan; seri yalnız dikey) ya da 'h' ile yatay 1920×1080, EN/TR
    - müzik dosyası varsa sonunda ffmpeg ile MP4 üretir
-   Kullanım (bölüm dosyası üzerinden): node store/tools/film/<bölüm>.js [en|tr] [v] [preview [çekim,çekim]]
+   Kullanım (bölüm dosyası üzerinden): node store/tools/film/<bölüm>.js [en|tr] [h] [preview [çekim,çekim]]   (h: yatay)
    Oyun klasörü 8099'da sunulmalı: cd balikci-tycoon && python3 -m http.server 8099
 
    BÖLÜM TANIMI (EP):
@@ -235,9 +235,9 @@ function overlayInit([L, LANG]) {
 }
 
 module.exports = async function film(EP) {
-  const ARGS = process.argv.slice(2), LANG = ARGS.includes('tr') ? 'tr' : 'en', V = ARGS.includes('v'), PREVIEW = ARGS.includes('preview');
+  const ARGS = process.argv.slice(2), LANG = ARGS.includes('tr') ? 'tr' : 'en', V = !ARGS.includes('h'), PREVIEW = ARGS.includes('preview');
   const last0 = ARGS[ARGS.length - 1];
-  const ONLY = ARGS.length && /^[a-zA-Z0-9]+(,[a-zA-Z0-9]+)*$/.test(last0) && !['tr', 'en', 'preview', 'v'].includes(last0) ? last0.split(',') : null;
+  const ONLY = ARGS.length && /^[a-zA-Z0-9]+(,[a-zA-Z0-9]+)*$/.test(last0) && !['tr', 'en', 'preview', 'v', 'h'].includes(last0) ? last0.split(',') : null;
   const L = EP.L[LANG], SHOTS = EP.shots(L), TEXT = EP.text(L), DUR = EP.dur;
   const FLASH = EP.flash || [], DIPS = EP.dips || [], GRADES = EP.grades || {};
   const tag = EP.id + '-' + LANG + (V ? '-v' : '');

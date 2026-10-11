@@ -61,13 +61,12 @@ gece limanı → logo. Müzik `tools/trailer-music.py`: deniz, martılar, kemen�
 ## 4c. Geliştirme Günlüğü videoları — şablon: [GUNLUK.md](GUNLUK.md)
 | Dosya | Boyut | Nereye |
 |---|---|---|
-| `video/ep02-1920x1080-{tr,en}.mp4` | yatay | YouTube, X |
 | `video/ep02-1080x1920-{tr,en}.mp4` | dikey | TikTok, Reels, Shorts |
 
 Gün 2 · Müdürler: Nevin Hanım'ın hikâyesi (elle çizilmiş) → seri kartı → müdür mekaniği (gerçek oyun ve arayüz) → kapanış.
 Araçlar `tools/film/`: `engine.js` (film motoru), `scenes.js` (sahneler), `sound.py` (ses), `ep02-mudurler.js` + `ep02-music.py`.
 ```
-node store/tools/film/ep02-mudurler.js tr v        # dikey Türkçe; müzik dosyası varsa MP4'ü de üretir
+node store/tools/film/ep02-mudurler.js tr          # dikey Türkçe (seri yalnız dikey); müzik dosyası varsa MP4'ü de üretir
 python3 store/tools/film/ep02-music.py store/video/ep02-music.wav
 ```
 

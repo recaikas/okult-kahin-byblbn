@@ -4,7 +4,7 @@
                         3) mekanik — gerçek oyun görüntüsü ve arayüzü, büyük başlıklar
                         4) kapanış — hikâyenin ilk sahnesine dönüş + "bir sonraki günlükte görüşürüz"
    Kahraman: Nevin Hanım — oyundaki müdür adaylarından (MGR_NAMES), oyundaki görünümüyle (look 1: mor ceket, altın fular).
-   Kullanım: node store/tools/film/ep02-mudurler.js [en|tr] [v] [preview [çekim,çekim]]
+   Kullanım: node store/tools/film/ep02-mudurler.js [en|tr] [preview [çekim,çekim]]   (dikey; 'h' ile yatay)
    Müzik: python3 store/tools/film/ep02-music.py store/video/ep02-music.wav (varsa motor MP4'ü de üretir) */
 const film = require('./engine');
 

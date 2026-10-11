@@ -24,7 +24,7 @@ oyundaki müdür görünümünden (look 1) alındı. Mekanik bölümünde o kara
 
 - **Piksel:** 320×180 sahne, ×6 büyütme (yakın plan sahnelerde 160×90, ×12). Bayer titreşimli gökyüzü. Işık için yumuşak radyal parıltı
   (`glow`), noktalı hâle yalnız küçük ışık kaynaklarında.
-- **Sinema dili:** yatayda 2.39:1 siyah şeritler (arayüz çekiminde kalkar), vinyet, sahneye göre hafif renk tonu, çözülerek geçiş
+- **Sinema dili:** vinyet, sahneye göre hafif renk tonu, çözülerek geçiş
   (0,4–0,9 sn). Beyaz patlama yalnız büyük vuruşlarda (seri kartı, önemli an).
 - **Tempo:** çekimler 3,5–6 sn. Bölüm başına en çok 12–13 çekim. Ara yazı çekim başladıktan ≈0,5 sn sonra gelir.
 - **Yazı:** oyunun piksel fontu.
@@ -35,14 +35,14 @@ oyundaki müdür görünümünden (look 1) alındı. Mekanik bölümünde o kara
   verilir, yavaş yaklaşma (%2–5). Arayüzde neye basıldığı **dokunma halkasıyla** gösterilir.
 - **Ses:** hikâyede yakın sesler (saat, kalem, adım, çay bardağı), mekanikte horon teması ve oyun sesleri: tık, işe alım çanı,
   sikke, uğultu. Her görsel vuruşa bir ses düşer. Bölüm sonunda La majöre çözülür.
-- **Dil ve biçim:** her bölüm TR + EN, yatay 1920×1080 + dikey 1080×1920. Dikeyde yazılar telefona göre küçülür, sinema şeridi
-  yoktur. Sahneler kırpılmaz; kayan bir dilimle dikey çekilir.
+- **Dil ve biçim:** her bölüm TR + EN, **yalnız dikey 1080×1920** (TikTok, Reels, Shorts). Yazılar telefona göre boyutlanır,
+  sinema şeridi yoktur. Çizilmiş sahneler kayan bir dilimle dikey çekilir. Yatay gerekirse motor `h` ile hâlâ üretebilir.
 
 ## 3. Dosyalar (`store/tools/film/`)
 
 | Dosya | Görev |
 |---|---|
-| `engine.js` | Film motoru: oyunu açar ve yamalar, kare kare çeker, sinema katmanı, yazı türleri, geçişler, yatay/dikey, TR/EN, MP4 |
+| `engine.js` | Film motoru: oyunu açar ve yamalar, kare kare çeker, sinema katmanı, yazı türleri, geçişler, dikey (gerekirse yatay), TR/EN, MP4 |
 | `scenes.js` | Elle çizilmiş sahne kütüphanesi (fragman sahneleri + Gün 2: `office`, `ledger`, `walk`, `desk`). Yeni sahneler buraya eklenir. |
 | `sound.py` | Ses kütüphanesi: kemençe, saz, ney, davul, tef, pad, koro, çan, vuruşlar ve ses efektleri. `theme()` horon temasını çalar. |
 | `epNN-konu.js` | Bölüm: metinler (L.tr / L.en), çekim listesi, yazılar, oyun kurulumları (`pageInit`) |
@@ -63,11 +63,11 @@ düğmesi bulunur) · `end` (kapanış kartı).
    `nevinFront`/`nevinSide` (karakter örneği), `teaGlass`, `steam`, `tiny` (küçük yazı). `SC` ve `CROP` tablolarına ekle.
    Hızlı önizleme için tek kareler çekilebilir.
 3. **Bölüm dosyası:** `ep02-mudurler.js`'i kopyala. `L`, `shots`, `text` ve `pageInit` içindeki kurulumları değiştir.
-4. **Önizleme:** `node store/tools/film/ep03-....js tr v preview` her 10. kareyi çeker. Yalnız bazı çekimler için sona adlarını ekle.
+4. **Önizleme:** `node store/tools/film/ep03-....js tr preview` her 10. kareyi çeker. Yalnız bazı çekimler için sona adlarını ekle.
 5. **Müzik:** `ep02-music.py`'yi kopyala, zamanları çekimlere oturt:
    `python3 store/tools/film/ep03-music.py store/video/ep03-music.wav`
-6. **Çekim:** `node store/tools/film/ep03-....js tr`, `tr v`, `en`, `en v`. Müzik dosyası varsa motor MP4'ü kendisi üretir:
-   `video/ep03-1920x1080-tr.mp4` vb.
+6. **Çekim:** `node store/tools/film/ep03-....js tr` ve `... en` (dikey). Müzik dosyası varsa motor MP4'ü kendisi üretir:
+   `video/ep03-1080x1920-tr.mp4` ve `-en.mp4`.
 
 Oyun klasörü 8099'da sunulmalı: `cd balikci-tycoon && python3 -m http.server 8099`.
 Gerekenler: Node 22 + Playwright (Chromium), Python 3 + numpy, ffmpeg.
@@ -93,7 +93,7 @@ Gerekenler: Node 22 + Playwright (Chromium), Python 3 + numpy, ffmpeg.
 
 ```
 Hamsi Koyu (Karadeniz'de piksel balıkçı tycoon oyunu) için "Geliştirme Günlüğü · Gün [n] · [KONU]" videosu istiyorum.
-≈60 sn, TR ve EN, yatay 1920×1080 ve dikey 1080×1920. Hep aynı sinematik stil:
+≈60 sn, TR ve EN, yalnız dikey 1080×1920 (TikTok/Reels/Shorts). Hep aynı sinematik stil:
 
 1) HİKÂYE (0–19 sn): Konunun oyundaki bir karakterinin kısa öyküsü, 3–4 elle çizilmiş piksel sahne (320×180, iri piksel,
    Bayer titreşimli gökyüzü, sıcak lamba ışığı, ters ışık). Karakter oyundaki görünümüyle aynı olsun. Kısa, duygulu ara yazılar.
@@ -104,6 +104,6 @@ Hamsi Koyu (Karadeniz'de piksel balıkçı tycoon oyunu) için "Geliştirme Gün
    Köşede "GÜN n · KONU" etiketi. Oyun sesleri: tık, çan, sikke, uğultu.
 4) KAPANIŞ (≈5 sn): hikâyenin ilk sahnesine dönüş + "Bir sonraki günlükte görüşürüz." + ÜCRETSİZ · REKLAMSIZ + adres.
 
-Sinema dili: 2.39:1 şeritler (dikeyde yok), vinyet, çözülerek geçiş, beyaz patlama yalnız büyük vuruşlarda, çekimler 3,5–6 sn.
+Sinema dili: vinyet, çözülerek geçiş, beyaz patlama yalnız büyük vuruşlarda, çekimler 3,5–6 sn.
 Müzik özgün ve telifsiz: horon (kemençe, davul, tef, La minör, 120 BPM), sonunda La majöre çözülsün.
 ```
