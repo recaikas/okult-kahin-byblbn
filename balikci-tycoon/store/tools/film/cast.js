@@ -380,7 +380,8 @@
   }
 
   /* ---------- S3 (10–16 sn): hızlı kesmeler; kasa, terazi, para, Nermin'in ayağı; hamsi havada (ağır çekim) ve kaskete PAT! ---------- */
-  function b1rush(t) {
+  function b1rush(t, u, O) {
+    if (O && O.freeze) t = Math.min(t, O.freeze);                      /* soğuk açılış: PAT anında donar */
     var x = 266, c, H2, chars, q = queueChars(t + 9, 1, { app: function () { return 0; }, mood: function (i, N) { return N.mood > 0.5 ? 'frown' : 'worry'; }, tap: 1 });
     var nerm = function (o2) { return { id: 'n', S: NERMIN, x: Q[0][0], y: Q[0][1], front: true, o: o2, after: function (g, I) { basket(g, I.hands.r[0], I.hands.r[1] - 2, true); purse(g, I.hands.l[0] - 1, I.hands.l[1] + 1); } }; };
     var nH = { r: [Q[0][0] + 9, Q[0][1] - 18], l: [Q[0][0] - 8, Q[0][1] - 20] };

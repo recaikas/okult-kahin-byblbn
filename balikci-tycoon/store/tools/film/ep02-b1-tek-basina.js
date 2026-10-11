@@ -1,7 +1,8 @@
 /* Geliştirme Günlüğü · Gün 2 · Bölüm 1: TEK BAŞINA OLMAZ (74 sn, dikey 1080×1920)
    Seri biçimi: her bölüm aynı karakterlerle (cast.js: Kaptan Rıza, Memo, Nermin Teyze) bir hikâye anlatır, sonra o hikâyenin
    oyundaki mekaniğini gerçek oyun görüntüsüyle tanıtır.
-     0–30 sn  sinematik (konuşmasız): şafak · ilk satış ve büyüyen kuyruk · hızlı kesmeler ve PAT! · yabancı · tokalaşma · birlikte
+     0–2.2 sn soğuk açılış (kanca): PAT anı donar, soru yazısı, baştan alınır
+     2.2–30 sn sinematik (konuşmasız): şafak · ilk satış ve büyüyen kuyruk · hızlı kesmeler ve PAT! · yabancı · tokalaşma · birlikte
      30–69 sn mekanik: ilk eleman (gerçek YÜKSELT paneli, gerçek işe alım, oyundaki dört rol, kadro kuralı)
      69–74 sn kapanış: Rıza ve Memo tezgâhta + kapanış kartı
    Kullanım: node store/tools/film/ep02-b1-tek-basina.js [tr|en] [preview [çekim,çekim]]
@@ -12,6 +13,8 @@ const L = {
   tr: {
     firm: 'Rıza\'nın Balıkları', num: 'tr-TR',
     quote: 'Büyük hayaller, tek başına kurulmaz.',
+    hook: ['BU ADAM NEDEN BAŞINA HAMSİ YEDİ?', 'Baştan alalım…'], place: ['KARADENİZ · 06:12', 'HAMSİ KOYU'],
+    who: ['KAPTAN RIZA · tezgâh sahibi', 'NERMİN TEYZE · ilk müşteri', 'MEMO · bir yabancı'],
     ep: ['HAMSİ KOYU · GELİŞTİRME GÜNLÜĞÜ', 'GÜN 2 · BÖLÜM 1', 'TEK BAŞINA OLMAZ'], corner: 'GÜN 2 · BÖLÜM 1',
     alone: ['TEK BAŞINA', 'Ağ, masa, tezgâh… Kuyruk uzadıkça Rıza yetişemez.'],
     hire: ['İLK ELEMAN', 'Yükselt › Personel › rol seç. İlk iş: hamal.'], staffBtn: 'personeli', roleBtn: 'Hamal',
@@ -25,6 +28,8 @@ const L = {
   en: {
     firm: 'Rıza\'s Fish', num: 'en-US',
     quote: 'Big dreams aren\'t built alone.',
+    hook: ['WHY DID THIS GUY GET HIT BY A FISH?', 'Let\'s rewind…'], place: ['BLACK SEA · 6:12 AM', 'HAMSI COVE'],
+    who: ['CAPTAIN RIZA · stall owner', 'AUNT NERMIN · first customer', 'MEMO · a stranger'],
     ep: ['HAMSI COVE · DEVLOG', 'DAY 2 · EPISODE 1', 'NOT ALONE'], corner: 'DAY 2 · EPISODE 1',
     alone: ['ALL ALONE', 'Net, table, stall… As the line grows, Rıza falls behind.'],
     hire: ['THE FIRST HIRE', 'Upgrade › Staff › pick a role. First up: a porter.'], staffBtn: 'staff', roleBtn: 'Porter',
@@ -41,7 +46,10 @@ film({
   id: 'gun2-b1', dur: 74, L, scripts: ['cast.js'],
   shots: L => [
     /* 1) sinematik — brief'e birebir, konuşmasız */
-    { id: 'dawn', a: 0, b: 5, kind: 'scene', scene: 'b1open', fadeIn: 1.2 },
+    /* 0) soğuk açılış (kanca): en komik an, donar, soru; sonra baştan */
+    { id: 'cold', a: 0, b: 1.0, kind: 'scene', scene: 'b1rush', t0: 4.55 },
+    { id: 'freeze', a: 1.0, b: 2.2, kind: 'scene', scene: 'b1rush', t0: 5.25, opt: { freeze: 5.25 }, grade: 'freeze', dim: 0.3 },
+    { id: 'dawn', a: 2.2, b: 5, kind: 'scene', scene: 'b1open', t0: 2.2 },
     { id: 'first', a: 5, b: 10, kind: 'scene', scene: 'b1rush0', tr: 'dissolve', td: 0.5 },
     { id: 'rush', a: 10, b: 16, kind: 'scene', scene: 'b1rush' },
     { id: 'stranger', a: 16, b: 21, kind: 'scene', scene: 'b1stranger', tr: 'dissolve', td: 0.7 },
@@ -60,6 +68,11 @@ film({
     { id: 'end', a: 69.4, b: 74, kind: 'scene', scene: 'b1end', tr: 'dissolve', td: 0.8, dim: 0.45, end: true }
   ],
   text: L => [
+    { a: 0.95, b: 2.15, kind: 'title', t: L.hook[0], s: L.hook[1], top: true },
+    { a: 2.5, b: 4.6, kind: 'kicker', s: L.place[0], t: L.place[1] },
+    { a: 3.3, b: 4.95, kind: 'chip', t: L.who[0] },
+    { a: 5.6, b: 7.3, kind: 'chip', t: L.who[1] },
+    { a: 16.9, b: 18.6, kind: 'chip', t: L.who[2] },
     { a: 27.5, b: 30.0, kind: 'int', t: L.quote },
     { a: 30.0, b: 33.3, kind: 'episode' },
     { a: 33.4, b: 69.3, kind: 'corner', t: L.corner },
@@ -75,8 +88,8 @@ film({
     { a: 64.3, b: 69.25, kind: 'title', t: L.team[0], s: L.team[1] },
     { a: 69.9, b: 74, kind: 'end' }
   ],
-  flash: [[30.0, 0.85], [43.25, 0.25]],
-  grades: { morning: ['#ffd6a0', 'soft-light', 0.16], gold: ['#ffb060', 'soft-light', 0.24] },
+  flash: [[0.32, 0.5], [2.2, 0.7], [30.0, 0.85], [43.25, 0.25]],
+  grades: { freeze: ['#6a7488', 'saturation', 0.55], morning: ['#ffd6a0', 'soft-light', 0.16], gold: ['#ffb060', 'soft-light', 0.24] },
 
   /* sayfada: çekim kurulumları */
   pageInit: function (L, LANG, V) {
@@ -84,6 +97,8 @@ film({
     const st = document.createElement('style');                      /* uzun bölüm adı dikey ekrana sığsın */
     st.textContent = 'body.tbv #tbg .tb-ep b{font-size:40px;text-align:center;line-height:1.1;padding:0 20px}body.tbv #tbg .tb-ep em{font-size:20px}' +
       '#tbg .tb-perks div{text-align:left;min-width:380px}' +
+      'body.tbv #tbg .tb-chip{top:auto;bottom:330px;font-size:17px}' +
+      'body.tbv #tbg .tb-kick small{font-size:15px;color:#fff3dc;text-shadow:2px 2px 0 #2a1408}body.tbv #tbg .tb-kick b{font-size:44px}' +
       '#tbg .tb-ep{background:radial-gradient(ellipse at 50% 46%,rgba(6,10,22,.88) 0%,rgba(6,10,22,.7) 45%,rgba(6,10,22,.35) 100%)}' +
       '#memoTag{position:fixed;z-index:195;transform:translate(-50%,-100%);padding:5px 10px 3px;background:rgba(8,14,24,.82);border:3px solid #e69a42;' +
       'font:700 15px "Pixelify Sans",monospace;letter-spacing:.12em;color:#fff3d6;white-space:nowrap;display:none;pointer-events:none}' +

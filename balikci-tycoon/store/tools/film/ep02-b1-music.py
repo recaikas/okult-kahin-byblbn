@@ -1,5 +1,6 @@
 """Gün 2 · Bölüm 1 · Tek Başına Olmaz — müzik ve ses (74 sn). ep02-b1-tek-basina.js'teki çekimlere oturur.
-     0–5     şafak: martılar, dalga; sakin akustik (saz arpeji, pad, kemençe), örtü çekilir
+     0–2.2   soğuk açılış: PAT!, donma, geri sarma
+     2.2–5   şafak: martılar, dalga; sakin akustik (saz arpeji, pad, kemençe), örtü çekilir
      5–10    ilk satış: terazi, sikke şıngırtısı; uğultu büyür, müzik hızlanır; endişe vuruşu
      10–13.1 hızlı kesmeler: horon temposu, kasa gümü, terazi, sikkeler, ayak vuruşu
      13.1–14.85 ağır çekim: müzik çekilir, havada ıslık, kalp atışı; 14.85 PAT! ve müzik kesilir
@@ -15,16 +16,26 @@ from sound import *
 import sound
 
 init(74)
-sea_bed([0, 9.8, 10.2, 15.9, 16.2, 20.8, 21.2, 29.8, 30.2, 69.2, 69.6, 74],
-        [1.0, .7, .25, .25, .55, .55, .6, .6, .18, .18, .8, .8])
+sea_bed([0, 2.0, 2.3, 9.8, 10.2, 15.9, 16.2, 20.8, 21.2, 29.8, 30.2, 69.2, 69.6, 74],
+        [0.15, 0.15, 1.0, .7, .25, .25, .55, .55, .6, .6, .18, .18, .8, .8])
 
-# ---------- 0–5: şafak ----------
-for a in [0.4, 1.9, 3.5, 4.6]: gull(a, 0.07)
-pad(0.0, [48, 55, 60, 64], 2.6, 0.04, hi=1200); pad(2.5, [53, 57, 60, 65], 2.6, 0.04, hi=1200)
-for i, m in enumerate([60, 64, 67, 72, 67, 64, 65, 69, 72, 77, 72, 69]):
-    pluck(0.3 + i * 0.4, m, 0.05)
+# ---------- 0–2.2: soğuk açılış (kanca) ----------
+n = int(0.3 * SR); tw = tt(n)
+add(sound.dry, 0.0, np.sin(2 * np.pi * np.cumsum(1900 - 900 * tw / 0.3) / SR) * env(n, 0.02, 0.1, 0.9, 0.05) * 0.04)   # düşen ıslık
+slap(0.30, 0.5); clap(0.30, 0.35); boom(0.31, 0.4, 120)                  # PAT!
+n = int(0.5 * SR); tw = tt(n)                                              # donma: bant durması
+add(sound.dry, 1.0, np.sin(2 * np.pi * np.cumsum(220 * (1 - tw / 0.6)) / SR) * env(n, 0.005, 0.1, 0.9, 0.1) * 0.12)
+boom(1.0, 0.45, 50)
+pad(1.0, [45, 52, 58], 1.2, 0.03, hi=600)
+riser(1.65, 2.2, 0.22); whoosh(2.0, 0.25, 0.25, 5000)                    # geri sarma
+
+# ---------- 2.2–5: şafak ----------
+for a in [2.3, 3.5, 4.6]: gull(a, 0.07)
+pad(2.2, [48, 55, 60, 64], 1.6, 0.04, hi=1200); pad(3.6, [53, 57, 60, 65], 1.6, 0.04, hi=1200)
+for i, m in enumerate([60, 64, 67, 72, 67, 64, 65]):
+    pluck(2.25 + i * 0.4, m, 0.05)
 prev = None
-for a, m, d in [(1.4, 76, 0.8), (2.2, 79, 0.4), (2.6, 77, 0.4), (3.0, 76, 0.8), (3.8, 74, 0.4), (4.2, 72, 0.8)]:
+for a, m, d in [(2.6, 76, 0.6), (3.2, 79, 0.4), (3.6, 77, 0.4), (4.0, 76, 0.5), (4.5, 72, 0.6)]:
     kemence(a, m, d, 0.07, prev, vib=0.014); prev = m
 scrape(3.85, 4.45, 0.07)                       # örtü çekilir
 bell(4.5, 84, 0.03, 1.4)                       # gülümseme
