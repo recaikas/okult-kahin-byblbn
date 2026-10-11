@@ -651,7 +651,7 @@
     B.forEach(function (b, i) { var h = hd(b[0]); bubble(g, h[0], h[1], b[1], popK(t, b[2]), t > 2.6 ? Math.round(Math.sin(t * 30 + i * 2)) : 0); });
     if (t > 2.9) dizzy(g, I.r.head[0], I.r.head[1] - 5, t);
     if (t > 3.8) sweat(g, I.r.head[0] + 6, I.r.head[1] + 2);
-    var c = t < 2.6 ? camPath([[0, 270, 252, 1.45], [2.6, 272, 254, 1.38]], t) : t < 3.6 ? frameOf(262 + sh * 0.3, 226, 2.7) : camPath([[3.6, 262, 238, 2.5], [5.3, 272, 258, 1.38]], t);
+    var c = t < 2.6 ? camPath([[0, 270, 252, 1.45], [2.6, 272, 254, 1.38]], t) : t < 3.6 ? frameOf(262 + sh * 0.3, 234, 1.95) : camPath([[3.6, 262, 238, 2.5], [5.3, 272, 258, 1.38]], t);
     c.L = H2.L; return c;
   }
   /* S2: gün boyu koşturma — gökyüzü şafaktan öğleye, akşama akar */
@@ -717,7 +717,7 @@
     return harbor(t, chars, { mode: mode, coins: 14 }, null, 0);
   }
   function b2desk(t) { var H2 = deskScene(t, 'noon', false), c = camPath([[0, 240, 262, 2.1], [1.4, 242, 262, 2.0], [3.4, 272, 272, 1.32], [4.5, 272, 270, 1.3]], t); c.L = H2.L; return c; }
-  function b2together(t) { var H2 = deskScene(t + 4.5, 'noon', t > 1.4), c = camPath([[0, 272, 270, 1.3], [2.0, 272, 240, 1.3], [3, 272, 238, 1.32]], t); c.L = H2.L; return c; }
+  function b2together(t) { var H2 = deskScene(t + 4.5, 'noon', t > 1.4), c = camPath([[0, 272, 270, 1.3], [2.0, 272, 210, 1.3], [3, 272, 208, 1.32]], t); c.L = H2.L; return c; }
   function b2end(t) { var H2 = deskScene(t + 8, 'dusk', true), c = frameOf(272, 160 - t * 1.2, 1.3); c.L = H2.L; return c; }
 
   TBS.reg('b2busy', b2busy); TBS.reg('b2run', b2run); TBS.reg('b2night', b2night); TBS.reg('b2nevin', b2nevin);
