@@ -1,6 +1,7 @@
 /* Fragmanın elle çizilmiş sinematik sahneleri. 320×180 piksel, ×6 büyütülür (1920×1080). Tarayıcıda çalışır: window.TBS.
    Katmanlar çıkış tuvaline kesirli kaydırmayla basılır: pikseller keskin kalır, kamera akıcı kayar.
    Sahneler: dawn (şafak), deep (hamsi sürüsü), cast (ağ atma), storm (lodos), legend (Şahmeran), finale (gece limanı)
+   Gün 2 (müdür Nevin Hanım): office (gece ofisi), ledger (defter), walk (şafakta iskele), desk (masaya oturuş)
    TBS.draw(ad, t, u) — t: sahnenin saniyesi, u: 0..1 ilerleme
    Dikey mod (window.TBS_V = 1, yüklemeden önce): sahne yine yatay çizilir; 135 piksel genişliğinde bir dilim ×8 büyütülüp
    1080×1440 olarak ortaya konur, dilim sahne içinde yavaşça kayar (CROP). Üst ve alt 240 px sahnenin kenar renkleriyle,
@@ -17,7 +18,8 @@
   document.body.appendChild(shown);
   var PV = VERT ? shown.getContext('2d') : null, PAD = layer(16, 1);
   /* dikey kadraj: sahne başında ve sonunda dilimin ortası (sahne pikseli) */
-  var CROP = { dawn: [104, 196], cast: [150, 192], deep: [162, 150], storm: [150, 196], legend: [160, 160], finale: [196, 214] };
+  var CROP = { dawn: [104, 196], cast: [150, 192], deep: [162, 150], storm: [150, 196], legend: [160, 160], finale: [196, 214],
+    office: [150, 160], ledger: [130, 150], walk: [120, 150], desk: [160, 160] };
   function compose(name, u) {
     var c = CROP[name] || [160, 160], e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2, cw = 135;
     var cx = Math.max(cw / 2, Math.min(W - cw / 2, c[0] + (c[1] - c[0]) * e)), sx = Math.round((cx - cw / 2) * K);
@@ -551,8 +553,250 @@
     blit(L, 0, 0);
   }
 
+  /* =====================================================================
+     GÜN 2 — MÜDÜR NEVİN HANIM (oyundaki müdür görünümü: mor ceket, altın fular)
+     ===================================================================== */
+  var NV = { hair: '#2b1d1a', hairHi: '#4a3028', skin: '#e0a673', skinS: '#b9784e', skinHi: '#f2c08e', coat: '#3a2a4a', coatHi: '#5a4468', coatS: '#251a30',
+    scarf: '#d9a441', scarfS: '#a87a2a', blouse: '#efe6d8', eye: '#1a1420', lip: '#a04a40', legs: '#2a2030', shoe: '#140e18' };
+  /* 3×5 küçük piksel yazı (levha, defter rakamları) */
+  var TINY = { '0': ['111', '101', '101', '101', '111'], '1': ['010', '110', '010', '010', '111'], '2': ['111', '001', '111', '100', '111'], '3': ['111', '001', '111', '001', '111'],
+    '4': ['101', '101', '111', '001', '001'], '5': ['111', '100', '111', '001', '111'], '6': ['111', '100', '111', '101', '111'], '7': ['111', '001', '010', '010', '010'],
+    '8': ['111', '101', '111', '101', '111'], '9': ['111', '101', '111', '001', '111'], '.': ['0', '0', '0', '0', '1'], ' ': ['00', '00', '00', '00', '00'],
+    A: ['010', '101', '111', '101', '101'], D: ['110', '101', '101', '101', '110'], E: ['111', '100', '110', '100', '111'], G: ['111', '100', '101', '101', '111'],
+    M: ['10001', '11011', '10101', '10001', '10001'], N: ['1001', '1101', '1011', '1001', '1001'], R: ['110', '101', '110', '101', '101'], U: ['101', '101', '101', '101', '111'], 'Ü': ['101', '101', '101', '101', '111'] };
+  function tinyW(s) { var w = 0; for (var i = 0; i < s.length; i++) w += (TINY[s[i]] || TINY[' '])[0].length + 1; return w - 1; }
+  function tiny(g, x, y, s, c) {
+    for (var i = 0; i < s.length; i++) {
+      var gl = TINY[s[i]] || TINY[' '];
+      for (var r = 0; r < 5; r++) for (var q = 0; q < gl[r].length; q++) if (gl[r][q] === '1') P(g, x + q, y + r, c);
+      if (s[i] === 'Ü') { P(g, x, y - 2, c); P(g, x + 2, y - 2, c); }
+      x += gl[0].length + 1;
+    }
+  }
+  /* Nevin Hanım, önden (bel üstü). o: { write: kalem salınımı, look: 0 aşağı / 1 kameraya, smile, arms: 'write'|'rest'|'none' } */
+  function nevinFront(g, cx, y0, o) {
+    o = o || {}; var cy = y0 + 12, dy, hw;
+    disc(g, cx + 1, y0 + 3, 3, NV.hair); P(g, cx + 2, y0 + 1, NV.hairHi);                         /* topuz */
+    var DESK = o.desk || 999;
+    /* gövde: omuzlar, ceket, fular */
+    for (var r = 0; r < (DESK < 999 ? DESK - cy - 8 : 26); r++) {
+      var yy = cy + 8 + r; if (yy >= DESK) break;
+      hw = r < 2 ? 8 + r * 1.5 : 11 - Math.max(0, r - 14) * 0.15; hw = Math.round(hw);
+      R(g, cx - hw, yy, hw * 2 + 1, 1, NV.coat); P(g, cx - hw, yy, NV.coatS); R(g, cx + hw - 1, yy, 2, 1, NV.coatHi);
+      var v = Math.max(0, 6 - r); if (v > 0) R(g, cx - v + 1, yy, v * 2 - 1, 1, NV.blouse);          /* V yaka */
+      if (r < 9 && r > 0) { P(g, cx - Math.max(1, v) - 0, yy, NV.coatS); P(g, cx + Math.max(1, v), yy, NV.coatS); }
+    }
+    R(g, cx - 2, cy + 9, 5, 3, NV.scarf); P(g, cx - 2, cy + 11, NV.scarfS); R(g, cx - 1, cy + 12, 2, 4, NV.scarf); P(g, cx, cy + 15, NV.scarfS);   /* fular düğümü */
+    P(g, cx + 4, cy + 18, NV.scarf); P(g, cx + 4, cy + 22, NV.scarf);                                 /* düğmeler */
+    R(g, cx - 2, cy + 6, 4, 3, NV.skinS);                                                            /* boyun */
+    /* baş */
+    for (dy = -6; dy <= 6; dy++) { hw = Math.round(5.4 * Math.sqrt(1 - Math.pow(dy / 6.6, 2))); R(g, cx - hw, cy + dy, hw * 2 + 1, 1, NV.skin); P(g, cx - hw, cy + dy, NV.skinS); P(g, cx + hw, cy + dy, NV.skinHi); }
+    /* saç: tepe ve yanlar, yandan ayrık */
+    for (dy = -7; dy <= -2; dy++) { hw = Math.round(6 * Math.sqrt(Math.max(0, 1 - Math.pow((dy + 1) / 7.2, 2)))); R(g, cx - hw, cy + dy, hw * 2 + 1, 1, NV.hair); }
+    R(g, cx - 6, cy - 2, 2, 7, NV.hair); R(g, cx + 5, cy - 2, 2, 6, NV.hair); P(g, cx - 1, cy - 6, NV.hairHi); P(g, cx - 3, cy - 5, NV.hairHi);
+    R(g, cx - 4, cy - 2, 5, 1, NV.hair);                                                             /* perçem */
+    /* yüz */
+    var look = o.look || 0, ey = cy + (look > 0.5 ? 0 : 1);
+    R(g, cx - 4, cy - 1 + (look > 0.5 ? 0 : 1) - 1, 3, 1, NV.hairHi); R(g, cx + 1, cy - 1 + (look > 0.5 ? 0 : 1) - 1, 3, 1, NV.hairHi);   /* kaşlar */
+    if (look > 0.5) { R(g, cx - 3, ey, 2, 2, NV.eye); R(g, cx + 2, ey, 2, 2, NV.eye); P(g, cx - 3, ey, '#ffffff'); P(g, cx + 2, ey, '#ffffff'); }
+    else { R(g, cx - 4, ey + 1, 3, 1, NV.eye); R(g, cx + 1, ey + 1, 3, 1, NV.eye); }
+    P(g, cx, cy + 2, NV.skinS);
+    if (o.smile) { R(g, cx - 1, cy + 4, 3, 1, NV.lip); P(g, cx - 2, cy + 3, NV.lip); P(g, cx + 2, cy + 3, NV.lip); }
+    else R(g, cx - 1, cy + 4, 3, 1, NV.lip);
+    /* kollar */
+    if (o.arms === 'write' || o.arms === 'rest') {
+      var w = o.write || 0, hx1 = cx - 7 + Math.round(Math.sin(w) * 2), hx2 = cx + 6;
+      var hy = (DESK < 999 ? DESK : cy + 28) - 3;
+      for (var k = 0; k <= 12; k++) { var f = k / 12; R(g, cx - 12 + (hx1 - cx + 11) * f, cy + 11 + (hy - cy - 11) * f, 4, 3, NV.coat); R(g, cx + 9 + (hx2 - cx - 9) * f, cy + 11 + (hy - cy - 11) * f, 4, 3, NV.coatS); }
+      R(g, hx1 - 1, hy, 4, 3, NV.skin); R(g, hx2 - 1, hy, 4, 3, NV.skin); P(g, hx1 - 1, hy + 2, NV.skinS);
+      if (o.arms === 'write') { line(g, hx1 + 2, hy, hx1 + 6, hy - 5, '#1a1420'); P(g, hx1 + 5, hy - 4, NV.scarf); }
+    }
+  }
+  /* Nevin Hanım, yandan yürürken (sağa bakar). y: ayak hizası, ph: adım evresi, book: defter koltukta */
+  function nevinSide(g, x, y, ph, book) {
+    var s1 = Math.sin(ph), lg = Math.round(s1 * 3), bob = Math.abs(Math.cos(ph)) > 0.7 ? -1 : 0;
+    y += bob;
+    R(g, x - 1 + lg, y - 9, 2, 9, NV.legs); R(g, x - 1 - lg, y - 9, 2, 9, '#1c1622');               /* bacaklar */
+    R(g, x - 1 + lg, y - 1, 4, 1, NV.shoe); R(g, x - 1 - lg, y - 1, 4, 1, NV.shoe);
+    for (var r = 0; r < 20; r++) { var hw = r < 2 ? 3 + r : Math.min(6, 4 + r * 0.12); R(g, x - Math.round(hw), y - 29 + r, Math.round(hw) * 2 + 1, 1, NV.coat); R(g, x + Math.round(hw) - 1, y - 29 + r, 1, 1, NV.coatHi); }
+    R(g, x + 1, y - 29, 3, 3, NV.scarf); P(g, x + 3, y - 27, NV.scarfS);
+    R(g, x - 1, y - 31, 3, 2, NV.skinS);                                                              /* boyun */
+    disc(g, x, y - 36, 5, NV.skin); R(g, x + 5, y - 36, 1, 2, NV.skin); P(g, x + 5, y - 35, NV.skinS);   /* baş + burun */
+    for (var dy = -6; dy <= -2; dy++) R(g, x - 5, y - 36 + dy, 9 - Math.max(0, dy + 3), 1, NV.hair); R(g, x - 5, y - 37, 3, 5, NV.hair);
+    disc(g, x - 6, y - 40, 3, NV.hair); P(g, x - 5, y - 42, NV.hairHi);                              /* topuz arkada */
+    P(g, x + 3, y - 37, NV.eye); P(g, x + 3, y - 33, NV.lip);
+    var aw = Math.round(-s1 * 3);                                                                     /* sallanan kol */
+    for (var k = 0; k < 9; k++) R(g, x - 1 + aw * k / 9, y - 27 + k, 3, 2, NV.coatS);
+    R(g, x - 1 + aw, y - 18, 3, 2, NV.skin);
+    if (book) { R(g, x - 5, y - 24, 4, 9, '#7a2a2a'); R(g, x - 5, y - 24, 4, 1, '#a84a3a'); R(g, x - 2, y - 23, 1, 7, '#e8d8b0'); }
+  }
+  function glow(g, x, y, r, col, a) {   /* sıcak ışık: düşük çözünürlükte radyal geçiş, büyütünce iri pikselli kalır */
+    var gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, col.replace('A', a)); gr.addColorStop(1, col.replace('A', 0));
+    g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); g.restore();
+  }
+  function teaGlass(g, x, y, fill) {   /* ince belli çay bardağı, yandan; x,y: tabanın ortası */
+    R(g, x - 5, y, 11, 1, '#c8c0b8'); R(g, x - 4, y + 1, 9, 1, '#9a928a');                          /* tabak */
+    var rows = [3, 3, 2, 2, 2, 3, 3, 3]; for (var i = 0; i < rows.length; i++) { var w = rows[i], yy = y - 1 - i; R(g, x - w, yy, w * 2 + 1, 1, i < fill ? (i > fill - 2 ? '#d0703a' : '#a8401c') : '#c8e0e8'); P(g, x - w, yy, '#e8f4f8'); }
+    R(g, x - 3, y - 9, 7, 1, '#e8f4f8');
+  }
+  function steam(g, x, y, t, n) { for (var i = 0; i < (n || 3); i++) for (var k = 0; k < 8; k++) { var yy = y - k * 2 - ((t * 10 + i * 5) % 6), xx = x + Math.sin(t * 2 + k * 0.6 + i * 2) * 2 + i - 1; if (((k + i) % 3) && yy < y) P(g, xx, yy, 'rgba(255,248,235,' + (0.5 - k * 0.05) + ')'); } }
+
+  /* ---------- 2a. GECE OFİSİ ---------- */
+  function drawOffice(t, u) {
+    var L = layer(W, H), g = L.g, x, y, i;
+    /* duvar: koyu tahta */
+    for (x = 0; x < W; x += 14) { R(g, x, 0, 14, 124, (x / 14) % 2 ? '#2b1b14' : '#2f1e16'); R(g, x, 0, 1, 124, '#1c120d'); }
+    for (i = 0; i < 10; i++) { var kx = (i * 53 + 11) % W, ky = (i * 37) % 110 + 6; R(g, kx, ky, 3, 2, '#241610'); }
+    /* pencere: gece limanı */
+    var wx = 182, wy = 26, ww = 82, wh = 70;
+    for (y = 0; y < wh; y++) R(g, wx, wy + y, ww, 1, mix('#070b22', '#1b2a52', y / wh));
+    for (i = 0; i < 22; i++) { var sx = wx + (i * 37) % ww, sy = wy + (i * 19) % 40; if (Math.sin(t * 2 + i) > -0.4) P(g, sx, sy, i % 4 ? '#8a9ad8' : '#ffffff'); }
+    disc(g, wx + 18, wy + 14, 5, '#efe8d0'); disc(g, wx + 20, wy + 12, 5, '#0c1230');
+    R(g, wx, wy + 50, ww, 4, '#0a0e1e'); for (x = wx; x < wx + ww; x += 7) { P(g, x + 2, wy + 51, '#ffd27a'); for (var k = 0; k < 4; k++) if (Math.sin(t * 3 + x + k) > 0) P(g, x + 2, wy + 56 + k * 3, '#a8802a'); }
+    R(g, wx, wy + 54, ww, wh - 54, '#0c1430');
+    if (Math.sin(t * 1.6) > 0.55) { R(g, wx + 70, wy + 44, 3, 3, '#fff2c0'); glow(g, wx + 71, wy + 45, 8, 'rgba(255,240,190,A)', 0.6); }
+    R(g, wx - 3, wy - 3, ww + 6, 3, '#1a100b'); R(g, wx - 3, wy + wh, ww + 6, 4, '#1a100b'); R(g, wx - 3, wy, 3, wh, '#1a100b'); R(g, wx + ww, wy, 3, wh, '#1a100b');
+    R(g, wx + ww / 2 - 1, wy, 2, wh, '#1a100b'); R(g, wx, wy + 34, ww, 2, '#1a100b');
+    /* raflar ve defter sırtları */
+    [[12, 50], [12, 88]].forEach(function (sh, si) {
+      R(g, sh[0], sh[1], 70, 3, '#4a2e1a'); R(g, sh[0], sh[1], 70, 1, '#6a4428');
+      var cols = ['#6a2a2a', '#2a4a6a', '#5a5a2a', '#3a2a4a', '#7a5a2a', '#2a5a4a'], bx = sh[0] + 2;
+      for (var b2 = 0; b2 < 11; b2++) { var bh = 12 + ((b2 * 7 + si * 3) % 6), bw = 4 + (b2 % 2); R(g, bx, sh[1] - bh, bw, bh, cols[(b2 + si) % 6]); P(g, bx + 1, sh[1] - bh + 3, '#c8a050'); bx += bw + 1; }
+    });
+    /* duvar saati: sarkaç saniyede bir */
+    var cx = 104, cyc = 30; disc(g, cx, cyc, 9, '#4a2e1a'); disc(g, cx, cyc, 7, '#e8dcc0');
+    for (i = 0; i < 12; i++) { var a = i / 12 * Math.PI * 2; P(g, cx + Math.cos(a) * 6, cyc + Math.sin(a) * 6, '#6a5a4a'); }
+    line(g, cx, cyc, cx + 3, cyc - 3, '#1a1420'); line(g, cx, cyc, cx, cyc - 5, '#1a1420');
+    R(g, cx - 4, cyc + 9, 9, 22, '#3a2416'); var pa = Math.sin(t * Math.PI) * 0.35; line(g, cx, cyc + 10, cx + Math.sin(pa) * 14, cyc + 10 + Math.cos(pa) * 14, '#c8a050'); disc(g, cx + Math.round(Math.sin(pa) * 15), cyc + 10 + Math.round(Math.cos(pa) * 15), 2, '#d9a441');
+    /* eski fotoğraf */
+    R(g, 130, 52, 16, 20, '#1a100b'); R(g, 132, 54, 12, 16, '#a8906a'); R(g, 135, 60, 6, 8, '#6a5a44'); disc(g, 138, 58, 2, '#6a5a44');
+    /* lamba hâlesi (duvara düşen sıcak ışık) */
+    var fl = 0.85 + 0.15 * Math.sin(t * 9) * Math.sin(t * 5.3);
+    glow(g, 212, 106, 150, 'rgba(255,150,60,A)', 0.20 * fl); glow(g, 212, 106, 70, 'rgba(255,190,110,A)', 0.20 * fl);
+    /* Nevin */
+    if (!OPT.empty) nevinFront(g, 150, 62, { arms: 'write', write: t * 7, desk: 124 });
+    else { R(g, 140, 98, 22, 26, '#3a2416'); R(g, 142, 96, 18, 3, '#4a2e1a'); }               /* boş sandalye */
+    /* masa */
+    R(g, 0, 124, W, 8, '#6a4428'); R(g, 0, 124, W, 1, '#8a5a34'); R(g, 0, 132, W, 48, '#3a2416');
+    for (x = 20; x < W; x += 70) { R(g, x, 142, 46, 22, '#331f13'); R(g, x + 20, 150, 6, 2, '#c8a050'); }
+    /* defter (masada) */
+    R(g, 132, 125, 38, 4, '#e9dcb8'); R(g, 150, 125, 1, 4, '#b8a888'); for (i = 0; i < 2; i++) { R(g, 135, 126 + i, 12, 1, '#8a8090'); R(g, 153, 126 + i, 13, 1, '#8a8090'); }
+    /* çay */
+    teaGlass(g, 118, 123, 6); steam(g, 118, 113, t, 3);
+    /* gaz lambası */
+    R(g, 206, 120, 12, 4, '#a87a2a'); R(g, 208, 118, 8, 2, '#c8a050'); R(g, 209, 100, 6, 18, 'rgba(230,240,240,0.35)'); R(g, 209, 100, 1, 18, '#e8f4f8');
+    var fh = Math.round(4 + Math.sin(t * 11) * 1); R(g, 211, 112 - fh, 2, fh + 2, '#ffb454'); P(g, 211, 112 - fh, '#fff2c0'); P(g, 212, 111, '#ffd27a');
+    glow(g, 212, 108, 20, 'rgba(255,220,150,A)', 0.55 * fl);
+    blit(L, 0, 0);
+    var push = 1 + 0.16 * eio(u);                                                                   /* Nevin'e doğru yavaş yaklaşma */
+    O.globalAlpha = 1; var tmp = document.createElement('canvas'); tmp.width = out.width; tmp.height = out.height; tmp.getContext('2d').drawImage(out, 0, 0);
+    O.imageSmoothingEnabled = false; O.drawImage(tmp, -W * K * (push - 1) * 0.5, -H * K * (push - 1) * 0.58, W * K * push, H * K * push);
+  }
+
+  /* ---------- 2b. DEFTER (üstten yakın plan) ---------- */
+  var ledgerW = null;
+  function drawLedger(t, u) {
+    var L = layer(W, H), g = L.g, x, y, i;
+    for (y = 0; y < H; y += 12) R(g, 0, y, W, 12, (y / 12) % 2 ? '#4e321d' : '#56381f');
+    /* sayfalar */
+    R(g, 34, 14, 252, 158, '#2a1a10'); R(g, 38, 16, 122, 152, '#e6d6b0'); R(g, 160, 16, 122, 152, '#ecdebc'); R(g, 156, 16, 8, 152, '#c8b48c'); R(g, 159, 16, 2, 152, '#a8946c');
+    for (y = 30; y < 164; y += 9) { R(g, 44, y, 110, 1, '#b8c8d8'); R(g, 166, y, 110, 1, '#b8c8d8'); }
+    R(g, 54, 18, 1, 148, '#d88a8a'); R(g, 176, 18, 1, 148, '#d88a8a');
+    tiny(g, 60, 20, '1996', '#5a4a6a'); tiny(g, 180, 20, '1996', '#5a4a6a');
+    /* sağ sayfa: eski kayıtlar (rakam sütunları) */
+    var nums = ['120', '85', '1.250', '340', '60', '2.400', '75', '910', '1.180', '45', '300', '660', '7.420', '15'];
+    for (i = 0; i < nums.length; i++) { tiny(g, 270 - tinyW(nums[i]), 32 + i * 9 - 5, nums[i], '#2a2440'); for (x = 180; x < 236 - (i % 3) * 10; x += 5 + (i + x) % 4) R(g, x, 29 + i * 9, 3 + (x % 3), 1, '#3a3450'); }
+    R(g, 236, 150, 36, 1, '#2a2440'); tiny(g, 270 - tinyW('15.780'), 153, '15.780', '#8a2a2a');
+    spr(g, 182, 150, ['.kbbbb..', 'kbsssssk', '.kwwww..'], { k: '#3a3450', b: '#5a6a8a', s: '#8a9ab0', w: '#c8d0dc' });   /* kenarda hamsi karalaması */
+    /* sol sayfa: kalem satır satır yazar */
+    if (!ledgerW) { var r = rng(41); ledgerW = []; for (y = 0; y < 14; y++) { var xx = 60; while (xx < 148) { var w = 4 + Math.floor(r() * 12); if (xx + w > 150) break; ledgerW.push({ x: xx, y: 27 + y * 9, w: w, s: r() }); xx += w + 3; } } }
+    var shown = Math.floor(t * 9 + 18), pen = null;
+    for (i = 0; i < Math.min(shown, ledgerW.length); i++) {
+      var wd = ledgerW[i], part = i === shown - 1 ? (t * 9 % 1) : 1, ww2 = Math.max(1, Math.round(wd.w * part));
+      for (x = 0; x < ww2; x++) { P(g, wd.x + x, wd.y, '#2a2440'); if ((x + i) % 5 === 0) P(g, wd.x + x, wd.y - 1, '#2a2440'); if ((x * 7 + i) % 11 === 0) P(g, wd.x + x, wd.y + 1, '#2a2440'); }
+      if (i === shown - 1) pen = { x: wd.x + ww2, y: wd.y };
+    }
+    if (!pen) pen = { x: 60, y: 27 };
+    /* çay (üstten) */
+    disc(g, 300, 30, 10, '#d8d0c8'); disc(g, 300, 30, 7, '#e8f0f0'); disc(g, 300, 30, 5, '#a8401c'); P(g, 298, 28, '#e88a5a');
+    for (i = 0; i < 10; i++) { var a2 = t * 1.5 + i * 0.6; P(g, 300 + Math.cos(a2) * (6 + i), 30 + Math.sin(a2) * (4 + i * 0.6) - i, 'rgba(255,248,235,0.25)'); }
+    /* kalem ve el */
+    var px2 = pen.x, py2 = pen.y;
+    for (i = 0; i < 28; i++) R(g, px2 + i * 0.7, py2 + i * 0.9, 2, 2, i > 22 ? '#c8a050' : '#1f1a2a');
+    for (i = 0; i < 46; i++) { R(g, px2 + 14 + i * 1.1, py2 + 16 + i * 1.0, 14, 3, i < 6 ? NV.skin : i < 9 ? NV.scarf : NV.coat); }
+    disc(g, px2 + 10, py2 + 13, 5, NV.skin); P(g, px2 + 7, py2 + 11, NV.skinS); disc(g, px2 + 14, py2 + 17, 4, NV.skin);
+    /* lamba ışığı: üst sağdan */
+    glow(g, 300, -10, 200, 'rgba(255,220,150,A)', 0.16);
+    blit(L, 0, 0);
+  }
+
+  /* ---------- 2c. ŞAFAKTA İSKELE (yandan, takip eden kamera) ---------- */
+  var walkB = null;
+  function drawWalk(t, u) {
+    if (!walkB) { walkB = { sky: layer(W, H) }; dgrad(walkB.sky, 0, 0, W, 100, ['#3a2560', '#7a3a70', '#c25a6c', '#ee8d6a', '#f9b678', '#fde0a8']); }
+    var L = layer(W, H), g = L.g, i, x;
+    var nx = 60 + t * 34, cam = Math.max(0, nx - 130);                                                  /* Nevin dünya x, kamera */
+    g.drawImage(walkB.sky.c, 0, 0);
+    disc(g, 70 - cam * 0.15, 92, 13, '#ffd27a'); disc(g, 70 - cam * 0.15, 91, 11, '#ffe9b0');
+    var rh = ridge(61, W + 200, 4, 2.0); for (x = 0; x < W; x++) { var hh = 8 + rh[Math.round(x + cam * 0.3)] ; if (x < 140) R(g, x, 96 - hh, 1, hh, '#6a3a62'); }
+    for (var yy = 96; yy < 128; yy++) R(g, 0, yy, W, 1, mix('#e09088', '#3a2650', (yy - 96) / 32));
+    for (i = 0; i < 60; i++) { var gx = ((i * 41 - cam * 0.6) % W + W) % W, gy = 98 + (i * 13) % 28; if (Math.sin(t * 4 + i) > 0.3) R(g, gx, gy, 3, 1, gy < 106 ? '#ffe3a8' : '#a8607a'); }
+    /* arka sıra tezgâhlar ve kalabalık (paralaks 0.85) */
+    var bo = cam * 0.85;
+    for (var s2 = 0; s2 < 6; s2++) {
+      var sx2 = 40 + s2 * 110 - bo; if (sx2 < -90 || sx2 > W + 20) continue;
+      for (var k = 0; k < 7; k++) R(g, sx2 + k * 10, 78, 10, 8, k % 2 ? '#f3e6d0' : '#c84a40'); R(g, sx2, 86, 70, 2, '#7a2a2a');
+      R(g, sx2 + 2, 88, 2, 22, '#4a2f1d'); R(g, sx2 + 66, 88, 2, 22, '#4a2f1d'); R(g, sx2, 104, 70, 10, '#6a4229'); R(g, sx2, 102, 70, 2, '#a2714a');
+      for (k = 0; k < 4 + s2 % 3; k++) R(g, sx2 + 4 + k * 9, 98 - (k % 2) * 3, 8, 4 + (k % 2) * 3, '#8a6a4a');          /* kasalar yığılmış */
+      for (k = 0; k < 8; k++) { R(g, sx2 + 6 + (k % 4) * 7, 95 - Math.floor(k / 4) * 2, 5, 2, '#9fb3c4'); }
+      for (k = 0; k < 3 + s2 % 2; k++) { var qx = sx2 + 74 + k * 8; R(g, qx, 100, 5, 10, ['#3a4a6a', '#6a3a3a', '#3a5a4a'][k % 3]); disc(g, qx + 2, 97, 2, '#c08a5a'); }   /* kuyruk */
+    }
+    /* koşturan hamal (karşıdan gelir) */
+    var hx = W + 80 - ((t * 60) % (W + 160)); R(g, hx, 112, 6, 12, '#4f7fae'); disc(g, hx + 3, 109, 3, '#c08a5a'); R(g, hx - 2, 100, 10, 8, '#8a6a4a'); R(g, hx - 1, 96, 8, 4, '#8a6a4a');
+    /* iskele güvertesi */
+    R(g, 0, 124, W, 26, '#8a5d3e'); for (x = -((cam) % 12); x < W; x += 12) R(g, x, 124, 1, 26, '#6b4630'); R(g, 0, 124, W, 1, '#c08a5c'); R(g, 0, 136, W, 1, '#7a5034');
+    R(g, 0, 150, W, 6, '#4a2e1e'); for (x = -((cam * 1.0) % 40); x < W; x += 40) R(g, x, 156, 5, 24, '#3a2316');
+    for (var yy2 = 156; yy2 < H; yy2++) R(g, 0, yy2, W, 1, mix('#3a2650', '#120c22', (yy2 - 156) / 24));
+    for (x = -((cam) % 40); x < W; x += 40) R(g, x, 156, 5, 24, '#2a1810');
+    /* Nevin + uzun gölge */
+    var sxN = nx - cam;
+    g.save(); g.globalAlpha = 0.35; R(g, sxN, 147, 40, 2, '#2a1420'); g.restore();
+    nevinSide(g, Math.round(sxN), 147, t * 6.2, true);
+    rim(L, '#ffcf9a', -1, 0, 1);
+    for (i = 0; i < 3; i++) gull(g, ((t * 26 + i * 120) % (W + 40)) - 20, 26 + i * 14, t + i, '#3a2040');
+    blit(L, 0, 0);
+  }
+
+  /* ---------- 2d. MASA (sabah, yakın plan; 160×90 iç çözünürlük = iki kat iri piksel) ---------- */
+  function drawDesk(t, u) {
+    var L = layer(160, 90), g = L.g, i, x;
+    for (x = 0; x < 160; x += 8) R(g, x, 0, 8, 22, (x / 8) % 2 ? '#f0e2cc' : '#c85a4c');               /* tente */
+    R(g, 0, 22, 160, 2, '#8a3a32');
+    for (var y = 24; y < 48; y++) R(g, 0, y, 160, 1, mix('#9ad0e8', '#4a8ab0', (y - 24) / 24));
+    glow(g, 120, 30, 70, 'rgba(255,240,200,A)', 0.25);
+    R(g, 0, 44, 160, 20, '#b88a5c'); for (x = 0; x < 160; x += 9) R(g, x, 44, 1, 20, '#a07448');
+    /* Nevin oturur: 2.0–2.6 aşağı iner; 2.8 kameraya bakar; 3.2 gülümser */
+    var sit = sm(1.9, 2.6, t), ny = Math.round(-46 + 52 * sit);
+    if (sit > 0) nevinFront(g, 80, ny, { arms: sit > 0.95 ? 'rest' : 'none', look: t > 2.8 ? 1 : 0, smile: t > 3.2, desk: 64 });
+    /* masa */
+    R(g, 0, 64, 160, 6, '#7a4c2c'); R(g, 0, 64, 160, 1, '#a06a3e'); R(g, 0, 70, 160, 20, '#4a2e1a'); R(g, 20, 76, 50, 10, '#422817'); R(g, 42, 80, 6, 2, '#c8a050');
+    R(g, 14, 60, 24, 5, '#f4efe4'); R(g, 16, 59, 22, 1, '#e4dccc');                                     /* evrak */
+    /* levha: elle kayarak gelir (0.4–1.1) */
+    var plate = OPT.plate || 'MÜDÜR', pw = tinyW(plate) + 8, pk = sm(0.4, 1.1, t), plx = Math.round(160 + (Math.min(88, 114 - pw) - 160) * pk);
+    R(g, plx, 55, pw, 11, '#c8a050'); R(g, plx, 55, pw, 1, '#f2d88a'); R(g, plx + 2, 57, pw - 4, 8, '#3a2416'); R(g, plx, 66, pw, 1, '#7a5a2a');
+    tiny(g, plx + 4, 60, plate, '#f2d88a');
+    if (t < 1.3) { var hx = plx + pw + 2; R(g, hx, 58, 6, 5, NV.skin); for (i = 0; i < 30; i++) R(g, hx + 5 + i, 57 - i * 0.25, 4, 6, i < 2 ? NV.scarf : NV.coat); }
+    /* çay: yukarıdan iner (1.3–1.8), buhar */
+    var tk = sm(1.3, 1.8, t), ty = Math.round(-10 + (64 - -10) * tk);
+    if (tk > 0) { teaGlass(g, 56, ty, 6); if (t < 1.95) { R(g, 52, ty - 16, 8, 6, NV.skin); for (i = 0; i < 24; i++) R(g, 54 - i * 0.3, ty - 17 - i, 6, 3, NV.coat); } }
+    if (t > 1.9) steam(g, 56, 54, t, 2);
+    if (t > 1.82 && t < 1.95) { P(g, 52, 62, '#ffffff'); P(g, 61, 61, '#ffffff'); }                    /* tık */
+    blit(L, 0, 0, undefined, K * 2);
+  }
+
   var OPT = {};
-  var SC = { dawn: drawDawn, deep: drawDeep, cast: drawCast, storm: drawStorm, legend: drawLegend, finale: drawFinale };
+  var SC = { dawn: drawDawn, deep: drawDeep, cast: drawCast, storm: drawStorm, legend: drawLegend, finale: drawFinale,
+    office: drawOffice, ledger: drawLedger, walk: drawWalk, desk: drawDesk };
   window.TBS = {
     opt: function (o) { OPT = o || {}; },
     draw: function (name, t, u) { shown.style.display = 'block'; O.setTransform(1, 0, 0, 1, 0, 0); O.globalAlpha = 1; O.fillStyle = '#000'; O.fillRect(0, 0, out.width, out.height); SC[name](t, u); if (VERT) compose(name, u); },

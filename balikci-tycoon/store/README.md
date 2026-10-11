@@ -48,7 +48,7 @@ Videoda başka platform adı geçmez (Apple önizleme kuralı). Müzik `tools/mu
 | `video/trailer-1080x1920-{en,tr}.mp4` | 1080×1920 dikey | Reels, TikTok, YouTube Shorts, WhatsApp durum |
 
 İki kaynak iç içe kurgulanır:
-- **Elle çizilmiş piksel sahneler** (`tools/trailer-scenes.js`, 320×180 ×6): şafakta Karadeniz köyü, hamsi sürüsü,
+- **Elle çizilmiş piksel sahneler** (`tools/film/scenes.js`, 320×180 ×6): şafakta Karadeniz köyü, hamsi sürüsü,
   kayıktan ağ atma, lodos gecesi, dipteki Şahmeran, gece limanı (logo zemini).
 - **Gerçek oyun**: `game.js` çekim sırasında tarayıcıya küçük yamalarla sunulur (dosya değişmez): serbest kamera,
   yakın plan (yakınlık 1–5), oyun içi etiketler gizli.
@@ -57,6 +57,19 @@ Akış: Karadeniz ve hamsi → ağ → vuruş → CATCH › FILLET › SELL › 
 (fümehane 2.4×, Reis Güveci) → 69 özel müşteri → Müşteri Defteri → lodos, sürü, yoğun saat → Dipteki Söz →
 gece limanı → logo. Müzik `tools/trailer-music.py`: deniz, martılar, kemençe, davul ve tef ile horon, hicaz ney ve koro,
 çekimlere oturan ses efektleri (ağ, suya düşüş, sikke, gök gürültüsü); yankı ve stereo miks.
+
+## 4c. Geliştirme Günlüğü videoları — şablon: [GUNLUK.md](GUNLUK.md)
+| Dosya | Boyut | Nereye |
+|---|---|---|
+| `video/ep02-1920x1080-{tr,en}.mp4` | yatay | YouTube, X |
+| `video/ep02-1080x1920-{tr,en}.mp4` | dikey | TikTok, Reels, Shorts |
+
+Gün 2 · Müdürler: Nevin Hanım'ın hikâyesi (elle çizilmiş) → seri kartı → müdür mekaniği (gerçek oyun ve arayüz) → kapanış.
+Araçlar `tools/film/`: `engine.js` (film motoru), `scenes.js` (sahneler), `sound.py` (ses), `ep02-mudurler.js` + `ep02-music.py`.
+```
+node store/tools/film/ep02-mudurler.js tr v        # dikey Türkçe; müzik dosyası varsa MP4'ü de üretir
+python3 store/tools/film/ep02-music.py store/video/ep02-music.wav
+```
 
 ## 5. Yükleme sırası (kısa kontrol listesi)
 **App Store Connect**
@@ -102,7 +115,7 @@ ffmpeg -framerate 30 -i frames-tr/%05d.jpg -i promo-music.wav -c:v libx264 -prof
 ```
 Sinematik fragman (dil `en` ya da `tr`; `preview` her 10. kareyi çeker; sona çekim adları eklenirse yalnız onları):
 ```
-node store/tools/trailer.js en                                # 1800 kare → video/frames-trailer-en/ (sahneler: tools/trailer-scenes.js)
+node store/tools/trailer.js en                                # 1800 kare → video/frames-trailer-en/ (sahneler: tools/film/scenes.js)
 node store/tools/trailer.js tr                                # Türkçe → video/frames-trailer-tr/
 node store/tools/trailer.js tr v                              # dikey 1080×1920 → video/frames-trailer-tr-v/ (çıktı: trailer-1080x1920-tr.mp4)
 python3 store/tools/trailer-music.py store/video/trailer-music.wav

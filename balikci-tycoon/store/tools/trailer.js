@@ -1,6 +1,6 @@
 /* Sinematik fragman (EN, 60 sn, 1920×1080, 30 fps).
    İki kaynak iç içe kurgulanır:
-   1) trailer-scenes.js — elle çizilmiş piksel sahneler (şafak, hamsi sürüsü, ağ, lodos, Şahmeran, gece limanı)
+   1) film/scenes.js — elle çizilmiş piksel sahneler (şafak, hamsi sürüsü, ağ, lodos, Şahmeran, gece limanı)
    2) gerçek oyun — game.js çekim sırasında küçük yamalarla yüklenir: kamera serbest, yakınlık 1–5, oyun içi etiketler gizli
    Oyunun saati sanaldır (rAF/performance.now/setTimeout adımlanır), her kare tek tek çekilir. Zamanlar müziğe oturur
    (120 BPM, 1 ölçü = 2 sn, logo vuruşu 15.0'te). Müzik: trailer-music.py.
@@ -149,7 +149,7 @@ const GRADES = { morning: ['#ffd6a0', 'soft-light', 0.18], gold: ['#ffb060', 'so
     window.__pumpOff();
   });
   if (V) await p.evaluate(() => { window.TBS_V = 1; document.body.classList.add('tbv'); });
-  await p.addScriptTag({ path: path.join(__dirname, 'trailer-scenes.js') });
+  await p.addScriptTag({ path: path.join(__dirname, 'film', 'scenes.js') });
 
   /* ---------- sinema katmanı ---------- */
   await p.evaluate(([L, LANG]) => {

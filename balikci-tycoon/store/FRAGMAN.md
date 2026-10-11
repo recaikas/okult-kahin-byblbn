@@ -5,7 +5,7 @@ Hiçbir hazır görüntü, stok müzik ya da video düzenleme programı kullanı
 
 | Parça | Dosya | Ne yapar |
 |---|---|---|
-| Sinematik sahneler | `tools/trailer-scenes.js` | Elle çizilmiş piksel sahneler: şafak, hamsi sürüsü, ağ atma, lodos, Şahmeran, gece limanı |
+| Sinematik sahneler | `tools/film/scenes.js` | Elle çizilmiş piksel sahneler: şafak, hamsi sürüsü, ağ atma, lodos, Şahmeran, gece limanı |
 | Çekim ve kurgu | `tools/trailer.js` | Oyunu tarayıcıda açar, kare kare çeker, sahnelerle iç içe kurgular, yazıları ve geçişleri bindirir |
 | Müzik ve ses | `tools/trailer-music.py` | Özgün müzik ve ses efektleri, yankılı stereo miks |
 | Birleştirme | `ffmpeg` | Kareleri ve sesi MP4'e çevirir |
@@ -46,7 +46,7 @@ Bir hikâye ipi sahneleri birbirine bağlar:
 | 51.5–55 | Dipteki Söz ara sahnesi | oyunun hikâye motoru | THE PROMISE BELOW / DİPTEKİ SÖZ + altyazı | çözülerek |
 | 55–60 | Gece limanı + logo kartı | çizim | "Build your cove. Keep the promise." · FREE · NO ADS | çözülerek, sonda siyah |
 
-## 3. Elle çizilmiş sahneler (`trailer-scenes.js`)
+## 3. Elle çizilmiş sahneler (`film/scenes.js`)
 
 - **Çözünürlük:** 320×180 piksel, ×6 büyütülür (1920×1080). Pikseller iri ve okunaklı, oyunun stiliyle uyumlu.
 - **Katmanlar ve paralaks:** gökyüzü, bulutlar, dağlar, yamaç, deniz ve ön plan ayrı katmanlar. Kamera kayarken her katman farklı hızda hareket eder.
