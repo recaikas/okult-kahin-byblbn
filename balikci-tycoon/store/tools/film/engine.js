@@ -11,6 +11,7 @@
 
    BÖLÜM TANIMI (EP):
      id, dur                    — çıktı adı ve süre (sn)
+     scripts                    — scenes.js'ten sonra yüklenecek ek sahne dosyaları (ör. ['cast.js'])
      L: { en: {...}, tr: {...} } — metinler; motorun kullandıkları: firm, end[3], ep[3] (seri kartı), loop[], cash
      shots(L)                   — [{ id, a, b, kind: scene|game|black, scene, t0, opt, z, cam:[[u,x,y]…], day, grade,
                                      tr:'dissolve', td, push, dim, fadeIn, glow, story, ui }]
@@ -57,6 +58,9 @@ function patchGame(src) {
   /* müdür etiketleri oyuncu uzaktayken de görünebilsin (çekimde oyuncu kadraj dışında) */
   rep("if (dist2(player.x, player.y, p.x, p.y) < 7) uiLabel(p.x, p.y, 30, '👔 '", "if (window.__mgrLabel || dist2(player.x, player.y, p.x, p.y) < 7) uiLabel(p.x, p.y, 30, '👔 '");
   rep("if (dist2(player.x, player.y, a.x, a.y) < 9) uiLabel(a.x, a.y, 34, '👔 '", "if (window.__mgrLabel || dist2(player.x, player.y, a.x, a.y) < 9) uiLabel(a.x, a.y, 34, '👔 '");
+  rep('mode: \'load\', name: pick(WNAMES)', 'mode: \'load\', name: window.__nextName || pick(WNAMES)');   /* çekimde işe alınanın adı */
+  /* oyuncuyu çekimde yönlendirme: window.__pdir = { x, y } dünya yönü (oyun kendi etkileşimlerini yapar) */
+  rep('  var ox = player.x, oy = player.y;\n  moveActor(player, wx, wy, speed(), dt);', '  if (window.__pdir) { wx = window.__pdir.x; wy = window.__pdir.y; }\n  var ox = player.x, oy = player.y;\n  moveActor(player, wx, wy, speed(), dt);');
   rep('function hireMgr(z, c) {', 'window.__hireMgr = function (z, c) { hireMgr(z, c); };\nfunction hireMgr(z, c) {');
   return src;
 }
@@ -266,6 +270,7 @@ module.exports = async function film(EP) {
   });
   if (V) await p.evaluate(() => { window.TBS_V = 1; document.body.classList.add('tbv'); });
   await p.addScriptTag({ path: path.join(__dirname, 'scenes.js') });
+  for (const sc of EP.scripts || []) await p.addScriptTag({ path: path.join(__dirname, sc) });   /* ek sahne dosyaları (ör. cast.js) */
   await p.evaluate(overlayInit, [L, LANG]);
   await p.evaluate(`(${EP.pageInit.toString()})(${JSON.stringify(L)}, ${JSON.stringify(LANG)}, ${V})`);
   await p.evaluate(async () => { await document.fonts.ready; });

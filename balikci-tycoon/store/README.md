@@ -58,16 +58,19 @@ Akış: Karadeniz ve hamsi → ağ → vuruş → CATCH › FILLET › SELL › 
 gece limanı → logo. Müzik `tools/trailer-music.py`: deniz, martılar, kemençe, davul ve tef ile horon, hicaz ney ve koro,
 çekimlere oturan ses efektleri (ağ, suya düşüş, sikke, gök gürültüsü); yankı ve stereo miks.
 
-## 4c. Geliştirme Günlüğü videoları — şablon: [GUNLUK.md](GUNLUK.md)
+## 4c. Geliştirme Günlüğü dizisi — şablon: [GUNLUK.md](GUNLUK.md)
 | Dosya | Boyut | Nereye |
 |---|---|---|
-| `video/ep02-1080x1920-{tr,en}.mp4` | dikey | TikTok, Reels, Shorts |
+| `video/gun2-b1-1080x1920-{tr,en}.mp4` | dikey, 74 sn | TikTok, Reels, Shorts |
+| `video/ep02-1080x1920-{tr,en}.mp4` | dikey | eski deneme (müdürler), dizi biçiminden önce |
 
-Gün 2 · Müdürler: Nevin Hanım'ın hikâyesi (elle çizilmiş) → seri kartı → müdür mekaniği (gerçek oyun ve arayüz) → kapanış.
-Araçlar `tools/film/`: `engine.js` (film motoru), `scenes.js` (sahneler), `sound.py` (ses), `ep02-mudurler.js` + `ep02-music.py`.
+Gün 2 · Bölüm 1 · Tek Başına Olmaz: sabit kadro (Kaptan Rıza, Memo, Nermin Teyze) ile 30 sn sinematik → oyuna geçiş ve seri
+kartı → ilk eleman mekaniği (gerçek oyun ve arayüz) → kapanış.
+Araçlar `tools/film/`: `engine.js` (film motoru), `scenes.js` (sahneler), `cast.js` (sabit kadro ve dizi sahneleri),
+`sound.py` (ses), `ep02-b1-tek-basina.js` + `ep02-b1-music.py`.
 ```
-node store/tools/film/ep02-mudurler.js tr          # dikey Türkçe (seri yalnız dikey); müzik dosyası varsa MP4'ü de üretir
-python3 store/tools/film/ep02-music.py store/video/ep02-music.wav
+python3 store/tools/film/ep02-b1-music.py store/video/gun2-b1-music.wav
+node store/tools/film/ep02-b1-tek-basina.js tr     # dikey Türkçe; müzik dosyası varsa MP4'ü de üretir
 ```
 
 ## 5. Yükleme sırası (kısa kontrol listesi)

@@ -563,13 +563,17 @@
     '4': ['101', '101', '111', '001', '001'], '5': ['111', '100', '111', '001', '111'], '6': ['111', '100', '111', '101', '111'], '7': ['111', '001', '010', '010', '010'],
     '8': ['111', '101', '111', '101', '111'], '9': ['111', '101', '111', '001', '111'], '.': ['0', '0', '0', '0', '1'], ' ': ['00', '00', '00', '00', '00'],
     A: ['010', '101', '111', '101', '101'], D: ['110', '101', '101', '101', '110'], E: ['111', '100', '110', '100', '111'], G: ['111', '100', '101', '101', '111'],
-    M: ['10001', '11011', '10101', '10001', '10001'], N: ['1001', '1101', '1011', '1001', '1001'], R: ['110', '101', '110', '101', '101'], U: ['101', '101', '101', '101', '111'], 'Ü': ['101', '101', '101', '101', '111'] };
+    M: ['10001', '11011', '10101', '10001', '10001'], N: ['1001', '1101', '1011', '1001', '1001'], R: ['110', '101', '110', '101', '101'], U: ['101', '101', '101', '101', '111'], 'Ü': ['101', '101', '101', '101', '111'],
+    I: ['111', '010', '010', '010', '111'], 'İ': ['111', '010', '010', '010', '111'], Z: ['111', '001', '010', '100', '111'], "'": ['1', '1', '0', '0', '0'], B: ['110', '101', '110', '101', '110'],
+    L: ['100', '100', '100', '100', '111'], K: ['101', '101', '110', '101', '101'], P: ['110', '101', '110', '100', '100'], T: ['111', '010', '010', '010', '010'], '!': ['1', '1', '1', '0', '1'],
+    O: ['111', '101', '101', '101', '111'], S: ['111', '100', '111', '001', '111'], H: ['101', '101', '111', '101', '101'], F: ['111', '100', '110', '100', '100'], C: ['111', '100', '100', '100', '111'] };
   function tinyW(s) { var w = 0; for (var i = 0; i < s.length; i++) w += (TINY[s[i]] || TINY[' '])[0].length + 1; return w - 1; }
   function tiny(g, x, y, s, c) {
     for (var i = 0; i < s.length; i++) {
       var gl = TINY[s[i]] || TINY[' '];
       for (var r = 0; r < 5; r++) for (var q = 0; q < gl[r].length; q++) if (gl[r][q] === '1') P(g, x + q, y + r, c);
       if (s[i] === 'Ü') { P(g, x, y - 2, c); P(g, x + 2, y - 2, c); }
+      if (s[i] === 'İ') P(g, x + 1, y - 2, c);
       x += gl[0].length + 1;
     }
   }
@@ -797,9 +801,25 @@
   var OPT = {};
   var SC = { dawn: drawDawn, deep: drawDeep, cast: drawCast, storm: drawStorm, legend: drawLegend, finale: drawFinale,
     office: drawOffice, ledger: drawLedger, walk: drawWalk, desk: drawDesk };
+  /* dikey doğal sahneler (cast.js ve sonrakiler): sahne { L, x, y, z } döndürür — L katmanı, (x, y) görünen pencerenin sol üstü
+     (dünya pikseli), z yakınlık. Pencere 180/z × 320/z dünya pikseli; dikeyde ×6·z ile 1080×1920'yi doldurur. */
+  var PSC = {};
+  function drawP(r) {
+    var C = VERT ? PV : O, cw = VERT ? 1080 : out.width, ch = VERT ? 1920 : out.height, z = r.z || 1;
+    var k = (VERT ? 6 : ch / 320) * z, ox = VERT ? 0 : (cw - 180 * ch / 320) / 2;
+    C.setTransform(1, 0, 0, 1, 0, 0); C.globalAlpha = 1; C.fillStyle = '#000'; C.fillRect(0, 0, cw, ch);
+    C.imageSmoothingEnabled = false; C.drawImage(r.L.c, ox - r.x * k, -r.y * k, r.L.w * k, r.L.h * k);
+  }
   window.TBS = {
     opt: function (o) { OPT = o || {}; },
-    draw: function (name, t, u) { shown.style.display = 'block'; O.setTransform(1, 0, 0, 1, 0, 0); O.globalAlpha = 1; O.fillStyle = '#000'; O.fillRect(0, 0, out.width, out.height); SC[name](t, u); if (VERT) compose(name, u); },
-    hide: function () { shown.style.display = 'none'; }
+    draw: function (name, t, u) {
+      shown.style.display = 'block';
+      if (PSC[name]) { drawP(PSC[name](t, u, OPT)); return; }
+      O.setTransform(1, 0, 0, 1, 0, 0); O.globalAlpha = 1; O.fillStyle = '#000'; O.fillRect(0, 0, out.width, out.height); SC[name](t, u); if (VERT) compose(name, u);
+    },
+    hide: function () { shown.style.display = 'none'; },
+    reg: function (name, fn) { PSC[name] = fn; },
+    lib: { layer: layer, rng: rng, rgb: rgb, hx: hx, mix: mix, dgrad: dgrad, R: R, P: P, disc: disc, halo: halo, line: line, spr: spr, rim: rim,
+      ridge: ridge, ease: ease, eio: eio, sm: sm, gull: gull, glow: glow, tiny: tiny, tinyW: tinyW }
   };
 })();

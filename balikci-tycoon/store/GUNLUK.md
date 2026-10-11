@@ -1,109 +1,120 @@
-# Geliştirme Günlüğü: video şablonu
+# Geliştirme Günlüğü: dizi şablonu
 
-Hamsi Koyu'nun "Geliştirme Günlüğü" videoları hep aynı sinematik dille yapılır. Fragman (`FRAGMAN.md`) bu dilin ilk örneğidir.
-Gün videoları ise sabit bir yapıyı izler.
+Hamsi Koyu'nun "Geliştirme Günlüğü" bir dizidir. **Karakterler sabittir.** Her bölüm onlarla kısa bir hikâye anlatır, sonra o
+hikâyenin oyundaki **mekaniğini** gerçek oyun görüntüsüyle tanıtır. Biçim yalnız dikey 1080×1920'dir (TikTok, Reels, Shorts),
+her bölüm TR ve EN olarak çıkar.
 
-| Gün | Konu | Kahraman | Dosyalar | Videolar |
+| Bölüm | Konu (mekanik) | Hikâye | Dosyalar | Videolar |
 |---|---|---|---|---|
-| 1 | Fragman | Balıkçı | `tools/trailer.js`, `tools/trailer-music.py` | `video/trailer-*` |
-| 2 | Müdürler | Nevin Hanım (müdür) | `tools/film/ep02-mudurler.js`, `tools/film/ep02-music.py` | `video/ep02-*` |
+| Gün 1 | Fragman | Koyun bir günü | `tools/trailer.js`, `tools/trailer-music.py` | `video/trailer-*` |
+| Gün 2 · Bölüm 1 | İlk eleman (personel) | Tek Başına Olmaz: Rıza yetişemez, Memo gelir | `tools/film/ep02-b1-tek-basina.js`, `tools/film/ep02-b1-music.py` | `video/gun2-b1-1080x1920-{tr,en}.mp4` |
 
-## 1. Yapı (≈60 sn)
+Eski deneme: `ep02-mudurler.js` (Nevin Hanım, müdürler) bu biçimden önceydi; dizinin parçası sayılmaz.
+
+## 1. Sabit kadro (`tools/film/cast.js`)
+
+Her bölümde aynı görünürler. Renkler değişmez.
+
+| Karakter | Kim | Görünüş |
+|---|---|---|
+| **Kaptan Rıza** | Patron, 32 | Soluk kırmızı kasket `#B44D40`, krem gömlek `#E8D7B5`, petrol mavisi yelek `#24566A`, koyu kahve pantolon `#554333`, eski deri bot. Kısa dağınık siyah saç, kirli sakal, sol kaşta yara izi, hafif göbek. Sol bilekte saat, yelek cebinde defter. Telaşlanınca kasketini düzeltir. |
+| **Memo** | İlk eleman, 23 | Ters turuncu kasket `#E69A42`, açık mavi gömlek `#78B7CB`, balık armalı lacivert önlük `#293F59`, koyu gri pantolon `#50565D`, siyah lastik çizme. Kısa kıvırcık kestane saç, sağ yanakta iki çil, sağ bilekte yeşil ip bileklik. İlk sahnesinde kahverengi bez çanta. |
+| **Nermin Teyze** | İlk müşteri, 58 | Mor çiçekli bej yazma, bordo hırka `#873F53`, lacivert uzun etek, siyah ayakkabı. Sağ elde hasır sepet, sol elde bozuk para kesesi. Pazarlıkçı ve sabırsız ama iyi kalpli; beklerken ayağını vurur. |
+
+Ortak mekân: önden görülen iskele. Tezgâhın üstünde **"RIZA'NIN BALIKLARI"** levhası, kırmızı-krem tente, arkada deniz ve doğan
+güneş. Kuyruk tezgâhın sağından liman yoluna iner. Ters açı (`b1stranger`) liman kapısına ("LİMAN") bakar.
+
+Oyunda Rıza oyuncunun kahramanıdır: ad `Rıza`, kızıl balıkçı beresi (oyunda kırmızı kasket yok, en yakını bu), sakal, petrol
+ceket. Memo, oyunda işe alınan ilk hamaldır; çekimde adı `Memo` verilir ve üstünde **MEMO** etiketi durur.
+
+## 2. Bölüm yapısı (65–75 sn)
 
 | Bölüm | Süre | İçerik |
 |---|---|---|
-| **1. Hikâye** | 0–19 sn | Konunun bir **karakterini** anlatan 3–4 elle çizilmiş sahne. Kısa, duygulu ara yazılar. Müzik sakin, ses tasarımı yakın (saat, kalem, adım, çay). |
-| **2. Seri kartı** | ≈3 sn | Vuruşla: logo + `HAMSİ KOYU · GELİŞTİRME GÜNLÜĞÜ` + `GÜN n` + konu. Horon teması burada başlar. |
-| **3. Mekanik** | ≈30 sn | Gerçek oyun görüntüsü ve gerçek arayüz. 5–6 çekim, her biri tek bir fikir: büyük başlık + tek satır açıklama. Köşede `GÜN n · KONU` etiketi. |
-| **4. Kapanış** | ≈5 sn | Hikâyenin **ilk sahnesine** geri dönülür (ör. boş sandalye, yanan lamba) + "Bir sonraki günlükte görüşürüz." + ÜCRETSİZ · REKLAMSIZ + adres. |
+| **1. Sinematik** | 0–30 sn | Bölümün brief'ine birebir uyar. Konuşma yok. 5–6 sahne, sabit kadro, dikey doğal piksel sahneler. Son karede tek cümlelik ekran yazısı. |
+| **2. Geçiş + seri kartı** | ≈3 sn | Vuruş ve beyaz patlamayla oyuna geçilir; oyun görüntüsünün üstünde `HAMSİ KOYU · GELİŞTİRME GÜNLÜĞÜ` / `GÜN n · BÖLÜM m` / bölüm adı. |
+| **3. Mekanik** | ≈36 sn | Gerçek oyun ve gerçek arayüz, 5–6 çekim. Her çekimde tek fikir: büyük başlık ve tek satır açıklama. Arayüz çekiminde başlık üstte durur, alttaki oyun paneli kapanmaz. Basılan yer dokunma halkasıyla gösterilir. Köşede `GÜN n · BÖLÜM m` yazar. Oyunda olmayan hiçbir özellik gösterilmez. |
+| **4. Kapanış** | ≈5 sn | Kadro tezgâhta + "Bir sonraki bölümde görüşürüz." + ÜCRETSİZ · REKLAMSIZ + adres. |
 
-Hikâyedeki karakter **oyundaki karşılığıyla aynı görünür**. Örnek: Nevin Hanım oyunda müdür adayıdır; mor ceketi ve altın fuları
-oyundaki müdür görünümünden (look 1) alındı. Mekanik bölümünde o karakter işe alınır ve masasında görünür.
+## 3. Stil kuralları
 
-## 2. Stil kuralları
+- **Piksel:** dikey doğal sahne 180×320, ×6 (1080×1920). Kamera dünya içinde kayar ve yaklaşır (`camPath`); yakın planlarda aynı
+  pikseller büyür. Gökyüzü Bayer titreşimli. Işık için yumuşak parıltı (`glow`), kenar ışığı (`rim`). Ters ışık siluetinde
+  kişiler ayrı katmanda kararır, kenarları güneş rengine döner.
+- **İfadeler:** `neutral · smile · happy · worry · surprise · helpless · frown · blink`. Ter damlası, yıldız ve "PAT!" gibi çizgi
+  roman vuruşları sahnenin içine çizilir.
+- **Tempo:** brief'in saniyeleri korunur. Hızlı kesme gereken sahnede (ör. `b1rush`) kesmeler sahne içinde yapılır.
+- **Ses:** sinematikte doğal sesler (martı, dalga, sikke, adım, kasa sürtünmesi) ve müzik brief'teki duyguyu izler. Mekanikte
+  horon teması ve oyun sesleri (tık, işe alım çanı, sikke) kullanılır. Kapanış La majöre çözülür.
+- **Yazı:** oyunun piksel fontu. Başlıklar büyük harfle yazılır.
 
-- **Piksel:** 320×180 sahne, ×6 büyütme (yakın plan sahnelerde 160×90, ×12). Bayer titreşimli gökyüzü. Işık için yumuşak radyal parıltı
-  (`glow`), noktalı hâle yalnız küçük ışık kaynaklarında.
-- **Sinema dili:** vinyet, sahneye göre hafif renk tonu, çözülerek geçiş
-  (0,4–0,9 sn). Beyaz patlama yalnız büyük vuruşlarda (seri kartı, önemli an).
-- **Tempo:** çekimler 3,5–6 sn. Bölüm başına en çok 12–13 çekim. Ara yazı çekim başladıktan ≈0,5 sn sonra gelir.
-- **Yazı:** oyunun piksel fontu.
-  - Ara yazılar ince ve koyu zemin üstünde.
-  - Başlıklar büyük harf, altın çizgili, altında tek satır açıklama.
-  - Arayüz çekiminde başlık üstte durur; alttaki oyun paneli kapanmaz.
-- **Oyun görüntüsü:** oyun içi etiketler gizli; yalnız konunun etiketi açık (ör. `👔 Nevin Hanım · Müdür`). Kamera kadrajı elle
-  verilir, yavaş yaklaşma (%2–5). Arayüzde neye basıldığı **dokunma halkasıyla** gösterilir.
-- **Ses:** hikâyede yakın sesler (saat, kalem, adım, çay bardağı), mekanikte horon teması ve oyun sesleri: tık, işe alım çanı,
-  sikke, uğultu. Her görsel vuruşa bir ses düşer. Bölüm sonunda La majöre çözülür.
-- **Dil ve biçim:** her bölüm TR + EN, **yalnız dikey 1080×1920** (TikTok, Reels, Shorts). Yazılar telefona göre boyutlanır,
-  sinema şeridi yoktur. Çizilmiş sahneler kayan bir dilimle dikey çekilir. Yatay gerekirse motor `h` ile hâlâ üretebilir.
-
-## 3. Dosyalar (`store/tools/film/`)
+## 4. Dosyalar (`store/tools/film/`)
 
 | Dosya | Görev |
 |---|---|
-| `engine.js` | Film motoru: oyunu açar ve yamalar, kare kare çeker, sinema katmanı, yazı türleri, geçişler, dikey (gerekirse yatay), TR/EN, MP4 |
-| `scenes.js` | Elle çizilmiş sahne kütüphanesi (fragman sahneleri + Gün 2: `office`, `ledger`, `walk`, `desk`). Yeni sahneler buraya eklenir. |
-| `sound.py` | Ses kütüphanesi: kemençe, saz, ney, davul, tef, pad, koro, çan, vuruşlar ve ses efektleri. `theme()` horon temasını çalar. |
-| `epNN-konu.js` | Bölüm: metinler (L.tr / L.en), çekim listesi, yazılar, oyun kurulumları (`pageInit`) |
-| `epNN-music.py` | Bölümün müziği: `sound.py` ile çekim zamanlarına oturtulur |
+| `engine.js` | Film motoru: oyunu açar ve yamalar (serbest kamera, etiket filtresi, `__pdir` ile oyuncuyu yürütme, `__nextName` ile işe alınana ad), kare kare çeker, sinema katmanı, yazı türleri, TR/EN, MP4 |
+| `scenes.js` | Fragman sahneleri + dikey doğal sahne kaydı (`TBS.reg`) ve ortak çizim yardımcıları (`TBS.lib`) |
+| `cast.js` | **Sabit kadro** (`person()` ile Rıza, Memo, Nermin Teyze, kalabalık), eşyalar (kasa, hamsi, sepet, çanta, terazi), liman dünyası ve bölüm sahneleri |
+| `sound.py` | Ses kütüphanesi: kemençe, saz, ney, davul, pad, çan, ses efektleri; `theme()` horon temasını çalar |
+| `epNN-bM-konu.js` | Bölüm: metinler (L.tr / L.en), çekim listesi, yazılar, oyun kurulumları (`pageInit`) |
+| `epNN-bM-music.py` | Bölümün müziği, çekim zamanlarına oturtulur |
 
-Motorun yazı türleri: `int` (ara yazı, `low` ile altta) · `title` (`top` ile üstte) · `chip` · `stamp` · `loop` · `logo` · `cash` · `kicker` ·
-`episode` (seri kartı) · `perks` (sırayla beliren liste) · `corner` (köşe etiketi) · `tap` (dokunma halkası; `btn:metin` ile kart
-düğmesi bulunur) · `end` (kapanış kartı).
+Motorun yazı türleri: `int` · `title` (`top` ile üstte) · `chip` · `stamp` · `episode` (seri kartı) · `perks` (sırayla beliren
+liste) · `corner` · `tap` (`btn:metin` ile kart düğmesi) · `end`.
 
-Çekim seçenekleri: `kind` (scene/game/black), `scene`, `t0`, `opt`, `z` (yakınlık), `cam` ([[u,x,y]…]), `day` (günün saati),
-`grade`, `tr:'dissolve'`+`td`, `push`, `dim`, `fadeIn`, `glow` (fenerler), `ui` (oyun arayüzü görünür), `toast` (yalnız bildirim),
-`end`.
+## 5. Yeni bölüm nasıl yapılır
 
-## 4. Yeni gün nasıl yapılır
-
-1. **Konu ve kahraman:** oyundaki mekanik ile o mekaniğin bir karakteri (ör. Gün 3 Fümehane → fümeci usta).
-2. **Hikâye sahneleri:** `scenes.js` içine 3–4 sahne yaz. Var olan yardımcılar şunlar: `layer`, `dgrad`, `glow`, `halo`, `rim`, `spr`,
-   `nevinFront`/`nevinSide` (karakter örneği), `teaGlass`, `steam`, `tiny` (küçük yazı). `SC` ve `CROP` tablolarına ekle.
-   Hızlı önizleme için tek kareler çekilebilir.
-3. **Bölüm dosyası:** `ep02-mudurler.js`'i kopyala. `L`, `shots`, `text` ve `pageInit` içindeki kurulumları değiştir.
-4. **Önizleme:** `node store/tools/film/ep03-....js tr preview` her 10. kareyi çeker. Yalnız bazı çekimler için sona adlarını ekle.
-5. **Müzik:** `ep02-music.py`'yi kopyala, zamanları çekimlere oturt:
-   `python3 store/tools/film/ep03-music.py store/video/ep03-music.wav`
-6. **Çekim:** `node store/tools/film/ep03-....js tr` ve `... en` (dikey). Müzik dosyası varsa motor MP4'ü kendisi üretir:
-   `video/ep03-1080x1920-tr.mp4` ve `-en.mp4`.
+1. **Brief:** ilk 30 saniye brief'e birebir uyar. Mekanik bölümü oyunun **bugünkü** sürümünden kurulur.
+2. **Sahneler:** `cast.js` içine sahne fonksiyonlarını yaz (`harbor()` liman dünyasını, `person()` karakteri çizer) ve
+   `TBS.reg('ad', fn)` ile kaydet. Önizlemek için tek kareler çekilebilir.
+3. **Bölüm dosyası:** `ep02-b1-tek-basina.js`'i kopyala; `scripts: ['cast.js']` kalsın. `L`, `shots`, `text`, `pageInit` değişir.
+4. **Önizleme:** `node store/tools/film/<bölüm>.js tr preview [çekim,çekim]` (her 10. kare).
+5. **Müzik:** `python3 store/tools/film/<bölüm>-music.py store/video/<id>-music.wav`
+6. **Çekim:** `node store/tools/film/<bölüm>.js tr` ve `... en`. Müzik dosyası varsa MP4 kendiliğinden çıkar:
+   `video/<id>-1080x1920-tr.mp4`.
 
 Oyun klasörü 8099'da sunulmalı: `cd balikci-tycoon && python3 -m http.server 8099`.
 Gerekenler: Node 22 + Playwright (Chromium), Python 3 + numpy, ffmpeg.
 
-## 5. Gün 2 · Müdürler: zaman çizelgesi
+## 6. Gün 2 · Bölüm 1 · Tek Başına Olmaz: zaman çizelgesi
 
-| Sn | Çekim | Ne görülür | Yazı (TR) |
+| Sn | Çekim | Ne görülür | Ses |
 |---|---|---|---|
-| 0–5.5 | office | Gece ofisi: Nevin Hanım lamba ışığında yazıyor, saat sallanıyor, çay buharı | Her limanın uyumayan biri vardır. |
-| 5.5–10 | ledger | Defter, 1996; kalem satır satır yazar | Nevin Hanım otuz yıl koyun defterini tuttu. |
-| 10–15 | walk | Şafakta iskele: tezgâhlar taşmış, hamal koşturuyor; Nevin Hanım defteri koltuğunda yürüyor | Sonra koy büyüdü. Tek bir çift el yetmez oldu. |
-| 15–19 | seat | MÜDÜR levhası, çay bardağı, oturur, gülümser | Ve masasına oturdu. |
-| 19–22.5 | card | Seri kartı | GÜN 2 · MÜDÜRLER |
-| 22.5–27.5 | roles | Kadro, rol etiketleri açık | ÖNCE KADRO |
-| 27.5–33.5 | pick | Gerçek YÜKSELT paneli: "Müdür gerekli" → 3 aday → Nevin Hanım seçilir (dokunma halkası) | 3 ADAY · 2'ŞER YETENEK |
-| 33.5–38.5 | desk | Nevin Hanım masasında, etiketiyle | BÖLGE KENDİ KENDİNE İŞLER |
-| 38.5–44 | perks | Altı yetenek sırayla belirir | ALTI YETENEK |
-| 44–50 | rush | Yoğun saat: kamera müdürü izler, kasayı boşaltır | YOĞUN SAATTE SAHAYA İNER |
-| 50–54 | four | Dört bölge, dört müdür masası (akşam, fenerler) | DÖRT BÖLGE · DÖRT MÜDÜR |
-| 54–59 | end | Boş ofis, lamba yanıyor | Bir sonraki günlükte görüşürüz. |
+| 0–5 | dawn | Kamera denizden iskeleye süzülür, martılar, kayıklar; Rıza kasketini düzeltir, örtüyü çeker, gülümser | martı, dalga, sakin akustik |
+| 5–10 | first | Nermin Teyze gelir; tartı, paket, ilk sikkeler kutuya; arkada 2, sonra 4 kişi; kamera geri çekilir, kuyruk yola iner; Rıza'nın yüzü endişeye döner | sikke, uğultu, müzik hızlanır |
+| 10–16 | rush | Hızlı kesmeler: kasa, terazi, para, Nermin Teyze'nin ayağı; Rıza döner, hamsi havaya uçar (ağır çekim), kaskete düşer: PAT! Çaresiz bakış | hızlı perküsyon, ıslık, "pat!", müzik kesilir |
+| 16–21 | stranger | Rıza'nın omzu üstünden liman kapısı; Memo görünür, kalabalığa ve devrik kasaya bakar, çantasını bırakır, tezgâha yürür | uğultu söner, gizemli ney |
+| 21–26 | shake | Memo kasayı tezgâha koyar, Rıza şaşırır; el uzatır, duraksama, tokalaşma; ters ışıkta siluetlere yaklaşma | umutlu, güçlenen müzik |
+| 26–30 | together | Kamera yükselir; Memo müşteriye verir, Rıza kasaları dizer, Nermin Teyze mutlu gider; ikisi yan yana. *"Büyük hayaller, tek başına kurulmaz."* | yükseliş, geçiş vuruşu |
+| 30–33.4 | card | Oyun görüntüsü üstünde seri kartı | horon başlar |
+| 33.4–39.4 | alone | Oyuncu Rıza ağ → masa → tezgâh koşar, kuyruk bekler: **TEK BAŞINA** | |
+| 39.4–46.4 | hire | Gerçek YÜKSELT paneli: personel kartı → Hamal ($360) → "Memo işe alındı": **İLK ELEMAN** | tık, işe alım çanı |
+| 46.4–52.4 | memo | Kamera Memo'yu izler (MEMO etiketi): **MEMO İŞ BAŞINDA** | |
+| 52.4–58.4 | roles | Dört rol, oyundaki açıklamalarıyla: **DÖRT ROL** | her satıra bir pop |
+| 58.4–63.9 | rule | Personel kartı: Kadro 1/2, eksik roller: **KADRO 1/2** | |
+| 63.9–69.4 | team | Bölge yükselmiş, dört rol çalışıyor: **SONRA: EKİP** | tam horon, sikkeler |
+| 69.4–74 | end | Rıza ve Memo tezgâhta + kapanış kartı | La majör |
 
-## 6. Başka bir yapay zekâ için hazır istem
+## 7. Başka bir yapay zekâ için hazır istem
 
 ```
-Hamsi Koyu (Karadeniz'de piksel balıkçı tycoon oyunu) için "Geliştirme Günlüğü · Gün [n] · [KONU]" videosu istiyorum.
-≈60 sn, TR ve EN, yalnız dikey 1080×1920 (TikTok/Reels/Shorts). Hep aynı sinematik stil:
+Hamsi Koyu (Karadeniz'de piksel balıkçı tycoon oyunu) için "Geliştirme Günlüğü · Gün [n] · Bölüm [m] · [AD]" videosu istiyorum.
+65–75 sn, TR ve EN, yalnız dikey 1080×1920. Dizi biçimi:
 
-1) HİKÂYE (0–19 sn): Konunun oyundaki bir karakterinin kısa öyküsü, 3–4 elle çizilmiş piksel sahne (320×180, iri piksel,
-   Bayer titreşimli gökyüzü, sıcak lamba ışığı, ters ışık). Karakter oyundaki görünümüyle aynı olsun. Kısa, duygulu ara yazılar.
-   Yakın sesler: saat, kalem, adım, çay bardağı. Müzik sakin: pad, saz, kemençe.
-2) SERİ KARTI (≈3 sn): vuruşla logo + "HAMSİ KOYU · GELİŞTİRME GÜNLÜĞÜ" + "GÜN n" + konu. Horon teması başlar.
-3) MEKANİK (≈30 sn): gerçek oyun görüntüsü ve gerçek arayüz; oyun içi etiketler gizli, kamera elle kadrajlanmış, yavaş yaklaşma.
-   5–6 çekim, her biri tek fikir: büyük başlık + tek satır açıklama. Arayüzde basılan yer dokunma halkasıyla gösterilsin.
-   Köşede "GÜN n · KONU" etiketi. Oyun sesleri: tık, çan, sikke, uğultu.
-4) KAPANIŞ (≈5 sn): hikâyenin ilk sahnesine dönüş + "Bir sonraki günlükte görüşürüz." + ÜCRETSİZ · REKLAMSIZ + adres.
+Sabit kadro (her bölümde aynı): Kaptan Rıza (soluk kırmızı kasket #B44D40, krem gömlek, petrol mavisi yelek #24566A, kirli
+sakal, sol kaşta yara izi, saat, cepte defter), Memo (ters turuncu kasket #E69A42, açık mavi gömlek, balık armalı lacivert
+önlük, kıvırcık kestane saç, iki çil, yeşil bileklik), Nermin Teyze (mor çiçekli bej yazma, bordo hırka, lacivert etek, hasır
+sepet, para kesesi). Mekân: "RIZA'NIN BALIKLARI" levhalı tezgâh, iskele, deniz, doğan güneş.
 
-Sinema dili: vinyet, çözülerek geçiş, beyaz patlama yalnız büyük vuruşlarda, çekimler 3,5–6 sn.
-Müzik özgün ve telifsiz: horon (kemençe, davul, tef, La minör, 120 BPM), sonunda La majöre çözülsün.
+1) SİNEMATİK (0–30 sn, konuşmasız): bu bölümün brief'indeki sahneler birebir. Dikey doğal piksel sahneler (180×320, ×6),
+   iri piksel, Bayer titreşimli gökyüzü, sıcak ters ışık. Ses: martı, dalga, sikke, adım; müzik duyguyu izler. Son karede tek
+   cümlelik ekran yazısı.
+2) GEÇİŞ + SERİ KARTI (≈3 sn): vuruşla oyuna geçiş; "HAMSİ KOYU · GELİŞTİRME GÜNLÜĞÜ", "GÜN n · BÖLÜM m", bölüm adı.
+3) MEKANİK (≈36 sn): bu bölümün mekaniği, oyunun bugünkü sürümünden gerçek görüntü ve gerçek arayüzle. 5–6 çekim, her biri tek
+   fikir: büyük başlık + tek satır açıklama; arayüz çekiminde başlık üstte, alttaki panel açık. Basılan yer dokunma halkasıyla
+   gösterilsin. Oyunda olmayan özellik gösterilmesin.
+4) KAPANIŞ (≈5 sn): kadro tezgâhta + "Bir sonraki bölümde görüşürüz." + ÜCRETSİZ · REKLAMSIZ + adres.
+
+Müzik özgün ve telifsiz: sinematikte akustik (saz, kemençe, ney), mekanikte horon (kemençe, davul, tef, La minör, 120 BPM),
+sonunda La majöre çözülsün.
 ```
