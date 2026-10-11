@@ -1,2 +1,3 @@
 video/frames-*/
 video/*.wav
+tools/film/__pycache__/
