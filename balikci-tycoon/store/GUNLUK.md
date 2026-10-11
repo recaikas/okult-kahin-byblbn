@@ -8,8 +8,10 @@ her bölüm TR ve EN olarak çıkar.
 |---|---|---|---|---|
 | Gün 1 | Fragman | Koyun bir günü | `tools/trailer.js`, `tools/trailer-music.py` | `video/trailer-*` |
 | Gün 2 · Bölüm 1 | İlk eleman (personel) | Tek Başına Olmaz: Rıza yetişemez, Memo gelir | `tools/film/ep02-b1-tek-basina.js`, `tools/film/ep02-b1-music.py` | `video/gun2-b1-1080x1920-{tr,en}.mp4` |
+| Gün 3 · Bölüm 2 | Müdür | Her Yere Yetişemezsin: herkes Rıza'yı çağırır, gece defterde uyuyakalır, Memo Nevin Hanım'ı getirir | `tools/film/ep03-b2-mudur.js`, `tools/film/ep03-b2-music.py` | `video/gun3-b2-1080x1920-{tr,en}.mp4` |
 
-Eski deneme: `ep02-mudurler.js` (Nevin Hanım, müdürler) bu biçimden önceydi; dizinin parçası sayılmaz.
+Eski deneme: `ep02-mudurler.js` (Nevin Hanım, müdürler) bu biçimden önceydi; dizinin parçası sayılmaz. Her bölüm
+artık bir **soğuk açılışla** (bölümün en çarpıcı anı donar + soru yazısı + "Baştan alalım…") ve karakter isim etiketleriyle başlar.
 
 ## 1. Sabit kadro (`tools/film/cast.js`)
 
@@ -20,6 +22,7 @@ Her bölümde aynı görünürler. Renkler değişmez.
 | **Kaptan Rıza** | Patron, 32 | Soluk kırmızı kasket `#B44D40`, krem gömlek `#E8D7B5`, petrol mavisi yelek `#24566A`, koyu kahve pantolon `#554333`, eski deri bot. Kısa dağınık siyah saç, kirli sakal, sol kaşta yara izi, hafif göbek. Sol bilekte saat, yelek cebinde defter. Telaşlanınca kasketini düzeltir. |
 | **Memo** | İlk eleman, 23 | Ters turuncu kasket `#E69A42`, açık mavi gömlek `#78B7CB`, balık armalı lacivert önlük `#293F59`, koyu gri pantolon `#50565D`, siyah lastik çizme. Kısa kıvırcık kestane saç, sağ yanakta iki çil, sağ bilekte yeşil ip bileklik. İlk sahnesinde kahverengi bez çanta. |
 | **Nermin Teyze** | İlk müşteri, 58 | Mor çiçekli bej yazma, bordo hırka `#873F53`, lacivert uzun etek, siyah ayakkabı. Sağ elde hasır sepet, sol elde bozuk para kesesi. Pazarlıkçı ve sabırsız ama iyi kalpli; beklerken ayağını vurur. |
+| **Nevin Hanım** | Müdür (Bölüm 2'den) | Oyundaki müdür adayı (look 1): mor uzun ceket `#3A2A4A`, altın fular `#D9A441`, krem bluz, koyu topuz saç, elinde bordo defter. Masasında altın **MÜDÜR** levhası. |
 
 Ortak mekân: önden görülen iskele. Tezgâhın üstünde **"RIZA'NIN BALIKLARI"** levhası, kırmızı-krem tente, arkada deniz ve doğan
 güneş. Kuyruk tezgâhın sağından liman yoluna iner. Ters açı (`b1stranger`) liman kapısına ("LİMAN") bakar.
@@ -95,7 +98,26 @@ Gerekenler: Node 22 + Playwright (Chromium), Python 3 + numpy, ffmpeg.
 | 63.9–69.4 | team | Bölge yükselmiş, dört rol çalışıyor: **SONRA: EKİP** | tam horon, sikkeler |
 | 69.4–74 | end | Rıza ve Memo tezgâhta + kapanış kartı | La majör |
 
-## 7. Başka bir yapay zekâ için hazır istem
+## 7. Gün 3 · Bölüm 2 · Her Yere Yetişemezsin: zaman çizelgesi
+
+| Sn | Çekim | Ne görülür |
+|---|---|---|
+| 0–2.2 | cold, freeze | Dört balon "RIZA!", Rıza fırıl fırıl döner; kare donar: **BİR PATRON KAÇ YERE YETİŞİR?** |
+| 2.2–7.5 | busy | Memo, iki yeni eleman ve Nermin Teyze sırayla seslenir; Rıza döner, başı döner |
+| 7.5–12.5 | run | Rıza defterle tezgâhın önünde koşturur, kâğıtlar uçuşur; gökyüzü şafaktan öğleye, akşama akar |
+| 12.5–17.5 | night | Gece, fener; Rıza defterin başında uyuyakalır; Memo görür, aklına bir şey gelir (!) |
+| 17.5–22.5 | nevin | Sabah Memo, Nevin Hanım'ı getirir; çay, Rıza uyanır, kâğıtlar düzene girer |
+| 22.5–30 | desk2, together | MÜDÜR masası; Nevin Hanım yönetir, ekip akar, Rıza çayını yudumlar. *"Her yere yetişemezsin. Yetişecek birini bul."* |
+| 30–33.4 | card | Seri kartı |
+| 33.4–38.4 | roles | Dört rol: **ÖNCE KADRO** |
+| 38.4–44.9 | pick | Gerçek YÜKSELT paneli: müdür kartı → 3 aday → Nevin Hanım (seç + onayla) |
+| 44.9–50.4 | desk | Nevin Hanım masasında, etiketiyle: **BÖLGE KENDİ KENDİNE İŞLER** |
+| 50.4–56.4 | perks | Altı yetenek |
+| 56.4–62.4 | rush | Yoğun saatte müdür sahaya iner |
+| 62.4–67.4 | four | Dört bölge, dört müdür |
+| 67.4–72 | end | Akşam, kadro tezgâhta + kapanış kartı |
+
+## 8. Başka bir yapay zekâ için hazır istem
 
 ```
 Hamsi Koyu (Karadeniz'de piksel balıkçı tycoon oyunu) için "Geliştirme Günlüğü · Gün [n] · Bölüm [m] · [AD]" videosu istiyorum.

@@ -29,6 +29,19 @@
     p: { skin: '#d2a47a', skinS: '#b0805a', skinHi: '#e4bc94', hair: '#6e6e74', hairW: '#dcdce0', eye: '#3a2414', lip: '#a0504a',
       scarf: '#cdb88e', scarfS: '#a8946c', flower: '#7a4a9a', flowerHi: '#c08ad8', top: '#873f53', topS: '#6a3040', topHi: '#a2566a', btn: '#ead6ae',
       skirt: '#26304a', skirtS: '#1c2438', boot: '#141418', bootHi: '#2a2a30', basket: '#b48a4a', basketS: '#8a6432', purse: '#7a2a3a' } };
+  var NEVIN = { H: 50, leg: 16, torso: 15, sh: 7, wa: 6, hw: 5, hh: 12, lw: 3, boots: 2, hat: 'bun', top: 'jacket', arm: 13, sleeve: 'full',
+    p: { skin: '#e0a673', skinS: '#b9784e', skinHi: '#f2c08e', hair: '#2b1d1a', hairHi: '#4a3028', eye: '#1a1420', lip: '#a04a40',
+      top: '#3a2a4a', topS: '#251a30', topHi: '#524064', btn: '#efe6d8', neck: '#d9a441', neckS: '#a87a2a', pants: '#2a2030', pantsS: '#1c1622',
+      boot: '#140e18', bootHi: '#2a2030', book: '#7a2a2a' } };
+  /* ekip: önlüklü elemanlar (kalabalık tohumundan, deri önlük) */
+  var CREW = {};
+  function crew(seed) {
+    if (CREW[seed]) return CREW[seed];
+    var N = npc(seed), o = Object.assign({}, N, { top: 'apron', skirt: 0, hat: 'cap', round: 0, H: Math.max(N.H, 50) });
+    o.p = Object.assign({}, N.p, { shirt: N.p.top, shirtS: N.p.topS, apron: '#6a4a32', apronS: '#4a3222', emb: '#c8b090', embO: '#c8b090' });
+    o.p.cap = ['#2a4a6a', '#3a3a40'][seed % 2]; o.p.capS = '#1a1a20'; o.p.capHi = '#5a6a7a';
+    o.leg = Math.round(o.H * 0.33); o.torso = Math.round(o.H * 0.29); CREW[seed] = o; return o;
+  }
   /* kalabalık: tohumlu rastgele müşteriler (aynı tohum = aynı kişi) */
   var NPC_C = ['#3a5a7a', '#7a3a3a', '#4a6a3a', '#6a5a7a', '#8a6a3a', '#3a4a5a', '#5a3a4a', '#2f6a6a', '#9a5a3a'];
   var NPC_H = ['#1d1713', '#3d2a1a', '#6b3f22', '#9a9a96', '#2a2420'];
@@ -97,6 +110,11 @@
       if (S.top === 'vest' && back && r < 2) R(g, x - 2, yy, 5, 1, p.shirt);
       if (S.top === 'cardigan' && !back) { if (r < 3) R(g, x - 2 + r, yy, 5 - r * 2, 1, p.btn); P(g, x, yy, p.topS); if (r > 3 && r % 3 === 1) P(g, x + 1, yy, p.btn); }
       if (S.top === 'shirt' && !back && r < 2) R(g, x - 1, yy, 3, 1, p.skinS);
+      if (S.top === 'jacket' && !back) { var v2 = 4 - r; if (v2 > 0) R(g, x - v2 + 1, yy, v2 * 2 - 1, 1, p.btn); if (r > 5 && r % 3 === 0) P(g, x + 2, yy, p.neck); P(g, x, yy, r > 3 ? p.topS : p.btn); }
+    }
+    if (S.top === 'jacket') {                                                                   /* uzun ceket etekleri + fular */
+      for (j = 0; j < 6; j++) { R(g, x - S.wa - 1, hip + j, S.wa * 2 + 3, 1, p.top); P(g, x - S.wa - 1, hip + j, p.topS); if (!back) P(g, x, hip + j, p.topS); }
+      if (!back) { R(g, x - 2, yt, 5, 2, p.neck); P(g, x + 2, yt + 1, p.neckS); R(g, x, yt + 2, 1, 3, p.neck); P(g, x + 1, yt + 4, p.neckS); }
     }
     if (S.top === 'vest') { R(g, x - S.wa, hip - 1, S.wa * 2 + 1, 1, p.belt); if (!back) R(g, x, hip - 1, 2, 1, p.buckle); }
     if (S.book && !back) { R(g, x - 6, yt + 5, 3, 4, p.book); R(g, x - 6, yt + 5, 3, 1, p.bookS); }
@@ -133,7 +151,7 @@
       /* saç */
       if (S.hat === 'scarf') { for (i = -3; i <= 3; i++) P(g, x + i, hy0 + 2, (i + 9) % 2 ? p.hair : p.hairW); }
       else if (S.curly) { for (i = -HW; i <= HW; i++) P(g, x + i, hy0 + 2, (i + 9) % 2 ? p.hair : p.hairHi); for (j = 2; j < ey - hy0; j++) { P(g, x - HW - 1, hy0 + j, (j % 2) ? p.hair : p.hairHi); P(g, x + HW + 1, hy0 + j, (j % 2) ? p.hairHi : p.hair); P(g, x - HW, hy0 + j, p.hair); P(g, x + HW, hy0 + j, p.hair); } }
-      else { for (j = 1; j < ey - hy0; j++) { P(g, x - HW, hy0 + j, p.hair); P(g, x + HW, hy0 + j, p.hair); } P(g, x - HW - 1, hy0 + 3, p.hair); P(g, x + HW + 1, hy0 + 2, p.hair); if (!S.hat) for (i = -HW; i <= HW; i++) { P(g, x + i, hy0, p.hair); P(g, x + i, hy0 + 1, p.hair); if (i % 3) P(g, x + i, hy0 + 2, p.hair); } }
+      else { for (j = 1; j < ey - hy0; j++) { P(g, x - HW, hy0 + j, p.hair); P(g, x + HW, hy0 + j, p.hair); } P(g, x - HW - 1, hy0 + 3, p.hair); P(g, x + HW + 1, hy0 + 2, p.hair); if (!S.hat || S.hat === 'bun') for (i = -HW; i <= HW; i++) { P(g, x + i, hy0, p.hair); P(g, x + i, hy0 + 1, p.hair); if (i % 3) P(g, x + i, hy0 + 2, p.hair); } }
       /* yüz */
       var e = o.expr || 'neutral', lx = x - 3 + fx, rx = x + 2 + fx, by = ey - 2, br = S.stubble || S.H > 52 ? p.hair : mix(p.skin, '#3a2010', 0.5);
       var bL = [[lx - 1, by], [lx, by]], bR = [[rx, by], [rx + 1, by]];
@@ -169,6 +187,7 @@
       if (S.hat === 'rcap' && !back) { R(g, x - 1, hy0 - 1, 3, 2, p.hair); P(g, x, hy0 - 1, p.hairHi); R(g, x - 2, hy0 + 1, 5, 1, p.capS); if (d) R(g, x + (d > 0 ? -10 : 3), hy0 + 1, 8, 1, p.capS); }
       if (S.hat === 'rcap' && back) R(g, x - 6, hy0 + 2, 13, 1, p.capS);
     }
+    if (S.hat === 'bun') { disc(g, x, hy0 - 2, 3, p.hair); P(g, x - 1, hy0 - 3, p.hairHi); if (back) R(g, x - HW, hy0, HW * 2 + 1, S.hh - 3, p.hair); else { R(g, x - HW - 1, hy0 + 1, 1, 6, p.hair); R(g, x + HW + 1, hy0 + 1, 1, 6, p.hair); } }
     if (S.hat === 'scarf') { R(g, x - 1, hy0 + S.hh, 3, 2, p.scarfS); P(g, x - 2, hy0 + S.hh + 2, p.scarf); P(g, x + 2, hy0 + S.hh + 2, p.scarf); }
     /* kollar */
     var sy = yt + 2, sL = [x - S.sh, sy], sR = [x + S.sh, sy], H = o.hands || {};
@@ -211,6 +230,33 @@
   function wrap(g, x, y) { R(g, x - 2, y - 3, 5, 6, '#efe6d0'); P(g, x - 2, y - 3, '#d8ccb0'); P(g, x + 2, y + 2, '#d8ccb0'); P(g, x, y - 4, '#8a9cb0'); }
   function star(g, x, y, s, c) { for (var i = -s; i <= s; i++) { P(g, x + i, y, c); P(g, x, y + i, c); if (Math.abs(i) < s * 0.6) { P(g, x + i, y + i, c); P(g, x + i, y - i, c); } } }
   function sweat(g, x, y) { P(g, x, y, '#bfe4ff'); R(g, x - 1, y + 1, 3, 2, '#bfe4ff'); P(g, x, y + 3, '#8ac0e8'); }
+
+  /* konuşma balonu: k 0..1 açılış, sh sarsıntı */
+  function bubble(g, x, y, txt, k, sh) {
+    if (k <= 0) return; var w = tinyW(txt) + 6, s2 = Math.min(1, k), bx = Math.round(x - w / 2 + (sh || 0)), by = Math.round(y - 10);
+    if (s2 < 1) { R(g, x - 2, y - 5, 4, 3, '#ffffff'); return; }
+    R(g, bx, by, w, 9, '#1a1420'); R(g, bx + 1, by + 1, w - 2, 7, '#fffaf0'); P(g, bx, by, 'rgba(0,0,0,0)');
+    R(g, x - 1, by + 9, 3, 1, '#1a1420'); P(g, x, by + 10, '#1a1420'); P(g, x, by + 8, '#fffaf0');
+    tiny(g, bx + 3, by + 2, txt, '#1a1420');
+  }
+  function ledger(g, x, y, messy) {   /* açık defter (tezgâhta), x,y sol üst */
+    R(g, x, y, 16, 4, '#efe4c4'); R(g, x + 7, y, 2, 4, '#c8b48c'); R(g, x - 1, y + 4, 18, 1, '#7a2a2a');
+    for (var i = 0; i < 3; i++) { R(g, x + 1, y + 1 + i, 4 + (i % 2), 1, messy ? '#8a3a3a' : '#5a5a7a'); R(g, x + 10, y + 1 + i, 3 + (i % 2) * 2, 1, '#5a5a7a'); }
+  }
+  function paper(g, x, y, k) { R(g, x, y, 4, 3, '#f4f0e4'); P(g, x + 1, y + 1, '#8a8aa0'); if (k) P(g, x + 2, y + 1, '#8a8aa0'); }
+  function teaCup(g, x, y) { R(g, x - 2, y + 4, 5, 1, '#c8c0b8'); R(g, x - 1, y, 3, 4, '#b04a1c'); P(g, x - 1, y, '#e8f4f8'); P(g, x + 1, y, '#e8f4f8'); R(g, x - 1, y, 3, 1, '#d8703a'); }
+  function desk(g, x, y, plate) {     /* müdür masası: x,y ön üst köşe */
+    R(g, x, y, 32, 3, '#a87444'); R(g, x, y, 32, 1, '#c89060'); R(g, x + 1, y + 3, 30, 10, '#6a4228'); R(g, x + 3, y + 5, 12, 6, '#5a3620'); R(g, x + 8, y + 7, 2, 1, '#c8a050');
+    R(g, x + 2, y + 13, 3, 2, '#3a2416'); R(g, x + 27, y + 13, 3, 2, '#3a2416');
+    var pw = tinyW(plate) + 6; R(g, x + 30 - pw, y - 11, pw, 11, '#c8a050'); R(g, x + 30 - pw, y - 11, pw, 1, '#f2d88a'); R(g, x + 31 - pw, y - 10, pw - 2, 9, '#3a2416'); tiny(g, x + 33 - pw, y - 7, plate, '#f2d88a');
+    R(g, x + 2, y - 2, 8, 2, '#f4efe4'); R(g, x + 3, y - 3, 7, 1, '#e4dccc');
+  }
+  function lamp(g, t, k) {            /* tentede asılı fener */
+    R(g, 266, 198, 1, 4, '#2a1a10'); R(g, 263, 202, 7, 2, '#3a2a20'); R(g, 264, 204, 5, 5, '#3a2a20');
+    var f = 0.8 + 0.2 * Math.sin(t * 11) * Math.sin(t * 6.3); R(g, 265, 205, 3, 3, f > 0.85 ? '#fff2c0' : '#ffd27a'); R(g, 263, 209, 7, 1, '#3a2a20');
+  }
+  function zzz(g, x, y, t) { for (var i = 0; i < 3; i++) { var k = (t * 0.6 + i / 3) % 1; tiny(g, x + Math.round(k * 8 + Math.sin(k * 6) * 2), y - Math.round(k * 16), 'Z', 'rgba(220,230,255,' + (1 - k).toFixed(2) + ')'); } }
+  function dizzy(g, x, y, t) { for (var i = 0; i < 3; i++) { var a = t * 7 + i * 2.1; star(g, x + Math.cos(a) * 8, y + Math.sin(a) * 2.5, 1, i === 1 ? '#ffd27a' : '#fff4c0'); } }
 
   /* ---------- liman dünyası (önden: tezgâh ortada, deniz ve güneş arkada) ---------- */
   var WW = 400, WH = 470, HZ = 170, GR = 272;            /* dünya, ufuk, tezgâh zemini */
@@ -276,10 +322,43 @@
     /* para kutusu */
     if (!o.noBox) { R(g, 289, 244, 11, 6, '#6a4228'); R(g, 289, 244, 11, 1, '#8a5a36'); R(g, 290, 245, 9, 2, '#3a2416'); for (var c = 0; c < (o.coins || 2); c++) P(g, 291 + (c * 3) % 8, 245 + (c % 2), '#e8c050'); }
   }
-  function harborDyn(g, t) {   /* deniz pırıltısı, kayıklar, martılar (arka katman) */
-    var i, x, y;
+  /* günün saatleri: aynı liman, farklı gökyüzü (zaman atlaması ve gece için) */
+  var SKY = {
+    noon: { sky: ['#3a78c0', '#6aa8dc', '#a8d4ee', '#dcf0f8'], sea: ['#7ab8d8', '#3a7aa8', '#1a3a6a'], sun: [120, 52, 9, '#fffbe8'], hill: '#4a7a5a', hz: '#e8f6fc', glint: '#ffffff' },
+    dusk: { sky: ['#24163e', '#5a2654', '#b4485a', '#ec7a4c', '#f8b05c'], sea: ['#e88a5a', '#6a3060', '#1a1840'], sun: [70, 160, 12, '#ffd08a'], hill: '#4a2a4a', hz: '#ffc890', glint: '#ffd6a0' },
+    night: { sky: ['#03061a', '#081032', '#141e48', '#22305e'], sea: ['#26305e', '#121a40', '#05081a'], moon: [300, 54, 8], hill: '#141a34', hz: '#3a4a7a', glint: '#a8b8f0' }
+  };
+  var HBM = {};
+  function skyBg(md) {
+    if (md === 'dawn') { if (!HB) harborStatic(); return HB.bg; }
+    if (HBM[md]) return HBM[md];
+    var S2 = SKY[md], bg = layer(WW, WH), g = bg.g, x, y, i;
+    dgrad(bg, 0, 0, WW, HZ, S2.sky);
+    if (md === 'night') { var sr = rng(77); for (i = 0; i < 70; i++) P(g, sr() * WW, sr() * (HZ - 30), sr() < 0.2 ? '#ffffff' : '#8a9ad8'); }
+    else { var cl = rng(5); for (i = 0; i < 8; i++) { var cx = cl() * WW, cy = 30 + cl() * 100, w = 20 + cl() * 50; R(g, cx, cy, w, 3, md === 'noon' ? '#f4fbff' : '#f0a07a'); R(g, cx + 6, cy - 2, w * 0.5, 2, md === 'noon' ? '#ffffff' : '#f8c090'); } }
+    if (S2.sun) { disc(g, S2.sun[0], S2.sun[1], S2.sun[2], S2.sun[3]); glow(g, S2.sun[0], S2.sun[1], 70, md === 'noon' ? 'rgba(255,255,230,A)' : 'rgba(255,170,90,A)', 0.5); }
+    if (S2.moon) { disc(g, S2.moon[0], S2.moon[1], S2.moon[2], '#eef0e0'); disc(g, S2.moon[0] + 3, S2.moon[1] - 2, S2.moon[2] - 1, S2.sky[0]); glow(g, S2.moon[0], S2.moon[1], 40, 'rgba(180,200,255,A)', 0.25); }
+    var rh = ridge(9, WW, 6, 2.0);
+    for (x = 0; x < WW; x++) { var hh = x > 300 ? 18 + (x - 300) * 0.25 + rh[x] : x < 60 ? 10 + rh[x] * 0.6 : 0; if (hh > 0) R(g, x, HZ - hh, 1, hh, S2.hill); }
+    for (i = 0; i < 9; i++) { var hx = 318 + i * 9, hy = HZ - 14 - (i % 3) * 5 - (i > 4 ? 6 : 0); R(g, hx, hy, 7, 6, md === 'night' ? '#3a3a5a' : '#e8d8c0'); R(g, hx - 1, hy - 2, 9, 2, md === 'night' ? '#2a2034' : '#a84a3a'); P(g, hx + 2, hy + 2, md === 'night' ? '#ffd27a' : '#5a4a4a'); if (md === 'night') P(g, hx + 4, hy + 2, '#ffd27a'); }
+    for (y = HZ; y < WH; y++) R(g, 0, y, WW, 1, mix(mix(S2.sea[0], S2.sea[1], Math.min(1, (y - HZ) / 60)), S2.sea[2], Math.max(0, (y - HZ - 60) / 240)));
+    R(g, 0, HZ, WW, 1, S2.hz);
+    HBM[md] = bg; return bg;
+  }
+  function harborDyn(g, t, md) {   /* deniz pırıltısı, kayıklar, martılar (arka katman) */
+    var i, x, y, gl = md && SKY[md] ? SKY[md].glint : null;
+    if (md === 'night') {
+      for (i = 0; i < 40; i++) { var nx = (i * 53) % 196, ny = HZ + 4 + (i * 29) % 260; if (Math.sin(t * 2 + i * 1.7) > 0.7) R(g, nx, ny, 3, 1, gl); }
+      for (y = HZ + 3; y < 236; y += 6) for (x = 290; x < 312; x += 9) if (Math.sin(t * 3 + x + y) > 0.5) R(g, x, y, 2, 1, 'rgba(200,210,255,0.5)');
+      return;
+    }
+    if (gl) { for (i = 0; i < 90; i++) { var gx2 = (i * 53 + Math.floor(t * 6) * (i % 3)) % WW, gy2 = HZ + 2 + (i * 29) % 280; if (gx2 > 196 && gy2 > 66 + HZ) continue; if (Math.sin(t * 3.2 + i * 1.7) > 0.55) R(g, gx2, gy2, 3, 1, gl); } return harborBoats(g, t); }
     for (i = 0; i < 90; i++) { var gx = (i * 53 + Math.floor(t * 6) * (i % 3)) % WW, gy = HZ + 2 + (i * 29) % 280; if (gx > 196 && gy > 66 + HZ) continue; var near = false; if (Math.sin(t * 3.2 + i * 1.7) > (near ? -0.3 : 0.55)) R(g, gx, gy, near ? 4 : 3, 1, near ? '#fff0c0' : gy < HZ + 50 ? '#ffd6a0' : '#8a7aa8'); }
     for (y = HZ + 3; y < 236; y += 5) { var sw3 = 6 + (y - HZ) * 0.35; for (x = SUN[0] - sw3; x < SUN[0] + sw3; x += 9) if (Math.sin(t * 3 + x * 0.7 + y * 1.3) > 0.55) R(g, x + Math.sin(y + t) * 2, y, 2, 1, 'rgba(255,236,190,0.7)'); }
+    harborBoats(g, t);
+  }
+  function harborBoats(g, t) {
+    var i;
     [[50, 262, 1], [140, 320, 0.8], [20, 200, 0.5], [110, 410, 1.1]].forEach(function (b, k) {
       var bx = b[0] + Math.sin(t * 0.4 + k) * 3, by = b[1] + Math.sin(t * 1.3 + k * 2) * 1.2, s = b[2], w = Math.round(30 * s);
       R(g, bx, by, w, 2, '#f0ece0'); R(g, bx + 1, by + 2, w - 2, 1, '#c83a2a'); R(g, bx + 1, by + 3, w - 2, 1, '#2a5a8a'); R(g, bx + 3, by + 4, w - 6, 2, '#3a2a30');
@@ -299,19 +378,28 @@
   /* liman karesi: chars = [{ S, x, y, o, front:true (sayacın önünde) }], props = fn(g) sayaçtan sonra */
   function harbor(t, chars, cOpt, after, sil) {
     if (!HB) harborStatic();
-    var F = layer(WW, WH), g = F.g;
-    g.drawImage(HB.bg.c, 0, 0); harborDyn(g, t);
+    var F = layer(WW, WH), g = F.g, md = (cOpt && cOpt.mode) || 'dawn', night = (cOpt && cOpt.night) || 0;
+    g.drawImage(skyBg(md).c, 0, 0);
+    if (cOpt && cOpt.mode2 && cOpt.mk > 0) { g.globalAlpha = Math.min(1, cOpt.mk); g.drawImage(skyBg(cOpt.mode2).c, 0, 0); g.globalAlpha = 1; }
+    harborDyn(g, t, cOpt && cOpt.mode2 && cOpt.mk > 0.5 ? cOpt.mode2 : md === 'dawn' ? null : md);
     var G = layer(WW, WH), h = G.g; h.drawImage(HB.fg.c, 0, 0);
+    if (cOpt && cOpt.extra) cOpt.extra(h);
     var back = chars.filter(function (c) { return !c.front; }), front = chars.filter(function (c) { return c.front; }).sort(function (a, b) { return a.y - b.y; });
     var info = {};
     if (!sil) {
-      back.forEach(function (c) { info[c.id || ''] = person(h, c.x, c.y, c.S, c.o); });
+      var BL = layer(WW, WH);                                                                   /* tezgâh arkasındakiler: zeminin altı kırpılır */
+      back.forEach(function (c) { info[c.id || ''] = person(BL.g, c.x, c.y, c.S, c.o); });
+      BL.g.clearRect(0, GR, WW, WH - GR); h.drawImage(BL.c, 0, 0);
       counter(h, cOpt, t);
       if (cOpt && cOpt.before) cOpt.before(h, info);
       front.forEach(function (c) { info[c.id || ''] = person(h, c.x, c.y, c.S, c.o); if (c.after) c.after(h, info[c.id || '']); });
       if (after) after(h, info);
-      rim(G, '#ffc890', 0, -1, 1);
+      if (night) { h.save(); h.globalCompositeOperation = 'source-atop'; h.fillStyle = 'rgba(10,14,44,' + (0.62 * night) + ')'; h.fillRect(0, 0, WW, WH); h.restore(); }
+      rim(G, night ? '#8a9ae0' : md === 'noon' ? '#fff6e0' : '#ffc890', 0, -1, 1);
+      if (cOpt && cOpt.lamp) lamp(h, t, cOpt.lamp);
       g.drawImage(G.c, 0, 0);
+      if (cOpt && cOpt.lamp) { glow(g, 266, 206, 60, 'rgba(255,180,90,A)', 0.55 * cOpt.lamp); glow(g, 266, 206, 18, 'rgba(255,230,170,A)', 0.6 * cOpt.lamp); }
+      if (cOpt && cOpt.top) cOpt.top(g, info);
       return { L: F, info: info };
     }
     /* ters ışık: kişiler ayrı katmanda karanlık siluet + güneş kenarı; arkadaki her şey parıltıda */
@@ -380,8 +468,7 @@
   }
 
   /* ---------- S3 (10–16 sn): hızlı kesmeler; kasa, terazi, para, Nermin'in ayağı; hamsi havada (ağır çekim) ve kaskete PAT! ---------- */
-  function b1rush(t, u, O) {
-    if (O && O.freeze) t = Math.min(t, O.freeze);                      /* soğuk açılış: PAT anında donar */
+  function b1rush(t) {
     var x = 266, c, H2, chars, q = queueChars(t + 9, 1, { app: function () { return 0; }, mood: function (i, N) { return N.mood > 0.5 ? 'frown' : 'worry'; }, tap: 1 });
     var nerm = function (o2) { return { id: 'n', S: NERMIN, x: Q[0][0], y: Q[0][1], front: true, o: o2, after: function (g, I) { basket(g, I.hands.r[0], I.hands.r[1] - 2, true); purse(g, I.hands.l[0] - 1, I.hands.l[1] + 1); } }; };
     var nH = { r: [Q[0][0] + 9, Q[0][1] - 18], l: [Q[0][0] - 8, Q[0][1] - 20] };
@@ -537,6 +624,105 @@
     var c = frameOf(267, 166 - t * 1.2, 1.3); c.L = H2.L; return c;
   }
 
+  /* ======================================================================
+     Gün 3 · Bölüm 2 · HER YERE YETİŞEMEZSİN (müdür)
+     ====================================================================== */
+  var C1 = 31, C2 = 32;                                         /* ekipteki iki yeni eleman */
+  function popK(t, a) { return t < a ? 0 : Math.min(1, (t - a) / 0.12); }
+  /* S1: herkes Rıza'yı çağırır; Rıza fırıl fırıl döner, başı döner */
+  function b2busy(t) {
+    var rx = 262, dir = 0, back = false, expr = 'neutral';
+    if (t > 0.35 && t < 0.9) { dir = 1; expr = 'worry'; } else if (t >= 0.9 && t < 1.5) { dir = -1; expr = 'worry'; }
+    else if (t >= 1.5 && t < 2.1) { dir = 1; expr = 'surprise'; } else if (t >= 2.1 && t < 2.6) { dir = 1; expr = 'surprise'; }
+    else if (t >= 2.6 && t < 3.6) { var ph = Math.floor(t * 12) % 4; dir = [0, 1, 0, -1][ph]; back = ph === 2; expr = 'surprise'; }
+    else if (t >= 3.6) expr = 'helpless';
+    var sh = t > 2.6 ? Math.round(Math.sin(t * 40)) : 0;
+    var chars = [
+      { id: 'r', S: RIZA, x: rx, y: 266, o: { dir: dir, back: back, expr: expr, hands: t > 2.6 && t < 3.6 ? { l: [rx - 11, 236], r: [rx + 11, 236] } : null } },
+      { id: 'm', S: MEMO, x: 292, y: 267, o: { dir: -1, expr: 'worry', hands: { l: [284, 246], r: [300, 246] } } },
+      { id: 'c1', S: crew(C1), x: 222, y: 292, front: true, o: { dir: 1, expr: 'frown', hands: { r: [232, 270] } } },
+      { id: 'n', S: NERMIN, x: 294, y: 306, front: true, o: { dir: -1, expr: 'frown', tap: Math.max(0, Math.sin(t * 16)) }, after: function (g, I) { basket(g, I.hands.r[0], I.hands.r[1] - 2, false); } },
+      { id: 'c2', S: crew(C2), x: 322, y: 294, front: true, o: { dir: -1, expr: 'worry' } }];
+    [[340, 316, 7], [326, 336, 8]].forEach(function (q) { chars.push({ S: npc(q[2]), x: q[0], y: q[1], front: true, o: { dir: -1, expr: 'frown' } }); });
+    var H2 = harbor(t, chars, { coins: 9 }, null, 0);
+    var I = H2.info, g = H2.L.g;
+    var hd = function (id, dy) { return [I[id].head[0], I[id].head[1] - (dy || 6)]; };
+    var B = [['m', 'RIZA?', 0.3], ['c1', 'ABİ!', 0.9], ['n', 'RIZA!', 1.5], ['c2', '?', 2.1]];
+    B.forEach(function (b, i) { var h = hd(b[0]); bubble(g, h[0], h[1], b[1], popK(t, b[2]), t > 2.6 ? Math.round(Math.sin(t * 30 + i * 2)) : 0); });
+    if (t > 2.9) dizzy(g, I.r.head[0], I.r.head[1] - 5, t);
+    if (t > 3.8) sweat(g, I.r.head[0] + 6, I.r.head[1] + 2);
+    var c = t < 2.6 ? camPath([[0, 270, 252, 1.45], [2.6, 272, 254, 1.38]], t) : t < 3.6 ? frameOf(262 + sh * 0.3, 226, 2.7) : camPath([[3.6, 262, 238, 2.5], [5.3, 272, 258, 1.38]], t);
+    c.L = H2.L; return c;
+  }
+  /* S2: gün boyu koşturma — gökyüzü şafaktan öğleye, akşama akar */
+  function b2run(t) {
+    var k = t < 2.5 ? t / 2.5 : (t - 2.5) / 2.5, opt = t < 2.5 ? { mode: 'dawn', mode2: 'noon', mk: k } : { mode: 'noon', mode2: 'dusk', mk: k };
+    var rx = 286 + 58 * Math.sin(t * 2.4), rd = Math.cos(t * 2.4) > 0 ? 1 : -1, ry = 300;
+    var chars = [
+      { S: MEMO, x: 292, y: 267, o: { dir: -1, expr: 'worry', hands: { l: [282, 248 - Math.round(Math.abs(Math.sin(t * 6)) * 3)], r: [300, 248] } } },
+      { S: crew(C1), x: 246, y: 267, o: { dir: 1, expr: 'neutral', hands: { r: [256, 249 - Math.round(Math.abs(Math.sin(t * 9)) * 2)] } } },
+      { S: NERMIN, x: 344, y: 318, front: true, o: { dir: -1, expr: 'frown', tap: Math.max(0, Math.sin(t * 16)) } },
+      { id: 'r', S: RIZA, x: rx, y: ry, front: true, o: { dir: rd, ph: t * 18, expr: 'worry', hands: { l: [rx - 4 + rd * 3, ry - 30], r: [rx + 4 + rd * 3, ry - 30] } },
+        after: function (g) { R(g, rx - 4 + rd * 3, ry - 33, 8, 5, '#7a2a2a'); R(g, rx - 3 + rd * 3, ry - 33, 6, 1, '#efe4c4'); } }];
+    [[360, 300, 9], [372, 330, 10], [330, 344, 11]].forEach(function (q) { chars.push({ S: npc(q[2]), x: q[0], y: q[1], front: true, o: { dir: -1, expr: 'frown' } }); });
+    var H2 = harbor(t * 3, chars, opt, function (g) {
+      for (var i = 1; i < 7; i++) { var tt2 = t - i * 0.07, px2 = 286 + 58 * Math.sin(tt2 * 2.4); paper(g, px2 - rd * 2, ry - 30 + i * 3 + Math.sin(t * 9 + i) * 2, i % 2); }
+    });
+    var c = camPath([[0, 290, 270, 1.25], [5, 290, 266, 1.32]], t); c.L = H2.L; return c;
+  }
+  /* S3: gece; Rıza defterin başında uyuyakalır; Memo görür, aklına bir şey gelir */
+  function b2night(t) {
+    var drop = sm(2.3, 2.8, t), ry = Math.round(lerp(266, 292, drop)), wr = t < 1.6 ? Math.sin(t * 14) * 3 : 0;
+    var rE = t < 1.6 ? 'worry' : t < 2.3 ? (t < 1.95 ? 'surprise' : 'blink') : 'blink';
+    var mx = t < 3.0 ? 400 : t < 3.8 ? lerp(380, 316, (t - 3.0) / 0.8) : t < 4.6 ? 316 : lerp(316, 380, (t - 4.6) / 0.6);
+    var chars = [{ id: 'r', S: RIZA, x: 262, y: ry, o: { expr: rE, dir: t < 1.6 ? -1 : 0, hands: drop > 0.5 ? { l: [250, 249], r: [274, 249] } : { l: [254 + wr, 248], r: [272, 249] } } }];
+    if (mx < 395) chars.push({ id: 'm', S: MEMO, x: mx, y: 292, front: true, o: { dir: t < 4.6 ? -1 : 1, ph: (t > 3.0 && t < 3.8) || t > 4.6 ? t * 10 : null, expr: t > 4.25 ? 'smile' : 'worry' } });
+    var H2 = harbor(t, chars, { mode: 'night', night: 1, lamp: 1, coins: 3, before: function (g) { ledger(g, 252, 245, true); paper(g, 240, 247, 1); paper(g, 286, 246, 0); paper(g, 276, 248, 1); } }, null, 0);
+    var g = H2.L.g, I = H2.info;
+    if (t > 2.8) zzz(g, I.r.head[0] + 6, I.r.head[1] - 2, t);
+    if (t > 4.25 && t < 4.9 && I.m) bubble(g, I.m.head[0], I.m.head[1] - 6, '!', popK(t, 4.25), 0);
+    var c = camPath([[0, 268, 236, 2.2], [2.8, 266, 240, 2.6], [3.2, 286, 246, 2.0], [5, 290, 248, 2.0]], t); c.L = H2.L; return c;
+  }
+  /* S4: sabah; Memo, Nevin Hanım'ı getirir; çay, Rıza uyanır, kâğıtlar düzene girer */
+  function b2nevin(t) {
+    var nk = Math.min(1, t / 1.6), nx = lerp(392, 306, eio(nk)), mk = Math.min(1, t / 1.9), mxx = lerp(420, 326, eio(mk));
+    var wake = sm(2.4, 2.8, t), ry = Math.round(lerp(292, 266, wake)), tea = t > 2.15;
+    var nH = t > 1.8 && t < 2.3 ? { l: [lerp(297, 288, sm(1.8, 2.1, t)), lerp(270, 248, sm(1.8, 2.1, t))] } : t > 3.0 && t < 4.4 ? { l: [296, 252 - Math.round(Math.sin(t * 8) * 2)] } : null;
+    var chars = [{ id: 'r', S: RIZA, x: 262, y: ry, o: { expr: wake < 0.5 ? 'blink' : t < 3.4 ? 'surprise' : 'smile', dir: t > 2.8 && t < 3.4 ? 1 : 0, hands: wake < 0.5 ? { l: [250, 249], r: [274, 249] } : null } },
+      { id: 'v', S: NEVIN, x: nx, y: 292, front: true, o: { dir: -1, ph: nk < 1 ? t * 10 : null, expr: t > 2.0 ? 'smile' : 'neutral', hands: nH || { r: [nx + 8, 270] }, armFront: 'l' },
+        after: function (g, I) { if (!nH || t > 3) { R(g, I.hands.r[0] - 1, I.hands.r[1] - 9, 4, 9, '#7a2a2a'); R(g, I.hands.r[0], I.hands.r[1] - 8, 1, 7, '#e8d8b0'); } } },
+      { id: 'm', S: MEMO, x: mxx, y: 302, front: true, o: { dir: -1, ph: mk < 1 ? t * 10 : null, expr: 'smile' } }];
+    var PP = [[240, 247], [286, 246], [276, 248], [228, 262], [300, 258], [250, 270]], st = sm(3.0, 4.2, t);
+    var H2 = harbor(t, chars, { mode: 'dawn', coins: 3, before: function (g) {
+      ledger(g, 252, 245, st < 0.9); if (tea) teaCup(g, 288, 244);
+      PP.forEach(function (q, i) { var kk = Math.min(1, Math.max(0, st * 1.4 - i * 0.07)), px2 = lerp(q[0], 236, eio(kk)), py2 = lerp(q[1], 247 - i * 0.6, eio(kk)) - Math.sin(kk * Math.PI) * 10; paper(g, px2, py2, i % 2); if (kk > 0 && kk < 1) P(g, px2 + 2, py2 - 2, '#fff4c0'); });
+    } }, null, 0);
+    var g = H2.L.g, I = H2.info;
+    if (t < 2.4) zzz(g, I.r.head[0] + 6, I.r.head[1] - 2, t);
+    if (tea) for (var i = 0; i < 3; i++) P(g, 288 + Math.sin(t * 3 + i) * 1.5, 240 - i * 2 - (t * 6 % 2), 'rgba(255,248,235,0.6)');
+    var c = camPath([[0, 300, 244, 1.75], [2.2, 286, 242, 1.95], [3.0, 272, 240, 2.1], [5, 276, 244, 2.0]], t); c.L = H2.L; return c;
+  }
+  /* S5–S6: müdür masası; Nevin Hanım yönetir, ekip akar, Rıza çayını yudumlar */
+  function deskScene(t, mode, fin) {
+    var pt = Math.sin(t * 2.2), arr = Math.abs(Math.sin(t * 5));
+    var chars = [
+      { S: MEMO, x: 292, y: 267, o: { dir: -1, expr: 'happy', hands: { l: [282 - arr * 3, 246 - arr * 3], r: [300 - arr * 3, 246 - arr * 3] } } },
+      { S: crew(C1), x: 248, y: 267, o: { dir: 1, expr: 'smile', hands: { r: [258, 249 - Math.round(Math.abs(Math.sin(t * 9)) * 2)] } } },
+      { id: 'v', S: NEVIN, x: 228, y: 284, front: true, o: { dir: 1, expr: 'smile', hands: fin ? null : { r: [246 + Math.round(pt * 2), 256 - Math.round(pt * 6)] } }, after: function (g) { desk(g, 212, 271, 'MÜDÜR'); teaCup(g, 238, 266); } },
+      { S: crew(C2), x: 300, y: 294, front: true, o: { dir: -1, expr: 'smile', hands: { l: [290, 274] } } },
+      { id: 'r', S: RIZA, x: 314, y: 316, front: true, o: { dir: fin ? 0 : -1, expr: 'happy', hands: { r: fin ? [326, 282] : [318, 298 - Math.round(Math.max(0, Math.sin(t * 1.6)) * 14)] } },
+        after: function (g, I) { teaCup(g, I.hands.r[0], I.hands.r[1] - 6); } },
+      { id: 'n', S: NERMIN, x: 334, y: 324, front: true, o: { dir: -1, expr: 'happy' }, after: function (g, I) { basket(g, I.hands.r[0], I.hands.r[1] - 2, true); } }];
+    [[346, 306, 12]].forEach(function (q) { chars.push({ S: npc(q[2]), x: q[0], y: q[1], front: true, o: { dir: -1, expr: 'smile' } }); });
+    return harbor(t, chars, { mode: mode, coins: 14 }, null, 0);
+  }
+  function b2desk(t) { var H2 = deskScene(t, 'noon', false), c = camPath([[0, 240, 262, 2.1], [1.4, 242, 262, 2.0], [3.4, 272, 272, 1.32], [4.5, 272, 270, 1.3]], t); c.L = H2.L; return c; }
+  function b2together(t) { var H2 = deskScene(t + 4.5, 'noon', t > 1.4), c = camPath([[0, 272, 270, 1.3], [2.0, 272, 240, 1.3], [3, 272, 238, 1.32]], t); c.L = H2.L; return c; }
+  function b2end(t) { var H2 = deskScene(t + 8, 'dusk', true), c = frameOf(272, 160 - t * 1.2, 1.3); c.L = H2.L; return c; }
+
+  TBS.reg('b2busy', b2busy); TBS.reg('b2run', b2run); TBS.reg('b2night', b2night); TBS.reg('b2nevin', b2nevin);
+  TBS.reg('b2desk', b2desk); TBS.reg('b2together', b2together); TBS.reg('b2end', b2end);
+
   TBS.reg('b1open', b1open); TBS.reg('b1rush0', b1rush0); TBS.reg('b1rush', b1rush); TBS.reg('b1stranger', b1stranger);
   TBS.reg('b1shake', b1shake); TBS.reg('b1together', b1together); TBS.reg('b1end', b1end);
   /* karakter dizisi önizlemesi (yalnız geliştirme) */
@@ -545,7 +731,7 @@
     var ex = ['neutral', 'smile', 'happy', 'worry', 'surprise', 'helpless', 'frown', 'blink'], e = ex[Math.floor(t) % ex.length];
     person(g, 40, 120, RIZA, { expr: e }); person(g, 92, 120, MEMO, { expr: e }); person(g, 140, 120, NERMIN, { expr: e });
     person(g, 40, 200, RIZA, { expr: e, dir: 1 }); person(g, 92, 200, MEMO, { expr: e, dir: -1, ph: t * 8 }); person(g, 140, 200, NERMIN, { expr: e, dir: -1 });
-    person(g, 40, 290, RIZA, { back: true }); person(g, 92, 290, npc(1), { expr: e }); person(g, 140, 290, npc(2), { expr: e });
+    person(g, 40, 290, RIZA, { back: true }); person(g, 92, 290, npc(1), { expr: e }); person(g, 140, 290, NEVIN, { expr: e });
     basket(g, 149, 102); tiny(g, 4, 4, e.toUpperCase().replace(/[^A-Z]/g, ''), '#ffffff');
     return { L: L, x: 0, y: 0, z: 1 };
   });
