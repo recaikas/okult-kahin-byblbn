@@ -502,7 +502,8 @@ function trimLabels() {
   }
   function near(a, b) { return a._d - b._d; }
   lab.sort(near); bad.sort(near);
-  uiQ = rest.concat(bad.slice(0, BADGE_BUDGET)).concat(lab.slice(0, LABEL_BUDGET));
+  /* v2.13: ince görünümde dünya daha ayrıntılı — yazı kalabalığı daha da azaltılır (en yakın 4 ad, 8 rozet) */
+  uiQ = rest.concat(bad.slice(0, FINE ? 8 : BADGE_BUDGET)).concat(lab.slice(0, FINE ? 4 : LABEL_BUDGET));
 }
 function uiText(x, y, z, s, col, size, a, dx, dy, outline) { uiQ.push({ t: 3, x: x, y: y, z: z, s: s, c: col, sz: size || 12, a: a === undefined ? 1 : a, dx: dx, dy: dy, o: outline }); }
 function uiFont(px) { return 'bold ' + px + 'px "Pixelify Sans",ui-monospace,monospace'; }
@@ -563,9 +564,17 @@ function renderUI() {
       if (hits(rect)) continue;                       /* yer yoksa hiç çizme */
       taken.push(rect);
       cy = rect.y + h;
+      if (FINE) {                                     /* v2.13 ince: köşesi kırık, gölgeli, tek çizgi kenarlı sade levha */
+        uctx.fillStyle = 'rgba(6,16,24,.35)'; uctx.fillRect(rect.x + 2, rect.y + h, w - 3, 2);
+        uctx.fillStyle = '#0a1a27'; uctx.fillRect(rect.x + 1, rect.y, w - 2, h); uctx.fillRect(rect.x, rect.y + 1, w, h - 2);
+        uctx.fillStyle = q.t === 1 ? 'rgba(22,44,64,.95)' : 'rgba(31,62,88,.95)';
+        uctx.fillRect(rect.x + 1, rect.y + 1, w - 2, h - 2);
+        uctx.fillStyle = 'rgba(255,255,255,.10)'; uctx.fillRect(rect.x + 2, rect.y + 1, w - 4, 1);
+      } else {
       uctx.fillStyle = '#0a1a27'; uctx.fillRect(rect.x, rect.y, w, h);
       uctx.fillStyle = q.t === 1 ? 'rgba(20,41,60,.92)' : 'rgba(29,58,82,.92)';
       uctx.fillRect(rect.x + 2, rect.y + 2, w - 4, h - 4);
+      }
       /* kilim çentiği: üst kenarda iki altın nokta */
       uctx.fillStyle = q.t === 1 ? '#c9a15e' : '#7a9ab0';
       uctx.fillRect(rect.x + 2, rect.y + 2, 2, 1); uctx.fillRect(rect.x + w - 4, rect.y + 2, 2, 1);
