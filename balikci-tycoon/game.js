@@ -32,7 +32,7 @@ var STR = {
     welcomeCo: 'Hayırlı olsun! {n} kapılarını açtı.', tapStart: '▶ BAŞLAMAK İÇİN DOKUN', skip: 'ATLA ▶▶',
     dayScore: 'Skor (toplam balık)', dayRank: '{s} • {r}. sıra', fishN: '{n} balık',
     tag: 'KÜÇÜK İSKELEDEN BÜYÜK LİMANA',
-    langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM', visLbl: 'GÖRÜNÜM', visClassic: 'KLASİK', visFine: 'İNCE',
     resetAsk: 'Tüm ilerleme silinsin mi?',
     intro1: '🎣 Ağın yanında bekle, balık birikir',
     intro2: '🧺 Üstünden geç, sırtla (ağır balık çok yer kaplar)',
@@ -246,7 +246,7 @@ var STR = {
     welcomeCo: '{n} is open for business!', tapStart: '▶ TAP TO BEGIN', skip: 'SKIP ▶▶',
     dayScore: 'Score (total fish)', dayRank: '{s} • #{r}', fishN: '{n} fish',
     tag: 'FROM A TINY PIER TO A GRAND HARBOR',
-    langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM', visLbl: 'GRAPHICS', visClassic: 'CLASSIC', visFine: 'FINE',
     resetAsk: 'Erase all progress?',
     intro1: '🎣 Wait by the net, fish pile up',
     intro2: '🧺 Walk over the crate to carry them (big fish weigh more)',
@@ -456,13 +456,24 @@ var ucv = document.getElementById('ui');
 var uctx = ucv.getContext('2d');
 var VW = 0, VH = 0, PXS = 3, zoomLvl = 2, DPR2 = 1;
 var W = 0, H = 0;                 /* sanal (pixel) tuval boyutu */
+/* v2.13 — İNCE PİKSEL: dünya birimi, PXS, kamera ve dokunma hesabı aynı kalır; yalnız tuval FK kat çözünürlükte açılır.
+   Ana tuvale her çizim FK ölçekli dönüşümle yapılır, yani eski çizim kodu birebir aynı görünür (Klasik).
+   İnce sanat (art/*.js) aynı dünya biriminde 1/FK'lık alt piksellerle çizer. curK: o an çizilen tuvalin ölçeği
+   (ana tuval FK; kahraman/müşteri portresi gibi yan tuvaller kendi ölçeğini kurar). */
+var FINE = true, FK = 2, curK = 2;
+function camT(x, y) { ctx.setTransform(FK, 0, 0, FK, (x || 0) * FK, (y || 0) * FK); }
+function setFine(on) {
+  FINE = !!on; FK = FINE ? 2 : 1; curK = FK;
+  if (window.HKA && HKA.reset) try { HKA.reset(); } catch (e) { }
+  if (VW) resize();
+}
 function resize() {
   VW = cvs.clientWidth || window.innerWidth;
   VH = cvs.clientHeight || window.innerHeight;
   var base = clamp(Math.round(VW / 330), 2, 4);
   PXS = clamp(base + (zoomLvl - 2), 1, 6);
   W = Math.ceil(VW / PXS); H = Math.ceil(VH / PXS);
-  cvs.width = W; cvs.height = H;
+  cvs.width = W * FK; cvs.height = H * FK; curK = FK;
   ctx.imageSmoothingEnabled = false;
   DPR2 = Math.min(2, window.devicePixelRatio || 1);
   ucv.width = Math.round(VW * DPR2); ucv.height = Math.round(VH * DPR2);
@@ -2562,13 +2573,14 @@ var termsOK = false, hiddenRuns = [];  /* v2.11: topluluk kuralları kabul edild
 /* v2.12 — giriş onayı: 0 henüz sorulmadı, 1 kabul (çevrimiçi), -1 çevrimdışı oyna. Onay yokken sunucuya hiçbir şey gitmez. */
 var consent = 0, CONSENT_VER = 1;
 var onlineAsked = false;              /* KVKK aydınlatma: bilgilendirme bir kez gösterildi mi — gösterilmeden hiçbir şey gönderilmez */
-function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, mp: musicPick, onn: onlineAsked ? 1 : 0, vol: [VOL.mus, VOL.sfx, VOL.amb], trm: termsOK ? 1 : 0, hid: hiddenRuns.slice(-200), cns: consent, cnsV: CONSENT_VER })); }
+function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, mp: musicPick, onn: onlineAsked ? 1 : 0, vol: [VOL.mus, VOL.sfx, VOL.amb], trm: termsOK ? 1 : 0, hid: hiddenRuns.slice(-200), cns: consent, cnsV: CONSENT_VER, vis: FINE ? 1 : 0 })); }
 function loadPref() {
   try {
     var d = JSON.parse(Store.get(PREF_KEY) || 'null'); if (!d) return;
     if (d.lang) lang = d.lang;
     if (d.snd !== undefined) { volLvl = clamp(d.snd | 0, 0, 2); applyVolume(); }
     if (d.zoom) zoomLvl = d.zoom;
+    if (d.vis === 0 || d.vis === 1) setFine(d.vis === 1);              /* v2.13: Görünüm — Klasik / İnce */
     if (d.mus !== undefined) musicEnabled = !!d.mus;
     if (typeof d.mp === 'number') musicPick = d.mp >= 0 && d.mp < SONGS.length ? d.mp | 0 : -1;
     if (Array.isArray(d.vol)) { VOL.mus = clamp(+d.vol[0] || 0, 0, 1); VOL.sfx = clamp(+d.vol[1] || 0, 0, 1); VOL.amb = clamp(+d.vol[2] || 0, 0, 1); applyBusVol(); }
@@ -4825,7 +4837,7 @@ var scenery = [], grass = [];
 
 /* uzak sahil: beyaz evler, kırmızı çatılar, minare, servi (parallax) */
 function drawVillage() {
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  camT(0, 0);
   var off = (camX * 0.22) % 260, base = R(horizonY);
   if (base < -30) return;                               /* v1.3: ufuk ekranın üstünde kaldıysa uzak kıyı görünmez */
   /* tepeler */
@@ -5214,7 +5226,7 @@ function drawGull(g) {
 /* --- deniz: bantlar + parıltı + kıyı köpüğü --- */
 var HORIZON_GAP = 40;
 function drawSea() {
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  camT(0, 0);
   var hz = R(horizonY), i;
   /* gökyüzü (ufkun üstü): yukarı doğru koyulaşan pastel bantlar */
   if (hz > 0) {
@@ -6758,8 +6770,7 @@ function render() {
   horizonY = camOY + R(pY(0, 0, 0)) - HORIZON_GAP;
   drawSea();
   drawVillage();
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.translate(camOX, camOY);
+  camT(camOX, camOY);
 
   drawShoal(); drawWaves();
   for (var b = 0; b < boats.length; b++) drawBoat(boats[b]);
@@ -6878,13 +6889,13 @@ function render() {
   drawFlyers(); drawPuffs(); drawFloats();
   var tg = S.started ? tutorialTarget() : null; if (tg) { drawTutGuide(tg); drawArrow(tg); }
 
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  camT(0, 0);
   drawVignette();                           /* v0.1 — kenarları yumuşatan vinyet */
   if (S.started) dayTint();                 /* v1.2 — sabah/gündüz/akşam tonu */
   if (tg) drawTutEdge(tg);                  /* v1.9 — hedef ekran dışındaysa kenarda ok */
   ctx.translate(camOX, camOY);
   renderUI();
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  camT(0, 0);
   if (stick.active) drawJoystick(R(stick.bx / PXS), R(stick.by / PXS), stick.dx, stick.dy, 1);
   else if (S.started && S.ctrl === 0 && inputMode === 'touch' && !paused) {
     /* eğitim: ekranın altında "burada sürükle" hayalet joystick'i */
@@ -6954,6 +6965,7 @@ function applyLang() {
   if (!el.nameScr.classList.contains('hidden')) { syncNamePreview(); renderNameChips(); }
   el.setTitle.textContent = T('settings'); el.setLang.textContent = T('langLbl');
   el.setSound.textContent = T('soundLbl'); el.setZoom.textContent = T('zoomLbl');
+  (function () { var a = document.getElementById('setVis'), b = document.getElementById('visClassic'), c = document.getElementById('visFine'); if (a) a.textContent = T('visLbl'); if (b) b.textContent = T('visClassic'); if (c) c.textContent = T('visFine'); })();
   el.setOnline.textContent = T('onlineLbl'); syncOnlineLbl();
   el.forgetBtn.textContent = T('forgetBtn'); el.privBtn.textContent = T('privBtn'); el.aboutBtn.textContent = T('aboutBtn'); el.privClose.textContent = T('privClose');
   el.setAuto.textContent = T('autoLbl'); el.setMusic.textContent = T('musicLbl'); el.musOn.textContent = T('musOn'); el.musOff.textContent = T('musOff'); var spl = document.getElementById('setPlist'); if (spl) spl.textContent = T('musList');
@@ -7849,6 +7861,14 @@ Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), funct
     b.classList.add('on'); resize(); save();
   };
 });
+/* v2.13 — Görünüm: Klasik (eski çözünürlük) / İnce (2 kat ince piksel). Yalnız çizimi değiştirir, kayıt etkilenmez. */
+Array.prototype.forEach.call(document.querySelectorAll('#visSeg button'), function (b) {
+  b.onclick = function () {
+    setFine(b.dataset.v === '1');
+    Array.prototype.forEach.call(document.querySelectorAll('#visSeg button'), function (o) { o.classList.toggle('on', o === b); });
+    savePref(); sfx.tap();
+  };
+});
 el.setBtn.onclick = function () { el.startScreen.classList.add('hidden'); openSettings(false); };
 el.setClose.onclick = function () {
   var from = el.settingsScreen.dataset.from;
@@ -7944,6 +7964,7 @@ function syncSettingsUI() {
     if (l) l.textContent = T(q[0]) + ' · ' + Math.round(VOL[q[1]] * 100) + '%';
   });
   Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.z, 10) === zoomLvl); });
+  Array.prototype.forEach.call(document.querySelectorAll('#visSeg button'), function (o) { o.classList.toggle('on', (o.dataset.v === '1') === FINE); });
 }
 
 /* =========================================================
@@ -9272,20 +9293,21 @@ function confirmHero() {
 /* önizleme: iskele tahtası üstünde karakter, arada bir döner */
 function drawHeroPreview(t) {
   if (el.heroScr.classList.contains('hidden') || !pendingHero) return;
-  var cv = el.heroCv, g = cv.getContext('2d'), old = ctx;
+  var cv = el.heroCv, g = cv.getContext('2d'), old = ctx, oldK = curK, k = FK;
+  if (cv.width !== 32 * k) { cv.width = 32 * k; cv.height = 36 * k; }      /* v2.13: ince modda portre de ince */
   if (Math.floor(t / 1.6) % 2 !== (heroFace > 0 ? 0 : 1)) heroFace = -heroFace;
-  ctx = g;
+  ctx = g; curK = k;
   try {
-    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.setTransform(k, 0, 0, k, 0, 0);
     g.imageSmoothingEnabled = false;
-    g.fillStyle = '#16293a'; g.fillRect(0, 0, cv.width, cv.height);
-    for (var i = 0; i < 5; i++) { g.fillStyle = i % 2 ? '#7a5130' : '#8a5a33'; g.fillRect(0, 26 + i * 2, cv.width, 2); }
-    g.fillStyle = '#5a3a22'; g.fillRect(0, 26, cv.width, 1);
-    g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), 32);
+    g.fillStyle = '#16293a'; g.fillRect(0, 0, 32, 36);
+    for (var i = 0; i < 5; i++) { g.fillStyle = i % 2 ? '#7a5130' : '#8a5a33'; g.fillRect(0, 26 + i * 2, 32, 2); }
+    g.fillStyle = '#5a3a22'; g.fillRect(0, 26, 32, 1);
+    g.setTransform(k, 0, 0, k, 16 * k, 32 * k);
     var a = { x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: t * 6, act: 0, carry: [] };
     drawPerson(a, heroOutfit(pendingHero, heroFace));
   } catch (e) { }
-  ctx = old;
+  ctx = old; curK = oldK;
 }
 
 /* ---------- İŞLETME ADI EKRANI ---------- */
@@ -10472,15 +10494,16 @@ function drawPersonAt(a, o, after) {
   drawScaled(a, sc, function () { drawPerson(a, o); if (after) after(); });
 }
 function drawScaled(a, sc, fn) {
-  var bw = 40, bh = 72, foot = 6;
-  if (!_mini) { _mini = document.createElement('canvas'); _mini.width = bw; _mini.height = bh; }
+  var bw = 40, bh = 72, foot = 6, k = curK;                       /* v2.13: ara tuval de ince ölçekte */
+  if (!_mini) _mini = document.createElement('canvas');
+  if (_mini.width !== bw * k) { _mini.width = bw * k; _mini.height = bh * k; }
   var g = _mini.getContext('2d'), sx = R(pX(a.x, a.y)), sy = R(pY(a.x, a.y, a.z || 0)), old = ctx;
-  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, bw, bh); g.imageSmoothingEnabled = false;
-  g.setTransform(1, 0, 0, 1, bw / 2 - sx, bh - foot - sy);
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, bw * k, bh * k); g.imageSmoothingEnabled = false;
+  g.setTransform(k, 0, 0, k, (bw / 2 - sx) * k, (bh - foot - sy) * k);
   ctx = g;
   try { fn(); } finally { ctx = old; }
   var w = Math.round(bw * sc), h = Math.round(bh * sc);
-  ctx.drawImage(_mini, 0, 0, bw, bh, sx - Math.round(bw * sc / 2), sy - Math.round((bh - foot) * sc), w, h);
+  ctx.drawImage(_mini, 0, 0, bw * k, bh * k, sx - Math.round(bw * sc / 2), sy - Math.round((bh - foot) * sc), w, h);
 }
 function drawYardFolk(push) {
   for (var i = 0; i < yardFolk.length; i++) (function (f) {
@@ -11027,16 +11050,18 @@ var custTab = 'spec';
 function numMap(d) { var o = {}; if (d && typeof d === 'object') for (var k in d) if (/^[a-z0-9_]+$/.test(k) && isFinite(+d[k])) o[k] = Math.max(0, Math.min(1e7, +d[k] | 0)); return o; }
 function custNew() { S.custNewF = true; }
 function custPortrait(cv, o, sil) {
-  var g = cv.getContext('2d'), old = ctx;
-  ctx = g;
+  var g = cv.getContext('2d'), old = ctx, oldK = curK, k = FK;
+  if (!cv.dataset.k) { cv.dataset.k = k; cv.width *= k; cv.height *= k; }   /* v2.13: ince modda portre de ince */
+  k = +cv.dataset.k; var cw = cv.width / k, ch = cv.height / k;
+  ctx = g; curK = k;
   try {
     g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingEnabled = false;
     g.clearRect(0, 0, cv.width, cv.height);
-    g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), cv.height - 5);
+    g.setTransform(k, 0, 0, k, Math.round(cw / 2) * k, (ch - 5) * k);
     drawPerson({ x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: 0, act: 0, carry: [] }, o);
     if (sil) { g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = '#071019'; g.fillRect(0, 0, cv.width, cv.height); g.globalCompositeOperation = 'source-over'; }
   } catch (e) { }
-  ctx = old;
+  ctx = old; curK = oldK;
 }
 function custBookData() {
   var out = { story: [], spec: [], type: [] }, st = S.story;
@@ -11686,6 +11711,115 @@ function openLangPick() {
   if (!Store.get(LANGPICK_KEY)) openLangPick();   /* ilk açılış: dil → hikâye → ana menü */
   else openIntro(null);
 })();
+/* =========================================================
+   v2.13 — İNCE PİKSEL KANCALARI (mimar)
+   Her çizim fonksiyonu sarılır: ince ölçekli tuvalde (curK > 1) ve window.HKA[ad] tanımlıysa önce o çağrılır;
+   false dönerse ya da hata atarsa klasik çizim yapılır (hata bir kez konsola uyarı olarak yazılır, oyun durmaz).
+   Sanatçı dosyaları (art/*.js) oyunun içine HKG köprüsüyle bakar; oyun mantığına yazmazlar.
+   ========================================================= */
+var CLASSIC = {}, _artErr = {};
+function hook(name, f0) {
+  CLASSIC[name] = f0;
+  return function (a, b, c, d, e, f, g) {
+    var H = window.HKA, fn;
+    if (curK > 1 && H && (fn = H[name])) {
+      try { if (fn(a, b, c, d, e, f, g) !== false) return; }
+      catch (err) { if (!_artErr[name]) { _artErr[name] = 1; console.warn('HKA.' + name + ':', err && err.message); } }
+    }
+    return f0(a, b, c, d, e, f, g);
+  };
+}
+(function () {
+  drawPerson = hook('drawPerson', drawPerson);
+  drawEmote = hook('drawEmote', drawEmote);
+  drawRoleTag = hook('drawRoleTag', drawRoleTag);
+  drawCustomer = hook('drawCustomer', drawCustomer);
+  drawVillage = hook('drawVillage', drawVillage);
+  drawScenery = hook('drawScenery', drawScenery);
+  drawWorn = hook('drawWorn', drawWorn);
+  drawRoad = hook('drawRoad', drawRoad);
+  drawFlowerbed = hook('drawFlowerbed', drawFlowerbed);
+  drawBillboard = hook('drawBillboard', drawBillboard);
+  drawJunk = hook('drawJunk', drawJunk);
+  drawCat = hook('drawCat', drawCat);
+  drawGull = hook('drawGull', drawGull);
+  drawSea = hook('drawSea', drawSea);
+  drawWaves = hook('drawWaves', drawWaves);
+  drawBoat = hook('drawBoat', drawBoat);
+  drawShoal = hook('drawShoal', drawShoal);
+  drawLand = hook('drawLand', drawLand);
+  drawArea = hook('drawArea', drawArea);
+  fencePost = hook('fencePost', fencePost);
+  drawLamp = hook('drawLamp', drawLamp);
+  drawStallSign = hook('drawStallSign', drawStallSign);
+  drawSpot = hook('drawSpot', drawSpot);
+  drawCounterClosed = hook('drawCounterClosed', drawCounterClosed);
+  drawTable = hook('drawTable', drawTable);
+  drawSmoker = hook('drawSmoker', drawSmoker);
+  drawKitchen = hook('drawKitchen', drawKitchen);
+  drawFumeMachine = hook('drawFumeMachine', drawFumeMachine);
+  drawCounter = hook('drawCounter', drawCounter);
+  drawTray = hook('drawTray', drawTray);
+  drawHalCounter = hook('drawHalCounter', drawHalCounter);
+  drawBin = hook('drawBin', drawBin);
+  drawSafe = hook('drawSafe', drawSafe);
+  drawBuilding = hook('drawBuilding', drawBuilding);
+  drawSlot = hook('drawSlot', drawSlot);
+  drawBuzhane = hook('drawBuzhane', drawBuzhane);
+  drawRestoran = hook('drawRestoran', drawRestoran);
+  drawNakliye = hook('drawNakliye', drawNakliye);
+  drawKoop = hook('drawKoop', drawKoop);
+  drawMezat = hook('drawMezat', drawMezat);
+  drawServ = hook('drawServ', drawServ);
+  drawPlot = hook('drawPlot', drawPlot);
+  drawVignette = hook('drawVignette', drawVignette);
+  drawOffice = hook('drawOffice', drawOffice);
+  drawProject = hook('drawProject', drawProject);
+  drawDecor = hook('drawDecor', drawDecor);
+  drawTutGuide = hook('drawTutGuide', drawTutGuide);
+  drawArrow = hook('drawArrow', drawArrow);
+  drawFlyers = hook('drawFlyers', drawFlyers);
+  drawFloats = hook('drawFloats', drawFloats);
+  drawPuffs = hook('drawPuffs', drawPuffs);
+  drawYardGround = hook('drawYardGround', drawYardGround);
+  drawMeydanGround = hook('drawMeydanGround', drawMeydanGround);
+  drawHut = hook('drawHut', drawHut);
+  drawDepot = hook('drawDepot', drawDepot);
+  drawWhall = hook('drawWhall', drawWhall);
+  drawWoodSign = hook('drawWoodSign', drawWoodSign);
+  drawMgrDesk = hook('drawMgrDesk', drawMgrDesk);
+  drawFishItem = hook('drawFishItem', drawFishItem);
+  drawFiletoItem = hook('drawFiletoItem', drawFiletoItem);
+  drawDishItem = hook('drawDishItem', drawDishItem);
+  drawFumeItem = hook('drawFumeItem', drawFumeItem);
+  drawMoneyItem = hook('drawMoneyItem', drawMoneyItem);
+  drawItem = hook('drawItem', drawItem);
+  drawCrateIcon = hook('drawCrateIcon', drawCrateIcon);
+  drawStack = hook('drawStack', drawStack);
+  drawSpecialTag = hook('drawSpecialTag', drawSpecialTag);
+  shadow = hook('shadow', shadow);
+  for (var k in SERV_DRAW) SERV_DRAW[k] = { buzhane: drawBuzhane, restoran: drawRestoran, nakliye: drawNakliye, koop: drawKoop, mezat: drawMezat }[k] || SERV_DRAW[k];
+})();
+/* sanatçıların oyuna bakış penceresi: yalnız okuma (v: ad → değer, yavaş; açılışta ya da seyrek kullanın) */
+window.HKG = {
+  get ctx() { return ctx; }, get K() { return curK; }, get FK() { return FK; }, get fine() { return FINE; },
+  get t() { return gameT; }, get W() { return W; }, get H() { return H; }, get PXS() { return PXS; },
+  get VW() { return VW; }, get VH() { return VH; },
+  get camOX() { return camOX; }, get camOY() { return camOY; }, get camX() { return camX; }, get camY() { return camY; },
+  get horizonY() { return horizonY; }, get started() { return S.started; },
+  get day() { return day; }, get S() { return S; }, get player() { return player; },
+  TW: TW, TH: TH, PAL: PAL, WALK: WALK, ANIM: ANIM, FISH: FISH, LANDX: LANDX, LANDY: LANDY,
+  pX: pX, pY: pY, R: R, clamp: clamp, lerp: lerp, px: px, dot: dot, quad: quad, isoQuad: isoQuad, isoBox: isoBox, isoLine: isoLine,
+  shade: shade, phase2: phase2, phase4: phase4, envStage: function () { return envStage(); },
+  classic: CLASSIC, camT: camT,
+  /* başka bir tuvale geçici çizim: k=1 ise kancalar devre dışı kalır (klasik çizim), k=FK ise ince */
+  withCtx: function (g, k, fn) { var o = ctx, ok = curK; ctx = g; curK = k; try { return fn(); } finally { ctx = o; curK = ok; } },
+  v: function (n) { if (!/^[A-Za-z_$][\w$.]*$/.test(n)) return undefined; try { return eval(n); } catch (e) { return undefined; } },
+  /* klasik bir fonksiyonu ince tuvalde kancasız çiz (parçayı klasik bırakmak için) */
+  plain: function (name, a, b, c, d, e, f) { return CLASSIC[name](a, b, c, d, e, f); }
+};
+window.HKG.setFine = setFine;
+
 requestAnimationFrame(frame);
 
 /* =========================================================
@@ -11931,7 +12065,7 @@ window.BT = {
   cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },
   envStage: function () { return envStage(); }, buildSave: buildSave, loadFrom: loadFrom, DEPOT_LV: DEPOT_LV, counterMax: counterMax, queueMax: queueMax, upCost: upCost, envFlow: envFlow, legacyEnvStage: legacyEnvStage, ENV_UPS: ENV_UPS, scenery: scenery, SPECIALS: SPECIALS,
   /* test/önizleme: bir kıyafeti verilen tuvale çiz */
-  drawOutfitOn: function (cv, o, t) { var old = ctx, g = cv.getContext('2d'); ctx = g; try { g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), cv.height - 4); drawPerson({ x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: t || 0, act: 0, carry: [] }, o); } catch (e) { } ctx = old; },
+  drawOutfitOn: function (cv, o, t) { var old = ctx, oldK = curK, g = cv.getContext('2d'); ctx = g; curK = cv.dataset && cv.dataset.k ? +cv.dataset.k : 1; try { if (curK > 1) g.setTransform(curK, 0, 0, curK, Math.round(cv.width / curK / 2) * curK, cv.height - 4 * curK); else g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), cv.height - 4); drawPerson({ x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: t || 0, act: 0, carry: [] }, o); } catch (e) { } ctx = old; curK = oldK; },
   specOutfit: function (id, face) { return specOutfit(specById(id), face || 1); },
   specState: function () { return { spec: day.spec, sp: day.sp, normals: day.normals, active: customers.filter(function (c) { return c.spec; }).map(function (c) { return c.spec + ':' + c.state; }) }; },
   autoState: function () { return { min: S.autoMin, t: Math.round(saveT), left: Math.round(autoLeft()) }; }, fastForwardAutosave: function (sec) { saveT += sec; },

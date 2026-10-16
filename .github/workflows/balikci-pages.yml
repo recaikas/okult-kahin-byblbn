@@ -28,6 +28,7 @@ jobs:
           mkdir -p _site
           cp balikci-tycoon/index.html balikci-tycoon/native.js balikci-tycoon/game.js balikci-tycoon/config.js balikci-tycoon/specials.js balikci-tycoon/story.js balikci-tycoon/story.html balikci-tycoon/privacy.html balikci-tycoon/about.html balikci-tycoon/panel.html balikci-tycoon/terms.html balikci-tycoon/support.html balikci-tycoon/icon.png _site/
           cp -r balikci-tycoon/fonts _site/fonts
+          cp -r balikci-tycoon/art _site/art
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

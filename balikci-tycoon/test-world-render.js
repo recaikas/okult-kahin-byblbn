@@ -5,8 +5,11 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
 (async () => {
   const b = await chromium.launch({ args: ['--ignore-certificate-errors'] });
   const out = {}; const errs = [];
-  for (const vp of [{ width: 400, height: 860 }, { width: 1100, height: 720 }]) {
-    const p = await b.newPage({ viewport: vp });
+  /* v2.13: renk örneklemesi Klasik görünümde (eski paletle); İnce görünümde dünya dolu ve çeşitli mi diye bakılır */
+  for (const [vp, vis] of [[{ width: 400, height: 860 }, 0], [{ width: 1100, height: 720 }, 0], [{ width: 400, height: 860 }, 1], [{ width: 1100, height: 720 }, 1]]) {
+    const ctx = await b.newContext({ viewport: vp });
+    await ctx.addInitScript(v => { try { const d = JSON.parse(localStorage.getItem('balikci_pref') || '{}'); d.vis = v; localStorage.setItem('balikci_pref', JSON.stringify(d)); } catch (e) { } }, vis);
+    const p = await ctx.newPage(); p.close = () => ctx.close();
     p.on('pageerror', e => errs.push(e.message));
     p.on('console', m => { if (m.type()==='error') errs.push('C:'+m.text()); });
     await p.goto(URL);
@@ -19,21 +22,23 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
       const g = cv.getContext('2d');
       const d = g.getImageData(0, 0, cv.width, cv.height).data;
       let land = 0, wood = 0, person = 0, total = cv.width * cv.height;
+      const cols = new Set();
       for (let i = 0; i < d.length; i += 4) {
         const r = d[i], gg = d[i+1], bb = d[i+2];
+        if ((i & 63) === 0) cols.add(r << 16 | gg << 8 | bb);
         if (Math.abs(r-203)<14 && Math.abs(gg-185)<14 && Math.abs(bb-141)<14) land++;      // kum
         if (Math.abs(r-171)<16 && Math.abs(gg-122)<16 && Math.abs(bb-72)<16) wood++;        // iskele tahtası
         if (Math.abs(r-31)<8 && Math.abs(gg-78)<10 && Math.abs(bb-107)<10) person++;        // oyuncu montu
       }
-      return { landPct: +(land/total*100).toFixed(1), woodPct: +(wood/total*100).toFixed(1), personPx: person,
+      return { fine: window.HKG ? HKG.K : 1, colors: cols.size, landPct: +(land/total*100).toFixed(1), woodPct: +(wood/total*100).toFixed(1), personPx: person,
                cam: { x: Math.round(BT.cam().x), y: Math.round(BT.cam().y) } };
     });
-    out[vp.width + 'x' + vp.height] = res;
+    out[vp.width + 'x' + vp.height + (vis ? '-ince' : '')] = res;
     await p.close();
   }
   /* v1.3: ufuk dünyaya bağlandı — geniş ekranda üstü gökyüzü + kasaba kaplar, kum oranı biraz düşer.
      v1.9.2: meydan büyüdü (kumun bir kısmı taş zemin): geniş ekranda kum %2.8 → %2.0 */
-  const ok = Object.values(out).every(r => r.landPct > 1.5 && r.woodPct > 2 && r.personPx > 5);
+  const ok = Object.values(out).every(r => r.fine > 1 ? r.colors > 300 : (r.landPct > 1.5 && r.woodPct > 2 && r.personPx > 5));
   console.log(JSON.stringify({ out, WORLD_OK: ok, errs: [...new Set(errs)] }, null, 1));
   process.exit(ok && !errs.length ? 0 : 1);
 })();
