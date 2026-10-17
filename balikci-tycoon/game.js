@@ -5489,8 +5489,10 @@ function drawLamp(x, y) {
 /* v1.3.2: bölge adı ana tezgâhın tentesindeki tahta levhada — ayrı bir yer kaplamaz, hiçbir şeyin önüne düşmez */
 function drawStallSign(c) {
   var a = AREAS[c.z];
-  if (!a || a.locked || a.lvl < 2 || dist2(player.x, player.y, c.x, c.y) > 14) return;   /* v1.9.3: yalnız yakındayken (tezgâh önü sade) */
-  var sx = R(pX(c.x, c.y)), top = 27, sy = R(pY(c.x, c.y, 12)) - top;
+  /* v2.13.1: tabela yakında tezgâhı kapatıyordu — artık yaklaşınca kaybolur, uzaktan tezgâhı tanıtır ve çatının üstünde durur */
+  var d = dist2(player.x, player.y, c.x, c.y);
+  if (!a || a.locked || a.lvl < 2 || d <= 14 || d > 90) return;
+  var sx = R(pX(c.x, c.y)), top = 40, sy = R(pY(c.x, c.y, 12)) - top;
   var s = UP(NM(a.n)), fs = 7;
   uctx.font = uiFont(fs);
   var w = Math.max(30, R((uctx.measureText(s).width + 12) / PXS)), h = R((fs + 7) / PXS);
