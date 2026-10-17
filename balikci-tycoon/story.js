@@ -243,7 +243,7 @@
   /* ---------------- dekor parçaları (ince piksel, tampon içine) ---------------- */
   var SKIES = {
     dawn: ['#3b2a5a', '#5a3a72', '#8a4a78', '#c46a78', '#eb9a7e', '#f7c08a', '#fbdca6', '#fdeec8'],
-    day: ['#3f7fc0', '#4b8ccc', '#5a9ad4', '#6aa8dc', '#7cb6e2', '#90c4e8', '#a6d2ee', '#bddff2'],
+    day: ['#4a98cf', '#529fd1', '#5aa5d3', '#6cafd8', '#7db9de', '#a3cfe5', '#c5e2e9', '#e3f1ea'],   /* oyunun göğü */
     sunset: ['#2b1b4d', '#4a2468', '#7a2f6e', '#b84a62', '#e0736a', '#f29a6b', '#f7c27a', '#fbe0a0'],
     night: ['#07071a', '#0b0b24', '#10102e', '#15153a', '#1b1b46', '#222252', '#2a2a5e', '#33336a'],
     morning: ['#5a8ac8', '#6a98d0', '#7ca8d8', '#90b8e0', '#a6c8e6', '#bcd8ec', '#d2e6f2', '#e8f2f8']
@@ -306,11 +306,165 @@
       if (h > 3 && hash(x, seed) > 0.86) b.set(x, base - h - 1, col, 0.7);
     }
   }
-  function seaB(b, y0, c1, c2, c3, glo, hz) {
-    var Y0 = y0 * K, rp = ramp([mix(c2, hz, 0.5), mix(c2, hz, 0.15), c2, c1, c3, dark(c3, 0.3)], 32);
-    for (var y = Y0; y < FH; y++) { var f = Math.pow((y - Y0) / (FH - Y0), 0.85); for (var x = 0; x < FW; x++) b.set(x, y, rpick(rp, f, x, y)); }
-    for (var r = 0; r < 70; r++) { var yy = Y0 + 3 + Math.floor(Math.pow(hash(r, 3), 1.6) * (FH - Y0 - 3)), xx = Math.floor(hash(3, r) * FW), L = 2 + Math.floor((yy - Y0) / 14); b.rect(xx, yy, L, 1, dark(c3, 0.2), 0.45); }
-    b.rect(0, Y0, FW, 1, glo); b.rect(0, Y0 + 1, FW, 1, glo, 0.45); b.rect(0, Y0 + 2, FW, 1, lite(c2, 0.2), 0.25);
+  /* ---------------- Hamsi Koyu: oyundaki limanın kendisi (art/arkaplan.js buildSeaBand / buildFar / buildNear ile
+     aynı palet, aynı ince piksel ölçeği). Sahne saati yalnız ton olarak biner: her renk saat rengine 'a' kadar karışır,
+     uzak tepe ayrıca ufuk pusuna 'far' kadar, yakın (iskele) yarı ton; deniz kendi tonuna 'sa' kadar. ---------------- */
+  var TONE = {
+    day: { t: '#e3f1ea', a: 0.04, hz: '#e3f1ea', far: 0.12, st: '#e3f1ea', sa: 0 },
+    morning: { t: '#fff4dc', a: 0.12, hz: '#e8f2f8', far: 0.22, st: '#e8f2f8', sa: 0.06 },
+    dawn: { t: '#6a3a78', a: 0.34, hz: '#fdeec8', far: 0.3, st: '#4a2a68', sa: 0.36 },
+    sunset: { t: '#5a2462', a: 0.38, hz: '#fbe0a0', far: 0.3, st: '#3a1e5a', sa: 0.42 },
+    dusk: { t: '#3a1e52', a: 0.5, hz: '#e0736a', far: 0.25, st: '#24183f', sa: 0.5 },
+    night: { t: '#0c0c28', a: 0.74, hz: '#33336a', far: 0.2, st: '#060a20', sa: 0.72, lit: 1 }
+  };
+  var TCM = {};
+  function tc(tn, c, far) {   /* far: 1 uzak (pus), -1 yakın (yarı ton) */
+    var k = tn + '|' + (far || 0) + c, v = TCM[k]; if (v) return v; var T = TONE[tn];
+    v = mix(c, T.t, far < 0 ? T.a * 0.5 : T.a); if (far > 0) v = mix(v, T.hz, T.far);
+    return (TCM[k] = v);
+  }
+  function seaC(tn, c) { var T = TONE[tn]; return T.sa ? tc('s' + tn, c) : c; }
+  Object.keys(TONE).forEach(function (n) { TONE['s' + n] = { t: TONE[n].st, a: TONE[n].sa }; });
+  var WV = {}; ['day', 'morning', 'dawn', 'sunset', 'dusk', 'night'].forEach(function (n) { WV[n] = [seaC(n, '#3194b6'), seaC(n, '#2a7398')]; });
+  /* deniz: oyunun şeridi — ufukta koyu turkuaz, yakına doğru açılır; ufka yakın ince açık noktalar + dalga parıltıları */
+  function bayB(b, y0, tn) {
+    var T = TONE[tn], Y0 = y0 * K, H2 = FH - Y0, rp = ramp(['#2a7398', '#2b7ca1', '#2e88ac', '#3194b6', '#379fc0'].map(function (c) { return seaC(tn, c); }), 24);
+    var hz = seaC(tn, mix('#2a7398', T.hz, 0.45)), x, y, i;
+    for (y = Y0; y < FH; y++) { var f = (y - Y0) / H2; for (x = 0; x < FW; x++) b.set(x, y, y === Y0 ? hz : rpick(rp, f, x, y)); }
+    b.rect(0, Y0 + 1, FW, 1, hz, 0.45);
+    var dot = seaC(tn, '#bfe6f0'), TR = seaC(tn, '#1d5d80'), CR = seaC(tn, '#a4daea'), HI = seaC(tn, '#e6f6fa');
+    for (i = 0; i < 220; i++) b.set(Math.floor(hash(i, 7) * FW), Y0 + 2 + Math.floor(Math.pow(hash(i, 8), 1.6) * 34), dot, 0.5);
+    for (i = 0; i < 90; i++) {
+      var yy = Y0 + Math.round(6 + Math.pow(hash(i, 41), 1.3) * (H2 - 10)), tl = Math.min(1, (yy - Y0) / (H2 * 0.75)), xx = Math.floor(hash(i, 42) * FW);
+      var l = 2 + Math.round(tl * 12 + hash(i, 43) * 6), k = 0.45 + 0.55 * Math.min(1, tl * 3);
+      b.rect(xx, yy + 1, l, 1, TR, 0.5 * k); b.rect(xx + 1, yy, l - 2, 1, CR, 0.7 * k);
+      if (l > 9 && hash(i, 44) > 0.5) b.rect(xx + 3, yy - 1, l - 8, 1, HI, 0.55 * k);
+    }
+  }
+  /* karşı kıyı: soluk uzak tepe, yeşil yakın tepe, kiremit çatılı beyaz evler, servi/ağaç, cami (kubbe + minare), kum + köpük.
+     o: { y: deniz ufku (sanat pikseli), x0/x1: kıyının ince piksel aralığı (uçlar burun gibi ufka iner), mq: cami x | yok, tn: saat, seed } */
+  function coastB(b, o) {
+    var tn = o.tn, T = TONE[tn], Y0 = o.y * K, x0 = o.x0, x1 = o.x1, sd = o.seed || 1, p = b.like(), lights = [], x, y, i;
+    function C(c) { return tc(tn, c); }
+    function CF(c) { return tc(tn, c, 1); }
+    function taper(x, a, z, L) { var e = Math.min(a <= 0 ? 1 : (x - a) / L, z >= FW ? 1 : (z - x) / L); e = clamp(e, 0, 1); return e * e * (3 - 2 * e); }
+    var S = [], N = [], E = [];
+    for (x = 0; x < FW; x++) {
+      var en = taper(x, x0, x1, 44); E[x] = en;
+      S[x] = Y0 + Math.round(1 + 7 * en);
+      N[x] = S[x] - 4 - Math.round(en * (20 + 5 * Math.sin(x * 0.037 + sd) + 2.4 * Math.sin(x * 0.12 + sd * 2))) - (hash(x >> 1, 9 + sd) > 0.75 ? 1 : 0);
+    }
+    /* uzak tepe (pus): yakın kıyıdan biraz taşar, ufka iner */
+    var fx0 = x0 <= 0 ? x0 : x0 - 30, fx1 = x1 >= FW ? x1 : x1 + 30;
+    function FY(x) { return S[x] - Math.round(taper(x, fx0, fx1, 70) * (40 + 6 * Math.sin(x * 0.025 + sd) + 2.8 * Math.sin(x * 0.07 + sd * 3))) + (hash(x >> 1, 3 + sd) > 0.7 ? -1 : 0); }
+    var cFt = CF('#c3d6cb'), cFb = CF('#a9c3b7'), cFs = CF('#9cb8ad');
+    for (x = Math.max(0, fx0); x < Math.min(FW, fx1); x++) { var fy = FY(x); for (y = fy; y < S[x]; y++) p.set(x, y, y - fy < 2 ? cFt : hash(x >> 1, y >> 1) > 0.9 ? cFs : cFb); }
+    for (i = 0; i < (fx1 - fx0) / 6; i++) {
+      var hx0 = Math.max(0, fx0) + Math.floor(hash(i, 61 + sd) * (Math.min(FW, fx1) - Math.max(0, fx0))), hy = FY(hx0) + 5 + Math.floor(hash(i, 62) * 10);
+      if (hy > S[hx0] - 6) continue;
+      if (hash(i, 63) > 0.45) { p.rect(hx0, hy, 3, 2, CF('#d9e2dc')); p.rect(hx0, hy - 1, 3, 1, CF('#c9a294')); if (T.lit && hash(i, 64) > 0.6) p.set(hx0 + 1, hy + 1, '#e8b860', 0.8); }
+      else { p.rect(hx0, hy, 3, 2, CF('#93b0a4')); p.set(hx0 + 1, hy - 1, CF('#93b0a4')); }
+    }
+    /* yakın yeşil tepe + zeytinlik lekeleri */
+    for (x = 0; x < FW; x++) {
+      if (E[x] <= 0) continue;
+      for (y = N[x]; y < S[x] - 4; y++) {
+        var d = y - N[x], c = '#7b9d80';
+        if (d < 2) c = '#98b99a'; else if (d < 4) c = '#8aac8c';
+        if (hash(x >> 1, y >> 1) > 0.86) c = '#6a8e6f';
+        if (hash(x, y) > 0.97) c = '#5f8365';
+        p.set(x, y, C(c));
+      }
+    }
+    for (i = 0; i < (x1 - x0) / 4; i++) { x = Math.max(0, x0) + Math.floor(hash(i, 71 + sd) * (Math.min(FW, x1) - Math.max(0, x0))); var ty = N[x] + 3 + Math.floor(hash(i, 72) * 12); if (E[x] > 0.3 && ty < S[x] - 8) p.circ(x, ty, 1 + Math.floor(hash(i, 73) * 2), C(hash(i, 74) > 0.5 ? '#6a8e6f' : '#5f8365')); }
+    var MQ = o.mq, MZ0 = MQ === undefined ? -1e4 : MQ - 30, MZ1 = MQ === undefined ? -1e4 : MQ + 66;   /* cami + servileri */
+    function solid(x, w, k) { return x >= 0 && x + w < FW && E[x] >= k && E[x + w] >= k; }
+    /* oyundaki ev: sıva, sol ışık / sağ gölge, kiremit sıraları, saçak, baca, pencere + kapı (haze: arka sıra soluk) */
+    function house(x, w, h, base, haze) {
+      var hz = haze ? function (c) { return CF(mix(c, '#a9c3b7', haze)); } : C, y = base - h, j, k;
+      p.rect(x, y, w, h, hz('#f1e8d4')); p.rect(x, y, 2, h, hz('#fffaf0')); p.rect(x + w - 4, y, 4, h, hz('#d6c8a8')); p.rect(x, base - 2, w, 2, hz('#c4b494'));
+      for (j = 0; j < h; j += 3) if (hash(x, j) > 0.5) p.rect(x + 2, y + j, w - 6, 1, hz('#e8dec6'), 0.7);
+      for (j = 0; j < 6; j++) { var ex = j >> 1; p.rect(x - ex - 1, y - 6 + j, w + ex * 2 + 2, 1, hz(j === 0 ? '#e56a47' : (j % 2 ? '#c2492f' : '#b0402a'))); }
+      p.rect(x - 3, y - 1, w + 6, 2, hz('#8e2f1f')); p.rect(x - 3, y - 1, w + 6, 1, hz('#a83a26'));
+      for (k = 0; k < w - 2; k++) if (k % 4 === 1) p.set(x + 1 + k, y - 3, hz('#8e2f1f'), 0.6);
+      if (hash(x, 1) > 0.55) { p.rect(x + w - 6, y - 9, 3, 4, hz('#b7a88a')); p.rect(x + w - 6, y - 9, 3, 1, hz('#d6c8a8')); }
+      if (haze) { if (h >= 6) { var on = T.lit && hash(x, 5) > 0.45; p.rect(x + 3, y + 2, 2, 2, on ? '#e8b860' : hz('#5a4a3c')); } return; }
+      var nw = Math.max(1, Math.floor((w - 6) / 8));
+      for (k = 0; k < nw; k++) {
+        var wx = x + 4 + k * 8, wy = y + 3; if (wy + 5 > base - 2) wy = base - 7;
+        p.rect(wx, wy, 4, 5, C('#5a4a3c'));
+        if (T.lit && hash(wx, sd) > 0.4) { p.rect(wx + 1, wy + 1, 2, 3, '#ffc85a'); p.set(wx + 1, wy + 1, '#fff0b0'); lights.push(wx + 1); }
+        else { p.rect(wx + 1, wy + 1, 2, 3, C('#6e8fa0')); p.set(wx + 1, wy + 1, C('#a8c4d0')); }
+        p.rect(wx - 1, wy + 5, 6, 1, C('#c4b494'));
+      }
+      if (w >= 16 && hash(x, 7) > 0.4) { p.rect(x + w - 9, base - 7, 3, 5, C('#7a5a3c')); p.set(x + w - 9, base - 7, C('#5a4030')); }
+    }
+    function cypress(cx, base, hh) {
+      for (var y = 0; y < hh; y++) { var t = y / hh, w = Math.round((1 - Math.pow(Math.abs(t - 0.55) / 0.55, 1.7)) * 6.4); for (var k = -w; k <= w; k++) p.set(cx + k, base - y, C(k < -w * 0.2 ? '#4b7a52' : k > w * 0.4 ? '#2e4d35' : '#3f6646')); }
+      for (y = 0; y < hh; y += 3) p.set(cx - 1, base - y, C('#5f9066'));
+    }
+    function roundTree(cx, by, r) { p.circ(cx, by - r, r, C('#557a5b')); p.circ(cx - 1, by - r - 1, r - 1, C('#6a8e6f')); p.set(cx - 1, by - r - 2, C('#86a887')); p.rect(cx, by - 1, 1, 2, C('#5a4632')); }
+    /* cami: oyundaki klasik minare + kubbe (K = 2 ince piksel) */
+    function mosque(x, base) {
+      var j, k;
+      [[x + 6, 6], [x + 28, 6]].forEach(function (q) { for (var jj = -q[1]; jj <= 0; jj++) for (var ii = -q[1]; ii <= q[1]; ii++) if (ii * ii + jj * jj <= q[1] * q[1]) p.set(q[0] + ii, base - 16 + jj, C(ii < -q[1] * 0.3 ? '#c9d5d2' : ii > q[1] * 0.4 ? '#8c9d9c' : '#a6b5b1')); });
+      p.rect(x, base - 16, 34, 16, C('#efe6d2')); p.rect(x, base - 16, 2, 16, C('#fffaf0')); p.rect(x + 30, base - 16, 4, 16, C('#d6c8a8')); p.rect(x, base - 16, 34, 2, C('#e4d9bf'));
+      for (k = 3; k < 15; k += 4) {
+        var lit = T.lit && k !== 7;
+        p.rect(x + k * 2, base - 10, 5, 6, C('#6a5a44')); p.rect(x + k * 2 + 1, base - 9, 3, 4, lit ? '#ffc85a' : C('#4a3e30'));
+        for (var q = 0; q < 4; q++) p.set(x + k * 2 + q, base - 11 + (q === 0 || q === 3 ? 1 : 0), C('#6a5a44'));
+        if (lit) lights.push(x + k * 2 + 1);
+      }
+      var dcx = x + 16, dcy = base - 18, dr = 14;
+      for (j = -dr; j <= 0; j++) for (k = -dr; k <= dr; k++) if (k * k + j * j <= dr * dr) {
+        var c = k < -dr * 0.45 ? '#d3dedb' : k > dr * 0.35 ? '#8c9d9c' : '#aebcb8';
+        if (j > -3 && c !== '#d3dedb') c = dark(c, 0.08);
+        if ((k + j * 3) % 5 === 0 && hash(k, j) > 0.4) c = dark(c, 0.1);
+        p.set(dcx + k, dcy + j, C(c));
+      }
+      p.rect(dcx - dr, dcy, 2 * dr + 1, 2, C('#c4b494'));
+      p.rect(dcx, dcy - dr - 5, 1, 6, C('#d8c890')); p.set(dcx - 1, dcy - dr - 5, C('#d8c890')); p.set(dcx + 1, dcy - dr - 6, C('#d8c890'));
+      var mq = x - 8;
+      p.rect(mq, base - 64, 6, 64, C('#f3ebd8')); p.rect(mq, base - 64, 2, 64, C('#fffaf0')); p.rect(mq + 4, base - 64, 2, 64, C('#d6c8a8'));
+      p.rect(mq - 2, base - 42, 10, 2, C('#c2492f')); p.rect(mq - 2, base - 40, 10, 2, C('#8e2f1f')); p.rect(mq - 1, base - 38, 8, 1, C('#e6dcc4'));
+      if (T.lit) [-2, 1, 4, 7].forEach(function (q) { p.set(mq + q, base - 41, '#ffe08a'); });
+      p.rect(mq + 1, base - 54, 4, 4, C('#6a5a44'), 0.8);
+      for (j = 0; j < 10; j++) { var w = Math.round((1 - j / 10) * 3); p.rect(mq + 3 - w, base - 65 - j, w * 2 + 1, 1, C(j < 2 ? '#e4dcc4' : '#f3ebd8')); p.set(mq + 3 + w, base - 65 - j, C('#d6c8a8')); }
+      p.rect(mq + 2, base - 77, 1, 4, C('#d8c890')); p.set(mq + 3, base - 77, C('#d8c890'));
+    }
+    /* arka sıra: yamaçta soluk evler */
+    for (i = 0; i < (x1 - x0) / 15; i++) {
+      x = Math.max(0, x0) + Math.floor(hash(i, 81 + sd) * (Math.min(FW, x1) - Math.max(0, x0)));
+      var bw = (5 + Math.floor(hash(i, 82) * 3)) * 2;
+      if ((x > MZ0 - 20 && x < MZ1) || !solid(x, bw, 0.8)) continue;
+      house(x, bw, (3 + Math.floor(hash(i, 84) * 3)) * 2, Math.min(S[x] - 12, N[x + (bw >> 1)] + 10 + Math.floor(hash(i, 83) * 4)), 0.38);
+    }
+    /* ön sıra: kümeler halinde kiremitli evler, aralarda servi ve ağaç */
+    x = Math.max(0, x0) + 6;
+    while (x < Math.min(FW, x1) - 24) {
+      var w = (6 + Math.floor(hash(x, 41 + sd) * 3)) * 2 + (hash(x, 42) > 0.8 ? 6 : 0), h = (4 + Math.floor(hash(x, 43) * 4)) * 2;
+      if (x + w > MZ0 && x < MZ1) { x = MZ1; continue; }
+      if (!solid(x, w, 0.92)) { x += 4; continue; }
+      house(x, w, h, S[x] - 8, 0);
+      var gap = 5 + Math.floor(hash(x, 44) * 7);
+      if (hash(x, 45 + sd) > 0.74) {
+        gap = 24 + Math.floor(hash(x, 46) * 40);
+        var tx = x + w + 7 + Math.floor(hash(x, 47) * (gap - 14));
+        if (tx < FW && E[tx] > 0.8) { if (hash(x, 48) > 0.5) cypress(tx, S[tx] - 8, (14 + Math.floor(hash(x, 49) * 10)) * 2); else { roundTree(tx, S[tx] - 8, 4); if (gap > 40) roundTree(tx + 12, S[tx] - 8, 3); } }
+      }
+      x += w + gap;
+    }
+    if (MQ !== undefined) { var mb = S[MQ] - 8; mosque(MQ, mb); cypress(MQ + 46, mb, 56); cypress(MQ - 20, mb, 40); roundTree(MQ + 56, mb, 4); }
+    /* kıyı: kum, köpük, sığ su */
+    for (x = 0; x < FW; x++) {
+      if (E[x] <= 0) continue; var s = S[x];
+      p.set(x, s - 4, C(hash(x >> 1, 91) > 0.15 ? '#d8cfa6' : '#c9bf94')); p.set(x, s - 3, C('#d8cfa6'));
+      p.set(x, s - 2, C(hash(x, 92) > 0.12 ? '#eaf3ee' : '#cfe7e6')); p.set(x, s - 1, C(hash(x >> 1, 93) > 0.4 ? '#eaf3ee' : '#9fd3d6'));
+      p.set(x, s, seaC(tn, '#6fbfcf'), 0.55); p.set(x, s + 1, seaC(tn, '#5aaac4'), 0.3);
+    }
+    b.put(p);
+    /* gece: pencere ışıklarının suda titreyen yansıması */
+    lights.forEach(function (lx, n) { var s = S[lx] || Y0 + 8; for (var j = 0; j < 4; j++) b.rect(lx - (j & 1), s + 2 + j * 3, 2 + (j & 1) * 2, 1, '#ffc85a', 0.34 - j * 0.07); });
   }
   /* katmanlı dalga (4 kare): yakına geldikçe uzun ve seyrek */
   function waveSpr(key, y0, c2, c3, f) {
@@ -346,24 +500,28 @@
     });
   }
   function gull(x, y, ph) { blit(gullSpr(Math.sin(S.wt * 5 + ph) > 0 ? 1 : 0), Math.round(x * K), Math.round(y * K)); }
-  /* ahşap iskele: tahta damarı, ek yerleri, çiviler */
-  function dockB(b) {
+  /* ahşap iskele: oyundaki iskelenin açık meşe tahtaları (WOODS1), ek yerleri, çiviler, budaklar; saat tonu yarı bulaşır */
+  function dockB(b, tn) {
+    tn = tn || 'day';
+    var WD = ['#c99558', '#bd8a4f', '#c49050', '#b98648', '#d09a5c'].map(function (c) { return tc(tn, c, -1); });
+    var seam = tc(tn, '#7d4e2b', -1), nail = tc(tn, '#5e381e', -1), side = tc(tn, '#9a6236', -1), sideD = tc(tn, '#7a4a28', -1), post = tc(tn, '#4e3a2a', -1);
     var rows = [[204, 216, 0], [216, 228, 18], [228, 234, 9]], seams = [10, 48, 93, 131, 170];
     rows.forEach(function (r, ri) {
+      var SX = seams.map(function (sx) { return ((sx + r[2]) * K) % FW; }).sort(function (a, c) { return a - c; });
       for (var y = r[0]; y < r[1]; y++) for (var x = 0; x < FW; x++) {
-        var n = hash(Math.floor((x + hash(y, ri) * 40) / 7), y * 3 + ri), c = '#6b4630';
-        if (n < 0.16) c = '#5c3b28'; else if (n > 0.9) c = '#7a5238';
-        if (y === r[0]) c = '#a0704a'; else if (y === r[0] + 1) c = '#8a5d3e'; else if (y === r[1] - 1) c = '#45291b';
+        var sg = 0; while (sg < SX.length && SX[sg] <= x) sg++;
+        var c = WD[Math.floor(hash(sg + ri * 7, 5) * WD.length)], n = hash(Math.floor((x + hash(y, ri) * 40) / 7), y * 3 + ri);
+        if (n < 0.14) c = dark(c, 0.08); else if (n > 0.9) c = lite(c, 0.07);
+        if (y === r[0]) c = seam; else if (y === r[0] + 1) c = lite(c, 0.18); else if (y < r[0] + 4) c = lite(c, 0.07); else if (y === r[1] - 1) c = dark(c, 0.12);
         b.set(x, y, c);
       }
-      seams.forEach(function (sx, si) {
-        var X = ((sx + r[2]) * K) % FW;
-        b.rect(X, r[0] + 1, 1, r[1] - r[0] - 2, '#33200f'); b.rect(X + 1, r[0] + 1, 1, r[1] - r[0] - 2, '#84583a');
-        if (r[1] - r[0] > 8) { [[-3, 3], [3, 3], [-3, r[1] - r[0] - 4], [3, r[1] - r[0] - 4]].forEach(function (q) { b.set(X + q[0], r[0] + q[1], '#2a1a12'); b.set(X + q[0] - 1, r[0] + q[1] - 1, '#a0704a', 0.7); }); }
-        if (hash(si, ri) > 0.5) { var kx = X + 20 + Math.floor(hash(ri, si) * 30), ky = r[0] + 4; b.ell(kx, ky, 3, 1.5, '#4e3020'); b.set(kx - 1, ky, '#33200f'); }
+      SX.forEach(function (X, si) {
+        b.rect(X, r[0] + 1, 1, r[1] - r[0] - 2, seam); b.rect(X + 1, r[0] + 1, 1, r[1] - r[0] - 2, lite(WD[si % WD.length], 0.25));
+        if (r[1] - r[0] > 8) { [[-3, 3], [3, 3], [-3, r[1] - r[0] - 4], [3, r[1] - r[0] - 4]].forEach(function (q) { b.set(X + q[0], r[0] + q[1], nail); b.set(X + q[0] - 1, r[0] + q[1] - 1, lite(WD[0], 0.4), 0.7); }); }
+        if (hash(si, ri) > 0.5) { var kx = X + 20 + Math.floor(hash(ri, si) * 30), ky = r[0] + 5; b.ell(kx, ky, 3, 1.5, dark(WD[2], 0.22)); b.set(kx - 1, ky, dark(WD[2], 0.4)); }
       });
     });
-    for (var x = 0; x < FW; x++) { b.set(x, 234, '#4a2e1e'); for (var y = 235; y < FH; y++) b.set(x, y, (x % 38 < 4) ? '#2a180e' : (y === 235 ? '#5a3826' : '#3a2316')); }
+    for (var x = 0; x < FW; x++) { b.set(x, 234, seam); for (var y = 235; y < FH; y++) b.set(x, y, (x % 38 < 4) ? post : (y === 235 ? side : sideD)); }
   }
   /* balık: 12×5, başı sağda (flip: sola) */
   function fishB(b, x, y, c, flip) {
@@ -440,8 +598,8 @@
     p.set(x + 2, y + 5, dark(c, 0.5)); p.set(x + 4, y + 5, dark(c, 0.5)); p.rect(x + 1, y + 8, 4, 1, dark(c, 0.4)); p.rect(x + 1, y + 12, 5, 1, dark(c, 0.3)); p.set(x + 2, y + 14, dark(c, 0.3));
     b.part(p, 0, 0, 0.55);
   }
-  function moundB(b, x0, hgt, dk) {
-    var p = b.like(), body = dk ? '#1c2a1c' : '#2c3a2b', top = dk ? '#2e4430' : '#4a6340';
+  function moundB(b, x0, hgt, dk, tn) {   /* tn: oyunun çimen yeşilleri, sahne saatine tonlanır (önde: yarı ton) */
+    var p = b.like(), body = tn ? tc(tn, dk ? '#3f6646' : '#557a5b', dk ? 0 : -1) : dk ? '#1c2a1c' : '#2c3a2b', top = tn ? tc(tn, '#8aac8c', dk ? 0 : -1) : dk ? '#2e4430' : '#4a6340';
     for (var X = x0 * K; X < FW; X++) {
       var h = Math.round(K * hgt * Math.sin(Math.PI * (X / K - x0 + 4) / 70)); if (h <= 0) continue;
       for (var j = 0; j < h; j++) { var Y = 124 - h + j, c = j < 2 ? top : j < 5 ? (BAY[Y & 3][X & 3] > 0.5 ? top : body) : (hash(X >> 1, Y >> 1) < 0.1 ? dark(body, 0.15) : hash(X, Y) > 0.95 ? mix(body, top, 0.5) : body); p.set(X, Y, c); }
@@ -532,38 +690,38 @@
   function shadowSpr(w) { return spr('shd|' + w, -w - 1, -4, w + 2, 5, function (b) { b.ell(0, 0, w, 3, '#000000', 0.22); b.ell(0, 0, w * 0.7, 2, '#000000', 0.18); }); }
 
   /* ---------------- dekorlar (bg): gök / arka / ön katman önbellekte, a0/a1/a2 karede ---------------- */
-  var HZ = { dawn: '#fdeec8', day: '#bddff2', sunset: '#fbe0a0', night: '#33336a', morning: '#e8f2f8' };
+  var HZ = { dawn: '#fdeec8', day: '#e3f1ea', sunset: '#fbe0a0', night: '#33336a', morning: '#e8f2f8' };
   var BGD = {
     dock: { /* şafak iskelesi */
       sky: function (b) { skyB(b, 'dawn'); sunB(b, 150, 62, 9, '#ffd98a'); [[18, 22, 30, 8], [70, 14, 40, 9], [108, 30, 26, 6]].forEach(function (q, i) { b.put(shift(cloudBuf(q[2] * K, q[3] * K, '#f3b8a8', '#c47a8a', i + 1), q[0] * K, q[1] * K)); }); },
       back: function (b) {
-        hillsB(b, 0, 230, 124, 9, mix('#6a4a7a', HZ.dawn, 0.55), 1);
-        seaB(b, 62, '#2f4a7a', '#39578a', '#2a4270', '#8aa0c8', HZ.dawn);
-        var bc = mix('#2a1a40', HZ.dawn, 0.4), p = b.like(); for (var hy = 0; hy < 6; hy++) p.rect(38 + hy, 117 + hy, 40 - hy * 2 - (hy > 3 ? 2 : 0), 1, hy === 0 ? lite(bc, 0.15) : bc); p.rect(50, 111, 12, 6, bc); p.rect(51, 112, 2, 2, lite(bc, 0.35)); p.rect(55, 113, 2, 2, lite(bc, 0.35)); p.rect(64, 90, 1, 27, bc); p.line(65, 92, 74, 113, bc, 0.8); p.rect(62, 100, 5, 2, bc); p.line(38, 117, 30, 116, bc, 0.6); b.part(p, 0, 0, 0); b.rect(36, 123, 46, 1, lite('#8aa0c8', 0.3), 0.6);
+        bayB(b, 62, 'dawn'); coastB(b, { y: 62, x0: 0, x1: 252, mq: 128, tn: 'dawn', seed: 1 });
+        /* açıkta, güneşin yanında dönen tekne silueti */
+        var bc = mix('#2a1a40', HZ.dawn, 0.4), p = b.like(), X = 300; for (var hy = 0; hy < 6; hy++) p.rect(X + 38 + hy, 117 + hy, 40 - hy * 2 - (hy > 3 ? 2 : 0), 1, hy === 0 ? lite(bc, 0.15) : bc); p.rect(X + 50, 111, 12, 6, bc); p.rect(X + 51, 112, 2, 2, lite(bc, 0.35)); p.rect(X + 55, 113, 2, 2, lite(bc, 0.35)); p.rect(X + 64, 90, 1, 27, bc); p.line(X + 65, 92, X + 74, 113, bc, 0.8); p.rect(X + 62, 100, 5, 2, bc); p.line(X + 38, 117, X + 30, 116, bc, 0.6); b.part(p, 0, 0, 0); b.rect(X + 36, 124, 46, 1, lite('#8aa0c8', 0.3), 0.6);
       },
-      a1: function () { waves('dock', 62, '#39578a', '#2a4270'); reflect(150, 62, 7, 14, '#ffd98a', '#fbe0a0'); gull(((S.wt * 7 + 30) % 230) - 20, 38 + Math.sin(S.wt) * 3, 0); },
-      front: function (b) { dockB(b); netB(b); crateB(b, 300, 184, 32, 20); fishPileB(b, 151, 91, 8, '#8fa9bd'); }
+      a1: function () { waves('dock', 62, WV.dawn[0], WV.dawn[1]); reflect(150, 62, 7, 14, '#ffd98a', '#fbe0a0'); gull(((S.wt * 7 + 30) % 230) - 20, 38 + Math.sin(S.wt) * 3, 0); },
+      front: function (b) { dockB(b, 'dawn'); netB(b); crateB(b, 300, 184, 32, 20); fishPileB(b, 151, 91, 8, '#8fa9bd'); }
     },
     market: { /* gündüz pazar */
       sky: function (b) { skyB(b, 'day'); [[10, 20, 34, 9], [96, 12, 44, 10], [150, 22, 30, 7]].forEach(function (q, i) { b.put(shift(cloudBuf(q[2] * K, q[3] * K, '#ffffff', '#c8dcef', i + 4), q[0] * K, q[1] * K)); }); },
-      back: function (b) { hillsB(b, 60, 250, 124, 10, mix('#3a6a5a', HZ.day, 0.55), 4); seaB(b, 62, '#2b5a8f', '#34689e', '#28527f', '#7fb0dc', HZ.day); houseB(b, HZ.day); },
-      a1: function () { waves('market', 62, '#34689e', '#28527f'); gull(((S.wt * 6 + 80) % 230) - 20, 22 + Math.sin(S.wt * 1.2) * 3, 1); },
-      front: function (b) { dockB(b); stallB(b, 0, '#2f7a4a'); fishPileB(b, 8, 82, 14, '#5f8f8a'); fishPileB(b, 40, 82, 6, '#a8b6c2'); scaleB(b); }
+      back: function (b) { bayB(b, 62, 'day'); coastB(b, { y: 62, x0: 0, x1: FW, mq: 96, tn: 'day', seed: 4 }); houseB(b, HZ.day); },
+      a1: function () { waves('market', 62, WV.day[0], WV.day[1]); gull(((S.wt * 6 + 80) % 230) - 20, 22 + Math.sin(S.wt * 1.2) * 3, 1); },
+      front: function (b) { dockB(b, 'day'); stallB(b, 0, '#2f7a4a'); fishPileB(b, 8, 82, 14, '#5f8f8a'); fishPileB(b, 40, 82, 6, '#a8b6c2'); scaleB(b); }
     },
     mound: { /* höyük, gün batımı */
       sky: function (b) { skyB(b, 'sunset'); sunB(b, 112, 62, 11, '#ffc66a'); },
       a0: function () { var cd = (S.wt * 1.2) % 260; blit(streakSpr(48, 3, '#c6566a'), (((40 - cd + 260) % 260) - 30) * K, 34 * K - 2); blit(streakSpr(60, 2, '#e08a7a'), (((150 - cd + 260) % 260) - 30) * K, 42 * K - 1); },
-      back: function (b) { hillsB(b, 0, 120, 124, 7, mix('#5a2a5a', HZ.sunset, 0.5), 2); moundB(b, 134, 13); seaB(b, 62, '#2b3f73', '#34497f', '#27386a', '#5a6fa8', HZ.sunset); },
-      a1: function () { waves('mound', 62, '#34497f', '#27386a'); reflect(112, 62, 9, 13, '#ffd98a', '#f7b868'); gull(((S.wt * 7 + 20) % 230) - 20, 42 + Math.sin(S.wt * 1.3) * 3, 0); },
-      front: function (b) { dockB(b); counterB(b, 0, 86); potB(b); },
+      back: function (b) { bayB(b, 62, 'sunset'); coastB(b, { y: 62, x0: 0, x1: 196, mq: 58, tn: 'sunset', seed: 2 }); moundB(b, 134, 13, false, 'sunset'); },
+      a1: function () { waves('mound', 62, WV.sunset[0], WV.sunset[1]); reflect(112, 62, 9, 13, '#ffd98a', '#f7b868'); gull(((S.wt * 7 + 20) % 230) - 20, 42 + Math.sin(S.wt * 1.3) * 3, 0); },
+      front: function (b) { dockB(b, 'sunset'); counterB(b, 0, 86); potB(b); },
       a2: function () { if (S.steam) { S.potT += 0.016; if (S.potT > 0.18) { S.potT = 0; S.parts.push({ t: 'st', x: 36 + rnd(-5, 5), y: 70, vx: rnd(-3, 3), vy: rnd(-12, -7), life: 0, max: rnd(0.8, 1.4) }); } } }
     },
     mound_dusk: { /* höyük tepesi, alacakaranlık: kazı alanı */
       sky: function (b) { skyB(b, 'sunset', 8); sunB(b, 40, 64, 10, '#ff9a5a'); [[100, 30, 50, 6], [150, 40, 30, 5]].forEach(function (q, i) { b.put(shift(cloudBuf(q[2] * K, q[3] * K, '#e08a7a', '#9a4a6a', i + 9), q[0] * K, q[1] * K)); }); },
       back: function (b) {
-        seaB(b, 64, '#24365f', '#2c4070', '#202f55', '#4a5f98', HZ.sunset); moundB(b, 60, 22, true);
+        bayB(b, 64, 'dusk'); coastB(b, { y: 64, x0: 250, x1: FW, mq: 318, tn: 'dusk', seed: 3 }); moundB(b, 60, 22, true, 'dusk');
       },
-      a1: function () { waves('dusk', 64, '#2c4070', '#202f55'); reflect(40, 64, 4, 10, '#ffb070', '#ff9a5a'); },
+      a1: function () { waves('dusk', 64, WV.dusk[0], WV.dusk[1]); reflect(40, 64, 4, 10, '#ffb070', '#ff9a5a'); },
       front: function (b) {
         groundB(b, 78, '#3a4a30', '#4e6340');
         var p = b.like(); for (var y = 168; y < 188; y++) for (var x = 40; x < 140; x++) { var e = Math.min(x - 40, 139 - x, y - 168, 187 - y); p.set(x, y, e < 2 ? (y < 170 ? '#4a3a24' : '#8a7048') : y < 172 ? '#4e3e26' : (hash(x >> 1, y) < 0.12 ? '#5a4630' : (y - 172) % 6 === 0 ? '#7a6040' : '#6a5436')); }
@@ -601,8 +759,8 @@
     rocks: { /* fener gecesi: rüzgârlı kayalık */
       sky: function (b) { skyB(b, 'night'); starsB(b, 60, 3); for (var i = 0; i < 25; i++) { var x = (i * 53) % W * K, y = (i * 17) % 50 * K; b.set(x, y, i % 3 ? '#8a8ac8' : '#ffffff'); if (!(i % 3)) { b.set(x + 1, y, '#8a8ac8', 0.6); b.set(x, y + 1, '#8a8ac8', 0.6); } } sunB(b, 160, 20, 6, '#e8e8f8', true); },
       a0: function () { if (RM) return; for (var i = 0; i < 6; i++) if (Math.sin(S.wt * 2 + i * 1.7) > 0.7) F(((i * 97) % W) * K, ((i * 29) % 50) * K, 1, 1, '#ffffff'); },
-      back: function (b) { hillsB(b, 0, FW, 132, 8, '#1a1a3a', 5); seaB(b, 66, '#0e1a36', '#152446', '#0a1530', '#2a3a6a', HZ.night); },
-      a1: function () { waves('rocks', 66, '#152446', '#0a1530'); reflect(160, 66, 5, 8, '#c8c8e8', '#8a8ac8'); },
+      back: function (b) { bayB(b, 66, 'night'); coastB(b, { y: 66, x0: 0, x1: 262, mq: 112, tn: 'night', seed: 5 }); },
+      a1: function () { waves('rocks', 66, WV.night[0], WV.night[1]); reflect(160, 66, 5, 8, '#c8c8e8', '#8a8ac8'); },
       front: function (b) { for (var i = 0; i < 6; i++) { var rx = i * 36 - 6, rh = 18 + (i % 3) * 8; rockFormB(b, rx * K, (102 - rh) * K, 34 * K, i + 1); } },
       a2: function () { if (Math.sin(S.wt * 0.7) > 0.6) for (var i = 0; i < 6; i++) { var x = ((S.wt * 120 + i * 40) % W) * K, y = (40 + i * 9) * K; F(x, y, 20, 1, 'rgba(255,255,255,0.22)'); F(x + 4, y - 1, 10, 1, 'rgba(255,255,255,0.12)'); F(x - 4, y, 4, 1, 'rgba(255,255,255,0.1)'); } }
     },
@@ -610,7 +768,7 @@
       sky: function (b) { skyB(b, 'night'); starsB(b, 70, 9); for (var i = 0; i < 30; i++) b.set((i * 47) % W * K, (i * 13) % 55 * K, i % 4 ? '#8a8ac8' : '#ffffff'); },
       a0: function () { if (RM) return; for (var i = 0; i < 6; i++) if (Math.sin(S.wt * 1.7 + i * 2.1) > 0.75) F(((i * 61 + 13) % W) * K, ((i * 23) % 55) * K, 1, 1, '#ffffff'); },
       back: function (b) {
-        hillsB(b, 0, FW, 123, 10, '#141838', 6);
+        coastB(b, { y: 61, x0: 0, x1: FW, mq: 86, tn: 'night', seed: 6 });   /* koyun ışıkları höyüğün ardında */
         var rf = ramp(['#121a20', '#162016', '#1a2418'], 12); for (var y = 122; y < 172; y++) for (var x = 0; x < FW; x++) b.set(x, y, rpick(rf, (y - 122) / 50, x, y));
         moundB(b, 100, 20, true); groundB(b, 86, '#1a2418', '#243020');
       },
@@ -625,9 +783,9 @@
     },
     dawn_mound: { /* bereket sabahı */
       sky: function (b) { skyB(b, 'morning'); sunB(b, 30, 50, 12, '#fff2b0'); [[60, 18, 40, 9], [140, 26, 34, 8]].forEach(function (q, i) { b.put(shift(cloudBuf(q[2] * K, q[3] * K, '#ffffff', '#d8e4f2', i + 12), q[0] * K, q[1] * K)); }); },
-      back: function (b) { hillsB(b, 0, 130, 124, 8, mix('#4a7a6a', HZ.morning, 0.55), 8); moundB(b, 120, 16); seaB(b, 62, '#2f6aa0', '#3a78ae', '#2a5f92', '#9ac8ec', HZ.morning); },
-      a1: function () { waves('dawnm', 62, '#3a78ae', '#2a5f92'); reflect(30, 62, 6, 10, '#fff2b0', '#ffffff'); gull(((S.wt * 7 + 20) % 230) - 20, 30 + Math.sin(S.wt * 1.3) * 3, 0); gull(((S.wt * 5 + 110) % 230) - 20, 40, 2); },
-      front: function (b) { dockB(b); fishPileB(b, 10, 100, 25, '#8fa9bd'); fishPileB(b, 40, 100, 15, '#5f8f8a'); fishPileB(b, 70, 100, 10, '#a8b6c2'); }
+      back: function (b) { bayB(b, 62, 'morning'); coastB(b, { y: 62, x0: 104, x1: 240, mq: 150, tn: 'morning', seed: 8 }); moundB(b, 120, 16, false, 'morning'); },
+      a1: function () { waves('dawnm', 62, WV.morning[0], WV.morning[1]); reflect(30, 62, 6, 10, '#fff2b0', '#ffffff'); gull(((S.wt * 7 + 20) % 230) - 20, 30 + Math.sin(S.wt * 1.3) * 3, 0); gull(((S.wt * 5 + 110) % 230) - 20, 40, 2); },
+      front: function (b) { dockB(b, 'morning'); fishPileB(b, 10, 100, 25, '#8fa9bd'); fishPileB(b, 40, 100, 15, '#5f8f8a'); fishPileB(b, 70, 100, 10, '#a8b6c2'); }
     }
   };
   function shift(p, dx, dy) { p.x0 += Math.round(dx); p.y0 += Math.round(dy); return p; }
