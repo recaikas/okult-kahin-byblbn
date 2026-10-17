@@ -673,7 +673,8 @@ function applyBusVol() {
   if (!AC || !sfxBus) return;
   var t = AC.currentTime;
   var q = storyMute ? 0 : 1;                       /* v2.4: ara sahnede oyunun müziği ve ortamı tamamen susar */
-  try { musBus.gain.setTargetAtTime(VOL.mus * q, t, 0.05); sfxBus.gain.setTargetAtTime(VOL.sfx, t, 0.03); ambBus.gain.setTargetAtTime(VOL.amb * 1.4 * q, t, 0.05); }
+  var tc = q !== applyBusVol.q ? 0.35 : 0.05; applyBusVol.q = q;   /* v2.13: ara sahneye giriş/çıkışta yumuşak (≈1 sn) */
+  try { musBus.gain.setTargetAtTime(VOL.mus * q, t, tc); sfxBus.gain.setTargetAtTime(VOL.sfx, t, 0.03); ambBus.gain.setTargetAtTime(VOL.amb * 1.4 * q, t, tc); }
   catch (e) { musBus.gain.value = VOL.mus * q; sfxBus.gain.value = VOL.sfx; ambBus.gain.value = VOL.amb * 1.4 * q; }
 }
 var VOLS = [0, 0.22, 0.5];
@@ -920,6 +921,22 @@ var music = { on: false, timer: 0, next: 0, li: 0, lt: 0, bar: 0, step: 0, gain:
 var musicEnabled = true;                       /* ayarlar › müzik (tercihlere yazılır) */
 var musicPick = -1;                            /* v1.9.5 ayarlar › çalma listesi: -1 sırayla, 0.. tek parça (tercihlere yazılır) */
 var MUSIC_VOL = { menu: 0.55, game: 0.2 };
+/* v2.13 — ses dengesi: menü kipinde parçalar farklı enstrümanlarla ~5 dB açılıyordu (ölçüm: müzik kanalı RMS, 7 sn).
+   Parça başına kazanç hepsini ~-33.5 dBFS'e çeker. Oyun kipi (mırıldanma) zaten ±1 dB içinde, dokunulmaz. */
+var SONG_GAIN = { iskele: 0.98, liman: 1.05, yesilcam: 0.72, rock: 0.93, karadeniz: 0.97, tango: 0.97, zeybek: 1.02, ciftetelli: 1.17, shanty: 0.83, arabesk: 1.26 };
+function musicTarget() { var sg = SONGS[music.si]; return MUSIC_VOL[music.mode] * (music.mode === 'menu' && sg ? (SONG_GAIN[sg.id] || 1) : 1); }
+/* v2.13 — yumuşak parça geçişi: önce kıs (0.5 sn), sessizlikte parçayı değiştir, sonra aç (0.9 sn). Eskiden yeni parça
+   notanın ortasında başlıyordu. */
+function musicSwap(i) {
+  if (!AC || !music.gain) { songAt(i); return; }
+  var g = music.gain.gain, now = AC.currentTime;
+  songAt(i); music.next = now + 0.55;
+  try {
+    g.cancelScheduledValues(now); g.setValueAtTime(Math.max(0.0001, g.value), now);
+    g.exponentialRampToValueAtTime(0.0001, now + 0.5);
+    g.exponentialRampToValueAtTime(Math.max(0.0001, musicTarget()), now + 1.4);
+  } catch (e) { }
+}
 function midiF(m) { return 440 * Math.pow(2, (m - 69) / 12); }
 function songAt(i) { music.si = ((i % SONGS.length) + SONGS.length) % SONGS.length; music.li = 0; music.lt = 0; music.bar = 0; music.step = 0; music.st = 0; }
 /* v2.1 — oyun modunda (mırıldanma) her parçanın imza tınısı: parça arka planda da kimliğini korur */
@@ -955,7 +972,7 @@ function musicTick() {
     if (music.lt <= 0) {
       if (music.li === 0 && music.step > 0) {                 /* parça bir tur döndü */
         music.loops++;
-        if (hum && musicPick < 0) { songAt(music.si + 1); SG = SONGS[music.si]; sty = SG.style; e8 = 60 / SG.bpm / 2; BL = SG.bar || 8; st = 0; }
+        if (hum && musicPick < 0) { musicSwap(music.si + 1); return; }   /* v2.13: sıradaki parçaya yumuşak geçiş */
       }
       var n = SG.lead[music.li];
       music.li = (music.li + 1) % SG.lead.length;
@@ -1096,11 +1113,11 @@ function musicPlay(mode, song) {
     if (!music.gain) { music.gain = AC.createGain(); music.gain.gain.value = 0.0001; music.gain.connect(musBus || masterGain); }
     var g = music.gain.gain, now = AC.currentTime;
     g.cancelScheduledValues(now); g.setValueAtTime(Math.max(0.0001, g.value), now);
-    g.exponentialRampToValueAtTime(MUSIC_VOL[music.mode], now + (music.on ? 1.8 : 1.2));
+    g.exponentialRampToValueAtTime(Math.max(0.0001, MUSIC_VOL[music.mode] * (music.mode === 'menu' ? (SONG_GAIN[(SONGS[song !== undefined ? song : music.si] || {}).id] || 1) : 1)), now + (music.on ? 1.8 : 1.2));
   } catch (e) { return; }
   var want = song !== undefined ? song : musicPick >= 0 ? musicPick : (music.mode === 'menu' ? 0 : null);
   if (!music.on) { music.on = true; songAt(want === null ? music.si : want); music.next = AC.currentTime + 0.1; }
-  else if (want !== null && want !== music.si && (song !== undefined || prevMode !== 'menu')) { songAt(want); music.next = AC.currentTime + 0.3; }
+  else if (want !== null && want !== music.si && (song !== undefined || prevMode !== 'menu')) { musicSwap(want); }
   if (!music.timer) music.timer = setInterval(musicTick, 60);
 }
 function musicStop(fade) {
