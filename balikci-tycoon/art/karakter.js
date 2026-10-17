@@ -335,6 +335,14 @@ function build(o, pose, arm, fx, mood) {
     }
     rf(-15 - bo + L2, hb + 4, 2, 1, '#e6be59'); rf(-19 - bo + L2, hb + 9, 10, 1, dark(bb, 0.4));
   }
+  if (o.briefcase && !carrying) {                     /* evrak çantası: arkadaki elde, deri gövde + pirinç kilit + sap */
+    var bc = col(o.briefcase, '#4a2c18'), bcL = lite(bc, 0.22), bcD = dark(bc, 0.3);
+    var bcx = -21 - bo + L2, bcy = TT + 15;
+    rf(bcx + 4, bcy - 3, 6, 1, bcD); pf(bcx + 3, bcy - 2, bcD); pf(bcx + 10, bcy - 2, bcD); pf(bcx + 3, bcy - 1, bcD); pf(bcx + 10, bcy - 1, bcD);   /* sap */
+    rf(bcx, bcy, 14, 9, bc); rf(bcx, bcy, 14, 1, bcL); rf(bcx, bcy, 1, 9, bcL); rf(bcx + 12, bcy + 1, 2, 8, bcD); rf(bcx, bcy + 8, 14, 1, bcD);
+    rf(bcx, bcy + 3, 14, 1, bcD);                                                                    /* kapak çizgisi */
+    rf(bcx + 3, bcy + 3, 2, 2, '#e6be59'); rf(bcx + 9, bcy + 3, 2, 2, '#e6be59'); pf(bcx + 3, bcy + 3, '#fff0b0');   /* kilitler */
+  }
   if (o.notebook) {                                   /* not defteri, öndeki elde */
     var nx = hand.x + 2, ny = hand.y - 7;
     rf(nx, ny, 6, 8, '#e8ddc8'); rf(nx, ny, 6, 2, '#b3422f'); rf(nx, ny, 6, 1, '#d0604a');
@@ -363,9 +371,9 @@ function build(o, pose, arm, fx, mood) {
 
   /* ---------- saç (arka katman) ---------- */
   var hs = o.hairStyle | 0;
-  var hat = o.scarf ? 'scarf' : o.fez ? 'fez' : o.tophat ? 'tophat' : o.turban ? 'turban' : o.cap ? 'cap' :
+  var hat = o.scarf ? 'scarf' : o.fez ? 'fez' : o.tophat ? 'tophat' : o.fedora ? 'fedora' : o.turban ? 'turban' : o.cap ? 'cap' :
     o.chefHat ? 'chef' : o.sunHat ? 'sun' : o.beanie ? 'beanie' : '';
-  var backOK = !hat || hat === 'cap' || hat === 'beanie' || hat === 'tophat' || hat === 'sun';
+  var backOK = !hat || hat === 'cap' || hat === 'beanie' || hat === 'tophat' || hat === 'fedora' || hat === 'sun';
   if (hat === 'scarf') {
     var scf = col(o.scarf, '#c8553d'), scD = dark(scf, 0.22), scL2 = lite(scf, 0.18);
     for (var yy = HY - 3; yy <= TT + 2; yy++) {
@@ -502,6 +510,14 @@ function build(o, pose, arm, fx, mood) {
     r(hx - 6, HY - 14, 12, 1, lite(tp, 0.32));
     r(hx - 6, HY - 6, 12, 2, lite(tp, 0.42)); r(hx + 3, HY - 6, 3, 2, lite(tp, 0.28));
     r(hx - 10, HY - 2, 20, 2, tp); r(hx - 10, HY - 2, 20, 1, tpL); b.del(hx - 10, HY - 1); b.del(hx + 9, HY - 1);
+    sideHair();
+  } else if (hat === 'fedora') {                    /* fötr şapka: tepesi çukur, bantlı, geniş kenarlı (Yeşilçam kötüsü) */
+    var fd = col(o.fedora, '#3a3238'), fdL = lite(fd, 0.2), fdD = dark(fd, 0.28), fbd = col(o.fedoraBand, '#1a1418');
+    r(hx - 6, HY - 9, 12, 8, fd); r(hx - 6, HY - 9, 2, 8, fdL); r(hx + 3, HY - 9, 3, 8, fdD);
+    r(hx - 5, HY - 10, 10, 1, fdL); b.del(hx - 1, HY - 10); b.del(hx, HY - 10); r(hx - 1, HY - 9, 2, 1, fdD);   /* tepe çukuru */
+    r(hx - 6, HY - 4, 12, 2, fbd); r(hx - 6, HY - 4, 12, 1, lite(fbd, 0.18));                                 /* bant */
+    r(hx - 11, HY - 2, 22, 2, fd); r(hx - 11, HY - 2, 22, 1, fdL); r(hx + 5, HY - 1, 6, 1, fdD);               /* kenar */
+    b.del(hx - 11, HY - 1); r(hx - 12, HY - 3, 2, 1, fd); r(hx + 10, HY - 3, 2, 1, fdD);                     /* kenar uçları kalkık */
     sideHair();
   } else if (hat === 'turban') {
     var tb = col(o.turban, '#e8e2d2'), tbL = lite(tb, 0.25), tbD = dark(tb, 0.22);

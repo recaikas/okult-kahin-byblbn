@@ -32,7 +32,7 @@ var STR = {
     welcomeCo: 'Hayırlı olsun! {n} kapılarını açtı.', tapStart: '▶ BAŞLAMAK İÇİN DOKUN', skip: 'ATLA ▶▶',
     dayScore: 'Skor (toplam balık)', dayRank: '{s} • {r}. sıra', fishN: '{n} balık',
     tag: 'KÜÇÜK İSKELEDEN BÜYÜK LİMANA',
-    langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM', visLbl: 'GÖRÜNÜM', visClassic: 'KLASİK', visFine: 'İNCE',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM', taxWarn: '🎩 Yarın vergi memuru Haşmet Bey limana uğrayacak…', taxPaid: '🧾 Vergi makbuzu: {n} ürün · −{v}', taxName: 'Vergi Memuru Haşmet Bey', visLbl: 'GÖRÜNÜM', visClassic: 'KLASİK', visFine: 'İNCE',
     resetAsk: 'Tüm ilerleme silinsin mi?',
     intro1: '🎣 Ağın yanında bekle, balık birikir',
     intro2: '🧺 Üstünden geç, sırtla (ağır balık çok yer kaplar)',
@@ -246,7 +246,7 @@ var STR = {
     welcomeCo: '{n} is open for business!', tapStart: '▶ TAP TO BEGIN', skip: 'SKIP ▶▶',
     dayScore: 'Score (total fish)', dayRank: '{s} • #{r}', fishN: '{n} fish',
     tag: 'FROM A TINY PIER TO A GRAND HARBOR',
-    langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM', visLbl: 'GRAPHICS', visClassic: 'CLASSIC', visFine: 'FINE',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM', taxWarn: '🎩 Tomorrow the tax collector Mr. Haşmet will visit the harbour…', taxPaid: '🧾 Tax receipt: {n} items · −{v}', taxName: 'Tax Collector Mr. Haşmet', visLbl: 'GRAPHICS', visClassic: 'CLASSIC', visFine: 'FINE',
     resetAsk: 'Erase all progress?',
     intro1: '🎣 Wait by the net, fish pile up',
     intro2: '🧺 Walk over the crate to carry them (big fish weigh more)',
@@ -556,8 +556,8 @@ function renderUI() {
     var cx = Math.round(uiX(q.x, q.y, q.dx)), cy = Math.round(uiY(q.x, q.y, q.z, q.dy));
     if (cx < -160 || cx > VW + 160 || cy < -60 || cy > VH + 60) continue;
     uctx.globalAlpha = q.a;
-    if (q.t === 1 || q.t === 2) {
-      var fs = q.t === 1 ? 10 : 9.5;
+    if (q.t === 1 || q.t === 2 || q.t === 4) {
+      var fs = q.t === 2 ? 9.5 : q.t === 4 ? 10.5 : 10;
       uctx.font = uiFont(fs);
       var w = Math.round(uctx.measureText(q.s).width) + 9, h = fs + 6;
       var rect = { x: cx - w / 2, y: cy - h, w: w, h: h };
@@ -569,12 +569,12 @@ function renderUI() {
       if (FINE) {                                     /* v2.13 ince: köşesi kırık, gölgeli, tek çizgi kenarlı sade levha */
         uctx.fillStyle = 'rgba(6,16,24,.35)'; uctx.fillRect(rect.x + 2, rect.y + h, w - 3, 2);
         uctx.fillStyle = '#0a1a27'; uctx.fillRect(rect.x + 1, rect.y, w - 2, h); uctx.fillRect(rect.x, rect.y + 1, w, h - 2);
-        uctx.fillStyle = q.t === 1 ? 'rgba(22,44,64,.95)' : 'rgba(31,62,88,.95)';
+        uctx.fillStyle = q.t === 4 ? 'rgba(58,16,12,.96)' : q.t === 1 ? 'rgba(22,44,64,.95)' : 'rgba(31,62,88,.95)';
         uctx.fillRect(rect.x + 1, rect.y + 1, w - 2, h - 2);
         uctx.fillStyle = 'rgba(255,255,255,.10)'; uctx.fillRect(rect.x + 2, rect.y + 1, w - 4, 1);
       } else {
       uctx.fillStyle = '#0a1a27'; uctx.fillRect(rect.x, rect.y, w, h);
-      uctx.fillStyle = q.t === 1 ? 'rgba(20,41,60,.92)' : 'rgba(29,58,82,.92)';
+      uctx.fillStyle = q.t === 4 ? 'rgba(58,16,12,.94)' : q.t === 1 ? 'rgba(20,41,60,.92)' : 'rgba(29,58,82,.92)';
       uctx.fillRect(rect.x + 2, rect.y + 2, w - 4, h - 4);
       }
       /* kilim çentiği: üst kenarda iki altın nokta */
@@ -928,7 +928,7 @@ function musicTarget() { var sg = SONGS[music.si]; return MUSIC_VOL[music.mode] 
 /* v2.13 — yumuşak parça geçişi: önce kıs (0.5 sn), sessizlikte parçayı değiştir, sonra aç (0.9 sn). Eskiden yeni parça
    notanın ortasında başlıyordu. */
 function musicSwap(i) {
-  if (!AC || !music.gain) { songAt(i); return; }
+  if (!AC || !music.gain || music.held) { songAt(i); return; }
   var g = music.gain.gain, now = AC.currentTime;
   songAt(i); music.next = now + 0.55;
   try {
@@ -962,7 +962,7 @@ function sigVoice(sty, m, len, at) {
 /* iki kip: 'menu' = tam düzenleme (melodi, bas, vurmalı);
    'game' = arkadan mırıldanma (yumuşak sinüs melodi + alçak oktav, seyrek bas; Liman Yolu'nda çok hafif darbuka) */
 function musicTick() {
-  if (!music.on || !AC || AC.state !== 'running') return;
+  if (!music.on || !AC || AC.state !== 'running' || music.held) return;   /* v2.14: sahne müziği çalarken parça yerinde bekler */
   var horizon = AC.currentTime + 0.25, hum = music.mode === 'game';
   if (music.next < AC.currentTime) music.next = AC.currentTime + 0.05;
   while (music.next < horizon) {
@@ -1113,7 +1113,7 @@ function musicPlay(mode, song) {
     if (!music.gain) { music.gain = AC.createGain(); music.gain.gain.value = 0.0001; music.gain.connect(musBus || masterGain); }
     var g = music.gain.gain, now = AC.currentTime;
     g.cancelScheduledValues(now); g.setValueAtTime(Math.max(0.0001, g.value), now);
-    g.exponentialRampToValueAtTime(Math.max(0.0001, MUSIC_VOL[music.mode] * (music.mode === 'menu' ? (SONG_GAIN[(SONGS[song !== undefined ? song : music.si] || {}).id] || 1) : 1)), now + (music.on ? 1.8 : 1.2));
+    if (!music.held) g.exponentialRampToValueAtTime(Math.max(0.0001, MUSIC_VOL[music.mode] * (music.mode === 'menu' ? (SONG_GAIN[(SONGS[song !== undefined ? song : music.si] || {}).id] || 1) : 1)), now + (music.on ? 1.8 : 1.2));   /* sahne müziği varken açılmaz */
   } catch (e) { return; }
   var want = song !== undefined ? song : musicPick >= 0 ? musicPick : (music.mode === 'menu' ? 0 : null);
   if (!music.on) { music.on = true; songAt(want === null ? music.si : want); music.next = AC.currentTime + 0.1; }
@@ -1130,9 +1130,116 @@ function musicStop(fade) {
     g.exponentialRampToValueAtTime(0.0001, t + (fade || 0.8));
   } catch (e) { }
 }
+/* =========================================================
+   v2.14 — SAHNE MÜZİKLERİ (cue). Bir sahne müziği başlayınca oyunun parçası yavaşça kısılır ve OLDUĞU YERDE
+   bekler; sahne bitince aynı parça kaldığı yerden yumuşakça döner. Cue'lar müzik kanalını değil doğrudan ana çıkışı
+   kullanır (hikâye ara sahnesi oyunun müzik kanalını susturur; Şahmeran teması sahne boyunca sürer).
+   Hepsi bizim bestemiz, anlık sentez (telifsiz).
+   ========================================================= */
+var CUE = { on: null, gain: null, next: 0, step: 0, timer: 0, def: null };
+function musicHold(on) {
+  if (!AC || !music.gain) { music.held = !!on; return; }
+  var g = music.gain.gain, t = AC.currentTime;
+  try { g.cancelScheduledValues(t); g.setValueAtTime(Math.max(0.0001, g.value), t); } catch (e) { }
+  if (on) { music.held = true; try { g.exponentialRampToValueAtTime(0.0001, t + 0.9); } catch (e) { } return; }
+  if (!music.held) return;
+  music.held = false; music.next = t + 0.35;
+  try { g.exponentialRampToValueAtTime(Math.max(0.0001, musicTarget()), t + 1.8); } catch (e) { }
+}
+function cuePlay(id) {
+  if (CUE.on === id) return;
+  var def = CUES[id]; if (!def || !musicEnabled || !ensureAudio()) return;
+  if (CUE.on) cueStop(0.4, true);
+  musicHold(true);
+  try {
+    var g = AC.createGain(); g.gain.value = 0.0001; g.connect(masterGain);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0001, VOL.mus * def.vol), AC.currentTime + 1.0);
+    CUE.gain = g;
+  } catch (e) { return; }
+  CUE.on = id; CUE.def = def; CUE.step = 0;
+  CUE.next = AC.currentTime + (def.intro ? def.intro(CUE.gain) : 0.4);
+  if (!CUE.timer) CUE.timer = setInterval(cueTick, 60);
+}
+function cueStop(fade, keepHold) {
+  if (!CUE.on) return;
+  var g = CUE.gain; CUE.on = null; CUE.gain = null;
+  try { var t = AC.currentTime; g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), t); g.gain.exponentialRampToValueAtTime(0.0001, t + (fade || 1.5));
+    setTimeout(function () { try { g.disconnect(); } catch (e) { } }, ((fade || 1.5) + 0.5) * 1000); } catch (e) { }
+  if (!keepHold) musicHold(false);
+}
+function cueTick() {
+  if (!CUE.on) { if (CUE.timer) { clearInterval(CUE.timer); CUE.timer = 0; } return; }
+  if (!AC || AC.state !== 'running') return;
+  var d = CUE.def, e = 60 / d.bpm / 2, hz = AC.currentTime + 0.3;
+  if (CUE.next < AC.currentTime) CUE.next = AC.currentTime + 0.05;
+  while (CUE.next < hz) { d.step(CUE.step, CUE.next - AC.currentTime, CUE.gain); CUE.next += e; CUE.step++; }
+}
+var CUES = {
+  /* HAŞMET BEY — Yeşilçam kötüsü girişi: Re hicaz, ağır. Timpani gürlemesi + üç orkestra vuruşu, sonra sinsi döngü:
+     pizzicato bas, yaylı tremolosu, bakır nefesli ezgisi, dört ölçüde bir gong. */
+  hasmet: {
+    bpm: 72, vol: 0.85,
+    intro: function (g) {
+      var i;
+      for (i = 0; i < 14; i++) noise(0.22, 0.03 + i * 0.012, { at: i * 0.085, f: 220, dst: g });            /* timpani gürlemesi */
+      tone(55, 1.3, 'sine', 0.22, { at: 0, atk: 0.9, to: 52, dst: g });
+      [[1.3, [50, 57, 62, 63], 0.55], [1.95, [51, 58, 63, 66], 0.55], [2.6, [50, 54, 57, 62], 1.6]].forEach(function (h) {   /* dan… dan… DAAAN */
+        h[1].forEach(function (m) { tone(midiF(m), h[2], 'sawtooth', 0.05, { at: h[0], atk: 0.01, lp: 1300, dst: g }); });
+        tone(midiF(h[1][0] - 12), h[2], 'square', 0.07, { at: h[0], atk: 0.01, lp: 500, dst: g });
+        tone(55, h[2] * 0.8, 'sine', 0.24, { at: h[0], atk: 0.005, to: 44, dst: g });
+        noise(0.4, 0.14, { at: h[0], f: 260, dst: g });
+      });
+      return 4.4;
+    },
+    mel: [[0, 62, 4], [4, 63, 2], [6, 62, 2], [8, 66, 3], [11, 67, 1], [12, 66, 2], [14, 63, 2], [16, 62, 2], [18, 60, 2], [20, 58, 2], [22, 57, 2], [24, 58, 2], [26, 57, 2], [28, 55, 2], [30, 54, 2]],
+    step: function (i, at, g) {
+      var s = i % 8, bar = Math.floor(i / 8), e = 60 / this.bpm / 2, k;
+      if (s === 0) { tone(55, 0.55, 'sine', 0.2, { at: at, atk: 0.005, to: 48, dst: g }); noise(0.22, 0.09, { at: at, f: 200, dst: g }); }
+      if (s === 4 && bar % 2) noise(0.18, 0.05, { at: at, f: 200, dst: g });
+      var bass = bar % 4 === 3 ? [50, 0, 51, 0, 54, 0, 51, 0] : [50, 0, 50, 0, 51, 0, 50, 0];
+      if (bass[s]) tone(midiF(bass[s] - 12), e * 0.9, 'triangle', 0.17, { at: at, atk: 0.004, lp: 600, dst: g });
+      for (k = 0; k < 2; k++) tone(midiF(k ? 75 : 74), e * 0.22, 'sawtooth', 0.014, { at: at + k * e * 0.5, atk: 0.01, lp: 2400, dst: g });   /* tremolo */
+      var p = i % 32;
+      for (k = 0; k < this.mel.length; k++) if (this.mel[k][0] === p) {
+        var m = this.mel[k][1], L = this.mel[k][2] * e;
+        tone(midiF(m - 12), L * 0.95, 'sawtooth', 0.075, { at: at, atk: 0.07, lp: 950, dst: g });
+        tone(midiF(m - 24), L * 0.95, 'square', 0.03, { at: at, atk: 0.07, lp: 500, dst: g });
+      }
+      if (p === 0 && bar > 0) noise(1.6, 0.05, { at: at, f: 320, to: 120, dst: g });            /* gong */
+    }
+  },
+  /* ŞAHMERAN — gizemli 6/8, Re kürdi: dem (Re + La), bendir, hikâyenin kopuz motifi, ney ezgisi, yılan pırıltısı. */
+  sahmeran: {
+    bpm: 70, vol: 0.9,
+    intro: function (g) {
+      tone(midiF(38), 3.2, 'sine', 0.12, { at: 0, atk: 1.6, dst: g }); tone(midiF(45), 3.2, 'sine', 0.06, { at: 0.3, atk: 1.6, dst: g });
+      [1760, 2637, 2093].forEach(function (f, i) { tone(f, 1.4, 'sine', 0.025, { at: 0.6 + i * 0.35, atk: 0.02, dst: g }); });
+      return 2.2;
+    },
+    ney: [[0, 69, 3], [3, 70, 1], [4, 69, 2], [6, 67, 2], [8, 65, 2], [10, 63, 1], [11, 62, 1], [12, 62, 6], [18, 65, 2], [20, 67, 2], [22, 65, 1], [23, 63, 1]],
+    step: function (i, at, g) {
+      var s = i % 6, bar = Math.floor(i / 6), e = 60 / this.bpm / 2, k, ph = bar % 4;
+      if (s === 0 && bar % 2 === 0) { tone(midiF(38), e * 12, 'sine', 0.1, { at: at, atk: 0.6, dst: g }); tone(midiF(45), e * 12, 'sine', 0.05, { at: at, atk: 0.6, dst: g }); }
+      if (s === 0) { noise(0.28, 0.16, { at: at, f: 160, dst: g }); tone(70, 0.3, 'sine', 0.14, { at: at, to: 48, dst: g }); }   /* düm */
+      if (s === 3) noise(0.07, 0.05, { at: at, f: 1800, type: 'bandpass', q: 2, dst: g });                                      /* tek */
+      if (s === 5) noise(0.05, 0.03, { at: at, f: 2400, type: 'bandpass', q: 2, dst: g });
+      var kop = [62, 65, 67, 69, 67, 65];
+      if (ph < 2 || s % 2 === 0) { tone(midiF(kop[s]), e * 1.6, 'triangle', ph < 2 ? 0.075 : 0.045, { at: at, atk: 0.003, lp: 2600, dst: g }); tone(midiF(kop[s] + 12), e * 0.6, 'square', 0.008, { at: at, atk: 0.003, lp: 3000, dst: g }); }
+      if (ph >= 2) {
+        var p = (bar - 2) % 4 * 6 + s;
+        for (k = 0; k < this.ney.length; k++) if (this.ney[k][0] === p) {
+          var m = this.ney[k][1], L = this.ney[k][2] * e;
+          tone(midiF(m), L * 0.98, 'sine', 0.07, { at: at, atk: 0.12, dst: g }); tone(midiF(m) * 1.004, L * 0.98, 'sine', 0.04, { at: at, atk: 0.15, dst: g });
+          noise(Math.min(L, 0.4), 0.012, { at: at, f: 2600, type: 'bandpass', q: 1.5, dst: g });
+        }
+      }
+      if (s === 3 && ph === 3) [1760, 2637].forEach(function (f, j) { tone(f, 1.3, 'sine', 0.02, { at: at + j * 0.12, atk: 0.02, dst: g }); });
+    }
+  }
+};
 function setMusicEnabled(on) {
   musicEnabled = !!on;
-  if (musicEnabled) musicPlay(); else musicStop(0.5);
+  if (musicEnabled) musicPlay(); else { cueStop(0.5); musicStop(0.5); }
 }
 /* tarayıcı sesi ilk dokunuşta açar: müzik o anda başlar (menüde tam, oyunda mırıldanma) */
 ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) {
@@ -1395,6 +1502,11 @@ function updateMgrJokers(dt) {
     if (!mgr(z) || !zoneOpen(z)) { mgrAct[z] = null; continue; }
     var s = mgrSeat(z), a = mgrAct[z] || (mgrAct[z] = { x: s.x, y: s.y, z: 0, vx: 0, vy: 0, bob: 0, face: 1, carry: [], act: 0, zone: z, capX: MGR_CAP, mode: 'drop' });
     var sp = 2.4 * (1 + mgrEff(z, 'wspeed')), mine = mgrZoneCounters(z), i, c;
+    if (TAX.on && TAX.call && TAX.call[z]) {                  /* v2.14: vergi memuru tezgâhta → müdür gelip ilgilenir */
+      var tcl = TAX.call[z];
+      if (goTo(a, tcl.x, tcl.y, sp, dt, 0.2)) { tcl.here = true; a.face = tcl.x < TAX.x ? 1 : -1; } else a.bob += dt * 8;
+      continue;
+    }
     if (!rush || !mine.length) {
       if (hasCarry(a, isGoods)) mgrDropBack(a, z);
       a.mode = 'drop'; a.tc = null;
@@ -2232,6 +2344,7 @@ function pickFeatured() {
 }
 function custById(id) { for (var i = 0; i < CUST.length; i++) if (CUST[i].id === id) return CUST[i]; return null; }
 function endDay() {
+  if (TAX.on) taxFinish();                         /* v2.14: kapanışta memur hâlâ limandaysa vergiyi alıp gider */
   dismissCustomers();
   var auc = runAuction();
   var insp = mxInspect();                         /* v2.9: gizli müfettiş raporu */
@@ -2259,11 +2372,192 @@ function beginNextDay(skipPrep) {
   day.market = isMarketDay(day.n);
   day.st = newDayStats();
   day.t = 0;
+  TAX.on = false;
+  if (day.n % TAX_EVERY === TAX_EVERY - 1 && taxQ().items > 0) setTimeout(function () { toast(T('taxWarn')); }, 2600);   /* v2.14: bir gün önceden haber */
   if (day.market && !skipPrep) { day.phase = 'prep'; showPrepCard(); return; }
   day.phase = 'intro'; day.ph = 1.7;
   sfx.dayIn();
   syncPause();
   if (undecidedStalls().length) openStallScreen();   /* gün başı: yeni tezgâh kararı */
+}
+
+/* =========================================================
+   v2.14 — VERGİ MEMURU HAŞMET BEY (Yeşilçam kötüsü)
+   Her 7. gün, günün ilk üçte birinde yoldan sallana sallana gelir ve satış yapan HER tezgâha tek tek uğrar:
+   o tezgâhın haftalık vergisini orada keser (satılan ürün başına ürün değerinin %10'u, en az 1; toplam en çok
+   kasanın %40'ı). Limandayken müşteriler kaçar (kayıp SAYILMAZ), yeni müşteri gelmez.
+   MÜDÜR: tezgâhın bölgesinde müdür varsa masasından kalkıp gelir, memurla konuşur, pazarlıkla vergiyi %25 indirir;
+   o bölgenin müşterileri kaçmaz, akış sürer. 10 hafta boyunca her hafta ayrı konuşur, sonra baştan.
+   ========================================================= */
+var TAX_EVERY = 7, TAX_ARRIVE = 0.3, TAX_RATE = 0.10, TAX_CAP = 0.4, TAX_WALK = 1.05, TAX_SAY = 4.2, TAX_MGR_OFF = 0.25;
+var TAX = { on: false };
+var TAX_LOOK = { coat: '#3f3a44', coat2: '#57515f', pants: '#2a262e', boot: '#141012', boots: false, tall: true, belly: true,
+  tie: '#7a1a1a', thickMust: true, hair: '#17121a', hairStyle: 0, fedora: '#2e2a30', fedoraBand: '#120e10', briefcase: '#4a2c18' };
+var TAX_LINES = [
+  [{ tr: 'Hah hah haaa! Demek limanın yeni esnafı sensin…', en: 'Ha ha haaa! So you are the new trader of this harbour…' },
+   { tr: 'Ne güzel tezgâhlar… ne güzel balıklar… hepsi deftere!', en: 'Lovely stalls… lovely fish… all going in my ledger!' },
+   { tr: '{n} ürün sattın: {v}. Gözyaşların vergiden muaf değil!', en: '{n} items sold: {v}. Your tears are not tax-exempt!' }],
+  [{ tr: 'Yine ben! Haşmet! Unuttun mu yoksa?', en: 'Me again! Haşmet! Did you forget me?' },
+   { tr: 'Kasa ne kadar da dolu… ne kadar da güzel…', en: 'How full the safe is… how beautiful…' },
+   { tr: '{v}! Makbuzunu da al, çerçeveletirsin!', en: '{v}! Take your receipt, frame it!' }],
+  [{ tr: 'Kaçın bakalım, kaçın! Haşmet geldi!', en: 'Run, run all of you! Haşmet is here!' },
+   { tr: 'Hımm… bu hamsiler fazla parlak. Şüpheli…', en: 'Hmm… these anchovies shine too much. Suspicious…' },
+   { tr: '{n} ürün, {v}. Haftaya yine buradayım!', en: '{n} items, {v}. I will be back next week!' }],
+  [{ tr: 'Bana bak! Deden balık tutarken ben bu limanı biliyordum!', en: 'Listen! I knew this harbour when your grandpa was still fishing!' },
+   { tr: 'Defterim hiç yalan söylemez… ya sen?', en: 'My ledger never lies… and you?' },
+   { tr: '{v}… Az ama olsun. Şimdilik!', en: '{v}… Little, but fine. For now!' }],
+  [{ tr: 'Yağmur yağsa da güneş açsa da… vergi günü değişmez!', en: 'Rain or shine… tax day never changes!' },
+   { tr: 'Bu tezgâhı kim kurdu? Vergi kurdu, vergi!', en: 'Who built this stall? Taxes did, taxes!' },
+   { tr: '{v}. Al makbuzunu. Bu limanda Haşmet\'ten kaçış yok!', en: '{v}. Here is your receipt. Nobody escapes Haşmet here!' }],
+  [{ tr: 'Ne o, beni görünce müşterilerin mi kaçtı? Vah vah… hah hah!', en: 'What, your customers ran off when they saw me? Tsk tsk… ha ha!' },
+   { tr: 'Şu terazi biraz eğri gibi… neyse, bu hafta görmedim say.', en: 'That scale looks a bit crooked… fine, I did not see it this week.' },
+   { tr: '{v}. Merhamet mi? O başka memurun işi.', en: '{v}. Mercy? That is another clerk\'s job.' }],
+  [{ tr: 'Seni gidi seni… Liman büyümüş, kasa büyümüş!', en: 'Well, well… The harbour has grown, and so has the safe!' },
+   { tr: 'Her balığın hesabı var, her tanesinin!', en: 'Every fish is counted, every single one!' },
+   { tr: '{n} ürün çarpı adalet: {v}!', en: '{n} items times justice: {v}!' }],
+  [{ tr: 'Bıyıklarım titriyor… vergi kokusu alıyorum!', en: 'My moustache is twitching… I smell taxes!' },
+   { tr: 'Şu çay ocağı da güzelmiş… deftere yazayım mı? Şaka şaka!', en: 'Nice tea stove there… shall I write it down? Just kidding!' },
+   { tr: '{v}. Ağlama! Ağlamak da vergiye tabi.', en: '{v}. Don\'t cry! Crying is taxable too.' }],
+  [{ tr: 'Dokuz hafta oldu, hâlâ ayaktasın. Takdir ediyorum… biraz.', en: 'Nine weeks and you are still standing. I admire that… a little.' },
+   { tr: 'Bu limanı ben de sevmeye başladım galiba… yok, hayır!', en: 'I think I am starting to like this harbour… no. No!' },
+   { tr: '{v}! Duygusallık kasaya girmez.', en: '{v}! Sentiment does not go in the safe.' }],
+  [{ tr: 'Onuncu hafta! Bu şerefe bir vergi daha!', en: 'Week ten! Another tax in its honour!' },
+   { tr: 'Biliyor musun… iyi esnafsın. Vergisini veren esnaf.', en: 'You know… you are a good trader. One who pays.' },
+   { tr: '{v}. Haftaya yine gelirim. Haşmet hep gelir! Hah hah haaa!', en: '{v}. See you next week. Haşmet always comes back! Ha ha haaa!' }]
+];
+/* müdür ile memurun karşılıklı konuşması: [müdür, memur] */
+var TAX_MGR_LINES = [
+  [{ tr: 'Haşmet Bey, hoş geldiniz! Defterler hazır, çayınız da.', en: 'Welcome, Mr. Haşmet! The books are ready, and so is your tea.' },
+   { tr: 'Hımm… işini bilen bir müdür. Bu tezgâha indirim!', en: 'Hmm… a manager who knows the job. A discount for this stall!' }],
+  [{ tr: 'Bu tezgâhın hesabı bende efendim, kuruşu kuruşuna.', en: 'I keep this stall\'s accounts, sir, to the last penny.' },
+   { tr: 'Kuruşu kuruşuna mı? Hah! Sevdim seni.', en: 'To the last penny? Ha! I like you.' }],
+  [{ tr: 'Geçen haftanın makbuzu da burada, buyurun.', en: 'Last week\'s receipt is right here, sir.' },
+   { tr: 'Makbuz saklayan esnaf… nadir bulunur. Az keseyim!', en: 'A trader who keeps receipts… rare. I\'ll take less!' }],
+  [{ tr: 'Haşmet Bey, müşterilerimi ürkütmeyin lütfen.', en: 'Mr. Haşmet, please don\'t scare my customers.' },
+   { tr: 'Peki peki… senin tezgâhına dokunmuyorum. Şimdilik!', en: 'Fine, fine… I won\'t touch your stall. For now!' }],
+  [{ tr: 'Bir bardak çay? Taze demlendi.', en: 'A glass of tea? Freshly brewed.' },
+   { tr: 'Çaya hayır denmez… Tamam, indirimli olsun.', en: 'One never refuses tea… Fine, a discount then.' }]
+];
+function taxQ() { return S.tax || (S.tax = { items: 0, due: 0, n: 0, last: 0, by: {} }); }
+function taxLoad(d) {
+  if (!d || typeof d !== 'object') return { items: 0, due: 0, n: 0, last: 0, by: {} };
+  var by = {};
+  if (d.by && typeof d.by === 'object') for (var k in d.by) if (/^[a-z0-9_]{1,12}$/i.test(k) && Array.isArray(d.by[k])) by[k] = [numIn(d.by[k][0], 0, 1e9, true), numIn(d.by[k][1], 0, 1e12, true)];
+  return { items: numIn(d.items, 0, 1e9, true), due: numIn(d.due, 0, 1e12, true), n: numIn(d.n, 0, 1e6, true), last: numIn(d.last, 0, 1e7, true), by: by };
+}
+function taxNote(n, unit, key) {
+  var q = taxQ(); n = n | 0; if (n <= 0) return;
+  var t = n * Math.max(1, Math.round((unit || 0) * TAX_RATE));
+  q.items += n; q.due += t;
+  if (key) { q.by = q.by || {}; var e = q.by[key] || (q.by[key] = [0, 0]); e[0] += n; e[1] += t; }
+}
+function taxZone(c) { var z = c && c.fish ? zoneOfFish(c.fish) : -1; return z >= 0 ? z : (c ? c.z : -1); }
+function taxMgrZone(c) { var z = taxZone(c); return mgr(z) && zoneOpen(z) ? z : -1; }
+function taxSafe(c) { return taxMgrZone(c) >= 0; }                     /* müdürlü bölge vergi gününde de çalışır */
+function taxLine(k) { var w = TAX_LINES[(TAX.wk || 0) % TAX_LINES.length][k]; return NM(w).replace('{n}', TAX.items || 0).replace('{v}', money(TAX.v || 0)); }
+function taxSay(k) { TAX.say = k; TAX.sayT = 0; }
+function taxStart() {
+  var q = taxQ(); q.by = q.by || {};
+  var cs = counters.filter(function (c) { return c.open && !AREAS[c.z].locked; });
+  var withSales = cs.filter(function (c) { return q.by[c.key] && q.by[c.key][1] > 0; });
+  if (!withSales.length && cs.length) withSales = [cs[0]];               /* eski kayıt: tezgâh dökümü yok → ilk tezgâhta keser */
+  withSales.sort(function (a, b) { return (b.x + b.y) - (a.x + a.y); }); /* yoldan gelirken yakından uzağa */
+  TAX.on = true; TAX.x = 13.6; TAX.y = 22.5; TAX.bob = 0; TAX.vx = 0; TAX.vy = 0; TAX.face = -1; TAX.wait = 0; TAX.i = 0;
+  TAX.wk = q.n; TAX.items = q.items; TAX.v = 0; TAX.say = -1; TAX.sayT = 0; TAX.call = {}; TAX.mgrSay = null; TAX.st = 0;
+  TAX.capLeft = Math.max(0, Math.floor(S.cash * TAX_CAP)); TAX.left = q.due; TAX.done = 0;
+  TAX.path = withSales.map(function (c, i) {
+    var p = queueSlotPos(c, 0);
+    return { c: c, x: p.x + 0.4, y: p.y + 0.5, last: i === withSales.length - 1 };
+  });
+  TAX.path.push({ x: 13.6, y: 24, out: true });
+  /* müdürsüz bölgelerin müşterileri kaçar; kaçan kayıp sayılmaz (hikâye ziyaretçisi hariç) */
+  for (var j = 0; j < customers.length; j++) {
+    var cu = customers[j];
+    if (cu.story || cu.state === 'leave' || (cu.c && taxSafe(cu.c))) continue;
+    if (cu.c && cu.slot !== undefined && cu.c.slots[cu.slot] === cu) cu.c.slots[cu.slot] = null;
+    cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; cu.flee = true;
+    addFloat(cu.x, cu.y - 0.7, '!', '#ff8a7a');
+  }
+  counters.forEach(function (c) { shiftQueue(c); });
+  cuePlay('hasmet');                                    /* Yeşilçam kötüsü girişi */
+}
+/* bir tezgâhın vergisini kes (son durakta dökümü olmayan artık da alınır); müdür varsa %25 pazarlık */
+function taxCollectAt(w, mz) {
+  var q = taxQ(), e = (q.by || {})[w.c.key] || [0, 0], due = e[1];
+  if (w.last) due = Math.max(due, TAX.left);
+  if (mz >= 0) due = Math.round(due * (1 - TAX_MGR_OFF));
+  var v = Math.max(0, Math.min(due, TAX.capLeft));
+  S.cash -= v; TAX.capLeft -= v; TAX.v += v; TAX.left = Math.max(0, TAX.left - e[1]); TAX.done++;
+  if (q.by) delete q.by[w.c.key];
+  if (v > 0) addFloat(w.c.x, w.c.y - 1.2, '−' + money(v) + (mz >= 0 ? ' (−%' + Math.round(TAX_MGR_OFF * 100) + ')' : ''), '#ff8a7a');
+  sfx.drop && sfx.drop();
+}
+function taxClose() {                                     /* hafta kapandı: makbuz, sayaçlar sıfır */
+  var q = taxQ();
+  q.items = 0; q.due = 0; q.by = {}; q.n++; q.last = day.n;
+  toast(T('taxPaid', { n: TAX.items, v: money(TAX.v) }));
+  TAX.paid = true;
+  save();
+}
+function taxCollect() {                                   /* test/kapanış: hepsini tek seferde (tavanlı) */
+  var q = taxQ(); if (TAX.capLeft === undefined || !TAX.on) TAX.capLeft = Math.max(0, Math.floor(S.cash * TAX_CAP));
+  var v = Math.max(0, Math.min(TAX.left !== undefined && TAX.on ? TAX.left : q.due, TAX.capLeft));
+  S.cash -= v; TAX.v = (TAX.on ? TAX.v : 0) + v; TAX.items = q.items; TAX.capLeft -= v;
+  taxClose();
+}
+function taxFinish() { if (CUE.on === 'hasmet') cueStop(1.5); if (!TAX.paid && TAX.on) { if (TAX.left > 0 && TAX.capLeft > 0) { var v = Math.min(TAX.left, TAX.capLeft); S.cash -= v; TAX.v += v; } taxClose(); } TAX.on = false; TAX.call = {}; }
+function updateTax(dt) {
+  var q = taxQ();
+  if (!TAX.on) {
+    if (day.phase === 'play' && day.n % TAX_EVERY === 0 && q.last !== day.n && q.items > 0 && S.ctrl === 2 &&
+      day.t >= DAY_LEN * TAX_ARRIVE && !storyOpenNow() && !storyVis) { TAX.paid = false; taxStart(); }
+    return;
+  }
+  TAX.bob += dt * 3.2; TAX.sayT += dt; if (TAX.mgrSay) TAX.mgrSay.t += dt;
+  var w = TAX.path[TAX.i];
+  if (!w) { TAX.on = false; return; }
+  var dx = w.x - TAX.x, dy = w.y - TAX.y, L = Math.hypot(dx, dy);
+  if (L > 0.08) {
+    TAX.x += dx / L * TAX_WALK * dt; TAX.y += dy / L * TAX_WALK * dt; TAX.vx = dx / L; TAX.vy = dy / L;
+    var sx = pX(dx, dy); if (Math.abs(sx) > 0.01) TAX.face = sx > 0 ? 1 : -1;
+    return;
+  }
+  TAX.vx = 0; TAX.vy = 0;
+  if (w.out) { TAX.on = false; TAX.call = {}; if (CUE.on === 'hasmet') cueStop(2.5); return; }
+  var mz = taxMgrZone(w.c);
+  if (!w.st) {                                             /* durağa vardı */
+    w.st = 1; w.t = 0;
+    if (TAX.i === 0) taxSay(0); else if (TAX.i === 1) taxSay(1);
+    if (mz >= 0) { TAX.call[mz] = { x: w.x - 0.9, y: w.y + 0.25 }; w.mz = mz; }
+  }
+  w.t += dt;
+  if (w.mz >= 0 && mz >= 0) {                              /* müdür gelir, konuşurlar */
+    var cl = TAX.call[mz];
+    if (w.st === 1 && (cl.here || w.t > 7)) { w.st = 2; w.t = 0; var pr = TAX_MGR_LINES[(TAX.wk + TAX.i) % TAX_MGR_LINES.length]; TAX.mgrSay = { z: mz, s: NM(pr[0]), t: 0 }; w.reply = NM(pr[1]); }
+    if (w.st === 2 && w.t > 3.2) { w.st = 3; w.t = 0; TAX.say = -2; TAX.sayT = 0; TAX.sayTxt = w.reply; taxCollectAt(w, mz); }
+    if (w.st === 3 && w.t > 3.2) w.st = 4;
+    if (w.st !== 4) return;
+    delete TAX.call[mz]; TAX.mgrSay = null;
+  } else {
+    if (w.st === 1) { w.st = 4; w.t = 0; taxCollectAt(w, -1); }
+    if (w.t < (TAX.i === 0 ? TAX_SAY : 2.4)) return;
+  }
+  if (w.last && !w.end) { w.end = 1; w.t = 0; taxClose(); taxSay(2); }
+  if (w.last && w.t < TAX_SAY + 0.4) return;
+  TAX.i++;
+}
+function drawTaxman() {
+  var sw = Math.sin(TAX.bob * 0.55) * 0.08;          /* sallana sallana */
+  var moving = Math.abs(TAX.vx) + Math.abs(TAX.vy) > 0;
+  var a = { x: TAX.x + sw, y: TAX.y - sw, z: 0, vx: TAX.vx * 0.5, vy: TAX.vy * 0.5, bob: TAX.bob * 0.6, act: 0, carry: [] };
+  var o = {}; for (var k in TAX_LOOK) o[k] = TAX_LOOK[k];
+  o.face = TAX.face; o.walk = moving; o.mood = 1;
+  drawPerson(a, o);
+  var line = TAX.say === -2 ? TAX.sayTxt : TAX.say >= 0 ? taxLine(TAX.say) : null;
+  if (line && TAX.sayT < TAX_SAY + 0.4) uiQ.push({ t: 4, x: TAX.x, y: TAX.y, z: 62, s: '“' + line + '”', c: '#ffe2c8', a: 1 });
+  uiQ.push({ t: 4, x: TAX.x, y: TAX.y, z: 46, s: '🎩 ' + T('taxName'), c: '#ffc94a', a: 0.95 });
+  var ms = TAX.mgrSay, ma = ms && mgrAct[ms.z];
+  if (ms && ma && ms.t < 3.4) uiQ.push({ t: 4, x: ma.x, y: ma.y, z: 52, s: '👔 “' + ms.s + '”', c: '#d8f2ff', a: 1 });
 }
 
 /* ---------------- istasyonlar ---------------- */
@@ -2625,7 +2919,7 @@ function buildSave() {
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
     auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
-    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, custSeen: S.custSeen || {}, specN: S.specN || {}, custNewF: S.custNewF ? 1 : 0, stallSt: S.stallSt || {}, help: S.help || {}, jobs: S.jobs || [], mx: S.mx || null, specForce: S.specForce || null, ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
+    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, custSeen: S.custSeen || {}, specN: S.specN || {}, custNewF: S.custNewF ? 1 : 0, stallSt: S.stallSt || {}, help: S.help || {}, jobs: S.jobs || [], mx: S.mx || null, tax: S.tax || null, specForce: S.specForce || null, ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
     areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
@@ -2706,7 +3000,7 @@ function loadFrom(d) {
     S.met = Array.isArray(d.met) ? d.met.filter(function (q) { return typeof q === 'string'; }) : [];
     /* v2.4: isimler — eski kayıtta tanışılan herkesin adı bilinir; yeni tanışılan "?????" başlar */
     S.names = Array.isArray(d.names) ? d.names.filter(function (q) { return typeof q === 'string'; }) : S.met.slice();
-    S.mx = mxLoad(d.mx); S.specForce = typeof d.specForce === 'string' && d.specForce.length < 30 ? d.specForce : null;
+    S.mx = mxLoad(d.mx); S.tax = taxLoad(d.tax);   /* v2.14: eski kayıtta yok → sıfır */ S.specForce = typeof d.specForce === 'string' && d.specForce.length < 30 ? d.specForce : null;
     S.jobs = Array.isArray(d.jobs) ? d.jobs.filter(function (q) { return typeof q === 'string'; }) : S.met.slice();   /* v2.8: eski kayıtta tanışılanın mesleği bilinir */
     S.story = storyLoad(d.story);
     S.custSeen = numMap(d.custSeen); S.specN = numMap(d.specN); S.custNewF = !!d.custNewF;
@@ -3662,6 +3956,7 @@ function updateCounter(c, dt) {
   if (c.spawnT <= 0 && freeIdx >= 0) {
     c.spawnT = 5.4 * rnd(0.75, 1.3);
     if (!daySpawnOK()) return;                 /* gün kapanışında yeni müşteri gelmez (§2) */
+    if (TAX.on && !taxSafe(c)) return;         /* v2.14: vergi memuru limandayken kimse gelmez (müdürlü bölge hariç) */
     if (trayFull(c)) return;                   /* v0.5: kasa dolu — tahsildar ya da oyuncu boşaltmalı */
     /* v0.1 adalet: stoksuz tezgâha müşteri seyrek gelir, kuyrukta uzadıkça daha da seyrek.
        Umutsuz müşteri doğup boşuna kızmasın. */
@@ -3750,6 +4045,7 @@ function finishOrder(c, cu) {
   pay = specPay(cu, c, pay, happy);                 /* v2.9: özel müşteri mekaniği (selfie, acele, cimri, gece, plak, veresiye) */
   if (pay > 0) payout(c, pay, cu.slot);
   noteFishIncome(pay); noteDayIncome(pay); noteDaySale(cu);
+  taxNote(cu.ord.need, unit, c.key);                /* v2.14: haftalık vergi (ürün başı, tezgâh tezgâh) */
   retSale(c, cu, pay);                              /* bölge gelir ortalaması + satış başarımları */
   stallSale(c, cu, pay);                            /* v2.6: tezgâh istatistiği */
   mxSale();                                         /* v2.9: canlı yayın sırasında satış */
@@ -3851,7 +4147,7 @@ function updateCustomers(dt) {
     } else {
       cu.x += ((13.6 + (cu.c.lane || 0) * 0.5) - cu.x) * Math.min(1, dt * (cu.spec ? 0.9 : 1.6));
       if (cu.spec) cu.byeT = (cu.byeT || 0) + dt;
-      cu.y += (cu.spec ? SPEC_LEAVE : 3.6) * dt; cu.bob += dt * (cu.spec ? 5 : 8);
+      cu.y += (cu.spec ? SPEC_LEAVE : 3.6) * (cu.flee ? 1.8 : 1) * dt; cu.bob += dt * (cu.spec ? 5 : 8) * (cu.flee ? 1.6 : 1);   /* v2.14: memurdan kaçan koşar */
       if (cu.y > 23) customers.splice(i, 1);
     }
   }
@@ -4510,6 +4806,11 @@ function drawPerson(a, o) {
     px(gx, y - 11, 5, 7, o.bigBag); px(gx, y - 11, 5, 1, shade(o.bigBag, 20)); px(gx + 1, y - 13, 3, 2, shade(o.bigBag, -25));
     px(gx + 2, y - 8, 1, 1, PAL.brass);
   }
+  if (o.briefcase) {                                  /* v2.14: evrak çantası */
+    var bcx = fx > 0 ? sx - 11 : sx + 5;
+    px(bcx, y - 10, 7, 5, o.briefcase); px(bcx, y - 10, 7, 1, shade(o.briefcase, 22)); px(bcx + 2, y - 11, 3, 1, shade(o.briefcase, -30));
+    px(bcx + 1, y - 8, 1, 1, PAL.brass); px(bcx + 5, y - 8, 1, 1, PAL.brass);
+  }
   if (o.notebook) {                                   /* küçük not defteri */
     var nbx = sx + fx * 5;
     px(nbx - 1, y - 11, 3, 4, '#e8ddc8'); px(nbx - 1, y - 11, 3, 1, '#b3422f'); px(nbx, y - 9, 1, 1, '#6f604b');
@@ -4545,6 +4846,10 @@ function drawPerson(a, o) {
   } else if (o.tophat) {                              /* v1.1: silindir şapka */
     px(sx - 3, hy - 7, 6, 6, o.tophat); px(sx - 5, hy - 1, 10, 1, o.tophat);
     px(sx - 3, hy - 3, 6, 1, shade(o.tophat, 40)); px(sx - 3, hy - 7, 6, 1, shade(o.tophat, 25));
+    px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair);
+  } else if (o.fedora) {                              /* v2.14: fötr şapka (vergi memuru) */
+    px(sx - 3, hy - 5, 6, 4, o.fedora); px(sx - 6, hy - 1, 12, 1, o.fedora);
+    px(sx - 3, hy - 2, 6, 1, o.fedoraBand || '#1a1418'); px(sx - 1, hy - 5, 2, 1, shade(o.fedora, -25));
     px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair);
   } else if (o.turban) {                              /* v1.1: kavuk / sarık */
     px(sx - 5, hy - 4, 10, 5, o.turban); px(sx - 4, hy - 5, 8, 1, o.turban);
@@ -6881,6 +7186,7 @@ function render() {
   for (i = 0; i < customers.length; i++) (function (cu) { push(cu.x + cu.y + 0.2, function () { drawCustomer(cu); }); })(customers[i]);
   drawYardFolk(push);
   drawMgrJokers(push);
+  if (TAX.on) push(TAX.x + TAX.y + 0.22, drawTaxman);
   for (i = 0; i < workers.length; i++) (function (w) {
     var col = w.role === 'hamal' ? '#4f7fae' : w.role === 'filetocu' ? '#5f8f6a' : w.role === 'tezgahtar' ? '#b8624a' : '#7a6ba8';
     push(w.x + w.y + 0.15, function () {
@@ -8015,6 +8321,7 @@ function frame(ts) {
   updateWorkers(dt);
   updateStations(dt);
   updateCustomers(dt);
+  updateTax(dt);                    /* v2.14 — vergi memuru */
   updateYardFolk(dt);
   updateMgrJokers(dt);                             /* v1.9.4: yoğun saatte müdürler tezgâhta */                              /* v1.9.2: hizmet sahası yayaları (görsel) */
   updateDay(dt);                    /* v1.2 — gün döngüsü + depo kilidi */
@@ -10982,7 +11289,7 @@ function storyOpen(cu) {
     audio: AC, dst: masterGain || undefined,
     onDone: function (r) { storyApply(r || {}, n); storyRelease(cu); }
   });
-  if (!ok) { storyMute = false; applyBusVol(); return false; }
+  if (!ok) { storyMute = false; applyBusVol(); if (CUE.on === 'sahmeran') cueStop(1.5); return false; }
   syncPause();
   return true;
 }
@@ -10990,6 +11297,7 @@ function storyRelease(cu) {
   cu.storyDone = true;
   if (cu.state !== 'leave') { cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; if (cu.c.slots[cu.slot] === cu) { cu.c.slots[cu.slot] = null; shiftQueue(cu.c); } }
   storyVis = null; storyMute = false; applyBusVol(); syncPause(); save();
+  if (CUE.on === 'sahmeran') cueStop(2.5);                /* v2.14: sahne bitti, oyunun parçası kaldığı yerden döner */
 }
 function storyApply(r, n) {
   var st = stQ(), k;
@@ -11009,7 +11317,7 @@ function updateStory(dt) {
   if (!storyOn()) return;
   var st = stQ();
   if (storyVis) {
-    if (customers.indexOf(storyVis) < 0 || (storyVis.state === 'leave' && !storyVis.storyDone)) { storyVis = null; return; }   /* tezgâh kapandı: yarın/az sonra yeniden */
+    if (customers.indexOf(storyVis) < 0 || (storyVis.state === 'leave' && !storyVis.storyDone)) { storyVis = null; if (CUE.on === 'sahmeran') cueStop(2); return; }   /* tezgâh kapandı: yarın/az sonra yeniden */
     if (storyVis.state === 'wait' && !storyVis.storyDone && !storyOpenNow()) storyOpen(storyVis);
     return;
   }
@@ -11017,7 +11325,7 @@ function updateStory(dt) {
   if (day.phase !== 'play' || day.t < STORY_AT) return;
   st.tryT = (st.tryT || 0) - dt; if (st.tryT > 0) return;
   st.tryT = 2;
-  if (storySpawn()) sfxFrom({ x: storyVis.c.x, y: storyVis.c.y }, function () { specSfx(storyVis && specById(storyVis.spec)); });
+  if (storySpawn()) { sfxFrom({ x: storyVis.c.x, y: storyVis.c.y }, function () { specSfx(storyVis && specById(storyVis.spec)); }); cuePlay('sahmeran'); }   /* v2.14: sahne yaklaşıyor */
 }
 
 /* =========================================================
@@ -12122,6 +12430,8 @@ window.BT = {
   specState: function () { return { spec: day.spec, sp: day.sp, normals: day.normals, active: customers.filter(function (c) { return c.spec; }).map(function (c) { return c.spec + ':' + c.state; }) }; },
   autoState: function () { return { min: S.autoMin, t: Math.round(saveT), left: Math.round(autoLeft()) }; }, fastForwardAutosave: function (sec) { saveT += sec; },
   yardFolk: function () { return yardFolk; }, roadFlow: function () { return roadFlow(); }, ui: { openSettings: openSettings, openPauseMenu: openPauseMenu, openStallScreen: openStallScreen, openHal: openHal, openOffice: openOffice, openChapter: openChapter, fbShow: fbShow, fbClose: fbClose, showChapterCard: showChapterCard, closeSettings: function () { el.settingsScreen.classList.add('hidden'); syncPause(); } }, mkt: { corpAction: function (c, k) { corpAction(c, k); }, ownPct: function (c) { return ownPct(c); }, shares: function (c) { return shares(c); }, migrate: function (d) { return migrateMarket(d); }, newMarket: function () { return newMarket(); } }, T: function (k) { return T(k); }, rushNow: function () { return rushNow(); }, mgrAct: function () { return mgrAct; }, showChapterCard: function () { showChapterCard(); }, chapterGroups: function () { return chapterGroups(); }, ACH_IDS: function () { return (typeof ACH !== 'undefined' ? ACH : []).map(function (q) { return q.id; }); },
+  cue: { play: function (id) { cuePlay(id); }, stop: function () { cueStop(0.3); }, on: function () { return CUE.on; }, held: function () { return !!music.held; }, pos: function () { return { si: music.si, li: music.li, bar: music.bar }; } },
+  tax: { q: function () { return taxQ(); }, st: function () { return TAX; }, start: function () { taxStart(); }, lines: TAX_LINES, mgrLines: TAX_MGR_LINES, collect: function () { taxCollect(); }, mgrAct: function () { return mgrAct; } },
   CTYPES: CTYPES, S: S, safe: safe, BINS: BINS, HUT: HUT, DEPOT: DEPOT, WHALL: WHALL, office: office, MEYDAN: MEYDAN, BRIDGE: BRIDGE, depotCount: function () { return depotCount(); }, openHal: function () { openHal(); }, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
   zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,

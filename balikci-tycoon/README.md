@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v2.13** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v2.14** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -16,6 +16,24 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
 ---
+
+## v2.14 — Vergi Memuru Haşmet Bey, sahne müzikleri
+
+- **Vergi Memuru Haşmet Bey** (Yeşilçam kötüsü): her 7. gün, günün ilk üçte birinde yoldan sallana sallana gelir.
+  Bir gün önceden haber verilir. Satış yapan her tezgâha tek tek uğrar, o tezgâhın haftalık vergisini orada keser:
+  satılan ürün başına ürün değerinin %10'u (en az 1), toplam en çok kasanın %40'ı. Sonunda makbuz.
+- O limandayken müşteriler kaçar (**kayıp sayılmaz**), yeni müşteri gelmez.
+- **Müdür:** tezgâhın bölgesinde müdür varsa masasından kalkıp gelir, memurla konuşur, pazarlıkla o tezgâhın vergisini
+  %25 indirir; o bölgenin müşterileri kaçmaz, satış sürer.
+- 10 hafta boyunca her hafta ayrı 3 replik (geliş, yoklama, tahsilat), müdürle 5 karşılıklı diyalog; TR/EN.
+- Görünüş: uzun boylu, göbekli, takım elbise, kravat, kalın bıyık, **fötr şapka**, **evrak çantası** (iki yeni giysi
+  seçeneği klasik ve ince çizime eklendi).
+- **Sahne müzikleri** (kendi bestemiz, anlık sentez): Haşmet Bey teması (hicaz; timpani, orkestra vuruşları, sinsi
+  pizzicato, bakır ezgi) ve Şahmeran teması (6/8 kürdi; dem, bendir, kopuz motifi, ney). Tema çalarken oyunun parçası
+  yerinde bekler, bitince kaldığı yerden döner. Şahmeran teması hikâye ziyaretçisi limana yürürken başlar, ara sahne
+  boyunca sürer.
+- Tezgâh tabelası artık yaklaşınca kaybolur, uzaktan çatının üstünde görünür (v2.13.1).
+- Kayıt: `tax` alanı (eski kayıtta yoksa sıfır). Test: `test-vergi.js`, `test-sahne-muzik.js`.
 
 ## v2.13 — İnce piksel remaster
 
