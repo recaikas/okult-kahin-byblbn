@@ -3784,11 +3784,12 @@ function showLevelUp(from, l) {
   un.push(T('lvBonus', { p: pct((l - 1) * 2) }));
   el.lvlNum.textContent = T('lvlN', { l: l });
   el.lvlTitle.textContent = repTitle();
-  el.lvlList.innerHTML = un.map(function (u) { return '<span>🔓 ' + escH(u) + '</span>'; }).join('');
-  var cf = '';
-  for (k = 0; k < 26; k++) cf += '<i style="left:' + Math.round(Math.random() * 100) + '%;animation-delay:' +
-    (Math.random() * 0.35).toFixed(2) + 's;background:' + pick(['#ffc94a', '#e5533d', '#5fd37a', '#4fb3e8', '#f4e9d2']) +
-    ';--dx:' + Math.round(rnd(-40, 40)) + 'px"></i>';
+  /* v2.13: kilim baklavalı sade satırlar (emoji yok); son satır satış primi */
+  el.lvlList.innerHTML = un.map(function (u, i) { return '<span' + (i === un.length - 1 ? ' class="bon"' : '') + '>' + escH(u) + '</span>'; }).join('');
+  var cf = '';                                         /* konfeti yerine gümüş/altın balık pulu pırıltısı */
+  for (k = 0; k < 12; k++) cf += '<i style="left:' + Math.round(8 + Math.random() * 84) + '%;animation-delay:' +
+    (0.25 + Math.random() * 0.5).toFixed(2) + 's;background:' + pick(['#e8f2f6', '#c9d6dc', '#ffd35a', '#f4e9d2']) +
+    ';--dx:' + Math.round(rnd(-14, 14)) + 'px"></i>';
   el.lvlConf.innerHTML = cf;
   el.lvlUp.classList.remove('hidden', 'go'); void el.lvlUp.offsetWidth; el.lvlUp.classList.add('go');
   lvlUpT = 3.6;
