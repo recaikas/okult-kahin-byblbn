@@ -1,5 +1,5 @@
 /* v2.14 — Vergi Memuru Haşmet Bey: 7. gün gelir, müşteriler kaçar ama kayıp sayılmaz, o varken müşteri gelmez,
-   Ana Kasa'da ürün başı vergiyi keser (en çok kasanın %40'ı), 10 hafta ayrı konuşur, kayıtta saklanır.
+   Ana Kasa'da ürün başı vergiyi keser (v2.15: tavan yok, yetmeyen borca), 10 hafta ayrı konuşur, kayıtta saklanır.
    İsteğe bağlı: node test-vergi.js <görüntü klasörü> */
 const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -49,9 +49,9 @@ const SHOT = process.argv[2];
   /* aynı gün ikinci kez gelmez */
   await p.evaluate(() => { BT.tax.q().items = 5; BT.tax.q().due = 10; }); await sleep(1200);
   ok(!(await p.evaluate(() => BT.tax.st().on)), 'aynı gün tekrar geldi');
-  /* tavan: kasanın %40'ı */
-  R.cap = await p.evaluate(() => { BT.S.cash = 1000; BT.tax.st().on = false; const q = BT.tax.q(); q.due = 10000; q.items = 99; BT.tax.collect(); return BT.S.cash; });
-  ok(R.cap === 600, 'tavan çalışmıyor ' + R.cap);
+  /* v2.15: tavan yok; yetmeyen kısım borca yazılır */
+  R.cap = await p.evaluate(() => { BT.S.cash = 1000; BT.tax.st().on = false; const q = BT.tax.q(); q.debt = []; q.due = 10000; q.items = 99; BT.tax.collect(); const r = [BT.S.cash, JSON.stringify(q.debt)]; q.debt = []; return r; });
+  ok(R.cap[0] === 0 && R.cap[1] === '[[9000,0]]', 'borca yazma çalışmıyor ' + JSON.stringify(R.cap));
   /* MÜDÜR: bölgede müdür varsa gelir, konuşur, %25 indirir; o bölgenin müşterileri kaçmaz */
   await p.evaluate(() => {
     const c = BT.counters.find(c => c.open); window.__k = c.key;

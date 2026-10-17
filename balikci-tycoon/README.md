@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v2.14** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v2.15** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -16,6 +16,14 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
 ---
+
+## v2.15 — Vergi borcu, "Liman Battı", kaçışma replikleri, çöp kovası yerleri
+
+- **Vergi borcu:** kasadaki para yetmezse eksik kalan borca yazılır (tavan kalktı). Haşmet Bey önce en eski borcu ister; borç bekledikçe ikiye katlanır: 2. hafta eski ×2 + bu hafta, 3. hafta ilk ×4, ikinci ×2, bu hafta ×1. Bir gün önceden borçlu uyarı, son haftada "SON HAFTA" uyarısı.
+- **Liman Battı (oyun sonu):** 4. ziyarette en eski borç (×8) hâlâ ödenemezse Haşmet Bey limanı mühürler. Kayıt silinir, skor tablosundaki yer kalır. Ardından gazete (mühür · son fotoğraf · ertesi sabah), "LİMAN BATTI" kartı ve ana menü gelir.
+- **Kaçışma replikleri:** memur gelince kaçan müşteriler (20 replik) ve korkuyla zıplayan çalışanlar (20 replik) her hafta farklı konuşur. Borç replikleri ayrı. Hepsi TR/EN.
+- **Çöp kovaları:** tek kurala göre yerleştirildi; tezgâh önünde mal çöpe gitmiyor.
+- Test: `test-borc.js`.
 
 ## v2.14 — Vergi Memuru Haşmet Bey, sahne müzikleri
 
