@@ -461,9 +461,11 @@ var W = 0, H = 0;                 /* sanal (pixel) tuval boyutu */
    İnce sanat (art/*.js) aynı dünya biriminde 1/FK'lık alt piksellerle çizer. curK: o an çizilen tuvalin ölçeği
    (ana tuval FK; kahraman/müşteri portresi gibi yan tuvaller kendi ölçeğini kurar). */
 var FINE = true, FK = 2, curK = 2;
+if (document.body) document.body.classList.add('ince');
 function camT(x, y) { ctx.setTransform(FK, 0, 0, FK, (x || 0) * FK, (y || 0) * FK); }
 function setFine(on) {
   FINE = !!on; FK = FINE ? 2 : 1; curK = FK;
+  if (document.body) document.body.classList.toggle('ince', FINE);   /* menüler de ince görünüme uyar */
   if (window.HKA && HKA.reset) try { HKA.reset(); } catch (e) { }
   if (VW) resize();
 }

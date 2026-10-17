@@ -581,6 +581,55 @@
   .plist button.on{border-color:var(--gold);color:var(--gold)}
   .plist button small{display:block;font-size:9px;color:var(--ink2);margin-top:2px}
   #stallBtn.new::after{content:'';position:absolute;top:3px;right:3px;width:6px;height:6px;background:#ffc94a;box-shadow:0 0 0 1px #1a2433}
+
+  /* =========================================================
+     v2.13 — İNCE görünüm menüleri (body.ince). Klasik görünüm yukarıdaki kurallarla aynen kalır.
+     Dil: 2px renkli koyu kenar, içte 1px ışık (sol üst) + 1px gölge (sağ alt), basamaklı 3 tonlu dolgu,
+     ince kilim şeridi. Yerleşim ve boyutlar değişmez.
+     ========================================================= */
+  body.ince{--bev:inset 1px 1px 0 rgba(255,255,255,.16),inset -1px -1px 0 rgba(0,0,0,.38);
+    --drop:0 2px 0 rgba(4,12,20,.45);--edge:#081521}
+  body.ince .card{border-width:2px;
+    background:linear-gradient(180deg,#1b3650 0,#183149 2px,#132a3e 70%,#10222f 100%);
+    box-shadow:var(--bev),inset 0 0 0 3px rgba(255,255,255,.03),0 4px 0 rgba(4,12,20,.5),0 0 0 1px rgba(255,201,74,.06)}
+  body.ince .card::before{height:4px;background:
+    linear-gradient(180deg,transparent 0 3px,rgba(0,0,0,.35) 3px 4px),
+    repeating-linear-gradient(90deg,var(--kilim1) 0 2px,var(--kilim2) 2px 3px,var(--kilim3) 3px 5px,var(--kilim2) 5px 6px,var(--kilim1) 6px 8px,#f4e9d2 8px 9px)}
+  body.ince .card h1{text-shadow:1px 1px 0 #3a1406,2px 2px 0 #7a2b10,-1px 0 0 #3a1406,0 -1px 0 #3a1406}
+  body.ince .card h2{text-shadow:1px 1px 0 #3a2401}
+  body.ince .go{border-width:2px;border-color:#14502a;
+    background:linear-gradient(180deg,#9af0ac 0 2px,#6fe08a 2px 45%,#58cf74 45% calc(100% - 4px),#3fae5c calc(100% - 4px));
+    box-shadow:inset 1px 1px 0 rgba(255,255,255,.35),inset -1px -1px 0 rgba(0,0,0,.2),var(--drop);text-shadow:1px 1px 0 rgba(255,255,255,.35)}
+  body.ince .alt,body.ince .seg button,body.ince .dtab,body.ince .chip,body.ince .btn,body.ince .hrow button{
+    border-width:2px;border-color:var(--edge);
+    background:linear-gradient(180deg,#2b5274 0 2px,#23445f 2px 50%,#1d3a52 50% calc(100% - 3px),#152c40 calc(100% - 3px));
+    box-shadow:var(--bev),var(--drop)}
+  body.ince .chip,body.ince .dtab{box-shadow:var(--bev)}
+  body.ince .btn{border-width:2px}
+  body.ince .seg button.on,body.ince .dtab.on{color:#3a2401;border-color:#6a4704;
+    background:linear-gradient(180deg,#ffe28f 0 2px,#ffc94a 2px 50%,#f2b830 50% calc(100% - 3px),#d99a1c calc(100% - 3px));
+    box-shadow:inset 1px 1px 0 rgba(255,255,255,.45),inset -1px -1px 0 rgba(0,0,0,.18),var(--drop)}
+  body.ince .danger{color:#ff9b8a;border-color:#3a1109}
+  body.ince .dcard{border-width:2px;box-shadow:var(--bev),var(--drop);
+    background:linear-gradient(180deg,#2a5070 0 2px,#23445f 2px 40%,#1a3549 100%)}
+  body.ince .dcard::before{height:3px;background:repeating-linear-gradient(90deg,var(--kilim1) 0 2px,var(--kilim2) 2px 3px,var(--kilim3) 3px 5px,var(--kilim2) 5px 6px)}
+  body.ince .dcard .buy{border-width:2px;
+    background:linear-gradient(180deg,#9af0ac 0 2px,#6fe08a 2px 50%,#4cc46a 50% calc(100% - 3px),#3aa257 calc(100% - 3px));
+    box-shadow:inset 1px 1px 0 rgba(255,255,255,.35),var(--drop)}
+  body.ince .dcard .buy.no{background:var(--pnl);box-shadow:var(--bev)}
+  body.ince .hrow{border-width:2px;box-shadow:var(--bev)}
+  body.ince .pnl{border-width:2px;box-shadow:var(--bev),var(--drop)}
+  body.ince #tradeBtn,body.ince #actBtn{border-width:2px;border-color:#6a4704;
+    background:linear-gradient(180deg,#ffe28f 0 2px,#ffc94a 2px 50%,#f2b830 50% calc(100% - 3px),#d99a1c calc(100% - 3px));
+    box-shadow:inset 1px 1px 0 rgba(255,255,255,.45),inset -1px -1px 0 rgba(0,0,0,.18),var(--drop)}
+  body.ince .overlay{background:radial-gradient(ellipse at 50% 40%,rgba(10,30,46,.82),rgba(4,12,20,.94))}
+  /* piksel ses kaydırıcıları */
+  body.ince .vols input[type=range]{-webkit-appearance:none;appearance:none;height:22px;background:transparent}
+  body.ince .vols input[type=range]::-webkit-slider-runnable-track{height:6px;background:#081521;border:1px solid #2b5274;box-shadow:inset 0 1px 0 rgba(0,0,0,.5)}
+  body.ince .vols input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:16px;margin-top:-6px;
+    background:linear-gradient(180deg,#ffe28f 0 2px,#ffc94a 2px 60%,#d99a1c 60%);border:2px solid #6a4704;border-radius:0}
+  body.ince .vols input[type=range]::-moz-range-track{height:6px;background:#081521;border:1px solid #2b5274}
+  body.ince .vols input[type=range]::-moz-range-thumb{width:10px;height:14px;background:#ffc94a;border:2px solid #6a4704;border-radius:0}
 </style>
 </head>
 <body>
