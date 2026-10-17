@@ -655,6 +655,54 @@
     background:linear-gradient(180deg,#ffe28f 0 2px,#ffc94a 2px 60%,#d99a1c 60%);border:2px solid #6a4704;border-radius:0}
   body.ince .vols input[type=range]::-moz-range-track{height:6px;background:#081521;border:1px solid #2b5274}
   body.ince .vols input[type=range]::-moz-range-thumb{width:10px;height:14px;background:#ffc94a;border:2px solid #6a4704;border-radius:0}
+
+  /* =========================================================
+     v2.13 — LİMAN arayüz dili (küçük parçalar, iki görünümde de):
+     pirinç çerçeve, lacivert derinlik, iki katmanlı yumuşak gölge, 3px yumuşak köşe, kilim dokunuşu.
+     ========================================================= */
+  :root{--brass:#d9b45e;--brass2:#f2d488;--brassD:#7a5418;--paper:#f4e6c4;--paper2:#e6d2a4;--inkB:#3a2614;
+    --deep:0 2px 0 rgba(3,10,16,.55),0 8px 18px rgba(2,8,14,.38);--deepS:0 1px 0 rgba(3,10,16,.5),0 4px 10px rgba(2,8,14,.3);
+    --hi:inset 0 1px 0 rgba(255,255,255,.12);--rad:3px}
+  .card,.go,.alt,.seg button,.tab,.dtab,.chip,.btn,.row,.trow,.dcard,.hrow,.sb,.pnl{border-radius:var(--rad)}
+  .card{box-shadow:var(--hi),inset 0 0 0 1px rgba(255,255,255,.03),var(--deep)}
+  .tab{background:linear-gradient(180deg,#2b5274 0 2px,#23445f 2px 50%,#1d3a52 50% calc(100% - 3px),#152c40 calc(100% - 3px));
+    box-shadow:var(--hi),0 2px 0 rgba(4,12,20,.4)}
+  .tab.on{background:linear-gradient(180deg,#ffe28f 0 2px,#ffc94a 2px 50%,#f2b830 50% calc(100% - 3px),#d99a1c calc(100% - 3px));
+    color:#3a2401;border-color:#6a4704;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 0 rgba(4,12,20,.4)}
+  .row,.trow{border-left-width:2px;box-shadow:var(--hi),var(--deepS);
+    background:linear-gradient(180deg,#25486a 0,#1f3d56 3px,#1a3448 100%)}
+  .row{border-left-color:var(--brass)}
+  .trow{border-width:2px}
+  .trow button{border-width:2px;border-radius:2px;box-shadow:var(--hi),0 1px 0 rgba(0,0,0,.4)}
+  /* bildirim: krem not kâğıdı, pirinç şerit, mürekkep yazı */
+  #toast{background:linear-gradient(180deg,var(--paper) 0,var(--paper) 70%,var(--paper2) 100%);color:var(--inkB);
+    border:2px solid #5a3e1e;border-top:4px solid var(--brass);border-radius:var(--rad);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6),var(--deep);padding:8px 16px 9px;font-size:13.5px;line-height:1.35;letter-spacing:.2px}
+  /* ipucu kutusu */
+  .coach{background:linear-gradient(180deg,rgba(26,52,74,.96),rgba(12,28,42,.96));border:2px solid var(--brass);
+    border-radius:var(--rad);box-shadow:var(--hi),var(--deep)}
+  .coach .keys i{border-radius:2px;background:linear-gradient(180deg,#34607f,#23445f);border-color:#081521;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.18);color:var(--brass2)}
+  /* görev çubuğu + rozetler */
+  #objective{background:linear-gradient(180deg,rgba(26,52,74,.92),rgba(14,32,48,.92));border:1px solid #081521;
+    border-radius:var(--rad);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(217,180,94,.18),var(--deepS);padding:5px 11px}
+  #objective .lbl{color:var(--brass2)}
+  #queueHint{background:linear-gradient(180deg,#5a1f16,#3e130c);border:2px solid #1a0603;border-radius:var(--rad);box-shadow:var(--hi),var(--deepS)}
+  #pauseBadge{border:2px solid var(--brass);border-radius:var(--rad);box-shadow:var(--hi),var(--deep);
+    background:linear-gradient(180deg,rgba(26,52,74,.97),rgba(10,26,39,.97))}
+  #autoBadge{border-radius:var(--rad);box-shadow:var(--hi),var(--deepS);background:linear-gradient(180deg,rgba(20,56,40,.95),rgba(10,32,22,.95))}
+  /* özel müşteri: küçük tahta levha */
+  #specPop{border:2px solid #2e1a0a;border-top:4px solid var(--brass);border-radius:var(--rad);color:#f4e9d2;
+    background:repeating-linear-gradient(180deg,#8a5a33 0 9px,#7a4e2c 9px 10px,#5a3818 10px 11px,#83552f 11px 20px,#6e4526 20px 21px,#4a2e16 21px 22px);
+    box-shadow:inset 0 1px 0 rgba(255,230,180,.2),var(--deep);text-shadow:1px 1px 0 #2e1a0a}
+  /* gün şeridi */
+  #dayBanner b{text-shadow:1px 0 0 #3a1406,-1px 0 0 #3a1406,0 -1px 0 #3a1406,0 1px 0 #3a1406,3px 3px 0 #7a2b10,0 0 18px rgba(255,201,74,.35)}
+  #dayBanner small{display:inline-block;padding:3px 12px;background:linear-gradient(180deg,rgba(26,52,74,.9),rgba(12,28,42,.9));
+    border:1px solid rgba(217,180,94,.5);border-radius:var(--rad);box-shadow:var(--deepS)}
+  /* kart başlıkları ve ayraçlar */
+  .card h2{text-shadow:1px 1px 0 #3a2401,0 0 12px rgba(255,201,74,.18)}
+  .lbl{color:#b8cdda}
+  .lbl::before{content:"";display:inline-block;width:5px;height:5px;margin:0 6px 1px 0;background:var(--brass);transform:rotate(45deg);vertical-align:middle;opacity:.8}
 </style>
 </head>
 <body>
