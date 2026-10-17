@@ -25,7 +25,9 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 - **Çöp kovaları:** tek kurala göre yerleştirildi; tezgâh önünde mal çöpe gitmiyor.
 - **PROJE sekmesi kaldırıldı:** Ticaret Ofisi ve lisansı artık BİNA sekmesinde, alt çubukta dört sekme var.
 - **Alp Er Tunga nöbette:** hikâyede kendini tanıttığı 6. günden sonra köprü başında, kıyıda yayıyla nöbet tutar. 12. günden sonra yayı yanındaki kazıkta asılı durur.
-- Test: `test-borc.js`, `test-bekci.js`.
+- **Denizden gelen yunus:** "Şahmeran" sahnesi artık tezgâha yürüyen biriyle değil, denizden gelen yunusla başlar. Yunus yüzgeciyle yaklaşır, üç kez sıçrar, sonra kıyıda bekler; oyuncu yanına gelince sahne açılır.
+- **Hikâye arka planları:** karşı kıyıda oyundaki kasaba, cami ve serviler var; sahnelerin saatleri korundu.
+- Test: `test-borc.js`, `test-bekci.js`, `test-yunus.js`.
 
 ## v2.14 — Vergi Memuru Haşmet Bey, sahne müzikleri
 

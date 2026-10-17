@@ -32,7 +32,7 @@ var STR = {
     welcomeCo: 'Hayırlı olsun! {n} kapılarını açtı.', tapStart: '▶ BAŞLAMAK İÇİN DOKUN', skip: 'ATLA ▶▶',
     dayScore: 'Skor (toplam balık)', dayRank: '{s} • {r}. sıra', fishN: '{n} balık',
     tag: 'KÜÇÜK İSKELEDEN BÜYÜK LİMANA',
-    langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM', taxWarn: '🎩 Yarın vergi memuru Haşmet Bey limana uğrayacak…', taxPaid: '🧾 Vergi makbuzu: {n} ürün · −{v}', taxName: 'Vergi Memuru Haşmet Bey', guardLbl: 'Alp Er Tunga · nöbette', taxWarnDebt: '🎩 Yarın Haşmet Bey geliyor! Faiziyle borcun: {v}. Kasada para olsun!', taxWarnLast: '⚠ SON HAFTA! Yarın {v} borcunu ödeyemezsen liman mühürlenir!', taxDebt: '📕 Ödenemeyen vergi borca yazıldı: {v}. Haftaya iki katı!', taxDebtOff: '✅ Haşmet Bey\'e borcun kapandı', overK: 'OYUN BİTTİ', overT: 'LİMAN BATTI', overBy: 'HAŞMET BEY HER ZAMAN GELİR', overGo: 'ANA MENÜ', overP: '{c} vergi borcu yüzünden mühürlendi. {d} gün boyunca {s} müşteriye balık sattın. Hamsiler hâlâ koyda… belki bir gün, yeniden.', visLbl: 'GÖRÜNÜM', visClassic: 'KLASİK', visFine: 'İNCE',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM', taxWarn: '🎩 Yarın vergi memuru Haşmet Bey limana uğrayacak…', taxPaid: '🧾 Vergi makbuzu: {n} ürün · −{v}', taxName: 'Vergi Memuru Haşmet Bey', guardLbl: 'Alp Er Tunga · nöbette', dolphLbl: '🐬 Yunus seni çağırıyor', dolphHint: '🐬 İskelenin batı kıyısında bir yunus sıçrıyor… yanına git!', dolphHintN: '🐬 İskelenin kuzey ucunda bir yunus sıçrıyor… yanına git!', taxWarnDebt: '🎩 Yarın Haşmet Bey geliyor! Faiziyle borcun: {v}. Kasada para olsun!', taxWarnLast: '⚠ SON HAFTA! Yarın {v} borcunu ödeyemezsen liman mühürlenir!', taxDebt: '📕 Ödenemeyen vergi borca yazıldı: {v}. Haftaya iki katı!', taxDebtOff: '✅ Haşmet Bey\'e borcun kapandı', overK: 'OYUN BİTTİ', overT: 'LİMAN BATTI', overBy: 'HAŞMET BEY HER ZAMAN GELİR', overGo: 'ANA MENÜ', overP: '{c} vergi borcu yüzünden mühürlendi. {d} gün boyunca {s} müşteriye balık sattın. Hamsiler hâlâ koyda… belki bir gün, yeniden.', visLbl: 'GÖRÜNÜM', visClassic: 'KLASİK', visFine: 'İNCE',
     resetAsk: 'Tüm ilerleme silinsin mi?',
     intro1: '🎣 Ağın yanında bekle, balık birikir',
     intro2: '🧺 Üstünden geç, sırtla (ağır balık çok yer kaplar)',
@@ -246,7 +246,7 @@ var STR = {
     welcomeCo: '{n} is open for business!', tapStart: '▶ TAP TO BEGIN', skip: 'SKIP ▶▶',
     dayScore: 'Score (total fish)', dayRank: '{s} • #{r}', fishN: '{n} fish',
     tag: 'FROM A TINY PIER TO A GRAND HARBOR',
-    langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM', taxWarn: '🎩 Tomorrow the tax collector Mr. Haşmet will visit the harbour…', taxPaid: '🧾 Tax receipt: {n} items · −{v}', taxName: 'Tax Collector Mr. Haşmet', guardLbl: 'Alp Er Tunga · on watch', taxWarnDebt: '🎩 Mr. Haşmet comes tomorrow! Your debt with interest: {v}. Keep cash in the safe!', taxWarnLast: '⚠ LAST WEEK! If you can\'t pay your {v} debt tomorrow, the harbour will be sealed!', taxDebt: '📕 Unpaid tax added to your debt: {v}. It doubles next week!', taxDebtOff: '✅ Your debt to Mr. Haşmet is cleared', overK: 'GAME OVER', overT: 'THE HARBOUR SANK', overBy: 'MR. HAŞMET ALWAYS COMES BACK', overGo: 'MAIN MENU', overP: '{c} was sealed over unpaid taxes. For {d} days you sold fish to {s} customers. The anchovies are still in the bay… maybe one day, again.', visLbl: 'GRAPHICS', visClassic: 'CLASSIC', visFine: 'FINE',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM', taxWarn: '🎩 Tomorrow the tax collector Mr. Haşmet will visit the harbour…', taxPaid: '🧾 Tax receipt: {n} items · −{v}', taxName: 'Tax Collector Mr. Haşmet', guardLbl: 'Alp Er Tunga · on watch', dolphLbl: '🐬 The dolphin is calling you', dolphHint: '🐬 A dolphin is leaping by the west edge of the pier… go to it!', dolphHintN: '🐬 A dolphin is leaping at the north end of the pier… go to it!', taxWarnDebt: '🎩 Mr. Haşmet comes tomorrow! Your debt with interest: {v}. Keep cash in the safe!', taxWarnLast: '⚠ LAST WEEK! If you can\'t pay your {v} debt tomorrow, the harbour will be sealed!', taxDebt: '📕 Unpaid tax added to your debt: {v}. It doubles next week!', taxDebtOff: '✅ Your debt to Mr. Haşmet is cleared', overK: 'GAME OVER', overT: 'THE HARBOUR SANK', overBy: 'MR. HAŞMET ALWAYS COMES BACK', overGo: 'MAIN MENU', overP: '{c} was sealed over unpaid taxes. For {d} days you sold fish to {s} customers. The anchovies are still in the bay… maybe one day, again.', visLbl: 'GRAPHICS', visClassic: 'CLASSIC', visFine: 'FINE',
     resetAsk: 'Erase all progress?',
     intro1: '🎣 Wait by the net, fish pile up',
     intro2: '🧺 Walk over the crate to carry them (big fish weigh more)',
@@ -7272,6 +7272,7 @@ function render() {
     if (AREAS[bn.z].locked) return; push(bn.x + bn.y, function () { drawBin(bn); });
   })(BINS[i]);
   if (guardOn()) push(GUARD.x + GUARD.y, drawGuard);   /* v2.15: Alp Er Tunga nöbette */
+  if (dolph) push(dolph.x + dolph.y, drawStoryDolphin);   /* v2.15: denizden gelen yunus */
   for (i = 0; i < PLOTS.length; i++) (function (p) {          /* v0.4 hizmet parselleri */
     if (!plotActive(p)) return;
     if (p.b) push(p.x + p.y, function () { drawServ(p); });
@@ -11499,8 +11500,100 @@ function specName(sp) {
   if (sp.id.indexOf('st_') === 0) return stQ().known.indexOf(sp.id.slice(3)) >= 0 ? NM(sp.n) : '?????';
   return (S.names || []).indexOf(sp.id) >= 0 ? NM(sp.n) : '?????';
 }
+/* v2.15 — DENİZDEN GELEN YUNUS: "Şahmeran" sahnesi ("Yunus seni aşağı çekiyor") tezgâha yürüyen biriyle değil, denizden
+   gelen yunusla başlar. Yüzgeci görünerek yüzer, üç kez sıçrar, sonra oyuncunun bölgesinde iskelenin batı kıyısında
+   bekler; oyuncu kıyıya gelince sahne açılır. Gün biterse dalıp gider, ertesi gün yeniden gelir. */
+var STORY_SEA = { 8: 1 };
+/* bölge başına: [su noktası x, y, kıyı yönü (dışa doğru) x, y]; ağların ve demirli teknelerin arasındaki açık su.
+   1. bölgenin batısında tekne ve ağ var: yunus orada iskelenin kuzey kıyısına gelir. */
+var DOLPH_AT = [[5.0, -1.4, 0, -1], [-1.1, 8.3, -1, 0], [-1.1, 12.6, -1, 0], [-1.1, 20.0, -1, 0]];
+var DOLPH_IN = 4, DOLPH_LEAP = 1.15, DOLPH_N = 3, DOLPH_OUT = 3;
+var dolph = null;                                          /* görünen yunus (bekliyor ya da uzaklaşıyor) */
+function dolphSpawn(n) {
+  var z = 0, i;
+  for (i = AREAS.length - 1; i >= 0; i--) if (!AREAS[i].locked && player.y >= AREAS[i].y0) { z = i; break; }
+  if (AREAS[z].locked) z = 0;
+  var a = DOLPH_AT[z] || DOLPH_AT[0];
+  dolph = { dolphin: true, story: n, x: a[0] + a[2] * 5, y: a[1] + a[3] * 5, hx: a[0], hy: a[1], ox: a[2], oy: a[3], t: 0, st: 'in', dir: 1, hint: false };
+  dolph.c = { x: a[0] - a[2] * 2.2, y: a[1] - a[3] * 2.0 };       /* oyuncunun gelmesi gereken kıyı noktası */
+  storyVis = dolph;
+  return true;
+}
+function dolphSplash(x, y) { addPuff(x, y, '#e2f3ff'); addPuff(x + 0.2, y + 0.1, '#b9dcf2'); try { noise(0.35, 0.07, { f: 1400, to: 500, q: 0.8, type: 'bandpass' }); } catch (e) { } }
+function updateDolph(dt) {
+  var d = dolph; if (!d) return;
+  d.t += dt;
+  var far = function (k) { d.x = d.hx + d.ox * k; d.y = d.hy + d.oy * k; };
+  if (d.st === 'in') { far(5 * (1 - Math.min(1, d.t / DOLPH_IN))); if (d.t >= DOLPH_IN) { d.st = 'leap'; d.t = 0; d.k = -1; } return; }
+  if (d.st === 'leap') {
+    var k = Math.floor(d.t / DOLPH_LEAP);
+    if (k !== d.k) { d.k = k; if (k < DOLPH_N) { d.dir = k % 2 ? -1 : 1; dolphSplash(d.x, d.y); } }
+    if (k >= DOLPH_N) { d.st = 'wait'; d.t = 0; dolphSplash(d.x, d.y); return; }
+    var u = (d.t - k * DOLPH_LEAP) / DOLPH_LEAP;
+    var sl = (u - 0.5) * 1.2 * d.dir; d.x = d.hx - d.oy * sl; d.y = d.hy + d.ox * sl;   /* kıyıya paralel sıçrar */
+    if (u > 0.92 && !d.sp) { d.sp = 1; dolphSplash(d.x, d.y); } else if (u < 0.5) d.sp = 0;
+    return;
+  }
+  if (d.st === 'wait') {
+    d.x = d.hx; d.y = d.hy;
+    if (!d.hint) { d.hint = true; toast(T(d.oy < 0 ? 'dolphHintN' : 'dolphHint')); }
+    if (storyVis === d && !storyOpenNow() && day.phase === 'play' && dist2(player.x, player.y, d.c.x, d.c.y) < 2.6) { d.st = 'talk'; if (!storyOpen(d)) d.st = 'wait'; }
+    return;
+  }
+  if (d.st === 'out') { far(Math.min(1, d.t / DOLPH_OUT) * 6); if (d.t >= DOLPH_OUT) dolph = null; }
+}
+/* yunus çizimi: ince piksel ızgarası bir kez hazırlanır (sağa bakan), su çizgisinin altı kırpılır */
+var _dolSpr = null;
+function dolphSprite() {
+  if (_dolSpr) return _dolSpr;
+  var SC = 1.45, Wd = 38, Hd = 19, c = document.createElement('canvas'); c.width = Wd; c.height = Hd;   /* SC: şekil ölçeği (ince piksel) */
+  var g = c.getContext('2d'), m = [], i, j;
+  function inside(x, y) {
+    var ex = (x - 12) / 9.5, ey = (y - 7) / 3.4;
+    if (ex * ex + ey * ey <= 1) return true;                                 /* gövde */
+    if (x >= 20 && x <= 24 && y >= 6.5 && y <= 8) return true;               /* gaga */
+    if (x >= 9 && x <= 13 && y >= 1 + (13 - x) * 0.25 && y < 5 && y >= 4 - (x - 9)) return true;   /* sırt yüzgeci */
+    if (x <= 3 && Math.abs(y - 7) <= (3 - x) * 1.6 + 0.6 && Math.abs(y - 7) >= 0.4 * (3 - x)) return true;   /* kuyruk */
+    if (x >= 3 && x <= 5 && y >= 6 && y <= 8) return true;
+    if (x >= 12 && x <= 15 && y >= 10 && y <= 11 - (x - 12) * 0.3) return true;   /* göğüs yüzgeci */
+    return false;
+  }
+  for (j = 0; j < Hd; j++) { m[j] = []; for (i = 0; i < Wd; i++) m[j][i] = inside((i + 0.5) / SC, (j + 0.5) / SC); }
+  for (j = 0; j < Hd; j++) for (i = 0; i < Wd; i++) {
+    var col = null;
+    if (m[j][i]) { var jj = j / SC; col = jj < 5 ? '#4a6c8e' : jj < 7 ? '#6f93b6' : jj < 8 ? '#9db9d3' : '#e3edf5'; }
+    else if ((m[j][i - 1]) || (m[j][i + 1]) || (m[j - 1] && m[j - 1][i]) || (m[j + 1] && m[j + 1][i])) col = '#1d2b40';
+    if (col) { g.fillStyle = col; g.fillRect(i, j, 1, 1); }
+  }
+  g.fillStyle = '#b8d2ea'; for (i = 12; i < 26; i++) for (j = 4; j < 8; j++) if (m[j][i] && !m[j - 1][i]) { g.fillRect(i, j + 1, 1, 1); break; }   /* sırt ışığı */
+  g.fillStyle = '#0e141c'; g.fillRect(27, 8, 2, 2); g.fillStyle = '#ffffff'; g.fillRect(27, 8, 1, 1);   /* göz */
+  g.fillStyle = '#1d2b40'; g.fillRect(30, 11, 4, 1);                                            /* gülümseyen ağız çizgisi */
+  _dolSpr = c; return c;
+}
+function drawStoryDolphin() {
+  var d = dolph; if (!d) return;
+  var sx = pX(d.x, d.y), sy = pY(d.x, d.y, 0), spr = dolphSprite(), z = 0, ang = 0, show = 1;
+  if (d.st === 'leap') { var u = (d.t - d.k * DOLPH_LEAP) / DOLPH_LEAP; z = Math.sin(Math.PI * u) * 15; ang = (u - 0.5) * 1.5; }
+  else if (d.st === 'wait' || d.st === 'talk') { var w = (d.t % 3.2) / 3.2; z = w < 0.3 ? Math.sin(Math.PI * w / 0.3) * 6 : -2 + Math.sin(d.t * 3) * 1; ang = w < 0.3 ? (w / 0.3 - 0.5) * 1.2 : -0.5; }
+  else show = 0;                                                             /* yüzerken yalnız yüzgeç */
+  ctx.save();
+  ctx.beginPath(); ctx.rect(sx - 40, sy - 80, 80, 80); ctx.clip();          /* su çizgisinin altı görünmez */
+  if (show) {
+    ctx.translate(sx, sy - z); ctx.scale(d.dir * 0.5, 0.5); ctx.rotate(-ang);
+    ctx.imageSmoothingEnabled = false; ctx.drawImage(spr, -19, -17);
+  } else {
+    var fx = R(sx), fy = R(sy);                                              /* sırt yüzgeci + iz */
+    px(fx - 1, fy - 4, 2, 4, '#1d2b40'); px(fx, fy - 5, 2, 5, '#4a6c8e'); px(fx + 2, fy - 2, 1, 2, '#4a6c8e');
+    px(fx - 8, fy, 6, 1, '#d8eefc'); px(fx - 14, fy + 1, 4, 1, '#b9dcf2');
+  }
+  ctx.restore();
+  if (d.st !== 'out' && d.st !== 'in' && Math.floor(d.t * 2) % 3 !== 0) px(R(sx) - 1, R(sy) - 26, 2, 1, '#e2f3ff');   /* fıskiye damlası */
+  if (d.st === 'wait') { if (phase2(gameT, 1.2)) drawEmote(d.x, d.y, 30, 'love'); uiLabel(d.x, d.y, 40, T('dolphLbl'), '#9fe0ff', 0.95); }
+}
 function storySpawn() {
-  var n = stQ().step + 1, sp = STORY_SPECS['st_' + window.HK_STORY.visitor(n)];
+  var n = stQ().step + 1;
+  if (STORY_SEA[n]) return dolphSpawn(n);
+  var sp = STORY_SPECS['st_' + window.HK_STORY.visitor(n)];
   if (!sp) return false;
   var c = specStall(sp), j, slot = -1;
   if (!c) for (j = 0; j < counters.length; j++) { var cc = counters[j]; if (!AREAS[cc.z].locked && cc.open && cc.fish && cc.slots.indexOf(null) >= 0) { c = cc; break; } }
@@ -11527,7 +11620,8 @@ function storyOpen(cu) {
 }
 function storyRelease(cu) {
   cu.storyDone = true;
-  if (cu.state !== 'leave') { cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; if (cu.c.slots[cu.slot] === cu) { cu.c.slots[cu.slot] = null; shiftQueue(cu.c); } }
+  if (cu.dolphin) { cu.st = 'out'; cu.t = 0; dolphSplash(cu.x, cu.y); }   /* v2.15: yunus derine dalar */
+  else if (cu.state !== 'leave') { cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; if (cu.c.slots[cu.slot] === cu) { cu.c.slots[cu.slot] = null; shiftQueue(cu.c); } }
   storyVis = null; storyMute = false; applyBusVol(); syncPause(); save();
   if (CUE.on === 'sahmeran') cueStop(2.5);                /* v2.14: sahne bitti, oyunun parçası kaldığı yerden döner */
 }
@@ -11546,8 +11640,13 @@ function storyApply(r, n) {
   if (st.step >= STORY_N) toast(T('storyDone'));
 }
 function updateStory(dt) {
+  updateDolph(dt);
   if (!storyOn()) return;
   var st = stQ();
+  if (storyVis && storyVis.dolphin) {                    /* v2.15: yunus kıyıda bekliyor; gün biterse dalıp gider */
+    if (day.phase !== 'play' && !storyVis.storyDone && !storyOpenNow()) { storyVis.st = 'out'; storyVis.t = 0; storyVis = null; if (CUE.on === 'sahmeran') cueStop(2); }
+    return;
+  }
   if (storyVis) {
     if (customers.indexOf(storyVis) < 0 || (storyVis.state === 'leave' && !storyVis.storyDone)) { storyVis = null; if (CUE.on === 'sahmeran') cueStop(2); return; }   /* tezgâh kapandı: yarın/az sonra yeniden */
     if (storyVis.state === 'wait' && !storyVis.storyDone && !storyOpenNow()) storyOpen(storyVis);
@@ -11557,7 +11656,7 @@ function updateStory(dt) {
   if (day.phase !== 'play' || day.t < STORY_AT) return;
   st.tryT = (st.tryT || 0) - dt; if (st.tryT > 0) return;
   st.tryT = 2;
-  if (storySpawn()) { sfxFrom({ x: storyVis.c.x, y: storyVis.c.y }, function () { specSfx(storyVis && specById(storyVis.spec)); }); cuePlay('sahmeran'); }   /* v2.14: sahne yaklaşıyor */
+  if (storySpawn()) { if (!storyVis.dolphin) sfxFrom({ x: storyVis.c.x, y: storyVis.c.y }, function () { specSfx(storyVis && specById(storyVis.spec)); }); cuePlay('sahmeran'); }   /* v2.14: sahne yaklaşıyor */
 }
 
 /* =========================================================
@@ -12734,7 +12833,7 @@ window.BT = {
   mx: function () { return { cfg: SPEC_CFG, st: S.mx, horonT: horonT, liveT: liveT, force: S.specForce, insp: day.insp, mxRep: day.mxRep || 0 }; }, mxInspect: mxInspect, mxNewDay: mxNewDay, custDrain: custDrain, specArrive: specArrive,
   specJob: function (id) { return specJob(specById(id)); },
   custBook: function () { return custBookData(); }, openCustBook: function () { openCustBook(); }, finishOrder: finishOrder, notifsAll: function () { return el.toast.textContent; },
-  story: function () { return { st: S.story, vis: storyVis, on: storyOn(), open: storyOpenNow(), mute: storyMute, netMul: storyNetMul(), name: function (id) { return specName(specById(id)); } }; }, storySet: function (o) { var st = stQ(); for (var k in o) st[k] = o[k]; },
+  dolph: function () { return dolph; }, story: function () { return { st: S.story, vis: storyVis, on: storyOn(), open: storyOpenNow(), mute: storyMute, netMul: storyNetMul(), name: function (id) { return specName(specById(id)); } }; }, storySet: function (o) { var st = stQ(); for (var k in o) st[k] = o[k]; },
   snd: function () { return { vol: { mus: VOL.mus, sfx: VOL.sfx, amb: VOL.amb }, buses: !!(musBus && sfxBus && ambBus), stat: { asked: sfxStat.asked, played: sfxStat.played }, musDst: !!(music.gain && musBus) }; },
   sfxFrom: sfxFrom, sfx: sfx, REP_LEVELS: REP_LEVELS, repLevel: function () { return repLevel(); }, repCapped: function () { return repCapped(); }, notifs: function () { return M ? M.notif.map(function (n) { return n.m; }) : []; },
   canProcess: canProcess, scr: function (x, y, z) { return { x: Math.round(uiX(x, y)), y: Math.round(uiY(x, y, z || 0)) }; }, kitchen: kitchen, COOK_TIME: COOK_TIME, zoneRoles: zoneRoles, customers: customers, FISH: FISH, start: start, hire: hire, toast: toast,
