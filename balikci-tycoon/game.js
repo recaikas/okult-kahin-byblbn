@@ -9727,12 +9727,13 @@ function takeHarborSnap() {
     var src = document.getElementById('game'), aw = PAPER_W - 14, ah = 84;
     var sc = Math.min(src.width / (aw * 2.2), src.height / (ah * 2.2));
     var cw = Math.round(aw * 2.2 * sc), chh = Math.round(ah * 2.2 * sc);
-    var col = document.createElement('canvas'); col.width = aw; col.height = ah;
+    var fk = FK;                                               /* v2.13: ince görünümde fotoğraf da ince */
+    var col = document.createElement('canvas'); col.width = aw * fk; col.height = ah * fk;
     var cg = col.getContext('2d'); cg.imageSmoothingEnabled = false;
-    cg.drawImage(src, Math.round((src.width - cw) / 2), Math.round(src.height * 0.46 - chh / 2), cw, chh, 0, 0, aw, ah);
-    var sep = document.createElement('canvas'); sep.width = aw; sep.height = ah;
+    cg.drawImage(src, Math.round((src.width - cw) / 2), Math.round(src.height * 0.46 - chh / 2), cw, chh, 0, 0, aw * fk, ah * fk);
+    var sep = document.createElement('canvas'); sep.width = aw * fk; sep.height = ah * fk;
     var sg = sep.getContext('2d'); sg.drawImage(col, 0, 0);
-    var d = sg.getImageData(0, 0, aw, ah), a = d.data;
+    var d = sg.getImageData(0, 0, aw * fk, ah * fk), a = d.data;
     for (var i = 0; i < a.length; i += 4) {                    /* baskı sepyası */
       var l = (a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11) / 255;
       a[i] = 60 + l * 180; a[i + 1] = 48 + l * 170; a[i + 2] = 30 + l * 140;
@@ -9776,7 +9777,8 @@ function drawPaper(g, sc, idx, t) {
   var W = PAPER_W, H = PAPER_H, INK = '#2c231a', i, j;
   g.fillStyle = '#e8dcc0'; g.fillRect(0, 0, W, H);
   var r = seedRnd(101);                                             /* eskimiş kâğıt lekeleri */
-  for (i = 0; i < 160; i++) { g.fillStyle = r() > 0.5 ? '#ddd0b0' : '#efe5cc'; g.fillRect(Math.floor(r() * W), Math.floor(r() * H), 1 + Math.floor(r() * 2), 1); }
+  if ((intro.k || 1) > 1 && window.HKA && HKA.gazete && HKA.gazete.paper) HKA.gazete.paper(g, W, H);   /* v2.13: ince kâğıt dokusu */
+  else for (i = 0; i < 160; i++) { g.fillStyle = r() > 0.5 ? '#ddd0b0' : '#efe5cc'; g.fillRect(Math.floor(r() * W), Math.floor(r() * H), 1 + Math.floor(r() * 2), 1); }
   g.fillStyle = '#d3c39f'; g.fillRect(0, 0, W, 1); g.fillRect(0, H - 1, W, 1); g.fillRect(0, 0, 1, H); g.fillRect(W - 1, 0, 1, H);
   g.fillStyle = '#cbbb96'; g.fillRect(W / 2, 0, 1, H);             /* orta katlama izi */
   g.fillStyle = INK;
@@ -9792,7 +9794,7 @@ function drawPaper(g, sc, idx, t) {
   /* resim kutusu */
   var ax = 7, ay = 90, aw = W - 14, ah = 84;
   g.save(); g.beginPath(); g.rect(ax, ay, aw, ah); g.clip(); g.translate(ax, ay);
-  var art = ARTS[sc.art];
+  var GZ = (intro.k || 1) > 1 && window.HKA && HKA.gazete, art = (GZ && GZ[sc.art]) || ARTS[sc.art];   /* v2.13: ince gazete resimleri (art/gazete.js) */
   art(g, PAL_SEPIA, t, aw, ah);
   if (sc.art === 'harbor' || sc.art === 'snap') {                /* hayal sahnesi / limanın fotoğrafı renge bürünür */
     var k = clamp((t - 1.2) / 2.2, 0, 1);
@@ -9829,8 +9831,10 @@ function openIntro(then, list) {
   intro.then = then || null;
   intro.list = list || INTRO;
   intro.cv = el.introCv; intro.g = intro.cv.getContext('2d');
-  intro.cv.width = STAGE_W; intro.cv.height = STAGE_H;
-  if (!intro.pc) { intro.pc = document.createElement('canvas'); intro.pc.width = PAPER_W; intro.pc.height = PAPER_H; intro.pg = intro.pc.getContext('2d'); }
+  intro.k = FK;                                                   /* v2.13: ince görünümde gazete 2 kat çözünürlükte */
+  intro.cv.width = STAGE_W * intro.k; intro.cv.height = STAGE_H * intro.k;
+  if (!intro.pc) { intro.pc = document.createElement('canvas'); intro.pg = intro.pc.getContext('2d'); }
+  intro.pc.width = PAPER_W * intro.k; intro.pc.height = PAPER_H * intro.k;
   el.startScreen.classList.add('hidden');
   el.introScr.classList.remove('hidden');
   el.introSkip.textContent = T('skip');
@@ -9870,6 +9874,8 @@ function closeIntro() {
 function updateIntro(dt) {
   var g = intro.g, sc = intro.list[intro.i];
   intro.t += dt;
+  var ik = intro.k || 1;
+  g.setTransform(ik, 0, 0, ik, 0, 0);
   g.imageSmoothingEnabled = false;
   g.clearRect(0, 0, STAGE_W, STAGE_H);
   if (intro.ph === 'gate') return;
@@ -9899,12 +9905,13 @@ function updateIntro(dt) {
       if (intro.typed >= full.length) el.introNext.classList.remove('hidden');
     }
   }
+  intro.pg.setTransform(ik, 0, 0, ik, 0, 0); intro.pg.imageSmoothingEnabled = false;
   drawPaper(intro.pg, sc, intro.i, intro.ph === 'in' ? 0 : intro.t);
   g.save();
   g.translate(Math.round(STAGE_W / 2 + ox), Math.round(STAGE_H / 2));
   g.rotate(rot); g.scale(s, s);
   g.fillStyle = 'rgba(0,0,0,.38)'; g.fillRect(-PAPER_W / 2 + 4, -PAPER_H / 2 + 5, PAPER_W, PAPER_H);
-  g.drawImage(intro.pc, -PAPER_W / 2, -PAPER_H / 2);
+  g.drawImage(intro.pc, -PAPER_W / 2, -PAPER_H / 2, PAPER_W, PAPER_H);
   g.restore();
 }
 
