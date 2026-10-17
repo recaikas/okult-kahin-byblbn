@@ -1395,6 +1395,11 @@ function updateMgrJokers(dt) {
     if (!mgr(z) || !zoneOpen(z)) { mgrAct[z] = null; continue; }
     var s = mgrSeat(z), a = mgrAct[z] || (mgrAct[z] = { x: s.x, y: s.y, z: 0, vx: 0, vy: 0, bob: 0, face: 1, carry: [], act: 0, zone: z, capX: MGR_CAP, mode: 'drop' });
     var sp = 2.4 * (1 + mgrEff(z, 'wspeed')), mine = mgrZoneCounters(z), i, c;
+    if (TAX.on && TAX.call && TAX.call[z]) {                  /* v2.14: vergi memuru tezgâhta → müdür gelip ilgilenir */
+      var tcl = TAX.call[z];
+      if (goTo(a, tcl.x, tcl.y, sp, dt, 0.2)) { tcl.here = true; a.face = tcl.x < TAX.x ? 1 : -1; } else a.bob += dt * 8;
+      continue;
+    }
     if (!rush || !mine.length) {
       if (hasCarry(a, isGoods)) mgrDropBack(a, z);
       a.mode = 'drop'; a.tc = null;
@@ -2271,11 +2276,13 @@ function beginNextDay(skipPrep) {
 
 /* =========================================================
    v2.14 — VERGİ MEMURU HAŞMET BEY (Yeşilçam kötüsü)
-   Her 7. gün, günün ilk üçte birinde yoldan sallana sallana gelir. Limandayken müşteriler kaçar (kayıp SAYILMAZ)
-   ve yeni müşteri gelmez. 1–3 tezgâhı yoklar, Ana Kasa'da haftalık vergiyi keser: satılan ürün başına
-   (ürün değerinin %10'u, en az 1), en çok kasanın %40'ı. 10 hafta boyunca her hafta ayrı konuşur, sonra baştan.
+   Her 7. gün, günün ilk üçte birinde yoldan sallana sallana gelir ve satış yapan HER tezgâha tek tek uğrar:
+   o tezgâhın haftalık vergisini orada keser (satılan ürün başına ürün değerinin %10'u, en az 1; toplam en çok
+   kasanın %40'ı). Limandayken müşteriler kaçar (kayıp SAYILMAZ), yeni müşteri gelmez.
+   MÜDÜR: tezgâhın bölgesinde müdür varsa masasından kalkıp gelir, memurla konuşur, pazarlıkla vergiyi %25 indirir;
+   o bölgenin müşterileri kaçmaz, akış sürer. 10 hafta boyunca her hafta ayrı konuşur, sonra baştan.
    ========================================================= */
-var TAX_EVERY = 7, TAX_ARRIVE = 0.3, TAX_RATE = 0.10, TAX_CAP = 0.4, TAX_WALK = 1.05, TAX_SAY = 4.2;
+var TAX_EVERY = 7, TAX_ARRIVE = 0.3, TAX_RATE = 0.10, TAX_CAP = 0.4, TAX_WALK = 1.05, TAX_SAY = 4.2, TAX_MGR_OFF = 0.25;
 var TAX = { on: false };
 var TAX_LOOK = { coat: '#3f3a44', coat2: '#57515f', pants: '#2a262e', boot: '#141012', boots: false, tall: true, belly: true,
   tie: '#7a1a1a', thickMust: true, hair: '#17121a', hairStyle: 0, fedora: '#2e2a30', fedoraBand: '#120e10', briefcase: '#4a2c18' };
@@ -2311,53 +2318,95 @@ var TAX_LINES = [
    { tr: 'Biliyor musun… iyi esnafsın. Vergisini veren esnaf.', en: 'You know… you are a good trader. One who pays.' },
    { tr: '{v}. Haftaya yine gelirim. Haşmet hep gelir! Hah hah haaa!', en: '{v}. See you next week. Haşmet always comes back! Ha ha haaa!' }]
 ];
-function taxQ() { return S.tax || (S.tax = { items: 0, due: 0, n: 0, last: 0 }); }
+/* müdür ile memurun karşılıklı konuşması: [müdür, memur] */
+var TAX_MGR_LINES = [
+  [{ tr: 'Haşmet Bey, hoş geldiniz! Defterler hazır, çayınız da.', en: 'Welcome, Mr. Haşmet! The books are ready, and so is your tea.' },
+   { tr: 'Hımm… işini bilen bir müdür. Bu tezgâha indirim!', en: 'Hmm… a manager who knows the job. A discount for this stall!' }],
+  [{ tr: 'Bu tezgâhın hesabı bende efendim, kuruşu kuruşuna.', en: 'I keep this stall\'s accounts, sir, to the last penny.' },
+   { tr: 'Kuruşu kuruşuna mı? Hah! Sevdim seni.', en: 'To the last penny? Ha! I like you.' }],
+  [{ tr: 'Geçen haftanın makbuzu da burada, buyurun.', en: 'Last week\'s receipt is right here, sir.' },
+   { tr: 'Makbuz saklayan esnaf… nadir bulunur. Az keseyim!', en: 'A trader who keeps receipts… rare. I\'ll take less!' }],
+  [{ tr: 'Haşmet Bey, müşterilerimi ürkütmeyin lütfen.', en: 'Mr. Haşmet, please don\'t scare my customers.' },
+   { tr: 'Peki peki… senin tezgâhına dokunmuyorum. Şimdilik!', en: 'Fine, fine… I won\'t touch your stall. For now!' }],
+  [{ tr: 'Bir bardak çay? Taze demlendi.', en: 'A glass of tea? Freshly brewed.' },
+   { tr: 'Çaya hayır denmez… Tamam, indirimli olsun.', en: 'One never refuses tea… Fine, a discount then.' }]
+];
+function taxQ() { return S.tax || (S.tax = { items: 0, due: 0, n: 0, last: 0, by: {} }); }
 function taxLoad(d) {
-  if (!d || typeof d !== 'object') return { items: 0, due: 0, n: 0, last: 0 };
-  return { items: numIn(d.items, 0, 1e9, true), due: numIn(d.due, 0, 1e12, true), n: numIn(d.n, 0, 1e6, true), last: numIn(d.last, 0, 1e7, true) };
+  if (!d || typeof d !== 'object') return { items: 0, due: 0, n: 0, last: 0, by: {} };
+  var by = {};
+  if (d.by && typeof d.by === 'object') for (var k in d.by) if (/^[a-z0-9_]{1,12}$/i.test(k) && Array.isArray(d.by[k])) by[k] = [numIn(d.by[k][0], 0, 1e9, true), numIn(d.by[k][1], 0, 1e12, true)];
+  return { items: numIn(d.items, 0, 1e9, true), due: numIn(d.due, 0, 1e12, true), n: numIn(d.n, 0, 1e6, true), last: numIn(d.last, 0, 1e7, true), by: by };
 }
-function taxNote(n, unit) { var q = taxQ(); n = n | 0; if (n <= 0) return; q.items += n; q.due += n * Math.max(1, Math.round((unit || 0) * TAX_RATE)); }
+function taxNote(n, unit, key) {
+  var q = taxQ(); n = n | 0; if (n <= 0) return;
+  var t = n * Math.max(1, Math.round((unit || 0) * TAX_RATE));
+  q.items += n; q.due += t;
+  if (key) { q.by = q.by || {}; var e = q.by[key] || (q.by[key] = [0, 0]); e[0] += n; e[1] += t; }
+}
+function taxZone(c) { var z = c && c.fish ? zoneOfFish(c.fish) : -1; return z >= 0 ? z : (c ? c.z : -1); }
+function taxMgrZone(c) { var z = taxZone(c); return mgr(z) && zoneOpen(z) ? z : -1; }
+function taxSafe(c) { return taxMgrZone(c) >= 0; }                     /* müdürlü bölge vergi gününde de çalışır */
 function taxLine(k) { var w = TAX_LINES[(TAX.wk || 0) % TAX_LINES.length][k]; return NM(w).replace('{n}', TAX.items || 0).replace('{v}', money(TAX.v || 0)); }
 function taxSay(k) { TAX.say = k; TAX.sayT = 0; }
 function taxStart() {
-  var q = taxQ();
-  var cs = counters.filter(function (c) { return c.open && !AREAS[c.z].locked; }).slice(0, 3);
+  var q = taxQ(); q.by = q.by || {};
+  var cs = counters.filter(function (c) { return c.open && !AREAS[c.z].locked; });
+  var withSales = cs.filter(function (c) { return q.by[c.key] && q.by[c.key][1] > 0; });
+  if (!withSales.length && cs.length) withSales = [cs[0]];               /* eski kayıt: tezgâh dökümü yok → ilk tezgâhta keser */
+  withSales.sort(function (a, b) { return (b.x + b.y) - (a.x + a.y); }); /* yoldan gelirken yakından uzağa */
   TAX.on = true; TAX.x = 13.6; TAX.y = 22.5; TAX.bob = 0; TAX.vx = 0; TAX.vy = 0; TAX.face = -1; TAX.wait = 0; TAX.i = 0;
-  TAX.wk = q.n; TAX.paid = false; TAX.items = q.items; TAX.v = 0; TAX.say = -1; TAX.sayT = 0;
-  TAX.path = cs.map(function (c, i) { var p = queueSlotPos(c, 0); return { x: p.x + 0.4, y: p.y + 0.5, wait: i === 0 ? TAX_SAY : 2.2, say: i === 0 ? 0 : i === 1 ? 1 : -1 }; });
-  if (TAX.path.length < 2) TAX.path.push({ x: safe.x + 2.2, y: safe.y + 1.2, wait: TAX_SAY, say: 1 });
-  else if (TAX.path.length === 2 && TAX.path[1].say !== 1) TAX.path[1].say = 1;
-  TAX.path.push({ x: safe.x + 0.9, y: safe.y + 0.7, wait: TAX_SAY + 0.6, say: 2, pay: true });
-  TAX.path.push({ x: 13.6, y: 24, wait: 0, say: -1, out: true });
-  /* herkes kaçar: kuyruklar boşalır, kaçan kayıp sayılmaz (hikâye ziyaretçisi hariç) */
+  TAX.wk = q.n; TAX.items = q.items; TAX.v = 0; TAX.say = -1; TAX.sayT = 0; TAX.call = {}; TAX.mgrSay = null; TAX.st = 0;
+  TAX.capLeft = Math.max(0, Math.floor(S.cash * TAX_CAP)); TAX.left = q.due; TAX.done = 0;
+  TAX.path = withSales.map(function (c, i) {
+    var p = queueSlotPos(c, 0);
+    return { c: c, x: p.x + 0.4, y: p.y + 0.5, last: i === withSales.length - 1 };
+  });
+  TAX.path.push({ x: 13.6, y: 24, out: true });
+  /* müdürsüz bölgelerin müşterileri kaçar; kaçan kayıp sayılmaz (hikâye ziyaretçisi hariç) */
   for (var j = 0; j < customers.length; j++) {
     var cu = customers[j];
-    if (cu.story || cu.state === 'leave') continue;
+    if (cu.story || cu.state === 'leave' || (cu.c && taxSafe(cu.c))) continue;
     if (cu.c && cu.slot !== undefined && cu.c.slots[cu.slot] === cu) cu.c.slots[cu.slot] = null;
     cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; cu.flee = true;
     addFloat(cu.x, cu.y - 0.7, '!', '#ff8a7a');
   }
   counters.forEach(function (c) { shiftQueue(c); });
-  if (AC && soundOn) { var at = 0; [196, 185, 175, 165].forEach(function (f, i) { tone(f, 0.24, 'square', 0.1, { at: 0.02 + i * 0.26, lp: 1400 }); }); tone(98, 0.7, 'triangle', 0.16, { at: 1.1, lp: 600 }); }
+  if (AC && soundOn) { [196, 185, 175, 165].forEach(function (f, i) { tone(f, 0.24, 'square', 0.1, { at: 0.02 + i * 0.26, lp: 1400 }); }); tone(98, 0.7, 'triangle', 0.16, { at: 1.1, lp: 600 }); }
 }
-function taxCollect() {
-  var q = taxQ(), v = Math.max(0, Math.min(q.due, Math.floor(S.cash * TAX_CAP)));
-  S.cash -= v; TAX.v = v; TAX.items = q.items; TAX.paid = true;
-  q.items = 0; q.due = 0; q.n++; q.last = day.n;
-  addFloat(safe.x, safe.y - 1, '−' + money(v), '#ff8a7a');
-  toast(T('taxPaid', { n: TAX.items, v: money(v) }));
+/* bir tezgâhın vergisini kes (son durakta dökümü olmayan artık da alınır); müdür varsa %25 pazarlık */
+function taxCollectAt(w, mz) {
+  var q = taxQ(), e = (q.by || {})[w.c.key] || [0, 0], due = e[1];
+  if (w.last) due = Math.max(due, TAX.left);
+  if (mz >= 0) due = Math.round(due * (1 - TAX_MGR_OFF));
+  var v = Math.max(0, Math.min(due, TAX.capLeft));
+  S.cash -= v; TAX.capLeft -= v; TAX.v += v; TAX.left = Math.max(0, TAX.left - e[1]); TAX.done++;
+  if (q.by) delete q.by[w.c.key];
+  if (v > 0) addFloat(w.c.x, w.c.y - 1.2, '−' + money(v) + (mz >= 0 ? ' (−%' + Math.round(TAX_MGR_OFF * 100) + ')' : ''), '#ff8a7a');
   sfx.drop && sfx.drop();
+}
+function taxClose() {                                     /* hafta kapandı: makbuz, sayaçlar sıfır */
+  var q = taxQ();
+  q.items = 0; q.due = 0; q.by = {}; q.n++; q.last = day.n;
+  toast(T('taxPaid', { n: TAX.items, v: money(TAX.v) }));
+  TAX.paid = true;
   save();
 }
-function taxFinish() { if (!TAX.paid) { var q = taxQ(); if (q.last !== day.n && q.items > 0) taxCollect(); } TAX.on = false; }
+function taxCollect() {                                   /* test/kapanış: hepsini tek seferde (tavanlı) */
+  var q = taxQ(); if (TAX.capLeft === undefined || !TAX.on) TAX.capLeft = Math.max(0, Math.floor(S.cash * TAX_CAP));
+  var v = Math.max(0, Math.min(TAX.left !== undefined && TAX.on ? TAX.left : q.due, TAX.capLeft));
+  S.cash -= v; TAX.v = (TAX.on ? TAX.v : 0) + v; TAX.items = q.items; TAX.capLeft -= v;
+  taxClose();
+}
+function taxFinish() { if (!TAX.paid && TAX.on) { if (TAX.left > 0 && TAX.capLeft > 0) { var v = Math.min(TAX.left, TAX.capLeft); S.cash -= v; TAX.v += v; } taxClose(); } TAX.on = false; TAX.call = {}; }
 function updateTax(dt) {
   var q = taxQ();
   if (!TAX.on) {
     if (day.phase === 'play' && day.n % TAX_EVERY === 0 && q.last !== day.n && q.items > 0 && S.ctrl === 2 &&
-      day.t >= DAY_LEN * TAX_ARRIVE && !storyOpenNow()) taxStart();
+      day.t >= DAY_LEN * TAX_ARRIVE && !storyOpenNow()) { TAX.paid = false; taxStart(); }
     return;
   }
-  TAX.bob += dt * 3.2; TAX.sayT += dt;
+  TAX.bob += dt * 3.2; TAX.sayT += dt; if (TAX.mgrSay) TAX.mgrSay.t += dt;
   var w = TAX.path[TAX.i];
   if (!w) { TAX.on = false; return; }
   var dx = w.x - TAX.x, dy = w.y - TAX.y, L = Math.hypot(dx, dy);
@@ -2367,14 +2416,28 @@ function updateTax(dt) {
     return;
   }
   TAX.vx = 0; TAX.vy = 0;
-  if (w.out) { TAX.on = false; return; }
-  if (TAX.wait <= 0) {                               /* durağa yeni vardı */
-    TAX.wait = w.wait;
-    if (w.pay) taxCollect();
-    if (w.say >= 0) taxSay(w.say);
+  if (w.out) { TAX.on = false; TAX.call = {}; return; }
+  var mz = taxMgrZone(w.c);
+  if (!w.st) {                                             /* durağa vardı */
+    w.st = 1; w.t = 0;
+    if (TAX.i === 0) taxSay(0); else if (TAX.i === 1) taxSay(1);
+    if (mz >= 0) { TAX.call[mz] = { x: w.x - 0.9, y: w.y + 0.25 }; w.mz = mz; }
   }
-  TAX.wait -= dt;
-  if (TAX.wait <= 0) { TAX.i++; TAX.wait = 0; }
+  w.t += dt;
+  if (w.mz >= 0 && mz >= 0) {                              /* müdür gelir, konuşurlar */
+    var cl = TAX.call[mz];
+    if (w.st === 1 && (cl.here || w.t > 7)) { w.st = 2; w.t = 0; var pr = TAX_MGR_LINES[(TAX.wk + TAX.i) % TAX_MGR_LINES.length]; TAX.mgrSay = { z: mz, s: NM(pr[0]), t: 0 }; w.reply = NM(pr[1]); }
+    if (w.st === 2 && w.t > 3.2) { w.st = 3; w.t = 0; TAX.say = -2; TAX.sayT = 0; TAX.sayTxt = w.reply; taxCollectAt(w, mz); }
+    if (w.st === 3 && w.t > 3.2) w.st = 4;
+    if (w.st !== 4) return;
+    delete TAX.call[mz]; TAX.mgrSay = null;
+  } else {
+    if (w.st === 1) { w.st = 4; w.t = 0; taxCollectAt(w, -1); }
+    if (w.t < (TAX.i === 0 ? TAX_SAY : 2.4)) return;
+  }
+  if (w.last && !w.end) { w.end = 1; w.t = 0; taxClose(); taxSay(2); }
+  if (w.last && w.t < TAX_SAY + 0.4) return;
+  TAX.i++;
 }
 function drawTaxman() {
   var sw = Math.sin(TAX.bob * 0.55) * 0.08;          /* sallana sallana */
@@ -2383,8 +2446,11 @@ function drawTaxman() {
   var o = {}; for (var k in TAX_LOOK) o[k] = TAX_LOOK[k];
   o.face = TAX.face; o.walk = moving; o.mood = 1;
   drawPerson(a, o);
-  if (TAX.say >= 0 && TAX.sayT < TAX_SAY + 0.4) uiQ.push({ t: 4, x: TAX.x, y: TAX.y, z: 62, s: '“' + taxLine(TAX.say) + '”', c: '#ffe2c8', a: 1 });
+  var line = TAX.say === -2 ? TAX.sayTxt : TAX.say >= 0 ? taxLine(TAX.say) : null;
+  if (line && TAX.sayT < TAX_SAY + 0.4) uiQ.push({ t: 4, x: TAX.x, y: TAX.y, z: 62, s: '“' + line + '”', c: '#ffe2c8', a: 1 });
   uiQ.push({ t: 4, x: TAX.x, y: TAX.y, z: 46, s: '🎩 ' + T('taxName'), c: '#ffc94a', a: 0.95 });
+  var ms = TAX.mgrSay, ma = ms && mgrAct[ms.z];
+  if (ms && ma && ms.t < 3.4) uiQ.push({ t: 4, x: ma.x, y: ma.y, z: 52, s: '👔 “' + ms.s + '”', c: '#d8f2ff', a: 1 });
 }
 
 /* ---------------- istasyonlar ---------------- */
@@ -3783,7 +3849,7 @@ function updateCounter(c, dt) {
   if (c.spawnT <= 0 && freeIdx >= 0) {
     c.spawnT = 5.4 * rnd(0.75, 1.3);
     if (!daySpawnOK()) return;                 /* gün kapanışında yeni müşteri gelmez (§2) */
-    if (TAX.on) return;                        /* v2.14: vergi memuru limandayken kimse gelmez */
+    if (TAX.on && !taxSafe(c)) return;         /* v2.14: vergi memuru limandayken kimse gelmez (müdürlü bölge hariç) */
     if (trayFull(c)) return;                   /* v0.5: kasa dolu — tahsildar ya da oyuncu boşaltmalı */
     /* v0.1 adalet: stoksuz tezgâha müşteri seyrek gelir, kuyrukta uzadıkça daha da seyrek.
        Umutsuz müşteri doğup boşuna kızmasın. */
@@ -3872,7 +3938,7 @@ function finishOrder(c, cu) {
   pay = specPay(cu, c, pay, happy);                 /* v2.9: özel müşteri mekaniği (selfie, acele, cimri, gece, plak, veresiye) */
   if (pay > 0) payout(c, pay, cu.slot);
   noteFishIncome(pay); noteDayIncome(pay); noteDaySale(cu);
-  taxNote(cu.ord.need, unit);                       /* v2.14: haftalık vergi (ürün başı) */
+  taxNote(cu.ord.need, unit, c.key);                /* v2.14: haftalık vergi (ürün başı, tezgâh tezgâh) */
   retSale(c, cu, pay);                              /* bölge gelir ortalaması + satış başarımları */
   stallSale(c, cu, pay);                            /* v2.6: tezgâh istatistiği */
   mxSale();                                         /* v2.9: canlı yayın sırasında satış */
@@ -12256,7 +12322,7 @@ window.BT = {
   specState: function () { return { spec: day.spec, sp: day.sp, normals: day.normals, active: customers.filter(function (c) { return c.spec; }).map(function (c) { return c.spec + ':' + c.state; }) }; },
   autoState: function () { return { min: S.autoMin, t: Math.round(saveT), left: Math.round(autoLeft()) }; }, fastForwardAutosave: function (sec) { saveT += sec; },
   yardFolk: function () { return yardFolk; }, roadFlow: function () { return roadFlow(); }, ui: { openSettings: openSettings, openPauseMenu: openPauseMenu, openStallScreen: openStallScreen, openHal: openHal, openOffice: openOffice, openChapter: openChapter, fbShow: fbShow, fbClose: fbClose, showChapterCard: showChapterCard, closeSettings: function () { el.settingsScreen.classList.add('hidden'); syncPause(); } }, mkt: { corpAction: function (c, k) { corpAction(c, k); }, ownPct: function (c) { return ownPct(c); }, shares: function (c) { return shares(c); }, migrate: function (d) { return migrateMarket(d); }, newMarket: function () { return newMarket(); } }, T: function (k) { return T(k); }, rushNow: function () { return rushNow(); }, mgrAct: function () { return mgrAct; }, showChapterCard: function () { showChapterCard(); }, chapterGroups: function () { return chapterGroups(); }, ACH_IDS: function () { return (typeof ACH !== 'undefined' ? ACH : []).map(function (q) { return q.id; }); },
-  tax: { q: function () { return taxQ(); }, st: function () { return TAX; }, start: function () { taxStart(); }, lines: TAX_LINES, collect: function () { taxCollect(); } },
+  tax: { q: function () { return taxQ(); }, st: function () { return TAX; }, start: function () { taxStart(); }, lines: TAX_LINES, mgrLines: TAX_MGR_LINES, collect: function () { taxCollect(); }, mgrAct: function () { return mgrAct; } },
   CTYPES: CTYPES, S: S, safe: safe, BINS: BINS, HUT: HUT, DEPOT: DEPOT, WHALL: WHALL, office: office, MEYDAN: MEYDAN, BRIDGE: BRIDGE, depotCount: function () { return depotCount(); }, openHal: function () { openHal(); }, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
   zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,

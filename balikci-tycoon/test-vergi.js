@@ -50,11 +50,35 @@ const SHOT = process.argv[2];
   await p.evaluate(() => { BT.tax.q().items = 5; BT.tax.q().due = 10; }); await sleep(1200);
   ok(!(await p.evaluate(() => BT.tax.st().on)), 'aynı gün tekrar geldi');
   /* tavan: kasanın %40'ı */
-  R.cap = await p.evaluate(() => { BT.S.cash = 1000; const q = BT.tax.q(); q.due = 10000; q.items = 99; BT.tax.collect(); return BT.S.cash; });
+  R.cap = await p.evaluate(() => { BT.S.cash = 1000; BT.tax.st().on = false; const q = BT.tax.q(); q.due = 10000; q.items = 99; BT.tax.collect(); return BT.S.cash; });
   ok(R.cap === 600, 'tavan çalışmıyor ' + R.cap);
+  /* MÜDÜR: bölgede müdür varsa gelir, konuşur, %25 indirir; o bölgenin müşterileri kaçmaz */
+  await p.evaluate(() => {
+    const c = BT.counters.find(c => c.open); window.__k = c.key;
+    BT.S.mgr = [{ n: 'Sadık Bey', a: 'value', b: 'pat', wage: 35, look: 0 }];
+    BT.day.n = 14; BT.day.t = 20; BT.S.cash = 1000; const q = BT.tax.q(); q.items = 20; q.due = 200; q.by = { [c.key]: [20, 200] }; q.last = 7;
+    BT.player.x = c.x - 1.5; BT.player.y = c.y + 2;
+  });
+  await sleep(8000);
+  R.mBefore = await p.evaluate(() => BT.customers.filter(c => c.state !== 'leave').length);
+  await p.evaluate(() => { BT.day.t = BT.DAY_LEN * 0.31; }); await sleep(700);
+  R.mStart = await p.evaluate(() => ({ on: BT.tax.st().on, flee: BT.customers.filter(c => c.flee && c.state === 'leave' && c.y < 20).length, stay: BT.customers.filter(c => c.state !== 'leave').length }));
+  ok(R.mStart.on, 'müdürlü günde memur gelmedi');
+  ok(R.mStart.flee === 0, 'müdürlü bölgede müşteri kaçtı ' + JSON.stringify(R.mStart));
+  let met = false;
+  for (let i = 0; i < 90; i++) {
+    const s = await p.evaluate(() => { const T = BT.tax.st(); return { on: T.on, ms: !!T.mgrSay, here: !!(T.call && T.call[0] && T.call[0].here) }; });
+    if (s.ms) { met = true; if (SHOT && !R.shot3) { R.shot3 = 1; await p.screenshot({ path: SHOT + '/vergi-3-mudur.png' }); } }
+    if (!s.on) break;
+    await sleep(500);
+  }
+  ok(met, 'müdür memurla konuşmadı');
+  R.mAfter = await p.evaluate(() => ({ cash: BT.S.cash, q: Object.assign({}, BT.tax.q()) }));
+  ok(R.mAfter.cash >= 850 - 5 && R.mAfter.cash <= 850 + 120, 'müdür indirimi yanlış ' + R.mAfter.cash);   /* 200 × 0.75 = 150 (arada satış olabilir) */
+  ok(R.mAfter.q.n === 3 && R.mAfter.q.last === 14, 'ikinci hafta kapanmadı ' + JSON.stringify(R.mAfter.q));
   /* kayıt + eski kayıt */
   R.save = await p.evaluate(() => { const d = BT.buildSave(); const has = !!d.tax && typeof d.tax.n === 'number'; delete d.tax; BT.loadFrom(d); return { has, q: BT.tax.q() }; });
-  ok(R.save.has && R.save.q.items === 0 && R.save.q.n === 0, 'kayıt alanı yanlış ' + JSON.stringify(R.save));
+  ok(R.save.has && R.save.q.items === 0 && R.save.q.n === 0 && typeof R.save.q.by === 'object', 'kayıt alanı yanlış ' + JSON.stringify(R.save));
   await b.close();
   console.log(JSON.stringify({ R, errs }, null, 1));
   console.log(fail.length || errs.length ? 'VERGI_FAIL ' + JSON.stringify(fail) : 'VERGI_OK');
