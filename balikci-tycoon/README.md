@@ -23,7 +23,9 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 - **Liman Battı (oyun sonu):** 4. ziyarette en eski borç (×8) hâlâ ödenemezse Haşmet Bey limanı mühürler. Kayıt silinir, skor tablosundaki yer kalır. Ardından gazete (mühür · son fotoğraf · ertesi sabah), "LİMAN BATTI" kartı ve ana menü gelir.
 - **Kaçışma replikleri:** memur gelince kaçan müşteriler (20 replik) ve korkuyla zıplayan çalışanlar (20 replik) her hafta farklı konuşur. Borç replikleri ayrı. Hepsi TR/EN.
 - **Çöp kovaları:** tek kurala göre yerleştirildi; tezgâh önünde mal çöpe gitmiyor.
-- Test: `test-borc.js`.
+- **PROJE sekmesi kaldırıldı:** Ticaret Ofisi ve lisansı artık BİNA sekmesinde, alt çubukta dört sekme var.
+- **Alp Er Tunga nöbette:** hikâyede kendini tanıttığı 6. günden sonra köprü başında, kıyıda yayıyla nöbet tutar. 12. günden sonra yayı yanındaki kazıkta asılı durur.
+- Test: `test-borc.js`, `test-bekci.js`.
 
 ## v2.14 — Vergi Memuru Haşmet Bey, sahne müzikleri
 

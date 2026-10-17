@@ -32,7 +32,7 @@ var STR = {
     welcomeCo: 'Hayırlı olsun! {n} kapılarını açtı.', tapStart: '▶ BAŞLAMAK İÇİN DOKUN', skip: 'ATLA ▶▶',
     dayScore: 'Skor (toplam balık)', dayRank: '{s} • {r}. sıra', fishN: '{n} balık',
     tag: 'KÜÇÜK İSKELEDEN BÜYÜK LİMANA',
-    langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM', taxWarn: '🎩 Yarın vergi memuru Haşmet Bey limana uğrayacak…', taxPaid: '🧾 Vergi makbuzu: {n} ürün · −{v}', taxName: 'Vergi Memuru Haşmet Bey', taxWarnDebt: '🎩 Yarın Haşmet Bey geliyor! Faiziyle borcun: {v}. Kasada para olsun!', taxWarnLast: '⚠ SON HAFTA! Yarın {v} borcunu ödeyemezsen liman mühürlenir!', taxDebt: '📕 Ödenemeyen vergi borca yazıldı: {v}. Haftaya iki katı!', taxDebtOff: '✅ Haşmet Bey\'e borcun kapandı', overK: 'OYUN BİTTİ', overT: 'LİMAN BATTI', overBy: 'HAŞMET BEY HER ZAMAN GELİR', overGo: 'ANA MENÜ', overP: '{c} vergi borcu yüzünden mühürlendi. {d} gün boyunca {s} müşteriye balık sattın. Hamsiler hâlâ koyda… belki bir gün, yeniden.', visLbl: 'GÖRÜNÜM', visClassic: 'KLASİK', visFine: 'İNCE',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM', taxWarn: '🎩 Yarın vergi memuru Haşmet Bey limana uğrayacak…', taxPaid: '🧾 Vergi makbuzu: {n} ürün · −{v}', taxName: 'Vergi Memuru Haşmet Bey', guardLbl: 'Alp Er Tunga · nöbette', taxWarnDebt: '🎩 Yarın Haşmet Bey geliyor! Faiziyle borcun: {v}. Kasada para olsun!', taxWarnLast: '⚠ SON HAFTA! Yarın {v} borcunu ödeyemezsen liman mühürlenir!', taxDebt: '📕 Ödenemeyen vergi borca yazıldı: {v}. Haftaya iki katı!', taxDebtOff: '✅ Haşmet Bey\'e borcun kapandı', overK: 'OYUN BİTTİ', overT: 'LİMAN BATTI', overBy: 'HAŞMET BEY HER ZAMAN GELİR', overGo: 'ANA MENÜ', overP: '{c} vergi borcu yüzünden mühürlendi. {d} gün boyunca {s} müşteriye balık sattın. Hamsiler hâlâ koyda… belki bir gün, yeniden.', visLbl: 'GÖRÜNÜM', visClassic: 'KLASİK', visFine: 'İNCE',
     resetAsk: 'Tüm ilerleme silinsin mi?',
     intro1: '🎣 Ağın yanında bekle, balık birikir',
     intro2: '🧺 Üstünden geç, sırtla (ağır balık çok yer kaplar)',
@@ -246,7 +246,7 @@ var STR = {
     welcomeCo: '{n} is open for business!', tapStart: '▶ TAP TO BEGIN', skip: 'SKIP ▶▶',
     dayScore: 'Score (total fish)', dayRank: '{s} • #{r}', fishN: '{n} fish',
     tag: 'FROM A TINY PIER TO A GRAND HARBOR',
-    langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM', taxWarn: '🎩 Tomorrow the tax collector Mr. Haşmet will visit the harbour…', taxPaid: '🧾 Tax receipt: {n} items · −{v}', taxName: 'Tax Collector Mr. Haşmet', taxWarnDebt: '🎩 Mr. Haşmet comes tomorrow! Your debt with interest: {v}. Keep cash in the safe!', taxWarnLast: '⚠ LAST WEEK! If you can\'t pay your {v} debt tomorrow, the harbour will be sealed!', taxDebt: '📕 Unpaid tax added to your debt: {v}. It doubles next week!', taxDebtOff: '✅ Your debt to Mr. Haşmet is cleared', overK: 'GAME OVER', overT: 'THE HARBOUR SANK', overBy: 'MR. HAŞMET ALWAYS COMES BACK', overGo: 'MAIN MENU', overP: '{c} was sealed over unpaid taxes. For {d} days you sold fish to {s} customers. The anchovies are still in the bay… maybe one day, again.', visLbl: 'GRAPHICS', visClassic: 'CLASSIC', visFine: 'FINE',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM', taxWarn: '🎩 Tomorrow the tax collector Mr. Haşmet will visit the harbour…', taxPaid: '🧾 Tax receipt: {n} items · −{v}', taxName: 'Tax Collector Mr. Haşmet', guardLbl: 'Alp Er Tunga · on watch', taxWarnDebt: '🎩 Mr. Haşmet comes tomorrow! Your debt with interest: {v}. Keep cash in the safe!', taxWarnLast: '⚠ LAST WEEK! If you can\'t pay your {v} debt tomorrow, the harbour will be sealed!', taxDebt: '📕 Unpaid tax added to your debt: {v}. It doubles next week!', taxDebtOff: '✅ Your debt to Mr. Haşmet is cleared', overK: 'GAME OVER', overT: 'THE HARBOUR SANK', overBy: 'MR. HAŞMET ALWAYS COMES BACK', overGo: 'MAIN MENU', overP: '{c} was sealed over unpaid taxes. For {d} days you sold fish to {s} customers. The anchovies are still in the bay… maybe one day, again.', visLbl: 'GRAPHICS', visClassic: 'CLASSIC', visFine: 'FINE',
     resetAsk: 'Erase all progress?',
     intro1: '🎣 Wait by the net, fish pile up',
     intro2: '🧺 Walk over the crate to carry them (big fish weigh more)',
@@ -7271,6 +7271,7 @@ function render() {
   for (i = 0; i < BINS.length; i++) (function (bn) {
     if (AREAS[bn.z].locked) return; push(bn.x + bn.y, function () { drawBin(bn); });
   })(BINS[i]);
+  if (guardOn()) push(GUARD.x + GUARD.y, drawGuard);   /* v2.15: Alp Er Tunga nöbette */
   for (i = 0; i < PLOTS.length; i++) (function (p) {          /* v0.4 hizmet parselleri */
     if (!plotActive(p)) return;
     if (p.b) push(p.x + p.y, function () { drawServ(p); });
@@ -11444,6 +11445,30 @@ var STORY_SPECS = (function () {
   return o;
 })();
 function storyOn() { return !!(window.HK_STORY && STORY_SPECS.st_a) && !window.HK_STORY_OFF; }   /* HK_STORY_OFF: yalnız eski testler (oyun durmasın) */
+/* v2.15 — ALP ER TUNGA NÖBETTE: hikâyede kendini tanıttığı günden (6) sonra koyun kıyısında, yayıyla denize bakarak
+   bekler; ara ara başını çevirip ufku tarar. 12. gün yayını höyüğe astıktan sonra yay yanındaki kazıkta asılı durur.
+   Yalnız görüntü: yürüme alanının dışında durur, kimseyi engellemez. O gün hikâye ziyaretçisi oysa ikinci kez görünmez. */
+var GUARD = { x: 12.4, y: 0.9, z: 0, vx: 0, vy: 0, bob: 0, face: -1, act: 0, carry: [] };
+var GUARD_FROM = 6, GUARD_BOW = 12;
+function guardOn() { var st = S.story; return !!(STORY_SPECS.st_a && st && st.step >= GUARD_FROM && !(storyVis && storyVis.spec === 'st_a')); }
+function drawGuard() {
+  var sp = STORY_SPECS.st_a, st = S.story, scan = Math.sin(gameT * 0.35) > 0.82;   /* uzun bekleyiş, kısa bir bakış */
+  var o = specOutfit(sp, scan ? -1 : 1); o.walk = false; o.mood = 1;          /* denize (sağ üst) bakar */
+  GUARD.face = o.face; GUARD.bob = 0;
+  drawPersonAt(GUARD, o);
+  var sx = R(pX(GUARD.x, GUARD.y)), sy = R(pY(GUARD.x, GUARD.y, 0)), i, f = GUARD.face;
+  var WOOD = '#6b3a1a', WOODL = '#a0622e', STR = '#e8e2d2';
+  function bow(bx, by) {                                     /* kirişli yay: dikey kavis */
+    for (i = 0; i < 17; i++) { var dx = Math.round(Math.sin(Math.PI * i / 16) * 3) * f; px(bx + dx, by + i, 1, 1, i % 5 ? WOOD : WOODL); }
+    px(bx, by, 1, 17, STR); px(bx, by, 1, 1, WOODL); px(bx, by + 16, 1, 1, WOODL);
+  }
+  if (st.step >= GUARD_BOW) {                                /* yay kazıkta asılı */
+    var kx = sx + 12 * -f;
+    px(kx, sy - 22, 2, 22, '#5a4029'); px(kx, sy - 22, 1, 22, '#7a5a3a'); px(kx - 1, sy - 23, 4, 1, '#3a2a1a');
+    bow(kx + (f > 0 ? -2 : 3), sy - 21);
+  } else bow(sx + 6 * f, sy - 24);
+  if (dist2(player.x, player.y, GUARD.x, GUARD.y) < 9) uiLabel(GUARD.x, GUARD.y, 44, T('guardLbl'), '#e4b94a', 0.95);
+}
 function storyOpenNow() { return !!(window.HK_STORY && window.HK_STORY.isOpen()); }
 function storyFresh() { return { step: 0, last: 0, ber: 6, flags: {}, buffs: {}, items: [], pieces: [], known: [] }; }
 function stQ() { return S.story || (S.story = storyFresh()); }
