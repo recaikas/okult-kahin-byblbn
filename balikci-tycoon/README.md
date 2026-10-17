@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v2.3** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v2.13** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -16,6 +16,20 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
 ---
+
+## v2.13 — İnce piksel remaster
+
+- **2 kat ince piksel:** aynı dünya ve oranlar, ekranda 2 kat sanat pikseli (karakter ~44 px). Koyu konturlu sprite'lar,
+  3 tonlu gölge (ışık sol üstten), dokulu zemin, katmanlı deniz, hava perspektifli kasaba ve tepeler.
+  Dokunma, kamera, zoom ve kayıtlar aynı; eski kayıtlar sorunsuz yüklenir.
+- **Ayarlar › GÖRÜNÜM: KLASİK / İNCE.** Varsayılan İNCE; eski görünüm bir dokunuşla geri gelir (tercih `vis`).
+- Bütün karakterler, binalar (her seviye), iskele, tezgâhlar, tekneler, çevre ve süsler yeniden çizildi (`art/*.js`).
+- **Intro ve Bölüm 1 sonu** gazeteleri ve **Dipteki Söz** hikâye sahneleri ince çizildi.
+- **Arayüz:** iplerle sarkan seviye tabelası, pirinç lombarlı başarımlar, krem not kâğıdı bildirimler, yumuşak köşe ve
+  derin gölgeli pencereler; ince görünümde sadeleşen dünya etiketleri.
+- **Müzik:** menüde parça seviyeleri eşitlendi, parça geçişleri ve ara sahne susması yumuşadı.
+- Teknik: `game.js` çizim fonksiyonları `hook()` ile sarılır, ince çizim `art/` dosyalarında (yoksa klasik çizim).
+  Ayrıntı: `NOTLAR.md`. Test: `test-ince.js`, `test-gorsel.js`.
 
 ## v2.12 — Girişte veri izni (KVKK aydınlatma + açık rıza)
 

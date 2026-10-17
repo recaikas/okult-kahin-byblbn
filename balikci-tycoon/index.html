@@ -304,20 +304,45 @@
   #specPop i{font-style:normal;color:var(--gold);font-size:20px;animation:blink 0.8s steps(2) infinite}
   #specPop.go{animation:spIn 3.2s ease forwards}
   @keyframes spIn{0%{opacity:0;transform:translateY(8px)}10%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
-  /* seviye atlama şeridi — tıklamayı engellemez, oyun akmaya devam eder */
-  #lvlUp{position:fixed;left:50%;top:calc(50px + env(safe-area-inset-top,0px));z-index:9;pointer-events:none;
-    transform:translate(-50%,-140%);min-width:230px;max-width:92vw;text-align:center;padding:8px 16px 9px;
-    background:linear-gradient(180deg,#3d2a0c,#241806);border:3px solid var(--gold);
-    box-shadow:0 4px 0 rgba(0,0,0,.45),inset 0 0 0 2px #7a5406;overflow:visible}
-  #lvlUp.go{animation:lvIn 3.6s cubic-bezier(.2,1.2,.3,1) forwards}
-  @keyframes lvIn{0%{transform:translate(-50%,-140%)}12%{transform:translate(-50%,0)}86%{transform:translate(-50%,0);opacity:1}100%{transform:translate(-50%,-140%);opacity:0}}
-  #lvlUp small{display:block;font-size:11px;letter-spacing:3px;color:#ffd98a}
-  #lvlUp b{display:block;font-size:20px;color:var(--gold);letter-spacing:1px;text-shadow:2px 2px 0 #7a2b10;line-height:1.2}
-  #lvlList{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:5px}
-  #lvlList span{font-size:10.5px;background:rgba(0,0,0,.35);border:1px solid #7a5406;color:var(--ink);padding:2px 6px}
+  /* seviye atlama — v2.13: iplerle sarkan iskele tabelası (tahta kalas, kilim şeridi, pirinç levha, balık pulu pırıltısı).
+     Tıklamayı engellemez, oyun akmaya devam eder. */
+  #lvlUp{position:fixed;left:50%;top:calc(58px + env(safe-area-inset-top,0px));z-index:9;pointer-events:none;
+    transform:translate(-50%,-160%);min-width:236px;max-width:92vw;text-align:center;padding:12px 16px 10px;
+    transform-origin:50% -60px;
+    background:
+      linear-gradient(90deg,rgba(255,255,255,.10) 0 2px,transparent 2px calc(100% - 2px),rgba(0,0,0,.28) calc(100% - 2px)),
+      repeating-linear-gradient(180deg,#9a6a3c 0 2px,#8a5a33 2px 11px,#7a4e2c 11px 13px,#5a3818 13px 14px,#946238 14px 16px,#83552f 16px 25px,#6e4526 25px 27px,#4a2e16 27px 28px);
+    border:2px solid #2e1a0a;
+    box-shadow:inset 0 2px 0 rgba(255,230,180,.18),inset 0 -2px 0 rgba(0,0,0,.35),0 3px 0 rgba(0,0,0,.5);overflow:visible}
+  #lvlUp::before{content:"";position:absolute;left:-2px;right:-2px;top:-2px;height:4px;
+    background:repeating-linear-gradient(90deg,#a83d2b 0 2px,#d9a441 2px 3px,#2a4c7d 3px 5px,#d9a441 5px 6px,#a83d2b 6px 8px,#f4e9d2 8px 9px);
+    box-shadow:0 1px 0 #2e1a0a}
+  #lvlUp::after{content:"";position:absolute;left:0;right:0;top:-64px;height:62px;pointer-events:none;
+    background:linear-gradient(90deg,transparent 22px,#4a3018 22px 23px,#c9a46a 23px 25px,#7a5a32 25px 26px,transparent 26px calc(100% - 26px),
+      #4a3018 calc(100% - 26px) calc(100% - 25px),#c9a46a calc(100% - 25px) calc(100% - 23px),#7a5a32 calc(100% - 23px) calc(100% - 22px),transparent calc(100% - 22px))}
+  #lvlUp.go{animation:lvIn 3.6s linear forwards}
+  @keyframes lvIn{
+    0%{transform:translate(-50%,-160%) rotate(-4deg)}
+    9%{transform:translate(-50%,4px) rotate(2.5deg);animation-timing-function:ease-out}
+    15%{transform:translate(-50%,0) rotate(-1.4deg)}
+    21%{transform:translate(-50%,0) rotate(.7deg)}
+    27%{transform:translate(-50%,0) rotate(0)}
+    86%{transform:translate(-50%,0) rotate(0);opacity:1}
+    100%{transform:translate(-50%,-160%) rotate(3deg);opacity:1}}
+  #lvlUp small{display:inline-block;font-size:10.5px;letter-spacing:3px;color:#3a2401;padding:2px 10px 1px;margin-bottom:4px;
+    background:linear-gradient(180deg,#f2d488 0 2px,#d9b45e 2px 60%,#b88f3c 60%);border:2px solid #5a3a10;
+    box-shadow:inset 1px 1px 0 rgba(255,255,255,.4),0 1px 0 rgba(0,0,0,.4)}
+  #lvlUp b{display:block;font-size:21px;color:#ffd35a;letter-spacing:1px;line-height:1.2;
+    text-shadow:1px 0 0 #2e1a0a,-1px 0 0 #2e1a0a,0 1px 0 #2e1a0a,0 -1px 0 #2e1a0a,2px 2px 0 #2e1a0a}
+  #lvlList{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;margin:7px auto 0;max-width:330px;text-align:left;
+    background:rgba(30,16,6,.55);border:1px solid #2e1a0a;box-shadow:inset 1px 1px 0 rgba(0,0,0,.4);padding:5px 8px}
+  #lvlList span{position:relative;font-size:10.5px;color:#f4e9d2;padding-left:10px;line-height:1.35;white-space:normal}
+  #lvlList span::before{content:"";position:absolute;left:1px;top:5px;width:4px;height:4px;background:#d9a441;transform:rotate(45deg);box-shadow:0 0 0 1px #6a3a10}
+  #lvlList span.bon{grid-column:1/-1;color:#9fe8a6}
+  #lvlList span.bon::before{background:#5fd37a;box-shadow:0 0 0 1px #1b5d31}
   #lvlConf{position:absolute;inset:0;pointer-events:none}
-  #lvlConf i{position:absolute;top:40%;width:4px;height:4px;opacity:0;animation:conf 1.3s ease-out forwards}
-  @keyframes conf{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--dx),-70px) rotate(240deg)}}
+  #lvlConf i{position:absolute;top:30%;width:3px;height:3px;opacity:0;animation:pul 1.6s steps(8) forwards;box-shadow:0 0 0 1px rgba(46,26,10,.6)}
+  @keyframes pul{0%{opacity:0;transform:translate(0,0)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-46px)}}
   .nextday{margin-top:8px;background:#3d2410;border:3px solid #7a5406;color:#ffd9a0;
     padding:8px;font-size:12.5px;text-align:center;letter-spacing:1px;line-height:1.5}
   .nextday.hidden{display:none}
@@ -581,6 +606,103 @@
   .plist button.on{border-color:var(--gold);color:var(--gold)}
   .plist button small{display:block;font-size:9px;color:var(--ink2);margin-top:2px}
   #stallBtn.new::after{content:'';position:absolute;top:3px;right:3px;width:6px;height:6px;background:#ffc94a;box-shadow:0 0 0 1px #1a2433}
+
+  /* =========================================================
+     v2.13 — İNCE görünüm menüleri (body.ince). Klasik görünüm yukarıdaki kurallarla aynen kalır.
+     Dil: 2px renkli koyu kenar, içte 1px ışık (sol üst) + 1px gölge (sağ alt), basamaklı 3 tonlu dolgu,
+     ince kilim şeridi. Yerleşim ve boyutlar değişmez.
+     ========================================================= */
+  body.ince{--bev:inset 1px 1px 0 rgba(255,255,255,.16),inset -1px -1px 0 rgba(0,0,0,.38);
+    --drop:0 2px 0 rgba(4,12,20,.45);--edge:#081521}
+  body.ince .card{border-width:2px;
+    background:linear-gradient(180deg,#1b3650 0,#183149 2px,#132a3e 70%,#10222f 100%);
+    box-shadow:var(--bev),inset 0 0 0 3px rgba(255,255,255,.03),0 4px 0 rgba(4,12,20,.5),0 0 0 1px rgba(255,201,74,.06)}
+  body.ince .card::before{height:4px;background:
+    linear-gradient(180deg,transparent 0 3px,rgba(0,0,0,.35) 3px 4px),
+    repeating-linear-gradient(90deg,var(--kilim1) 0 2px,var(--kilim2) 2px 3px,var(--kilim3) 3px 5px,var(--kilim2) 5px 6px,var(--kilim1) 6px 8px,#f4e9d2 8px 9px)}
+  body.ince .card h1{text-shadow:1px 1px 0 #3a1406,2px 2px 0 #7a2b10,-1px 0 0 #3a1406,0 -1px 0 #3a1406}
+  body.ince .card h2{text-shadow:1px 1px 0 #3a2401}
+  body.ince .go{border-width:2px;border-color:#14502a;
+    background:linear-gradient(180deg,#9af0ac 0 2px,#6fe08a 2px 45%,#58cf74 45% calc(100% - 4px),#3fae5c calc(100% - 4px));
+    box-shadow:inset 1px 1px 0 rgba(255,255,255,.35),inset -1px -1px 0 rgba(0,0,0,.2),var(--drop);text-shadow:1px 1px 0 rgba(255,255,255,.35)}
+  body.ince .alt,body.ince .seg button,body.ince .dtab,body.ince .chip,body.ince .btn,body.ince .hrow button{
+    border-width:2px;border-color:var(--edge);
+    background:linear-gradient(180deg,#2b5274 0 2px,#23445f 2px 50%,#1d3a52 50% calc(100% - 3px),#152c40 calc(100% - 3px));
+    box-shadow:var(--bev),var(--drop)}
+  body.ince .chip,body.ince .dtab{box-shadow:var(--bev)}
+  body.ince .btn{border-width:2px}
+  body.ince .seg button.on,body.ince .dtab.on{color:#3a2401;border-color:#6a4704;
+    background:linear-gradient(180deg,#ffe28f 0 2px,#ffc94a 2px 50%,#f2b830 50% calc(100% - 3px),#d99a1c calc(100% - 3px));
+    box-shadow:inset 1px 1px 0 rgba(255,255,255,.45),inset -1px -1px 0 rgba(0,0,0,.18),var(--drop)}
+  body.ince .danger{color:#ff9b8a;border-color:#3a1109}
+  body.ince .dcard{border-width:2px;box-shadow:var(--bev),var(--drop);
+    background:linear-gradient(180deg,#2a5070 0 2px,#23445f 2px 40%,#1a3549 100%)}
+  body.ince .dcard::before{height:3px;background:repeating-linear-gradient(90deg,var(--kilim1) 0 2px,var(--kilim2) 2px 3px,var(--kilim3) 3px 5px,var(--kilim2) 5px 6px)}
+  body.ince .dcard .buy{border-width:2px;
+    background:linear-gradient(180deg,#9af0ac 0 2px,#6fe08a 2px 50%,#4cc46a 50% calc(100% - 3px),#3aa257 calc(100% - 3px));
+    box-shadow:inset 1px 1px 0 rgba(255,255,255,.35),var(--drop)}
+  body.ince .dcard .buy.no{background:var(--pnl);box-shadow:var(--bev)}
+  body.ince .hrow{border-width:2px;box-shadow:var(--bev)}
+  body.ince .pnl{border-width:2px;box-shadow:var(--bev),var(--drop)}
+  body.ince #tradeBtn,body.ince #actBtn{border-width:2px;border-color:#6a4704;
+    background:linear-gradient(180deg,#ffe28f 0 2px,#ffc94a 2px 50%,#f2b830 50% calc(100% - 3px),#d99a1c calc(100% - 3px));
+    box-shadow:inset 1px 1px 0 rgba(255,255,255,.45),inset -1px -1px 0 rgba(0,0,0,.18),var(--drop)}
+  body.ince .overlay{background:radial-gradient(ellipse at 50% 40%,rgba(10,30,46,.82),rgba(4,12,20,.94))}
+  /* piksel ses kaydırıcıları */
+  body.ince .vols input[type=range]{-webkit-appearance:none;appearance:none;height:22px;background:transparent}
+  body.ince .vols input[type=range]::-webkit-slider-runnable-track{height:6px;background:#081521;border:1px solid #2b5274;box-shadow:inset 0 1px 0 rgba(0,0,0,.5)}
+  body.ince .vols input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:16px;margin-top:-6px;
+    background:linear-gradient(180deg,#ffe28f 0 2px,#ffc94a 2px 60%,#d99a1c 60%);border:2px solid #6a4704;border-radius:0}
+  body.ince .vols input[type=range]::-moz-range-track{height:6px;background:#081521;border:1px solid #2b5274}
+  body.ince .vols input[type=range]::-moz-range-thumb{width:10px;height:14px;background:#ffc94a;border:2px solid #6a4704;border-radius:0}
+
+  /* =========================================================
+     v2.13 — LİMAN arayüz dili (küçük parçalar, iki görünümde de):
+     pirinç çerçeve, lacivert derinlik, iki katmanlı yumuşak gölge, 3px yumuşak köşe, kilim dokunuşu.
+     ========================================================= */
+  :root{--brass:#d9b45e;--brass2:#f2d488;--brassD:#7a5418;--paper:#f4e6c4;--paper2:#e6d2a4;--inkB:#3a2614;
+    --deep:0 2px 0 rgba(3,10,16,.55),0 8px 18px rgba(2,8,14,.38);--deepS:0 1px 0 rgba(3,10,16,.5),0 4px 10px rgba(2,8,14,.3);
+    --hi:inset 0 1px 0 rgba(255,255,255,.12);--rad:3px}
+  .card,.go,.alt,.seg button,.tab,.dtab,.chip,.btn,.row,.trow,.dcard,.hrow,.sb,.pnl{border-radius:var(--rad)}
+  .card{box-shadow:var(--hi),inset 0 0 0 1px rgba(255,255,255,.03),var(--deep)}
+  .tab{background:linear-gradient(180deg,#2b5274 0 2px,#23445f 2px 50%,#1d3a52 50% calc(100% - 3px),#152c40 calc(100% - 3px));
+    box-shadow:var(--hi),0 2px 0 rgba(4,12,20,.4)}
+  .tab.on{background:linear-gradient(180deg,#ffe28f 0 2px,#ffc94a 2px 50%,#f2b830 50% calc(100% - 3px),#d99a1c calc(100% - 3px));
+    color:#3a2401;border-color:#6a4704;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 0 rgba(4,12,20,.4)}
+  .row,.trow{border-left-width:2px;box-shadow:var(--hi),var(--deepS);
+    background:linear-gradient(180deg,#25486a 0,#1f3d56 3px,#1a3448 100%)}
+  .row{border-left-color:var(--brass)}
+  .trow{border-width:2px}
+  .trow button{border-width:2px;border-radius:2px;box-shadow:var(--hi),0 1px 0 rgba(0,0,0,.4)}
+  /* bildirim: krem not kâğıdı, pirinç şerit, mürekkep yazı */
+  #toast{background:linear-gradient(180deg,var(--paper) 0,var(--paper) 70%,var(--paper2) 100%);color:var(--inkB);
+    border:2px solid #5a3e1e;border-top:4px solid var(--brass);border-radius:var(--rad);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6),var(--deep);padding:8px 16px 9px;font-size:13.5px;line-height:1.35;letter-spacing:.2px}
+  /* ipucu kutusu */
+  .coach{background:linear-gradient(180deg,rgba(26,52,74,.96),rgba(12,28,42,.96));border:2px solid var(--brass);
+    border-radius:var(--rad);box-shadow:var(--hi),var(--deep)}
+  .coach .keys i{border-radius:2px;background:linear-gradient(180deg,#34607f,#23445f);border-color:#081521;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.18);color:var(--brass2)}
+  /* görev çubuğu + rozetler */
+  #objective{background:linear-gradient(180deg,rgba(26,52,74,.92),rgba(14,32,48,.92));border:1px solid #081521;
+    border-radius:var(--rad);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(217,180,94,.18),var(--deepS);padding:5px 11px}
+  #objective .lbl{color:var(--brass2)}
+  #queueHint{background:linear-gradient(180deg,#5a1f16,#3e130c);border:2px solid #1a0603;border-radius:var(--rad);box-shadow:var(--hi),var(--deepS)}
+  #pauseBadge{border:2px solid var(--brass);border-radius:var(--rad);box-shadow:var(--hi),var(--deep);
+    background:linear-gradient(180deg,rgba(26,52,74,.97),rgba(10,26,39,.97))}
+  #autoBadge{border-radius:var(--rad);box-shadow:var(--hi),var(--deepS);background:linear-gradient(180deg,rgba(20,56,40,.95),rgba(10,32,22,.95))}
+  /* özel müşteri: küçük tahta levha */
+  #specPop{border:2px solid #2e1a0a;border-top:4px solid var(--brass);border-radius:var(--rad);color:#f4e9d2;
+    background:repeating-linear-gradient(180deg,#8a5a33 0 9px,#7a4e2c 9px 10px,#5a3818 10px 11px,#83552f 11px 20px,#6e4526 20px 21px,#4a2e16 21px 22px);
+    box-shadow:inset 0 1px 0 rgba(255,230,180,.2),var(--deep);text-shadow:1px 1px 0 #2e1a0a}
+  /* gün şeridi */
+  #dayBanner b{text-shadow:1px 0 0 #3a1406,-1px 0 0 #3a1406,0 -1px 0 #3a1406,0 1px 0 #3a1406,3px 3px 0 #7a2b10,0 0 18px rgba(255,201,74,.35)}
+  #dayBanner small{display:inline-block;padding:3px 12px;background:linear-gradient(180deg,rgba(26,52,74,.9),rgba(12,28,42,.9));
+    border:1px solid rgba(217,180,94,.5);border-radius:var(--rad);box-shadow:var(--deepS)}
+  /* kart başlıkları ve ayraçlar */
+  .card h2{text-shadow:1px 1px 0 #3a2401,0 0 12px rgba(255,201,74,.18)}
+  .lbl{color:#b8cdda}
+  .lbl::before{content:"";display:inline-block;width:5px;height:5px;margin:0 6px 1px 0;background:var(--brass);transform:rotate(45deg);vertical-align:middle;opacity:.8}
 </style>
 </head>
 <body>
@@ -630,7 +752,7 @@
   <div class="card">
     <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v2.12</div>
+    <div class="ver">v2.13</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -675,6 +797,10 @@
     <span class="lbl" id="setZoom">GÖRÜNTÜ / ZOOM</span>
     <div class="seg" id="zoomSeg">
       <button data-z="1">-</button><button data-z="2" class="on">◻</button><button data-z="3">+</button>
+    </div>
+    <span class="lbl" id="setVis">GÖRÜNÜM</span>
+    <div class="seg" id="visSeg">
+      <button data-v="0" id="visClassic">KLASİK</button><button data-v="1" id="visFine" class="on">İNCE</button>
     </div>
     <span class="lbl" id="setAuto">OTOMATİK KAYIT</span>
     <div class="seg" id="autoSeg"><button data-m="5">5 dk</button><button data-m="10" class="on">10 dk</button><button data-m="30">30 dk</button></div>

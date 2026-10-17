@@ -1,0 +1,58 @@
+{
+ "mode": "yok",
+ "shots": [
+  "screenshots/once/tel-pxs2-liman.png",
+  "screenshots/once/tel-pxs2-iskele.png",
+  "screenshots/once/tel-pxs2-meydan.png",
+  "screenshots/once/tel-pxs2-aksam.png",
+  "screenshots/once/tel-pxs2-sabah.png",
+  "screenshots/once/tel-pxs3-liman.png",
+  "screenshots/once/tel-pxs3-iskele.png",
+  "screenshots/once/tel-pxs3-meydan.png",
+  "screenshots/once/tel-pxs3-aksam.png",
+  "screenshots/once/tel-pxs3-sabah.png",
+  "screenshots/once/masa-pxs4-liman.png",
+  "screenshots/once/masa-pxs4-iskele.png",
+  "screenshots/once/masa-pxs4-meydan.png",
+  "screenshots/once/masa-pxs4-aksam.png",
+  "screenshots/once/masa-pxs4-sabah.png"
+ ],
+ "errs": [],
+ "fps": {
+  "tel-pxs2": {
+   "normal": 60,
+   "cpu4x": 16
+  },
+  "tel-pxs3": {
+   "normal": 60,
+   "cpu4x": 17
+  },
+  "masa-pxs4": {
+   "normal": 60,
+   "cpu4x": 18
+  }
+ },
+ "dbg": {
+  "tel-pxs2": {
+   "PXS": 2,
+   "W": 195,
+   "H": 422,
+   "cw": 195,
+   "fine": 1
+  },
+  "tel-pxs3": {
+   "PXS": 3,
+   "W": 130,
+   "H": 282,
+   "cw": 130,
+   "fine": 1
+  },
+  "masa-pxs4": {
+   "PXS": 4,
+   "W": 320,
+   "H": 200,
+   "cw": 320,
+   "fine": 1
+  }
+ }
+}
