@@ -10519,14 +10519,13 @@ function drawYardFolk(push) {
     if (f.in > 0) return;
     push(f.x + f.y + 0.2, function () {
       var o = custOutfit(f); o.walk = !(f.look > 0); o.mood = 1;
-      drawPersonAt(f, o, function () {
-        if (f.bag) {                                          /* alışveriş torbası */
-          var sx = R(pX(f.x, f.y)), sy = R(pY(f.x, f.y, 0));
-          px(sx + f.face * 4 - 1, sy - 9, 3, 4, '#e8dcc0'); px(sx + f.face * 4 - 1, sy - 10, 3, 1, '#a8966f');
-        }
-      });
+      drawPersonAt(f, o, function () { if (f.bag) drawShopBag(f); });
     });
   })(yardFolk[i]);
+}
+function drawShopBag(f) {                                     /* alışveriş torbası (v2.13: ayrı fonksiyon, ince kancası var) */
+  var sx = R(pX(f.x, f.y)), sy = R(pY(f.x, f.y, 0));
+  px(sx + f.face * 4 - 1, sy - 9, 3, 4, '#e8dcc0'); px(sx + f.face * 4 - 1, sy - 10, 3, 1, '#a8966f');
 }
 /* meydan kapıları: kulübe → personel paneli, hal → hal paneli (düğme), depo → oyuncu malı rafa koyar */
 function syncMeydanBtn() {
@@ -11807,6 +11806,7 @@ function hook(name, f0) {
   drawStack = hook('drawStack', drawStack);
   drawSpecialTag = hook('drawSpecialTag', drawSpecialTag);
   shadow = hook('shadow', shadow);
+  drawShopBag = hook('drawShopBag', drawShopBag);
   for (var k in SERV_DRAW) SERV_DRAW[k] = { buzhane: drawBuzhane, restoran: drawRestoran, nakliye: drawNakliye, koop: drawKoop, mezat: drawMezat }[k] || SERV_DRAW[k];
 })();
 /* sanatçıların oyuna bakış penceresi: yalnız okuma (v: ad → değer, yavaş; açılışta ya da seyrek kullanın) */
@@ -11821,6 +11821,7 @@ window.HKG = {
   pX: pX, pY: pY, R: R, clamp: clamp, lerp: lerp, px: px, dot: dot, quad: quad, isoQuad: isoQuad, isoBox: isoBox, isoLine: isoLine,
   shade: shade, phase2: phase2, phase4: phase4, envStage: function () { return envStage(); },
   classic: CLASSIC, camT: camT,
+  shadow: function (x, y, r) { return shadow(x, y, r); }, drawStack: function (x, y, items, baseZ, gap) { return drawStack(x, y, items, baseZ, gap); },
   /* başka bir tuvale geçici çizim: k=1 ise kancalar devre dışı kalır (klasik çizim), k=FK ise ince */
   withCtx: function (g, k, fn) { var o = ctx, ok = curK; ctx = g; curK = k; try { return fn(); } finally { ctx = o; curK = ok; } },
   v: function (n) { if (!/^[A-Za-z_$][\w$.]*$/.test(n)) return undefined; try { return eval(n); } catch (e) { return undefined; } },

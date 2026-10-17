@@ -28,7 +28,7 @@ var gShadow = null, gStack = null, WALK = null, ANIM = null, PAL = null;
 function init() {
   if (gShadow) return;
   var H = G();
-  gShadow = H.v('shadow'); gStack = H.v('drawStack');
+  gShadow = H.shadow || H.v('shadow'); gStack = H.drawStack || H.v('drawStack');   /* köprü alanı (mimar, v2.13) */
   WALK = H.WALK; ANIM = H.ANIM; PAL = H.PAL;
 }
 
@@ -755,6 +755,19 @@ HKA.drawCat = function (c) {
   var k = cc + d + st + f1 + f2, s = CATS.get(k);
   if (!s) { s = buildCat(cc, d, st, f1, f2); CATS.set(k, s); }
   L.blit(s, Math.round(H.pX(c.x, c.y)), Math.round(H.pY(c.x, c.y, 0)));
+  return true;
+};
+
+/* avludaki müşterinin alışveriş torbası (mimar ekledi: game.js drawShopBag kancası) — kâğıt torba, sap, kontur */
+var BAG = null;
+HKA.drawShopBag = function (f) {
+  var H = G(); if (H.K !== 2) return false;
+  if (!BAG) BAG = L.sprite('kr:bag', function (b) {
+    b.rect(0, 0, 6, 7, '#e8dcc0'); b.rect(0, 0, 1, 7, '#f6eedc'); b.rect(4, 0, 2, 7, '#cbbd98');
+    b.rect(0, 0, 6, 1, '#a8966f'); b.set(1, -1, '#7a6a48'); b.set(4, -1, '#7a6a48'); b.rect(2, -2, 2, 1, '#7a6a48');
+    b.rect(1, 3, 4, 1, '#c2492f'); b.outline(0.55);
+  });
+  L.blit(BAG, Math.round(H.pX(f.x, f.y)) + f.face * 4 - 1, Math.round(H.pY(f.x, f.y, 0)) - 9);
   return true;
 };
 
