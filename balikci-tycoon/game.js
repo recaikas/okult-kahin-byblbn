@@ -928,7 +928,7 @@ function musicTarget() { var sg = SONGS[music.si]; return MUSIC_VOL[music.mode] 
 /* v2.13 — yumuşak parça geçişi: önce kıs (0.5 sn), sessizlikte parçayı değiştir, sonra aç (0.9 sn). Eskiden yeni parça
    notanın ortasında başlıyordu. */
 function musicSwap(i) {
-  if (!AC || !music.gain) { songAt(i); return; }
+  if (!AC || !music.gain || music.held) { songAt(i); return; }
   var g = music.gain.gain, now = AC.currentTime;
   songAt(i); music.next = now + 0.55;
   try {
@@ -962,7 +962,7 @@ function sigVoice(sty, m, len, at) {
 /* iki kip: 'menu' = tam düzenleme (melodi, bas, vurmalı);
    'game' = arkadan mırıldanma (yumuşak sinüs melodi + alçak oktav, seyrek bas; Liman Yolu'nda çok hafif darbuka) */
 function musicTick() {
-  if (!music.on || !AC || AC.state !== 'running') return;
+  if (!music.on || !AC || AC.state !== 'running' || music.held) return;   /* v2.14: sahne müziği çalarken parça yerinde bekler */
   var horizon = AC.currentTime + 0.25, hum = music.mode === 'game';
   if (music.next < AC.currentTime) music.next = AC.currentTime + 0.05;
   while (music.next < horizon) {
@@ -1113,7 +1113,7 @@ function musicPlay(mode, song) {
     if (!music.gain) { music.gain = AC.createGain(); music.gain.gain.value = 0.0001; music.gain.connect(musBus || masterGain); }
     var g = music.gain.gain, now = AC.currentTime;
     g.cancelScheduledValues(now); g.setValueAtTime(Math.max(0.0001, g.value), now);
-    g.exponentialRampToValueAtTime(Math.max(0.0001, MUSIC_VOL[music.mode] * (music.mode === 'menu' ? (SONG_GAIN[(SONGS[song !== undefined ? song : music.si] || {}).id] || 1) : 1)), now + (music.on ? 1.8 : 1.2));
+    if (!music.held) g.exponentialRampToValueAtTime(Math.max(0.0001, MUSIC_VOL[music.mode] * (music.mode === 'menu' ? (SONG_GAIN[(SONGS[song !== undefined ? song : music.si] || {}).id] || 1) : 1)), now + (music.on ? 1.8 : 1.2));   /* sahne müziği varken açılmaz */
   } catch (e) { return; }
   var want = song !== undefined ? song : musicPick >= 0 ? musicPick : (music.mode === 'menu' ? 0 : null);
   if (!music.on) { music.on = true; songAt(want === null ? music.si : want); music.next = AC.currentTime + 0.1; }
@@ -1130,9 +1130,116 @@ function musicStop(fade) {
     g.exponentialRampToValueAtTime(0.0001, t + (fade || 0.8));
   } catch (e) { }
 }
+/* =========================================================
+   v2.14 — SAHNE MÜZİKLERİ (cue). Bir sahne müziği başlayınca oyunun parçası yavaşça kısılır ve OLDUĞU YERDE
+   bekler; sahne bitince aynı parça kaldığı yerden yumuşakça döner. Cue'lar müzik kanalını değil doğrudan ana çıkışı
+   kullanır (hikâye ara sahnesi oyunun müzik kanalını susturur; Şahmeran teması sahne boyunca sürer).
+   Hepsi bizim bestemiz, anlık sentez (telifsiz).
+   ========================================================= */
+var CUE = { on: null, gain: null, next: 0, step: 0, timer: 0, def: null };
+function musicHold(on) {
+  if (!AC || !music.gain) { music.held = !!on; return; }
+  var g = music.gain.gain, t = AC.currentTime;
+  try { g.cancelScheduledValues(t); g.setValueAtTime(Math.max(0.0001, g.value), t); } catch (e) { }
+  if (on) { music.held = true; try { g.exponentialRampToValueAtTime(0.0001, t + 0.9); } catch (e) { } return; }
+  if (!music.held) return;
+  music.held = false; music.next = t + 0.35;
+  try { g.exponentialRampToValueAtTime(Math.max(0.0001, musicTarget()), t + 1.8); } catch (e) { }
+}
+function cuePlay(id) {
+  if (CUE.on === id) return;
+  var def = CUES[id]; if (!def || !musicEnabled || !ensureAudio()) return;
+  if (CUE.on) cueStop(0.4, true);
+  musicHold(true);
+  try {
+    var g = AC.createGain(); g.gain.value = 0.0001; g.connect(masterGain);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0001, VOL.mus * def.vol), AC.currentTime + 1.0);
+    CUE.gain = g;
+  } catch (e) { return; }
+  CUE.on = id; CUE.def = def; CUE.step = 0;
+  CUE.next = AC.currentTime + (def.intro ? def.intro(CUE.gain) : 0.4);
+  if (!CUE.timer) CUE.timer = setInterval(cueTick, 60);
+}
+function cueStop(fade, keepHold) {
+  if (!CUE.on) return;
+  var g = CUE.gain; CUE.on = null; CUE.gain = null;
+  try { var t = AC.currentTime; g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), t); g.gain.exponentialRampToValueAtTime(0.0001, t + (fade || 1.5));
+    setTimeout(function () { try { g.disconnect(); } catch (e) { } }, ((fade || 1.5) + 0.5) * 1000); } catch (e) { }
+  if (!keepHold) musicHold(false);
+}
+function cueTick() {
+  if (!CUE.on) { if (CUE.timer) { clearInterval(CUE.timer); CUE.timer = 0; } return; }
+  if (!AC || AC.state !== 'running') return;
+  var d = CUE.def, e = 60 / d.bpm / 2, hz = AC.currentTime + 0.3;
+  if (CUE.next < AC.currentTime) CUE.next = AC.currentTime + 0.05;
+  while (CUE.next < hz) { d.step(CUE.step, CUE.next - AC.currentTime, CUE.gain); CUE.next += e; CUE.step++; }
+}
+var CUES = {
+  /* HAŞMET BEY — Yeşilçam kötüsü girişi: Re hicaz, ağır. Timpani gürlemesi + üç orkestra vuruşu, sonra sinsi döngü:
+     pizzicato bas, yaylı tremolosu, bakır nefesli ezgisi, dört ölçüde bir gong. */
+  hasmet: {
+    bpm: 72, vol: 0.85,
+    intro: function (g) {
+      var i;
+      for (i = 0; i < 14; i++) noise(0.22, 0.03 + i * 0.012, { at: i * 0.085, f: 220, dst: g });            /* timpani gürlemesi */
+      tone(55, 1.3, 'sine', 0.22, { at: 0, atk: 0.9, to: 52, dst: g });
+      [[1.3, [50, 57, 62, 63], 0.55], [1.95, [51, 58, 63, 66], 0.55], [2.6, [50, 54, 57, 62], 1.6]].forEach(function (h) {   /* dan… dan… DAAAN */
+        h[1].forEach(function (m) { tone(midiF(m), h[2], 'sawtooth', 0.05, { at: h[0], atk: 0.01, lp: 1300, dst: g }); });
+        tone(midiF(h[1][0] - 12), h[2], 'square', 0.07, { at: h[0], atk: 0.01, lp: 500, dst: g });
+        tone(55, h[2] * 0.8, 'sine', 0.24, { at: h[0], atk: 0.005, to: 44, dst: g });
+        noise(0.4, 0.14, { at: h[0], f: 260, dst: g });
+      });
+      return 4.4;
+    },
+    mel: [[0, 62, 4], [4, 63, 2], [6, 62, 2], [8, 66, 3], [11, 67, 1], [12, 66, 2], [14, 63, 2], [16, 62, 2], [18, 60, 2], [20, 58, 2], [22, 57, 2], [24, 58, 2], [26, 57, 2], [28, 55, 2], [30, 54, 2]],
+    step: function (i, at, g) {
+      var s = i % 8, bar = Math.floor(i / 8), e = 60 / this.bpm / 2, k;
+      if (s === 0) { tone(55, 0.55, 'sine', 0.2, { at: at, atk: 0.005, to: 48, dst: g }); noise(0.22, 0.09, { at: at, f: 200, dst: g }); }
+      if (s === 4 && bar % 2) noise(0.18, 0.05, { at: at, f: 200, dst: g });
+      var bass = bar % 4 === 3 ? [50, 0, 51, 0, 54, 0, 51, 0] : [50, 0, 50, 0, 51, 0, 50, 0];
+      if (bass[s]) tone(midiF(bass[s] - 12), e * 0.9, 'triangle', 0.17, { at: at, atk: 0.004, lp: 600, dst: g });
+      for (k = 0; k < 2; k++) tone(midiF(k ? 75 : 74), e * 0.22, 'sawtooth', 0.014, { at: at + k * e * 0.5, atk: 0.01, lp: 2400, dst: g });   /* tremolo */
+      var p = i % 32;
+      for (k = 0; k < this.mel.length; k++) if (this.mel[k][0] === p) {
+        var m = this.mel[k][1], L = this.mel[k][2] * e;
+        tone(midiF(m - 12), L * 0.95, 'sawtooth', 0.075, { at: at, atk: 0.07, lp: 950, dst: g });
+        tone(midiF(m - 24), L * 0.95, 'square', 0.03, { at: at, atk: 0.07, lp: 500, dst: g });
+      }
+      if (p === 0 && bar > 0) noise(1.6, 0.05, { at: at, f: 320, to: 120, dst: g });            /* gong */
+    }
+  },
+  /* ŞAHMERAN — gizemli 6/8, Re kürdi: dem (Re + La), bendir, hikâyenin kopuz motifi, ney ezgisi, yılan pırıltısı. */
+  sahmeran: {
+    bpm: 70, vol: 0.9,
+    intro: function (g) {
+      tone(midiF(38), 3.2, 'sine', 0.12, { at: 0, atk: 1.6, dst: g }); tone(midiF(45), 3.2, 'sine', 0.06, { at: 0.3, atk: 1.6, dst: g });
+      [1760, 2637, 2093].forEach(function (f, i) { tone(f, 1.4, 'sine', 0.025, { at: 0.6 + i * 0.35, atk: 0.02, dst: g }); });
+      return 2.2;
+    },
+    ney: [[0, 69, 3], [3, 70, 1], [4, 69, 2], [6, 67, 2], [8, 65, 2], [10, 63, 1], [11, 62, 1], [12, 62, 6], [18, 65, 2], [20, 67, 2], [22, 65, 1], [23, 63, 1]],
+    step: function (i, at, g) {
+      var s = i % 6, bar = Math.floor(i / 6), e = 60 / this.bpm / 2, k, ph = bar % 4;
+      if (s === 0 && bar % 2 === 0) { tone(midiF(38), e * 12, 'sine', 0.1, { at: at, atk: 0.6, dst: g }); tone(midiF(45), e * 12, 'sine', 0.05, { at: at, atk: 0.6, dst: g }); }
+      if (s === 0) { noise(0.28, 0.16, { at: at, f: 160, dst: g }); tone(70, 0.3, 'sine', 0.14, { at: at, to: 48, dst: g }); }   /* düm */
+      if (s === 3) noise(0.07, 0.05, { at: at, f: 1800, type: 'bandpass', q: 2, dst: g });                                      /* tek */
+      if (s === 5) noise(0.05, 0.03, { at: at, f: 2400, type: 'bandpass', q: 2, dst: g });
+      var kop = [62, 65, 67, 69, 67, 65];
+      if (ph < 2 || s % 2 === 0) { tone(midiF(kop[s]), e * 1.6, 'triangle', ph < 2 ? 0.075 : 0.045, { at: at, atk: 0.003, lp: 2600, dst: g }); tone(midiF(kop[s] + 12), e * 0.6, 'square', 0.008, { at: at, atk: 0.003, lp: 3000, dst: g }); }
+      if (ph >= 2) {
+        var p = (bar - 2) % 4 * 6 + s;
+        for (k = 0; k < this.ney.length; k++) if (this.ney[k][0] === p) {
+          var m = this.ney[k][1], L = this.ney[k][2] * e;
+          tone(midiF(m), L * 0.98, 'sine', 0.07, { at: at, atk: 0.12, dst: g }); tone(midiF(m) * 1.004, L * 0.98, 'sine', 0.04, { at: at, atk: 0.15, dst: g });
+          noise(Math.min(L, 0.4), 0.012, { at: at, f: 2600, type: 'bandpass', q: 1.5, dst: g });
+        }
+      }
+      if (s === 3 && ph === 3) [1760, 2637].forEach(function (f, j) { tone(f, 1.3, 'sine', 0.02, { at: at + j * 0.12, atk: 0.02, dst: g }); });
+    }
+  }
+};
 function setMusicEnabled(on) {
   musicEnabled = !!on;
-  if (musicEnabled) musicPlay(); else musicStop(0.5);
+  if (musicEnabled) musicPlay(); else { cueStop(0.5); musicStop(0.5); }
 }
 /* tarayıcı sesi ilk dokunuşta açar: müzik o anda başlar (menüde tam, oyunda mırıldanma) */
 ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) {
@@ -2372,7 +2479,7 @@ function taxStart() {
     addFloat(cu.x, cu.y - 0.7, '!', '#ff8a7a');
   }
   counters.forEach(function (c) { shiftQueue(c); });
-  if (AC && soundOn) { [196, 185, 175, 165].forEach(function (f, i) { tone(f, 0.24, 'square', 0.1, { at: 0.02 + i * 0.26, lp: 1400 }); }); tone(98, 0.7, 'triangle', 0.16, { at: 1.1, lp: 600 }); }
+  cuePlay('hasmet');                                    /* Yeşilçam kötüsü girişi */
 }
 /* bir tezgâhın vergisini kes (son durakta dökümü olmayan artık da alınır); müdür varsa %25 pazarlık */
 function taxCollectAt(w, mz) {
@@ -2398,12 +2505,12 @@ function taxCollect() {                                   /* test/kapanış: hep
   S.cash -= v; TAX.v = (TAX.on ? TAX.v : 0) + v; TAX.items = q.items; TAX.capLeft -= v;
   taxClose();
 }
-function taxFinish() { if (!TAX.paid && TAX.on) { if (TAX.left > 0 && TAX.capLeft > 0) { var v = Math.min(TAX.left, TAX.capLeft); S.cash -= v; TAX.v += v; } taxClose(); } TAX.on = false; TAX.call = {}; }
+function taxFinish() { if (CUE.on === 'hasmet') cueStop(1.5); if (!TAX.paid && TAX.on) { if (TAX.left > 0 && TAX.capLeft > 0) { var v = Math.min(TAX.left, TAX.capLeft); S.cash -= v; TAX.v += v; } taxClose(); } TAX.on = false; TAX.call = {}; }
 function updateTax(dt) {
   var q = taxQ();
   if (!TAX.on) {
     if (day.phase === 'play' && day.n % TAX_EVERY === 0 && q.last !== day.n && q.items > 0 && S.ctrl === 2 &&
-      day.t >= DAY_LEN * TAX_ARRIVE && !storyOpenNow()) { TAX.paid = false; taxStart(); }
+      day.t >= DAY_LEN * TAX_ARRIVE && !storyOpenNow() && !storyVis) { TAX.paid = false; taxStart(); }
     return;
   }
   TAX.bob += dt * 3.2; TAX.sayT += dt; if (TAX.mgrSay) TAX.mgrSay.t += dt;
@@ -2416,7 +2523,7 @@ function updateTax(dt) {
     return;
   }
   TAX.vx = 0; TAX.vy = 0;
-  if (w.out) { TAX.on = false; TAX.call = {}; return; }
+  if (w.out) { TAX.on = false; TAX.call = {}; if (CUE.on === 'hasmet') cueStop(2.5); return; }
   var mz = taxMgrZone(w.c);
   if (!w.st) {                                             /* durağa vardı */
     w.st = 1; w.t = 0;
@@ -11182,7 +11289,7 @@ function storyOpen(cu) {
     audio: AC, dst: masterGain || undefined,
     onDone: function (r) { storyApply(r || {}, n); storyRelease(cu); }
   });
-  if (!ok) { storyMute = false; applyBusVol(); return false; }
+  if (!ok) { storyMute = false; applyBusVol(); if (CUE.on === 'sahmeran') cueStop(1.5); return false; }
   syncPause();
   return true;
 }
@@ -11190,6 +11297,7 @@ function storyRelease(cu) {
   cu.storyDone = true;
   if (cu.state !== 'leave') { cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; if (cu.c.slots[cu.slot] === cu) { cu.c.slots[cu.slot] = null; shiftQueue(cu.c); } }
   storyVis = null; storyMute = false; applyBusVol(); syncPause(); save();
+  if (CUE.on === 'sahmeran') cueStop(2.5);                /* v2.14: sahne bitti, oyunun parçası kaldığı yerden döner */
 }
 function storyApply(r, n) {
   var st = stQ(), k;
@@ -11209,7 +11317,7 @@ function updateStory(dt) {
   if (!storyOn()) return;
   var st = stQ();
   if (storyVis) {
-    if (customers.indexOf(storyVis) < 0 || (storyVis.state === 'leave' && !storyVis.storyDone)) { storyVis = null; return; }   /* tezgâh kapandı: yarın/az sonra yeniden */
+    if (customers.indexOf(storyVis) < 0 || (storyVis.state === 'leave' && !storyVis.storyDone)) { storyVis = null; if (CUE.on === 'sahmeran') cueStop(2); return; }   /* tezgâh kapandı: yarın/az sonra yeniden */
     if (storyVis.state === 'wait' && !storyVis.storyDone && !storyOpenNow()) storyOpen(storyVis);
     return;
   }
@@ -11217,7 +11325,7 @@ function updateStory(dt) {
   if (day.phase !== 'play' || day.t < STORY_AT) return;
   st.tryT = (st.tryT || 0) - dt; if (st.tryT > 0) return;
   st.tryT = 2;
-  if (storySpawn()) sfxFrom({ x: storyVis.c.x, y: storyVis.c.y }, function () { specSfx(storyVis && specById(storyVis.spec)); });
+  if (storySpawn()) { sfxFrom({ x: storyVis.c.x, y: storyVis.c.y }, function () { specSfx(storyVis && specById(storyVis.spec)); }); cuePlay('sahmeran'); }   /* v2.14: sahne yaklaşıyor */
 }
 
 /* =========================================================
@@ -12322,6 +12430,7 @@ window.BT = {
   specState: function () { return { spec: day.spec, sp: day.sp, normals: day.normals, active: customers.filter(function (c) { return c.spec; }).map(function (c) { return c.spec + ':' + c.state; }) }; },
   autoState: function () { return { min: S.autoMin, t: Math.round(saveT), left: Math.round(autoLeft()) }; }, fastForwardAutosave: function (sec) { saveT += sec; },
   yardFolk: function () { return yardFolk; }, roadFlow: function () { return roadFlow(); }, ui: { openSettings: openSettings, openPauseMenu: openPauseMenu, openStallScreen: openStallScreen, openHal: openHal, openOffice: openOffice, openChapter: openChapter, fbShow: fbShow, fbClose: fbClose, showChapterCard: showChapterCard, closeSettings: function () { el.settingsScreen.classList.add('hidden'); syncPause(); } }, mkt: { corpAction: function (c, k) { corpAction(c, k); }, ownPct: function (c) { return ownPct(c); }, shares: function (c) { return shares(c); }, migrate: function (d) { return migrateMarket(d); }, newMarket: function () { return newMarket(); } }, T: function (k) { return T(k); }, rushNow: function () { return rushNow(); }, mgrAct: function () { return mgrAct; }, showChapterCard: function () { showChapterCard(); }, chapterGroups: function () { return chapterGroups(); }, ACH_IDS: function () { return (typeof ACH !== 'undefined' ? ACH : []).map(function (q) { return q.id; }); },
+  cue: { play: function (id) { cuePlay(id); }, stop: function () { cueStop(0.3); }, on: function () { return CUE.on; }, held: function () { return !!music.held; }, pos: function () { return { si: music.si, li: music.li, bar: music.bar }; } },
   tax: { q: function () { return taxQ(); }, st: function () { return TAX; }, start: function () { taxStart(); }, lines: TAX_LINES, mgrLines: TAX_MGR_LINES, collect: function () { taxCollect(); }, mgrAct: function () { return mgrAct; } },
   CTYPES: CTYPES, S: S, safe: safe, BINS: BINS, HUT: HUT, DEPOT: DEPOT, WHALL: WHALL, office: office, MEYDAN: MEYDAN, BRIDGE: BRIDGE, depotCount: function () { return depotCount(); }, openHal: function () { openHal(); }, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
