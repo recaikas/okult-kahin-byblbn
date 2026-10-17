@@ -177,6 +177,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
     await closeBar();
   };
   const investProject = async () => {
+    if (!await p.evaluate(() => !!document.querySelector('.dtab[data-t="proj"]'))) return;   /* v2.15: PROJE sekmesi kalktı */
     for (let k = 0; k < 30; k++) {
       await openTab('proj');
       const btn = await p.evaluate(() => { const bs = [...document.querySelectorAll('#dpCards .dinv button')]; const b = bs[bs.length - 1]; if (!b) return null; b.click(); return b.textContent; });

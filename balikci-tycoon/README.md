@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v2.14** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v2.15** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -16,6 +16,18 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
 ---
+
+## v2.15 — Vergi borcu, "Liman Battı", kaçışma replikleri, çöp kovası yerleri
+
+- **Vergi borcu:** kasadaki para yetmezse eksik kalan borca yazılır (tavan kalktı). Haşmet Bey önce en eski borcu ister; borç bekledikçe ikiye katlanır: 2. hafta eski ×2 + bu hafta, 3. hafta ilk ×4, ikinci ×2, bu hafta ×1. Bir gün önceden borçlu uyarı, son haftada "SON HAFTA" uyarısı.
+- **Liman Battı (oyun sonu):** 4. ziyarette en eski borç (×8) hâlâ ödenemezse Haşmet Bey limanı mühürler. Kayıt silinir, skor tablosundaki yer kalır. Ardından gazete (mühür · son fotoğraf · ertesi sabah), "LİMAN BATTI" kartı ve ana menü gelir.
+- **Kaçışma replikleri:** memur gelince kaçan müşteriler (20 replik) ve korkuyla zıplayan çalışanlar (20 replik) her hafta farklı konuşur. Borç replikleri ayrı. Hepsi TR/EN.
+- **Çöp kovaları:** tek kurala göre yerleştirildi; tezgâh önünde mal çöpe gitmiyor.
+- **PROJE sekmesi kaldırıldı:** Ticaret Ofisi ve lisansı artık BİNA sekmesinde, alt çubukta dört sekme var.
+- **Alp Er Tunga nöbette:** hikâyede kendini tanıttığı 6. günden sonra köprü başında, kıyıda yayıyla nöbet tutar. 12. günden sonra yayı yanındaki kazıkta asılı durur.
+- **Denizden gelen yunus:** "Şahmeran" sahnesi artık tezgâha yürüyen biriyle değil, denizden gelen yunusla başlar. Yunus yüzgeciyle yaklaşır, üç kez sıçrar, sonra kıyıda bekler; oyuncu yanına gelince sahne açılır.
+- **Hikâye arka planları:** karşı kıyıda oyundaki kasaba, cami ve serviler var; sahnelerin saatleri korundu.
+- Test: `test-borc.js`, `test-bekci.js`, `test-yunus.js`.
 
 ## v2.14 — Vergi Memuru Haşmet Bey, sahne müzikleri
 
