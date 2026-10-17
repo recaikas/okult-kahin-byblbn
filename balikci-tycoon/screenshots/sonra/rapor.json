@@ -1,0 +1,49 @@
+{
+ "mode": "ince",
+ "shots": [
+  "screenshots/sonra/tel-pxs2-liman.png",
+  "screenshots/sonra/tel-pxs2-iskele.png",
+  "screenshots/sonra/tel-pxs3-liman.png",
+  "screenshots/sonra/tel-pxs3-iskele.png",
+  "screenshots/sonra/masa-pxs4-liman.png",
+  "screenshots/sonra/masa-pxs4-iskele.png"
+ ],
+ "errs": [],
+ "fps": {
+  "tel-pxs2": {
+   "normal": 60,
+   "cpu4x": 18
+  },
+  "tel-pxs3": {
+   "normal": 60,
+   "cpu4x": 19
+  },
+  "masa-pxs4": {
+   "normal": 60,
+   "cpu4x": 21
+  }
+ },
+ "dbg": {
+  "tel-pxs2": {
+   "PXS": 2,
+   "W": 195,
+   "H": 422,
+   "cw": 390,
+   "fine": 2
+  },
+  "tel-pxs3": {
+   "PXS": 3,
+   "W": 130,
+   "H": 282,
+   "cw": 260,
+   "fine": 2
+  },
+  "masa-pxs4": {
+   "PXS": 4,
+   "W": 320,
+   "H": 200,
+   "cw": 640,
+   "fine": 2
+  }
+ }
+}
