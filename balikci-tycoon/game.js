@@ -2744,11 +2744,14 @@ var BRIDGE = { x0: 9.3, y0: 1.9, x1: 15.7, y1: 2.9 };
 function inRect(x, y, r, m) { m = m || 0; return x > r.x0 + m && x < r.x1 - m && y > r.y0 + m && y < r.y1 - m; }
 /* v0.6 — çöp kovaları: elde kalan fazla mal (tezgâh/kuyruk dolu, yanlış tür) atılabilsin.
    Kovanın önünde kısa bir an durunca taşıdığın mallar boşalır (para asla atılmaz). */
+/* v2.14.1 yerleşim kuralı (her kova): hiçbir istasyonun etki alanına girmez (en az 0.2 karo pay; tezgâh önünde mal
+   çöpe gitmez), bölgenin hasırına 2–4 karo, yürüme yolunda (çakışma yok), hiçbir tentenin arkasında kalmaz,
+   kovalar arası en az 3.5 karo. 3. bölgenin içi ekranda hep bir tentenin arkasında kaldığı için kovası sınırın hemen kuzeyinde. */
 var BINS = [
-  { z: 0, x: 3.64, y: 3.88, pop: 0 },
-  { z: 1, x: 7.53, y: 10.05, pop: 0 },
-  { z: 2, x: 8.7, y: 13.78, pop: 0 },
-  { z: 3, x: 8.9, y: 21.6, pop: 0 }
+  { z: 0, x: 5.6, y: 4.4, pop: 0 },
+  { z: 1, x: 2.2, y: 9.2, pop: 0 },
+  { z: 2, x: 5.6, y: 10.7, pop: 0 },
+  { z: 3, x: 5.6, y: 18.4, pop: 0 }
 ];
 var binT = 0, trashN = 0, stuckT = 0, stuckHintAt = -99;
 var isTrash = function (it) { return it.k !== 'money'; };
