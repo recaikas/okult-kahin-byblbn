@@ -48,12 +48,34 @@ Referanslar: `gorsel-referans/` (hamsi3.html, karşılaştırma görüntüsü, t
 
 ## Yapılanlar
 - [x] Aşama 1: altyapı, ayar, kancalar, temel.js, testler (test-ince.js, test-gorsel.js), ajan tanımları, önce görüntüleri.
-- [ ] Aşama 2: arka plan ve deniz
-- [ ] Aşama 3: iskele, yapılar, objeler
-- [ ] Aşama 4: karakterler
-- [ ] Aşama 5: tekne, balık, efekt, etiketler
-- [ ] Aşama 6: performans
-- [ ] Aşama 7: son kalite turu
+- [x] Aşama 2: arka plan ve deniz (art/arkaplan.js) — gök, bulut, martı, 2 katman paralaks tepe, kasaba, cami/minare,
+      katmanlı deniz, kum (256×256 önbellekli parçalar), kıyı köpüğü, yol (3 kademe), meydan ve avlu zemini, vinyet.
+- [x] Aşama 3: iskele, yapılar, objeler (art/nesne.js) — bölge zemini (her seviye), istasyonlar, tezgâh/tente, hizmet
+      binaları Sv1–5, meydan yapıları, parseller, çevre (servi, zeytin, kaya, ağ kurutma, sandal…), süsler, enkaz.
+- [x] Aşama 4: karakterler (art/karakter.js) — drawPerson'ın tüm seçenekleri, 4 kare yürüme, nefes, iş pozu, yön başına
+      ayrı sprite (ışık hep sol üstten), duygu balonu, kedi, avlu torbası; portreler (kahraman, Müşteri Defteri) ince.
+- [x] Aşama 5: tekne, balık, efekt, etiketler — tekneler, eşyalar, martı, duman, etiket bütçesi (4 ad / 8 rozet).
+- [x] Aşama 6: performans — her şey önbellekli sprite; kurulum kare başına bütçeli (arka plan ~9 ms).
+- [x] Aşama 7: son tur — test-ince, test-binalar, test-world-render, test-specials, test-defter, test-etiket geçti;
+      konsol hatası yok. Son görüntüler: screenshots/sonra/.
+
+## Sonraki ölçüm (ince, sanat tamam)
+- Headless, richCove: normal 60 FPS; CPU 4×: tel PXS2 15–18, tel PXS3 20–21, masa PXS4 17–21 (klasik 15–18).
+  Darboğaz karakterler (~0.5 ms/kare) ve yazılım çizici; gerçek telefonda GPU ile daha iyi olması beklenir.
+
+## Mimar düzeltmeleri (sonradan)
+- hook() kancanın dönüş değerini geçiriyor (bina çizicileri yükseklik döndürür → etiket konumu).
+- drawShopBag ayrı ve kancalı; HKG.shadow / HKG.drawStack köprüsü.
+- test-binalar.js okuma koordinatları HKG.K ile ölçeklendi.
 
 ## Bilinen eksikler / açık konular
-- (sanatçılar çalıştıkça güncellenecek)
+- drawFloats klasik (yalnız UI katmanına yazı kuyruklar, çizecek pikseli yok).
+- Açılışın ilk birkaç saniyesinde, önbellek kurulurken bazı kareler klasik çizimle görünebilir (bütçe aşılırsa).
+- Ufkun üstündeki dalga/balık gölgesi ve kasaba sıçraması ince modda düzeltildi; klasikte bilerek dokunulmadı.
+- Bütün test paketi (46 dosya) bu dalda baştan sona koşturulmadı (kullanıcı test tasarrufu istedi); ilgili testler geçti.
+
+## main'e birleştirmeden önce
+1. Gerçek bir telefonda (özellikle eski Android) ince modu açıp FPS'e bak; yavaşsa Ayarlar › GÖRÜNÜM › KLASİK var.
+2. İstenirse tam test paketi: `for f in test-*.js; do node $f; done` (sunucu 8099'da).
+3. Yayın: Pages iş akışı ve mobil build-www `art/` klasörünü kopyalıyor; ek ayar gerekmez.
+4. Birleştirme: PR aç → main. Varsayılan İNCE; istenirse game.js'te `var FINE = true` → false ile varsayılan klasik.

@@ -11731,7 +11731,7 @@ function hook(name, f0) {
   return function (a, b, c, d, e, f, g) {
     var H = window.HKA, fn;
     if (curK > 1 && H && (fn = H[name])) {
-      try { if (fn(a, b, c, d, e, f, g) !== false) return; }
+      try { var r = fn(a, b, c, d, e, f, g); if (r !== false) return r; }   /* bina çizicileri yükseklik döndürür */
       catch (err) { if (!_artErr[name]) { _artErr[name] = 1; console.warn('HKA.' + name + ':', err && err.message); } }
     }
     return f0(a, b, c, d, e, f, g);

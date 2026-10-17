@@ -2,7 +2,7 @@
    Her seviyede beş binanın ekrandaki pikselleri okunur, renk dağılımları (histogram) karşılaştırılır:
    hiçbir iki bina birbirine benzememeli; her bina da Sv.1 → Sv.5 arasında gözle görülür şekilde büyümeli.
    Ayrıca SERV_DRAW her bina için ayrı bir çizim fonksiyonu tutar. */
-const { chromium } = require('./test-offline');
+const { chromium } = require('./test-offline');   /* v2.13: ince tuval HKG.K kat büyük → okuma koordinatları ölçeklenir */
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
 const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
@@ -23,7 +23,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   /* boş parsellerin zemini (arka plan) — sonra yalnız binaya ait pikseller karşılaştırılır */
   await p.evaluate(() => { BT.player.x = 19.75; BT.player.y = 14.6; }); await sleep(1600);
   await p.evaluate(() => { const cv = document.getElementById('game'), g = cv.getContext('2d'); window.__bg = {};
-    BT.PLOTS.forEach(pl => { const c = BT.canvasPt(pl.x, pl.y, 0); window.__bg[pl.id] = Array.from(g.getImageData(Math.round(c[0] - 22), Math.round(c[1] - 60), 46, 70).data); });
+    BT.PLOTS.forEach(pl => { const c = BT.canvasPt(pl.x, pl.y, 0); window.__bg[pl.id] = Array.from(g.getImageData(Math.round(c[0] - 22) * HKG.K, Math.round(c[1] - 60) * HKG.K, 46 * HKG.K, 70 * HKG.K).data); });
     [['buzhane', 'p1'], ['restoran', 'p2'], ['nakliye', 'p3'], ['koop', 'p4'], ['mezat', 'p5']].forEach(([id, pl]) => BT.servBuild(id, pl)); });
   const sig = {}, ids = ['buzhane', 'restoran', 'nakliye', 'koop', 'mezat'];
   for (const L of [1, 2, 3, 4, 5]) {
@@ -34,7 +34,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
       ids.forEach(id => {
         const st = BT.serv()[id], pl = BT.PLOTS.find(q => q.id === st.plot), c = BT.canvasPt(pl.x, pl.y, 0);
         const x0 = Math.round(c[0] - 22), y0 = Math.round(c[1] - 60), w = 46, h = 70;
-        const d = g.getImageData(x0, y0, w, h).data, bg = window.__bg[pl.id], hist = new Map(); let n = 0;
+        const d = g.getImageData(x0 * HKG.K, y0 * HKG.K, w * HKG.K, h * HKG.K).data, bg = window.__bg[pl.id], hist = new Map(); let n = 0;
         for (let i = 0; i < d.length; i += 4) { if (Math.abs(d[i] - bg[i]) + Math.abs(d[i + 1] - bg[i + 1]) + Math.abs(d[i + 2] - bg[i + 2]) < 24) continue; const k = (d[i] >> 5) * 64 + (d[i + 1] >> 5) * 8 + (d[i + 2] >> 5); hist.set(k, (hist.get(k) || 0) + 1); n++; }
         const o = {}; hist.forEach((v, k) => { o[k] = v / Math.max(1, n); }); out[id] = o;
       });

@@ -3,24 +3,33 @@
  "shots": [
   "screenshots/sonra/tel-pxs2-liman.png",
   "screenshots/sonra/tel-pxs2-iskele.png",
+  "screenshots/sonra/tel-pxs2-meydan.png",
+  "screenshots/sonra/tel-pxs2-aksam.png",
+  "screenshots/sonra/tel-pxs2-sabah.png",
   "screenshots/sonra/tel-pxs3-liman.png",
   "screenshots/sonra/tel-pxs3-iskele.png",
+  "screenshots/sonra/tel-pxs3-meydan.png",
+  "screenshots/sonra/tel-pxs3-aksam.png",
+  "screenshots/sonra/tel-pxs3-sabah.png",
   "screenshots/sonra/masa-pxs4-liman.png",
-  "screenshots/sonra/masa-pxs4-iskele.png"
+  "screenshots/sonra/masa-pxs4-iskele.png",
+  "screenshots/sonra/masa-pxs4-meydan.png",
+  "screenshots/sonra/masa-pxs4-aksam.png",
+  "screenshots/sonra/masa-pxs4-sabah.png"
  ],
  "errs": [],
  "fps": {
   "tel-pxs2": {
    "normal": 60,
-   "cpu4x": 18
+   "cpu4x": 15
   },
   "tel-pxs3": {
    "normal": 60,
-   "cpu4x": 19
+   "cpu4x": 20
   },
   "masa-pxs4": {
    "normal": 60,
-   "cpu4x": 21
+   "cpu4x": 17
   }
  },
  "dbg": {
