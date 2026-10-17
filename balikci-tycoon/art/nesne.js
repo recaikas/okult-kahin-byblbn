@@ -948,9 +948,10 @@ function stallSignSpr(name) {
 }
 HKA.drawStallSign = function (c) {
   var A = gv('AREAS'), a = A[c.z], pl = G().player;
-  if (!a || a.locked || a.lvl < 2 || d2(pl.x, pl.y, c.x, c.y) > 14) return;
+  var d = d2(pl.x, pl.y, c.x, c.y);
+  if (!a || a.locked || a.lvl < 2 || d <= 14 || d > 90) return;   /* v2.13.1: yakında kaybolur (tezgâhı kapatmasın), uzaktan tanıtır */
   var name = gf('UP')(gf('NM')(a.n));
-  L.blit(stallSignSpr(name), R(pX(c.x + 0.78, c.y)), R(pY(c.x + 0.78, c.y, 24)));
+  L.blit(stallSignSpr(name), R(pX(c.x + 0.78, c.y)), R(pY(c.x + 0.78, c.y, 40)));   /* çatının üstünde, tenteye binmez */
 };
 /* çöp kovası (galvaniz): kapak zıplar */
 function binSpr(pop) {
