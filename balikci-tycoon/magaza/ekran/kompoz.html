@@ -1,0 +1,70 @@
+<!doctype html><html><head><meta charset="utf-8"><link href="../../fonts/fonts.css" rel="stylesheet">
+<!-- App Store görseli şablonu (1290×2796). ?img=&l1=&l2=&sub=&n=&tone=  — uret.js doldurur -->
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1290px;height:2796px;overflow:hidden;background:#0f2236;font-family:"Pixelify Sans",monospace;-webkit-font-smoothing:none}
+  #c{position:relative;width:1290px;height:2796px;overflow:hidden}
+  canvas#bg{position:absolute;inset:0;image-rendering:pixelated}
+  .kilim{position:absolute;left:0;width:1290px;height:44px;image-rendering:pixelated}
+  #k1{top:0} #k2{bottom:0}
+  .ttl{position:absolute;left:60px;right:60px;top:84px;height:470px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .l{font-weight:700;line-height:1.02;white-space:nowrap;letter-spacing:1px;
+     text-shadow:6px 6px 0 #050c14,0 -3px 0 #050c14,-3px 0 0 #050c14,3px 0 0 #050c14,0 3px 0 #050c14}
+  #l1{color:#fff1c9} #l2{color:#ffc94a}
+  #sub{margin-top:30px;font-size:44px;color:#a9cfe0;letter-spacing:.5px;white-space:nowrap}
+  .rule{display:flex;align-items:center;gap:14px;margin-top:26px}
+  .rule i{display:block;width:150px;height:6px;background:#b07d2a}
+  .rule b{display:block;width:18px;height:18px;background:#d9a441;transform:rotate(45deg);box-shadow:0 0 0 5px #3a2605}
+  /* telefon: koyu gövde + pirinç çember + tahta gölge */
+  .ph{position:absolute;left:45px;top:588px;width:1200px;height:2136px;border-radius:70px;background:#060d16;
+      box-shadow:0 0 0 8px #d9a441,0 0 0 14px #6b4512,18px 22px 0 14px rgba(3,8,14,.55)}
+  .ph::before{content:"";position:absolute;inset:8px;border-radius:62px;border:4px solid #1b2a3a}
+  .scr{position:absolute;left:30px;top:30px;width:1140px;height:2076px;border-radius:44px;overflow:hidden;background:#000}
+  .scr img{display:block;width:1140px;height:2076px;image-rendering:pixelated}
+  .rivet{position:absolute;width:16px;height:16px;background:#ffd98f;box-shadow:inset -4px -4px 0 #9a6a1c}
+</style></head><body><div id="c">
+<canvas id="bg" width="1290" height="2796"></canvas>
+<canvas class="kilim" id="k1" width="1290" height="44"></canvas>
+<div class="ttl"><div class="l" id="l1"></div><div class="l" id="l2"></div><div class="rule"><i></i><b></b><i></i></div><div id="sub"></div></div>
+<div class="ph"><div class="scr"><img id="img"></div></div>
+<canvas class="kilim" id="k2" width="1290" height="44"></canvas>
+</div>
+<script>
+const q = new URLSearchParams(location.search);
+const tone = q.get('tone') || '#0f2236';
+document.body.style.background = tone;
+document.getElementById('img').src = q.get('img');
+const l1 = document.getElementById('l1'), l2 = document.getElementById('l2'), sub = document.getElementById('sub');
+l1.textContent = q.get('l1') || ''; l2.textContent = q.get('l2') || ''; sub.textContent = q.get('sub') || '';
+/* başlık: iki satır aynı boyda, en geniş satır 1150 px'e sığana kadar küçülür */
+document.fonts.ready.then(() => {
+  let fs = 132; const fit = () => { l1.style.fontSize = l2.style.fontSize = fs + 'px'; return Math.max(l1.scrollWidth, l2.scrollWidth) <= 1150; };
+  while (!fit() && fs > 70) fs -= 2;
+  let ss = 44; sub.style.fontSize = ss + 'px'; while (sub.scrollWidth > 1150 && ss > 28) { ss -= 2; sub.style.fontSize = ss + 'px'; }
+});
+/* arka plan: düz ton, seyrek piksel yıldızlar, alt yarıda piksel dalga çizgileri (deterministik) */
+const g = document.getElementById('bg').getContext('2d');
+g.fillStyle = tone; g.fillRect(0, 0, 1290, 2796);
+let sd = 7 + (+q.get('n') || 1) * 13; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+for (let i = 0; i < 46; i++) { const x = Math.floor(rnd() * 215) * 6, y = 56 + Math.floor(rnd() * 90) * 6, s = rnd() < 0.2 ? 12 : 6;
+  g.fillStyle = rnd() < 0.3 ? 'rgba(255,217,143,.55)' : 'rgba(191,233,255,.28)'; g.fillRect(x, y, s, s); }
+for (let row = 0; row < 40; row++) {
+  const y = 620 + row * 54, ph = rnd() * 200;
+  g.fillStyle = 'rgba(120,190,220,' + (0.05 + 0.03 * (row % 3 === 0)) + ')';
+  for (let x = -60; x < 1350; x += 120) { const xx = Math.round((x + ph) / 6) * 6; g.fillRect(xx, y, 36, 6); g.fillRect(xx + 36, y - 6, 24, 6); g.fillRect(xx + 60, y, 36, 6); }
+}
+/* kilim şeridi: piksel motifli (kırmızı zemin, altın baklava, lacivert göz, krem kenar) */
+function kilim(cv) {
+  const k = cv.getContext('2d'), P = 4;
+  const C = { r: '#a83d2b', d: '#6e2216', g: '#d9a441', b: '#2a4c7d', c: '#f2e2bd', k: '#2b1810' };
+  k.fillStyle = C.r; k.fillRect(0, 0, 1290, 44);
+  k.fillStyle = C.k; k.fillRect(0, 0, 1290, P); k.fillRect(0, 40, 1290, P);
+  k.fillStyle = C.c; k.fillRect(0, P, 1290, P); k.fillRect(0, 36, 1290, P);
+  for (let x0 = 0; x0 < 1290; x0 += 64) {
+    for (let j = 0; j < 7; j++) { const w = (j < 4 ? j : 6 - j); k.fillStyle = C.g; k.fillRect(x0 + 32 - (w + 1) * P, 10 + j * P, (w + 1) * 2 * P, P); }
+    k.fillStyle = C.b; k.fillRect(x0 + 28, 18, 8, 8);
+    k.fillStyle = C.d; k.fillRect(x0, 14, P, 16); k.fillRect(x0 + 4, 18, P, 8);
+  }
+}
+kilim(document.getElementById('k1')); kilim(document.getElementById('k2'));
+</script></body></html>
