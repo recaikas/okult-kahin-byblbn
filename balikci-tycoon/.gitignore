@@ -1,2 +1,4 @@
 ps_*.png
 sw_*.png
+node_modules/
+_site/
