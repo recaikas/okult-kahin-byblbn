@@ -19,14 +19,19 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   await p.evaluate(() => { BT.achMute && BT.achMute(true); BT.S.ctrl = 2; BT.S.tut = 99; BT.S.cash = 1e5; BT.S.rep = 400;
     window.__ns = setInterval(() => { const s = document.getElementById('stallScr'); if (!s.classList.contains('hidden')) document.getElementById('stallGo').click(); }, 200); });
 
-  /* 1) v2.15: PROJE sekmesi yok; Kapalı Pazar rafta; Ticaret Ofisi BİNA sekmesinde */
+  /* 1) v2.15: PROJE sekmesi yok; Kapalı Pazar rafta. v2.15.1: Ticaret Ofisi YAPI › Meydan'da (BİNA'da değil) */
   R.proj = await p.evaluate(() => ({ tab: !!document.querySelector('.dtab[data-t="proj"]'), ch: BT.chapterGroups().map(g => g.t), ach: BT.ACH_IDS().includes('kapali_pazar') }));
   ok(!R.proj.tab, 'PROJE sekmesi hâlâ var');
   ok(!R.proj.ch.some(t => /Kapalı Pazar/.test(t)) && !R.proj.ach, 'Kapalı Pazar hedefte / başarımda ' + JSON.stringify(R.proj));
   await p.click('.dtab[data-t="serv"]'); await sleep(300);
-  R.office = await p.evaluate(() => document.getElementById('dpCards').textContent.slice(0, 200));
-  ok(/T[İI]CARET/.test(R.office), 'Ticaret Ofisi BİNA sekmesinde yok ' + R.office);
+  R.serv = await p.evaluate(() => document.getElementById('dpCards').textContent);
+  ok(!/T[İI]CARET OF/.test(R.serv), 'Ticaret Ofisi hâlâ BİNA sekmesinde');
   await p.click('.dtab[data-t="serv"]'); await sleep(200);
+  await p.click('.dtab[data-t="build"]'); await sleep(300);
+  await p.click('#dpSub button[data-s="meydan"]'); await sleep(300);
+  R.office = await p.evaluate(() => { const c = [...document.querySelectorAll('#dpCards .dcard')].find(d => /T[İI]CARET OF/.test(d.textContent)); return c ? c.textContent : ''; });
+  ok(/T[İI]CARET OF/.test(R.office) && /\$/.test(R.office) && !/B[İI]NA ›/.test(R.office), 'Ticaret Ofisi Meydan’da satın alınamıyor ' + R.office);
+  await p.click('.dtab[data-t="build"]'); await sleep(200);
 
   /* 2) joker müdür (1. bölge) */
   R.jk = await p.evaluate(async () => {
