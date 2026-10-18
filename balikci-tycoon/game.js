@@ -33,6 +33,8 @@ var STR = {
     dayScore: 'Skor (toplam balık)', dayRank: '{s} • {r}. sıra', fishN: '{n} balık',
     tag: 'KÜÇÜK İSKELEDEN BÜYÜK LİMANA',
     langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM', taxWarn: '🎩 Yarın vergi memuru Haşmet Bey limana uğrayacak…', taxPaid: '🧾 Vergi makbuzu: {n} ürün · −{v}', taxName: 'Vergi Memuru Haşmet Bey', guardLbl: 'Alp Er Tunga · nöbette', dolphLbl: '🐬 Yunus seni çağırıyor', dolphHint: '🐬 İskelenin batı kıyısında bir yunus sıçrıyor… yanına git!', dolphHintN: '🐬 İskelenin kuzey ucunda bir yunus sıçrıyor… yanına git!', taxWarnDebt: '🎩 Yarın Haşmet Bey geliyor! Faiziyle borcun: {v}. Kasada para olsun!', taxWarnLast: '⚠ SON HAFTA! Yarın {v} borcunu ödeyemezsen liman mühürlenir!', taxDebt: '📕 Ödenemeyen vergi borca yazıldı: {v}. Haftaya iki katı!', taxDebtOff: '✅ Haşmet Bey\'e borcun kapandı', overK: 'OYUN BİTTİ', overT: 'LİMAN BATTI', overBy: 'HAŞMET BEY HER ZAMAN GELİR', overGo: 'ANA MENÜ', overP: '{c} vergi borcu yüzünden mühürlendi. {d} gün boyunca {s} müşteriye balık sattın. Hamsiler hâlâ koyda… belki bir gün, yeniden.', visLbl: 'GÖRÜNÜM', visClassic: 'KLASİK', visFine: 'İNCE',
+    /* v2.16 — Liman Gazetesi özel sayı */
+    gzBoy: 'Gazeteci Çocuk', gzYell: 'Son dakika! Liman Gazetesi özel sayı!', gzYellMorn: 'Gazeteee! Liman Gazetesi!', gzOnGround: 'Özel sayı!', gzFame: 'Şeref Panosu · {n}/{m}', gzArch: 'LİMAN GAZETESİ ARŞİVİ', gzArchN: '{a}/{n} sayı', gzDay: '{d}. GÜN', gzRead: 'OKU', gzShareBtn: 'PAYLAŞ', gzLockedD: 'Bu sayı henüz çıkmadı', gzMissed: 'Bu sayı kaçırıldı', gzMissedD: 'Bu kayıtta o gün çoktan geçmişti', gzOpenRow: 'Açılış sayısı', gzCh1Row: 'Bölüm 1 sonu', gzShareTxt: 'Liman Gazetesi\'nde manşet oldum! Hamsi Koyu\'nu sen de oyna:', gzShareTag: 'KARADENİZ\'DE BİR BALIKÇI LİMANI', gzSaved: '📰 Gazete görseli indirildi', gzShareErr: 'Görsel hazırlanamadı',
     resetAsk: 'Tüm ilerleme silinsin mi?',
     intro1: '🎣 Ağın yanında bekle, balık birikir',
     intro2: '🧺 Üstünden geç, sırtla (ağır balık çok yer kaplar)',
@@ -247,6 +249,8 @@ var STR = {
     dayScore: 'Score (total fish)', dayRank: '{s} • #{r}', fishN: '{n} fish',
     tag: 'FROM A TINY PIER TO A GRAND HARBOR',
     langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM', taxWarn: '🎩 Tomorrow the tax collector Mr. Haşmet will visit the harbour…', taxPaid: '🧾 Tax receipt: {n} items · −{v}', taxName: 'Tax Collector Mr. Haşmet', guardLbl: 'Alp Er Tunga · on watch', dolphLbl: '🐬 The dolphin is calling you', dolphHint: '🐬 A dolphin is leaping by the west edge of the pier… go to it!', dolphHintN: '🐬 A dolphin is leaping at the north end of the pier… go to it!', taxWarnDebt: '🎩 Mr. Haşmet comes tomorrow! Your debt with interest: {v}. Keep cash in the safe!', taxWarnLast: '⚠ LAST WEEK! If you can\'t pay your {v} debt tomorrow, the harbour will be sealed!', taxDebt: '📕 Unpaid tax added to your debt: {v}. It doubles next week!', taxDebtOff: '✅ Your debt to Mr. Haşmet is cleared', overK: 'GAME OVER', overT: 'THE HARBOUR SANK', overBy: 'MR. HAŞMET ALWAYS COMES BACK', overGo: 'MAIN MENU', overP: '{c} was sealed over unpaid taxes. For {d} days you sold fish to {s} customers. The anchovies are still in the bay… maybe one day, again.', visLbl: 'GRAPHICS', visClassic: 'CLASSIC', visFine: 'FINE',
+    /* v2.16 — Harbour Gazette special issue */
+    gzBoy: 'Paperboy', gzYell: 'Breaking news! Harbour Gazette special issue!', gzYellMorn: 'Paaaper! Harbour Gazette!', gzOnGround: 'Special issue!', gzFame: 'Wall of Fame · {n}/{m}', gzArch: 'HARBOUR GAZETTE ARCHIVE', gzArchN: '{a}/{n} issues', gzDay: 'DAY {d}', gzRead: 'READ', gzShareBtn: 'SHARE', gzLockedD: 'This issue is not out yet', gzMissedD: 'That day had long passed in this save', gzMissed: 'You missed this issue', gzOpenRow: 'First issue', gzCh1Row: 'End of Chapter 1', gzShareTxt: 'I made the Harbour Gazette headlines! Play Hamsi Koyu too:', gzShareTag: 'A FISHING HARBOUR ON THE BLACK SEA', gzSaved: '📰 Newspaper image downloaded', gzShareErr: 'Could not prepare the image',
     resetAsk: 'Erase all progress?',
     intro1: '🎣 Wait by the net, fish pile up',
     intro2: '🧺 Walk over the crate to carry them (big fish weigh more)',
@@ -1443,7 +1447,7 @@ function mgrCands(z) {
 }
 function mgrText(m) { return NM(MGR_BUFFS[m.a].t) + ' • ' + NM(MGR_BUFFS[m.b].t); }
 function hireMgr(z, c) {
-  progEv('mudur');
+  progEv('mudur'); gzMark('mudur', { m: c.n });   /* v2.16: ilk müdür özel sayısı */
   if (!S.mgr) S.mgr = [];
   S.mgr[z] = { n: c.n, a: c.a, b: c.b, wage: MGR_DESK[z].wage, look: c.look };
   S.mgrCand[z] = null;
@@ -2356,9 +2360,10 @@ function endDay() {
     next: isMarketDay(day.n + 1), auc: auc
   };
   if (M && M.office) closeDay();                 /* borsa günü oyun günüyle aynı */
+  if (day.n === 1) gzMark('ilkgun', { n: S.served | 0 });   /* v2.16: ilk günün sonu → ertesi sabah gazetesi */
   day.phase = 'summary';
   sfx.dayOut();
-  showDayCard();
+  gzDayEnd(showDayCard);                           /* v2.16: alınmamış özel sayı gün kartından önce açılır */
   retDayEnd(day.last);                           /* gün geliri ortalaması + gün sonu başarımları */
   save();
 }
@@ -2595,7 +2600,7 @@ function taxClose() {                                     /* hafta kapandı: mak
   if (TAX.short > 0 && !TAX.over) setTimeout(function () { toast(T('taxDebt', { v: money(TAX.short) })); }, 2400);
   else if (TAX.hadDebt && !q.debt.length) setTimeout(function () { toast(T('taxDebtOff')); }, 2400);
   TAX.paid = true;
-  if (!TAX.over) save();
+  if (!TAX.over) { gzMark('hasmet', { v: Math.round(TAX.v || 0), debt: TAX.short > 0 ? 1 : 0 }); save(); }   /* v2.16: ilk vergi özel sayısı */
 }
 /* son durağın repliği: borç durumuna göre */
 function taxEndLine() {
@@ -3048,7 +3053,7 @@ function buildSave() {
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
     auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
-    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, custSeen: S.custSeen || {}, specN: S.specN || {}, custNewF: S.custNewF ? 1 : 0, stallSt: S.stallSt || {}, help: S.help || {}, jobs: S.jobs || [], mx: S.mx || null, tax: S.tax || null, specForce: S.specForce || null, ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
+    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, custSeen: S.custSeen || {}, specN: S.specN || {}, custNewF: S.custNewF ? 1 : 0, stallSt: S.stallSt || {}, help: S.help || {}, jobs: S.jobs || [], mx: S.mx || null, tax: S.tax || null, gz: S.gz || null, specForce: S.specForce || null, ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
     areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
@@ -3191,6 +3196,7 @@ function loadFrom(d) {
     try { queueLoad(d); } catch (e) { }                /* bozuk kuyruk verisi kaydın geri kalanını bozmasın */
     retLoad(d);                                     /* uzakta kazanç + başarımlar (yoksa boş) */
     S.evs = {}; if (Array.isArray(d.ev)) d.ev.forEach(function (k) { if (typeof k === 'string' && /^[a-z0-9_]{2,24}$/.test(k)) S.evs[k] = 1; });
+    S.gz = gzLoad(d.gz) || gzOld(); gzReset();   /* v2.16: eski kayıtta yok → geçilmiş dönüm noktaları "kaçırıldı" */
     return true;
   } catch (e) { return false; }
 }
@@ -3227,7 +3233,7 @@ function useSlot(n) {
   camX = pX(player.x, player.y); camY = pY(player.x, player.y, 0);
 }
 function deleteSlot(n) {
-  Store.del(slotKey(n));
+  Store.del(slotKey(n)); gzWipe(n);   /* v2.16: gazete fotoğrafları da */
   if (parseInt(Store.get(LAST_KEY), 10) === n) Store.del(LAST_KEY);
   if (curSlot === n) { resetWorld(); curSlot = 0; }
 }
@@ -4307,6 +4313,7 @@ function applyPad(p) {
   else if (p.kind === 'hire') { p.lvl++; hire(p.role); }
   else if (p.kind === 'area') {
     AREAS[p.target].locked = false; rebuildCounters(); reassignWorkers(); progEv('bolge' + (p.target + 1));
+    if (p.target === 1) gzMark('pazar', { n: S.served | 0 });   /* v2.16: Balık Pazarı özel sayısı */
     toast(T('areaOpen', { n: NM(AREAS[p.target].n) })); sfx.build();
     
   } else if (p.kind === 'arealv') {
@@ -7272,6 +7279,8 @@ function render() {
     if (AREAS[bn.z].locked) return; push(bn.x + bn.y, function () { drawBin(bn); });
   })(BINS[i]);
   if (guardOn()) push(GUARD.x + GUARD.y, drawGuard);   /* v2.15: Alp Er Tunga nöbette */
+  if (GZD) push(GZD.x + GZD.y - 0.05, function () { drawGzPaper(GZD); });   /* v2.16: yerdeki özel sayı */
+  if (GZB.on) push(GZB.x + GZB.y + 0.2, function () { drawNewsboy(GZB); });   /* v2.16: gazeteci çocuk */
   if (dolph) push(dolph.x + dolph.y, drawStoryDolphin);   /* v2.15: denizden gelen yunus */
   for (i = 0; i < PLOTS.length; i++) (function (p) {          /* v0.4 hizmet parselleri */
     if (!plotActive(p)) return;
@@ -7603,7 +7612,7 @@ function barList() {
       var blk = S.rep < a.rep;
       out.push({ id: 'a' + i, ic: '🔓', t: NM(a.n), s: T('areaGives') + (a.rep ? ' • Sv ' + levelForRep(a.rep) : ''),
         cost: upCost(a.cost), blocked: blk, why: T('needRep', { n: a.rep, c: S.rep, l: levelForRep(a.rep) }),
-        go: function (k) { return function () { clearJunk(k); AREAS[k].locked = false; progEv('bolge' + (k + 1)); rebuildCounters(); reassignWorkers(); clampCam(); sfx.build(); toast(T('areaOpen', { n: NM(AREAS[k].n) })); }; }(i) });
+        go: function (k) { return function () { clearJunk(k); AREAS[k].locked = false; progEv('bolge' + (k + 1)); if (k === 1) gzMark('pazar', { n: S.served | 0 }); rebuildCounters(); reassignWorkers(); clampCam(); sfx.build(); toast(T('areaOpen', { n: NM(AREAS[k].n) })); }; }(i) });
       break;
     }
     if (!out.length) out.push({ empty: T('emptyArea') });
@@ -8180,6 +8189,7 @@ function row(ic, title, sub, val, val2) {
 function lockTag() { return '<span style="color:var(--ink2)">' + T('locked') + '</span>'; }   /* v1.0: kilitli değer yeşil (para gibi) görünmesin */
 function renderTab() {
   if (curTab === 'basarim') { el.tabBody.innerHTML = achTabHTML(); return; }   /* BAŞARIMLAR sekmesi */
+  if (curTab === 'gazete') { el.tabBody.innerHTML = PX(gzTabHTML()); gzTabBind(); return; }   /* v2.16: GAZETELER arşivi */
   var h = '', i;
   if (curTab === 'liman') {
     var lvl = repLevel(), nxt = lvl < REP_LEVELS.length ? REP_LEVELS[lvl] : null;
@@ -8455,6 +8465,7 @@ function frame(ts) {
   updateStations(dt);
   updateCustomers(dt);
   updateTax(dt);                    /* v2.14 — vergi memuru */
+  updateGz(dt);                     /* v2.16 — gazeteci çocuk + yerdeki özel sayı */
   updateYardFolk(dt);
   updateMgrJokers(dt);                             /* v1.9.4: yoğun saatte müdürler tezgâhta */                              /* v1.9.2: hizmet sahası yayaları (görsel) */
   updateDay(dt);                    /* v1.2 — gün döngüsü + depo kilidi */
@@ -8568,7 +8579,7 @@ el.nameDice.onclick = function () { el.nameIn.value = randomCompany([el.nameIn.v
 el.nameIn.addEventListener('input', syncNamePreview);
 el.nameIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); confirmName(); } });
 el.introScr.addEventListener('pointerdown', function (e) {
-  if (e.target === el.introSkip || (e.target.closest && e.target.closest('#introLang'))) return;
+  if (e.target === el.introSkip || (e.target.closest && e.target.closest('#introLang,#introShare'))) return;
   introAdvance();
 });
 el.introSkip.onclick = function (e) { e.stopPropagation(); ensureAudio(); sfx.tap(); closeIntro(); };
@@ -9895,6 +9906,7 @@ function confirmName() {
   if (nameMode === 'new') {                         /* seçilen slotta temiz bir oyun */
     resetWorld();
     curSlot = pendingSlot || curSlot || 1;
+    gzWipe(curSlot);                                /* v2.16: yuvadaki eski oyunun gazete fotoğrafları */
     S.runId = newRunId();
     S.hero = cleanHero(pendingHero || randomHero());
   }
@@ -9963,7 +9975,8 @@ var GLY = {
   '.': '.|.|.|.|.|.|#', ',': '..|..|..|..|..|.#|#.', '!': '#|#|#|#|#|.|#', "'": '#|#|.|.|.|.|.',
   '?': '.###.|#...#|....#|...#.|..#..|.....|..#..', ':': '.|#|.|.|.|#|.', '-': '...|...|...|###|...|...|...',
   '&': '.##..|#..#.|#.#..|.#...|#.#.#|#..#.|.##.#', '▲': '.....|.....|..#..|.###.|#####|.....|.....',
-  '/': '....#|...#.|...#.|..#..|.#...|.#...|#....'
+  '/': '....#|...#.|...#.|..#..|.#...|.#...|#....',
+  '(': '..#|.#.|#..|#..|#..|.#.|..#', ')': '#..|.#.|..#|..#|..#|.#.|#..', '$': '..#..|.####|#.#..|.###.|..#.#|####.|..#..'   /* v2.16: vergi manşeti */
 };
 var GLY_MARK = { 'İ': ['I', 'dot'], 'Ö': ['O', 'uml'], 'Ü': ['U', 'uml'], 'Ğ': ['G', 'brv'], 'Ç': ['C', 'ced'], 'Ş': ['S', 'ced'], 'Â': ['A', 'crc'] };
 var _gly = {};
@@ -10181,10 +10194,11 @@ function artHarbor(g, P, t, W, H) {
 }
 /* v1.3 — Bölüm 1 sonu: oyuncunun GERÇEK limanının fotoğrafı (kapanış anında çekilir) */
 var chSnap = null;
-function takeHarborSnap() {
+function takeHarborSnap(fx, fy) {
   try {
     var ox = camX, oy = camY;
-    camX = pX(8, 8); camY = pY(8, 8, 0) - 10;                  /* üç tezgâh + Kapalı Pazar kadrajda */
+    if (fx === undefined) { fx = 8; fy = 8; }                  /* üç tezgâh + Kapalı Pazar kadrajda (v2.16: özel sayıda olayın yeri) */
+    camX = pX(fx, fy); camY = pY(fx, fy, 0) - 10;
     render();
     var src = document.getElementById('game'), aw = PAPER_W - 14, ah = 84;
     var sc = Math.min(src.width / (aw * 2.2), src.height / (ah * 2.2));
@@ -10317,6 +10331,7 @@ function drawPaper(g, sc, idx, t) {
   /* manşet: dar ve uzun gazete harfi (yatay 1, dikey 2 kat) */
   var lines = pxWrap(NM(sc.hl), 1, true, W - 14), lh = lines.length > 2 ? 12 : 19, sy = lines.length > 2 ? 1 : 2;
   var hy = lines.length === 1 ? 58 : 50;
+  if (lines.length > 3) { lh = 9; hy = 47; }                       /* v2.16: uzun özel sayı manşeti resme taşmasın */
   for (i = 0; i < lines.length; i++) { pxText(g, lines[i], W / 2, hy, 1, sy, true, INK, 'center'); hy += lh; }
   /* resim kutusu */
   var ax = 7, ay = 90, aw = W - 14, ah = 84;
@@ -10358,6 +10373,7 @@ function openIntro(then, list) {
   intro.then = then || null;
   intro.list = list || INTRO;
   intro.cv = el.introCv; intro.g = intro.cv.getContext('2d');
+  gzShareShow(false);                                             /* v2.16: PAYLAŞ yalnız özel sayı / arşiv gazetesinde */
   intro.k = FK;                                                   /* v2.13: ince görünümde gazete 2 kat çözünürlükte */
   intro.cv.width = STAGE_W * intro.k; intro.cv.height = STAGE_H * intro.k;
   if (!intro.pc) { intro.pc = document.createElement('canvas'); intro.pg = intro.pc.getContext('2d'); }
@@ -10964,6 +10980,7 @@ function pushMeydan(push) {
   push(WHALL.x + WHALL.y, drawWhall);
   push(MSIGN.x + MSIGN.y, drawMeydanSign);
   push(YSIGN.x + YSIGN.y, drawYardSign);
+  if (gzFrameN() > 0) push(FAME.x + FAME.y, function () { drawFamePano(FAME, gzFrames()); });   /* v2.16: Şeref Panosu */
 }
 /* =========================================================
    v1.9.2 — HİZMET SAHASI YAYALARI (yalnız görsel; oyuncudan hiçbir şey istemez)
@@ -11681,6 +11698,8 @@ var HELP = {
   m_album: { ic: '⭐', tr: ['ALBÜM', 'Tanıştığın özel müşteriler ve Dipteki Söz hikâyesinin durumu (gün, Bereket Ölçeri, kalıcı etkiler).', 'Herkesi görmek için üstteki 📖 Müşteri Defteri\'ne bak.'], en: ['ALBUM', 'Special customers you\'ve met and the state of The Promise Below story (day, Bounty Gauge, permanent effects).', 'For everyone, see the 📖 Customer Book at the top.'] },
   m_yardim: { ic: '❓', tr: ['YARDIM', 'Oyunun temel döngüsü ve kontroller. İpuçlarını yeniden görmek istersen buradaki düğmeyi kullan.'], en: ['HELP', 'The core loop and the controls. Use the button here to see the tips again.'] },
   m_basarim: { ic: '🏆', tr: ['BAŞARIMLAR', 'Oynadıkça açılan rozetler. Kilitli olanın nasıl açılacağı yazar.'], en: ['ACHIEVEMENTS', 'Badges you unlock as you play. Locked ones say how to get them.'] },
+  m_gazete: { ic: '📰', tr: ['GAZETELER', 'Liman Gazetesi\'nin senin limanını yazdığı bütün sayılar. Büyük bir dönüm noktasından sonra gazeteci çocuk özel sayıyı koşa koşa getirir; yere düşen gazetenin üstünden geçince açılır.', 'OKU ile yeniden okursun, PAYLAŞ ile sayfanın görselini paylaşırsın. Aldığın her sayı meydandaki Şeref Panosu\'na asılır.'],
+              en: ['NEWSPAPERS', 'Every issue in which the Harbour Gazette wrote about your harbour. After a big milestone the paperboy runs the special issue over; walk over the paper on the ground to open it.', 'READ opens it again, SHARE shares an image of the page. Every issue you get is framed on the Wall of Fame in the square.'] },
   of_market: { ic: '📈', tr: ['PİYASA', 'Koyun borsası: genel endeks ve şirketlerin hisse fiyatları, günlük yüzde değişimleriyle. Bir şirkete dokununca ŞİRKET sekmesinde ayrıntısı açılır.'], en: ['MARKET', 'The cove\'s stock market: the index and each company\'s share price with its daily change. Tap a company to open it in COMPANY.'] },
   of_co: { ic: '🏢', tr: ['ŞİRKET', 'Seçili şirketin fiyat geçmişi, sağlığı, büyümesi ve riski. Buradan hisse alıp satarsın.', 'Payın %5, %15 ve %51\'e ulaşınca ek avantajlar açılır; ilişkin yüksekse şirketi tamamen satın alabilirsin.'], en: ['COMPANY', 'The selected company\'s price history, health, growth and risk. Buy and sell shares here.', 'Reaching 5%, 15% and 51% unlocks extra perks; with a strong relationship you can take the company over.'] },
   of_ctr: { ic: '📜', tr: ['KONTRAT', 'Şirketlerin teslim teklifleri: belli sürede belli miktarda ürün teslim et, ödülü ve şirketle ilişki puanını al. Aynı anda alabileceğin kontrat sayısı sınırlı.'], en: ['CONTRACTS', 'Delivery offers from companies: deliver a set amount in time to earn the reward and relationship points. You can only hold a few at once.'] },
@@ -11851,16 +11870,18 @@ function openChapter() {
   el.chScr.classList.remove('hidden'); syncPause(); sfx.tap(); helpOnce('chapter');
 }
 /* Bölüm 1 kapanışı — şimdilik sade kart; sinematik ara sahne oyuncuyla birlikte tasarlanacak */
-function chapterPaper() {
-  var hero = (S.hero && S.hero.n) || (lang === 'tr' ? 'GENÇ BALIKÇI' : 'THE YOUNG FISHER'), co = S.company || '';
-  var staff = workers.length, met = (S.met || []).length;
+function chapterStat() { return { h: (S.hero && S.hero.n) || '', c: S.company || '', w: workers.length, s: (S.met || []).length, k: Math.round(S.caught || 0), d: day.n }; }
+function chapterPaper(o) {                                     /* v2.16: o = kayıtlı rakamlar (arşivden yeniden okuma) */
+  o = o || chapterStat();
+  var hero = o.h || (lang === 'tr' ? 'GENÇ BALIKÇI' : 'THE YOUNG FISHER'), co = o.c || '';
+  var staff = o.w | 0, met = o.s | 0, caught = +o.k || 0, dn = o.d || day.n;
   function both(tr, en) { return { tr: tr, en: en }; }
   return [
-    { art: 'snap', date: both(day.n + '. GÜN', 'DAY ' + day.n),
+    { art: 'snap', date: both(dn + '. GÜN', 'DAY ' + dn),
       hl: both('LİMANIN YENİ PATRONU - ' + hero, 'THE HARBOR HAS A NEW BOSS - ' + hero),
       cap: both('▲ ' + (co.length > 22 ? co.slice(0, 21) + '.' : co), '▲ ' + (co.length > 22 ? co.slice(0, 21) + '.' : co)),
-      sub: both('Bir sandık ve bir ağla başlayan ' + hero + ', bugün ' + co + ' ile limanın en bilinen adı. ' + fmtN(S.caught) + ' balık, ' + day.n + ' gün, ' + staff + ' çalışan, ' + met + ' özel müşteri. Artık basit bir balıkçı değil, tezgâhları olan bir balıkçı iş insanı.',
-        'It started with one crate and one net. Today ' + hero + ' and ' + co + ' are the best-known names in the harbor: ' + fmtN(S.caught) + ' fish, ' + day.n + ' days, ' + staff + ' staff, ' + met + ' special customers. No longer a simple fisher - a fish tycoon.') },
+      sub: both('Bir sandık ve bir ağla başlayan ' + hero + ', bugün ' + co + ' ile limanın en bilinen adı. ' + fmtN(caught) + ' balık, ' + dn + ' gün, ' + staff + ' çalışan, ' + met + ' özel müşteri. Artık basit bir balıkçı değil, tezgâhları olan bir balıkçı iş insanı.',
+        'It started with one crate and one net. Today ' + hero + ' and ' + co + ' are the best-known names in the harbor: ' + fmtN(caught) + ' fish, ' + dn + ' days, ' + staff + ' staff, ' + met + ' special customers. No longer a simple fisher - a fish tycoon.') },
     { art: 'giants', date: both('ERTESİ SABAH', 'NEXT MORNING'),
       hl: both('KARADENİZİN DEVLERİ TEDİRGİN', 'THE BLACK SEA GIANTS ARE WATCHING'),
       cap: both('▲ Ufukta dev trol filoları', '▲ Giant trawler fleets on the horizon'),
@@ -11872,7 +11893,7 @@ function openChapterEnd() {
   if (S.ch1) return;
   S.ch1 = true; progEv('bolum1'); save();
   closeBar();                                                   /* açık panel sahnenin arkasında kalmasın */
-  takeHarborSnap();
+  takeHarborSnap(); gzMarkCh();                                 /* v2.16: arşive ve Şeref Panosu'na */
   openIntro(function () { showChapterCard(); }, chapterPaper());
   el.introGate.classList.add('hidden'); el.introScr.classList.remove('gate');
   musicPlay('menu'); introScene(0);
@@ -11910,7 +11931,7 @@ function gameOverTax() {
   var paper = overPaper(), n = curSlot;
   overStat = { c: S.company || '', d: day.n, s: S.served | 0 };
   takeHarborSnap();
-  if (n) { Store.del(slotKey(n)); if (parseInt(Store.get(LAST_KEY), 10) === n) Store.del(LAST_KEY); }
+  if (n) { Store.del(slotKey(n)); gzWipe(n); if (parseInt(Store.get(LAST_KEY), 10) === n) Store.del(LAST_KEY); }
   curSlot = 0;                                                  /* save() artık hiçbir yuvaya yazmaz */
   openIntro(showOverCard, paper);
   el.introGate.classList.add('hidden'); el.introScr.classList.remove('gate');
@@ -11959,6 +11980,419 @@ el.chEndFin.onclick = function () {
 };
 el.endGo.onclick = function () { el.endScr.classList.add('hidden'); if (overOn) quitAfterOver(); else saveAndQuit(); };
 
+/* =========================================================
+   v2.16 — LİMAN GAZETESİ ÖZEL SAYI (bkz. GAZETE_TASARIM.md)
+   Dört dönüm noktasında (ilk gün, Balık Pazarı, ilk vergi, ilk müdür) gazeteci çocuk yoldan koşarak gelir, özel sayıyı
+   oyuncunun bir iki karo ötesine atar; üstünden geçince tek sayfalık gazete açılır: dönüm noktası anında çekilen gerçek
+   liman fotoğrafı (sepyadan renge döner) + gerçek rakamlı manşet. Gün sonuna kadar alınmazsa gün kartından önce açılır.
+   Günde en çok bir sayı; fazlası kuyrukta bekler, ertesi sabah gelir. Hikâye sahnesi, hikâye ziyaretçisi, yunus ya da
+   Haşmet Bey limandayken gazeteci gelmez, bekler. Arşiv: menü › GAZETELER. Kalıcı iz: meydanda Şeref Panosu.
+   Kayıt: S.gz = { got: {id: gün}, miss: {id: 1}, q: [id], st: {id: {n, d, v, m, c, debt}}, last: son okunan özel sayının günü }.
+   Fotoğraflar kayıttan ayrı anahtarda (balikci_gz_<yuva>_<id>, küçük JPEG). Yalnız görüntü: para ve dengeye dokunmaz.
+   ========================================================= */
+var GZ_IDS = ['ilkgun', 'pazar', 'hasmet', 'mudur'], GZ_ALL = GZ_IDS.concat(['bolum1']);
+var GZ_URL = 'https://recaikas.github.io/okult-kahin-byblbn/';
+var GZ_RUN = 3.6, GZ_SAY = 3.4, GZ_GIVEUP = 22;               /* koşu hızı (karo/sn), bağırma süresi, kovalamayı bırakma */
+var GZ_PAPERS = {
+  ilkgun: { hl: { tr: '{c} KAPILARINI AÇTI: İLK GÜN {n} MÜŞTERİ', en: '{c} OPENS ITS DOORS: {n} CUSTOMERS ON DAY ONE' },
+    sub: { tr: 'Dedemin iskelesi yeniden nefes aldı. Temel Dede: "Bu iskele yıllardır böyle gülmemişti." Haşmet Bey\'in köşesi: "İlk gün mü? Ben defterimi çoktan açtım."',
+      en: 'Grandpa\'s pier breathes again. Grandpa Temel: "This pier hasn\'t smiled like this in years." Mr. Haşmet\'s corner: "Day one? I\'ve already opened my ledger."' },
+    cap: { tr: '▲ İlk günün akşamı', en: '▲ The evening of day one' } },
+  pazar: { hl: { tr: 'BALIK PAZARI AÇILDI! {c} {d} GÜNDE {n} MÜŞTERİYE ULAŞTI', en: 'FISH MARKET OPENS! {c} REACHES {n} CUSTOMERS IN {d} DAYS' },
+    sub: { tr: 'Uskumru tezgâhları kuruldu, kuyruk iskeleyi aştı. Hacer Teyze: "Bu çocuk dedesine çekmiş." Haşmet Bey\'in köşesi: "Pazar büyüdü, defterim de."',
+      en: 'Mackerel stalls are up and the queue runs past the pier. Aunt Hacer: "This boy takes after his grandpa." Mr. Haşmet\'s corner: "The market grew, and so did my ledger."' },
+    cap: { tr: '▲ Balık Pazarı\'nın ilk günü', en: '▲ The fish market\'s first day' } },
+  hasmet: { hl: { tr: 'HAŞMET BEY GELDİ, GİTTİ: {c} İLK VERGİSİNİ ÖDEDİ ({v})', en: 'MR. HAŞMET CAME AND WENT: {c} PAYS ITS FIRST TAX ({v})' },
+    hlDebt: { tr: 'HAŞMET BEY GELDİ, GİTTİ: {c} AYAKTA, AMA DEFTERDE BORÇ VAR', en: 'MR. HAŞMET CAME AND WENT: {c} STANDS, BUT OWES THE LEDGER' },
+    sub: { tr: 'Müşteriler kaçıştı ama liman yerinde duruyor. Kalender: "Haşmet geldi, gitti; biz hâlâ buradayız!" Haşmet Bey\'in köşesi: "Haftaya yine buradayım. Hah hah haaa!"',
+      en: 'Customers scattered, but the harbour still stands. Kalender: "Haşmet came and went; we\'re still here!" Mr. Haşmet\'s corner: "See you next week. Ha ha haaa!"' },
+    cap: { tr: '▲ Vergi gününün akşamı', en: '▲ The evening of tax day' } },
+  mudur: { hl: { tr: '{c} İLK MÜDÜRÜNÜ ATADI: {m}', en: '{c} APPOINTS ITS FIRST MANAGER: {m}' },
+    sub: { tr: 'Bundan sonra tezgâhın başında bir müdür var. Temel Dede: "İş büyüyünce omuz da büyür." Haşmet Bey\'in köşesi: "Müdür mü? Pazarlığa hazırım."',
+      en: 'From now on a manager runs the stall. Grandpa Temel: "When the work grows, so do the shoulders." Mr. Haşmet\'s corner: "A manager? Ready to haggle."' },
+    cap: { tr: '▲ Yeni müdür iş başında', en: '▲ The new manager at work' } }
+};
+var GZB = { on: false }, GZD = null, gzWait = -1;            /* gazeteci çocuk · yerdeki gazete · gelişe kalan süre (-1: kurulmadı) */
+var FAME = { x: 16.3, y: 5.9 };                              /* Şeref Panosu: meydanın batı kenarı, köprü tabelası ile ofis arası */
+function gzOff() { return !!window.HK_GZ_OFF; }               /* yalnız eski testler (oyun akışı durmasın); test-gazete.js açar */
+function gzFresh() { return { got: {}, miss: {}, q: [], st: {}, last: 0 }; }
+function gzQ() { return S.gz || (S.gz = gzFresh()); }
+function gzReset() { GZB = { on: false }; GZD = null; gzWait = -1; }
+/* kayıttan gelen veriyi doğrula (taxLoad örneği); yoksa null → eski kayıt */
+function gzLoad(d) {
+  if (!d || typeof d !== 'object') return null;
+  var o = gzFresh(), i, id;
+  for (i = 0; i < GZ_ALL.length; i++) {
+    id = GZ_ALL[i];
+    if (d.got && typeof d.got[id] === 'number') o.got[id] = numIn(d.got[id], 0, 1e6, true);
+    if (d.miss && d.miss[id]) o.miss[id] = 1;
+    var s = d.st && d.st[id];
+    if (s && typeof s === 'object') {
+      var e = { n: numIn(s.n, 0, 1e9, true), d: numIn(s.d, 0, 1e6, true), v: numIn(s.v, 0, 1e13, true), m: String(s.m || '').slice(0, 24), c: String(s.c || '').slice(0, 40), debt: s.debt ? 1 : 0 };
+      if (id === 'bolum1') { e.h = String(s.h || '').slice(0, 24); e.w = numIn(s.w, 0, 1e4, true); e.s = numIn(s.s, 0, 1e4, true); e.k = numIn(s.k, 0, 1e10, true); }
+      o.st[id] = e;
+    }
+  }
+  if (Array.isArray(d.q)) d.q.forEach(function (q) { if (GZ_IDS.indexOf(q) >= 0 && o.got[q] !== undefined && !o.miss[q] && o.q.indexOf(q) < 0) o.q.push(q); });
+  o.last = numIn(d.last, 0, 1e6, true);
+  return o;
+}
+/* eski kayıt (S.gz yok): halihazırda geçilmiş dönüm noktaları "kaçırıldı", gazete gelmez. Bölüm 1 sonu S.ch1 ile zaten arşivde. */
+function gzOld() {
+  var o = gzFresh();
+  if (day.n > 1) o.miss.ilkgun = 1;
+  if (AREAS[1] && !AREAS[1].locked) o.miss.pazar = 1;
+  if (taxQ().n > 0) o.miss.hasmet = 1;
+  if ((S.mgr || []).some(function (m) { return !!m; })) o.miss.mudur = 1;
+  return o;
+}
+function gzKey(id, n) { return 'balikci_gz_' + (n === undefined ? curSlot : n) + '_' + id; }
+function gzWipe(n) { if (!n) return; for (var i = 0; i < GZ_ALL.length; i++) Store.del(gzKey(GZ_ALL[i], n)); }
+/* limanın o anki fotoğrafını (takeHarborSnap → chSnap) küçük JPEG olarak ayrı anahtara yaz */
+function gzKeep(id) {
+  if (!curSlot || !chSnap || !chSnap.col) return;
+  try { Store.set(gzKey(id), chSnap.col.toDataURL('image/jpeg', 0.8)); } catch (e) { }
+}
+/* dönüm noktası: rakamları ve fotoğrafı sakla, sıraya koy (her biri oyunda bir kez) */
+function gzMark(id, st) {
+  if (gzOff() || !S.started) return;
+  var g = gzQ();
+  if (g.got[id] !== undefined || g.miss[id]) return;
+  st = st || {}; st.d = day.n; st.c = S.company || '';
+  g.got[id] = day.n; g.st[id] = st;
+  if (g.q.indexOf(id) < 0) g.q.push(id);
+  var f = id === 'ilkgun' ? [5.5, 3.2] : id === 'pazar' ? [5.5, 9.2]
+    : [clamp(player.x, 3, 8), clamp(player.y, 3, maxOpenY() - 3)];   /* fotoğraf olayın olduğu yeri çeker */
+  takeHarborSnap(f[0], f[1]); gzKeep(id);
+}
+/* Bölüm 1 sonu: gazetesi zaten açılıyor (openChapterEnd); yalnız arşive ve panoya rakam + fotoğraf */
+function gzMarkCh() {
+  if (gzOff()) return;
+  var g = gzQ();
+  if (g.got.bolum1 === undefined) g.got.bolum1 = day.n;
+  g.st.bolum1 = chapterStat(); gzKeep('bolum1');
+}
+/* alınan sayı: Bölüm 1 sonu S.ch1 ile; özel sayı gelmiş ve okunmuşsa */
+function gzHave(id) {
+  if (id === 'bolum1') return !!S.ch1;
+  var g = gzQ(); return g.got[id] !== undefined && !g.miss[id] && g.q.indexOf(id) < 0;
+}
+function gzFrames() { return GZ_ALL.map(gzHave); }
+function gzFrameN() { var n = 0, i; for (i = 0; i < GZ_ALL.length; i++) if (gzHave(GZ_ALL[i])) n++; return n; }
+/* manşet: kayıtlı rakamlarla, her iki dilde ({c} şirket · {n} müşteri · {d} gün · {v} tutar · {m} müdür) */
+function gzMoney(v, L) { return '$' + Math.round(v || 0).toLocaleString(L === 'tr' ? 'tr-TR' : 'en-US'); }
+function gzUp(s, L) { s = String(s || ''); return L === 'tr' ? s.replace(/i/g, 'İ').replace(/ı/g, 'I').toUpperCase() : s.toUpperCase(); }
+function gzHL(id, L) {
+  var P = GZ_PAPERS[id], g = gzQ(), st = g.st[id] || {}, s = ((st.debt && P.hlDebt) || P.hl)[L];
+  var c = String(st.c || '').trim(), d = st.d || g.got[id] || day.n;
+  var rep = { c: c ? gzUp(c, L) : 'HAMSİ KOYU', n: Math.round(st.n || 0).toLocaleString(L === 'tr' ? 'tr-TR' : 'en-US'), d: d, v: gzMoney(st.v, L), m: gzUp(st.m || '?', L) };
+  return s.replace(/\{([cndvm])\}/g, function (m0, k) { return rep[k]; });
+}
+function gzScene(id) {
+  var P = GZ_PAPERS[id], g = gzQ(), d = (g.st[id] && g.st[id].d) || g.got[id] || day.n;
+  return { art: 'snap', gz: id, date: { tr: d + '. GÜN', en: 'DAY ' + d }, hl: { tr: gzHL(id, 'tr'), en: gzHL(id, 'en') }, cap: P.cap, sub: P.sub };
+}
+function gzList(id) {
+  if (id === 'acilis') return INTRO;
+  if (id === 'bolum1') return chapterPaper(gzQ().st.bolum1);
+  return [gzScene(id)];
+}
+/* kayıtlı fotoğrafı chSnap'e yükle (renkli + baskı sepyası); yoksa chSnap boş → limanın hayali resmi (harbor) */
+function gzSepia(src) {
+  var w = src.width, h = src.height, sep = document.createElement('canvas'); sep.width = w; sep.height = h;
+  var sg = sep.getContext('2d'); sg.drawImage(src, 0, 0);
+  var d = sg.getImageData(0, 0, w, h), a = d.data;
+  for (var i = 0; i < a.length; i += 4) { var l = (a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11) / 255; a[i] = 60 + l * 180; a[i + 1] = 48 + l * 170; a[i + 2] = 30 + l * 140; }
+  sg.putImageData(d, 0, 0);
+  return sep;
+}
+function gzPhoto(id, cb) {
+  var raw = id !== 'acilis' && curSlot ? Store.get(gzKey(id)) : null, done = false;
+  if (!raw || !/^data:image\//.test(raw)) { chSnap = null; cb(); return; }
+  var img = new Image();
+  img.onload = function () {
+    if (done) return; done = true;
+    try { var col = document.createElement('canvas'); col.width = img.width; col.height = img.height; col.getContext('2d').drawImage(img, 0, 0); chSnap = { col: col, sep: gzSepia(col) }; }
+    catch (e) { chSnap = null; }
+    cb();
+  };
+  img.onerror = function () { if (done) return; done = true; chSnap = null; cb(); };
+  img.src = raw;
+}
+/* gazeteyi gazete motoruyla aç (dönen kâğıt, alt yazı daktilo); PAYLAŞ düğmesi görünür */
+var gzBtn = document.getElementById('introShare'), gzSub = document.querySelector('#introScr .isub');
+function gzShareShow(on) {
+  if (!gzBtn) return;
+  gzBtn.textContent = T('gzShareBtn');
+  gzBtn.classList.toggle('hidden', !on); if (gzSub) gzSub.classList.toggle('gz', !!on);
+}
+function gzOpen(id, then) {
+  if (typeof closeBar === 'function') closeBar();
+  gzPhoto(id, function () {
+    openIntro(function () { gzShareShow(false); if (then) then(); }, gzList(id));
+    el.introGate.classList.add('hidden'); el.introScr.classList.remove('gate');
+    intro.gzId = id; gzShareShow(true);
+    introScene(0);
+  });
+}
+/* özel sayıyı oku: sıradan düş, bugünün sayısı sayılır, kaydet, aç */
+function gzRead(id, then) {
+  var g = gzQ(), k = g.q.indexOf(id);
+  if (k >= 0) g.q.splice(k, 1);
+  if (GZ_IDS.indexOf(id) >= 0) g.last = day.n;
+  if (GZD && GZD.id === id) GZD = null;
+  gzWait = -1;
+  if (S.started) save();
+  sfx.star && sfx.star();
+  gzOpen(id, then);
+}
+/* gün sonu: yolda ya da yerde bekleyen sayı varsa gün kartından ÖNCE açılır */
+function gzDayEnd(next) {
+  var id = GZD ? GZD.id : GZB.on ? GZB.id : (gzWait >= 0 && S.gz && S.gz.q.length ? S.gz.q[0] : null);
+  GZB.on = false; GZD = null; gzWait = -1;
+  if (id && !gzOff()) gzRead(id, next); else next();
+}
+/* ---------- gazeteci çocuk ---------- */
+function gzBlocked() { return day.phase !== 'play' || S.ctrl !== 2 || TAX.on || storyOpenNow() || !!storyVis || !!dolph; }
+function gzSpawn(id) {
+  GZB = { on: true, id: id, x: 13.6, y: 22.5, z: 0, vx: 0, vy: 0, bob: 0, face: -1, act: 0, carry: [], ph: 'in', t: 0, sayT: 0,
+    morn: gzQ().got[id] !== day.n, spot: null, re: 0 };
+  sfx.bell && sfx.bell();
+}
+/* oyuncunun bir iki karo ötesinde, durulabilen, çocuğa en yakın nokta */
+function gzSpot(b) {
+  var best = null, bd = 1e9, r, k;
+  for (r = 1.5; r >= 1.15; r -= 0.35) for (k = 0; k < 12; k++) {
+    var a = k / 12 * Math.PI * 2, x = player.x + Math.cos(a) * r, y = player.y + Math.sin(a) * r;
+    if (!canStand(x, y)) continue;
+    var d = dist2(x, y, b.x, b.y); if (d < bd) { bd = d; best = { x: x, y: y }; }
+  }
+  return best || { x: player.x, y: player.y + 1.2 };
+}
+function gzStep(b, tx, ty, dt) {                               /* düz çizgide koşar (Haşmet gibi; kimseyi itmez) */
+  var dx = tx - b.x, dy = ty - b.y, L = Math.hypot(dx, dy);
+  if (L < 0.1) { b.vx = 0; b.vy = 0; return true; }
+  var s = Math.min(L, GZ_RUN * dt);
+  b.x += dx / L * s; b.y += dy / L * s; b.vx = dx / L; b.vy = dy / L; b.bob += dt * 16;
+  var sx = pX(dx, dy); if (Math.abs(sx) > 0.01) b.face = sx > 0 ? 1 : -1;
+  return false;
+}
+function updateNewsboy(dt) {
+  var b = GZB; b.t += dt; b.sayT += dt;
+  if (b.ph === 'in') {
+    b.re -= dt; if (!b.spot || b.re <= 0) { b.spot = gzSpot(b); b.re = 0.5; }
+    var sp = b.spot, onRoad = b.x > 10.2 && b.x < 14.6;
+    var tx = onRoad && Math.abs(b.y - sp.y) > 0.6 ? 12.4 : sp.x, ty = sp.y;   /* önce yol boyunca, sonra oyuncuya */
+    if ((gzStep(b, tx, ty, dt) && tx === sp.x) || b.t > GZ_GIVEUP) {
+      var at = tx === sp.x && dist2(b.x, b.y, sp.x, sp.y) < 0.05 ? sp : (canStand(b.x, b.y) ? { x: b.x, y: b.y } : sp);
+      GZD = { id: b.id, x: at.x, y: at.y, t: 0 };
+      b.ph = 'drop'; b.t = 0; b.sayT = 0; b.vx = 0; b.vy = 0;
+      sfx.drop && sfx.drop(); addPuff(at.x, at.y, '#f4e9d2');
+    }
+  } else if (b.ph === 'drop') {
+    b.act = b.t < 0.35 ? 1 : 0;                              /* gazeteyi atar */
+    if (b.t > 0.9) { b.ph = 'out'; b.t = 0; b.act = 0; b.out = [{ x: 12.4, y: b.y }, { x: 13.6, y: 24.8 }]; }
+  } else if (b.ph === 'out') {
+    var w = b.out[0];
+    if (!w) { GZB = { on: false }; return; }
+    if (gzStep(b, w.x, w.y, dt)) b.out.shift();
+  }
+}
+function updateGz(dt) {
+  if (gzOff() || !S.gz) return;
+  var g = S.gz;
+  if (GZD) {
+    GZD.t += dt;
+    if ((day.phase === 'play' || day.phase === 'closing') && dist2(player.x, player.y, GZD.x, GZD.y) < 0.9) { gzRead(GZD.id, null); return; }
+  }
+  if (GZB.on) { updateNewsboy(dt); return; }
+  if (GZD || !g.q.length || g.last === day.n) return;          /* günde en çok bir özel sayı */
+  if (gzBlocked()) return;                                      /* sahne, ziyaretçi, yunus, Haşmet: bekler */
+  if (gzWait < 0) gzWait = g.got[g.q[0]] === day.n ? rnd(4, 8) : 2.5;   /* son dakika 4–8 sn · sabah gazetesi */
+  gzWait -= dt;
+  if (gzWait <= 0) { gzWait = -1; gzSpawn(g.q[0]); }
+}
+/* gazeteci çocuk: kasket, kısa pantolon, omzunda gazete çantası, elinde katlı gazete */
+var GZ_LOOK = { coat: '#d9cdb0', coat2: '#efe5cc', pants: '#5a4632', boot: '#2a1d14', boots: false, short: true, cap: '#6b5a48', hair: PAL.hair[2], skin: PAL.skin[1], mood: 1, vest: '#7a3a2a' };
+function drawNewsboy(b) {
+  var o = {}; for (var k in GZ_LOOK) o[k] = GZ_LOOK[k];
+  var moving = Math.abs(b.vx) + Math.abs(b.vy) > 0;
+  o.face = b.face; o.walk = moving;
+  drawPersonAt(b, o, function () {
+    var sx = R(pX(b.x, b.y)), sy = R(pY(b.x, b.y, 0)), f = b.face > 0 ? 1 : -1;
+    var w = moving ? WALK[phase4(b.bob * 0.16, ANIM.walkFps)] : null, y = sy + (w ? w.body : 0);
+    px(sx - 3, y - 3, 3, 1, o.skin); px(sx + 1, y - 3, 3, 1, o.skin);                 /* kısa pantolon: dizler açık */
+    var bx = f > 0 ? sx - 8 : sx + 4;                                                   /* omuzda gazete çantası */
+    for (var i = 0; i < 7; i++) px(sx + (f > 0 ? 3 - i : -4 + i), y - 17 + i, 1, 1, '#4a3322');   /* askı göğüsten çaprazlama */
+    px(bx, y - 11, 5, 5, '#8a6a3c'); px(bx, y - 11, 5, 1, '#a8834e'); px(bx + 2, y - 9, 1, 1, PAL.brass);
+    px(bx + 1, y - 13, 3, 2, '#e8dcc0'); px(bx + 1, y - 13, 3, 1, '#b9ab8c');                  /* çantadan taşan gazeteler */
+    var hx = sx + f * 5 - (f > 0 ? 0 : 2), hy = y - (b.act ? 14 : 10);                        /* elinde katlı gazete */
+    if (b.ph !== 'out') { px(hx, hy, 3, 4, '#e8dcc0'); px(hx, hy, 3, 1, '#2c231a'); px(hx + 1, hy + 2, 1, 1, '#a8281e'); }
+  });
+  var say = (b.ph === 'in' ? b.t % 6 < GZ_SAY : b.sayT < GZ_SAY) ? T(b.morn ? 'gzYellMorn' : 'gzYell') : null;   /* koşarken ara ara bağırır */
+  if (say) uiQ.push({ t: 4, x: b.x, y: b.y, z: 42, s: '“' + say + '”', c: '#ffe2c8', a: 1 });
+  if (b.ph !== 'out') uiQ.push({ t: 4, x: b.x, y: b.y, z: 29, s: '📰 ' + T('gzBoy'), c: '#ffc94a', a: 0.95 });
+}
+/* yerdeki özel sayı: katlı, kırmızı mühürlü, parıldar; ara sıra hafifçe zıplar */
+function drawGzPaper(o) {
+  var c = o.t % 2.6, hop = c < 0.36 ? Math.sin(c / 0.36 * Math.PI) * 3 : 0, gl = 0.5 + 0.5 * Math.sin(o.t * 4);
+  shadow(o.x, o.y, 0.32);
+  ctx.save(); ctx.globalAlpha = 0.18 + gl * 0.22; isoQuad(o.x - 0.36, o.y - 0.27, 0.72, 0.54, 0, '#ffe27a'); ctx.restore();   /* ışıltı */
+  isoQuad(o.x - 0.26, o.y - 0.18, 0.52, 0.36, 1 + hop, '#e8dcc0');
+  isoQuad(o.x - 0.26, o.y - 0.18, 0.52, 0.08, 1.2 + hop, '#2c231a');                   /* manşet şeridi */
+  hline(o.x - 0.2, o.y + 0.02, o.x + 0.2, o.y + 0.02, 1.4 + hop, '#8f7a57');            /* sütun yazısı */
+  hline(o.x - 0.2, o.y + 0.1, o.x + 0.12, o.y + 0.1, 1.4 + hop, '#8f7a57');
+  var sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 2 + hop));
+  px(sx + 2, sy - 1, 3, 2, '#a8281e'); px(sx + 3, sy - 1, 1, 1, '#d8483a');               /* kırmızı mühür */
+  for (var i = 0; i < 3; i++) {                                                         /* parıltılar */
+    var a = o.t * 2.2 + i * 2.1, kx = sx + Math.round(Math.cos(a) * 9), ky = sy - 4 + Math.round(Math.sin(a) * 4);
+    if (Math.sin(o.t * 6 + i * 1.7) > 0.2) { px(kx, ky, 1, 1, '#fff4c2'); px(kx - 1, ky, 3, 1, 'rgba(255,226,122,.55)'); }
+  }
+  uiLabel(o.x, o.y, 14 + hop, '📰 ' + T('gzOnGround'), '#ffe27a', 0.95);
+}
+/* Şeref Panosu: tahta pano, beş çerçeve; alınan her sayı için küçük sepya manşet, boşlar soluk çerçeve */
+function drawFamePano(o, fr) {
+  var sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0)), i, n = 0;
+  shadow(o.x, o.y, 1.0);
+  px(sx - 17, sy - 16, 2, 16, PAL.woodDark); px(sx + 15, sy - 16, 2, 16, PAL.woodDark);   /* direkler */
+  px(sx - 16, sy - 16, 1, 16, PAL.wood); px(sx + 16, sy - 16, 1, 16, PAL.wood);
+  px(sx - 20, sy - 35, 40, 20, PAL.woodDark);                                               /* pano */
+  px(sx - 19, sy - 34, 38, 18, PAL.wood);
+  for (i = 0; i < 3; i++) px(sx - 19, sy - 29 + i * 6, 38, 1, shade(PAL.wood, -14));       /* tahta araları */
+  px(sx - 22, sy - 38, 44, 3, PAL.tileDark); px(sx - 21, sy - 39, 42, 1, PAL.tile);       /* kiremit saçak */
+  px(sx - 22, sy - 35, 44, 1, 'rgba(0,0,0,.25)');
+  for (i = 0; i < 5; i++) {
+    var fx = sx - 17 + i * 7, fy = sy - 32, on = fr && fr[i];
+    if (on) {
+      n++;
+      px(fx, fy, 6, 8, i === 4 ? PAL.brass : PAL.tar);                                     /* çerçeve (Bölüm 1: pirinç) */
+      px(fx + 1, fy + 1, 4, 6, '#e8dcc0');                                                  /* sepya manşet minyatürü */
+      px(fx + 1, fy + 1, 4, 1, '#2c231a'); px(fx + 1, fy + 3, 4, 2, '#8f7a57'); px(fx + 1, fy + 6, 3, 1, '#9a8a6c');
+      if (i === 4) px(fx + 3, fy + 5, 1, 1, '#a8281e');
+    } else {
+      ctx.save(); ctx.globalAlpha = 0.55;
+      px(fx, fy, 6, 8, '#5a3e26'); px(fx + 1, fy + 1, 4, 6, shade(PAL.wood, -6));          /* soluk boş çerçeve */
+      ctx.restore();
+    }
+  }
+  px(sx - 7, sy - 23, 14, 3, PAL.brass); px(sx - 7, sy - 23, 14, 1, PAL.brassLite);        /* pirinç levha */
+  signScrawl(sx - 6, sy - 24, 12, '#6b4a1a', 31);
+  if (dist2(player.x, player.y, o.x, o.y) < 7) uiLabel(o.x, o.y, 46, T('gzFame', { n: n, m: 5 }), '#e4b94a', 0.95);
+}
+/* ---------- arşiv: menü › GAZETELER ---------- */
+function gzRows() {
+  var g = gzQ(), out = [{ id: 'acilis', st: 'ok', date: NM(INTRO[0].date), hl: NM(INTRO[0].hl), sub: T('gzOpenRow') }];
+  GZ_IDS.forEach(function (id) {
+    var d = g.got[id];
+    if (g.miss[id]) out.push({ id: id, st: 'miss', date: '', hl: T('gzMissed'), sub: T('gzMissedD') });
+    else if (d === undefined || g.q.indexOf(id) >= 0) out.push({ id: id, st: 'lock', date: '', hl: '?????', sub: T('gzLockedD') });
+    else out.push({ id: id, st: 'ok', date: T('gzDay', { d: (g.st[id] && g.st[id].d) || d }), hl: gzUp(gzHL(id, lang), lang), sub: '' });
+  });
+  if (S.ch1) {
+    var c = g.st.bolum1, cd = (c && c.d) || g.got.bolum1;
+    out.push({ id: 'bolum1', st: 'ok', date: cd ? T('gzDay', { d: cd }) : '', hl: NM(chapterPaper(c)[0].hl), sub: T('gzCh1Row') });
+  }
+  return out;
+}
+function gzTabHTML() {
+  var rows = gzRows(), have = 0, h = '';
+  rows.forEach(function (r) { if (r.st === 'ok' && r.id !== 'acilis') have++; });
+  h += '<div class="gzHead"><b>📰 ' + T('gzArch') + '</b><span>' + T('gzArchN', { a: have, n: GZ_ALL.length }) + '</span></div>';
+  rows.forEach(function (r) {
+    h += '<div class="row gzrow ' + r.st + '" data-g="' + r.id + '"><div class="ic">📰</div><div class="tx">' +
+      (r.date ? '<em>' + escH(r.date) + '</em>' : '') + '<b>' + escH(r.hl) + '</b>' + (r.sub ? '<small>' + escH(r.sub) + '</small>' : '') + '</div>' +
+      (r.st === 'ok' ? '<div class="gzb"><button class="gzread" data-g="' + r.id + '">' + T('gzRead') + '</button><button class="gzshare" data-g="' + r.id + '">' + T('gzShareBtn') + '</button></div>' : '') + '</div>';
+  });
+  return h;
+}
+function gzTabBind() {
+  Array.prototype.forEach.call(el.tabBody.querySelectorAll('.gzread'), function (b) {
+    b.onclick = function () {
+      var id = b.dataset.g; sfx.tap();
+      el.menuScreen.classList.add('hidden'); syncPause();
+      gzOpen(id, function () { openPauseMenu(); });
+    };
+  });
+  Array.prototype.forEach.call(el.tabBody.querySelectorAll('.gzshare'), function (b) {
+    b.onclick = function () { sfx.tap(); gzShareId(b.dataset.g); };
+  });
+}
+/* ---------- PAYLAŞ: 1080×1920 görsel ----------
+   Koyu tahta zemin, üstte ve altta kilim şeridi, ortada gazete sayfası (en yakın komşu büyütme), altta oyunun adı ve adresi.
+   Web: navigator.share({files}) varsa paylaşım, yoksa PNG indirilir. Mobil (Capacitor) şimdilik aynı web yolu;
+   yerel paylaşım eklentisi (@capacitor/share) mağaza sürümünde eklenecek. */
+function gzPaperCanvas(sc, idx) {
+  var k = FK, c = document.createElement('canvas'); c.width = PAPER_W * k; c.height = PAPER_H * k;
+  var g = c.getContext('2d'), ok = intro.k; intro.k = k;
+  g.setTransform(k, 0, 0, k, 0, 0); g.imageSmoothingEnabled = false;
+  try { drawPaper(g, sc, idx || 0, 10); } finally { intro.k = ok; }            /* t=10: fotoğraf tam renkli */
+  return c;
+}
+function gzKilim(g, y0, h) {
+  var C = [PAL.madder, PAL.saffron, PAL.indigo, PAL.cream], s = 12, i, j, rows = Math.round(h / s);
+  g.fillStyle = PAL.madder; g.fillRect(0, y0, 1080, h);
+  for (i = 0; i < 1080 / s; i++) for (j = 0; j < rows; j++) {
+    var d = Math.abs((i % 8) - 3.5) + Math.abs(j - (rows - 1) / 2);
+    var col = d < 1.6 ? C[3] : d < 2.6 ? C[1] : d < 3.6 ? C[2] : null;
+    if (col) { g.fillStyle = col; g.fillRect(i * s, y0 + j * s, s, s); }
+  }
+  g.fillStyle = '#1a0f07'; g.fillRect(0, y0, 1080, 6); g.fillRect(0, y0 + h - 6, 1080, 6);
+}
+function gzShareCanvas(pc) {
+  var W2 = 1080, H2 = 1920, c = document.createElement('canvas'); c.width = W2; c.height = H2;
+  var g = c.getContext('2d'), r = seedRnd(1974), y, i;
+  g.imageSmoothingEnabled = false;
+  for (y = 0; y < H2; y += 96) {                                               /* koyu tahta zemin */
+    g.fillStyle = (y / 96) % 2 ? '#3a2416' : '#33200f'; g.fillRect(0, y, W2, 96);
+    g.fillStyle = '#1a0f07'; g.fillRect(0, y, W2, 6);
+    for (i = 0; i < 14; i++) { g.fillStyle = r() > 0.5 ? '#45301d' : '#2a1a0c'; g.fillRect(Math.floor(r() * 90) * 12, y + 18 + Math.floor(r() * 5) * 12, 48 + Math.floor(r() * 6) * 12, 6); }
+    g.fillStyle = '#7a5a3a'; g.fillRect(36, y + 42, 12, 12); g.fillRect(W2 - 48, y + 42, 12, 12);   /* çiviler */
+  }
+  gzKilim(g, 0, 72); gzKilim(g, H2 - 72, 72);
+  var pw = 900, ph = Math.round(pw * pc.height / pc.width), x0 = 90, y0 = 150;
+  g.fillStyle = 'rgba(0,0,0,.5)'; g.fillRect(x0 + 18, y0 + 24, pw, ph);
+  g.imageSmoothingEnabled = false; g.drawImage(pc, x0, y0, pw, ph);
+  pxText(g, 'HAMSİ KOYU', W2 / 2 + 8, 1458, 10, 10, true, '#7a2b10', 'center');
+  pxText(g, 'HAMSİ KOYU', W2 / 2, 1450, 10, 10, true, '#ffc94a', 'center');
+  pxText(g, T('gzShareTag'), W2 / 2, 1580, 4, 4, false, '#f4e9d2', 'center');
+  g.fillStyle = '#a9c0cf'; g.font = '40px "Pixelify Sans", monospace'; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+  g.fillText(GZ_URL.replace(/^https?:\/\//, '').replace(/\/$/, ''), W2 / 2, 1720);
+  return c;
+}
+function gzShareGo(pc, name) {
+  var cv = gzShareCanvas(pc), file = 'hamsi-koyu-' + name + '.png';
+  function dl() {
+    try { var a = document.createElement('a'); a.href = cv.toDataURL('image/png'); a.download = file; document.body.appendChild(a); a.click(); a.remove(); toast(T('gzSaved')); }
+    catch (e) { toast(T('gzShareErr')); }
+  }
+  if (cv.toBlob && window.File && navigator.share && navigator.canShare) {
+    cv.toBlob(function (bl) {
+      try {
+        var f = bl && new File([bl], file, { type: 'image/png' });
+        if (f && navigator.canShare({ files: [f] })) {
+          navigator.share({ files: [f], title: 'Hamsi Koyu', text: T('gzShareTxt'), url: GZ_URL })['catch'](function (e) { if (!e || e.name !== 'AbortError') dl(); });
+          return;
+        }
+      } catch (e) { }
+      dl();
+    }, 'image/png');
+    return 'share';
+  }
+  dl();
+  return 'download';
+}
+function gzShareScene(sc, name) { try { return gzShareGo(gzPaperCanvas(sc, intro.i || 0), name); } catch (e) { toast(T('gzShareErr')); return 'error'; } }
+function gzShareId(id) { gzPhoto(id, function () { gzShareScene(gzList(id)[0], id); }); }
+if (gzBtn) gzBtn.addEventListener('click', function (e) {
+  e.stopPropagation(); ensureAudio(); sfx.tap();
+  if (intro.on && intro.list) gzShareScene(intro.list[intro.i], intro.gzId || 'gazete');
+});
+Array.prototype.forEach.call(document.querySelectorAll('#introLang button'), function (b) {   /* dil değişince düğme metni */
+  b.addEventListener('click', function () { if (gzBtn && !gzBtn.classList.contains('hidden')) gzShareShow(true); });
+});
+ICONS.gazete = ['............', '.kkkkkkkkkk.', '.kcccccccck.', '.kckkkkkkck.', '.kcccccccck.', '.kcssscnnck.', '.kcssscccck.', '.kcssscnnck.', '.kccccccmmk.', '.kcnnnnnmmk.', '.kkkkkkkkkk.', '............'];
+EMO_MAP['📰'] = 'gazete'; _emoRe = null;
+
 /* v1.3.2 — yerleşim denetimi: tam gelişmiş limanda her nesnenin kapladığı alan (en büyük hâliyle).
    Aynı "own" değerine sahip parçalar birbirine ait (ör. tezgâh + tepsisi) ve çakışma sayılmaz. */
 function layoutRects() {
@@ -11985,6 +12419,10 @@ function layoutRects() {
   add('Ana Kasa', 'safe', 0, safe.x, safe.y, 0.5, 0.5);
   DECOR.forEach(function (d) { add('süs ' + d.id, 'dc' + d.id, d.z, d.x, d.y, 0.42, 0.42); });
   add('başlangıç noktası', 'start', 0, 4.5, 3.2, 0.25, 0.25);
+  /* v2.16: meydan binaları + Şeref Panosu (pano bunlarla çakışmasın) */
+  add('Personel Kulübesi', 'hut', 0, HUT.x, HUT.y, HUT.w / 2, HUT.h / 2); add('Depo', 'depot', 0, DEPOT.x, DEPOT.y, DEPOT.w / 2, DEPOT.h / 2);
+  add('Balık Hali', 'whall', 0, WHALL.x, WHALL.y, WHALL.w / 2, WHALL.h / 2); add('meydan tabelası', 'msign', 0, MSIGN.x, MSIGN.y, 0.3, 0.2);
+  add('Şeref Panosu', 'fame', 0, FAME.x, FAME.y, 0.85, 0.85);   /* ekranda yatay pano: x−y ekseninde ~3.3 karo */
   return R;
 }
 function layoutClashes(margin) {
@@ -12029,7 +12467,7 @@ Object.assign(ICONS, {
 });
 
 Object.assign(STR.tr, {
-  tabs: STR.tr.tabs.concat(['BAŞARIM']),
+  tabs: STR.tr.tabs.concat(['GAZETELER', 'BAŞARIM']),   /* v2.16: GAZETELER sekmesi index.html'de, BAŞARIM sonda */
   offTitle: 'SEN YOKKEN…', offSub: '{t} uzaktaydın. Müdürlerin tezgâhları bir an bile boş bırakmadı.',
   offZone: '{m} başındaydı', offTotal: 'KASAYA GİRECEK', offGo: 'TOPLA ▶',
   offNote: 'Uzaktayken iş ağır aksak döner: ilk 2 saat tam, sonrası yavaşlayarak, en fazla 8 saat sayılır.',
@@ -12042,7 +12480,7 @@ Object.assign(STR.tr, {
   achC_ilk: 'İLK ADIMLAR', achC_buy: 'BÜYÜME', achC_mus: 'MÜŞTERİLER', achC_eko: 'KESE', achC_giz: 'GİZLİ VE EĞLENCELİ'
 });
 Object.assign(STR.en, {
-  tabs: STR.en.tabs.concat(['AWARDS']),
+  tabs: STR.en.tabs.concat(['NEWSPAPERS', 'AWARDS']),
   offTitle: 'WHILE YOU WERE AWAY…', offSub: 'You were gone for {t}. Your managers never left the stalls unattended.',
   offZone: '{m} kept watch', offTotal: 'GOING INTO THE SAFE', offGo: 'COLLECT ▶',
   offNote: 'Things run slower while you are away: full pace for 2 hours, tapering after that, 8 hours at most.',
@@ -12403,7 +12841,7 @@ setInterval(retTick, 1000);
   var tabs = document.getElementById('menuTabs');
   if (tabs) {
     var tb = document.createElement('button');
-    tb.className = 'tab'; tb.dataset.t = 'basarim'; tb.textContent = T('tabs')[5] || T('achHead');
+    tb.className = 'tab'; tb.dataset.t = 'basarim'; tb.textContent = T('tabs')[6] || T('achHead');
     tb.onclick = function () {
       Array.prototype.forEach.call(document.querySelectorAll('#menuTabs .tab'), function (o) { o.classList.remove('on'); });
       tb.classList.add('on'); curTab = 'basarim'; renderTab(); sfx.tap();
@@ -12545,6 +12983,9 @@ function hook(name, f0) {
   drawSpecialTag = hook('drawSpecialTag', drawSpecialTag);
   shadow = hook('shadow', shadow);
   drawShopBag = hook('drawShopBag', drawShopBag);
+  drawFamePano = hook('drawFamePano', drawFamePano);   /* v2.16: Şeref Panosu (o, çerçeveler[5]) */
+  drawNewsboy = hook('drawNewsboy', drawNewsboy);     /* v2.16: gazeteci çocuk (b: GZB) */
+  drawGzPaper = hook('drawGzPaper', drawGzPaper);     /* v2.16: yerdeki özel sayı (o: GZD) */
   for (var k in SERV_DRAW) SERV_DRAW[k] = { buzhane: drawBuzhane, restoran: drawRestoran, nakliye: drawNakliye, koop: drawKoop, mezat: drawMezat }[k] || SERV_DRAW[k];
 })();
 /* sanatçıların oyuna bakış penceresi: yalnız okuma (v: ad → değer, yavaş; açılışta ya da seyrek kullanın) */
@@ -12906,6 +13347,13 @@ Object.assign(window.BT, {
   RET_K: { MIN: RET_MIN, FULL: RET_FULL, CAP: RET_CAP, TAIL: RET_TAIL, FRAC: RET_FRAC, ABSURD: RET_ABSURD }
 });
 
+/* v2.16 — Liman Gazetesi test kancaları */
+Object.assign(window.BT, {
+  gz: { st: function () { return gzQ(); }, boy: function () { return GZB; }, drop: function () { return GZD; }, wait: function () { return gzWait; }, mark: gzMark, read: gzRead, rows: gzRows, frames: function () { return gzFrameN(); }, have: gzHave,
+    scene: gzScene, hl: gzHL, intro: function () { return { on: intro.on, ph: intro.ph, list: intro.list, i: intro.i, id: intro.gzId }; }, FAME: FAME, key: gzKey, old: gzOld, load: gzLoad, hireMgr: hireMgr,
+    shareImg: function (id) { return new Promise(function (res) { gzPhoto(id, function () { res(gzShareCanvas(gzPaperCanvas(gzList(id)[0], 0)).toDataURL('image/png')); }); }); },
+    share: function (id) { return new Promise(function (res) { gzPhoto(id, function () { res(gzShareScene(gzList(id)[0], id)); }); }); } }
+});
 /* görüş formu + mağaza değerlendirmesi — test kancaları */
 Object.assign(window.BT, {
   fbShow: function () { fbShow(); }, fbGiftAmt: fbGiftAmt, fbGiftReady: fbGiftReady, fbNudgeOff: function () { Store.set(FB_NUDGE_KEY, FB_VER); }, fbIsOpen: fbOpen, fbOutbox: fbBox, fbFlush: function (force) { fbFlush(force); },
