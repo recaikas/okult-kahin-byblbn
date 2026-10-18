@@ -400,6 +400,20 @@
   .lbl{font-size:11px;color:var(--ink2);letter-spacing:1.5px;margin-top:10px;display:block}
   .setnote{font-size:11px;color:var(--ink2);margin:4px 0 2px;line-height:1.5;opacity:.85}
   .tabs{display:flex;gap:4px;margin-bottom:10px}
+  #menuTabs{display:grid;grid-template-columns:repeat(4,1fr)} #menuTabs .tab{min-width:0;padding-left:1px;padding-right:1px;letter-spacing:0}   /* v2.16: yedi sekme iki sıraya (4 + 3) */
+  /* v2.16 — menü › GAZETELER arşivi */
+  .gzHead{display:flex;justify-content:space-between;align-items:baseline;margin:2px 0 6px;font-size:11px;color:var(--ink2)}
+  .gzHead b{color:var(--gold);font-weight:normal;letter-spacing:1px;font-size:12.5px}
+  .gzrow .tx{min-width:0;flex:1}
+  .gzrow .tx em{display:block;font-style:normal;font-size:10px;letter-spacing:1px;color:var(--brass,#d9b45e)}
+  .gzrow .tx b{display:block;font-weight:normal;font-size:11.5px;line-height:1.35;color:var(--ink)}
+  .gzrow .gzb{display:flex;flex-direction:column;gap:4px;flex:none}
+  .gzrow .gzb button{font-family:inherit;font-size:10.5px;letter-spacing:.5px;padding:5px 8px;background:#1b2a36;color:var(--ink);
+    border:2px solid #6b4a2a;border-radius:var(--rad,3px);cursor:pointer;box-shadow:0 2px 0 #0a0604}
+  .gzrow .gzb button.gzshare{color:var(--gold);border-color:#7a5406}
+  .gzrow .gzb button:active{transform:translateY(2px);box-shadow:none}
+  .gzrow.lock{opacity:.6} .gzrow.lock .tx b{letter-spacing:3px;color:var(--ink2)}
+  .gzrow.miss{opacity:.42;filter:grayscale(1)} .gzrow.miss .tx b{color:var(--ink2)}
   .tab{flex:1;background:linear-gradient(180deg,#23445f,#1a3549);border:2px solid var(--edge);
     border-top-color:var(--edge2);color:var(--ink2);
     padding:9px 2px;font-size:11px;cursor:pointer;font-family:inherit;letter-spacing:.5px}
@@ -464,6 +478,14 @@
   #introDots{display:flex;gap:6px;position:relative}
   #introDots i{width:8px;height:8px;background:#3a2716;border:2px solid #0a0604}
   #introDots i.d{background:#8a6a44} #introDots i.on{background:var(--gold)}
+  /* v2.16 — Liman Gazetesi: özel sayıda PAYLAŞ düğmesi (devam okunun yanında) */
+  .isub.gz{padding-bottom:40px}
+  #introShare{position:absolute;right:30px;bottom:7px;z-index:1;font-family:inherit;font-size:13px;letter-spacing:1px;
+    padding:5px 12px;background:#1b2a36;color:var(--gold);border:2px solid var(--gold);border-radius:var(--rad,3px);
+    box-shadow:0 3px 0 #0a0604;cursor:pointer}
+  #introShare:active{transform:translateY(2px);box-shadow:0 1px 0 #0a0604}
+  #introShare.hidden{display:none}
+  .isub:has(#introShare:not(.hidden)){padding-bottom:46px}   /* v2.16: PAYLAŞ düğmesi metnin üstüne binmesin */
 
   /* ---------- işletme adı ---------- */
   .sign{position:relative;margin:14px auto 8px;max-width:330px;padding:14px 12px 13px;text-align:center;
@@ -752,7 +774,7 @@
   <div class="card">
     <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v2.15</div>
+    <div class="ver">v2.16</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>
@@ -921,6 +943,7 @@
       <button class="tab" data-t="urunler">ÜRÜNLER</button>
       <button class="tab" data-t="album">ALBÜM</button>
       <button class="tab" data-t="yardim">YARDIM</button>
+      <button class="tab" data-t="gazete">GAZETELER</button>
     </div>
     <div id="tabBody"></div>
     <button class="go" id="closeMenu">▶ DEVAM ET</button>
@@ -1067,7 +1090,7 @@
   <canvas id="introCv" width="216" height="272"></canvas>
   <div id="introGate"><b>HAMSİ<br>KOYU</b><small id="introTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</small><span id="introTap">▶ BAŞLAMAK İÇİN DOKUN</span></div>
   <div id="introDots"></div>
-  <div class="isub"><span id="introSub"></span><span id="introNext" class="hidden">▶</span></div>
+  <div class="isub"><span id="introSub"></span><button id="introShare" class="hidden">PAYLAŞ</button><span id="introNext" class="hidden">▶</span></div>
 </div>
 
 <script src="native.js"></script>   <!-- config.js, specials.js, game.js dosyalarını sırayla yükler (uygulamada önce kayıtları geri yükler) -->

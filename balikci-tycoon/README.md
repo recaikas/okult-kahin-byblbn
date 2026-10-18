@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v2.15** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v2.16** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -16,6 +16,16 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
 ---
+
+## v2.16 — Liman Gazetesi Özel Sayı
+
+- **Özel sayı:** dört dönüm noktasında (1. günün sonu, Balık Pazarı'nın açılışı, Haşmet Bey'in ilk vergi ziyareti, ilk müdür) gazeteci çocuk yoldan koşarak gelir, "Son dakika!" diye bağırıp gazeteyi oyuncunun yanına atar. Yerdeki gazetenin üstünden geçince tek sayfalık özel sayı açılır: dönüm noktası anında çekilen gerçek liman fotoğrafı (sepyadan renge döner) ve gerçek rakamlarla manşet. İlk günün sayısı ertesi sabah gelir ("Gazeteee!"). Bölüm 1 sonu gazetesi aynen kalır, arşive ve panoya eklenir.
+- **Kurallar:** günde en çok bir özel sayı, fazlası ertesi sabah gelir. Hikâye sahnesi, hikâye ziyaretçisi, yunus ya da Haşmet Bey limandayken gazeteci bekler. Gün sonuna kadar alınmayan gazete gün kartından önce kendiliğinden açılır.
+- **PAYLAŞ:** özel sayı ekranında ve arşivde. 1080×1920 görsel (koyu tahta, kilim şeritleri, gazete sayfası, oyunun adı ve adresi). Paylaşım destekleniyorsa sistem paylaşımı, yoksa PNG indirilir. Mobil uygulama şimdilik aynı web yolunu kullanır; yerel paylaşım eklentisi (`@capacitor/share`) mağaza sürümünde eklenecek.
+- **Menü › GAZETELER:** açılış gazetesi, 4 özel sayı ve Bölüm 1 sonu; OKU ve PAYLAŞ. Gelmemiş sayılar kilitli (?????), eski kayıtta zaten geçilmiş olanlar "Bu sayı kaçırıldı". Menü sekmeleri iki sıra (4 + 3).
+- **Şeref Panosu:** ilk özel sayıdan sonra meydanda, köprü çıkışında tahta bir pano; alınan her sayı için küçük sepya manşet. Yalnız görüntü, denge etkisi yok.
+- **Kayıt:** yeni alan `gz`; fotoğraflar küçük JPEG olarak ayrı anahtarda (`balikci_gz_<yuva>_<id>`), yuva silinince ya da liman batınca onlar da silinir. Eski kayıtlar sorunsuz yüklenir.
+- İnce görünüm kancaları: `HKA.drawFamePano`, `HKA.drawNewsboy`, `HKA.drawGzPaper`. Test: `test-gazete.js` (eski testlerde gazeteci kapalı: `HK_GZ_OFF`).
 
 ## v2.15 — Vergi borcu, "Liman Battı", kaçışma replikleri, çöp kovası yerleri
 
