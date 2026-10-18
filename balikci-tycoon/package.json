@@ -1,0 +1,15 @@
+{
+  "name": "hamsi-koyu-site",
+  "version": "1.0.0",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "description": "Hamsi Koyu — yayın derlemesi (kodu küçültüp karartır). Oyunun kendisi derleme gerektirmez; bu yalnız yayın/mobil kopyası içindir.",
+  "scripts": {
+    "build-site": "node build-site.js _site"
+  },
+  "devDependencies": {
+    "acorn": "8.8.2",
+    "javascript-obfuscator": "4.1.1",
+    "terser": "5.51.2"
+  }
+}

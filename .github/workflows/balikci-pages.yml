@@ -23,15 +23,22 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Oyun dosyalarını topla
-        run: |
-          mkdir -p _site
-          cp balikci-tycoon/index.html balikci-tycoon/native.js balikci-tycoon/game.js balikci-tycoon/config.js balikci-tycoon/specials.js balikci-tycoon/story.js balikci-tycoon/story.html balikci-tycoon/privacy.html balikci-tycoon/about.html balikci-tycoon/panel.html balikci-tycoon/terms.html balikci-tycoon/support.html balikci-tycoon/icon.png _site/
-          cp -r balikci-tycoon/fonts _site/fonts
-          cp -r balikci-tycoon/art _site/art
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: balikci-tycoon/package-lock.json
+      - name: Derleme araçlarını kur (terser, javascript-obfuscator)
+        working-directory: balikci-tycoon
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      # Dosya listesi build-site.js içinde (SITE_FILES + fonts/, art/) — eski cp listesiyle aynı.
+      # .js küçültülür + hafif karartılır (isimler korunur: HKG.v), HTML yorumları silinir. Kaynak haritası yok.
+      - name: Oyun dosyalarını topla (küçült + karart)
+        working-directory: balikci-tycoon
+        run: node build-site.js _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: balikci-tycoon/_site
       - id: deploy
         uses: actions/deploy-pages@v4
