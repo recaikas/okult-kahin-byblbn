@@ -47,6 +47,13 @@ Her fikir için bir taslak görsel hazırlanacak: `fikir-01.png` … `fikir-10.p
 - **Neden:** Takvime bir zirve koyar; oyuncu "festivale yetişeyim" diye plan yapar.
 - **Taslak görsel:** Meydanda bayrak dizisi, horon halkası, kemençeci, festival tezgâhında tava kokusu (buhar).
 
+- **Güncelleme (kullanıcı notu):** Festival bir günlük geçici panayır tezgâhı olur ve yalnız depodaki balıkla beslenir.
+  - Hazırlık: 2 gün önce gazete haber verir, oyuncu depoya stok biriktirir.
+  - Festival günü: turist ve köylü kalabalığı gelir, fiyat ×1,3 olur, standa bir personel atanır.
+  - Horon mini oyunu kalabalığı büyütür. Akşam festival gazetesi çıkar.
+  - Dönen festivaller: Hamsi Festivali (kış), Balık Panayırı (bahar), Kemençe Gecesi (yaz), Bayram pazarı.
+  - Stant yükseltmeleri: tente, ızgara, kemençeci. Tekne seferi ve güveçle de beslenir.
+
 ### 5. Müdavimler
 - **Ne:**
   - Aynı müşteri birkaç kez memnun ayrılırsa müdavim olur.
@@ -63,6 +70,8 @@ Her fikir için bir taslak görsel hazırlanacak: `fikir-01.png` … `fikir-10.p
   - Kedi evi ve kedi koleksiyonu albümü.
 - **Neden:** Karadeniz limanının ruhu, sevimlilik ve paylaşılabilir anlar. Oyunda kediler zaten var.
 - **Taslak görsel:** Kasa yanında küçük kedi evi ve üç kedi; biri ağızda hamsiyle kaçıyor. Üstte "Pamuk sahiplenildi! · müşteri sabrı +%5".
+
+- **Güncelleme (kullanıcı notu):** Evcil hayvanlar personel gibi alınır (YÜKSELT › Personel). Maaş yerine günlük mama ödenir. Limanın popülerliğini, yani müşteri cazibesini artırırlar. Kedi müşteriyi sevindirir, bekçi köpeği martı kovar, depo kedisi fare tutar.
 
 ### 7. Gazete fotoğraf modu (paylaşım kartı)
 - **Ne:**
@@ -138,6 +147,8 @@ Gündüz bitince limanın öbür yüzü açılır: ay karanlığında **ışık�
 - **Perspektif:** Oyun bir pencereye dönüşür; oyuncu denizi ve mevsimi gerçekten takip etmeye başlar. Okullar için eğitici versiyonu da olabilir.
 - **Taslak görsel:** Telefonda oyun, yanında gerçek Karadeniz haritası. Hamsi göç oku, gerçek hava ikonu, takvimde "AV YASAĞI BAŞLIYOR · 15 Nisan".
 
+- **Güncelleme (kullanıcı notu):** Geliştirilecekler listesinde. İlk adım fikir 2'deki hava kartı; gerçek hava verisi ona sonradan bağlanır.
+
 ### D4. Komşu Limanlar (eşzamansız çok oyunculu kıyı)
 - **Ne:**
   - Ufukta gördüğün koylar gerçek oyuncuların limanlarıdır.
@@ -154,3 +165,5 @@ Gündüz bitince limanın öbür yüzü açılır: ay karanlığında **ışık�
   - Her masal köyü ve anlatanın adıyla (izinle) arşivlenir.
 - **Perspektif:** Oyun, kaybolmakta olan sözlü kültürü toplayan bir müzeye dönüşür. Oyuncu tüketici değil, kültürün taşıyıcısı olur. Şahmeran gibi halk anlatılarıyla zaten uyumlu.
 - **Taslak görsel:** Tezgâh önünde kasketli yaşlı müşteri, üstünde ses dalgası balonu. Yanında arşiv kartı: "Anlatan: Hüsnü Dede · Çaykara · 1938".
+
+- **Güncelleme (kullanıcı notu):** Geliştirilecekler listesinde. D3 ile birleşebilir: yağmurlu gerçek günlerde masalcı dede kahvehaneye gelir.
