@@ -615,6 +615,15 @@ function pY(x, y, z) { return (x + y) * (TH / 2) - (z || 0); }
   document.addEventListener('focusout', function (ev) { if (ev.target && /INPUT|TEXTAREA/.test(ev.target.tagName)) setTimeout(function () { if (!typing()) resetZoom(); }, 80); });
   window.addEventListener('scroll', function () { if (!typing() && (window.scrollX || window.scrollY)) window.scrollTo(0, 0); });
   if (window.visualViewport) window.visualViewport.addEventListener('resize', function () { if (window.visualViewport.scale > 1.01 && !typing()) resetZoom(); });
+  /* v2.15.2 — iPhone Safari çift dokunmada sayfayı yakınlaştırıyordu (sıkıştırma kapalı olduğu için geri de dönülemiyordu).
+     Düğme dışındaki hızlı ikinci dokunuşun varsayılanı engellenir; düğmeler CSS touch-action:manipulation ile korunur. */
+  var lastTap = 0;
+  document.addEventListener('touchend', function (ev) {
+    var now = Date.now(), t = ev.target, ui = t && t.closest && t.closest('button,a,input,select,textarea,label');
+    if (!ui && !typing() && now - lastTap < 350) ev.preventDefault();
+    lastTap = now;
+  }, { passive: false });
+  document.addEventListener('dblclick', function (ev) { if (!typing()) ev.preventDefault(); }, { passive: false });
 })();
 
 /* ---------------- girdi ---------------- */
