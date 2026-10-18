@@ -1,4 +1,4 @@
-# 🐟 Hamsi Koyu — **v2.16** (eski adı Balıkçı Tycoon)
+# 🐟 Hamsi Koyu — **v2.17** (eski adı Balıkçı Tycoon)
 
 İzometrik **pixel-art** balıkçı işletmesi oyunu. Türkiye kıyı limanı teması, **Türkçe + İngilizce**.
 Ücretsiz, reklamsız, satın almasız: amaç insanların oynaması ve yorum yapması.
@@ -16,6 +16,14 @@ Tek klasör, bağımlılık yok: `index.html` + `game.js` (+ `specials.js` karak
 Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× değer)
 
 ---
+
+## v2.17 — Dekor Düzenleme Modu
+
+- **YAPI › Dekor › ✥ DÜZENLE:** oyun durur, alt çubuk gizlenir, üstte "Süsü sürükle · BİTTİ" şeridi çıkar. Süs konabilecek zemin (kum, meydan, saha, yol kenarı) hafif bir ızgarayla, her taşınabilir süsün altında ayak izi görünür. Süse dokunup sürükle: 0,5 karoluk ızgaraya oturur, ayak izi geçerliyse yeşil, değilse kırmızı; geçersiz yerde bırakılan süs eski yerine döner. Parmakla sürüklerken süs parmağın biraz üstünde durur; boş zemini sürüklemek kamerayı kaydırır, kenara gelince kamera kendiliğinden kayar. Taşımak ücretsiz.
+- **Geçerli yer:** iskele bölgeleri ve su dışı; müşteri yolu, köprü, saha patikası, meydan personel rotaları ve saha yayalarının şeritleri boş kalır; hiçbir bina, parsel, lamba, pano, çiçeklik ya da başka süsle çakışmaz (`layoutRects` + 0,1 pay); istasyonların etki alanına ve kapı önlerine girmez. Tekne ve mendirek feneri sabit (`fixed:1`).
+- **Süs Sandığı:** seçili süsün yanındaki SANDIĞA KALDIR süsü sahneden kaldırır; alttaki SÜS SANDIĞI listesinden KOY ile ekranın ortasındaki en yakın geçerli yere konur, oradan sürüklenir.
+- **Hediye kancası (lig için):** `DECOR` girdisinde `gift:1` / `buy:false` (mağazada satılmaz, Bölüm hedefine sayılmaz); `giftDecor(id)` süsü verir, sandığa koyar, "Hediye geldi!" bildirir. Örnek: `ligbayrak` (kodda henüz verilmez; ince kanca `HKA.drawGiftDecor`).
+- **Kayıt:** yeni alanlar `dpos` (taşınmış süslerin yeri) ve `dbox` (sandık). Eski kayıtta süsler varsayılan yerinde; yüklemede geçersiz konum varsayılana döner. Test: `test-duzenle.js`.
 
 ## v2.16 — Liman Gazetesi Özel Sayı
 
