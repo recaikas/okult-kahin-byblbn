@@ -726,6 +726,30 @@
   .card h2{text-shadow:1px 1px 0 #3a2401,0 0 12px rgba(255,201,74,.18)}
   .lbl{color:#b8cdda}
   .lbl::before{content:"";display:inline-block;width:5px;height:5px;margin:0 6px 1px 0;background:var(--brass);transform:rotate(45deg);vertical-align:middle;opacity:.8}
+  /* v2.17 — Dekor Düzenleme Modu: oyun durur, alt çubuk ve üst şerit gizlenir; tek elle rahat (dokunma hedefleri ≥44px) */
+  body.arr .hud,body.arr #objective,body.arr #queueHint,body.arr #devbar,body.arr #devpanel,body.arr #coach,body.arr #chBtn,
+  body.arr #actBtn,body.arr #tradeBtn,body.arr #eventChip,body.arr #specPop,body.arr #pauseBadge,body.arr #autoBadge,body.arr #dayBanner{display:none !important}
+  #arrTop{position:fixed;left:6px;right:6px;top:calc(6px + env(safe-area-inset-top,0px));z-index:7;display:flex;align-items:center;gap:8px;
+    background:linear-gradient(180deg,#1a3348,#122536);border:2px solid var(--edge);border-top-color:#2d5170;padding:3px 3px 3px 12px;
+    font-size:13px;color:var(--ink);box-shadow:0 3px 0 rgba(4,12,20,.35)}
+  #arrTop span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #arrTop span::before{content:"✥ ";color:var(--gold)}
+  #arrDone{min-width:104px;min-height:44px;background:linear-gradient(180deg,#6fe08a,#4cc46a);border:2px solid #1b5d31;color:#052b12;
+    font-family:inherit;font-size:15px;letter-spacing:1px;cursor:pointer;box-shadow:0 2px 0 rgba(4,12,20,.32)}
+  #arrBot{position:fixed;left:0;right:0;bottom:0;z-index:7;display:flex;justify-content:center;padding:6px;
+    padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,rgba(10,26,39,0),rgba(10,26,39,.85) 40%);pointer-events:none}
+  #arrChestBtn{pointer-events:auto;min-height:48px;min-width:210px;padding:0 16px;background:linear-gradient(180deg,#ffd76a,#f0b833);
+    border:2px solid #7a5406;color:#3a2401;font-family:inherit;font-size:14px;letter-spacing:.5px;cursor:pointer;box-shadow:0 3px 0 rgba(4,12,20,.4)}
+  #arrChestBtn b{display:inline-block;min-width:22px;margin-left:4px;padding:1px 5px;background:#3a2401;color:var(--gold);font-size:12px}
+  #arrBoxBtn{position:fixed;left:0;top:0;z-index:7;min-height:44px;min-width:44px;padding:0 12px;background:linear-gradient(180deg,#c8553d,#a83d2b);
+    border:2px solid #4a1710;color:#fff4e6;font-family:inherit;font-size:12.5px;letter-spacing:.5px;cursor:pointer;box-shadow:0 3px 0 rgba(4,12,20,.4)}
+  #arrBoxBtn::before{content:"⤓ "}
+  #arrChestP{position:fixed;left:0;right:0;z-index:7;bottom:calc(64px + env(safe-area-inset-bottom,0px));
+    background:var(--pnl);border-top:3px solid var(--edge);border-bottom:3px solid var(--edge);padding:6px 6px 8px}
+  #arrChestP .dphead .btn{min-width:44px;height:44px}
+  #arrChestL .buy{min-height:44px}
+  body.arr #toast{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
+  body.arr:has(#arrChestP:not(.hidden)) #toast{bottom:calc(64px + 40vh)}
 </style>
 </head>
 <body>
@@ -766,6 +790,11 @@
   <div class="subtabs hidden" id="dpSub"><button data-s="decor">Dekoratif</button><button data-s="dev" class="on">Geliştirmeler</button><button data-s="up">Yükseltme</button><button data-s="meydan">Meydan</button></div>
   <div class="dpcards" id="dpCards"></div>
 </div>
+<!-- v2.17 — Dekor Düzenleme Modu -->
+<div id="arrTop" class="hidden"><span id="arrHint">Süsü sürükle</span><button id="arrDone">BİTTİ</button></div>
+<button id="arrBoxBtn" class="hidden">SANDIĞA KALDIR</button>
+<div id="arrChestP" class="hidden"><div class="dphead"><b id="arrChestT">SÜS SANDIĞI</b><button class="btn" id="arrChestX">✕</button></div><div class="dpcards" id="arrChestL"></div></div>
+<div id="arrBot" class="hidden"><button id="arrChestBtn">🧰 <span id="arrChestLbl">SÜS SANDIĞI</span><b id="arrChestN">0</b></button></div>
 </div>
 
 
@@ -774,7 +803,7 @@
   <div class="card">
     <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v2.16</div>
+    <div class="ver">v2.17</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>

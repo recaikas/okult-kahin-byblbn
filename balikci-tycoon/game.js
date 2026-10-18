@@ -644,20 +644,24 @@ window.addEventListener('keydown', function (e) {
 });
 window.addEventListener('keyup', function (e) { keys[e.key.toLowerCase()] = false; });
 var stick = { active: false, id: -1, bx: 0, by: 0, dx: 0, dy: 0 };
+/* v2.17 — dekor düzenleme modu durumu (ayrıntılar DEKOR DÜZENLEME MODU bölümünde) */
+var ARR = { on: false, sel: -1, drag: null, pan: null, mask: null, chest: false, cam: null, last: null };
 cvs.addEventListener('pointerdown', function (e) {
   cvs.setPointerCapture(e.pointerId);
+  if (ARR.on) { arrDown(e); return; }               /* v2.17: düzenleme modunda joystick yok: süs sürükle / kamerayı kaydır */
   if (inputMode !== 'touch') { inputMode = 'touch'; if (el.coach) el.coach.dataset.k = ''; }
   stick.active = true; stick.id = e.pointerId; stick.bx = e.clientX; stick.by = e.clientY; stick.dx = 0; stick.dy = 0;
 });
 cvs.addEventListener('pointermove', function (e) {
+  if (ARR.on) { arrMove(e); return; }
   if (!stick.active || e.pointerId !== stick.id) return;
   var dx = e.clientX - stick.bx, dy = e.clientY - stick.by, L = Math.hypot(dx, dy), Rr = 60;
   if (L > Rr) { stick.bx += dx * (1 - Rr / L); stick.by += dy * (1 - Rr / L); dx = e.clientX - stick.bx; dy = e.clientY - stick.by; L = Rr; }
   stick.dx = L > 6 ? dx / Rr : 0; stick.dy = L > 6 ? dy / Rr : 0;
 });
 function stickEnd(e) { if (!e || e.pointerId === stick.id) { stick.active = false; stick.id = -1; stick.dx = 0; stick.dy = 0; } }
-cvs.addEventListener('pointerup', stickEnd);
-cvs.addEventListener('pointercancel', stickEnd);
+cvs.addEventListener('pointerup', function (e) { if (ARR.on) arrUp(e, false); stickEnd(e); });
+cvs.addEventListener('pointercancel', function (e) { if (ARR.on) arrUp(e, true); stickEnd(e); });
 cvs.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
 /* ---------------- ses ---------------- */
@@ -1892,7 +1896,7 @@ function roadFlow() { return clamp(S.roadFl | 0, 0, ROAD_FL.length) * FL_FLOW + 
 function flCost() { return Math.round(FL_COST * Math.pow(FL_GROW, S.roadFl | 0)); }
 var DECOR = [
   { id: 'bayrak', z: 0, x: ROAD_VX, y: 23.5, road: 1,  cost: 600,  n: { tr: 'Bayrak Direği', en: 'Flag Pole' },   icon: '🇹🇷', got: false },
-  { id: 'tekne',  z: 0, x: 4.2, y: -1.25, cost: 1300, n: { tr: 'Balıkçı Teknesi', en: 'Fishing Boat' }, icon: '⛵', got: false },
+  { id: 'tekne',  z: 0, x: 4.2, y: -1.25, fixed: 1, cost: 1300, n: { tr: 'Balıkçı Teknesi', en: 'Fishing Boat' }, icon: '⛵', got: false },
   { id: 'bank',   z: 0, x: ROAD_VX, y: 4.9, road: 1,  cost: 400,  n: { tr: 'Bank', en: 'Bench' },                icon: '🪑', got: false },
   { id: 'simit',  z: 1, x: ROAD_VX, y: 5.9, road: 1,  cost: 900,  n: { tr: 'Simit Arabası', en: 'Simit Cart' },  icon: '🥯', got: false },
   { id: 'lamba',  z: 1, x: ROAD_VX, y: 18.0, road: 1,  cost: 700,  n: { tr: 'Sokak Lambası', en: 'Street Lamp' }, icon: '💡', got: false },
@@ -1903,8 +1907,14 @@ var DECOR = [
   { id: 'nazar',  z: 0, x: ROAD_VX, y: 1.2, road: 1,  cost: 450,  n: { tr: 'Nazar Boncuğu', en: 'Evil Eye Charm' }, icon: '🧿', got: false },
   { id: 'cesme',  z: 1, x: ROAD_VX, y: 16.0, road: 1,  cost: 1500, n: { tr: 'Osmanlı Çeşmesi', en: 'Ottoman Fountain' }, icon: '⛲', lv: 5, got: false },
   { id: 'kilim',  z: 1, x: ROAD_VX, y: 9.1, road: 1,  cost: 800,  n: { tr: 'Kilim Sergisi', en: 'Kilim Display' }, icon: '🧶', got: false },
-  { id: 'fener',  z: 2, x: -1.5, y: 23.3, cost: 5200, n: { tr: 'Mendirek Feneri', en: 'Breakwater Lighthouse' }, icon: '🗼', lv: 7, got: false }
+  { id: 'fener',  z: 2, x: -1.5, y: 23.3, fixed: 1, cost: 5200, n: { tr: 'Mendirek Feneri', en: 'Breakwater Lighthouse' }, icon: '🗼', lv: 7, got: false },
+  /* v2.17 — hediye süsü (lig ödülü için örnek): mağazada satılmaz, giftDecor() ile Süs Sandığı'na gelir. Şimdilik kodda verilmez. */
+  { id: 'ligbayrak', z: 0, x: 17.25, y: 9.75, gift: 1, buy: false, cost: 0, n: { tr: 'Lig Bayrağı', en: 'League Banner' }, icon: '🚩', got: false }
 ];
+/* v2.17: her süsün varsayılan yeri (hx, hy) saklanır; düzenleme modunda x, y değişir, box: Süs Sandığı'nda */
+DECOR.forEach(function (d) { d.hx = d.x; d.hy = d.y; d.box = false; });
+function decorShop(d) { return !d.gift && d.buy !== false; }   /* mağazada satılır mı (hediye süsleri satılmaz) */
+function decorById(id) { for (var i = 0; i < DECOR.length; i++) if (DECOR[i].id === id) return DECOR[i]; return null; }
 function decorClearance() {
   var pts = [], i, out = [];
   spots.forEach(function (o) { pts.push(['ağ', o.x, o.y]); });
@@ -3067,6 +3077,7 @@ function buildSave() {
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
     decor: DECOR.map(function (d) { return d.got ? 1 : 0; }),
+    dpos: S.dpos || {}, dbox: S.dbox || [],           /* v2.17: taşınmış süslerin yeri + Süs Sandığı */
     proj: [Math.round(project.inv), project.stage, project.done ? 1 : 0],
     serv: servSave(),
     day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || '', (day.spec || []).join(','), day.sp || 0, day.normals || 0],
@@ -3182,6 +3193,7 @@ function loadFrom(d) {
     if (md[4] && typeof md[4] === 'object') for (var pk in md[4]) { var pn = parseInt(md[4][pk], 10); if (pn > 0 && /^(fileto|fume)\|[a-z]+$/.test(pk) && FISH[pk.split('|')[1]]) WHALL.pal[pk] = Math.min(pn, 999); }
     SLOTS.forEach(function (sl) { if (sl.b === 'kulube') { sl.b = null; HUT.lvl = Math.max(HUT.lvl, 1); } });
     if (d.decor) d.decor.forEach(function (v, i) { if (DECOR[i]) DECOR[i].got = !!v; });
+    decorLoad(d.dpos, d.dbox);                     /* v2.17: eski kayıtta yok → süsler varsayılan yerinde; geçersiz yer → varsayılan */
     if (d.proj) { project.inv = d.proj[0] || 0; project.stage = d.proj[1] || 0; project.done = !!d.proj[2]; }
     servLoad(d.serv);   /* v0.4 §41 — yoksa hiçbir bina kurulmaz, para kesilmez */
     if (servRefund > 0) { S.cash += servRefund; var rf = servRefund; servRefund = 0; setTimeout(function () { toast(T('servRefund', { n: money(rf) })); save(); }, 1200); }
@@ -3213,6 +3225,7 @@ function loadFrom(d) {
 function resetWorld() {
   var k;
   if (typeof closeBar === 'function') closeBar();
+  if (ARR.on) arrClose(true);                       /* v2.17 */
   workers.length = 0; customers.length = 0; flyers.length = 0; floats.length = 0; puffs.length = 0; yardFolk.length = 0; mgrAct.length = 0;
   event = null; eventT = 0; nextEvent = 80;
   for (k in S0) S[k] = S0[k];
@@ -3297,6 +3310,7 @@ function refreshSaveInfo() {
 var paused = false;
 function anyOverlay() {
   if (hiddenPause) return true;                 /* sekme arkada: oyun donar */
+  if (ARR.on) return true;                      /* v2.17: dekor düzenleme modu */
   if (!el.askScr.classList.contains('hidden')) return true;   /* onay sorusu */
   if (fbOpen()) return true;                    /* görüş formu */
   if (retCardOpen()) return true;               /* "Sen yokken…" kartı */
@@ -3311,7 +3325,7 @@ function anyOverlay() {
 }
 function syncPause() {
   paused = S.started && anyOverlay();
-  el.pauseBadge.classList.toggle('hidden', !paused || storyOpenNow());
+  el.pauseBadge.classList.toggle('hidden', !paused || storyOpenNow() || ARR.on);
   if (paused) el.pauseTxt.textContent = T('paused');
 }
 function openSettings(fromMenu) {
@@ -4301,6 +4315,7 @@ function updateCustomers(dt) {
    YATIRIM: alan / seviye / işe alım / kozmetik
    ========================================================= */
 for (var _d = 0; _d < DECOR.length; _d++) {
+  if (!decorShop(DECOR[_d])) continue;              /* v2.17: hediye süsü satılmaz */
   PADS.push({ id: 'dec' + _d, z: DECOR[_d].z, x: DECOR[_d].x, y: DECOR[_d].y, kind: 'decor',
     decor: _d, icon: DECOR[_d].icon, price: DECOR[_d].cost, lvl: 0, max: 1, paid: 0 });
 }
@@ -5286,7 +5301,7 @@ var scenery = [], grass = [];
     if (fx > 10.2 && fx < 14.6 && fy > -0.4) return false; /* müşteri yolu */
     return true;
   }
-  function nearDecor(fx, fy) { for (var q = 0; q < DECOR.length; q++) if (Math.hypot(DECOR[q].x - fx, DECOR[q].y - fy) < 1.3) return true; return false; }
+  function nearDecor(fx, fy) { for (var q = 0; q < DECOR.length; q++) if (!DECOR[q].gift && Math.hypot(DECOR[q].x - fx, DECOR[q].y - fy) < 1.3) return true; return false; }
   function nearOther(fx, fy) { for (var q = 0; q < scenery.length; q++) if (Math.hypot(scenery[q].x - fx, scenery[q].y - fy) < 1.0) return true; return false; }
   /* v0.8 — çevre oyun alanına yakın ve sade: meydanın güneyi (yolun doğusu) + güney kumsal.
      Başta eski/bakımsız görünür; her nesnenin 'up' eşiği var: çevre kademesi (envStage) o eşiğe
@@ -7260,6 +7275,7 @@ function render() {
   for (var a = 0; a < AREAS.length; a++) drawArea(AREAS[a], a);
   drawMeydanGround();
   drawYardGround();
+  if (ARR.on) arrDrawGround();             /* v2.17: düzenleme modu — geçerli alan ızgarası + ayak izleri */
 
   var list = [], i;
   function push(d, fn) { list.push({ d: d, f: fn }); }
@@ -7279,7 +7295,8 @@ function render() {
     if (!slotActive(s)) return; push(s.x + s.y, function () { drawSlot(s); });
   })(SLOTS[i]);
   for (i = 0; i < DECOR.length; i++) (function (d) {
-    if (!d.got || AREAS[d.z].locked) return; push(d.x + d.y, function () { drawDecor(d); });
+    if (!d.got || d.box || AREAS[d.z].locked || arrLifted(d)) return;   /* v2.17: sandıktaki ve sürüklenen süs burada çizilmez */
+    push(d.x + d.y, function () { if (d.gift) drawGiftDecor(d); else drawDecor(d); });
   })(DECOR[i]);
   pushMeydan(push);
   drawRoadLamps(push);
@@ -7363,6 +7380,7 @@ function render() {
 
   list.sort(function (a, b) { return a.d - b.d; });
   for (i = 0; i < list.length; i++) list[i].f();
+  if (ARR.on) arrDrawTop();                /* v2.17: sürüklenen süs en üstte, parmağın üstünde */
 
   if (S.started && playerOccluded()) {
     ctx.save(); ctx.globalAlpha = 0.45;
@@ -7381,6 +7399,7 @@ function render() {
   if (tg) drawTutEdge(tg);                  /* v1.9 — hedef ekran dışındaysa kenarda ok */
   ctx.translate(camOX, camOY);
   renderUI();
+  if (ARR.on) arrFrame();
   camT(0, 0);
   if (stick.active) drawJoystick(R(stick.bx / PXS), R(stick.by / PXS), stick.dx, stick.dy, 1);
   else if (S.started && S.ctrl === 0 && inputMode === 'touch' && !paused) {
@@ -7734,12 +7753,15 @@ function barList() {
         go: function () { S.roadBb = (S.roadBb | 0) + 1; sfx.build(); toast(T('rdBbDone')); } });
       for (i = 0; i < DECOR.length; i++) {
         var dc = DECOR[i];
-        if (dc.got || AREAS[dc.z].locked) continue;
+        if (dc.got || AREAS[dc.z].locked || !decorShop(dc)) continue;   /* v2.17: hediye süsü yalnız hediyeyle gelir */
         out.push({ id: 'd' + i, ic: dc.icon, t: NM(dc.n), s: T('decorGroup') + ' • ' + (dc.road ? T('roadShow') : NM(AREAS[dc.z].n)), cost: dc.cost,
           blocked: dc.lv && lvNow < dc.lv, why: T('needLv', { l: dc.lv }),
           go: function (k) { return function () { DECOR[k].got = true; sfx.build(); toast(T('decorBought', { n: NM(DECOR[k].n) })); }; }(i) });
       }
       if (!out.length) out.push({ empty: T('emptyDecor') });
+      /* v2.17 — en başta ✥ DÜZENLE kartı: süsleri sürükleyip yerleştirme modu */
+      var mvN = DECOR.filter(function (q) { return q.got && !q.fixed; }).length;
+      out.unshift({ id: 'arr', ic: '✥', t: T('arrCard'), s: T('arrCardD'), pick: mvN ? T('arrGo') : null, blocked: !mvN, why: T('arrNone'), go: arrOpen });
     } else if (buildSub === 'meydan') {
       meydanCards(out);
     } else if (buildSub === 'up') {
@@ -8613,6 +8635,7 @@ function backAction() {
     if (!el.slotScr.classList.contains('hidden')) { el.slotBack.click(); return true; }
     return false;
   }
+  if (ARR.on) { if (ARR.chest) arrChest(false); else arrClose(); return true; }   /* v2.17: düzenleme modu: sandık listesi, sonra BİTTİ */
   if (!el.endScr.classList.contains('hidden')) { el.endGo.click(); return true; }
   if (!el.chEnd.classList.contains('hidden')) { el.chEndGo.click(); return true; }
   if (!el.chScr.classList.contains('hidden')) { el.chClose.click(); return true; }
@@ -11387,7 +11410,7 @@ function specDone(cu, c, happy) {
   else if (m === 'chain' && sp.chain && specById(sp.chain)) { S.specForce = sp.chain; }
   else if (m === 'strict' && happy < 0.5) { mxRep(-SPEC_CFG.strictRep, q.x, q.y); toast(T('mxStrict')); }
   else if (m === 'souvenir') {
-    var lv = repLevel(), free = DECOR.filter(function (d) { return !d.got && (!d.lv || d.lv <= lv); });
+    var lv = repLevel(), free = DECOR.filter(function (d) { return !d.got && decorShop(d) && (!d.lv || d.lv <= lv); });
     if (free.length) { var d = pick(free); d.got = true; toast(T('mxSouv', { n: NM(d.n) })); }
     else { S.cash += SPEC_CFG.souvCash; toast(T('mxSouvCash', { v: money(SPEC_CFG.souvCash) })); }
   } else if (m === 'inspect') day.insp = 1;
@@ -11844,7 +11867,7 @@ function chapterGroups() {
   n = 0; for (i = 0; i < AREAS.length; i++) n += AREAS[i].lvl - 1; add('🏗️', 'chLevels', n, AREAS.length * (MAXLV - 1));
   n = 0; t = 0; for (i = 0; i < PADS.length; i++) if (PADS[i].max && PADS[i].kind !== 'decor') { n += PADS[i].lvl || 0; t += PADS[i].max; } add('⬆️', 'chPads', n, t);   /* süs noktaları Süsler satırında sayılır */
   n = 0; for (i = 0; i < SLOTS.length; i++) if (SLOTS[i].b) n++; add('🔨', 'chSlots', n, SLOTS.length);
-  n = 0; for (i = 0; i < DECOR.length; i++) if (DECOR[i].got) n++; add('🌺', 'chDecor', n, DECOR.length);
+  n = 0; t = 0; for (i = 0; i < DECOR.length; i++) if (decorShop(DECOR[i])) { t++; if (DECOR[i].got) n++; } add('🌺', 'chDecor', n, t);   /* v2.17: hediye süsleri hedefe sayılmaz */
   add('🌿', 'chEnv', envStage(), ENV_UPS.length);
   add('🔥', 'chFume', (fumeMachine(0) ? 1 : 0) + (fumeMachine(1) ? 1 : 0), 2);
   add('🏘️', 'chMeydan', (HUT.lvl ? 1 : 0) + (DEPOT.lvl ? 1 : 0) + (WHALL.built ? 1 : 0), 3);
@@ -12445,6 +12468,365 @@ function layoutClashes(margin) {
 }
 
 /* =========================================================
+   v2.17 — DEKOR DÜZENLEME MODU (Clash of Clans tarzı; DUZENLE_TASARIM.md)
+   YAPI › Dekor › ✥ DÜZENLE: oyun durur, alt çubuk gizlenir, üstte "Süsü sürükle · BİTTİ" şeridi çıkar.
+   Zeminde süs konabilecek alanlar hafif ızgarayla, her taşınabilir süsün altında ayak izi görünür.
+   Süs parmağı izler, 0,5 karoluk ızgaranın hücre ortasına oturur (yol vitrini çizgisi x = 14.75 de bir hücre ortası);
+   ayak izi geçerliyse yeşil, değilse kırmızı. Bırakınca geçerliyse yerleşir, değilse eski yerine döner.
+   Boş zemini sürüklemek kamerayı kaydırır. SANDIĞA KALDIR / SÜS SANDIĞI; BİTTİ kaydeder. Taşımak ücretsiz.
+   Geçerli yer (decorSpotOK):
+     a) karada (su değil, kameranın ulaştığı yerde), iskele bölgelerinin (AREAS) dışında: kum, meydan, hizmet sahası, yol kenarı;
+     b) müşteri yolu (x 10.2–14.6), köprü, saha patikası, meydan personel rotaları (köprü ucu → kapılar),
+        saha yayalarının şeritleri (giriş → YARD_LANE → kapı) üstünde değil;
+     c) layoutRects'teki hiçbir ayak izine (bina, parsel, lamba, çöp, pano, başka süs…) 0.1 paydan yakın değil;
+        yol fenerleri, çiçeklikler, reklam panoları (alınmamış olsalar da yerleri ayrılır), saha tabelası ve çevre süsleri de;
+     d) istasyonların etki alanına (test-trash.js'teki çemberler) ve meydan kapılarının önüne girmez.
+   Kayıt: S.dpos = {id: [x, y]} (yalnız taşınmışlar), S.dbox = [id, …]. Yüklemede geçersiz yer → varsayılan.
+   ========================================================= */
+var DFP = 0.42;                                    /* süs ayak izi yarı boyu (layoutRects ile aynı) */
+var ARR_LIFT = 64;                                 /* dokunmatikte süs parmağın bu kadar (css px) üstünde durur */
+var ARR_HGT = { bayrak: 36, bank: 12, simit: 16, lamba: 32, cicek: 16, caymasa: 14, heykel: 26, nazar: 28, cesme: 26, kilim: 22, ligbayrak: 34 };
+S.dpos = {}; S.dbox = [];                          /* S0 anlık görüntüsünden önce: yeni oyun boş başlar */
+Object.assign(STR.tr, {
+  arrCard: 'DÜZENLE', arrCardD: 'Süsleri sürükleyip istediğin yere koy. Taşımak ücretsiz.', arrGo: 'DÜZENLE', arrNone: 'Önce bir süs al',
+  arrHint: 'Süsü sürükle', arrDone: 'BİTTİ', arrChest: 'SÜS SANDIĞI', arrToBox: 'SANDIĞA KALDIR', arrPut: 'KOY',
+  arrEmpty: 'Sandık boş. Bir süse dokun, sonra SANDIĞA KALDIR.',
+  arrBad: 'Buraya konmaz: kum, meydan ya da yol kenarı olmalı; yollar ve binaların önü boş kalır.',
+  arrBoxed: '{n} sandığa kalktı', arrPlaced: '{n} yerleşti', arrNoRoom: 'Ekranın ortasında boş yer yok: kamerayı kaydırıp yeniden dene.',
+  arrSaved: 'Süslerin yerleri kaydedildi', arrGiftTag: 'Hediye', giftGot: 'Hediye geldi! Süs Sandığı\'na bak 🎁'
+});
+Object.assign(STR.en, {
+  arrCard: 'ARRANGE', arrCardD: 'Drag your decorations anywhere you like. Moving is free.', arrGo: 'ARRANGE', arrNone: 'Buy a decoration first',
+  arrHint: 'Drag a decoration', arrDone: 'DONE', arrChest: 'DECOR CHEST', arrToBox: 'TO CHEST', arrPut: 'PLACE',
+  arrEmpty: 'The chest is empty. Tap a decoration, then TO CHEST.',
+  arrBad: 'Can\'t go here: sand, square or roadside only; roads and doorways stay clear.',
+  arrBoxed: '{n} went to the chest', arrPlaced: '{n} placed', arrNoRoom: 'No free spot in the middle of the screen: pan the camera and try again.',
+  arrSaved: 'Decoration spots saved', arrGiftTag: 'Gift', giftGot: 'A gift arrived! Check the Decor Chest 🎁'
+});
+/* --- hediye süsü çizimi (klasik piksel; ince modda HKA.drawGiftDecor tanımlanırsa o çizer) --- */
+function drawGiftDecor(d) {
+  var sx = R(pX(d.x, d.y)), sy = R(pY(d.x, d.y, 0)), i;
+  if (d.id === 'ligbayrak') {                        /* lig bayrağı: taş kaide, pirinç direk, lacivert flama, altın şerit ve yıldız */
+    shadow(d.x, d.y, 0.35);
+    px(sx - 4, sy - 3, 8, 3, PAL.stoneDark); px(sx - 3, sy - 4, 6, 1, PAL.stoneLite);
+    px(sx - 1, sy - 33, 2, 30, '#c9a15e'); px(sx, sy - 33, 1, 30, '#e8c88a');
+    px(sx - 2, sy - 35, 4, 2, PAL.gold);
+    var wv = Math.sin(gameT * 2.2) > 0.3 ? 1 : 0;
+    for (i = 0; i < 11; i++) {
+      var w = R(16 * (1 - Math.abs(i - 5) / 6)), y = sy - 32 + i;
+      px(sx + 1, y, w + (i > 2 && i < 8 ? wv : 0), 1, i === 5 ? PAL.gold : '#2a4c7d');
+    }
+    px(sx + 4, sy - 28, 1, 1, '#f4e9d2'); px(sx + 3, sy - 27, 3, 1, '#f4e9d2'); px(sx + 4, sy - 26, 1, 1, '#f4e9d2');   /* yıldız */
+  }
+}
+/* --- lig ve benzeri ödüller için genel kanca: süs sahip olunanlara eklenir, Süs Sandığı'na girer --- */
+function giftDecor(id) {
+  var d = decorById(id); if (!d || d.fixed || d.got) return false;   /* zaten sahip olunan süs ikinci kez gelmez */
+  d.got = true; d.box = true; d.x = d.hx; d.y = d.hy;
+  decorSync();
+  if (ARR.on) arrTexts();
+  if (M) notify(T('giftGot'), 'high'); else toast(T('giftGot'));
+  if (sfx.star) sfx.star();
+  save();
+  return true;
+}
+/* --- kayıt --- */
+function decorSync() {
+  var pos = {}, box = [];
+  DECOR.forEach(function (d) {
+    if (d.fixed || !d.got) return;
+    if (d.box) { box.push(d.id); return; }
+    if (Math.abs(d.x - d.hx) > 1e-6 || Math.abs(d.y - d.hy) > 1e-6) pos[d.id] = [Math.round(d.x * 100) / 100, Math.round(d.y * 100) / 100];
+  });
+  S.dpos = pos; S.dbox = box;                      /* her seferinde yeni nesne: S0 ile paylaşılmaz */
+}
+function decorLoad(dp, db) {
+  var moved = [], id, d, k;
+  DECOR.forEach(function (q) { q.x = q.hx; q.y = q.hy; q.box = false; });
+  if (Array.isArray(db)) db.forEach(function (bid) { var q = typeof bid === 'string' ? decorById(bid) : null; if (q && !q.fixed && q.got) q.box = true; });
+  if (dp && typeof dp === 'object' && !Array.isArray(dp)) for (id in dp) {
+    d = decorById(id); var v = dp[id];
+    if (!d || d.fixed || !d.got || d.box || !Array.isArray(v)) continue;
+    var x = +v[0], y = +v[1];
+    if (!isFinite(x) || !isFinite(y)) continue;
+    d.x = x; d.y = y; moved.push(d);
+  }
+  /* geçerli değilse varsayılana; varsayılana dönen süs başka bir taşınmışı geçersiz kılabilir → durulana dek */
+  for (k = 0; k <= DECOR.length; k++) {
+    var ch = false;
+    moved.forEach(function (q) { if ((q.x !== q.hx || q.y !== q.hy) && !decorSpotOK(q, q.x, q.y)) { q.x = q.hx; q.y = q.hy; ch = true; } });
+    if (!ch) break;
+  }
+  decorSync();
+}
+/* --- geçerli yer --- */
+function decorHolds(o) { return !o.box && (o.got || !o.gift); }   /* alınmamış mağaza süsünün varsayılan yeri ayrılır */
+function rectHitC(x, y, h, x0, y0, x1, y1) { return x + h > x0 && x - h < x1 && y + h > y0 && y - h < y1; }
+function segDist(x, y, a) {
+  var dx = a[2] - a[0], dy = a[3] - a[1], L = dx * dx + dy * dy, t = L ? clamp(((x - a[0]) * dx + (y - a[1]) * dy) / L, 0, 1) : 0;
+  return Math.hypot(x - (a[0] + dx * t), y - (a[1] + dy * t));
+}
+var _arrSt = null;
+function arrStatic() {
+  if (_arrSt) return _arrSt;
+  var rects = [], lanes = [], rings = [], i;
+  layoutRects().forEach(function (r) { if (String(r.own).indexOf('dc') !== 0) rects.push(r); });
+  function rc(x, y, hx, hy) { rects.push({ x0: x - hx, y0: y - hy, x1: x + hx, y1: y + hy }); }
+  for (i = 3.5; i < 22; i += 4.5) rc(ROAD_VX, i, 0.2, 0.2);                       /* yol fenerleri */
+  ROAD_FL.forEach(function (y) { rc(ROAD_VX, y, 0.2, 0.3); });                     /* çiçeklikler */
+  ROAD_BB.forEach(function (y) { rc(ROAD_VX, y, 0.2, 0.62); });                    /* reklam panoları */
+  rc(YSIGN.x, YSIGN.y, 0.3, 0.2);                                                  /* saha tabelası */
+  scenery.forEach(function (o) { rc(o.x, o.y, 0.3, 0.3); });                       /* servi, kaya, sandal… */
+  /* meydan personeli: köprü ucundan kapılara düz yürür */
+  var B = [15.8, (BRIDGE.y0 + BRIDGE.y1) / 2];
+  [HUT.door, DEPOT.door, WHALL.door].forEach(function (d) { lanes.push([B[0], B[1], d.x, d.y, 0.35]); rings.push([d.x, d.y, 1.0]); });
+  lanes.push([DEPOT.door.x, DEPOT.door.y, WHALL.door.x, WHALL.door.y, 0.35]);
+  /* hizmet sahası yayaları: yoldan girişler → YARD_LANE → kapı hizası */
+  YARD_GATES.forEach(function (gy) { lanes.push([14.6, gy, YARD_LANE, gy, 0.35]); });
+  lanes.push([YARD_LANE, SERVYARD.y0, YARD_LANE, SERVYARD.y1, 0.35]);
+  PLOTS.forEach(function (q) { var dr = yardDoor(q); lanes.push([YARD_LANE, dr.y, dr.x, dr.y, 0.35]); });
+  /* istasyon etki alanları (test-trash.js ile aynı yarıçaplar) */
+  spots.forEach(function (s) { rings.push([s.x, s.y + 0.9, Math.sqrt(1.6)]); });
+  XNETS.forEach(function (s) { rings.push([s.x, s.y + 0.9, Math.sqrt(1.6)]); });
+  tables.forEach(function (t) { rings.push([t.x, t.y, Math.sqrt(1.6)], [t.mat.x, t.mat.y, Math.sqrt(1.5)]); });
+  rings.push([smoker.x, smoker.y, Math.sqrt(1.6)], [kitchen.x, kitchen.y, Math.sqrt(1.6)], [smoker.mat.x, smoker.mat.y, Math.sqrt(1.5)], [kitchen.mat.x, kitchen.mat.y, Math.sqrt(1.5)]);
+  [['b0', 8.9, 3.0], ['b1', 8.9, 10.4], ['b2', 8.9, 15.4], ['b3', 8.9, 18.6]].forEach(function (u) { rings.push([u[1], u[2], Math.sqrt(1.8)], [u[1] + 0.98, u[2] + 0.55, Math.sqrt(1.5)]); });
+  var ht = trayPos({ key: 'hal' }); rings.push([ht.x, ht.y, Math.sqrt(1.5)]);
+  rings.push([safe.x, safe.y, Math.sqrt(3.2)]);
+  _arrSt = { rects: rects, lanes: lanes, rings: rings };
+  return _arrSt;
+}
+/* zemin kuralları (a, b, c-süsler hariç, d) — '' geçerli, değilse neden */
+function arrBaseWhy(x, y) {
+  var st = arrStatic(), i, h = DFP;
+  if (x < -0.3 || y < -0.3 || x > LANDX - 0.5 || y > LANDY - 0.45 || x - y > 21.5) return 'su';
+  for (i = 0; i < AREAS.length; i++) { var a = AREAS[i]; if (rectHitC(x, y, h, a.x0 - 0.05, a.y0 - 0.05, a.x1 + 0.05, a.y1 + 0.05)) return 'iskele'; }
+  if (x > 10.1 && x < 14.7 && y > -0.6 && y < 24.4) return 'yol';
+  if (rectHitC(x, y, h, BRIDGE.x0 - 0.05, BRIDGE.y0 - 0.05, BRIDGE.x1 + 0.05, BRIDGE.y1 + 0.05)) return 'köprü';
+  if (rectHitC(x, y, h, YARDPATH.x0 - 0.05, YARDPATH.y0 - 0.05, YARDPATH.x1 + 0.05, YARDPATH.y1 + 0.05)) return 'patika';
+  for (i = 0; i < st.lanes.length; i++) if (segDist(x, y, st.lanes[i]) < st.lanes[i][4] + h) return 'şerit';
+  for (i = 0; i < st.rings.length; i++) { var r = st.rings[i]; if (Math.hypot(x - r[0], y - r[1]) - r[2] - h < 0.2) return 'etki'; }
+  for (i = 0; i < st.rects.length; i++) {
+    var q = st.rects[i];
+    if (Math.min(x + h, q.x1) - Math.max(x - h, q.x0) + 0.1 > 0.001 && Math.min(y + h, q.y1) - Math.max(y - h, q.y0) + 0.1 > 0.001) return 'nesne';
+  }
+  return '';
+}
+function decorClash(d, x, y) {
+  for (var i = 0; i < DECOR.length; i++) {
+    var o = DECOR[i]; if (o === d || !decorHolds(o)) continue;
+    if (Math.min(x, o.x) - Math.max(x, o.x) + 2 * DFP + 0.1 > 0.001 && Math.min(y, o.y) - Math.max(y, o.y) + 2 * DFP + 0.1 > 0.001) return o;
+  }
+  return null;
+}
+function decorSpotOK(d, x, y) { return !d.fixed && arrBaseWhy(x, y) === '' && !decorClash(d, x, y); }
+function arrSnap(v) { return (Math.floor(v * 2) + 0.5) / 2; }   /* 0,5 karoluk hücrenin ortası */
+/* --- ekran ↔ dünya (izometrik ters dönüşüm) --- */
+function arrScale() { var r = cvs.getBoundingClientRect(); return { r: r, k: (r.width || VW || 1) / (W || 1) }; }   /* 1 sanal piksel = k css px */
+function arrVirt(cx, cy) { var s = arrScale(); return { x: (cx - s.r.left) / s.k, y: (cy - s.r.top) / s.k, k: s.k }; }
+function screenToWorld(vx, vy) {
+  var u = vx - camOX, v = vy - camOY;
+  return { x: u / TW + v / TH, y: v / TH - u / TW };
+}
+function arrCss(x, y) { var s = arrScale(); return [(pX(x, y) + camOX) * s.k + s.r.left, (pY(x, y, 0) + camOY) * s.k + s.r.top]; }
+/* --- seçim: dokunulan süs (en öndeki) --- */
+function arrPick(vx, vy, k) {
+  var best = -1, bd = -1e9;
+  for (var i = 0; i < DECOR.length; i++) {
+    var d = DECOR[i]; if (d.fixed || !d.got || d.box || AREAS[d.z].locked) continue;
+    var sx = pX(d.x, d.y) + camOX, sy = pY(d.x, d.y, 0) + camOY;
+    var hw = Math.max(11, 22 / k), hb = Math.max(5, 8 / k), ht = Math.max(ARR_HGT[d.id] || 24, 44 / k - hb);   /* dokunma hedefi ≥44px */
+    if (Math.abs(vx - sx) < hw && vy > sy - ht && vy < sy + hb && d.x + d.y > bd) { bd = d.x + d.y; best = i; }
+  }
+  return best;
+}
+function arrLifted(d) { return ARR.on && ARR.drag && ARR.drag.moved && DECOR[ARR.drag.i] === d; }
+/* --- aç / kapa --- */
+function arrOpen() {
+  if (!S.started || ARR.on) return false;
+  closeBar(); stickEnd(); moveDir.on = false;
+  ARR.on = true; ARR.sel = -1; ARR.drag = null; ARR.pan = null; ARR.mask = null; ARR.chest = false; ARR.last = null;
+  ARR.cam = [camTX, camTY];
+  camTX = camX; camTY = camY;
+  document.body.classList.add('arr');
+  arrTexts(); arrEl('arrTop').classList.remove('hidden'); arrEl('arrBot').classList.remove('hidden');
+  syncPause(); sfx.tap();
+  return true;
+}
+function arrClose(silent) {
+  if (!ARR.on) return;
+  ARR.on = false; ARR.sel = -1; ARR.drag = null; ARR.pan = null; ARR.chest = false;
+  document.body.classList.remove('arr');
+  ['arrTop', 'arrBot', 'arrBoxBtn', 'arrChestP'].forEach(function (id) { arrEl(id).classList.add('hidden'); });
+  if (ARR.cam) { camTX = ARR.cam[0]; camTY = ARR.cam[1]; ARR.cam = null; }    /* kamera yumuşakça eski yerine döner */
+  decorSync();
+  if (!silent) { save(); toast(T('arrSaved')); sfx.tap(); }
+  syncPause();
+}
+function arrEl(id) { return document.getElementById(id) || { classList: { add: function () { }, remove: function () { }, toggle: function () { } }, style: {} }; }
+function arrTexts() {
+  var t = arrEl('arrHint'); t.textContent = T('arrHint');
+  arrEl('arrDone').textContent = T('arrDone'); arrEl('arrBoxBtn').textContent = T('arrToBox');
+  arrEl('arrChestLbl').textContent = T('arrChest'); arrEl('arrChestT').textContent = T('arrChest');
+  arrEl('arrChestN').textContent = '' + DECOR.filter(function (d) { return d.got && d.box; }).length;
+}
+/* --- dokunma / fare --- */
+function arrDown(e) {
+  if (ARR.drag || ARR.pan) return;                 /* ikinci parmak yok sayılır */
+  if (ARR.chest) arrChest(false);
+  var p = arrVirt(e.clientX, e.clientY), i = arrPick(p.x, p.y, p.k);
+  ARR.last = { cx: e.clientX, cy: e.clientY };
+  if (i >= 0) {
+    var d = DECOR[i], sx = pX(d.x, d.y) + camOX, sy = pY(d.x, d.y, 0) + camOY, touch = e.pointerType === 'touch' || e.pointerType === 'pen';
+    ARR.sel = i;
+    ARR.drag = { i: i, id: e.pointerId, cx0: e.clientX, cy0: e.clientY, x: d.x, y: d.y, ok: true, moved: false,
+      ox: touch ? 0 : sx - p.x, oy: touch ? -ARR_LIFT / p.k : sy - p.y };    /* fare: tutulan yerden; parmak: süs parmağın üstünde */
+    sfx.pick();
+  } else ARR.pan = { id: e.pointerId, cx0: e.clientX, cy0: e.clientY, cx: e.clientX, cy: e.clientY, moved: false };
+}
+function arrDragTo(cx, cy, g) {
+  g = g || ARR.drag; if (!g) return;
+  var p = arrVirt(cx, cy), w = screenToWorld(p.x + g.ox, p.y + g.oy), d = DECOR[g.i];
+  var x = arrSnap(w.x), y = arrSnap(w.y);
+  if (x !== g.x || y !== g.y || !g.moved) { g.x = x; g.y = y; g.ok = (x === d.x && y === d.y) || decorSpotOK(d, x, y); }
+}
+function arrMove(e) {
+  var g = ARR.drag, q = ARR.pan;
+  if (g && e.pointerId === g.id) {
+    ARR.last = { cx: e.clientX, cy: e.clientY };
+    if (!g.moved && Math.hypot(e.clientX - g.cx0, e.clientY - g.cy0) < 6) return;
+    g.moved = true; arrDragTo(e.clientX, e.clientY);
+  } else if (q && e.pointerId === q.id) {
+    if (!q.moved && Math.hypot(e.clientX - q.cx0, e.clientY - q.cy0) < 6) return;
+    q.moved = true;
+    var k = arrScale().k;
+    arrCamBy(-(e.clientX - q.cx) / k, -(e.clientY - q.cy) / k);
+    q.cx = e.clientX; q.cy = e.clientY;
+  }
+}
+function arrCamBy(dx, dy) { camTX = camX + dx; camTY = camY + dy; clampCam(); camX = camTX; camY = camTY; }
+function arrUp(e, cancel) {
+  var g = ARR.drag, q = ARR.pan;
+  if (g && e.pointerId === g.id) {
+    ARR.drag = null;
+    if (!g.moved) return;                          /* yalnız dokunuş: seçildi */
+    var d = DECOR[g.i];
+    if (cancel) return;                            /* iptal: eski yerinde kalır */
+    arrDragTo(e.clientX, e.clientY, g);
+    if (g.x === d.x && g.y === d.y) return;
+    if (g.ok && decorSpotOK(d, g.x, g.y)) { d.x = g.x; d.y = g.y; decorSync(); sfx.drop(); addPuff(d.x, d.y, '#f4e9d2'); }
+    else { sfx.bad(); toast(T('arrBad')); }        /* kırmızı: eski yerine döner */
+  } else if (q && e.pointerId === q.id) {
+    ARR.pan = null;
+    if (!q.moved) ARR.sel = -1;                    /* boş zemine dokunuş: seçim kalkar */
+  }
+}
+/* --- sandık --- */
+function arrToBox() {
+  var d = DECOR[ARR.sel]; if (!d || d.fixed || !d.got) return;
+  d.box = true; ARR.sel = -1; ARR.drag = null; decorSync(); arrTexts();
+  sfx.drop(); toast(T('arrBoxed', { n: NM(d.n) }));
+}
+function arrChest(on) {
+  ARR.chest = !!on; arrTexts();
+  var P = arrEl('arrChestP'); P.classList.toggle('hidden', !on);
+  if (!on) return;
+  var L = arrEl('arrChestL'), h = '', box = [];
+  DECOR.forEach(function (d, i) { if (d.got && d.box && !d.fixed) box.push(i); });
+  box.forEach(function (i) {
+    var d = DECOR[i];
+    h += '<div class="dcard"><span class="ic">' + d.icon + '</span><b>' + escH(NM(d.n)) + '</b><small>' + escH(d.gift ? T('arrGiftTag') : T('decorGroup')) + '</small><button class="buy" data-d="' + i + '">' + escH(T('arrPut')) + '</button></div>';
+  });
+  L.innerHTML = PX(h || '<div class="dempty">' + escH(T('arrEmpty')) + '</div>');
+  Array.prototype.forEach.call(L.querySelectorAll('button[data-d]'), function (b) { b.onclick = function () { arrFromBox(parseInt(b.dataset.d, 10)); }; });
+  sfx.tap();
+}
+/* sandıktan: ekranın ortasına en yakın geçerli yere konur, seçili kalır (oradan sürüklenir) */
+function arrFromBox(i) {
+  var d = DECOR[i]; if (!d || !d.box) return false;
+  var c = screenToWorld(W / 2, H * 0.46), best = null, bd = 1e9, m, k;
+  if (!ARR.mask) arrMaskBuild();
+  m = ARR.mask;
+  for (k = 0; k < m.length; k += 2) {
+    var dd = dist2(m[k], m[k + 1], c.x, c.y); if (dd >= bd || dd > 81) continue;
+    if (decorClash(d, m[k], m[k + 1])) continue;
+    bd = dd; best = [m[k], m[k + 1]];
+  }
+  if (!best) { sfx.bad(); toast(T('arrNoRoom')); return false; }
+  d.box = false; d.x = best[0]; d.y = best[1]; ARR.sel = i;
+  decorSync(); arrTexts(); arrChest(false);
+  sfx.build(); addPuff(d.x, d.y, '#ffc94a'); toast(T('arrPlaced', { n: NM(d.n) }));
+  return true;
+}
+/* --- çizim --- */
+function arrMaskBuild() {
+  var m = [];
+  for (var x = -0.25; x < LANDX; x += 0.5) for (var y = -0.25; y < LANDY; y += 0.5) if (arrBaseWhy(x, y) === '') m.push(x, y);
+  ARR.mask = m;
+}
+function arrDiamond(x, y, h) {
+  ctx.moveTo(pX(x - h, y - h), pY(x - h, y - h, 0)); ctx.lineTo(pX(x + h, y - h), pY(x + h, y - h, 0));
+  ctx.lineTo(pX(x + h, y + h), pY(x + h, y + h, 0)); ctx.lineTo(pX(x - h, y + h), pY(x - h, y + h, 0)); ctx.closePath();
+}
+function arrFoot(x, y, fill, line, dash) {
+  ctx.save(); ctx.beginPath(); arrDiamond(x, y, DFP);
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (dash) ctx.setLineDash([2, 2]);
+  ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.stroke(); ctx.restore();
+}
+function arrDrawGround() {
+  if (!ARR.mask) arrMaskBuild();
+  var m = ARR.mask, i, g = ARR.drag && ARR.drag.moved ? ARR.drag : null;
+  ctx.save(); ctx.beginPath();
+  for (i = 0; i < m.length; i += 2) {
+    var sx = pX(m[i], m[i + 1]) + camOX, sy = pY(m[i], m[i + 1], 0) + camOY;
+    if (sx < -12 || sx > W + 12 || sy < -8 || sy > H + 8) continue;
+    arrDiamond(m[i], m[i + 1], 0.25);
+  }
+  ctx.fillStyle = 'rgba(150,236,160,.16)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(236,255,232,.45)'; ctx.lineWidth = 0.5; ctx.stroke();
+  ctx.restore();
+  for (i = 0; i < DECOR.length; i++) {
+    var d = DECOR[i]; if (d.fixed || !d.got || d.box || AREAS[d.z].locked) continue;
+    if (g && g.i === i) { arrFoot(d.x, d.y, null, 'rgba(255,255,255,.7)', true); continue; }   /* eski yeri: kesik çizgi */
+    if (ARR.sel === i) arrFoot(d.x, d.y, 'rgba(255,201,74,.30)', '#ffc94a');
+    else arrFoot(d.x, d.y, 'rgba(255,255,255,.24)', 'rgba(255,255,255,.9)');
+  }
+}
+function arrDrawTop() {
+  var g = ARR.drag; if (!g || !g.moved) return;
+  var d = DECOR[g.i];
+  arrFoot(g.x, g.y, g.ok ? 'rgba(95,211,122,.45)' : 'rgba(229,83,61,.50)', g.ok ? '#5fd37a' : '#e5533d');
+  var o = Object.create(d); o.x = g.x; o.y = g.y;
+  ctx.save(); ctx.globalAlpha = 0.92;
+  if (d.gift) drawGiftDecor(o); else drawDecor(o);
+  ctx.restore();
+}
+/* her karede: kenara sürüklerken kamera kayar; SANDIĞA KALDIR düğmesi seçili süsün yanında */
+function arrFrame() {
+  var g = ARR.drag;
+  if (g && g.moved && ARR.last) {
+    var e = 34, vx = 0, vy = 0, L = ARR.last;
+    if (L.cx < e) vx = -2.5; else if (L.cx > VW - e) vx = 2.5;
+    if (L.cy < e + 56) vy = -2.5; else if (L.cy > VH - e - 60) vy = 2.5;
+    if (vx || vy) { arrCamBy(vx, vy); arrDragTo(L.cx, L.cy); }
+  }
+  var b = arrEl('arrBoxBtn'), d = ARR.sel >= 0 ? DECOR[ARR.sel] : null;
+  if (!d || !d.got || d.box || (g && g.moved) || ARR.chest) { b.classList.add('hidden'); return; }
+  var c = arrCss(d.x, d.y), bw = b.offsetWidth || 130;
+  b.style.left = Math.round(clamp(c[0] + 26, 6, VW - bw - 6)) + 'px';
+  b.style.top = Math.round(clamp(c[1] - 70, 64, VH - 130)) + 'px';
+  b.classList.remove('hidden');
+}
+(function () {
+  var dn = document.getElementById('arrDone'), bx = document.getElementById('arrBoxBtn'), cb = document.getElementById('arrChestBtn'), cx = document.getElementById('arrChestX');
+  if (dn) dn.onclick = function () { arrClose(); };
+  if (bx) bx.onclick = function () { arrToBox(); };
+  if (cb) cb.onclick = function () { arrChest(!ARR.chest); };
+  if (cx) cx.onclick = function () { arrChest(false); };
+})();
+
+/* =========================================================
    OYUNCUYU GERİ ÇAĞIRAN ŞEYLER: "SEN YOKKEN…" + BAŞARIMLAR
    Tek parça bölüm. Mevcut fonksiyonlara yalnız birer satırlık çağrılar eklenir:
      buildSave → ret: retSave()          loadFrom → retLoad(d)
@@ -12969,6 +13351,7 @@ function hook(name, f0) {
   drawOffice = hook('drawOffice', drawOffice);
   drawProject = hook('drawProject', drawProject);
   drawDecor = hook('drawDecor', drawDecor);
+  drawGiftDecor = hook('drawGiftDecor', drawGiftDecor);   /* v2.17: hediye süsleri (d: DECOR girdisi, ör. ligbayrak) */
   drawTutGuide = hook('drawTutGuide', drawTutGuide);
   drawArrow = hook('drawArrow', drawArrow);
   drawFlyers = hook('drawFlyers', drawFlyers);
@@ -13362,6 +13745,15 @@ Object.assign(window.BT, {
     scene: gzScene, hl: gzHL, intro: function () { return { on: intro.on, ph: intro.ph, list: intro.list, i: intro.i, id: intro.gzId }; }, FAME: FAME, key: gzKey, old: gzOld, load: gzLoad, hireMgr: hireMgr,
     shareImg: function (id) { return new Promise(function (res) { gzPhoto(id, function () { res(gzShareCanvas(gzPaperCanvas(gzList(id)[0], 0)).toDataURL('image/png')); }); }); },
     share: function (id) { return new Promise(function (res) { gzPhoto(id, function () { res(gzShareScene(gzList(id)[0], id)); }); }); } }
+});
+/* v2.17 — dekor düzenleme modu test kancaları */
+Object.assign(window.BT, {
+  arr: { st: function () { return { on: ARR.on, sel: ARR.sel, drag: ARR.drag ? { x: ARR.drag.x, y: ARR.drag.y, ok: ARR.drag.ok, moved: ARR.drag.moved } : null, chest: ARR.chest, cells: ARR.mask ? ARR.mask.length / 2 : 0 }; },
+    open: arrOpen, close: function () { arrClose(); }, toBox: arrToBox, chest: arrChest, fromBox: arrFromBox, select: function (id) { ARR.sel = DECOR.indexOf(decorById(id)); },
+    css: arrCss, why: arrBaseWhy, ok: function (id, x, y) { return decorSpotOK(decorById(id), x, y); }, snap: arrSnap, mask: function () { if (!ARR.mask) arrMaskBuild(); return ARR.mask.slice(); },
+    toWorld: function (cx, cy) { var p = arrVirt(cx, cy); return screenToWorld(p.x, p.y); },
+    look: function (x, y) { camTX = pX(x, y); camTY = pY(x, y, 0); clampCam(); camX = camTX; camY = camTY; render(); } },
+  giftDecor: giftDecor, decorById: decorById, decorSync: decorSync, decorLoad: decorLoad
 });
 /* görüş formu + mağaza değerlendirmesi — test kancaları */
 Object.assign(window.BT, {
