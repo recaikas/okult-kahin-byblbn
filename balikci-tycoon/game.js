@@ -560,8 +560,8 @@ function renderUI() {
     var cx = Math.round(uiX(q.x, q.y, q.dx)), cy = Math.round(uiY(q.x, q.y, q.z, q.dy));
     if (cx < -160 || cx > VW + 160 || cy < -60 || cy > VH + 60) continue;
     uctx.globalAlpha = q.a;
-    if (q.t === 1 || q.t === 2 || q.t === 4) {
-      var fs = q.t === 2 ? 9.5 : q.t === 4 ? 10.5 : 10;
+    if (q.t === 1 || q.t === 2 || q.t === 4 || q.t === 5) {     /* v2.18-deneme: t=5 gri "⏸ Bekliyor" rozeti */
+      var fs = q.t === 2 ? 9.5 : q.t === 4 ? 10.5 : q.t === 5 ? 9 : 10;
       uctx.font = uiFont(fs);
       var w = Math.round(uctx.measureText(q.s).width) + 9, h = fs + 6;
       var rect = { x: cx - w / 2, y: cy - h, w: w, h: h };
@@ -573,16 +573,16 @@ function renderUI() {
       if (FINE) {                                     /* v2.13 ince: köşesi kırık, gölgeli, tek çizgi kenarlı sade levha */
         uctx.fillStyle = 'rgba(6,16,24,.35)'; uctx.fillRect(rect.x + 2, rect.y + h, w - 3, 2);
         uctx.fillStyle = '#0a1a27'; uctx.fillRect(rect.x + 1, rect.y, w - 2, h); uctx.fillRect(rect.x, rect.y + 1, w, h - 2);
-        uctx.fillStyle = q.t === 4 ? 'rgba(58,16,12,.96)' : q.t === 1 ? 'rgba(22,44,64,.95)' : 'rgba(31,62,88,.95)';
+        uctx.fillStyle = q.t === 5 ? 'rgba(66,70,74,.94)' : q.t === 4 ? 'rgba(58,16,12,.96)' : q.t === 1 ? 'rgba(22,44,64,.95)' : 'rgba(31,62,88,.95)';
         uctx.fillRect(rect.x + 1, rect.y + 1, w - 2, h - 2);
         uctx.fillStyle = 'rgba(255,255,255,.10)'; uctx.fillRect(rect.x + 2, rect.y + 1, w - 4, 1);
       } else {
       uctx.fillStyle = '#0a1a27'; uctx.fillRect(rect.x, rect.y, w, h);
-      uctx.fillStyle = q.t === 4 ? 'rgba(58,16,12,.94)' : q.t === 1 ? 'rgba(20,41,60,.92)' : 'rgba(29,58,82,.92)';
+      uctx.fillStyle = q.t === 5 ? 'rgba(66,70,74,.92)' : q.t === 4 ? 'rgba(58,16,12,.94)' : q.t === 1 ? 'rgba(20,41,60,.92)' : 'rgba(29,58,82,.92)';
       uctx.fillRect(rect.x + 2, rect.y + 2, w - 4, h - 4);
       }
       /* kilim çentiği: üst kenarda iki altın nokta */
-      uctx.fillStyle = q.t === 1 ? '#c9a15e' : '#7a9ab0';
+      uctx.fillStyle = q.t === 1 ? '#c9a15e' : q.t === 5 ? '#9a9ea2' : '#7a9ab0';
       uctx.fillRect(rect.x + 2, rect.y + 2, 2, 1); uctx.fillRect(rect.x + w - 4, rect.y + 2, 2, 1);
       uctx.fillStyle = q.c || '#f4e9d2';
       uctx.fillText(q.s, Math.round(textAt(uctx, q.s, cx)), cy - 5);
@@ -1421,7 +1421,7 @@ function lineOf(f) { for (var i = 0; i < LINES.length; i++) if (LINES[i].f === f
    ========================================================= */
 var ZONE_ROLES = ['hamal', 'filetocu', 'tezgahtar', 'kasiyer'];
 /* v2.0: Mutfak bölgesinin beşinci rolü aşçı */
-function zoneRoles(z) { return z === KITCHEN_Z ? ZONE_ROLES.concat(['asci']) : ZONE_ROLES; }
+function zoneRoles(z) { var b = emek() ? EMEK_ZONE_ROLES : ZONE_ROLES; return z === KITCHEN_Z ? b.concat(['asci']) : b; }   /* v2.18-deneme: Emekçi Mod'da Balıkçı da bölge rolü */
 /* =========================================================
    v1.3 — BÖLGE MÜDÜRÜ: 4 personel tamamlanınca müdür masası kurulur, 3 adaydan biri seçilir.
    Her adayın iki buff'ı var; müdür gelince bölge tam otomatiğe geçer.
@@ -1520,6 +1520,7 @@ function updateMgrJokers(dt) {
       if (goTo(a, tcl.x, tcl.y, sp, dt, 0.2)) { tcl.here = true; a.face = tcl.x < TAX.x ? 1 : -1; } else a.bob += dt * 8;
       continue;
     }
+    if (emekMgrStep(a, z, sp, dt)) continue;               /* v2.18-deneme: eksik rolü yarı hızla doldurur */
     if (!rush || !mine.length) {
       if (hasCarry(a, isGoods)) mgrDropBack(a, z);
       a.mode = 'drop'; a.tc = null;
@@ -1690,7 +1691,9 @@ var ROLES = {
   depocu:    { id: 'depocu',    n: { tr: 'Depo Hamalı', en: 'Depot Porter' }, icon: '📦', wage: 16, speed: 2.6, cap: 10, price: 900, zone: false, d: { tr: 'Fazlayı depoya, depodan tezgâha', en: 'Surplus → depot → stalls' } },
   sevkiyat:  { id: 'sevkiyat',  n: { tr: 'Sevkiyatçı', en: 'Dispatcher' },   icon: '🚚', wage: 18, speed: 2.7, cap: 10, price: 1100, zone: false, d: { tr: 'Kontrat malını depodan teslim eder', en: 'Depot → contract delivery' } },
   /* v1.9.4 — Hal Hamalı: Hal'den alınan malı Hal paletinden depoya taşır (depo kadrosundan ayrı, en çok 2) */
-  halhamal:  { id: 'halhamal',  n: { tr: 'Hal Hamalı', en: 'Market Porter' }, icon: '🛒', wage: 14, speed: 2.5, cap: 12, price: 900, zone: false, d: { tr: 'Hal paleti → Depo', en: 'Market pallet → depot' } }
+  halhamal:  { id: 'halhamal',  n: { tr: 'Hal Hamalı', en: 'Market Porter' }, icon: '🛒', wage: 14, speed: 2.5, cap: 12, price: 900, zone: false, d: { tr: 'Hal paleti → Depo', en: 'Market pallet → depot' } },
+  /* v2.18-deneme — Emekçi Mod: Balıkçı ağın başında durur, balıkları tek tek çekip ağ sandığına koyar (yalnız Emekçi Mod'da alınır) */
+  balikci:   { id: 'balikci',   n: { tr: 'Balıkçı', en: 'Fisher' },   icon: '🎣', wage: 10, speed: 2.4, cap: 12, price: 300, zone: true, emek: 1, d: { tr: 'Ağı çeker, sandığa koyar', en: 'Hauls the net into the crate' } }
 };
 var WNAMES = ['Hasan', 'Kerim', 'Zeynep', 'Mert', 'Deniz', 'Ayla', 'Tarık', 'Elif', 'Cem', 'Nur', 'Osman', 'Sevgi'];
 
@@ -1834,7 +1837,7 @@ function zoneOpenStalls(z) {
    Taban 2, bölge seviyesi ve ek tezgâhlar +1'er; tam otomasyon (4 kişi) Sv3 bölge ya da kulübeyle açılır. */
 function zoneStaffCap(z) {
   if (!zoneOpen(z)) return 0;
-  return 2 + (zoneRoles(z).length - ZONE_ROLES.length) + Math.max(0, zoneOpenStalls(z) - 1) + (AREAS[z].lvl - 1) + slotEff(z, 'staff') + hutBonus();
+  return (emek() || emekLoading ? 4 : 2) + (z === KITCHEN_Z ? 1 : 0) + Math.max(0, zoneOpenStalls(z) - 1) + (AREAS[z].lvl - 1) + slotEff(z, 'staff') + hutBonus();
 }
 function zoneStaff(z) {
   var n = 0;
@@ -1859,10 +1862,10 @@ function roleBlock(z, r) {
   return rl.filter(function (q) { return roleCount(z, q) === mn; }).map(function (q) { return NM(ROLES[q].n); }).join(', ');
 }
 function hireCost(role, z) {
-  var base = ROLES[role].price || 500;
+  var base = rolePrice(role);                                    /* v2.18-deneme: Emekçi Mod fiyatı */
   var have = role === 'halhamal' ? halStaff() : DEPOT_ROLES.indexOf(role) >= 0 ? depotStaff() : zoneStaff(z);
-  if (ROLES[role] && ROLES[role].zone && z >= 0) have = Math.max(0, have - (zoneRoles(z).length - ZONE_ROLES.length));   /* v2.0: Mutfak'ın 5. rolü fiyatı katlamasın */
-  return upCost(Math.round(base * Math.pow(1.85, have) * (1 + (z || 0) * 0.35)));
+  if (ROLES[role] && ROLES[role].zone && z >= 0) have = Math.max(0, have - (z === KITCHEN_Z ? 1 : 0));   /* v2.0: Mutfak'ın 5. rolü fiyatı katlamasın */
+  return upCost(Math.round(base * Math.pow(emek() && ROLES[role].zone ? EMEK_HIRE_GROW : 1.85, have) * (1 + (z || 0) * 0.35)));   /* v2.18-deneme: Emekçi Mod artışı */
 }
 function workerSpeedMul() { return 1 + slotEff(null, 'wspeed') + perkSum('wspeed') + servEff('wspeed'); }
 
@@ -2927,7 +2930,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0, lvFloor: 0, names: [], story: null, custSeen: {}, specN: {}, custNewF: false, stallSt: {}, help: {}, jobs: [], mx: null, specForce: null     /* skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, capHint: 0, lvFloor: 0, names: [], story: null, custSeen: {}, specN: {}, custNewF: false, stallSt: {}, help: {}, jobs: [], mx: null, specForce: null, emek: 1, emekGift: 1     /* v2.18-deneme: emek = Emekçi Mod (bu dalda varsayılan açık), emekGift = eski kayıt hediyesi verildi; skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -2955,7 +2958,7 @@ function repFromOld(r) {
   return Math.round(REP_LEVELS[REP_LEVELS.length - 1].need + (r - 350) * 13);
 }
 function repTitle() { return NM(REP_LEVELS[repLevel() - 1].t); }
-function wageTotal() { var w = 0; for (var i = 0; i < workers.length; i++) w += ROLES[workers[i].role].wage * (1 - mgrEff(workers[i].zone, 'wage')); return (w + mgrWages()) * (1 - Math.min(0.5, servEff('wage'))); }
+function wageTotal() { var w = 0; for (var i = 0; i < workers.length; i++) w += workerWage(workers[i]) * (1 - mgrEff(workers[i].zone, 'wage')); return (w + mgrWages()) * (1 - Math.min(0.5, servEff('wage'))); }
 function upCost(v) { return Math.max(1, Math.round(v * (1 - Math.min(0.45, perkSum('upcost') + servEff('upcost'))))); }
 function pct(n) { return lang === 'tr' ? '%' + n : n + '%'; }
 function perMin() { return lang === 'tr' ? '/dk' : '/min'; }
@@ -3071,7 +3074,8 @@ function buildSave() {
     serv: servSave(),
     day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || '', (day.spec || []).join(','), day.sp || 0, day.normals || 0],
     stalls: counters.map(function (c) { return [c.key, c.open ? 1 : 0]; }),
-    workers: workers.map(function (w) { return [w.role, w.zone === undefined ? 0 : w.zone]; }),
+    workers: workers.map(function (w) { return (w.lv | 0) > 1 ? [w.role, w.zone === undefined ? 0 : w.zone, w.lv | 0] : [w.role, w.zone === undefined ? 0 : w.zone]; }),   /* v2.18-deneme: usta seviyesi (yoksa 1) */
+    emek: S.emek === 0 ? 0 : 1, eg: S.emekGift ? 1 : 0, nb: emekBoxSave(),   /* v2.18-deneme: Emekçi Mod + ağ sandıkları */
     ret: retSave(),                                   /* uzakta kazanç + başarımlar */
     ev: Object.keys(S.evs || {}),                     /* v1.9: gönderilmiş ilerleme olayları (tekrar gitmesin) */
     road: [S.roadFl | 0, S.roadBb | 0],               /* v1.9.3: yol çiçeklikleri + reklam panoları */
@@ -3129,8 +3133,10 @@ function save() {
 function numIn(v, lo, hi, int) { var n = typeof v === 'number' ? v : (typeof v === 'string' && v.trim() !== '' ? +v : NaN); if (!isFinite(n)) n = lo; n = clamp(n, lo, hi); return int ? Math.floor(n) : n; }
 function loadFrom(d) {
   if (!d) return false;
+  emekLoading = false;
   try {
     /* v1.9.7: elle bozulmuş kayıt — metin, eksi, sonsuz sayılar geçerli aralığa (normal oyunda para eksiye düşmez) */
+    S.emek = d.emek === 0 ? 0 : 1; S.emekGift = d.emek === undefined ? 0 : (d.eg ? 1 : 0);   /* v2.18-deneme: eski kayıt → Emekçi Mod açık, hediye bekliyor */
     S.cash = numIn(d.cash, 0, 1e13); S.rep = numIn(d.rep, 0, 1e9); if (!(d.v >= 7)) { S.rep = repFromOld(S.rep); S.lvFloor = levelForRep(S.rep); } else S.lvFloor = clamp(parseInt(d.lvF, 10) || 0, 0, 10);   /* v2.2: yeni itibar ölçeği; eski seviye taban */ S.capLvl = numIn(d.capLvl, 0, 20, true); S.spdLvl = numIn(d.spdLvl, 0, 20, true);
     S.priceLvl = numIn(d.priceLvl, 0, 20, true); S.served = numIn(d.served, 0, 1e9, true); S.lost = numIn(d.lost, 0, 1e9, true);
     S.caught = numIn(d.caught, 0, 1e10, true); S.tut = numIn(d.tut, 0, 99, true);
@@ -3187,6 +3193,7 @@ function loadFrom(d) {
     if (servRefund > 0) { S.cash += servRefund; var rf = servRefund; servRefund = 0; setTimeout(function () { toast(T('servRefund', { n: money(rf) })); save(); }, 1200); }
     rebuildCounters();  /* hedef stoklar yüklenmeden önce tezgâhlar var olmalı */
     loadDay(d);         /* v1.2 §9 — gün, depo ve hedef stoklar korunur */
+    emekLoading = d.emek !== undefined;               /* v2.18-deneme: bu daldaki kayıt mod kapalıyken açılsa da emek kadrosu düşmesin */
     if (d.workers) d.workers.forEach(function (r) {
       /* v2.1: [rol, bölge]; eski kayıtlarda düz rol dizisi vardı. Kaldırılmış roller atlanır,
          kilitli/dolmuş bölgeye kayıtlı çalışan uygun bir bölgeye kaydırılır. */
@@ -3199,13 +3206,16 @@ function loadFrom(d) {
         for (var q = 0; q < zoneCount(); q++) if (zoneOpen(q) && zoneFree(q) > 0) { z = q; break; }
         if (z < 0) return;                  /* hiç yer yoksa çalışan yüklenmez */
       }
-      hire(role, true, z);
+      var hw = hire(role, true, z);
+      if (hw && Array.isArray(r)) hw.lv = clamp(parseInt(r[2], 10) || 1, 1, 3);   /* v2.18-deneme: eski kayıtta yok → Çırak */
     });
+    emekLoading = false;
     if (d.mk) M = migrateMarket(d.mk);
     try { queueLoad(d); } catch (e) { }                /* bozuk kuyruk verisi kaydın geri kalanını bozmasın */
     retLoad(d);                                     /* uzakta kazanç + başarımlar (yoksa boş) */
     S.evs = {}; if (Array.isArray(d.ev)) d.ev.forEach(function (k) { if (typeof k === 'string' && /^[a-z0-9_]{2,24}$/.test(k)) S.evs[k] = 1; });
     S.gz = gzLoad(d.gz) || gzOld(); gzReset();   /* v2.16: eski kayıtta yok → geçilmiş dönüm noktaları "kaçırıldı" */
+    emekBoxLoad(d.nb);
     return true;
   } catch (e) { return false; }
 }
@@ -3300,6 +3310,7 @@ function anyOverlay() {
   if (!el.askScr.classList.contains('hidden')) return true;   /* onay sorusu */
   if (fbOpen()) return true;                    /* görüş formu */
   if (retCardOpen()) return true;               /* "Sen yokken…" kartı */
+  if (emekCardOpen()) return true;              /* v2.18-deneme: Usta ekip hediyesi */
   if (storyOpenNow()) return true;              /* v2.4: hikâye ara sahnesi */
   if (el.custScr && !el.custScr.classList.contains('hidden')) return true;   /* v2.5: müşteri defteri */
   if (el.consentScr && !el.consentScr.classList.contains('hidden')) return true;   /* v2.12: veri izni kartı */
@@ -3341,7 +3352,7 @@ function saveAndQuit() {
 /* =========================================================
    TAŞIMA / ETKİLEŞİM
    ========================================================= */
-function capOf(a) { return a.isPlayer ? capacity() : a.capX || ROLES[a.role].cap; }
+function capOf(a) { return a.isPlayer ? capacity() : a.capX || Math.round(ROLES[a.role].cap * wLvMul(a)); }   /* v2.18-deneme: usta yükü */
 function fits(a, it) { return carryW(a) + itemW(it) <= capOf(a); }
 function popCarry(a, test) { for (var i = a.carry.length - 1; i >= 0; i--) if (test(a.carry[i])) return a.carry.splice(i, 1)[0]; return null; }
 function hasCarry(a, test) { for (var i = 0; i < a.carry.length; i++) if (test(a.carry[i])) return true; return false; }
@@ -3630,12 +3641,13 @@ function updatePlayer(dt) {
   }
   for (i = 0; i < spots.length; i++) {
     var s = spots[i]; if (AREAS[s.z].locked || zoneAuto(i)) continue;
-    if (dist2(player.x, player.y, s.x, s.y + 0.9) < 1.6) acted = iPickFish(player, s, dt) || acted;
+    if (dist2(player.x, player.y, s.x, s.y + 0.9) < 1.6) acted = (emek() ? iPull(player, s, dt) : iPickFish(player, s, dt)) || acted;   /* v2.18-deneme: başında durunca tek tek */
   }
   for (i = 0; i < XNETS.length; i++) {
     var xs = XNETS[i]; if (!xnetOn(xs) || zoneAuto(xs.z)) continue;
-    if (dist2(player.x, player.y, xs.x, xs.y + 0.9) < 1.6) acted = iPickFish(player, xs, dt) || acted;
+    if (dist2(player.x, player.y, xs.x, xs.y + 0.9) < 1.6) acted = (emek() ? iPull(player, xs, dt) : iPickFish(player, xs, dt)) || acted;
   }
+  acted = emekPlayerBox(dt) || acted;                /* v2.18-deneme: ağ sandığından al */
   for (i = 0; i < tables.length; i++) {
     var tb = tables[i]; if (AREAS[tb.z].locked || zoneAuto(i)) continue;
     if (dist2(player.x, player.y, tb.x, tb.y) < 1.6) acted = iDropTable(player, tb, dt) || acted;
@@ -3851,9 +3863,10 @@ function updateWorkers(dt) {
   for (var i = 0; i < workers.length; i++) {
     var w = workers[i], R2 = ROLES[w.role];
     if (!R2) { workers.splice(i--, 1); continue; }
-    var sp = R2.speed * mul * (w.zone >= 0 && zoneAuto(w.zone) ? 1.2 : 1) * (1 + mgrEff(w.zone, 'wspeed'));
-    if (w.role === 'hamal') aiHamal(w, sp, dt);
-    else if (w.role === 'tezgahtar') aiTezgahtar(w, sp, dt);
+    var sp = R2.speed * mul * (w.zone >= 0 && zoneAuto(w.zone) ? 1.2 : 1) * (1 + mgrEff(w.zone, 'wspeed')) * wLvMul(w);
+    if (w.role === 'hamal') { if (emek()) aiHamalE(w, sp, dt); else aiHamal(w, sp, dt); }   /* v2.18-deneme: Emekçi Mod'da "bittikçe yenile" */
+    else if (w.role === 'tezgahtar') { if (emek()) aiVendorE(w, sp, dt); else aiTezgahtar(w, sp, dt); }
+    else if (w.role === 'balikci') { if (emek()) aiBalikci(w, sp, dt); else aiHamal(w, sp, dt); }   /* mod kapalıysa hamal gibi taşır */
     else if (w.role === 'kasiyer') aiKasiyer(w, sp, dt);
     else if (w.role === 'depocu') aiDepocu(w, sp, dt);
     else if (w.role === 'sevkiyat') aiSevkiyat(w, sp, dt);
@@ -4003,7 +4016,7 @@ function updateStations(dt) {
       if (pick2 >= 0) { t.cur = t.inn.splice(pick2, 1)[0]; t.t = 0; }
     }
     if (t.cur) {
-      t.t += dt * (t.worker ? 1.55 : 1) * (1 + perkSum('procspeed') + perkSum('rate'));
+      t.t += dt * (emek() ? emekCutMul(t) : (t.worker ? 1.55 : 1)) * (1 + perkSum('procspeed') + perkSum('rate'));   /* v2.18-deneme: başında kimse yoksa durur */
       if (t.t >= FISH[t.cur.f].cut) {
         var F = FISH[t.cur.f];
         for (var k = 0; k < F.out; k++) {
@@ -4144,7 +4157,7 @@ function updateCounter(c, dt) {
       if (dist2(player.x, player.y, c.x, c.y) < 90) sfxFrom({ x: c.x, y: c.y }, function () { sfx.cust(); });
     }
   }
-  c.eatT -= dt;
+  c.eatT -= dt * (emek() ? emekSellMul(c) : 1);      /* v2.18-deneme: satıcısız tezgâh %35 */
   if (c.eatT <= 0) {
     for (var q2 = 0; q2 < c.slots.length; q2++) {
       var cu2 = c.slots[q2];
@@ -4153,7 +4166,7 @@ function updateCounter(c, dt) {
       var idx = -1;
       for (i = 0; i < c.buffer.length; i++) if (c.buffer[i].k === cu2.ord.k && c.buffer[i].f === cu2.ord.f) { idx = i; break; }
       if (idx < 0) continue;
-      c.eatT = 0.2;
+      c.eatT = emek() ? EMEK_SELL_T : 0.2;
       var it = c.buffer.splice(idx, 1)[0];
       cu2.ord.got++;
       var fp = queueSlotPos(c, cu2.slot);
@@ -4277,7 +4290,7 @@ function updateCustomers(dt) {
       if (cu.spec && !cu.jobK && cu.spec.indexOf('st_') !== 0 && !(specById(cu.spec) || {}).hidden && cu.sayT >= specHiDur(cu)) {    /* v2.8: konuştu → mesleği bilinir */
         cu.jobK = true; S.jobs = S.jobs || []; if (S.jobs.indexOf(cu.spec) < 0) { S.jobs.push(cu.spec); custNew(); }
       }
-      if (!specTalking(cu)) cu.pat -= dt * custDrain(cu);   /* konuşurken sabrı azalmaz; v2.9: aura, horon, yorgunluk */
+      if (!specTalking(cu)) cu.pat -= dt * custDrain(cu) * (emek() && cu.c && !cu.c._att ? EMEK_IDLE_PAT : 1);   /* v2.18-deneme: satıcısız tezgâhta sabır %60 hızla azalır */   /* konuşurken sabrı azalmaz; v2.9: aura, horon, yorgunluk */
       cu.mood = clamp(cu.pat / cu.patMax, 0, 1);
       if (cu.pat <= 0) {
         cu.state = 'leave'; cu.happyLeave = false; cu.leaveT = 0; cu.c.slots[cu.slot] = null; shiftQueue(cu.c);
@@ -4304,10 +4317,15 @@ for (var _d = 0; _d < DECOR.length; _d++) {
   PADS.push({ id: 'dec' + _d, z: DECOR[_d].z, x: DECOR[_d].x, y: DECOR[_d].y, kind: 'decor',
     decor: _d, icon: DECOR[_d].icon, price: DECOR[_d].cost, lvl: 0, max: 1, paid: 0 });
 }
+/* v2.18-deneme — Emekçi Mod'un oyuncu yükseltmeleri (YÜKSELT › kendi gelişimin). Kayıt dizinleri kaymasın diye listenin sonunda;
+   Bölüm 1 sayacına girmez (emek: 1). */
+PADS.push({ id: 'knf', z: 0, x: 0, y: 0, kind: 'knife', icon: '🔪', price: 220, growth: 1.9, lvl: 0, max: 3, paid: 0, emek: 1 });
+PADS.push({ id: 'voc', z: 0, x: 0, y: 0, kind: 'voice', icon: '📣', price: 260, growth: 1.9, lvl: 0, max: 3, paid: 0, emek: 1 });
+PADS.push({ id: 'hnd', z: 0, x: 0, y: 0, kind: 'hands', icon: '🤲', price: 180, growth: 2.2, lvl: 0, max: 2, paid: 0, emek: 1 });
 function padPrice(p) {
-  if (p.kind === 'area') return AREAS[p.target].cost;
-  if (p.kind === 'arealv') { var a = AREAS[p.area]; return a.lvl < MAXLV ? a.up[a.lvl] : 0; }
-  return p.price;
+  if (p.kind === 'area') return emekCost(AREAS[p.target].cost);
+  if (p.kind === 'arealv') { var a = AREAS[p.area]; return a.lvl < MAXLV ? emekCost(a.up[a.lvl]) : 0; }
+  return p.kind === 'decor' ? p.price : emekCost(p.price);       /* v2.18-deneme: Emekçi Mod'da bölge ve yükseltme ×0,75 */
 }
 function padBlocked(p) {
   if (p.kind === 'area') return S.rep < AREAS[p.target].rep;
@@ -4319,6 +4337,7 @@ function applyPad(p) {
   if (p.kind === 'cap') { S.capLvl++; p.lvl++; toast(T('capUp', { n: capacity() })); }
   else if (p.kind === 'spd') { S.spdLvl++; p.lvl++; toast(T('spdUp')); }
   else if (p.kind === 'price') { S.priceLvl++; p.lvl++; toast(T('priceUp')); }
+  else if (p.kind === 'knife' || p.kind === 'voice' || p.kind === 'hands') { p.lvl++; toast(T('em_' + p.kind + 'Up', { n: p.lvl })); }   /* v2.18-deneme */
   else if (p.kind === 'hire') { p.lvl++; hire(p.role); }
   else if (p.kind === 'area') {
     AREAS[p.target].locked = false; rebuildCounters(); reassignWorkers(); progEv('bolge' + (p.target + 1));
@@ -4332,7 +4351,7 @@ function applyPad(p) {
     DECOR[p.decor].got = true;
     toast(T('decorBought', { n: NM(DECOR[p.decor].n) })); sfx.build();
   }
-  if ((p.kind === 'cap' || p.kind === 'spd' || p.kind === 'price' || p.kind === 'hire') && p.lvl < p.max) p.price = Math.round(p.price * p.growth);
+  if ((p.kind === 'cap' || p.kind === 'spd' || p.kind === 'price' || p.kind === 'hire' || p.emek) && p.lvl < p.max) p.price = Math.round(p.price * p.growth);
   addPuff(player.x, player.y, '#ffc94a'); addPuff(player.x, player.y, '#ffffff');
   save();
 }
@@ -4397,14 +4416,14 @@ function updateCoach(dt) {
   if (!show) return;
   if (S.ctrl === 0 && ctrlWalk > 3) { S.ctrl = 1; ctrlT = 6; sfx.star(); el.coach.dataset.k = ''; }
   if (S.ctrl === 1) { ctrlT -= dt; if (ctrlT <= 0) { S.ctrl = 2; el.coach.classList.add('hidden'); save(); return; } }
-  var key = S.ctrl + inputMode + lang;
+  var key = S.ctrl + inputMode + lang + (emek() ? 'E' : '');
   if (el.coach.dataset.k === key) return;
   el.coach.dataset.k = key;
   el.coach.className = 'coach s' + S.ctrl + ' ' + inputMode;
   el.coach.innerHTML = S.ctrl === 0
     ? (inputMode === 'touch' ? '<span class="hand">👆</span>' + T('coachTouch')
                              : '<span class="keys"><i>W</i><i>A</i><i>S</i><i>D</i></span>' + T('coachKeys'))
-    : '<span class="hand">✋</span>' + T('coachAuto');
+    : '<span class="hand">✋</span>' + TE('coachAuto');
 }
 /* eğitim hedef yazısına canlı ilerleme: kaç balık birikti / kaç taşıyorsun */
 function tutProgress() {
@@ -4420,7 +4439,7 @@ function updateTutorial() {
     S.tut++;
     progEv('tut' + S.tut);                                   /* ilerleme olayı: hangi adımda bırakıldı */
     addPuff(player.x, player.y, '#ffc94a');
-    if (S.tut < TUTOK.length) { sfx.star(); toast(T('tutStepOK')[S.tut - 1] || T('tutNice')); }
+    if (S.tut < TUTOK.length) { sfx.star(); toast(TE('tutStepOK')[S.tut - 1] || T('tutNice')); }
     else { toast(T('tutDone')); save(); }
   }
 }
@@ -5095,7 +5114,8 @@ var WORK_FIT = {
   depocu:    { coat: '#8a6a3a', coat2: '#a8844c', apron: '#5a4a32', kufe: true, cap: '#3a2f22', must: true, pants: '#3a3226' },
   sevkiyat:  { coat: '#3f6a5a', coat2: '#568a76', vest: '#e0a030', bag: true, cap: '#20382f', pants: '#26332e' },
   halhamal:  { coat: '#6a4a2a', coat2: '#8a6a3a', vest: '#c9a15e', kufe: true, cap: '#4a3220', must: true, pants: '#3a2c20' },
-  asci:      { coat: '#f4f1ea', coat2: '#ffffff', chefHat: true, apron: '#e6e0d2', sash: '#a83d2b', must: true, pants: '#3a3a3a' }
+  asci:      { coat: '#f4f1ea', coat2: '#ffffff', chefHat: true, apron: '#e6e0d2', sash: '#a83d2b', must: true, pants: '#3a3a3a' },
+  balikci:   { coat: '#2f7f86', coat2: '#4a9aa0', knit: '#e8ddc8', beanie: '#8d2a2a', beard: true, pants: '#2b3a45' }   /* v2.18-deneme */
 };
 function workerOutfit(w) {
   var f = WORK_FIT[w.role] || WORK_FIT.hamal, o = {}, k;
@@ -5190,7 +5210,8 @@ var ROLE_TAG = {
   kasiyer:   { bg: '#2f4a6b', d: 'coin' },
   depocu:    { bg: '#8a6a3a', d: 'kufe' },
   sevkiyat:  { bg: '#3f6a5a', d: 'cart' },
-  halhamal:  { bg: '#6a4a2a', d: 'cart' }
+  halhamal:  { bg: '#6a4a2a', d: 'cart' },
+  balikci:   { bg: '#2f7f86', d: 'fish' }                /* v2.18-deneme */
 };
 function drawRoleTag(w) {
   var g = ROLE_TAG[w.role] || ROLE_TAG.hamal;
@@ -7152,6 +7173,7 @@ function padInfo(p) {
   if (p.kind === 'area') return { t: UP(NM(AREAS[p.target].n)), e: T('openArea') };
   if (p.kind === 'arealv') return { t: UP(NM(AREAS[p.area].n)), e: T('upArea') + ' ' + T('level') + AREAS[p.area].lvl + '→' + (AREAS[p.area].lvl + 1) };
   if (p.kind === 'decor') return { t: UP(NM(DECOR[p.decor].n)), e: T('stDecor') };
+  if (p.emek) return emekPadInfo(p);                 /* v2.18-deneme */
   return { t: UP(NM(ROLES[p.role].n)), e: NM(ROLES[p.role].d) + ' ' + money(ROLES[p.role].wage) + perMin() };
 }
 /* v1.9 eğitim rehberi (ilk satışa kadar): oyuncudan hedefe akan noktalı yol + hedefte nabız halkası */
@@ -7304,6 +7326,7 @@ function render() {
   for (i = 0; i < XNETS.length; i++) (function (s) {
     if (!xnetOn(s)) return; push(s.x + s.y, function () { quietDraw(s.z, s.x, s.y, function () { drawSpot(s); }); });
   })(XNETS[i]);
+  emekPushBoxes(push);                               /* v2.18-deneme: ağ sandıkları */
   for (i = 0; i < tables.length; i++) (function (t) {
     if (AREAS[t.z].locked) return; push(t.x + t.y, function () { quietDraw(t.z, t.x, t.y, function () { drawTable(t); }); });
   })(tables[i]);
@@ -7372,6 +7395,7 @@ function render() {
     px(gx - 2, gy, 5, 2, '#ffc94a'); px(gx - 1, gy + 2, 3, 2, '#ffc94a'); px(gx, gy + 4, 1, 2, '#ffc94a');
   }
   for (i = 0; i < gulls.length; i++) drawGull(gulls[i]);
+  if (S.started && emek()) drawEmekFx();          /* v2.18-deneme: ⏸ Bekliyor rozetleri + çalışma halkası */
   drawFlyers(); drawPuffs(); drawFloats();
   var tg = S.started ? tutorialTarget() : null; if (tg) { drawTutGuide(tg); drawArrow(tg); }
 
@@ -7452,6 +7476,7 @@ function applyLang() {
   el.setTitle.textContent = T('settings'); el.setLang.textContent = T('langLbl');
   el.setSound.textContent = T('soundLbl'); el.setZoom.textContent = T('zoomLbl');
   (function () { var a = document.getElementById('setVis'), b = document.getElementById('visClassic'), c = document.getElementById('visFine'); if (a) a.textContent = T('visLbl'); if (b) b.textContent = T('visClassic'); if (c) c.textContent = T('visFine'); })();
+  syncEmekUI();                                    /* v2.18-deneme */
   el.setOnline.textContent = T('onlineLbl'); syncOnlineLbl();
   el.forgetBtn.textContent = T('forgetBtn'); el.privBtn.textContent = T('privBtn'); el.aboutBtn.textContent = T('aboutBtn'); el.privClose.textContent = T('privClose');
   el.setAuto.textContent = T('autoLbl'); el.setMusic.textContent = T('musicLbl'); el.musOn.textContent = T('musOn'); el.musOff.textContent = T('musOff'); var spl = document.getElementById('setPlist'); if (spl) spl.textContent = T('musList');
@@ -7540,7 +7565,7 @@ function syncHUD(dt) {
   if (S.tut < TUTOK.length) {
     el.objective.classList.remove('hidden');
     el.objLbl.textContent = T('goal') + ' ' + (S.tut + 1) + '/' + TUTOK.length;
-    el.objText.textContent = T('tut')[S.tut] + tutProgress();
+    el.objText.textContent = TE('tut')[S.tut] + tutProgress();
   } else if (undecidedStalls().length) {
     el.objective.classList.remove('hidden');
     el.objLbl.textContent = T('newStallLbl');
@@ -7620,7 +7645,7 @@ function barList() {
       if (!a.locked || AREAS[i - 1].locked) continue;
       var blk = S.rep < a.rep;
       out.push({ id: 'a' + i, ic: '🔓', t: NM(a.n), s: T('areaGives') + (a.rep ? ' • Sv ' + levelForRep(a.rep) : ''),
-        cost: upCost(a.cost), blocked: blk, why: T('needRep', { n: a.rep, c: S.rep, l: levelForRep(a.rep) }),
+        cost: upCost(emekCost(a.cost)), blocked: blk, why: T('needRep', { n: a.rep, c: S.rep, l: levelForRep(a.rep) }),
         go: function (k) { return function () { clearJunk(k); AREAS[k].locked = false; progEv('bolge' + (k + 1)); if (k === 1) gzMark('pazar', { n: S.served | 0 }); rebuildCounters(); reassignWorkers(); clampCam(); sfx.build(); toast(T('areaOpen', { n: NM(AREAS[k].n) })); }; }(i) });
       break;
     }
@@ -7642,11 +7667,13 @@ function barList() {
       var zrl = zoneRoles(zn);
       for (i = 0; i < zrl.length; i++) (function (r) {
         var full = zoneFree(zn) <= 0, rb = roleBlock(zn, r), have = roleCount(zn, r);
+        var h2 = emekHamal2(zn, r);                   /* v2.18-deneme: ikinci hamal ancak bölge Sv3 */
         out.push({ id: 'zr' + r + zn, ic: ROLES[r].icon, t: NM(ROLES[r].n) + (have ? ' ×' + have : ''),
-          s: NM(ROLES[r].d) + ' • ' + money(ROLES[r].wage) + perMin(),
-          cost: hireCost(r, zn), blocked: full || !!rb, why: full ? T('zoneFull') : T('roleOrder', { m: rb }),
+          s: roleDesc(r) + ' • ' + money(roleWage(r)) + perMin(),
+          cost: hireCost(r, zn), blocked: full || !!rb || h2, why: full ? T('zoneFull') : h2 ? T('em_hamal2') : T('roleOrder', { m: rb }),
           go: function () {
             /* v2.10: eski karta hızlı ikinci dokunuş kuralı atlamasın — alım anında yeniden denetle */
+            if (emekHamal2(zn, r)) { sfx.bad(); toast(T('em_hamal2')); barZone = null; renderBar(); return; }
             if (zoneFree(zn) <= 0 || roleBlock(zn, r)) { sfx.bad(); toast(zoneFree(zn) <= 0 ? T('zoneFull') : T('roleOrder', { m: roleBlock(zn, r) })); barZone = null; renderBar(); return; }
             hire(r, false, zn); barZone = null; save(); renderBar(); } });
       })(zrl[i]);
@@ -7657,7 +7684,7 @@ function barList() {
     for (i = 0; i < PADS.length; i++) {
       var p = PADS[i];
       if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
-      if (AREAS[p.z].locked || p.lvl >= p.max) continue;
+      if (AREAS[p.z].locked || p.lvl >= p.max || (p.emek && !emek())) continue;
       var info = padInfo(p), bl = padBlocked(p);
       out.push({ id: p.id, ic: p.icon, t: info.t + (p.max > 1 ? '  ' + T('level') + p.lvl + '→' + (p.lvl + 1) : ''),
         s: info.e, cost: upCost(padPrice(p)), blocked: bl, why: T('staffFull', { n: staffCap() }),
@@ -7747,7 +7774,7 @@ function barList() {
         var ar = AREAS[i];
         if (ar.locked || ar.lvl >= MAXLV) continue;
         out.push({ id: 'l' + i, ic: '🏗️', t: NM(ar.n) + '  ' + T('level') + ar.lvl + '→' + (ar.lvl + 1),
-          s: areaLevelEffect(ar), cost: upCost(ar.up[ar.lvl]),
+          s: areaLevelEffect(ar), cost: upCost(emekCost(ar.up[ar.lvl])),
           go: function (k) { return function () { AREAS[k].lvl++; rebuildCounters(); sfx.build(); toast(T('areaLvUp', { n: NM(AREAS[k].n), l: AREAS[k].lvl })); }; }(i) });
       }
       if (!out.length) out.push({ empty: T('emptyUp') });
@@ -7825,7 +7852,7 @@ function slotBuild(sl, id) {
 }
 function buildHot(sub) {
   var i;
-  if (sub === 'up') { for (i = 0; i < AREAS.length; i++) if (!AREAS[i].locked && AREAS[i].lvl < MAXLV && S.cash >= AREAS[i].up[AREAS[i].lvl]) return true; return false; }
+  if (sub === 'up') { for (i = 0; i < AREAS.length; i++) if (!AREAS[i].locked && AREAS[i].lvl < MAXLV && S.cash >= emekCost(AREAS[i].up[AREAS[i].lvl])) return true; return false; }
   if (sub === 'dev') { for (i = 0; i < SLOTS.length; i++) if (slotActive(SLOTS[i]) && !SLOTS[i].b && S.cash >= 900) return true; return false; }
   if (sub === 'meydan') return !!(M && ((officeReady() && !M.office && S.rep >= ECON.officeRep && S.cash >= upCost(ECON.officeCost)) || (M.office && !M.license && S.rep >= ECON.licenseRep && S.cash >= upCost(ECON.licenseCost))));
   return false;
@@ -7966,11 +7993,11 @@ function bindProjExtra() {
 }
 function barHot() {
   var hot = { area: false, level: false, build: false, proj: false, serv: false }, i;
-  for (i = 1; i < AREAS.length; i++) if (AREAS[i].locked && !AREAS[i - 1].locked && S.rep >= AREAS[i].rep && S.cash >= AREAS[i].cost) hot.area = true;
+  for (i = 1; i < AREAS.length; i++) if (AREAS[i].locked && !AREAS[i - 1].locked && S.rep >= AREAS[i].rep && S.cash >= emekCost(AREAS[i].cost)) hot.area = true;
   if (buildHot('up') || buildHot('dev')) hot.build = true;
   for (i = 0; i < PADS.length; i++) {
     var p = PADS[i];
-    if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
+    if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv' || (p.emek && !emek())) continue;
     if (!AREAS[p.z].locked && p.lvl < p.max && !padBlocked(p) && S.cash >= padPrice(p)) hot.level = true;
   }
   if (undecidedStalls().length) hot.level = true;
@@ -8208,8 +8235,8 @@ function renderTab() {
     for (i = 0; i < AREAS.length; i++) {
       var a = AREAS[i];
       h += row(a.locked ? '🔒' : '🏝️', NM(a.n),
-        a.locked ? (money(a.cost) + ' + ' + a.rep + '*') : (T('level') + a.lvl + '/' + MAXLV),
-        a.locked ? lockTag() : (a.lvl < MAXLV ? money(a.up[a.lvl]) : T('done')));
+        a.locked ? (money(emekCost(a.cost)) + ' + ' + a.rep + '*') : (T('level') + a.lvl + '/' + MAXLV),
+        a.locked ? lockTag() : (a.lvl < MAXLV ? money(emekCost(a.up[a.lvl])) : T('done')));
     }
     h += row('🌿', T('envRow'), envStage() < ENV_UPS.length ? T('envNext', { n: NM(ENV_UPS[envStage()].n), l: ENV_UPS[envStage()].lv }) : T('done'),
       envStage() + '/' + ENV_UPS.length, '+' + pct(Math.round((envFlow() + roadFlow()) * 100)) + ' ' + T('envCust'));   /* v1.9.5: yol vitrini dahil, dile göre % */
@@ -8239,9 +8266,10 @@ function renderTab() {
     if (!workers.length) h += '<div class="empty">' + T('mNoStaff') + '</div>';
     for (i = 0; i < workers.length; i++) {
       var w = workers[i], Rl = ROLES[w.role];
-      h += row(Rl.icon, w.name + ' - ' + NM(Rl.n),
-        (w.zone >= 0 ? NM(AREAS[w.zone].n) : DEPOT_ROLES.indexOf(w.role) >= 0 ? T('depotName') : T('harborWide')) + (w.stall ? ' • ' + stallLabel(w.stall) : '') + ' • ' + NM(Rl.d),
-        money(Rl.wage) + perMin(), T('carry') + ' ' + carryW(w) + '/' + Rl.cap);
+      h += row(Rl.icon, w.name + ' - ' + NM(Rl.n) + emekLvTag(w),
+        (w.zone >= 0 ? NM(AREAS[w.zone].n) : DEPOT_ROLES.indexOf(w.role) >= 0 ? T('depotName') : T('harborWide')) + (w.stall ? ' • ' + stallLabel(w.stall) : '') + ' • ' + roleDesc(w.role),
+        money(workerWage(w)) + perMin(), T('carry') + ' ' + carryW(w) + '/' + capOf(w));
+      h += emekLvBtn(w, i);                          /* v2.18-deneme: USTALAŞTIR */
     }
     for (i = 0; i < zoneCount(); i++) {
       if (!zoneOpen(i)) continue;
@@ -8278,6 +8306,7 @@ function renderTab() {
   }
   if (curTab === 'yardim') h += '<button class="alt" id="helpReset" style="margin-top:8px;width:100%">' + T('helpReset') + '</button>';
   el.tabBody.innerHTML = PX(h);
+  emekLvBind();                                    /* v2.18-deneme */
   var hr = document.getElementById('helpReset');
   if (hr) hr.onclick = function () { S.help = {}; sfx.tap(); toast(T('helpResetD')); save(); };
 }
@@ -8454,6 +8483,7 @@ function syncSettingsUI() {
   });
   Array.prototype.forEach.call(document.querySelectorAll('#zoomSeg button'), function (o) { o.classList.toggle('on', parseInt(o.dataset.z, 10) === zoomLvl); });
   Array.prototype.forEach.call(document.querySelectorAll('#visSeg button'), function (o) { o.classList.toggle('on', (o.dataset.v === '1') === FINE); });
+  syncEmekUI();                                    /* v2.18-deneme */
 }
 
 /* =========================================================
@@ -8468,6 +8498,18 @@ function frame(ts) {
   if (intro.on) { updateIntro(dt); return; }
   if (!S.started) { gameT += dt; updateFx(dt); render(); drawHeroPreview(gameT); return; }
   if (paused) { if (!document.hidden) render(); return; }   /* duraklatıldı: dünya tamamen donar */
+  gameStep(dt);
+  /* v0.8 — otomatik kayıt: oyuncunun seçtiği aralıkta (oynanan süre). Sekme kapanınca/arka plana
+     geçince ve gün sonunda ayrıca güvenlik kaydı yapılır (beforeunload / visibilitychange / endDay). */
+  if (S.autoMin) { saveT += dt; if (saveT >= S.autoMin * 60) { saveT = 0; autoSaveNow(); } }
+  if (stallPrompt && !anyOverlay()) {        /* yeni tezgâh kuruldu: kararı hemen sor */
+    stallPrompt = false;
+    if (undecidedStalls().length) { openStallScreen(); sfx.cust(); }
+  }
+  render();
+}
+/* v2.18-deneme: bir oyun adımı (frame'den ayrıldı; testlerdeki hızlı benzetim de bunu çağırır — sim: kamera/HUD atlanır) */
+function gameStep(dt, sim) {
   gameT += dt; S.play += dt;
   updatePlayer(dt);
   updateWorkers(dt);
@@ -8492,16 +8534,9 @@ function frame(ts) {
   updateEnv(dt);
   updateCoach(dt);
   if (workers.length) S.cash = Math.max(0, S.cash - wageTotal() / 60 * dt);
+  if (sim) return;
   updateCamera(dt);
   syncHUD(dt);
-  /* v0.8 — otomatik kayıt: oyuncunun seçtiği aralıkta (oynanan süre). Sekme kapanınca/arka plana
-     geçince ve gün sonunda ayrıca güvenlik kaydı yapılır (beforeunload / visibilitychange / endDay). */
-  if (S.autoMin) { saveT += dt; if (saveT >= S.autoMin * 60) { saveT = 0; autoSaveNow(); } }
-  if (stallPrompt && !anyOverlay()) {        /* yeni tezgâh kuruldu: kararı hemen sor */
-    stallPrompt = false;
-    if (undecidedStalls().length) { openStallScreen(); sfx.cust(); }
-  }
-  render();
 }
 /* ---------- v0.8 — OTOMATİK KAYIT ---------- */
 var AUTO_OPTS = [5, 10, 30], autoCb = null;
@@ -8547,6 +8582,7 @@ function start() {
   showOnlineNotice(logPlay);
   progEv('oyun'); evFlush();
   retOnStart();                                          /* uzun ayrılıktan dönüş: "Sen yokken…" */
+  emekGiftCheck();                                       /* v2.18-deneme: eski kayıt + Emekçi Mod → Usta ekip hediyesi */
 }
 /* OYNA: kayıt varsa devam; yoksa işletme adı → oyun. Adı olmayan eski kayıt önce ad sorar. */
 el.playBtn.onclick = function () { needConsent(playGo); };
@@ -9918,6 +9954,7 @@ function confirmName() {
     gzWipe(curSlot);                                /* v2.16: yuvadaki eski oyunun gazete fotoğrafları */
     S.runId = newRunId();
     S.hero = cleanHero(pendingHero || randomHero());
+    if (emek()) S.cash += EMEK_START;               /* v2.18-deneme: Emekçi Mod başlangıç kesesi */
   }
   S.company = n;
   if (!S.runId) S.runId = newRunId();
@@ -11842,7 +11879,7 @@ function chapterGroups() {
   function add(ic, key, done, tot) { g.push({ ic: ic, t: T(key), d: Math.min(done, tot), n: tot }); }
   n = 0; for (i = 1; i < AREAS.length; i++) if (!AREAS[i].locked) n++; add('🔓', 'chAreas', n, AREAS.length - 1);
   n = 0; for (i = 0; i < AREAS.length; i++) n += AREAS[i].lvl - 1; add('🏗️', 'chLevels', n, AREAS.length * (MAXLV - 1));
-  n = 0; t = 0; for (i = 0; i < PADS.length; i++) if (PADS[i].max && PADS[i].kind !== 'decor') { n += PADS[i].lvl || 0; t += PADS[i].max; } add('⬆️', 'chPads', n, t);   /* süs noktaları Süsler satırında sayılır */
+  n = 0; t = 0; for (i = 0; i < PADS.length; i++) if (PADS[i].max && PADS[i].kind !== 'decor' && !PADS[i].emek) { n += PADS[i].lvl || 0; t += PADS[i].max; } add('⬆️', 'chPads', n, t);   /* süs noktaları Süsler satırında sayılır */
   n = 0; for (i = 0; i < SLOTS.length; i++) if (SLOTS[i].b) n++; add('🔨', 'chSlots', n, SLOTS.length);
   n = 0; for (i = 0; i < DECOR.length; i++) if (DECOR[i].got) n++; add('🌺', 'chDecor', n, DECOR.length);
   add('🌿', 'chEnv', envStage(), ENV_UPS.length);
@@ -12686,7 +12723,7 @@ function retDayEnd(L) {
 /* bölgenin dakikalık maaş yükü (müdür dahil) */
 function zoneWagePM(z) {
   var w = 0;
-  for (var i = 0; i < workers.length; i++) if (workers[i].zone === z && ROLES[workers[i].role]) w += ROLES[workers[i].role].wage * (1 - mgrEff(z, 'wage'));
+  for (var i = 0; i < workers.length; i++) if (workers[i].zone === z && ROLES[workers[i].role]) w += workerWage(workers[i]) * (1 - mgrEff(z, 'wage'));
   if (mgr(z)) w += mgr(z).wage || 0;
   return w * (1 - Math.min(0.5, servEff('wage')));
 }
@@ -12698,10 +12735,12 @@ function retCompute(sec) {
   if (typeof sec !== 'number' || !isFinite(sec) || sec < RET_MIN || sec > RET_ABSURD) return o;
   var s = Math.min(sec, RET_CAP), effMin = (Math.min(s, RET_FULL) + Math.max(0, s - RET_FULL) * RET_TAIL) / 60;
   var rateSum = 0, gross = 0;
+  var ek = emek();
   for (var z = 0; z < RET.rate.length; z++) {
-    if (!zoneOpen(z) || !zoneAuto(z) || !mgr(z)) continue;
+    if (!zoneOpen(z)) continue;
+    if (ek ? !emekAwayOK(z) : (!zoneAuto(z) || !mgr(z))) continue;   /* v2.18-deneme: Emekçi Mod'da başında personel olan bölgeler */
     o.auto++;
-    var g = RET.rate[z] || 0, r = Math.min(g * RET_FRAC, Math.max(0, g - zoneWagePM(z)));
+    var g = (RET.rate[z] || 0) * (ek ? emekAwayMul(z) : 1), r = Math.min(g * RET_FRAC, Math.max(0, g - zoneWagePM(z)));
     gross += g;
     if (r > 0) { o.zones.push({ z: z, r: r, v: 0 }); rateSum += r; }
   }
@@ -12716,9 +12755,9 @@ function retCardOpen() { var e = document.getElementById('offScr'); return !!e &
 function retShowCard(o) {
   RET.cardV = o.v; RET.cardSec = o.sec;
   document.getElementById('offTitle').textContent = T('offTitle');
-  document.getElementById('offSub').textContent = T('offSub', { t: clockStr(o.sec) });
+  document.getElementById('offSub').textContent = TE('offSub', { t: clockStr(o.sec) });   /* v2.18-deneme: Emekçi Mod metni */
   var h = '';
-  o.zones.forEach(function (q) { h += row(ICO('koop'), escH(NM(AREAS[q.z].n)), escH(T('offZone', { m: mgr(q.z).n })), money(q.v)); });
+  o.zones.forEach(function (q) { h += row(ICO('koop'), escH(NM(AREAS[q.z].n)), escH(mgr(q.z) ? T('offZone', { m: mgr(q.z).n }) : T('em_offCrew', { p: Math.round(emekAwayMul(q.z) * 100) })), money(q.v)); });
   document.getElementById('offRows').innerHTML = h;
   document.getElementById('offTotL').textContent = T('offTotal');
   document.getElementById('offTot').textContent = '+' + money(o.v);
@@ -12743,7 +12782,7 @@ function retOffer(sec) {
   if (o.v > 0) { retShowCard(o); return o; }
   if (!o.auto && sec >= 1800 && sec <= RET_ABSURD && S.play >= 900 && Store.get(OFF_HINT_KEY) !== '1') {
     Store.set(OFF_HINT_KEY, '1');
-    setTimeout(function () { toast(T('offHint')); }, 900);
+    setTimeout(function () { toast(TE('offHint')); }, 900);
   }
   return o;
 }
@@ -12860,6 +12899,488 @@ setInterval(retTick, 1000);
 })();
 
 /* =========================================================
+   v2.18-deneme — EMEKÇİ MOD (yalnız deneme-emekci dalı; EMEKCI_TASARIM.md)
+   Temel kural: istasyon başında biri varken çalışır. Eylem beklemektir, dokunmak değil.
+   • Ağ kendiliğinden dolar; başında duran oyuncunun sırtına balıklar tek tek geçer (PULL_T, Hızlı Eller).
+     Balıkçı aynı işi yapar ama balıkları ağın yanındaki SANDIĞA koyar (sınır 12); oyuncu ve Hamal sandıktan alır.
+   • Kesim masası yalnız başında biri varken keser: oyuncu (Keskin Bıçak), Filetocu (asıl kesen), eksikse müdür yarı hızla.
+   • Tezgâh satıcısızken %35 hızla satar, sabır %60 hızla azalır; oyuncu (Sesli Satıcı) ya da Tezgâhtar başındayken tam hız.
+   • Hamal "bittikçe yenile": boşalan tezgâh (raf < %30) › boşta masa › dolmak üzere olan sandık.
+   • Usta seviyeleri: Çırak → Kalfa (+%35 hız/yük, +%20 maaş) → Usta (+%75, +%45).
+   • Kapalıyken (S.emek = 0; eski testlerde window.HK_EMEK_OFF) her şey bugünkü gibi çalışır.
+   ========================================================= */
+function emek() { return !window.HK_EMEK_OFF && S.emek !== 0; }
+var emekLoading = false;                      /* loadFrom: bu daldaki kayıt mod kapalıyken açılsa da kadro düşmesin */
+var PULL_T = 0.2, HANDS_T = [0.2, 0.14, 0.1], BOX_CAP = 12;
+var EMEK_SELL_T = 0.45, EMEK_IDLE_SELL = 0.35, EMEK_IDLE_PAT = 0.6, EMEK_MGR = 0.5, EMEK_PRICE = 0.75, EMEK_START = 0;
+var EMEK_ZONE_ROLES = ['tezgahtar', 'balikci', 'filetocu', 'hamal', 'kasiyer'];   /* sıra = kart sırası: ilk kiralanan tezgâhtar */
+/* fiyatlar bot ölçümüyle ayarlandı (taslak 300/420/360/360 ile ilk kiralama ~1,7 dk çıkıyordu; hedef 3–5 dk). Beş rol olduğu için
+   aynı bölgedeki her yeni kişinin fiyat artışı 1,85 yerine 1,6. Tezgâhtar en ucuzu: ilk kiralanacak olan. */
+var EMEK_ROLE = { tezgahtar: { price: 800, wage: 12 }, balikci: { price: 850, wage: 10 }, hamal: { price: 900, wage: 12 }, filetocu: { price: 1000, wage: 15 }, kasiyer: { price: 1050, wage: 17 } };
+var EMEK_HIRE_GROW = 1.6;
+var EMEK_DESC = {
+  balikci:   { tr: 'Ağın başında çeker, sandığa koyar', en: 'Hauls the net into its crate' },
+  filetocu:  { tr: 'Masanın başında keser (asıl kesen)', en: 'Cuts at the table (does the cutting)' },
+  tezgahtar: { tr: 'Tezgâhın arkasında satar, taşımaz', en: 'Sells behind the stall, no carrying' },
+  hamal:     { tr: 'Bittikçe yeniler: tezgâh › masa › sandık', en: 'Restocks: stall › table › crate' }
+};
+var USTA_MUL = [1, 1.35, 1.75], USTA_WAGE = [1, 1.2, 1.45], USTA_COST = [0, 1.5, 3], USTA_AWAY = [0.6, 0.8, 1];
+var USTA_ROLES = ['balikci', 'filetocu', 'tezgahtar', 'hamal', 'kasiyer'];
+function rolePrice(r) { return (emek() && EMEK_ROLE[r] ? EMEK_ROLE[r].price : ROLES[r].price) || 500; }
+function roleWage(r) { return emek() && EMEK_ROLE[r] ? EMEK_ROLE[r].wage : ROLES[r].wage; }
+function roleDesc(r) { return NM(emek() && EMEK_DESC[r] ? EMEK_DESC[r] : ROLES[r].d); }
+function wLv(w) { return clamp((w && w.lv) | 0, 1, 3); }
+function wLvMul(w) { return emek() && w && !w.isPlayer ? USTA_MUL[wLv(w) - 1] : 1; }
+function workerWage(w) { return roleWage(w.role) * (emek() ? USTA_WAGE[wLv(w) - 1] : 1); }
+function emekCost(v) { return emek() ? Math.round(v * EMEK_PRICE) : v; }
+function TE(k, p) { return T(emek() && STR.tr[k + 'E'] !== undefined ? k + 'E' : k, p); }
+function emekHamal2(z, r) { return emek() && r === 'hamal' && roleCount(z, 'hamal') >= 1 && AREAS[z].lvl < 3; }
+/* oyuncu yükseltmeleri */
+function padLvl(id) { for (var i = 0; i < PADS.length; i++) if (PADS[i].id === id) return PADS[i].lvl | 0; return 0; }
+function knifeMul() { return 1 + 0.4 * padLvl('knf'); }
+function voiceMul() { return 1 + 0.25 * padLvl('voc'); }
+function pullT() { return HANDS_T[clamp(padLvl('hnd'), 0, HANDS_T.length - 1)]; }
+function emekPadInfo(p) {
+  var n = p.lvl + 1;
+  if (p.kind === 'knife') return { t: T('em_knife'), e: T('em_knifeE', { p: 40 * n }) };
+  if (p.kind === 'voice') return { t: T('em_voice'), e: T('em_voiceE', { p: 25 * n }) };
+  return { t: T('em_hands'), e: T('em_handsE', { a: HANDS_T[p.lvl], b: HANDS_T[Math.min(n, HANDS_T.length - 1)] }) };
+}
+
+/* ---------- ağ sandıkları ---------- */
+var NET_BOX = [[3.45, 1.95], [1.85, 7.85], [1.85, 16.4], [1.85, 20.35]], XNET_BOX = [[2.0, 10.05], [1.85, 23.0]];
+spots.forEach(function (s, i) { s.box = []; s.bx = NET_BOX[i][0]; s.by = NET_BOX[i][1]; });
+XNETS.forEach(function (s, i) { s.box = []; s.bx = XNET_BOX[i][0]; s.by = XNET_BOX[i][1]; });
+function allNets() { return spots.concat(XNETS); }
+function emNetOn(s) { return s.xn ? xnetOn(s) : !AREAS[s.z].locked; }
+function netStand(s) { return { x: s.x + 0.5, y: s.y + 1.3 }; }
+function boxCap(s) {
+  var m = 1;
+  for (var i = 0; i < workers.length; i++) if (workers[i].role === 'balikci' && workers[i].zone === s.z) m = Math.max(m, wLvMul(workers[i]));
+  return Math.round(BOX_CAP * m);
+}
+function emekBoxSave() {
+  var o = allNets().map(function (s) { return s.box.map(itemKey); });
+  for (var i = 0; i < o.length; i++) if (o[i].length) return o;
+  return null;                                           /* hepsi boş: kayda yazılmaz */
+}
+function emekBoxLoad(d) {
+  var nets = allNets();
+  nets.forEach(function (s) { s.box.length = 0; });
+  if (!Array.isArray(d)) return;                         /* eski kayıt: sandıklar boş */
+  nets.forEach(function (s, i) {
+    (Array.isArray(d[i]) ? d[i] : []).forEach(function (k) {
+      var it = typeof k === 'string' ? keyItem(k) : null;
+      if (it && it.k === 'fish' && FISH[it.f] && zoneOfFish(it.f) === s.z && s.box.length < BOX_CAP * USTA_MUL[2]) s.box.push(it);
+    });
+  });
+}
+/* istasyon işareti (çizim için): bu karede başında kim var, iş ne kadar ilerledi */
+function emekMark(o, by, pr) { if (!by) return; o._et = gameT; o._eb = by; o._ep = pr; }
+/* oyuncu: ağın başında durunca balıklar tek tek sırta geçer */
+function iPull(a, s, dt) {
+  if (!s.stock.length || !fits(a, s.stock[s.stock.length - 1])) return false;
+  var t0 = pullT();
+  if (a._pn !== s || gameT - (a._pnT || 0) > 0.25) { a._pn = s; a.pullT = t0; }
+  a._pnT = gameT;
+  a.pullT -= dt;
+  emekMark(s, 'p', clamp(1 - a.pullT / t0, 0, 1));
+  if (a.pullT > 1e-6) return true;
+  a.pullT = Math.max(a.pullT + t0, t0 * 0.5);              /* artan süre bir sonrakine taşınır: kare hızından bağımsız ~0,2 sn */
+  var it = s.stock.pop(); a.carry.push(it);
+  fly(s.x, s.y + 0.9, 8, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.2);
+  sfx.splash();
+  return true;
+}
+/* balıkçı / müdür: ağdan sandığa */
+function netPull(a, s, dt, mul, by) {
+  if (a._pn !== s) { a._pn = s; a.pullT = PULL_T; }
+  if (!s.stock.length || s.box.length >= boxCap(s)) { emekMark(s, by, 0); return false; }
+  a.pullT -= dt * mul;
+  emekMark(s, by, clamp(1 - a.pullT / PULL_T, 0, 1));
+  if (a.pullT > 1e-6) return true;
+  a.pullT = Math.max(a.pullT + PULL_T, PULL_T * 0.5);
+  var it = s.stock.pop(); s.box.push(it);
+  fly(s.x, s.y + 0.9, 8, s.bx, s.by, 6, it, 0.3);
+  a._pc = (a._pc || 0) + 1;
+  if (a._pc % 3 === 0) sfxFrom(a, function () { sfx.pick(); });
+  return true;
+}
+function iPickBox(a, s, dt, filt) {
+  var idx = -1;
+  for (var i = s.box.length - 1; i >= 0; i--) if (fits(a, s.box[i]) && (!filt || filt(s.box[i]))) { idx = i; break; }
+  if (idx < 0) return false;
+  return tryTake(a, dt, function () {
+    var it = s.box.splice(idx, 1)[0]; a.carry.push(it);
+    fly(s.bx, s.by, 6, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.26); sfx.pick();
+  });
+}
+function emekPlayerBox(dt) {
+  var nets = allNets(), acted = false;
+  for (var i = 0; i < nets.length; i++) {
+    var s = nets[i]; if (!s.box.length || !emNetOn(s) || zoneAuto(s.z)) continue;
+    if (dist2(player.x, player.y, s.bx, s.by) < 0.8) acted = iPickBox(player, s, dt) || acted;
+  }
+  return acted;
+}
+
+/* ---------- başında kim var ---------- */
+function vendorSpot(c) { return { x: c.x - 0.95, y: c.y + 0.1 }; }
+function vendorAt(c) {
+  var p = vendorSpot(c);
+  for (var i = 0; i < workers.length; i++) { var w = workers[i]; if (w.role === 'tezgahtar' && w.stall === c.key && dist2(w.x, w.y, p.x, p.y) < 0.3) return w; }
+  return null;
+}
+function filetocuAt(t) {
+  for (var i = 0; i < workers.length; i++) { var w = workers[i]; if (w.role === 'filetocu' && w.table === t && dist2(w.x, w.y, t.x + 0.8, t.y + 0.15) < 0.3) return w; }
+  return null;
+}
+function mgrAt(o) { var a = mgrAct[o.z]; return !!(a && a.fill && a.fill.o === o && a.atFill); }
+/* masa: başında biri yoksa 0 (kesmez) */
+function emekCutMul(t) {
+  var m = 0, by = '', w = filetocuAt(t);
+  if (dist2(player.x, player.y, t.x, t.y) < 1.6) { m = knifeMul(); by = 'p'; }
+  if (w) { var wm = wLvMul(w) * workerSpeedMul(); if (wm > m) { m = wm; by = 'w'; } }
+  if (!m && mgrAt(t)) { m = EMEK_MGR; by = 'm'; }
+  emekMark(t, by, t.cur ? clamp(t.t / FISH[t.cur.f].cut, 0, 1) : 0);
+  return m;
+}
+/* tezgâh: satıcı varsa 1 (usta/ses çarpanıyla), yoksa 0,35 */
+function emekSellMul(c) {
+  var m = 0, by = '', v = vendorAt(c);
+  if (dist2(player.x, player.y, c.x, c.y) < 1.8) { m = voiceMul(); by = 'p'; }
+  if (v) { var vm = wLvMul(v) * workerSpeedMul(); if (vm > m) { m = vm; by = 'w'; } }
+  if (!m && mgrAt(c)) { m = EMEK_MGR; by = 'm'; }
+  c._att = m > 0;
+  emekMark(c, by, c.eatT > 0 ? clamp(1 - c.eatT / EMEK_SELL_T, 0, 1) : 1);
+  return m || EMEK_IDLE_SELL;
+}
+
+/* ---------- personel ---------- */
+function aiBalikci(w, sp, dt) {
+  var nets = zoneNets(w.zone).filter(emNetOn), i, s = w.net && nets.indexOf(w.net) >= 0 ? w.net : null;
+  if (!nets.length) { idleAtZone(w, sp, dt); return; }
+  if (!s || !s.stock.length || s.box.length >= boxCap(s)) {            /* bölgede birden çok ağ: en dolu, sandığı yer olan */
+    var best = null;
+    for (i = 0; i < nets.length; i++) if (nets[i].stock.length && nets[i].box.length < boxCap(nets[i]) && (!best || nets[i].stock.length > best.stock.length)) best = nets[i];
+    s = best || s || nets[0];
+  }
+  w.net = s;
+  var st = netStand(s);
+  if (!goTo(w, st.x, st.y, sp, dt, 0.25)) return;
+  netPull(w, s, dt, wLvMul(w) * workerSpeedMul(), 'w');
+}
+function aiVendorE(w, sp, dt) {
+  var c = counterByKey(w.stall);
+  if (!c || AREAS[c.z].locked || !c.fish) { assignVendor(w); c = counterByKey(w.stall); }
+  if (c && !c.open) {                                                /* kapalı tezgâh: bölgede satıcısız açık tezgâha geç */
+    var alt = mgrZoneCounters(w.zone).filter(function (q) { return !vendorAt(q); })[0];
+    if (alt) c = alt; else c = null;
+  }
+  if (hasCarry(w, isGoods)) {                                        /* eski moddan elinde kalan mal: tezgâha ya da hasıra */
+    var dc = c && hasCarry(w, function (it) { return acceptsAt(c, it); }) && c.buffer.length < counterMax(c) ? c : null;
+    if (dc) { if (goTo(w, dc.x - 0.5, dc.y - 0.6, sp, dt, 1.0)) iStock(w, dc, dt); return; }
+    var m0 = zoneTable(w.zone) && zoneTable(w.zone).mat;
+    if (m0 && goTo(w, m0.x, m0.y, sp, dt, 0.8)) { var gi = popCarry(w, isGoods); if (gi) m0.items.push(gi); }
+    return;
+  }
+  if (!c) { idleAtZone(w, sp, dt); return; }
+  var p = vendorSpot(c);
+  if (goTo(w, p.x, p.y, sp, dt, 0.2)) w.face = 1;
+}
+function iStock(a, c, dt) {                                          /* hamal: tezgâha doldurur (7 sınırı yok) */
+  if (c.buffer.length >= counterMax(c)) return false;
+  var f = function (it) { return acceptsAt(c, it); };
+  if (!hasCarry(a, f)) return false;
+  return tryTake(a, dt, function () {
+    var it = popCarry(a, f); c.buffer.push(it);
+    fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), c.x, c.y, 13, it, 0.26); sfx.drop();
+  });
+}
+function carryCount(a, f) { var n = 0; for (var i = 0; i < a.carry.length; i++) if (f(a.carry[i])) n++; return n; }
+/* "bittikçe yenile" işi seç: 1) boşalan tezgâh 2) boşta masa 3) dolan sandık */
+function hamalJob(w) {
+  var z = w.zone, t = zoneTable(z), i, best = null, bf = 1;
+  var cs = mgrZoneCounters(z);
+  for (i = 0; i < cs.length; i++) (function (c) {
+    var fill = c.buffer.length / Math.max(1, counterMax(c));
+    if (fill >= 0.3 || fill >= bf) return;
+    if (!matWith(function (it) { return acceptsAt(c, it); }, w)) return;
+    best = c; bf = fill;
+  })(cs[i]);
+  if (best) return { k: 'ctr', c: best };
+  if (!t || AREAS[t.z].locked) return null;
+  var fitT = function (it) { return it.k === 'fish' && tableRoom(t, it.f, w) > 0; };
+  var nets = zoneNets(z).filter(function (s) { return emNetOn(s) && s.box.some(fitT); });
+  if (!nets.length) return null;
+  if (!t.cur && !t.inn.length) return { k: 'tbl', s: nets.reduce(function (a, b) { return b.box.length > a.box.length ? b : a; }) };
+  for (i = 0; i < nets.length; i++) if (nets[i].box.length >= boxCap(nets[i]) * 0.75) return { k: 'tbl', s: nets[i] };
+  return null;
+}
+function aiHamalE(w, sp, dt) {
+  var t = zoneTable(w.zone), done = false;
+  if (w.mode === 'load' && w.ej) {
+    if (w.ej.k === 'ctr') {
+      var c = w.ej.c, f = function (it) { return acceptsAt(c, it); };
+      var need = Math.ceil(counterMax(c) * 0.7) - c.buffer.length - carryCount(w, f);
+      var m = need > 0 && c.open ? matWith(f, w) : null;
+      if (!m) done = true;
+      else if (goTo(w, m.x, m.y, sp, dt, 0.8) && !iPickMat(w, m, dt, f)) done = true;
+    } else {
+      var s = w.ej.s, ft = function (it) { return it.k === 'fish' && t && tableRoom(t, it.f, w) > 0; };
+      if (!t || !s.box.some(ft)) done = true;
+      else if (goTo(w, s.bx + 0.35, s.by + 0.45, sp, dt, 0.6) && !iPickBox(w, s, dt, ft)) done = true;
+    }
+    if (done) w.mode = 'drop';
+    return;
+  }
+  if (hasCarry(w, isGoods)) {                                        /* tezgâha bırak */
+    var dc = w.ej && w.ej.c && w.ej.c.open && w.ej.c.buffer.length < counterMax(w.ej.c) && hasCarry(w, function (it) { return acceptsAt(w.ej.c, it); }) ? w.ej.c : null;
+    if (!dc) mgrZoneCounters(w.zone).forEach(function (q) { if (q.buffer.length < counterMax(q) && hasCarry(w, function (it) { return acceptsAt(q, it); }) && (!dc || q.buffer.length < dc.buffer.length)) dc = q; });
+    if (dc) { w.ej = { k: 'ctr', c: dc }; if (goTo(w, dc.x - 0.5, dc.y - 0.6, sp, dt, 1.0)) iStock(w, dc, dt); return; }
+    var bm = t && t.mat;                                              /* teslim yeri yok: hasıra geri */
+    if (bm && goTo(w, bm.x, bm.y, sp, dt, 0.8)) { var gi = popCarry(w, isGoods); if (gi) { bm.items.push(gi); fly(w.x, w.y, carryTopZ(w, w.carry.length + 1), bm.x, bm.y, 6, gi, 0.26); } }
+    return;
+  }
+  if (hasCarry(w, isFish)) {                                         /* masaya bırak */
+    if (t && !AREAS[t.z].locked) { if (goTo(w, t.x - 0.1, t.y - 0.35, sp, dt, 0.9)) iDropTable(w, t, dt); }
+    return;
+  }
+  w.ej = hamalJob(w);
+  if (w.ej) { w.mode = 'load'; return; }
+  w.mode = 'drop';
+  idleAtZone(w, sp, dt);
+}
+/* müdür: bölgede eksik rol varsa yarı hızla doldurur (öncelik: tezgâhta satış › kesim › çekme) */
+function emekMgrFill(z) {
+  var cs = mgrZoneCounters(z), i, j, has;
+  for (i = 0; i < cs.length; i++) {
+    has = false;
+    for (j = 0; j < workers.length; j++) if (workers[j].role === 'tezgahtar' && workers[j].stall === cs[i].key) { has = true; break; }
+    if (!has) { var vp = vendorSpot(cs[i]); return { k: 'ctr', o: cs[i], x: vp.x, y: vp.y }; }
+  }
+  var t = zoneTable(z);
+  if (t && !AREAS[t.z].locked && !roleCount(z, 'filetocu')) return { k: 'tbl', o: t, x: t.x + 0.8, y: t.y + 0.15 };
+  if (!roleCount(z, 'balikci') && spots[z]) { var st = netStand(spots[z]); return { k: 'net', o: spots[z], x: st.x, y: st.y }; }
+  return null;
+}
+function emekMgrStep(a, z, sp, dt) {
+  if (!emek()) { a.fill = null; a.atFill = false; return false; }
+  var f = emekMgrFill(z);
+  if (f && a.fill && a.fill.o === f.o) f = a.fill;
+  a.fill = f;
+  if (!f) { a.atFill = false; return false; }
+  if (hasCarry(a, isGoods)) mgrDropBack(a, z);
+  a.atFill = goTo(a, f.x, f.y, sp, dt, 0.2);
+  if (!a.atFill) { a.bob += dt * 8; return true; }
+  if (f.k === 'net') netPull(a, f.o, dt, EMEK_MGR, 'm');
+  return true;
+}
+
+/* ---------- usta seviyeleri ---------- */
+function ustaOK(w) { return emek() && w && USTA_ROLES.indexOf(w.role) >= 0; }
+function ustaCost(w) { var lv = wLv(w); return lv >= 3 ? 0 : upCost(Math.round(rolePrice(w.role) * (1 + Math.max(0, w.zone | 0) * 0.35) * USTA_COST[lv])); }
+function emekLvUp(w) {
+  if (!ustaOK(w) || wLv(w) >= 3) return false;
+  var c = ustaCost(w);
+  if (S.cash < c) { toast(T('noMoney')); sfx.bad(); return false; }
+  S.cash -= c; w.lv = wLv(w) + 1;
+  toast(T('em_lvUp', { n: w.name, l: T('em_lv')[w.lv - 1] })); sfx.star();
+  addPuff(w.x, w.y, '#ffc94a');
+  save();
+  return true;
+}
+function emekLvTag(w) { return ustaOK(w) ? ' · ' + T('em_lv')[wLv(w) - 1] : ''; }
+function emekLvBtn(w, i) {
+  if (!ustaOK(w)) return '';
+  if (wLv(w) >= 3) return '<div class="emLvMax">★ ' + T('em_lvMax') + '</div>';
+  var c = ustaCost(w);
+  return '<button class="alt emLv' + (S.cash >= c ? '' : ' no') + '" data-wi="' + i + '">' + T('em_lvBtn', { l: T('em_lv')[wLv(w)], c: money(c) }) + '</button>';
+}
+function emekLvBind() {
+  Array.prototype.forEach.call(el.tabBody.querySelectorAll('.emLv'), function (b) {
+    b.onclick = function () { if (emekLvUp(workers[parseInt(b.dataset.wi, 10)])) renderTab(); };
+  });
+}
+
+/* ---------- "sen yokken": yalnız başında personel olan bölgeler, usta durumuna göre ---------- */
+function emekAwayOK(z) { return zoneChain(z).ok; }
+function emekAwayMul(z) {
+  var m = 1;
+  ['balikci', 'filetocu', 'tezgahtar'].forEach(function (r) {           /* zincirin en zayıf istasyonu belirler */
+    var best = 0;
+    for (var i = 0; i < workers.length; i++) if (workers[i].zone === z && workers[i].role === r) best = Math.max(best, USTA_AWAY[wLv(workers[i]) - 1]);
+    m = Math.min(m, best);
+  });
+  return m;
+}
+
+/* ---------- eski kayıt: Usta ekip hediyesi (bir kez) ---------- */
+function emekCardOpen() { var e = document.getElementById('emekScr'); return !!e && !e.classList.contains('hidden'); }
+function emekGiftCheck() {
+  if (!emek() || S.emekGift || !S.started) return false;
+  S.emekGift = 1;
+  var got = [];
+  for (var z = 0; z < zoneCount(); z++) {
+    if (!zoneOpen(z)) continue;
+    ['tezgahtar', 'balikci'].forEach(function (r) {
+      if (roleCount(z, r) || zoneFree(z) <= 0) return;
+      var w = hire(r, true, z); if (w) got.push(w);
+    });
+  }
+  document.getElementById('emekT').textContent = T('em_giftT');
+  document.getElementById('emekP').textContent = T('em_giftP');
+  document.getElementById('emekRows').innerHTML = got.length ? got.map(function (w) {
+    return row(ROLES[w.role].icon, escH(w.name) + ' - ' + NM(ROLES[w.role].n), escH(NM(AREAS[w.zone].n)) + ' • ' + roleDesc(w.role), T('free'));
+  }).join('') : '<div class="empty">' + T('em_giftNone') + '</div>';
+  document.getElementById('emekGo').textContent = T('em_giftGo');
+  document.getElementById('emekScr').classList.remove('hidden');
+  syncPause(); sfx.star(); save();
+  return true;
+}
+
+/* ---------- ayar: Emekçi Mod (deneme) ---------- */
+function syncEmekUI() {
+  var l = document.getElementById('setEmek'), n = document.getElementById('emekNote'), on = emek();
+  if (l) l.textContent = T('em_set');
+  if (n) n.textContent = T('em_setD');
+  Array.prototype.forEach.call(document.querySelectorAll('#emekSeg button'), function (b) {
+    b.classList.toggle('on', (b.dataset.e === '1') === on);
+    b.textContent = T(b.dataset.e === '1' ? 'em_on' : 'em_off');
+  });
+}
+function emekSet(on) {
+  S.emek = on ? 1 : 0;
+  syncEmekUI(); sfx.tap();
+  if (!S.started) return;
+  toast(T(on ? 'em_onT' : 'em_offT'));
+  for (var i = 0; i < workers.length; i++) { workers[i].mode = 'load'; workers[i].ej = null; }
+  save(); renderBar();
+  if (on) emekGiftCheck();
+}
+
+/* ---------- çizim: ağ sandığı, ⏸ Bekliyor rozeti, çalışma halkası ---------- */
+function emekPushBoxes(push) {
+  var nets = allNets();
+  for (var i = 0; i < nets.length; i++) (function (s) {
+    if (!emNetOn(s) || !(emek() || s.box.length)) return;
+    push(s.bx + s.by, function () { quietDraw(s.z, s.bx, s.by, function () { drawNetBox(s); }); });
+  })(nets[i]);
+}
+function drawNetBox(s) {
+  shadow(s.bx, s.by, 0.4);
+  isoBox(s.bx - 0.32, s.by - 0.26, 0.64, 0.52, 0, 6, '#8a5a30', '#5a3a1c', '#6f4526');
+  var sx = R(pX(s.bx, s.by)), sy = R(pY(s.bx, s.by, 6));
+  px(sx - 7, sy - 1, 14, 1, PAL.woodLite); px(sx - 1, sy + 1, 2, 4, '#4a2f18');
+  drawStack(s.bx, s.by, s.box, 6, 2.6);
+  labelAt(s.bx, s.by + 0.5, 20, T('em_box') + ' ' + s.box.length + '/' + boxCap(s), '#bfe9ff', s.box.length ? '' + s.box.length : '');
+}
+function emekWait(x, y, z) {
+  if (uiQuiet || dist2(player.x, player.y, x, y) > 150) return;
+  uiQ.push({ t: 5, x: x, y: y, z: z, s: '⏸ ' + T('em_wait'), c: '#dcdcd6', a: 0.92 });
+}
+function emekRing(x, y, z, pr, kind) {
+  var sx = R(pX(x, y)), sy = R(pY(x, y, z)), a0 = -Math.PI / 2;
+  ctx.save();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(10,26,39,.75)'; ctx.beginPath(); ctx.arc(sx, sy, 6, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = '#ffc94a'; ctx.beginPath(); ctx.arc(sx, sy, 6, a0, a0 + TAU * clamp(pr, 0.02, 1)); ctx.stroke();
+  ctx.restore();
+  var k = (gameT * 3) % 1, up = phase2(gameT, 8);
+  if (kind === 'knife') { px(sx + 9, sy - 6 - up * 2, 2, 6, '#e8eef2'); px(sx + 9, sy - 6 - up * 2, 1, 6, '#ffffff'); px(sx + 9, sy - up * 2, 2, 3, '#6f4526'); }
+  else if (kind === 'net') { px(sx - 11, sy - 4 - R(k * 6), 4, 2, '#8fa9bd'); px(sx - 8, sy - 5 - R(k * 6), 2, 1, '#d7e4ee'); px(sx - 10, sy + 2, 1, 1 + R(k * 6), PAL.rope); }
+  else { px(sx + 8, sy - 3 - R(k * 5), 3, 3, PAL.brass); px(sx + 9, sy - 2 - R(k * 5), 1, 1, PAL.brassLite); }
+}
+function drawEmekFx() {
+  var i, nets = allNets();
+  for (i = 0; i < nets.length; i++) {
+    var s = nets[i]; if (!emNetOn(s) || zoneAuto(s.z)) continue;
+    if (s._et === gameT) { if (s._eb === 'p') emekRing(s.x, s.y + 0.9, 48, s._ep, 'net'); }   /* halka yığın rozetinin üstünde */
+    else if (s.stock.length >= areaStock(s.z)) emekWait(s.x, s.y + 0.9, 34);
+  }
+  for (i = 0; i < tables.length; i++) {
+    var t = tables[i]; if (AREAS[t.z].locked || zoneAuto(i)) continue;
+    if (t._et === gameT) { if (t._eb === 'p' && t.cur) emekRing(t.x, t.y, 46, t._ep, 'knife'); }
+    else if (t.cur || t.inn.length) emekWait(t.x, t.y, 36);
+  }
+  for (i = 0; i < counters.length; i++) {
+    var c = counters[i]; if (AREAS[c.z].locked || !c.open) continue;
+    var wait = false;
+    for (var q = 0; q < c.slots.length; q++) if (c.slots[q] && c.slots[q].state === 'wait') wait = true;
+    if (c._et === gameT) { if (c._eb === 'p' && wait) emekRing(c.x, c.y, 60, c._ep, 'coin'); }
+    else if (wait) emekWait(c.x, c.y - 1.2, 62);
+  }
+}
+
+/* ---------- metinler (TR/EN) ---------- */
+Object.assign(STR.tr, {
+  tutE: ['Ağın başında bekle — balık birikiyor',
+         'Ağın başında dur: balıklar tek tek sırtına geçsin',
+         'Balıkları masaya bırak ve başında dur: kesilsin',
+         'Filetoyu tezgâha bırak, önünde dur: satılsın',
+         'Tezgâhın para kasasından geç — para hesabına geçer',
+         'Alt bardan bir yükseltme ya da personel al'],
+  tutStepOKE: ['✓ Balık birikti! Ağın başında dur', '✓ Balıklar sırtında! Kesim masasına götür', '✓ Masa kesiyor! Başında durdukça keser', '🎉 İlk balığın tezgâhta! Önünde durursan hızlı satılır', '✓ Para kasada! Alttaki çubuktan bir şey al'],
+  coachAutoE: 'Eylem beklemek: istasyonun başında dur, iş kendiliğinden ilerler',
+  em_wait: 'Bekliyor', em_box: 'SANDIK',
+  em_knife: 'KESKİN BIÇAK', em_knifeE: 'Masadayken kesimin +%{p}',
+  em_voice: 'SESLİ SATICI', em_voiceE: 'Tezgâhtayken satış +%{p}',
+  em_hands: 'HIZLI ELLER', em_handsE: 'Ağdan çekme {a} → {b} sn',
+  em_knifeUp: '🔪 Keskin Bıçak Sv {n}', em_voiceUp: '📣 Sesli Satıcı Sv {n}', em_handsUp: '🤲 Hızlı Eller Sv {n}',
+  em_hamal2: 'İkinci hamal bölge Sv3\'te alınır',
+  em_offCrew: 'Ekip başındaydı (verim %{p})',
+  em_lv: ['Çırak', 'Kalfa', 'Usta'], em_lvBtn: '🎓 USTALAŞTIR → {l} · {c}', em_lvMax: 'USTA', em_lvUp: '🎓 {n} artık {l}!',
+  em_set: 'EMEKÇİ MOD (DENEME)', em_setD: 'İstasyonlar ancak başında biri varken çalışır: sen ya da personelin.', em_on: 'AÇIK', em_off: 'KAPALI',
+  em_onT: '💪 Emekçi Mod açık: istasyonun başında dur, iş ilerlesin', em_offT: 'Emekçi Mod kapalı: istasyonlar kendi kendine çalışır',
+  em_giftT: '🎁 USTA EKİP HEDİYESİ',
+  em_giftP: 'Liman artık Emekçi Mod\'da: istasyonlar ancak başında biri varken çalışır. Ağı Balıkçı çeker, tezgâhta Tezgâhtar satar, taşımayı Hamal yapar. Hoş geldin hediyesi olarak eksik olanlar ücretsiz işe başladı:',
+  em_giftNone: 'Kadrolar dolu olduğu için yeni kimse eklenemedi; kadro açılınca kendin alabilirsin.',
+  em_giftGo: 'İŞE KOYUL ▶',
+  offSubE: '{t} uzaktaydın. Başında personel olan istasyonlar çalışmayı sürdürdü.',
+  offHintE: 'İpucu: bir bölgenin bütün rollerini (Balıkçı dahil) doldurursan sen yokken de azar azar kazandırır; ustalar daha çok.'
+});
+Object.assign(STR.en, {
+  tutE: ['Wait by the net — fish are coming',
+         'Stand at the net: fish move onto your back one by one',
+         'Drop the fish on the table and stay: it gets cut',
+         'Put fillets on the stall and stand in front: they sell',
+         'Walk past the stall cash box — money is banked',
+         'Buy an upgrade or hire staff from the bottom bar'],
+  tutStepOKE: ['✓ Fish are in! Stand at the net', '✓ Fish on your back! Take them to the cutting table', '✓ The table is cutting! It cuts while you stay', '🎉 Your first fish is on the stall! Stand in front to sell fast', '✓ Money banked! Buy something from the bottom bar'],
+  coachAutoE: 'Work is waiting: stand at a station and the job runs by itself',
+  em_wait: 'Waiting', em_box: 'CRATE',
+  em_knife: 'SHARP KNIFE', em_knifeE: 'You cut {p}% faster at the table',
+  em_voice: 'LOUD VENDOR', em_voiceE: 'You sell {p}% faster at the stall',
+  em_hands: 'QUICK HANDS', em_handsE: 'Hauling the net {a} → {b} s',
+  em_knifeUp: '🔪 Sharp Knife Lv {n}', em_voiceUp: '📣 Loud Vendor Lv {n}', em_handsUp: '🤲 Quick Hands Lv {n}',
+  em_hamal2: 'A second porter needs zone Lv3',
+  em_offCrew: 'The crew kept working ({p}% pace)',
+  em_lv: ['Apprentice', 'Journeyman', 'Master'], em_lvBtn: '🎓 TRAIN → {l} · {c}', em_lvMax: 'MASTER', em_lvUp: '🎓 {n} is now a {l}!',
+  em_set: 'WORKER MODE (TRIAL)', em_setD: 'Stations only work while someone is at them: you or your staff.', em_on: 'ON', em_off: 'OFF',
+  em_onT: '💪 Worker Mode on: stand at a station to get the job done', em_offT: 'Worker Mode off: stations run by themselves',
+  em_giftT: '🎁 MASTER CREW GIFT',
+  em_giftP: 'The harbor now runs in Worker Mode: stations only work while someone is at them. The Fisher hauls the net, the Vendor sells at the stall, the Porter carries. As a welcome gift, the missing hands joined for free:',
+  em_giftNone: 'Every crew is full, so nobody could be added; hire them yourself when a slot opens.',
+  em_giftGo: 'GET TO WORK ▶',
+  offSubE: 'You were gone for {t}. Every staffed station kept working.',
+  offHintE: 'Tip: fill every role in a zone (Fisher included) and it keeps earning a little while you are away; masters earn more.'
+});
+/* DOM: hediye kartı + ayar düğmeleri (kart index.html'e eklenmeden JS ile kurulur) */
+(function () {
+  var css = document.createElement('style'); css.id = 'emekCss';
+  css.textContent = '#emekScr{z-index:12}#emekScr .card p{font-size:12px;line-height:1.45}';
+  document.head.appendChild(css);
+  var ov = document.createElement('div');
+  ov.className = 'overlay hidden'; ov.id = 'emekScr';
+  ov.innerHTML = '<div class="card"><h2 id="emekT"></h2><p id="emekP"></p><div id="emekRows"></div><button class="go" id="emekGo"></button></div>';
+  document.body.appendChild(ov);
+  document.getElementById('emekGo').onclick = function () { ov.classList.add('hidden'); syncPause(); sfx.tap(); };
+  Array.prototype.forEach.call(document.querySelectorAll('#emekSeg button'), function (b) {
+    b.onclick = function () { emekSet(b.dataset.e === '1'); };
+  });
+})();
+
+/* =========================================================
    BAŞLAT
    ========================================================= */
 resize();
@@ -12956,6 +13477,8 @@ function hook(name, f0) {
   drawHalCounter = hook('drawHalCounter', drawHalCounter);
   drawBin = hook('drawBin', drawBin);
   drawSafe = hook('drawSafe', drawSafe);
+  drawNetBox = hook('drawNetBox', drawNetBox);       /* v2.18-deneme: Emekçi Mod ağ sandığı */
+  drawEmekFx = hook('drawEmekFx', drawEmekFx);
   drawBuilding = hook('drawBuilding', drawBuilding);
   drawSlot = hook('drawSlot', drawSlot);
   drawBuzhane = hook('drawBuzhane', drawBuzhane);
@@ -13345,6 +13868,14 @@ window.BT = {
   closeOverlays: function () {
     el.settingsScreen.classList.add('hidden'); el.menuScreen.classList.add('hidden'); syncPause();
   }
+};
+/* v2.18-deneme — Emekçi Mod test kancaları */
+window.BT.emek = {
+  on: emek, set: function (v) { S.emek = v ? 1 : 0; syncEmekUI(); }, setUI: emekSet, step: function (dt, n) { for (var i = 0; i < (n || 1); i++) gameStep(dt, true); },
+  keys: keys, nets: allNets, boxCap: boxCap, netStand: netStand, vendorSpot: vendorSpot, cutMul: emekCutMul, sellMul: emekSellMul,
+  lvUp: emekLvUp, ustaCost: ustaCost, wage: workerWage, rolePrice: rolePrice, cost: emekCost, gift: emekGiftCheck, cardOpen: emekCardOpen,
+  hamalJob: hamalJob, mgrFill: emekMgrFill, awayMul: emekAwayMul, pullT: pullT, padLvl: padLvl, retCompute: retCompute,
+  K: { PULL_T: PULL_T, BOX_CAP: BOX_CAP, SELL_T: EMEK_SELL_T, IDLE_SELL: EMEK_IDLE_SELL, START: EMEK_START, PRICE: EMEK_PRICE }
 };
 /* test kancaları: uzakta kazanç + başarımlar */
 Object.assign(window.BT, {
