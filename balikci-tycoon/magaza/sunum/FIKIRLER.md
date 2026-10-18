@@ -37,6 +37,8 @@ Her fikir için bir taslak görsel hazırlanacak: `fikir-01.png` … `fikir-10.p
 - **Neden:** İdle/tycoon türünün en sevilen döngüsü (gönder, bekle, ödül). Limanın denize açılan tarafını oynanır yapar.
 - **Taslak görsel:** İskeleye yanaşmış boyalı tekne. Üstünde "SEFERDE 3:42" sayacı, yanında rota kartı (Sinop açıkları · Kalkan ihtimali %20).
 
+- **Güncelleme (kullanıcı notu):** Ağlar, masalar ve tezgâhlar sabit olduğu için sefer malı bu zincire girmez, yoksa ürünler üst üste biner. Av iskeledeki tek bir sefer sandığına gider. Bazı tezgâhlardaki güveç ocağı bu malzemeyi Tarif Defteri'ndeki tariflerle (fikir 10) pişirir ve güveç tezgâhta pahalı satılır. Böylece tekne, tarif ve ocak tek mekanik olur.
+
 ### 4. Hamsi Festivali (her 10 günde bir)
 - **Ne:**
   - Festival günü bayraklar, kemençe ve horon halkası; müşteri iki katı.
@@ -70,6 +72,8 @@ Her fikir için bir taslak görsel hazırlanacak: `fikir-01.png` … `fikir-10.p
 - **Neden:** Bedava pazarlama; her paylaşım oyunun reklamı. Gazete altyapısı (intro, bölüm sonu, Liman Battı) hazır.
 - **Taslak görsel:** Sepya gazete sayfası, ortada oyuncunun renkli liman fotoğrafı, altta "PAYLAŞ" düğmesi ve QR.
 
+- **Güncelleme (kullanıcı notu):** Gazete, 5 dönüm noktasında kendiliğinden çıkar ve oyuncu sevinir: ilk gün sonu, Balık Pazarı açılışı, ilk Haşmet ziyaretini atlatmak, ilk müdür ya da Mutfak açılışı, Bölüm 1 sonu. Altında PAYLAŞ düğmesi olur.
+
 ### 8. Haftalık Liman Ligi
 - **Ne:**
   - Skor tablosu haftalık ligler olur: Bronz Ağ → Gümüş Olta → Altın Çapa.
@@ -77,6 +81,8 @@ Her fikir için bir taslak görsel hazırlanacak: `fikir-01.png` … `fikir-10.p
   - Ödüller kozmetik (tente rengi, tekne bayrağı); denge bozulmaz.
 - **Neden:** Uzun süreli bağlılık. Supabase skor tablosu zaten var.
 - **Taslak görsel:** Lig paneli: madalyalar, oyuncunun sırası (7.), "yükselme çizgisi", kalan süre 2g 4s.
+
+- **Güncelleme (kullanıcı notu):** D4 Komşu Limanlar ile birleşir: lig grubu, kıyı haritasındaki komşu limanlardır ve her oyuncunun kendi limanı haritada görünür. Kıyı gazetesi kazananı manşete çıkarır.
 
 ### 9. Kahvehane söylentileri
 - **Ne:**
