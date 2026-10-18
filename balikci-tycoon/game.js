@@ -7763,17 +7763,6 @@ function barList() {
       if (!fp.length) out.push({ empty: T('noPlot') });
       return out;
     }
-    /* v2.15: Büyük Proje sekmesi kalktı; Ticaret Ofisi ve lisansı meydan binalarıyla birlikte burada */
-    if (M && officeReady() && !M.office) {
-      var okRep = S.rep >= ECON.officeRep;
-      out.push({ id: 'office', ic: '🏛️', t: T('office'), s: T('officeD'), cost: upCost(ECON.officeCost), go: officeBuy,
-        blocked: !okRep, why: okRep ? '' : T('needRep', { n: ECON.officeRep, c: S.rep, l: levelForRep(ECON.officeRep) }) });
-    }
-    if (M && M.office && !M.license) {
-      var okR2 = S.rep >= ECON.licenseRep;
-      out.push({ id: 'lic', ic: '📜', t: T('license'), s: T('licenseD'), cost: upCost(ECON.licenseCost), go: licenseBuy,
-        blocked: !okR2, why: okR2 ? '' : T('needRep', { n: ECON.licenseRep, c: S.rep, l: levelForRep(ECON.licenseRep) }) });
-    }
     for (i = 0; i < SERV.length; i++) (function (d) {
       var lv = sLvl(d.id);
       if (lv > 0) {
@@ -7820,6 +7809,7 @@ function buildHot(sub) {
   var i;
   if (sub === 'up') { for (i = 0; i < AREAS.length; i++) if (!AREAS[i].locked && AREAS[i].lvl < MAXLV && S.cash >= AREAS[i].up[AREAS[i].lvl]) return true; return false; }
   if (sub === 'dev') { for (i = 0; i < SLOTS.length; i++) if (slotActive(SLOTS[i]) && !SLOTS[i].b && S.cash >= 900) return true; return false; }
+  if (sub === 'meydan') return !!(M && ((officeReady() && !M.office && S.rep >= ECON.officeRep && S.cash >= upCost(ECON.officeCost)) || (M.office && !M.license && S.rep >= ECON.licenseRep && S.cash >= upCost(ECON.licenseCost))));
   return false;
 }
 function setBuildSub(sub) { buildSub = sub; barSlot = null; cfId = null; renderBar(); sfx.tap(); helpOnce('bsub_' + sub); }
@@ -7967,8 +7957,7 @@ function barHot() {
   }
   if (undecidedStalls().length) hot.level = true;
   for (i = 0; i < zoneCount(); i++) if (zoneOpen(i) && zoneFree(i) > 0 && S.cash >= hireCost('hamal', i)) hot.level = true;
-  if (M && officeReady() && !M.office && S.rep >= ECON.officeRep && S.cash >= upCost(ECON.officeCost)) hot.serv = true;
-  if (M && M.office && !M.license && S.rep >= ECON.licenseRep && S.cash >= upCost(ECON.licenseCost)) hot.serv = true;
+  if (buildHot('meydan')) hot.build = true;
   for (i = 0; i < SERV.length; i++) {
     var sd = SERV[i], slv = sLvl(sd.id);
     if (slv === 0) { if (!servLockReason(sd) && S.cash >= upCost(sCost(sd.lv[0].c))) hot.serv = true; }
@@ -10766,8 +10755,17 @@ function meydanCards(out) {
   if (WHALL.built) out.push({ id: 'mrhalhamal', ic: ROLES.halhamal.icon, t: NM(ROLES.halhamal.n) + ' (' + halStaff() + '/' + HAL_STAFF + ')',
     s: NM(ROLES.halhamal.d) + ' • ' + money(ROLES.halhamal.wage) + perMin(), cost: hireCost('halhamal', -1), blocked: halStaff() >= HAL_STAFF, why: T('halStaffFull'),
     go: function () { hire('halhamal', false, -1); save(); } });
-  if (!officeBuilt()) out.push({ id: 'moff', ic: '🏛️', t: T('office'), s: T('officeInMeydan'), pick: T('goProj'),
-    go: function () { openBar('serv'); } });
+  /* v2.15.1: Büyük Proje sekmesi kalktı; Ticaret Ofisi ve lisansı meydan binası olarak burada kurulur */
+  if (M && officeReady() && !M.office) {
+    var okRep = S.rep >= ECON.officeRep;
+    out.push({ id: 'moffice', ic: '🏛️', t: T('office'), s: T('officeD'), cost: upCost(ECON.officeCost), go: officeBuy, buyTxt: T('build'),
+      blocked: !okRep, why: okRep ? '' : T('needRep', { n: ECON.officeRep, c: S.rep, l: levelForRep(ECON.officeRep) }) });
+  }
+  if (M && M.office && !M.license) {
+    var okR2 = S.rep >= ECON.licenseRep;
+    out.push({ id: 'mlic', ic: '📜', t: T('license'), s: T('licenseD'), cost: upCost(ECON.licenseCost), go: licenseBuy,
+      blocked: !okR2, why: okR2 ? '' : T('needRep', { n: ECON.licenseRep, c: S.rep, l: levelForRep(ECON.licenseRep) }) });
+  }
 }
 
 /* ---------- çizim ---------- */
@@ -11672,11 +11670,11 @@ var HELP = {
                en: ['BUILD', 'Where you place buildings and decorations. Switch with the sub-tabs on top:', '🔨 Improve: support buildings like the Tea House or Ice Machine on empty build spots. 🏗️ Upgrade: strengthen what you built. 🌺 Decor: decorations raise customer patience. 🏛️ Square: Depot, Fish Hall and Staff Lodge.', 'Each card says what it does; expensive purchases ask for confirmation.'] },
   bar_proj: { ic: '🏛️', tr: ['BÜYÜK PROJE', 'Uzun vadeli yatırımlar. Projeye parça parça para koyarsın; aşamalar tamamlandıkça koy değişir ve itibar kazanırsın.', 'Belli bir itibara ulaşınca Ticaret Ofisi de buradan kurulur: borsa, şirketler ve kontratlar oradadır.'],
               en: ['GRAND PROJECT', 'Long-term investments. You fund a project bit by bit; as stages complete the cove changes and you earn reputation.', 'At a certain reputation the Trade Office is built from here too: the market, companies and contracts live there.'] },
-  bar_serv: { ic: '🏢', tr: ['BİNA', 'Hizmet sahasındaki büyük binalar (restoran, kooperatif, nakliye ofisi…). Her biri kalıcı bir avantaj verir: maaş indirimi, toptancı müşteri, fazla balığı satma gibi.', 'Bir bina seç, sonra haritada boş bir parsel seç. Kurduğun binayı başka parsele ücretsiz taşıyabilirsin. Yeterli itibara ulaşınca Ticaret Ofisi de buradan kurulur.'],
-              en: ['BUILDINGS', 'The big buildings in the service yard (restaurant, cooperative, shipping office…). Each gives a lasting perk: lower wages, wholesale customers, selling surplus fish and more.', 'Pick a building, then pick an empty plot on the map. You can move a building to another plot for free. With enough reputation, the Trade Office is built here too.'] },
+  bar_serv: { ic: '🏢', tr: ['BİNA', 'Hizmet sahasındaki büyük binalar (restoran, kooperatif, nakliye ofisi…). Her biri kalıcı bir avantaj verir: maaş indirimi, toptancı müşteri, fazla balığı satma gibi.', 'Bir bina seç, sonra haritada boş bir parsel seç. Kurduğun binayı başka parsele ücretsiz taşıyabilirsin.'],
+              en: ['BUILDINGS', 'The big buildings in the service yard (restaurant, cooperative, shipping office…). Each gives a lasting perk: lower wages, wholesale customers, selling surplus fish and more.', 'Pick a building, then pick an empty plot on the map. You can move a building to another plot for free.'] },
   bsub_decor: { ic: '🌺', tr: ['DEKOR', 'Süsler koyu güzelleştirir ve müşteri sabrını artırır: müşteriler daha uzun bekler, daha az kaçar.'], en: ['DECOR', 'Decorations make the cove prettier and raise customer patience: they wait longer and leave less.'] },
   bsub_up: { ic: '🏗️', tr: ['YAPI YÜKSELTME', 'Kurduğun destek yapılarını bir üst seviyeye çıkarır; etkileri büyür.'], en: ['BUILDING UPGRADES', 'Takes your support buildings up a level; their effects grow.'] },
-  bsub_meydan: { ic: '🏛️', tr: ['MEYDAN', 'Ortak binalar: Depo (fazla ürünü saklar, tezgâhlara destek taşır), Balık Hali (paletle toptan mal gelir; Hal Hamalı taşır) ve Personel Kulübesi (personel sınırını artırır).'], en: ['SQUARE', 'Shared buildings: Depot (stores surplus, supplies the stalls), Fish Hall (wholesale pallets; the Hall Porter carries them) and Staff Lodge (raises the staff cap).'] },
+  bsub_meydan: { ic: '🏛️', tr: ['MEYDAN', 'Ortak binalar: Depo (fazla ürünü saklar, tezgâhlara destek taşır), Balık Hali (paletle toptan mal gelir; Hal Hamalı taşır) ve Personel Kulübesi (personel sınırını artırır). Yeterli itibara ulaşınca Ticaret Ofisi de buradan kurulur.'], en: ['SQUARE', 'Shared buildings: Depot (stores surplus, supplies the stalls), Fish Hall (wholesale pallets; the Hall Porter carries them) and Staff Lodge (raises the staff cap). With enough reputation the Trade Office is built here too.'] },
   m_liman: { ic: '⚓', tr: ['LİMAN', 'İşletmenin özeti: itibar seviyen ve tavan, para ve maaş gideri, açık bölgeler ve seviyeleri, satış ve kaçan müşteri sayıları.', 'Neyin eksik olduğunu görmek için ilk bakılacak yer.'], en: ['HARBOR', 'Your business at a glance: reputation level and cap, money and wages, open zones and their levels, sales and lost customers.', 'The first place to look when something is missing.'] },
   m_personel: { ic: '👷', tr: ['PERSONEL', 'Çalışanlarının listesi: kim hangi bölgede, hangi işte, dakikada ne kadar maaş alıyor ve ne kadar taşıyabiliyor. Personeli alt çubuktaki YÜKSELTME sekmesinden alırsın.'], en: ['STAFF', 'Your workers: who is in which zone, doing what, their wage per minute and how much they carry. Hire staff from the UPGRADE tab at the bottom.'] },
   m_urunler: { ic: '🐟', tr: ['ÜRÜNLER', 'Satabildiğin balıklar ve fiyatları: fileto ve füme değeri, kesim süresi, verim. Kilitli olanın neden kilitli olduğu yazar.'], en: ['PRODUCTS', 'The fish you can sell and their prices: fillet and smoked value, cutting time, yield. Locked ones say why.'] },
