@@ -17,6 +17,22 @@ Füme hattı: Balık → Kesim → (bant) → Fümehane → Füme paketi (2.4× 
 
 ---
 
+## Deneme (yalnız `deneme-emekci`) — Tarif Defteri + Güveç Ocağı
+Tasarım: `TARIF_TASARIM.md`. Test: `URL=http://localhost:8106/index.html node test-tarif.js` (eski testlerde `HK_TARIF_OFF = 1`).
+Belirsiz yerlerde verilen kararlar:
+- **Ocak kurulabilen tezgâhlar:** İskele (hamsi), Pazar (uskumru), Fümehane (levrek) ve Kapalı Pazar (orkinos). Mutfak tezgâhı zaten Reis Güveci satar; palamutun tezgâhı yok (Palamut Pilaki defterde keşfedilir, şimdilik pişirilmez). 4. ocağın fiyatı 3.600 (1.200 / 1.800 / 2.600'ün devamı); fiyatlara mevcut yapı indirimi (`upCost`) uygulanır.
+- **Ocak yeri:** tezgâhın batısında (tepsinin karşısı, satıcının yanı), ekranda tezgâhın solunda görünsün diye; Pazar ve Fümehane'de güneybatıdaki yapı noktası yüzünden biraz kuzeyde, Kapalı Pazar'da binanın batısında. Ocak + önündeki yemek sehpası `layoutRects`'te 0,84 × 0,84 karo; alınmamış ocağın yeri de ayrılır.
+- **Kiler sınırı malzeme başına:** 50; meydandaki Depo kuruluysa (seviye 1+) 100. Sınırı aşan paket sınıra kadar alınır.
+- **DENE:** her seçili malzemeden en az 1 tane kilerde olmalı. Doğru denemede malzeme harcanmaz; bilinen tarifi tekrar denemek ücretsiz ve ödülsüz. Yanlışta Hacer Teyze, seçime en yakın **bilinmeyen** tarifin ipucunu verir. Balık listesi: açık bölgelerin balıkları.
+- **Ocak durumları:** tarif yok, raf %50 dolu, kiler boş ("Kiler boş" rozeti), fileto yok, Emekçi Mod'da satıcı yok (oyuncu, Tezgâhtar ya da yerini dolduran müdür sayılır), pişiriyor. Sayaç yalnız pişirebilirken ilerler.
+- **Açılış:** HUD'da 📖'nin yanındaki 🍲, dünyada ocağa dokunmak, ya da ocağın başında ~0,8 sn durmak (bir kez; uzaklaşıp gelince yeniden). YAPI › Geliştirme'deki kurulu ocak kartı da defteri açar.
+- **Satış:** müşteri sıradaki malı alır (yemek öne alınmaz); siparişin ödemesi alınan malların ortalama çarpanıyla çarpılır. Sipariş tabelası sıradaki mal yemekse onun simgesini gösterir.
+- **Kayıt:** `S.tarif = { known, kiler, ocak: {tezgâh: {lv: 1, r}}, sandik: {} }`; raftaki yemek mevcut raf kaydında `fileto|hamsi|hamsitava` olarak durur (eski sürüm üçüncü parçayı yok sayar).
+- **Başarımlar:** Mutfağın Sırrı (ilk tarif, +$150), Karadeniz Sofrası (4 tarif, +5 itibar); Reis Güveci sayılmaz.
+- **Çizim:** klasik piksel `game.js`'te; ince mod kancaları `HKA.drawStove(o)` ve `HKA.drawDish(o)`.
+
+---
+
 ## v2.17 — Dekor Düzenleme Modu
 
 - **YAPI › Dekor › ✥ DÜZENLE:** oyun durur, alt çubuk gizlenir, üstte "Süsü sürükle · BİTTİ" şeridi çıkar. Süs konabilecek zemin (kum, meydan, saha, yol kenarı) hafif bir ızgarayla, her taşınabilir süsün altında ayak izi görünür. Süse dokunup sürükle: 0,5 karoluk ızgaraya oturur, ayak izi geçerliyse yeşil, değilse kırmızı; geçersiz yerde bırakılan süs eski yerine döner. Parmakla sürüklerken süs parmağın biraz üstünde durur; boş zemini sürüklemek kamerayı kaydırır, kenara gelince kamera kendiliğinden kayar. Taşımak ücretsiz.
