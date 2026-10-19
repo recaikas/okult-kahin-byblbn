@@ -2903,14 +2903,19 @@ var BRIDGE = { x0: 9.3, y0: 1.9, x1: 15.7, y1: 2.9 };
 function inRect(x, y, r, m) { m = m || 0; return x > r.x0 + m && x < r.x1 - m && y > r.y0 + m && y < r.y1 - m; }
 /* v0.6 — çöp kovaları: elde kalan fazla mal (tezgâh/kuyruk dolu, yanlış tür) atılabilsin.
    Kovanın önünde kısa bir an durunca taşıdığın mallar boşalır (para asla atılmaz). */
-/* v2.14.1 yerleşim kuralı (her kova): hiçbir istasyonun etki alanına girmez (en az 0.2 karo pay; tezgâh önünde mal
-   çöpe gitmez), bölgenin hasırına 2–4 karo, yürüme yolunda (çakışma yok), hiçbir tentenin arkasında kalmaz,
-   kovalar arası en az 3.5 karo. 3. bölgenin içi ekranda hep bir tentenin arkasında kaldığı için kovası sınırın hemen kuzeyinde. */
+/* v2.19-deneme yerleşim kuralı (her kova): iskelenin köşesinde/kenarında durur, açık alanın ortasında değil ("çöp kutuları köşelerde olsun").
+   Hâlâ geçerli: hiçbir istasyonun etki alanına girmez (en az 0.2 karo pay; tezgâh önünde mal çöpe gitmez), yürüme yolunda
+   ve hiçbir yapının/tentenin ekranda arkasında değil (layoutClashes temiz), kovalar arası en az 3.5 karo; Emekçi Mod personel
+   noktaları ve tek aktif istasyon kuralıyla (emekPickActive) çakışmaz. Bölgenin hasırına 2–5,5 karo (eskiden 2–4: köşeye taşımak için gevşetildi).
+   Seçimler (iskele zemini çok dolu; her kovanın istasyon payı 0,2 karoyu zor tutuyor):
+   bölge 1 (iskele): kuzey-doğu köşe, tezgâhın arkası; bölge 2 (pazar): batı kenarı, iki ağın arası (iki köşe de ağ/tezgâh alanında);
+   bölge 3 (fümehane): kuzey-doğu köşe, müdür masasının yanı (tezgâh ve kasa alanları arasındaki tek boşluk; hasıra 5,4 karo);
+   bölge 4 (mutfak): güney kenarı (güney-doğu köşe hasıra 6,9 karo olduğu için olmadı). */
 var BINS = [
-  { z: 0, x: 5.6, y: 4.4, pop: 0 },
-  { z: 1, x: 2.2, y: 9.2, pop: 0 },
-  { z: 2, x: 5.6, y: 10.7, pop: 0 },
-  { z: 3, x: 5.6, y: 18.4, pop: 0 }
+  { z: 0, x: 9.55, y: 0.45, pop: 0 },
+  { z: 1, x: 2.06, y: 9.19, pop: 0 },
+  { z: 2, x: 8.62, y: 12.94, pop: 0 },
+  { z: 3, x: 4.1, y: 23.1, pop: 0 }
 ];
 var binT = 0, trashN = 0, stuckT = 0, stuckHintAt = -99;
 var isTrash = function (it) { return it.k !== 'money'; };
@@ -13808,6 +13813,31 @@ function emekSet(on) {
   save(); renderBar();
   if (on) emekGiftCheck();
 }
+
+/* >>> DENEME-HILE: canlıya AKTARILMAZ >>> */
+/* Yalnız deneme dalı: Ayarlar'da Emekçi Mod'un altında sınırsız basılabilen test parası düğmesi (+50.000 $ · +500 itibar).
+   Düğme JS ile kurulur (index.html'e dokunulmaz). Canlıya aktarırken bu bloğu (başlangıç/bitiş işaretleri arası) tamamen sil. */
+function denemeHileSync() {
+  var note = document.getElementById('emekNote'); if (!note || !note.parentNode) return;
+  var b = document.getElementById('denemeHile');
+  if (!b) {
+    b = document.createElement('button'); b.className = 'alt'; b.id = 'denemeHile'; b.type = 'button';
+    b.style.marginTop = '8px';
+    b.addEventListener('click', denemeHile);
+    note.parentNode.insertBefore(b, note.nextSibling);
+  }
+  b.textContent = lang === 'tr' ? 'DENEME: +50.000 $ · +500 itibar' : 'TEST: +$50,000 · +500 rep';
+}
+function denemeHile() {
+  if (!S.started) return;
+  S.cash += 50000; S.rep += 500;
+  checkRepLevel(); syncHUD(0); sfx.tap();
+  toast(lang === 'tr' ? 'Deneme: +50.000 $ · +500 itibar' : 'Test: +$50,000 · +500 rep');
+  save(); renderBar();
+}
+(function () { var f = syncEmekUI; syncEmekUI = function () { f(); denemeHileSync(); }; })();
+denemeHileSync();
+/* <<< DENEME-HILE <<< */
 
 /* ---------- çizim: ağ sandığı, ⏸ Bekliyor rozeti, çalışma halkası ---------- */
 function emekPushBoxes(push) {

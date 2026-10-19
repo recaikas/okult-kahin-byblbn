@@ -83,3 +83,6 @@ Taşıma:
 
 ## 8. Hayvanlar (aynı dalda, Emekçi Mod'dan sonra)
 Ayrı belgede: `HAYVAN_TASARIM.md`.
+
+## 9. Deneme hilesi
+DENEME-HILE bloğu (test parası) yalnız deneme dalında; ana dala birleştirirken çıkarılmalı. (game.js: `/* >>> DENEME-HILE ... <<< DENEME-HILE <<< */` arası; test-emekci.js: "DENEME-HILE" kontrolü.)
