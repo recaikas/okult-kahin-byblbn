@@ -649,6 +649,7 @@ var ARR = { on: false, sel: -1, drag: null, pan: null, mask: null, chest: false,
 cvs.addEventListener('pointerdown', function (e) {
   cvs.setPointerCapture(e.pointerId);
   if (ARR.on) { arrDown(e); return; }               /* v2.17: düzenleme modunda joystick yok: süs sürükle / kamerayı kaydır */
+  petTapStart(e);                                   /* v2.18-deneme: hayvana dokun → sev */
   if (inputMode !== 'touch') { inputMode = 'touch'; if (el.coach) el.coach.dataset.k = ''; }
   stick.active = true; stick.id = e.pointerId; stick.bx = e.clientX; stick.by = e.clientY; stick.dx = 0; stick.dy = 0;
 });
@@ -660,7 +661,7 @@ cvs.addEventListener('pointermove', function (e) {
   stick.dx = L > 6 ? dx / Rr : 0; stick.dy = L > 6 ? dy / Rr : 0;
 });
 function stickEnd(e) { if (!e || e.pointerId === stick.id) { stick.active = false; stick.id = -1; stick.dx = 0; stick.dy = 0; } }
-cvs.addEventListener('pointerup', function (e) { if (ARR.on) arrUp(e, false); stickEnd(e); });
+cvs.addEventListener('pointerup', function (e) { if (ARR.on) arrUp(e, false); else petTapEnd(e); stickEnd(e); });
 cvs.addEventListener('pointercancel', function (e) { if (ARR.on) arrUp(e, true); stickEnd(e); });
 cvs.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
@@ -1933,7 +1934,7 @@ function decorClearance() {
   }
   return out;
 }
-function decorCount() { var n = 0; for (var i = 0; i < DECOR.length; i++) if (DECOR[i].got) n++; return n; }
+function decorCount() { var n = 0; for (var i = 0; i < DECOR.length; i++) if (DECOR[i].got && !DECOR[i].pet) n++; return n; }   /* v2.18-deneme: hayvan evi süs sabrına sayılmaz */
 
 /* =========================================================
    v0.4 — LİMAN HİZMET BİNALARI & GÖRSEL EVRİM (GDD v0.4 §31-44)
@@ -2381,6 +2382,7 @@ function endDay() {
     lost: day.st.lost, fish: day.st.fish, top: topSeller(), out: worstOut(), spec: (day.st.spec || []).slice(),
     next: isMarketDay(day.n + 1), auc: auc
   };
+  day.last.pet = petDayEnd();                      /* v2.18-deneme: hayvanların mama ücreti */
   if (M && M.office) closeDay();                 /* borsa günü oyun günüyle aynı */
   if (day.n === 1) gzMark('ilkgun', { n: S.served | 0 });   /* v2.16: ilk günün sonu → ertesi sabah gazetesi */
   day.phase = 'summary';
@@ -2698,7 +2700,7 @@ function updateTax(dt) {
 function drawTaxman() {
   var sw = Math.sin(TAX.bob * 0.55) * 0.08;          /* sallana sallana */
   var moving = Math.abs(TAX.vx) + Math.abs(TAX.vy) > 0;
-  var a = { x: TAX.x + sw, y: TAX.y - sw, z: 0, vx: TAX.vx * 0.5, vy: TAX.vy * 0.5, bob: TAX.bob * 0.6, act: 0, carry: [] };
+  var a = { x: TAX.x + sw, y: TAX.y - sw, z: petTaxHop(), vx: TAX.vx * 0.5, vy: TAX.vy * 0.5, bob: TAX.bob * 0.6, act: 0, carry: [] };
   var o = {}; for (var k in TAX_LOOK) o[k] = TAX_LOOK[k];
   o.face = TAX.face; o.walk = moving; o.mood = 1;
   drawPerson(a, o);
@@ -3086,7 +3088,8 @@ function buildSave() {
     day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || '', (day.spec || []).join(','), day.sp || 0, day.normals || 0],
     stalls: counters.map(function (c) { return [c.key, c.open ? 1 : 0]; }),
     workers: workers.map(function (w) { return (w.lv | 0) > 1 ? [w.role, w.zone === undefined ? 0 : w.zone, w.lv | 0] : [w.role, w.zone === undefined ? 0 : w.zone]; }),   /* v2.18-deneme: usta seviyesi (yoksa 1) */
-    emek: S.emek === 0 ? 0 : 1, eg: S.emekGift ? 1 : 0, nb: emekBoxSave(),   /* v2.18-deneme: Emekçi Mod + ağ sandıkları */
+    emek: S.emek === 0 ? 0 : 1, eg: S.emekGift ? 1 : 0, nb: emekBoxSave(), pet: petSave(),   /* v2.18-deneme: hayvanlar */
+      /* v2.18-deneme: Emekçi Mod + ağ sandıkları */
     ret: retSave(),                                   /* uzakta kazanç + başarımlar */
     ev: Object.keys(S.evs || {}),                     /* v1.9: gönderilmiş ilerleme olayları (tekrar gitmesin) */
     road: [S.roadFl | 0, S.roadBb | 0],               /* v1.9.3: yol çiçeklikleri + reklam panoları */
@@ -3228,6 +3231,7 @@ function loadFrom(d) {
     S.evs = {}; if (Array.isArray(d.ev)) d.ev.forEach(function (k) { if (typeof k === 'string' && /^[a-z0-9_]{2,24}$/.test(k)) S.evs[k] = 1; });
     S.gz = gzLoad(d.gz) || gzOld(); gzReset();   /* v2.16: eski kayıtta yok → geçilmiş dönüm noktaları "kaçırıldı" */
     emekBoxLoad(d.nb);
+    petLoad(d.pet);                                 /* v2.18-deneme: eski kayıtta yok → hayvansız */
     return true;
   } catch (e) { return false; }
 }
@@ -3325,6 +3329,7 @@ function anyOverlay() {
   if (fbOpen()) return true;                    /* görüş formu */
   if (retCardOpen()) return true;               /* "Sen yokken…" kartı */
   if (emekCardOpen()) return true;              /* v2.18-deneme: Usta ekip hediyesi */
+  if (petCardOpen()) return true;               /* v2.18-deneme: yeni dost kartı */
   if (storyOpenNow()) return true;              /* v2.4: hikâye ara sahnesi */
   if (el.custScr && !el.custScr.classList.contains('hidden')) return true;   /* v2.5: müşteri defteri */
   if (el.consentScr && !el.consentScr.classList.contains('hidden')) return true;   /* v2.12: veri izni kartı */
@@ -4121,7 +4126,7 @@ function patienceMul(z) { return (1 + decorCount() * 0.02) * (1 + mgrEff(z, 'pat
 function updateCounter(c, dt) {
   if (!c.open) return;                       /* v2.1: kapalı tezgâha müşteri gelmez */
   var custMul = (event ? stormMul(event) : 1) * (1 + 0.06 * storyBuff('sert')) * areaFlow(c.z) * dayCustMul() * (1 + envFlow() + roadFlow()) * rushMul();   /* v1.2: çevre yatırımı; v1.9.3: yol çiçeklikleri + panolar */
-  c.spawnT -= dt * custMul;
+  c.spawnT -= dt * custMul * petFlow(c);         /* v2.18-deneme: hayvanlı tezgâh (+%5 kedi, +%3 köpek; toplam en çok +%10) */
   var qmax = queueMax(c.z), freeIdx = -1, i;
   for (i = 0; i < qmax; i++) if (!c.slots[i]) { freeIdx = i; break; }
   if (c.spawnT <= 0 && freeIdx >= 0) {
@@ -4304,7 +4309,7 @@ function updateCustomers(dt) {
       if (cu.spec && !cu.jobK && cu.spec.indexOf('st_') !== 0 && !(specById(cu.spec) || {}).hidden && cu.sayT >= specHiDur(cu)) {    /* v2.8: konuştu → mesleği bilinir */
         cu.jobK = true; S.jobs = S.jobs || []; if (S.jobs.indexOf(cu.spec) < 0) { S.jobs.push(cu.spec); custNew(); }
       }
-      if (!specTalking(cu)) cu.pat -= dt * custDrain(cu) * (emek() && cu.c && !cu.c._att ? EMEK_IDLE_PAT : 1);   /* v2.18-deneme: satıcısız tezgâhta sabır %60 hızla azalır */   /* konuşurken sabrı azalmaz; v2.9: aura, horon, yorgunluk */
+      if (!specTalking(cu)) cu.pat -= dt * custDrain(cu) * (emek() && cu.c && !cu.c._att ? EMEK_IDLE_PAT : 1) / petPat(cu.c);   /* v2.18-deneme: kedili tezgâhta sabır +%15 */   /* v2.18-deneme: satıcısız tezgâhta sabır %60 hızla azalır */   /* konuşurken sabrı azalmaz; v2.9: aura, horon, yorgunluk */
       cu.mood = clamp(cu.pat / cu.patMax, 0, 1);
       if (cu.pat <= 0) {
         cu.state = 'leave'; cu.happyLeave = false; cu.leaveT = 0; cu.c.slots[cu.slot] = null; shiftQueue(cu.c);
@@ -7318,7 +7323,7 @@ function render() {
   })(SLOTS[i]);
   for (i = 0; i < DECOR.length; i++) (function (d) {
     if (!d.got || d.box || AREAS[d.z].locked || arrLifted(d)) return;   /* v2.17: sandıktaki ve sürüklenen süs burada çizilmez */
-    push(d.x + d.y, function () { if (d.gift) drawGiftDecor(d); else drawDecor(d); });
+    push(d.x + d.y, function () { if (d.pet) drawPetHouse(d); else if (d.gift) drawGiftDecor(d); else drawDecor(d); });   /* v2.18-deneme: hayvan evi */
   })(DECOR[i]);
   pushMeydan(push);
   drawRoadLamps(push);
@@ -7372,6 +7377,7 @@ function render() {
   })(i);
 
   for (i = 0; i < cats.length; i++) (function (ct) { push(ct.x + ct.y + 0.1, function () { drawCat(ct); }); })(cats[i]);
+  petPush(push);                                     /* v2.18-deneme: hayvanlar, sokak hayvanı, martı */
   for (i = 0; i < customers.length; i++) (function (cu) { push(cu.x + cu.y + 0.2, function () { drawCustomer(cu); }); })(customers[i]);
   drawYardFolk(push);
   drawMgrJokers(push);
@@ -7633,6 +7639,7 @@ var barZone = null;                    /* v2.1 — personel alınan bölge */
 var barMgr = null;                     /* v1.3 — müdür seçilen bölge */
 var stallPrompt = false;               /* v0.1 — yeni tezgâh bildirimi bekliyor */
 function closeBar() {
+  barPet = false;
   barTab = null; barSlot = null; cfId = null; servPick = null; barZone = null; barMgr = null;
   el.devpanel.classList.add('hidden');
   document.body.classList.remove('panel');
@@ -7640,6 +7647,7 @@ function closeBar() {
 }
 function openBar(t) {
   if (barTab === t) { closeBar(); return; }
+  barPet = false;
   barTab = t; barSlot = null; cfId = null; servPick = null; barZone = null; barMgr = null;
   el.devpanel.classList.remove('hidden');
   document.body.classList.add('panel');
@@ -7679,6 +7687,7 @@ function barList() {
       });
       return out;
     }
+    if (barPet) return petBarList();                                   /* v2.18-deneme: HAYVANLAR */
     /* --- v2.1: bölge personeli alt listesi --- */
     if (barZone !== null) {
       var zn = barZone;
@@ -7719,6 +7728,7 @@ function barList() {
         pick: free > 0 ? T('choose') : null, blocked: free <= 0, why: T('zoneFull'),
         go: function () { barZone = z2; cfId = null; renderBar(); } });
     })(i);
+    petBarCard(out);                                                   /* v2.18-deneme: HAYVANLAR kartı */
     /* --- v1.3: Füme Makinesi (Fümehane açılınca 1. ve 2. bölgeye) --- */
     FUME_MACH.forEach(function (fm) {
       if (AREAS[fm.z].locked || fumeMachine(fm.z)) return;
@@ -7913,6 +7923,7 @@ function renderBar() {
   for (var i = 0; i < list.length; i++) {
     var c = list[i];
     if (c.empty) { h += '<div class="dempty">' + c.empty + '</div>'; continue; }
+    if (c.raw) { h += c.raw; continue; }             /* v2.18-deneme: hayvan kartı (kendi düğmeleri) */
     var btn;
     if (c.back) btn = '<button class="buy" data-i="' + i + '">' + T('back') + '</button>';
     else if (c.pick) btn = '<button class="buy" data-i="' + i + '">' + c.pick + '</button>';
@@ -7934,7 +7945,7 @@ function renderBar() {
     b.onclick = function () {
       var c = list[parseInt(b.dataset.i, 10)];
       if (!c) return;
-      if (c.back) { barSlot = null; servPick = null; barZone = null; barMgr = null; cfId = null; renderBar(); return; }
+      if (c.back) { barSlot = null; servPick = null; barZone = null; barMgr = null; barPet = false; cfId = null; renderBar(); return; }
       if (c.pick) { c.go(); return; }
       if (c.owned) return;
       if (c.blocked) { sfx.bad(); toast(c.why); return; }
@@ -7945,6 +7956,7 @@ function renderBar() {
       purchase(c.cost, false, c.go);
     };
   });
+  petBind(el.dpCards, renderBar);                  /* v2.18-deneme */
 }
 function renderProjPanel() {
   var extra = '';
@@ -8055,6 +8067,7 @@ function showDayCard() {
   if (L.out) h += dayRow('⚠️', T('dayOut'), NM(FISH[L.out.f].n) + ' ' + fmtDur(L.out.t));
   if (L.auc) h += dayRow('🔔', T('dayAuction'), L.auc.n + ' × ' + money(L.auc.v));
   if (L.spec && L.spec.length) h += dayRow('⭐', T('daySpec'), escH(L.spec.join(', ')));
+  if (L.pet) h += dayRow('🐾', T('petDayRow'), petDayTxt(L.pet));   /* v2.18-deneme */
   if (L.insp) h += dayRow('🕵️', T('dayInsp'), T(L.insp.good ? 'inspGood' : 'inspBad', { v: money(L.insp.v), r: L.insp.r }));
   if (S.company) {
     submitScore(true);
@@ -8298,6 +8311,7 @@ function renderTab() {
       h += row('👷', T('zoneStaff', { n: NM(AREAS[i].n) }), T('mZoneStaff'), zoneStaff(i) + '/' + zoneStaffCap(i));
     }
     if (workers.length) h += row('💸', T('mTotalWage'), '', money(wageTotal()) + perMin());
+    h += petMenuRows();                            /* v2.18-deneme: HAYVANLAR */
   } else if (curTab === 'urunler') {
     for (i = 0; i < LINES.length; i++) {
       var L = LINES[i], F = FISH[L.f];
@@ -8329,6 +8343,7 @@ function renderTab() {
   if (curTab === 'yardim') h += '<button class="alt" id="helpReset" style="margin-top:8px;width:100%">' + T('helpReset') + '</button>';
   el.tabBody.innerHTML = PX(h);
   emekLvBind();                                    /* v2.18-deneme */
+  petBind(el.tabBody, renderTab);
   var hr = document.getElementById('helpReset');
   if (hr) hr.onclick = function () { S.help = {}; sfx.tap(); toast(T('helpResetD')); save(); };
 }
@@ -8539,6 +8554,7 @@ function gameStep(dt, sim) {
   updateCustomers(dt);
   updateTax(dt);                    /* v2.14 — vergi memuru */
   updateGz(dt);                     /* v2.16 — gazeteci çocuk + yerdeki özel sayı */
+  petTick(dt);                      /* v2.18-deneme — hayvanlar */
   updateYardFolk(dt);
   updateMgrJokers(dt);                             /* v1.9.4: yoğun saatte müdürler tezgâhta */                              /* v1.9.2: hizmet sahası yayaları (görsel) */
   updateDay(dt);                    /* v1.2 — gün döngüsü + depo kilidi */
@@ -8639,6 +8655,7 @@ el.halClose.onclick = closeHal;
 el.actBtn.onclick = function () {
   if (el.actBtn.dataset.a === 'hut') { openBar('level'); toast(T('hutWelcome')); }
   else if (el.actBtn.dataset.a === 'hal') openHal();
+  else if (el.actBtn.dataset.a === 'pet') petFeedNear();   /* v2.18-deneme */
 };
 Array.prototype.forEach.call(el.dpSub.children, function (b) { b.onclick = function () { setBuildSub(b.dataset.s); }; });
 el.nameGo.onclick = confirmName;
@@ -11162,9 +11179,11 @@ function syncMeydanBtn() {
   if (!barTab && S.started) {
     if (HUT.lvl && atDoor(player, HUT.door, 1.3)) k = 'hut';
     else if (WHALL.built && atDoor(player, WHALL.door, 1.4)) k = 'hal';
+    else if (petFeedTarget()) k = 'pet';               /* v2.18-deneme: sokak hayvanına mama */
   }
   b.classList.toggle('hidden', !k);
-  if (k && b.dataset.k !== k + lang) { b.dataset.k = k + lang; b.innerHTML = PX(k === 'hut' ? '👷 ' + T('hutBtn') : '🏪 ' + T('halBtn')); }
+  var kk = k + lang + (k === 'pet' ? petBtnTxt() : '');
+  if (k && b.dataset.k !== kk) { b.dataset.k = kk; b.innerHTML = PX(k === 'hut' ? '👷 ' + T('hutBtn') : k === 'hal' ? '🏪 ' + T('halBtn') : petBtnTxt()); }
   b.dataset.a = k || '';
 }
 
@@ -12836,7 +12855,7 @@ function arrDrawTop() {
   arrFoot(g.x, g.y, g.ok ? 'rgba(95,211,122,.45)' : 'rgba(229,83,61,.50)', g.ok ? '#5fd37a' : '#e5533d');
   var o = Object.create(d); o.x = g.x; o.y = g.y;
   ctx.save(); ctx.globalAlpha = 0.92;
-  if (d.gift) drawGiftDecor(o); else drawDecor(o);
+  if (d.pet) drawPetHouse(o); else if (d.gift) drawGiftDecor(o); else drawDecor(o);
   ctx.restore();
 }
 /* her karede: kenara sürüklerken kamera kayar; SANDIĞA KALDIR düğmesi seçili süsün yanında */
@@ -13763,6 +13782,696 @@ Object.assign(STR.en, {
 })();
 
 /* =========================================================
+   v2.18-deneme — HAYVANLAR: kedi + Karabaş köpek (yalnız deneme-emekci dalı; HAYVAN_TASARIM.md)
+   • Edinme: 3. günden itibaren koyda bir sokak kedisi, 5. günden itibaren bir sokak köpeği dolaşır. Yanına gidince
+     "MAMA KOY (15$)" düğmesi çıkar; 3 FARKLI günde mama koyan oyuncuya gelir. Evi (kedi evi / kulübe) Süs Sandığı'na gelir.
+   • Hak: açık bölge başına 1 kedi + 1 köpek (başta 1 + 1). Tezgâh başına en çok 1 kedi ve 1 köpek.
+   • Kedi: atandığı tezgâhın kuyruğunda sabır +%15 (müşteriye kalp), müşteri sıklığı +%5; arada bir tezgâhtan balık çalar.
+     Köpek: atandığı tezgâha martı yanaşamaz (köpeksiz tezgâhtan %3/dk bir fileto martıya gider), sıklık +%3; Haşmet'e havlar.
+     Hayvanlardan gelen toplam sıklık en çok +%10. Keyif ≥60 tam etki, 30–60 yarım; küsen hayvan etkisizdir, koyda dolaşır.
+   • Bakım: gün sonunda mama (kedi 8$, köpek 12$) kasadan düşer; para yetmezse verilmez, keyif −40 (<30 küser).
+     Sevmek +10 (günde en çok 3 kez). Küsen hayvan mama yiyince döner. Hayvan asla ölmez, kalıcı olarak kaybolmaz.
+   • Gündüz tezgâhın önünde; akşam/gece evinde uyur (ev sandıktaysa tezgâhın dibinde kıvrılır). Ev, Dekor Düzenleme
+     Modu ile taşınan bir hediye süsüdür (DECOR: gift + pet).
+   • Kapalıyken (eski testlerde window.HK_PET_OFF) hiçbir şey değişmez; martı kaybı da yalnız sistem açıkken ve
+     sokak köpeğinin geldiği günden sonra (oyuncunun çaresi varken) işler.
+   Kayıt: S.pet = { l: [{k, n, m, c, s, pd, pn}], sd: {cat: [gün…], dog: […]}, nx: {cat, dog}, f: {bayraklar} };
+   ev konumu Dekor kaydında (S.dpos / S.dbox). Eski kayıtta yoktur → hayvansız başlar.
+   ========================================================= */
+var PET_DAY = { cat: 3, dog: 5 };                 /* sokak hayvanı bu günden itibaren dolaşır */
+var PET_FEED = 15, PET_FEED_DAYS = 3, PET_FEE = { cat: 8, dog: 12 };
+var PET_PAT = 0.15, PET_FLOW = { cat: 0.05, dog: 0.03 }, PET_FLOW_CAP = 0.10;
+var PET_GULL_PM = 0.03, PET_STEAL_PM = 0.25;      /* olay / dakika: martı (köpeksiz tezgâh başına), kedi hırsızlığı (kedi başına) */
+var PET_MOOD0 = 80, PET_LOVE = 10, PET_LOVE_N = 3, PET_HUNGRY = 40, PET_FULL = 60, PET_SULK = 30, PET_BACK = 50;
+var PET_MAX = 4;                                   /* tür başına ev sayısı = bölge sayısı */
+var PET_NAMES = { cat: ['Pamuk', 'Duman', 'Tarçın'], dog: ['Karabaş', 'Paşa', 'Çomar'] };
+var PET_COAT = ['#8b8f96', '#3b332c', '#d8b06a', '#a8a29a'];   /* tekir, kara, sarman, boz (koydaki kediler gibi) */
+var PET_ROAM = { cat: { x0: 5.4, x1: 7.4, y0: 4.4, y1: 5.6 }, dog: { x0: 2.9, x1: 4.6, y0: 4.5, y1: 5.6 } };   /* sokak ve küs hayvan: İskele'de */
+var PET_HOUSE = { cat: 'kedievi', dog: 'kulube' };
+var PET_TAX_LINES = [
+  { tr: 'Bu köpek vergiden muaf mı?!', en: 'Is this dog tax-exempt?!' },
+  { tr: 'Bağla şunu, bağla!', en: 'Tie it up, tie it up!' },
+  { tr: 'Hav hav mı? Defterde hav hav diye kalem yok!', en: 'Woof woof? There is no "woof woof" in my ledger!' }
+];
+var STRAY = { cat: null, dog: null }, PGULL = [], PETFX = { bark: '', barkT: 0, hop: 0, n: 0 }, petTap0 = null;
+S.pet = null;                                      /* S0 anlık görüntüsünden önce: yeni oyun hayvansız başlar */
+/* evler: hediye süsü (mağazada satılmaz, Bölüm hedefine ve süs sabrına sayılmaz); varsayılan yer meydanın doğu kumu */
+(function () {
+  for (var i = 0; i < PET_MAX; i++) {
+    DECOR.push({ id: 'kedievi' + i, z: 0, x: 21.75, y: 4.25 + i, gift: 1, buy: false, pet: 'cat', pi: i, cost: 0, n: { tr: 'Kedi Evi', en: 'Cat House' }, icon: '🏠', got: false });
+    DECOR.push({ id: 'kulube' + i, z: 0, x: 21.75, y: 8.25 + i, gift: 1, buy: false, pet: 'dog', pi: i, cost: 0, n: { tr: 'Köpek Kulübesi', en: 'Dog Kennel' }, icon: '🛖', got: false });
+    ARR_HGT['kedievi' + i] = 16; ARR_HGT['kulube' + i] = 20;
+  }
+  DECOR.forEach(function (d) { if (d.hx === undefined) { d.hx = d.x; d.hy = d.y; d.box = false; } });
+})();
+function petsOn() { return !window.HK_PET_OFF; }
+function petNew() { return { l: [], sd: { cat: [], dog: [] }, nx: { cat: 0, dog: 0 }, f: {} }; }
+function petQ() { return S.pet || (S.pet = petNew()); }
+function petCount(k) { var n = 0, l = petQ().l; for (var i = 0; i < l.length; i++) if (l[i].k === k) n++; return n; }
+function petCap(k) { return Math.min(PET_MAX, openAreaCount()); }               /* bölge başına 1 kedi + 1 köpek */
+function petDefName(k, i) { var L = PET_NAMES[k]; return L[i % L.length] + (i >= L.length ? ' ' + (Math.floor(i / L.length) + 1) : ''); }
+function petMake(k, i) {
+  return { k: k, i: i, n: petDefName(k, i), m: PET_MOOD0, c: null, h: PET_HOUSE[k] + i, s: 0, pd: 0, pn: 0,
+    coat: k === 'cat' ? PET_COAT[i % PET_COAT.length] : null, x: 0, y: 0, st: 'sit', t: rnd(1, 3), dir: 1, at: 0,
+    tx: null, ty: null, act: null, love: 0, barkT: 0, eat: 0, carry: null };
+}
+function petNight() { return day.phase !== 'play' || day.t > DAY_LEN * 0.9; }
+function petCtr(p) { var c = p.c ? counterByKey(p.c) : null; return c && !AREAS[c.z].locked ? c : null; }
+/* etki çarpanı: küs ya da tezgâhsız 0, keyif <60 yarım */
+function petEff(p) { if (!petsOn() || p.s || p.m < PET_SULK || !petCtr(p)) return 0; return p.m >= PET_FULL ? 1 : 0.5; }
+function petAt(c, k) { var l = petQ().l; for (var i = 0; i < l.length; i++) if (l[i].k === k && l[i].c === c.key && petEff(l[i]) > 0) return l[i]; return null; }
+function petTaken(key, k, except) { var l = petQ().l; for (var i = 0; i < l.length; i++) if (l[i] !== except && l[i].k === k && l[i].c === key) return l[i]; return null; }
+function petCounters() { return counters.filter(function (c) { return !AREAS[c.z].locked && c.fish; }); }
+/* müşteri sıklığı: tezgâhtaki hayvanların payı, limandaki toplam en çok +%10 */
+function petFlow(c) {
+  if (!petsOn() || !S.pet || !S.pet.l.length) return 1;
+  var l = S.pet.l, tot = 0, own = 0;
+  for (var i = 0; i < l.length; i++) { var e = petEff(l[i]); if (!e) continue; var v = PET_FLOW[l[i].k] * e; tot += v; if (l[i].c === c.key) own += v; }
+  return 1 + (tot > PET_FLOW_CAP ? own * PET_FLOW_CAP / tot : own);
+}
+/* kuyruktaki müşterinin sabrı: kedili tezgâhta +%15 (azalma hızı bölünür) */
+function petPat(c) { if (!c || !S.pet || !S.pet.l.length) return 1; var p = petAt(c, 'cat'); return p ? 1 + PET_PAT * petEff(p) : 1; }
+/* tezgâhın önündeki yer (kedi tezgâhın güney ucunda, köpek arkasında yatar) */
+function petSpot(p, c) {
+  c = c || petCtr(p); if (!c) return null;
+  if (c.key === 'hal') { var tp = trayPos(c); return p.k === 'cat' ? { x: tp.x + 0.25, y: tp.y + 0.75 } : { x: tp.x - 0.7, y: tp.y + 0.95 }; }
+  return p.k === 'cat' ? { x: c.x + 0.42, y: c.y + 1.62 } : { x: c.x - 0.55, y: c.y + 1.62 };
+}
+function petHome(p) { var d = decorById(p.h); return d && d.got && !d.box ? { x: d.x + (p.k === 'cat' ? 0.05 : 0.1), y: d.y + 0.62 } : null; }
+function petRoamPt(k) { var b = PET_ROAM[k]; return { x: rnd(b.x0, b.x1), y: rnd(b.y0, b.y1) }; }
+function petHouseNames() {
+  DECOR.forEach(function (d) { if (d.pet) d.n = { tr: d.pet === 'cat' ? 'Kedi Evi' : 'Köpek Kulübesi', en: d.pet === 'cat' ? 'Cat House' : 'Dog Kennel' }; });
+  petQ().l.forEach(function (p) { var d = decorById(p.h); if (d) d.n = { tr: (p.k === 'cat' ? 'Kedi Evi' : 'Kulübe') + ' · ' + p.n, en: (p.k === 'cat' ? 'Cat House' : 'Kennel') + ' · ' + p.n }; });
+}
+function petName(s) {
+  s = String(s || '').replace(/[<>&"'`\\]/g, '').replace(/\s+/g, ' ').trim().slice(0, 14);
+  return s && !nameBad(s) ? s : '';
+}
+/* ---------- kayıt ---------- */
+function petSave() {
+  var q = petQ();
+  return { l: q.l.map(function (p) { return { k: p.k, n: p.n, m: Math.round(p.m), c: p.c, s: p.s ? 1 : 0, pd: p.pd | 0, pn: p.pn | 0 }; }),
+    sd: { cat: q.sd.cat.slice(), dog: q.sd.dog.slice() }, nx: { cat: q.nx.cat | 0, dog: q.nx.dog | 0 }, f: q.f };
+}
+function petLoad(d) {
+  var q = petNew(), cnt = { cat: 0, dog: 0 };
+  STRAY.cat = null; STRAY.dog = null; PGULL.length = 0; PETFX.bark = ''; PETFX.barkT = 0; PETFX.hop = 0; petTap0 = null;
+  if (d && typeof d === 'object') {
+    ['cat', 'dog'].forEach(function (k) {
+      if (d.sd && Array.isArray(d.sd[k])) d.sd[k].forEach(function (n) { n = parseInt(n, 10); if (n > 0 && q.sd[k].indexOf(n) < 0 && q.sd[k].length < PET_FEED_DAYS - 1) q.sd[k].push(n); });
+      if (d.nx) q.nx[k] = numIn(d.nx[k], 0, 1e6, true);
+    });
+    if (d.f && typeof d.f === 'object' && !Array.isArray(d.f)) for (var fk in d.f) if (/^[a-z]{1,8}$/.test(fk)) q.f[fk] = 1;
+    (Array.isArray(d.l) ? d.l : []).forEach(function (e) {
+      if (!e || (e.k !== 'cat' && e.k !== 'dog') || cnt[e.k] >= PET_MAX) return;
+      var p = petMake(e.k, cnt[e.k]++);
+      p.n = petName(e.n) || p.n; p.m = numIn(e.m, 0, 100, true); p.s = e.s ? 1 : 0;
+      p.pd = numIn(e.pd, 0, 1e6, true); p.pn = numIn(e.pn, 0, PET_LOVE_N, true);
+      p.c = typeof e.c === 'string' && e.c.length < 8 ? e.c : null;
+      q.l.push(p);
+    });
+  }
+  S.pet = q;
+  /* kural: tezgâh var ve açık bölgede; tezgâh başına bir kedi + bir köpek (ikincisi tezgâhsız kalır) */
+  q.l.forEach(function (p) {
+    if (p.c && (!counterByKey(p.c) || petTaken(p.c, p.k, p) && q.l.indexOf(petTaken(p.c, p.k, p)) < q.l.indexOf(p))) p.c = null;
+    var h = decorById(p.h); if (h && !h.got) { h.got = true; h.box = true; h.x = h.hx; h.y = h.hy; }   /* evi eksikse sandığa */
+    petPlace(p);
+  });
+  decorSync(); petHouseNames();
+}
+/* dünyaya yerleştir: gündüz tezgâhında, küsse ya da tezgâhsızsa İskele'de */
+function petPlace(p) {
+  var sp = !p.s && petSpot(p), r = sp || petRoamPt(p.k);
+  p.x = r.x; p.y = r.y; p.tx = null; p.act = null; p.carry = null; p.st = 'sit'; p.t = rnd(1, 4);
+}
+
+/* ---------- sokak hayvanı + bağ kurma ---------- */
+function petStrayTick(dt) {
+  var q = petQ();
+  ['cat', 'dog'].forEach(function (k) {
+    var s = STRAY[k], want = day.n >= PET_DAY[k] && day.n >= (q.nx[k] | 0) && petCount(k) < petCap(k);
+    if (!want) { STRAY[k] = null; return; }
+    if (!s) {
+      var r = petRoamPt(k), i = petCount(k);
+      s = STRAY[k] = { k: k, i: i, stray: 1, coat: k === 'cat' ? PET_COAT[i % PET_COAT.length] : null, x: r.x, y: r.y, st: 'sit', t: rnd(1, 3), dir: 1, at: 0, tx: null, love: 0, eat: 0, barkT: 0 };
+      if (!q.f[k] && S.ctrl === 2) { q.f[k] = 1; toast(T(k === 'cat' ? 'petStrayCat' : 'petStrayDog')); }
+    }
+    petWander(s, dt, PET_ROAM[k]);
+  });
+}
+/* küçük kutuda dolaşma: otur / yürü / uyu */
+function petWander(p, dt, box) {
+  p.at += dt; p.love = Math.max(0, p.love - dt); p.eat = Math.max(0, p.eat - dt); p.barkT = Math.max(0, (p.barkT || 0) - dt);
+  if (p.tx !== null && p.tx !== undefined) { if (petStep(p, p.tx, p.ty, 0.7, dt)) { p.tx = null; p.st = 'sit'; } return; }
+  p.t -= dt;
+  if (p.t > 0) return;
+  p.t = rnd(2.5, 7);
+  if (Math.random() < 0.55) { var r = { x: rnd(box.x0, box.x1), y: rnd(box.y0, box.y1) }; p.tx = r.x; p.ty = r.y; }
+  else p.st = Math.random() < 0.6 ? 'sit' : 'sleep';
+}
+/* düz yürüyüş (İskele kenarında doğuya geçerken önce kıyı hizasına) */
+function petStep(p, tx, ty, spd, dt) {
+  var wx = tx, wy = ty;
+  if ((p.x < 10.05) !== (tx < 10.05)) { wx = 10.35; wy = p.x < 10.05 ? p.y : ty; if (Math.abs(p.x - 10.35) < 0.12) { wx = tx; wy = ty; } }
+  var dx = wx - p.x, dy = wy - p.y, L = Math.hypot(dx, dy);
+  if (L < 0.06) { if (wx === tx && wy === ty) { p.x = tx; p.y = ty; return true; } p.x = wx; p.y = wy; return false; }
+  var v = Math.min(L, spd * dt);
+  p.x += dx / L * v; p.y += dy / L * v; p.st = 'walk';
+  var sx = pX(dx, dy); if (Math.abs(sx) > 0.01) p.dir = sx > 0 ? 1 : -1;
+  return false;
+}
+/* oyuncunun yanındaki beslenebilir hayvan: sokak hayvanı (bugün yemediyse) ya da küsmüş kendi hayvanın */
+function petFeedTarget() {
+  if (!petsOn() || !S.started || !S.pet) return null;
+  var best = null, bd = 2.9, i, q = S.pet;
+  ['cat', 'dog'].forEach(function (k) {
+    var s = STRAY[k]; if (!s || q.sd[k].indexOf(day.n) >= 0) return;
+    var d = dist2(player.x, player.y, s.x, s.y); if (d < bd) { bd = d; best = { p: s, own: false }; }
+  });
+  for (i = 0; i < q.l.length; i++) { var p = q.l[i]; if (!p.s) continue; var d2 = dist2(player.x, player.y, p.x, p.y); if (d2 < bd) { bd = d2; best = { p: p, own: true }; } }
+  return best;
+}
+function petBtnTxt() {
+  var t = petFeedTarget(); if (!t) return '';
+  var n = t.own ? '' : ' ' + (petQ().sd[t.p.k].length + 1) + '/' + PET_FEED_DAYS;
+  return '🍲 ' + T('petFeedBtn', { c: money(PET_FEED) }) + n;
+}
+function petFeedNear() {
+  var t = petFeedTarget(); if (!t) return false;
+  if (S.cash < PET_FEED) { toast(T('noMoney')); sfx.bad(); return false; }
+  S.cash -= PET_FEED;
+  var p = t.p; p.eat = 3.2; p.love = 1.6; p.tx = null; p.st = 'eat'; p.t = 3.4;
+  p.dir = pX(player.x - p.x, player.y - p.y) > 0 ? 1 : -1;
+  addFloat(p.x, p.y - 0.4, '−' + money(PET_FEED), '#ff8a7a');
+  petSfx(p.k);
+  if (t.own) {                                     /* küsmüş hayvan mamayı yiyince döner */
+    p.s = 0; p.m = Math.max(p.m, PET_BACK);
+    toast(T('petBack', { n: p.n })); save(); return true;
+  }
+  var q = petQ(); q.sd[p.k].push(day.n);
+  if (q.sd[p.k].length >= PET_FEED_DAYS) petAdopt(p.k, p);
+  else { toast(T('petFedN', { a: q.sd[p.k].length, b: PET_FEED_DAYS })); save(); }
+  return true;
+}
+/* sahiplenme: ilk boş tezgâha geçer, evi Süs Sandığı'na gelir, kart açılır (ad değiştirilebilir) */
+function petAdopt(k, s) {
+  var q = petQ(), i = petCount(k); if (i >= PET_MAX) return null;
+  var p = petMake(k, i);
+  if (s) { p.x = s.x; p.y = s.y; p.dir = s.dir; p.coat = s.coat || p.coat; } else { var r = petRoamPt(k); p.x = r.x; p.y = r.y; }
+  var fc = petCounters().filter(function (c) { return !petTaken(c.key, k); })[0];
+  p.c = fc ? fc.key : null;
+  q.l.push(p); q.sd[k] = []; q.nx[k] = day.n + 1; STRAY[k] = null;
+  giftDecor(p.h);                                  /* ev: genel hediye kancası → Süs Sandığı (kaydeder) */
+  petHouseNames();
+  petCard(p, true);
+  sfx.star(); save();
+  return p;
+}
+
+/* ---------- sevme ---------- */
+function petLove(p) {
+  if (!p) return false;
+  if (p.pd !== day.n) { p.pd = day.n; p.pn = 0; }
+  p.love = 1.6; petSfx(p.k);
+  if (p.pn >= PET_LOVE_N) { toast(T('petLoveMax', { n: p.n })); return false; }
+  p.pn++; p.m = Math.min(100, p.m + PET_LOVE);
+  return true;
+}
+function petSfx(k) { if (k === 'cat') sfx.meow(); else sfx.woof(); }
+function petTapStart(e) { petTap0 = { id: e.pointerId, x: e.clientX, y: e.clientY, t: Date.now() }; }
+function petTapEnd(e) {
+  var t = petTap0; petTap0 = null;
+  if (!t || t.id !== e.pointerId || paused || !petsOn() || !S.started || !S.pet || !S.pet.l.length) return;
+  if (Date.now() - t.t > 450 || Math.hypot(e.clientX - t.x, e.clientY - t.y) > 12) return;
+  var v = arrVirt(e.clientX, e.clientY), best = null, bd = 1e9, l = S.pet.l;
+  for (var i = 0; i < l.length; i++) {
+    var p = l[i], sx = pX(p.x, p.y) + camOX, sy = pY(p.x, p.y, 0) + camOY;
+    var hw = Math.max(10, 22 / v.k), ht = Math.max(p.k === 'dog' ? 20 : 16, 44 / v.k);
+    if (Math.abs(v.x - sx) < hw && v.y > sy - ht && v.y < sy + 6) { var d = Math.abs(v.x - sx) + Math.abs(v.y - sy + 8); if (d < bd) { bd = d; best = p; } }
+  }
+  if (best) petLove(best);
+}
+
+/* ---------- atama ---------- */
+function petAssign(p, key) {
+  if (!p) return false;
+  var c = key ? counterByKey(key) : null;
+  if (key && (!c || AREAS[c.z].locked || petTaken(key, p.k, p))) return false;   /* tezgâh başına bir kedi + bir köpek */
+  p.c = key || null; p.tx = null; p.act = null;
+  return true;
+}
+function petNextCounter(p) {
+  var cs = petCounters(), n = cs.length, i0 = cs.indexOf(petCtr(p));
+  for (var j = 1; j <= n; j++) { var c = cs[((i0 < 0 ? -1 : i0) + j + n) % n]; if (c && !petTaken(c.key, p.k, p) && c.key !== p.c) return c; }
+  return null;
+}
+function petAssignNext(p) {
+  var c = petNextCounter(p);
+  if (!c) { sfx.bad(); toast(T('petNoCtr')); return false; }
+  petAssign(p, c.key); sfx.tap(); toast(T('petAssigned', { n: p.n, s: petCtrName(c) })); save();
+  return true;
+}
+function petCtrName(c) { return c ? (c.key === 'hal' ? stallName('hal') : NM(AREAS[c.z].n)) + ' · ' + (c.fish ? NM(FISH[c.fish].n) : '') : T('petNoStall'); }
+
+/* ---------- gün sonu: mama ---------- */
+function petDayEnd() {
+  if (!petsOn() || !S.pet || !S.pet.l.length) return null;
+  var r = { fee: 0, hungry: [], back: [], sulk: [] };
+  S.pet.l.forEach(function (p) {
+    var f = PET_FEE[p.k];
+    if (S.cash >= f) {
+      S.cash -= f; r.fee += f;
+      if (p.s) { p.s = 0; p.m = Math.max(p.m, PET_BACK); r.back.push(p.n); }
+    } else {
+      p.m = Math.max(0, p.m - PET_HUNGRY); r.hungry.push(p.n);
+      if (p.m < PET_SULK && !p.s) { p.s = 1; p.act = null; p.carry = null; p.tx = null; r.sulk.push(p.n); }
+    }
+  });
+  if (r.sulk.length) setTimeout(function () { toast(T('petSulkT', { n: r.sulk.join(', ') })); }, 600);
+  return r;
+}
+function petDayTxt(r) {
+  var s = r.fee ? '−' + money(r.fee) : '';
+  if (r.hungry.length) s += (s ? ' · ' : '') + T('petHungry', { n: r.hungry.join(', ') });
+  if (r.back.length) s += (s ? ' · ' : '') + T('petBackS', { n: r.back.join(', ') });
+  return escH(s);
+}
+
+/* ---------- her adım ---------- */
+function petTick(dt) {
+  if (!petsOn() || !S.started) return;
+  var q = petQ(), i;
+  petStrayTick(dt);
+  for (i = 0; i < q.l.length; i++) petMove(q.l[i], dt);
+  petGullTick(dt);
+  petTaxTick(dt);
+  PETFX.barkT = Math.max(0, PETFX.barkT - dt); PETFX.hop = Math.max(0, PETFX.hop - dt);
+}
+function petMove(p, dt) {
+  p.at += dt; p.love = Math.max(0, p.love - dt); p.eat = Math.max(0, p.eat - dt); p.barkT = Math.max(0, p.barkT - dt);
+  var c = petCtr(p);
+  if (p.s || !c) {                                 /* küs / tezgâhsız: İskele'de dolaşır */
+    var bx = PET_ROAM[p.k];
+    p.act = null; p.carry = null;
+    if ((p.tx === null || p.tx === undefined) && (p.x < bx.x0 - 0.3 || p.x > bx.x1 + 0.3 || p.y < bx.y0 - 0.3 || p.y > bx.y1 + 0.3)) { var r = petRoamPt(p.k); p.tx = r.x; p.ty = r.y; }
+    petWander(p, dt, bx); return;
+  }
+  if (p.act === 'steal') { petStealStep(p, c, dt); return; }
+  var night = petNight(), home = night ? petHome(p) : null, g = home || petSpot(p, c);
+  if (dist2(p.x, p.y, g.x, g.y) > 0.01) { petStep(p, g.x, g.y, p.k === 'cat' ? 1.5 : 1.7, dt); return; }
+  if (p.barkT > 0) { p.st = 'bark'; return; }
+  if (p.eat > 0) { p.st = 'eat'; return; }
+  if (night) { p.st = 'sleep'; p.dir = home ? 1 : p.dir; return; }
+  p.t -= dt;
+  if (p.st === 'walk' || p.t <= 0) {
+    p.t = rnd(4, 10);
+    p.st = Math.random() < (p.k === 'cat' ? 0.35 : 0.3) ? 'sleep' : 'sit';
+    p.dir = p.k === 'cat' ? 1 : -1;                /* kedi kuyruğa, köpek yola bakar */
+    if (Math.random() < 0.3) p.dir = -p.dir;
+  }
+  /* kedi: arada bir tezgâhtan balık çalar (etki varken, satış saatinde) */
+  if (p.k === 'cat' && petEff(p) > 0 && day.phase === 'play' && c.buffer.length >= 2 && Math.random() < dt * PET_STEAL_PM / 60) {
+    p.act = 'steal'; p.ph = 0; p.t = 0;
+  }
+}
+function petStealStep(p, c, dt) {
+  var sp = petSpot(p, c);
+  if (p.ph === 0) {                                /* tezgâha sinsice */
+    if (petStep(p, c.x + 0.62, c.y + 0.55, 2.2, dt)) {
+      var j = -1; for (var k = c.buffer.length - 1; k >= 0 && j < 0; k--) if (c.buffer[k].k === 'fileto') j = k;
+      if (j < 0) j = c.buffer.length - 1;
+      if (j < 0) { p.act = null; return; }
+      p.carry = c.buffer.splice(j, 1)[0]; p.ph = 1; sfx.meow();
+      toast(T('petSteal', { n: p.n, f: petFishWord(p.carry.f) }));
+      addFloat(c.x + 0.6, c.y + 0.2, '−1', '#ff8a7a');
+    }
+  } else if (p.ph === 1) {                         /* kaçar */
+    if (petStep(p, sp.x - 1.4, sp.y + 1.1, 2.6, dt)) { p.ph = 2; p.t = 3.6; p.st = 'eat'; }
+  } else {                                         /* afiyetle yer, sonra yerine döner */
+    p.st = 'eat'; p.t -= dt;
+    if (p.t <= 0) { p.carry = null; p.act = null; p.t = rnd(3, 6); }
+  }
+}
+function petFishWord(f) { var n = FISH[f] ? NM(FISH[f].n) : ''; return lang === 'tr' ? n.toLocaleLowerCase('tr') : n.toLowerCase(); }
+
+/* ---------- martı: köpeksiz tezgâhtan ara sıra bir fileto kapar (görsel: uçup alır) ---------- */
+function petGullOK() { return petsOn() && S.started && S.ctrl === 2 && day.n >= PET_DAY.dog && day.phase === 'play'; }
+function petGullTick(dt) {
+  var i;
+  if (petGullOK()) for (i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (!c.open || AREAS[c.z].locked || !c.buffer.length || c._pg) continue;
+    if (Math.random() < dt * PET_GULL_PM / 60) petGullGo(c);
+  }
+  for (i = PGULL.length - 1; i >= 0; i--) {
+    var g = PGULL[i], tx = g.c.x + 0.3, ty = g.c.y + 0.2;
+    g.f += dt * 9; g.t += dt;
+    if (g.ph === 0) {                              /* denizden süzülür */
+      var dx = tx - g.x, dy = ty - g.y, L = Math.hypot(dx, dy), v = 4.2 * dt;
+      g.z = Math.max(16, g.z - dt * 18);
+      var dog = petAt(g.c, 'dog');
+      if (dog && L < 3.2 && !g.chk) {              /* köpek havlar, martı kaçar (yarım keyifte yarı yarıya) */
+        g.chk = 1;
+        if (Math.random() < petEff(dog)) { g.ph = 2; dog.barkT = 1.6; dog.dir = pX(g.x - dog.x, g.y - dog.y) > 0 ? 1 : -1; sfx.woof(); continue; }
+      }
+      if (L <= v) {
+        g.x = tx; g.y = ty; g.ph = 1; g.t = 0;
+        if (g.c.buffer.length && !(dog && g.chk === 0)) {
+          var j = g.c.buffer.length - 1; g.it = g.c.buffer.splice(j, 1)[0];
+          addFloat(g.c.x, g.c.y - 0.6, '−1', '#ff8a7a'); sfx.gull();
+          var q = petQ(); if (!q.f.gull) { q.f.gull = 1; toast(T('petGullT')); }
+        }
+      } else { g.x += dx / L * v; g.y += dy / L * v; }
+    } else if (g.ph === 1) { if (g.t > 0.35) g.ph = 2; }
+    else {                                         /* kaçar */
+      g.x -= dt * 4.6; g.y -= dt * 3.2; g.z += dt * 30;
+      if (g.z > 90) { g.c._pg = 0; PGULL.splice(i, 1); }
+    }
+  }
+}
+function petGullGo(c) {
+  c._pg = 1;
+  PGULL.push({ c: c, x: c.x - 7.5, y: c.y - 4.5, z: 58, ph: 0, t: 0, f: 0, it: null, chk: 0 });
+}
+
+/* ---------- Haşmet Bey'e havlama ---------- */
+function petTaxTick(dt) {
+  if (!TAX.on || TAX.x === undefined) return;
+  var l = petQ().l, tag = (TAX.wk | 0) + ':' + day.n;
+  for (var i = 0; i < l.length; i++) {
+    var p = l[i]; if (p.k !== 'dog' || !petEff(p) || p.bk === tag) continue;
+    if (dist2(TAX.x, TAX.y, p.x, p.y) > 3.6 * 3.6) continue;          /* memur kuyruk başında durur: ~3 karo */
+    p.bk = tag; p.barkT = 2.6; p.dir = pX(TAX.x - p.x, TAX.y - p.y) > 0 ? 1 : -1;
+    PETFX.bark = NM(PET_TAX_LINES[((TAX.wk | 0) + PETFX.n) % PET_TAX_LINES.length]); PETFX.n++;
+    PETFX.barkT = 3.6; PETFX.hop = 0.7; PETFX.who = p.n;
+    sfx.woof(); setTimeout(function () { sfx.woof(); }, 260);
+  }
+}
+function petTaxHop() { return PETFX.hop > 0 ? Math.abs(Math.sin((0.7 - PETFX.hop) * 9)) * 7 : 0; }
+
+/* ---------- çizim ---------- */
+function petLook(p) {
+  return { k: p.k, x: p.x, y: p.y, dir: p.dir, st: p.st, own: !p.stray, stray: !!p.stray, coat: p.coat, tabby: p.coat === PET_COAT[0] || p.coat === PET_COAT[3],
+    n: p.n || '', t: p.at, carry: p.carry || (p.st === 'eat' && !p.carry ? { k: 'bowl' } : null), love: p.love, sulk: !!p.s };
+}
+function petPush(push) {
+  if (!petsOn() || !S.started || !S.pet) return;
+  var l = S.pet.l, i;
+  for (i = 0; i < l.length; i++) (function (p) { push(p.x + p.y + 0.12, function () { drawPet(petLook(p)); petOver(p); }); })(l[i]);
+  ['cat', 'dog'].forEach(function (k) { var s = STRAY[k]; if (s) push(s.x + s.y + 0.12, function () { drawPet(petLook(s)); petOver(s); }); });
+  for (i = 0; i < PGULL.length; i++) (function (g) { push(g.x + g.y + 0.6, function () { petDrawGull(g); }); })(PGULL[i]);
+  /* kedili tezgâhın kuyruğunda arada bir kalp */
+  for (i = 0; i < counters.length; i++) {
+    var c = counters[i], cat = petAt(c, 'cat'); if (!cat) continue;
+    for (var j = 0; j < c.slots.length; j++) (function (cu, j) {
+      if (!cu || cu.state !== 'wait' || cu.mood < 0.45 || ((gameT * 0.45 + j * 0.61) % 3.4) > 0.8) return;
+      push(cu.x + cu.y + 0.3, function () { drawEmote(cu.x, cu.y, 42, 'love'); });
+    })(c.slots[j], j);
+  }
+}
+/* başının üstü: kalp, ad, küs simgesi, havlama */
+function petOver(p) {
+  var near = dist2(player.x, player.y, p.x, p.y) < 7;
+  if (p.love > 0) drawEmote(p.x, p.y, (p.k === 'dog' ? 26 : 22) + (1.6 - p.love) * 6, 'love');
+  else if (p.s && phase2(gameT, 0.8)) drawEmote(p.x, p.y, p.k === 'dog' ? 26 : 22, 'angry');
+  if (p.barkT > 0 && phase2(gameT, 5)) uiText(p.x, p.y, 30, T('petWoof'), '#ffe9a8', 10, 1, 10, -4);
+  if (p.stray && near) uiLabel(p.x, p.y, p.k === 'dog' ? 30 : 26, T(p.k === 'cat' ? 'petStrayC' : 'petStrayD') + ' ' + (petQ().sd[p.k].length) + '/' + PET_FEED_DAYS, '#ffe9a8');
+  else if (!p.stray && near && !p.love) uiLabel(p.x, p.y, p.k === 'dog' ? 30 : 26, (p.k === 'cat' ? '🐱 ' : '🐶 ') + p.n, '#f4e9d2', 0.9);
+  if (!p.stray && p.k === 'dog' && PETFX.barkT > 0 && PETFX.who === p.n && TAX.on) uiQ.push({ t: 4, x: TAX.x, y: TAX.y, z: 76, s: '“' + PETFX.bark + '”', c: '#ffe2c8', a: 1 });
+}
+/* klasik piksel: parçalar 1 px koyu kontur + 3 ton (açık / ana / koyu). parça: [x, y, w, h, renk, konturYok]; yüz sağa */
+function petBlit(sx, sy, d, P) {
+  var i, q;
+  for (i = 0; i < P.length; i++) { q = P[i]; if (q[5]) continue; px(d > 0 ? sx + q[0] - 1 : sx - q[0] - q[2] - 1, sy + q[1] - 1, q[2] + 2, q[3] + 2, PAL.edge); }
+  for (i = 0; i < P.length; i++) { q = P[i]; px(d > 0 ? sx + q[0] : sx - q[0] - q[2], sy + q[1], q[2], q[3], q[4]); }
+}
+var PET_PINK = '#d98a8a', PET_RED = '#c62828', PET_EYE = '#d8c84a';
+function petCatParts(o) {
+  var a = o.coat || PET_COAT[0], L = shade(a, 26), D = shade(a, -28), P, f = phase2(o.t, 6), own = o.own, st = o.st;
+  if (st === 'sleep') {
+    P = [[-5, -5, 10, 5, a], [3, -7, 4, 4, a], [3, -9, 1, 2, a], [6, -9, 1, 2, a],
+      [-4, -5, 7, 1, L, 1], [-5, -1, 10, 1, D, 1], [-3, -2, 7, 1, D, 1], [4, -7, 2, 1, L, 1], [4, -5, 2, 1, D, 1]];
+    if (o.tabby) P.push([-3, -4, 1, 2, D, 1], [-1, -4, 1, 2, D, 1], [1, -4, 1, 2, D, 1]);
+    if (own) P.push([3, -4, 1, 2, PET_RED, 1]);
+    return P;
+  }
+  if (st === 'walk' || st === 'eat') {
+    var lg = st === 'eat' ? [4, 4, 4, 4] : f ? [4, 3, 3, 4] : [3, 4, 4, 3], hy = st === 'eat' ? 3 : 0;
+    P = [[-6, -12 + (f ? 0 : 1), 1, 5, a], [-5, -8, 9, 4, a],
+      [-4, -4, 1, lg[0], a], [-2, -4, 1, lg[1], a], [1, -4, 1, lg[2], a], [3, -4, 1, lg[3], a],
+      [3, -11 + hy, 5, 4, a], [3, -13 + hy, 2, 2, a], [6, -13 + hy, 1, 2, a], [8, -9 + hy, 1, 1, PET_PINK],
+      [-4, -8, 7, 1, L, 1], [-4, -5, 7, 1, D, 1], [4, -11 + hy, 3, 1, L, 1], [3, -12 + hy, 1, 1, PET_PINK, 1],
+      [6, -10 + hy, 1, 1, PAL.edge, 1], [3, -8 + hy, 1, 1, D, 1]];
+    if (o.tabby) P.push([-3, -7, 1, 2, D, 1], [-1, -7, 1, 2, D, 1], [1, -7, 1, 2, D, 1]);
+    if (own) P.push([3, -8 + hy, 2, 1, PET_RED, 1]);
+    return P;
+  }
+  /* oturuş (bark yok: kedi için oturuş) */
+  var tw = phase2(o.t, 1.2);
+  P = [[-6, -4 - tw, 1, 3, a], [-5, -2, 3, 1, a], [-4, -8, 6, 7, a], [0, -3, 1, 3, a], [2, -3, 1, 3, a],
+    [0, -13, 6, 5, a], [0, -15, 2, 2, a], [4, -15, 2, 2, a], [6, -10, 1, 1, PET_PINK],
+    [-4, -8, 1, 7, D, 1], [0, -7, 2, 5, L, 1], [-3, -2, 4, 1, D, 1], [0, -1, 1, 1, L, 1], [2, -1, 1, 1, L, 1],
+    [1, -13, 4, 1, L, 1], [1, -14, 1, 1, PET_PINK, 1], [4, -14, 1, 1, PET_PINK, 1], [0, -9, 1, 1, D, 1],
+    [3, -11, 2, 1, PET_EYE, 1], [4, -11, 1, 1, PAL.edge, 1]];
+  if (o.tabby) P.push([-2, -7, 2, 1, D, 1], [-2, -5, 2, 1, D, 1], [2, -12, 1, 1, D, 1]);
+  if (own) P.push([0, -8, 5, 1, PET_RED, 1], [3, -7, 1, 1, PAL.gold, 1]);
+  return P;
+}
+var DOG_C = { a: '#2a2320', L: '#4a3f37', D: '#151010', t: '#b06a32', tL: '#cf8a4a', tD: '#7e4720' };
+function petDogParts(o) {
+  var C = DOG_C, P, f = phase2(o.t, 6), own = o.own, st = o.st, wag = phase2(o.t, 4);
+  if (st === 'sleep') {
+    P = [[-8, -2, 4, 1, C.a], [-7, -6, 12, 6, C.a], [3, -7, 6, 4, C.a], [8, -5, 3, 2, C.t], [4, -2, 4, 2, C.t],
+      [4, -6, 2, 4, C.D], [-6, -6, 9, 1, C.L, 1], [-7, -1, 12, 1, C.D, 1], [6, -6, 1, 1, C.t, 1], [7, -5, 1, 1, C.L, 1], [10, -5, 1, 1, PAL.edge, 1]];
+    if (own) P.push([3, -4, 1, 2, PET_RED, 1]);
+    return P;
+  }
+  if (st === 'walk') {
+    var lg = f ? [6, 5, 5, 6] : [5, 6, 6, 5];
+    P = [wag ? [-8, -13, 2, 1, C.a] : [-8, -12, 1, 2, C.a], [-7, -12, 1, 2, C.a], [-6, -10, 11, 5, C.a],
+      [-5, -6, 1, lg[0], C.t], [-3, -6, 1, lg[1], C.t], [2, -6, 1, lg[2], C.t], [4, -6, 1, lg[3], C.t],
+      [4, -15, 6, 5, C.a], [9, -13, 3, 3, C.t], [5, -14, 2, 5, C.D],
+      [-5, -10, 8, 1, C.L, 1], [-4, -6, 7, 1, C.tD, 1], [5, -15, 3, 1, C.L, 1], [10, -13, 1, 1, C.tL, 1],
+      [11, -13, 1, 1, PAL.edge, 1], [8, -14, 1, 1, C.t, 1], [8, -13, 1, 1, PAL.edge, 1], [10, -11, 2, 1, C.tD, 1]];
+    if (own) P.push([4, -11, 2, 1, PET_RED, 1]);
+    return P;
+  }
+  var bark = st === 'bark' && phase2(o.t, 5), hu = bark ? 1 : 0;
+  P = [wag && st !== 'eat' ? [-9, -3, 3, 1, C.a] : [-9, -2, 3, 1, C.a], [-6, -10, 8, 9, C.a], [0, -9, 3, 7, C.t],
+    [0, -2, 2, 2, C.t], [3, -3, 2, 3, C.t], [-5, -2, 3, 1, C.tD, 1],
+    [1, -17 - hu, 7, 6, C.a], [6, -14 - hu, 4, 3, C.t], [2, -16 - hu, 2, 5, C.D],
+    [-5, -10, 5, 1, C.L, 1], [-6, -9, 1, 7, C.D, 1], [1, -8, 1, 4, C.tL, 1], [0, -1, 1, 1, C.tL, 1], [3, -1, 1, 1, C.tL, 1],
+    [3, -17 - hu, 4, 1, C.L, 1], [7, -14 - hu, 2, 1, C.tL, 1], [9, -14 - hu, 1, 1, PAL.edge, 1],
+    [5, -16 - hu, 1, 1, C.t, 1], [5, -15 - hu, 1, 1, PAL.edge, 1], [7, -12 - hu, 2, 1, C.tD, 1]];
+  if (bark) P.push([6, -11, 3, 1, C.t], [6, -12, 3, 1, '#6a1a14', 1]);   /* ağız açık */
+  if (st === 'eat') P[6] = [1, -14, 7, 6, C.a];
+  if (own) P.push([2, -11 + (st === 'eat' ? 2 : 0), 5, 1, PET_RED, 1], [4, -10 + (st === 'eat' ? 2 : 0), 1, 1, PAL.gold, 1]);
+  return P;
+}
+function drawPet(o) {
+  var sx = R(pX(o.x, o.y)), sy = R(pY(o.x, o.y, 0)), d = o.dir > 0 ? 1 : -1;
+  shadow(o.x, o.y, o.k === 'dog' ? 0.5 : 0.36);
+  if (o.carry && o.carry.k === 'bowl') {           /* mama kabı */
+    var bx = sx + d * (o.k === 'dog' ? 11 : 9);
+    px(bx - 3, sy - 2, 7, 2, PAL.edge); px(bx - 2, sy - 3, 5, 1, '#c9952f'); px(bx - 2, sy - 2, 5, 1, '#8a5a30');
+  } else if (o.carry) {                           /* çalınan balık ağızda */
+    if (o.st === 'eat') drawItem(o.carry, sx + d * 9, sy - 3); else drawItem(o.carry, sx + d * 8, sy - 11);
+  }
+  petBlit(sx, sy, d, o.k === 'dog' ? petDogParts(o) : petCatParts(o));
+  if (o.st === 'sleep' && phase2(gameT, 0.5)) { px(sx - d * 5, sy - 10, 2, 1, PAL.cream); px(sx - d * 6, sy - 13, 1, 1, PAL.cream); }
+}
+/* kedi evi (ahşap, kiremit çatı, yuvarlak kapı) ve kulübe (tahta, kemerli kapı, kemik) */
+function drawPetHouse(d) {
+  var dog = d.pet === 'dog', hw = dog ? 0.4 : 0.31, hh = dog ? 0.34 : 0.27, h = dog ? 12 : 8, rh = dog ? 7 : 6;
+  var x0 = d.x - hw, y0 = d.y - hh, x1 = d.x + hw, y1 = d.y + hh, cx = d.x;
+  shadow(d.x, d.y + 0.1, dog ? 0.7 : 0.55);
+  var wt = dog ? '#9a6a3c' : '#c9975f', wl = dog ? '#8a5a30' : '#ab7a48', wr = dog ? '#6f4526' : '#8a5f36';
+  isoBox(x0, y0, x1 - x0, y1 - y0, 0, h, wt, wl, wr);
+  /* tahta çizgileri */
+  for (var k = 3; k < h; k += 3) { isoLine(x0, y1, x1, y1, k, 'rgba(60,34,16,.35)', 1); isoLine(x1, y0, x1, y1, k, 'rgba(60,34,16,.3)', 1); }
+  /* çatı: mahya y ekseni boyunca, alın üçgeni ön (sol) yüzde */
+  var ov = 0.07;
+  quad([[pX(x0, y1, 0), pY(x0, y1, h)], [pX(x1, y1, 0), pY(x1, y1, h)], [pX(cx, y1, 0), pY(cx, y1, h + rh)]], wl);
+  quad([[pX(x0 - ov, y0 - ov), pY(x0 - ov, y0 - ov, h - 1)], [pX(x0 - ov, y1 + ov), pY(x0 - ov, y1 + ov, h - 1)], [pX(cx, y1 + ov), pY(cx, y1 + ov, h + rh)], [pX(cx, y0 - ov), pY(cx, y0 - ov, h + rh)]], PAL.tileDark);
+  quad([[pX(cx, y0 - ov), pY(cx, y0 - ov, h + rh)], [pX(cx, y1 + ov), pY(cx, y1 + ov, h + rh)], [pX(x1 + ov, y1 + ov), pY(x1 + ov, y1 + ov, h - 1)], [pX(x1 + ov, y0 - ov), pY(x1 + ov, y0 - ov, h - 1)]], PAL.tile);
+  isoLine(cx, y0 - ov, cx, y1 + ov, h + rh, PAL.tileLite, 1);
+  for (var r = 0.25; r < 1; r += 0.25) isoLine(lerp(cx, x1 + ov, r), y0 - ov, lerp(cx, x1 + ov, r), y1 + ov, lerp(h + rh, h - 1, r), PAL.tileDark, 1);
+  isoLine(x0 - ov, y1 + ov, cx, y1 + ov, h - 1, PAL.edge, 1); isoLine(cx, y1 + ov, x1 + ov, y1 + ov, h - 1, PAL.edge, 1);
+  /* kapı */
+  var dx = R(pX(cx, y1)), dy = R(pY(cx, y1, 0));
+  if (dog) { px(dx - 3, dy - 8, 6, 8, '#1a120c'); px(dx - 2, dy - 9, 4, 1, '#1a120c'); px(dx - 3, dy - 1, 6, 1, '#3a2616'); }
+  else { px(dx - 2, dy - 6, 4, 4, '#1a120c'); px(dx - 1, dy - 7, 2, 1, '#1a120c'); px(dx - 1, dy - 2, 2, 1, '#1a120c'); px(dx - 1, dy - 3, 2, 1, '#c25a4a'); }
+  /* ön: kap ve kemik / balık kılçığı */
+  var fx = R(pX(d.x + 0.42, d.y + 0.5)), fy = R(pY(d.x + 0.42, d.y + 0.5, 0));
+  px(fx - 3, fy - 2, 6, 2, PAL.edge); px(fx - 2, fy - 3, 4, 1, PAL.brass); px(fx - 2, fy - 2, 4, 1, '#8a5a30');
+  if (dog) { px(fx - 9, fy - 1, 4, 1, PAL.cream); px(fx - 10, fy - 2, 1, 1, PAL.cream); px(fx - 10, fy, 1, 1, PAL.cream); px(fx - 5, fy - 2, 1, 1, PAL.cream); px(fx - 5, fy, 1, 1, PAL.cream); }
+  else { px(fx - 9, fy - 1, 4, 1, '#d8dde0'); px(fx - 8, fy - 2, 1, 3, '#d8dde0'); px(fx - 6, fy - 2, 1, 3, '#d8dde0'); }
+}
+/* martı (fileto kapan): klasik martı, alçalabilir; kaptığı fileto ayağında */
+function petDrawGull(g) {
+  var sx = R(pX(g.x, g.y)), sy = R(pY(g.x, g.y, g.z)), ph = Math.floor(g.f * 1.4) & 3;
+  var up = ph === 0 ? -2 : ph === 2 ? 2 : 0;
+  ctx.save(); ctx.globalAlpha = 0.25; px(R(pX(g.x, g.y)) - 3, R(pY(g.x, g.y, 0)), 7, 1, '#14303c'); ctx.restore();
+  px(sx - 6, sy - 1 + up, 5, 2, PAL.edge); px(sx + 2, sy - 1 + up, 5, 2, PAL.edge); px(sx - 2, sy - 2, 5, 4, PAL.edge);
+  px(sx - 5, sy + up, 4, 1, '#ffffff'); px(sx + 2, sy + up, 4, 1, '#ffffff');
+  px(sx - 1, sy - 1, 3, 2, '#f0f0f0'); px(sx - 1, sy + 1, 3, 1, '#c9d2d6'); px(sx + 2, sy - 1, 2, 1, '#e0a45a');
+  if (g.it) drawItem(g.it, sx, sy + 7);
+}
+
+/* ---------- arayüz: YÜKSELT › Personel › HAYVANLAR ---------- */
+var barPet = false;
+function petMoodTxt(p) { return p.s || p.m < PET_SULK ? T('petMoodS') : p.m >= PET_FULL ? T('petMoodH') : T('petMoodM'); }
+function petMoodCol(p) { return p.s || p.m < PET_SULK ? '#e5533d' : p.m >= PET_FULL ? '#5fd37a' : '#ffc94a'; }
+function petHouseTxt(p) { var d = decorById(p.h); return d && d.got && !d.box ? T('petHouseOK') : T('petHouseBox'); }
+function petBarCard(out) {
+  if (!petsOn()) return;
+  var q = petQ(), n = q.l.length;
+  out.push({ id: 'pets', ic: '🐾', t: T('petHead') + (n ? ' ×' + n : ''),
+    s: n ? q.l.map(function (p) { return p.n + ' ' + Math.round(p.m); }).join(' · ') : T('petHow'),
+    pick: T('petOpen'), go: function () { barPet = true; cfId = null; renderBar(); sfx.tap(); } });
+}
+function petBarList() {
+  var q = petQ(), out = [{ id: 'back', ic: '↩', t: T('back'), s: T('petHead'), back: true }];
+  q.l.forEach(function (p, i) { out.push({ id: 'pt' + i, raw: petCardHTML(p, i) }); });
+  ['cat', 'dog'].forEach(function (k) {
+    if (!STRAY[k]) return;
+    out.push({ id: 'ps' + k, raw: '<div class="dcard petCard"><span class="ic">' + (k === 'cat' ? '🐱' : '🐶') + '</span><b>' + escH(T(k === 'cat' ? 'petStrayC' : 'petStrayD')) + '</b><small>' +
+      escH(T('petStrayInfo', { a: q.sd[k].length, b: PET_FEED_DAYS, c: money(PET_FEED) })) + '</small><div class="petBar"><i style="width:' + Math.round(q.sd[k].length / PET_FEED_DAYS * 100) + '%;background:#ffc94a"></i></div></div>' });
+  });
+  out.push({ id: 'pr', raw: '<div class="dcard petCard"><span class="ic">📋</span><b>' + escH(T('petRuleT')) + '</b><small>' +
+    escH(T('petRule', { a: petCount('cat'), b: petCap('cat'), c: petCount('dog'), d: petCap('dog'), e: money(PET_FEE.cat), f: money(PET_FEE.dog) })) + '</small></div>' });
+  if (!q.l.length) out.splice(1, 0, { empty: T('petNone') });
+  return out;
+}
+function petCardHTML(p, i) {
+  var c = petCtr(p);
+  return '<div class="dcard petCard" data-pi="' + i + '"><span class="ic">' + (p.k === 'cat' ? '🐱' : '🐶') + '</span><b>' + escH(p.n) +
+    ' <button class="pren" data-pa="ad" data-pi="' + i + '" aria-label="' + escH(T('petRename')) + '">✎</button></b><small>' +
+    escH((c ? petCtrName(c) : T('petNoStall')) + ' · ' + petMoodTxt(p) + ' · ' + petHouseTxt(p)) + '</small>' +
+    '<div class="petBar" title="' + Math.round(p.m) + '"><i style="width:' + Math.round(p.m) + '%;background:' + petMoodCol(p) + '"></i></div>' +
+    '<div class="petBtns"><button class="buy pbtn" data-pa="ata" data-pi="' + i + '">' + escH(T('petAssign')) + '</button>' +
+    '<button class="buy pbtn" data-pa="sev" data-pi="' + i + '">' + escH(T('petLoveBtn')) + '</button></div></div>';
+}
+function petBind(root, after) {
+  if (!root) return;
+  Array.prototype.forEach.call(root.querySelectorAll('[data-pa]'), function (b) {
+    b.onclick = function (e) {
+      if (e) e.stopPropagation();
+      var p = petQ().l[parseInt(b.dataset.pi, 10)]; if (!p) return;
+      var a = b.dataset.pa;
+      if (a === 'ata') petAssignNext(p);
+      else if (a === 'sev') { if (petLove(p)) toast(T('petLoved', { n: p.n })); }
+      else if (a === 'ad') { petCard(p, false); return; }
+      after();
+    };
+  });
+}
+/* duraklatma menüsü › PERSONEL sekmesi: HAYVANLAR satırları */
+function petMenuRows() {
+  if (!petsOn()) return '';
+  var q = petQ(), h = '<div class="petHeadRow">🐾 ' + escH(T('petHead')) + '</div>';
+  if (!q.l.length) return h + '<div class="empty">' + escH(T('petHow')) + '</div>';
+  q.l.forEach(function (p, i) {
+    var c = petCtr(p);
+    h += row(p.k === 'cat' ? '🐱' : '🐶', escH(p.n) + ' · ' + escH(petMoodTxt(p)), escH((c ? petCtrName(c) : T('petNoStall')) + ' · ' + petHouseTxt(p)),
+      '<span style="color:' + petMoodCol(p) + '">' + Math.round(p.m) + '</span>', T('petFeeRow', { c: money(PET_FEE[p.k]) }));
+    h += '<div class="petBtns petMenu"><button class="alt" data-pa="ata" data-pi="' + i + '">' + escH(T('petAssign')) + '</button><button class="alt" data-pa="sev" data-pi="' + i + '">' + escH(T('petLoveBtn')) + '</button></div>';
+  });
+  return h;
+}
+
+/* ---------- kart: sahiplenme / ad değiştirme ---------- */
+var petCardP = null;
+function petCardOpen() { var e = document.getElementById('petScr'); return !!e && !e.classList.contains('hidden'); }
+function petCard(p, isNew) {
+  petCardP = p;
+  var c = petCtr(p);
+  document.getElementById('petT').textContent = isNew ? T('petNewT') : T('petRenameT');
+  document.getElementById('petP').textContent = isNew ? T('petNewP', { n: p.n }) + ' ' + (c ? T('petNewS', { s: petCtrName(c) }) : '') : T('petRenameP');
+  document.getElementById('petIc').innerHTML = PX(p.k === 'cat' ? '🐱' : '🐶');
+  var inp = document.getElementById('petIn'); inp.value = p.n; inp.placeholder = petDefName(p.k, p.i);
+  document.getElementById('petLbl').textContent = T('petNameLbl');
+  document.getElementById('petGo').textContent = T('petGo');
+  document.getElementById('petScr').classList.remove('hidden');
+  syncPause();
+}
+function petCardClose() {
+  var p = petCardP, inp = document.getElementById('petIn');
+  if (p) { var nm = petName(inp.value); if (nm && nm !== p.n) { p.n = nm; petHouseNames(); toast(T('petNamed', { n: nm })); } }
+  petCardP = null;
+  document.getElementById('petScr').classList.add('hidden');
+  syncPause(); sfx.tap(); save();
+  if (barTab) renderBar();
+  if (el.menuScreen && !el.menuScreen.classList.contains('hidden') && curTab === 'personel') renderTab();
+}
+
+/* ---------- ses ---------- */
+sfx.meow = function () { tone(620, 0.22, 'triangle', 0.16, { to: 980, lp: 2400 }); tone(980, 0.2, 'triangle', 0.12, { at: 0.16, to: 560, lp: 2200 }); };
+sfx.woof = function () { tone(260, 0.12, 'sawtooth', 0.18, { to: 150, lp: 900 }); noise(0.07, 0.07, { f: 900, to: 300 }); };
+sfx.gull = function () { tone(1250, 0.12, 'square', 0.07, { to: 1700, lp: 3000 }); tone(1500, 0.14, 'square', 0.06, { at: 0.13, to: 1100, lp: 3000 }); };
+
+/* ---------- pixel ikonlar (paneller) ---------- */
+Object.assign(ICONS, {
+  kedi:  ['............', '.kk......kk.', '.kik....kik.', '.kiikkkkiik.', '.kiiiiiiiik.', 'kiiiiiiiiiik', 'kiykiiiiykik', 'kiiiiiiiiiik', 'kiiiimmiiiik', '.kiiiiiiiik.', '..kkrrrrkk..', '....kyyk....'],
+  kopek: ['............', '...kkkkkk...', '..kxxxxxxk..', '.kxkxxxxkxk.', 'kxxkoxxokxxk', 'kxxkkxxkkxxk', 'kxxkxxxxkxxk', '.kk.xoooxkk.', '...koookok..', '...kooooak..', '....krrrk...', '.....kyk....'],
+  pati:  ['............', '..kk....kk..', '.kddk..kddk.', '.kddk..kddk.', '..kk.kk.kk..', '....kddk....', '..kkddddkk..', '.kddddddddk.', '.kddddddddk.', '..kddddddk..', '...kkkkkk...', '............'],
+  kedievi: ['.....kk.....', '....kook....', '...koooook..', '..koooooook.', '.kkkkkkkkkkk', '..kaaaaaaak.', '..kaakkaaak.', '..kakxxkaak.', '..kakxxkaak.', '..kakkkkaak.', '..kkkkkkkkk.', '............']
+});
+Object.assign(EMO_MAP, { '🐱': 'kedi', '🐶': 'kopek', '🐾': 'pati', '🏠': 'kedievi', '🛖': 'kedievi' }); _emoRe = null;
+
+/* ---------- metinler (TR/EN) ---------- */
+Object.assign(STR.tr, {
+  petHead: 'HAYVANLAR', petOpen: 'GÖR', petHow: 'Koyda dolaşan sokak kedisine ya da köpeğine 3 farklı günde mama koy: senin olur.',
+  petNone: 'Henüz hayvanın yok. Koydaki sokak kedisine ya da köpeğine mama koy.',
+  petFeedBtn: 'MAMA KOY ({c})', petFedN: 'Mama koydun ({a}/{b}). Yarın yine gel!', petBack: '{n} mamasını yedi, tezgâhına döndü!',
+  petStrayCat: '🐱 Koyda aç bir sokak kedisi dolaşıyor. Yanına git, mama koy!', petStrayDog: '🐶 Koya bir sokak köpeği geldi. Yanına git, mama koy!',
+  petStrayC: 'Sokak kedisi', petStrayD: 'Sokak köpeği', petStrayInfo: 'İskele\'de dolaşıyor · mama {a}/{b} gün · {c}',
+  petNewT: '🐾 YENİ DOST!', petNewP: '{n} artık senin! Bir tezgâha ata, evini yerleştir.', petNewS: 'Şimdilik {s} tezgâhında; evi Süs Sandığı\'nda.',
+  petRenameT: '✎ ADINI DEĞİŞTİR', petRenameP: 'Dostuna yeni bir ad ver.', petNameLbl: 'ADI', petGo: 'TAMAM', petNamed: 'Adı artık {n}',
+  petRename: 'Adını değiştir', petAssign: 'TEZGÂHA ATA', petLoveBtn: 'SEV ❤', petLoved: '{n} mırıl mırıl… keyfi arttı', petLoveMax: '{n} bugün yeterince sevildi',
+  petAssigned: '{n} → {s}', petNoCtr: 'Boş tezgâh yok: her tezgâhta en çok bir kedi ve bir köpek', petNoStall: 'Tezgâhsız',
+  petMoodH: 'Keyfi yerinde', petMoodM: 'Keyfi yarım', petMoodS: 'Küs: mama bekliyor', petHouseOK: 'evi yerinde', petHouseBox: 'evi sandıkta',
+  petRuleT: 'KURALLAR', petRule: 'Kedi {a}/{b} · Köpek {c}/{d} (her yeni bölge +1). Tezgâh başına bir kedi + bir köpek. Mama: kedi {e}, köpek {f} / gün.',
+  petFeeRow: 'mama {c}/gün', petDayRow: 'Hayvanlar', petHungry: 'aç kaldı: {n}', petBackS: 'döndü: {n}',
+  petSulkT: '😾 {n} küstü: mama yoktu. İskele\'de dolaşıyor; yanına gidip mama koy.',
+  petSteal: '{n} yine {f} çaldı!', petGullT: 'Martı tezgâhtan fileto kaptı! Tezgâhta köpek olsa yanaşamazdı.', petWoof: 'HAV! HAV!'
+});
+Object.assign(STR.en, {
+  petHead: 'ANIMALS', petOpen: 'VIEW', petHow: 'Feed the stray cat or dog roaming the cove on 3 different days: it becomes yours.',
+  petNone: 'No animals yet. Feed the stray cat or dog in the cove.',
+  petFeedBtn: 'PUT OUT FOOD ({c})', petFedN: 'You put out food ({a}/{b}). Come back tomorrow!', petBack: '{n} ate the food and went back to the stall!',
+  petStrayCat: '🐱 A hungry stray cat is roaming the cove. Go and put out some food!', petStrayDog: '🐶 A stray dog came to the cove. Go and put out some food!',
+  petStrayC: 'Stray cat', petStrayD: 'Stray dog', petStrayInfo: 'Roaming the pier · fed {a}/{b} days · {c}',
+  petNewT: '🐾 A NEW FRIEND!', petNewP: '{n} is yours now! Assign a stall and place its house.', petNewS: 'For now at the {s} stall; its house is in the Decor Chest.',
+  petRenameT: '✎ RENAME', petRenameP: 'Give your friend a new name.', petNameLbl: 'NAME', petGo: 'OK', petNamed: 'Now called {n}',
+  petRename: 'Rename', petAssign: 'ASSIGN STALL', petLoveBtn: 'PET ❤', petLoved: '{n} purrs… happier now', petLoveMax: '{n} has had enough cuddles today',
+  petAssigned: '{n} → {s}', petNoCtr: 'No free stall: at most one cat and one dog per stall', petNoStall: 'No stall',
+  petMoodH: 'Happy', petMoodM: 'So-so', petMoodS: 'Sulking: wants food', petHouseOK: 'house placed', petHouseBox: 'house in chest',
+  petRuleT: 'RULES', petRule: 'Cats {a}/{b} · Dogs {c}/{d} (+1 per new zone). One cat + one dog per stall. Food: cat {e}, dog {f} / day.',
+  petFeeRow: 'food {c}/day', petDayRow: 'Animals', petHungry: 'went hungry: {n}', petBackS: 'came back: {n}',
+  petSulkT: '😾 {n} is sulking: no food. Roaming the pier; go and put out some food.',
+  petSteal: '{n} pinched a {f} again!', petGullT: 'A gull snatched a fillet from the stall! A dog there would keep it away.', petWoof: 'WOOF! WOOF!'
+});
+/* DOM: sahiplenme kartı + panel biçimi (index.html'e eklenmeden JS ile kurulur) */
+(function () {
+  var css = document.createElement('style'); css.id = 'petCss';
+  css.textContent = '#petScr{z-index:12}#petScr .card p{font-size:12px;line-height:1.45}#petIc{display:flex;justify-content:center;margin:2px 0 4px}#petIc .pxi{width:48px;height:48px}' +
+    '#petLbl{display:block;font-size:10px;letter-spacing:1.5px;color:var(--ink2);margin:8px 0 3px}#petIn{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:9px 10px;background:#0f2233;color:var(--ink);border:2px solid var(--edge)}' +
+    '.dcard.petCard{flex-basis:184px}.petBar{height:7px;background:#0a1a27;border:1px solid var(--edge);margin:3px 0 1px}.petBar i{display:block;height:100%}' +
+    '.petBtns{display:flex;gap:4px}.petBtns .buy,.petBtns .alt{flex:1;font-size:10.5px;padding:6px 1px;min-height:44px;letter-spacing:.2px}' +
+    '.pren{background:none;border:0;color:var(--gold);font:inherit;font-size:12px;padding:0 4px;min-width:28px;min-height:24px;cursor:pointer}' +
+    '.petHeadRow{font-size:10px;letter-spacing:1.5px;color:#f2d488;margin:12px 0 5px;display:flex;align-items:center;gap:6px}.petHeadRow .pxi{width:14px;height:14px}.petMenu{margin:-2px 0 8px}';
+  document.head.appendChild(css);
+  var ov = document.createElement('div');
+  ov.className = 'overlay hidden'; ov.id = 'petScr';
+  ov.innerHTML = '<div class="card"><div id="petIc"></div><h2 id="petT"></h2><p id="petP"></p><label id="petLbl" for="petIn"></label><input id="petIn" maxlength="14" autocomplete="off"><button class="go" id="petGo"></button></div>';
+  document.body.appendChild(ov);
+  document.getElementById('petGo').onclick = petCardClose;
+  document.getElementById('petIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); petCardClose(); } });
+})();
+
+/* =========================================================
    BAŞLAT
    ========================================================= */
 resize();
@@ -13874,6 +14583,8 @@ function hook(name, f0) {
   drawOffice = hook('drawOffice', drawOffice);
   drawProject = hook('drawProject', drawProject);
   drawDecor = hook('drawDecor', drawDecor);
+  drawPet = hook('drawPet', drawPet);                 /* v2.18-deneme: kedi / köpek (o: {k, x, y, dir, st, own, coat, tabby, n, t, carry, love, sulk}) */
+  drawPetHouse = hook('drawPetHouse', drawPetHouse);  /* v2.18-deneme: kedi evi / kulübe (d: DECOR girdisi, d.pet = 'cat' | 'dog') */
   drawGiftDecor = hook('drawGiftDecor', drawGiftDecor);   /* v2.17: hediye süsleri (d: DECOR girdisi, ör. ligbayrak) */
   drawTutGuide = hook('drawTutGuide', drawTutGuide);
   drawArrow = hook('drawArrow', drawArrow);
@@ -14285,6 +14996,15 @@ Object.assign(window.BT, {
     toWorld: function (cx, cy) { var p = arrVirt(cx, cy); return screenToWorld(p.x, p.y); },
     look: function (x, y) { camTX = pX(x, y); camTY = pY(x, y, 0); clampCam(); camX = camTX; camY = camTY; render(); } },
   giftDecor: giftDecor, decorById: decorById, decorSync: decorSync, decorLoad: decorLoad
+});
+/* v2.18-deneme — hayvanlar test kancaları */
+Object.assign(window.BT, {
+  pet: { on: petsOn, q: petQ, list: function () { return petQ().l; }, stray: function (k) { return STRAY[k]; }, gulls: PGULL, fx: PETFX,
+    feedNear: petFeedNear, target: petFeedTarget, adopt: petAdopt, love: petLove, assign: petAssign, next: petAssignNext, dayEnd: petDayEnd,
+    flow: function (key) { return petFlow(counterByKey(key)); }, pat: function (key) { return petPat(counterByKey(key)); }, eff: petEff, spot: petSpot,
+    gullGo: function (key) { petGullGo(counterByKey(key)); }, save: petSave, load: petLoad, card: petCardOpen, cardClose: petCardClose, tick: petTick,
+    barOpen: function () { openBar('level'); barPet = true; renderBar(); }, lines: PET_TAX_LINES,
+    K: { DAY: PET_DAY, FEED: PET_FEED, FEED_DAYS: PET_FEED_DAYS, FEE: PET_FEE, PAT: PET_PAT, FLOW: PET_FLOW, CAP: PET_FLOW_CAP, GULL_PM: PET_GULL_PM, NAMES: PET_NAMES } }
 });
 /* görüş formu + mağaza değerlendirmesi — test kancaları */
 Object.assign(window.BT, {
