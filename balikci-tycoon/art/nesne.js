@@ -1032,12 +1032,10 @@ function boatSpr(r, fl) {
       Lb.rect(4, -43, 16, 2, '#c2492f'); Lb.rect(4, -41, 16, 1, '#8e2f1f');
       Lb.rect(3, -16, 20, 1, '#4a2e16');
     }
-    /* bayrak (Türk bayrağı) dalgalanır */
+    /* bayrak (Hamsi Koyu bayrağı) dalgalanır */
     var fw = r ? 9 : 14, fh = r ? 6 : 9, fx0 = 3, fy0 = r ? -50 : -44;
     if (r) Lb.rect(1, -50, 2, 6, '#6a4424');
-    for (i = 0; i < fw; i++) { var wv = Math.round(Math.sin(i * 0.7 + fl * 2.1) * 1); for (j = 0; j < fh; j++) Lb.set(fx0 + i, fy0 + j + wv, '#e30a17'); }
-    var cx = fx0 + Math.round(fw * 0.4), cy = fy0 + Math.floor(fh / 2) + Math.round(Math.sin(Math.round(fw * 0.4) * 0.7 + fl * 2.1));
-    Lb.rect(cx - 1, cy - 1, 3, 3, '#ffffff'); Lb.set(cx, cy, '#e30a17'); Lb.set(cx + 1, cy - 1, '#e30a17'); Lb.set(cx + 3, cy, '#ffffff');
+    for (i = 0; i < fw; i++) { var wv = Math.round(Math.sin(i * 0.7 + fl * 2.1) * 1); for (j = 0; j < fh; j++) Lb.set(fx0 + i, fy0 + j + wv, hkFlagPx(i, j, fw, fh)); }
     Lb.outline(0.55);
     b.put(Lb, 0, 0);
   });
@@ -1183,11 +1181,31 @@ function halfTimberK(b, x0, x1, y0, y1, z0, z1) {
   for (k = 0; k < n; k++) { var a0 = x0 + (x1 - x0) * k / n, a1 = x0 + (x1 - x0) * (k + 1) / n; line(b, fx(a0, y1), fy(a0, y1, z0), fx(a1, y1), fy(a1, y1, zm), TW); }
 }
 function stoneBaseK(b, x0, x1, y0, y1, z0, z1) { box(b, x0, y0, x1 - x0, y1 - y0, z0, z1, '#b8b3a5', stoneW('#8e8a80'), stoneW('#a09c92')); }
+/* Hamsi Koyu bayrağı (oyunun logosu): lacivert deniz, üstte kırmızı-krem tente şeridi, gümüş hamsi, turuncu kuyruk, altın sikke.
+   hkFlagPx(i, j, w, h): bayrağın (i, j) pikselinin rengi; her boyda (9x6 … 28x18) okunur kalacak şekilde ölçeklenir. */
+function hkFlagPx(i, j, w, h) {
+  var st = h >= 9 ? 2 : 1;                                             /* tente şeridi kalınlığı */
+  if (j < st) return (Math.floor(i / 2) % 2) ? '#f4e9d2' : '#d9443a';
+  var cy = st + Math.floor((h - st) / 2), hh = h >= 16 ? 3 : h >= 10 ? 2 : h >= 8 ? 1 : 0;
+  var bl = Math.round(w * 0.32), br = Math.round(w * 0.72), dj = j - cy;
+  if (i >= bl && i <= br) {                                             /* tombul gövde: elips */
+    var t = (i - bl + 0.5) / (br - bl + 1), th = Math.round((hh + 0.4) * Math.sqrt(Math.max(0, 1 - Math.pow(2 * t - 1, 2))));
+    if (hh >= 2 && dj === -th - 1 && t > 0.35 && t < 0.6) return '#f08a24';                     /* sırt yüzgeci */
+    if (Math.abs(dj) <= th) {
+      if (hh && i === br - Math.max(1, Math.floor(hh / 2)) && dj === -Math.max(0, Math.floor(th / 2))) return '#1b2a36';  /* göz */
+      if (dj < -Math.floor(th / 2)) return '#9fb0bd';                                          /* sırt */
+      if (dj > Math.floor(th / 2)) return '#f4f7f9';                                           /* karın */
+      return t > 0.2 && t < 0.75 && hh >= 2 ? '#b4c8d6' : '#d5dee5';                           /* yan şerit */
+    }
+  }
+  var k = bl - 1 - i;                                                   /* kuyruk: gövdeden geriye yelpaze */
+  if (k >= 0 && k <= Math.max(1, hh)) { var span = Math.min(hh, k); if (Math.abs(dj) <= span && (k < 1 || Math.abs(dj) >= Math.min(1, span) || hh < 2)) return k === 0 ? '#e07a18' : '#f6a640'; }
+  if (w >= 14 && i >= w - 4 && i <= w - 3 && j >= st + 1 && j <= st + 2) return (i === w - 4 && j === st + 1) ? '#fff2b0' : '#f2c14e';  /* sikke */
+  return j === h - 1 ? '#1a4a70' : '#235d8a';
+}
 function flagSpr(fr, w, h) {
   return L.sprite('flag|' + fr + '|' + w + '|' + h + '|' + G().K, function (b) {
-    for (var i = 0; i < w; i++) { var wv = Math.round(Math.sin(i * 0.6 - fr * 2.1) * 1.2 * (i / w)); for (var j = 0; j < h; j++) b.set(1 + i, j + wv, j === 0 ? '#ff3a3a' : '#e30a17'); }
-    var cx = 1 + Math.round(w * 0.38), cy = Math.floor(h / 2) + Math.round(Math.sin(Math.round(w * 0.38) * 0.6 - fr * 2.1) * 1.2 * 0.38);
-    b.rect(cx - 2, cy - 2, 4, 5, '#ffffff'); b.rect(cx - 1, cy - 2, 3, 4, '#e30a17'); b.set(cx + 3, cy, '#ffffff'); b.set(cx + 3, cy - 1, '#ffffff');
+    for (var i = 0; i < w; i++) { var wv = Math.round(Math.sin(i * 0.6 - fr * 2.1) * 1.2 * (i / w)); for (var j = 0; j < h; j++) b.set(1 + i, j + wv, hkFlagPx(i, j, w, h)); }
     b.outline(0.5);
   });
 }

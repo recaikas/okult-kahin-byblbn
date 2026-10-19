@@ -2241,20 +2241,34 @@ function restoSurplus() {
   return out;
 }
 function restoCook(d, st, L) {
-  var got = 0, gain = 0, src = restoSurplus(), guard = 0;
+  var got = 0, gain = 0, src = restoSurplus(), guard = 0, plain = 0, plainGain = 0, dishes = [], dl = null;
   while (got < L.cook && src.length && guard++ < 40) {
     var s0 = src[0], it = null;
     if (s0.depot) { if (depotCount() > depotCap() * 0.6) it = depotTake(s0.depot); }
     else if (s0.c.buffer.length > counterMax(s0.c) * 0.75) it = s0.c.buffer.pop();
     if (!it) { src.shift(); continue; }
-    gain += prodValue(it.k, it.f); got++;
+    var base = prodValue(it.k, it.f), dr = tarifRestoPick(it.f);   /* v2.18-deneme §A: menüdeki tarif + kiler → yemek */
+    if (dr) {
+      tarifRestoUse(dr);
+      var dv = base * L.cmul * dr.m;
+      gain += dv; got++;
+      if (!(dl = dishes.filter(function (x) { return x.r === dr; })[0])) dishes.push(dl = { r: dr, n: 0, v: 0 });
+      dl.n++; dl.v += dv;
+    } else { gain += base * L.cmul; got++; plain++; plainGain += base * L.cmul; }
   }
   st.cooked = got;
   var p = plotById(st.plot);
   if (!got) { if (p) addFloat(p.x, p.y - 0.4, T('restoIdle'), '#c9bfae'); return 0; }
-  var pay = Math.round(gain * L.cmul);
+  var pay = Math.round(gain);
   S.cash += pay; earn(pay); noteDayIncome(pay);
-  if (p) { addFloat(p.x, p.y - 0.4, '🍽 ' + got + ' → +' + money(pay), '#9df5b0'); st.flash = 0.8; }
+  if (p) {
+    dishes.forEach(function (x, i) {
+      addFloat(p.x, p.y - 0.4 - i * 0.32, '🍲 ' + NM(x.r.n) + (x.n > 1 ? ' ×' + x.n : '') + ' +' + money(Math.round(x.v)), '#ffd98a');
+      RFX.push({ x: p.x, y: p.y, t: -i * 0.35, d: x.r.id });
+    });
+    if (plain) addFloat(p.x, p.y - 0.4 - dishes.length * 0.32, '🍽 ' + plain + ' → +' + money(Math.round(plainGain)), '#9df5b0');
+    st.flash = 0.8;
+  }
   return pay;
 }
 
@@ -8111,12 +8125,13 @@ function barList() {
       }
       if (lv > 0) {
         var cur = d.lv[lv - 1];
+        var mline = d.id === 'restoran' ? tarifMenuLine() : '';      /* v2.18-deneme §A: "Menü: Hamsi Tava, Levrek Buğulama…" */
         if (lv >= 5) {
-          out.push({ id: 'sv' + d.id, ic: d.icon, t: NM(d.n) + '  Lv.5', s: NM(cur.d), owned: true });
+          out.push({ id: 'sv' + d.id, ic: d.icon, t: NM(d.n) + '  Lv.5', s: NM(cur.d) + (mline ? ' • ' + mline : ''), owned: true });
         } else {
           var nx = d.lv[lv];
           out.push({ id: 'sv' + d.id, ic: d.icon, t: NM(d.n) + '  Lv.' + lv + '→' + (lv + 1),
-            s: NM(nx.d) + ' • ' + T('nextLook') + ': ' + NM(nx.v),
+            s: NM(nx.d) + ' • ' + T('nextLook') + ': ' + NM(nx.v) + (mline ? ' • ' + mline : ''),
             cost: upCost(sCost(nx.c)),
             go: function () { servUp(d.id); servSel = d.id; } });
           if (insBusy(d.id)) insLock(out[out.length - 1], d.id);   /* v2.18-deneme: yükseltme sürüyor */
@@ -12892,7 +12907,7 @@ function layoutRects() {
   add('füme fırını', 'sm', smoker.z, smoker.x, smoker.y, 0.8, 0.65); add('fırın hasırı', 'sm', smoker.z, smoker.mat.x, smoker.mat.y, 0.62, 0.52);
   add('mutfak ocağı', 'kt', kitchen.z, kitchen.x, kitchen.y, 0.8, 0.6); add('mutfak hasırı', 'kt', kitchen.z, kitchen.mat.x, kitchen.mat.y, 0.62, 0.52);
   unit('b0', 0, 8.9, 3.0); unit('b1', 1, 8.9, 10.4); unit('b2', 2, 8.9, 15.4); unit('b3', 3, 8.9, 18.6);
-  TARIF_CTRS.forEach(function (k) { var tp = TARIF_POS[k]; add('güveç ocağı ' + k, 'tf' + k, k === 'hal' ? 1 : +k.charAt(1), tp.x, tp.y, TARIF_HW, TARIF_HW); });   /* v2.18-deneme: alınmamış olsa da yeri ayrılır */
+  if (TARIF_STALL) TARIF_CTRS.forEach(function (k) { var tp = TARIF_POS[k]; add('güveç ocağı ' + k, 'tf' + k, k === 'hal' ? 1 : +k.charAt(1), tp.x, tp.y, TARIF_HW, TARIF_HW); });   /* v2.18-deneme: alınmamış olsa da yeri ayrılır */
   SLOTS.forEach(function (sl) { add('yapı ' + sl.id, 'sl' + sl.id, sl.z, sl.x, sl.y, 0.65, 0.65); });
   add('Kapalı Pazar', 'proj', project.z, project.x, project.y, project.w / 2, project.h / 2);
   var htp = trayPos({ key: 'hal' }); add('tepsi Kapalı Pazar', 'proj', project.z, htp.x, htp.y, 0.4, 0.34);
@@ -15010,6 +15025,16 @@ Object.assign(STR.en, {
 
 /* =========================================================
    v2.18-deneme — TARİF: Tarif Defteri + Güveç Ocağı (yalnız deneme-emekci dalı; TARIF_TASARIM.md)
+   *** DEPO_REKLAM_RESTORAN_TASARIM.md §A (Restoran Menüsü) ESKİ TASARIMIN ÜSTÜNE GEÇER: ***
+   • TARIF_STALL = 0: Güveç Ocağı tezgâhlardan kalktı (kartlar, dünyadaki ocaklar, layoutRects yerleri, ocak etkileşimi, OCAKLAR
+     sekmesi kapalı; kod silinmedi). Eski kayıtta ocak varsa bedeli bir kez iade edilir, raftaki it.dish düz fileto olur.
+     Aşağıdaki "Güveç Ocağı", "Emekçi Mod'da ocak satıcısı" ve "Kapı: Fümehane" maddeleri artık GEÇERSİZ (kod yalnız bayrak arkasında).
+   • Defter, ilk Restoran tamamlanınca (inşaat bitince, restoran seviyesi > 0) açılır. Sekmeler: TARİFLER / DENE / KİLER / MENÜ.
+   • MENÜ: bütün restoranlar için tek menü; yer sayısı = restoran seviyesi (1–5); her yere bilinen bir tarif. S.tarif.menu = [id|null ×5].
+   • Restoran pişirme döngüsü (restoCook): alınan mal balığı f için menüde tarif varsa ve kiler yetiyorsa malzeme harcanır, satış
+     = val × cmul × tarif çarpanı; üstte tabak simgesi + "🍲 yemek +$x". Yoksa eski davranış. Restoran personelsiz çalışır.
+   • Reis Güveci restoranla bilinir: her balıkta ×1,3, malzemesi 1 soğan (menüde özel tarifi olan balıkta özel tarif öncelikli).
+   • Kiler sınırı 50; depoda Kiler bölmesi varsa (depotHasKiler(), yoksa 50) 100.
    Tekne, tarif ve ocak tek mekanik: yeni istasyon zinciri yok. Tezgâhta zaten duran fileto, yanındaki ocakta
    yerinde yemeğe döner ve aynı tezgâhta daha pahalı satılır; ürünler üst üste binmez.
    • Kiler: parayla alınan malzeme stoğu (adet). Tarif Defteri › KİLER'den 10'luk / 50'lik paket. Sınır MALZEME BAŞINA
@@ -15059,9 +15084,9 @@ var TARIFS = [
     h: { tr: 'Büyük balığa sade sofra.', en: 'A big fish wants a simple table.' } },
   { id: 'palamutpilaki', f: 'palamut', ing: ['sogan', 'domates'], m: 2.1, n: { tr: 'Palamut Pilaki', en: 'Bonito Stew' },
     h: { tr: 'Soğanla domates, palamutla kardeş.', en: 'Onion and tomato, bonito\'s siblings.' } },
-  /* mevcut mutfak yemeği: Balıkçı Mutfağı açılınca bilinir; DENE'de denenmez, ocağa atanmaz */
-  { id: 'reisguveci', f: 'guvec', ing: [], m: 1, kitchen: 1, n: { tr: 'Reis Güveci', en: 'Skipper\'s Stew' },
-    h: { tr: 'Balıkçı Mutfağı açılınca öğrenilir.', en: 'Learned when the Fishermen\'s Kitchen opens.' } }
+  /* restoranla birlikte bilinir (kitchen bayrağı = DENE'de denenmez, balığa bağlı değil); her balığa ×1,3 */
+  { id: 'reisguveci', f: 'guvec', ing: ['sogan'], m: 1.3, kitchen: 1, n: { tr: 'Reis Güveci', en: 'Skipper\'s Stew' },
+    h: { tr: 'Restoranla birlikte öğrenilir.', en: 'Learned along with the Restaurant.' } }
 ];
 var TARIF_BY = {}, TING_BY = {};
 TARIFS.forEach(function (r) { TARIF_BY[r.id] = r; });
@@ -15071,6 +15096,7 @@ var TARIF_CTRS = ['b0', 'b1', 'b2', 'hal'];        /* ocak kurulabilen tezgâhla
    b1 ve b2'de güneybatıdaki yapı noktası (s4, s6) yüzünden biraz kuzeyde; Kapalı Pazar'ınki binanın batısında. */
 var TARIF_POS = { b0: { x: 6.9, y: 3.3 }, b1: { x: 6.5, y: 9.8 }, b2: { x: 6.5, y: 14.8 }, hal: { x: 7.4, y: 8.3 } };
 var TARIF_HW = 0.42;                                /* ocak + yemek sehpası ayak izi yarı boyu (layoutRects) */
+var TARIF_STALL = 0;                                /* v2.18-deneme: Güveç Ocağı tezgâhlardan kalktı (1 = eski ocak kodu açılır) */
 var TARIF_COST = [1200, 1800, 2600, 3600];
 var TARIF_COOK = 4, TARIF_SHARE = 0.5, TARIF_REP = 40, TARIF_CAP = [50, 100], TARIF_PACKS = [10, 50];
 var TARIF_COL = { hamsitava: '#d39a45', hamsipilav: '#efe6cf', karalahana: '#3e6b45', uskumrudolma: '#5f8f8a',
@@ -15078,14 +15104,15 @@ var TARIF_COL = { hamsitava: '#d39a45', hamsipilav: '#efe6cf', karalahana: '#3e6
 var TOV = {}, TFX = [], tfTap0 = null, tfStand = { t: 0, armed: true };
 S.tarif = null;                                     /* S0 anlık görüntüsünden önce: yeni oyun boş başlar */
 function tarifOn() { return !window.HK_TARIF_OFF; }
-function tarifNew() { return { known: [], kiler: {}, ocak: {}, sandik: {}, open: 0 }; }
-/* Açılış kapısı: Tarif sistemi (🍲 düğmesi, ocak kartları, ocak etkileşimi) Fümehane kurulunca açılır (Füme Makinesi
-   kartının "Önce Fümehane" kilidiyle aynı koşul). Tarif/ocak/kiler verisi olan eski kayıt baştan açık sayılır (open=1). */
-function tarifUnlocked() { return tarifOn() && !!(S.tarif && S.tarif.open || !AREAS[smoker.z].locked); }
+function tarifNew() { return { known: [], kiler: {}, ocak: {}, sandik: {}, menu: [null, null, null, null, null], open: 0 }; }
+/* Açılış kapısı (v2.18-deneme §A): Tarif Defteri (🍲 düğmesi) en az bir Restoran tamamlanınca açılır; q.open yalnız "Tarif Defteri
+   açıldı" bildirimi bir kez gösterildi mi bayrağıdır. */
+function tarifRestoLv() { return sLvl('restoran'); }   /* inşaat bitince (lvl > 0) */
+function tarifUnlocked() { return tarifOn() && tarifRestoLv() > 0; }
 function tarifQ() { return S.tarif || (S.tarif = tarifNew()); }
-function tarifKnown(id) { var r = TARIF_BY[id]; if (!r) return false; return r.kitchen ? !AREAS[KITCHEN_Z].locked : tarifQ().known.indexOf(id) >= 0; }
+function tarifKnown(id) { var r = TARIF_BY[id]; if (!r) return false; return r.kitchen ? tarifRestoLv() > 0 : tarifQ().known.indexOf(id) >= 0; }
 function tarifFound() { return tarifQ().known.length; }               /* DENE ile bulunanlar (Reis Güveci sayılmaz) */
-function tarifCap() { return TARIF_CAP[DEPOT.lvl >= 1 ? 1 : 0]; }
+function tarifCap() { return TARIF_CAP[typeof depotHasKiler === 'function' && depotHasKiler() ? 1 : 0]; }   /* Depo'da Kiler bölmesi varsa 100 */
 function tarifStock(id) { return tarifQ().kiler[id] | 0; }
 function tarifCtrFish(key) { var l = lineByStall(key); return l ? l.f : null; }
 function tarifStoveN() { var n = 0; for (var k in tarifQ().ocak) n++; return n; }
@@ -15101,11 +15128,13 @@ function tarifCtrName(key) {
 function tarifSave() {
   var q = tarifQ(), oc = {};
   for (var k in q.ocak) oc[k] = { lv: 1, r: q.ocak[k].r || null };
-  return { known: q.known.slice(), kiler: JSON.parse(JSON.stringify(q.kiler)), ocak: oc, sandik: {}, open: q.open ? 1 : 0 };
+  return { known: q.known.slice(), kiler: JSON.parse(JSON.stringify(q.kiler)), ocak: oc, sandik: {}, open: q.open ? 1 : 0, menu: tarifMenuArr(q), rs: 1 };
 }
+var tfRefund = 0, RFX = [];                         /* RFX: restoran üstünde uçan tabak simgeleri {x, y, t, d} */
+function tarifMenuArr(q) { var a = []; for (var i = 0; i < 5; i++) a.push(typeof q.menu[i] === 'string' && TARIF_BY[q.menu[i]] ? q.menu[i] : null); return a; }
 function tarifLoad(d) {
   var q = tarifNew();
-  TOV = {}; TFX.length = 0; tfTap0 = null; tfStand.t = 0; tfStand.armed = true;
+  TOV = {}; TFX.length = 0; RFX.length = 0; tfTap0 = null; tfStand.t = 0; tfStand.armed = true; tfRefund = 0;
   if (d && typeof d === 'object' && !Array.isArray(d)) {
     (Array.isArray(d.known) ? d.known : []).forEach(function (id) { var r = typeof id === 'string' && TARIF_BY[id]; if (r && !r.kitchen && q.known.indexOf(id) < 0) q.known.push(id); });
     if (d.kiler && typeof d.kiler === 'object' && !Array.isArray(d.kiler)) TARIF_ING.forEach(function (g) { var n = numIn(d.kiler[g.id], 0, TARIF_CAP[1], true); if (n > 0) q.kiler[g.id] = n; });
@@ -15115,7 +15144,21 @@ function tarifLoad(d) {
       q.ocak[k] = { lv: 1, r: r && !r.kitchen && r.f === tarifCtrFish(k) ? r.id : null };
     });
   }
-  q.open = d && typeof d === 'object' && (d.open || (Array.isArray(d.known) && d.known.length) || tarifStoveN2(q) || Object.keys(q.kiler).length || (d.ocak && typeof d.ocak === 'object' && Object.keys(d.ocak).length)) ? 1 : 0;
+  /* v2.18-deneme §A: menü. Yalnız bilinen tarif (DENE ile bulunan ya da Reis Güveci), tekrarsız; eski kayıtta yok → boş menü */
+  if (d && typeof d === 'object' && Array.isArray(d.menu)) for (var mi = 0; mi < 5; mi++) {
+    var mid = d.menu[mi], mr = typeof mid === 'string' && TARIF_BY[mid];
+    if (mr && (mr.kitchen || q.known.indexOf(mid) >= 0) && q.menu.indexOf(mid) < 0) q.menu[mi] = mid;
+  }
+  /* "Tarif Defteri açıldı" bildirimi: yalnız bu sürümün kaydında (rs) işaretliyse tekrarlanmaz */
+  q.open = d && typeof d === 'object' && d.rs && d.open ? 1 : 0;
+  /* Güveç Ocakları tezgâhlardan kalktı: eski kayıttaki ocakların bedeli bir kez iade edilir */
+  if (!TARIF_STALL && tarifOn()) {
+    var n = tarifStoveN2(q);
+    if (n) {
+      for (var oi = 0; oi < n; oi++) tfRefund += upCost(TARIF_COST[Math.min(oi, TARIF_COST.length - 1)]);
+      q.ocak = {}; S.cash += tfRefund; q.open = 1;      /* iade bildirimi yeter: "Tarif Defteri açıldı" üstüne binmesin */
+    }
+  }
   S.tarif = q;
 }
 function tarifStoveN2(q) { var n = 0; for (var k in q.ocak) n++; return n; }
@@ -15123,7 +15166,7 @@ function tarifStoveN2(q) { var n = 0; for (var k in q.ocak) n++; return n; }
 function tarifItemKey(it) { return itemKey(it) + (it.dish && it.k === 'fileto' ? '|' + it.dish : ''); }
 function tarifKeyItem(k) {
   var it = keyItem(k), d = k.split('|')[2], r = d && TARIF_BY[d];
-  if (r && !r.kitchen && it.k === 'fileto' && r.f === it.f && tarifOn()) it.dish = d;
+  if (r && !r.kitchen && it.k === 'fileto' && r.f === it.f && tarifOn() && TARIF_STALL) it.dish = d;   /* ocaksız: yemek düz fileto */
   return it;
 }
 
@@ -15137,6 +15180,49 @@ function tarifBuy(id, n) {
   S.cash -= cost; q.kiler[id] = have + add;
   toast(T('tfBought', { n: add, i: NM(g.n) })); sfx.buy(); save();
   return add;
+}
+
+/* ---------- MENÜ (v2.18-deneme §A) ---------- */
+function tarifHas(r) { for (var i = 0; i < r.ing.length; i++) if (tarifStock(r.ing[i]) < 1) return false; return true; }
+function tarifMenuList() {
+  var q = tarifQ(), n = tarifRestoLv(), out = [];
+  for (var i = 0; i < n && i < 5; i++) { var id = q.menu[i]; if (id && TARIF_BY[id] && tarifKnown(id)) out.push(TARIF_BY[id]); }
+  return out;
+}
+function tarifSetMenu(slot, id) {
+  var q = tarifQ(); slot |= 0;
+  if (!tarifOn() || slot < 0 || slot >= tarifRestoLv() || slot > 4) return false;
+  if (!id) { q.menu[slot] = null; save(); return true; }
+  if (!TARIF_BY[id] || !tarifKnown(id)) return false;
+  var j = q.menu.indexOf(id);
+  if (j === slot) { q.menu[slot] = null; save(); return true; }          /* aynı tarife yeniden dokunmak kaldırır */
+  if (j >= 0) q.menu[j] = null;                                          /* başka yerdeyse taşınır */
+  q.menu[slot] = id; save();
+  return true;
+}
+function tarifMenuAdd(id) {
+  var q = tarifQ(), n = Math.min(5, tarifRestoLv());
+  if (!TARIF_BY[id] || !tarifKnown(id) || q.menu.indexOf(id) >= 0 && q.menu.indexOf(id) < n) return -1;
+  for (var i = 0; i < n; i++) if (!q.menu[i]) { q.menu[i] = id; save(); return i; }
+  return -1;
+}
+/* Restoran bir mal aldığında (balık f): menüde f'nin tarifi ve kilerde malzemesi varsa o yemek (en yüksek çarpan); yoksa menüde
+   Reis Güveci ve soğan varsa o (her balığa ×1,3); yoksa null (eski davranış). Mutfağın güveci (f = guvec) yemeğe çevrilmez. */
+function tarifRestoPick(f) {
+  if (!tarifOn() || !S.tarif || f === 'guvec') return null;
+  var best = null, reis = null, l = tarifMenuList();
+  for (var i = 0; i < l.length; i++) {
+    var r = l[i]; if (!tarifHas(r)) continue;
+    if (r.kitchen) reis = r; else if (r.f === f && (!best || r.m > best.m)) best = r;
+  }
+  return best || reis;
+}
+function tarifRestoUse(r) { var q = tarifQ(); r.ing.forEach(function (g) { q.kiler[g] = Math.max(0, tarifStock(g) - 1); }); }
+/* BİNA kartı satırı: "Menü: Hamsi Tava, Levrek Buğulama…" */
+function tarifMenuLine() {
+  if (!tarifOn() || !tarifUnlocked()) return '';
+  var l = tarifMenuList();
+  return T('tfMenuLine', { m: l.length ? l.slice(0, 2).map(function (r) { return NM(r.n); }).join(', ') + (l.length > 2 ? '…' : '') : T('tfMenuEmpty') });
 }
 
 /* ---------- DENE ---------- */
@@ -15239,8 +15325,10 @@ function tarifWhy(o, c) {
 function tarifTick(dt) {
   if (!tarifOn() || !S.started || !S.tarif) return;
   var q = S.tarif, k;
-  if (!q.open) {                                      /* Fümehane kurulunca bir kez: Tarif Defteri açıldı */
-    if (AREAS[smoker.z].locked) return;
+  if (tfRefund > 0) { toast(T('tfRefund', { c: money(tfRefund) })); sfx.buy(); tfRefund = 0; }   /* eski kayıt: ocak bedeli iade edildi */
+  for (var ri = RFX.length - 1; ri >= 0; ri--) { RFX[ri].t += dt; if (RFX[ri].t > 1.4) RFX.splice(ri, 1); }
+  if (!q.open) {                                      /* ilk Restoran tamamlanınca bir kez: Tarif Defteri açıldı */
+    if (tarifRestoLv() < 1) return;
     q.open = 1; notify(T('tfUnlock')); sfx.star(); save();
   }
   for (k in q.ocak) {
@@ -15258,7 +15346,7 @@ function tarifTick(dt) {
     sfxFrom({ x: p.x, y: p.y }, function () { sfx.sizzle(); });
   }
   for (var i = TFX.length - 1; i >= 0; i--) { TFX[i].t += dt; if (TFX[i].t > 0.9) TFX.splice(i, 1); }
-  tarifStandTick(dt);
+  if (TARIF_STALL) tarifStandTick(dt);
 }
 function tarifState(key) { var v = TOV[key]; return v ? v.st : 'off'; }
 /* ocağın başında durunca o ocağın sayfası açılır (bir kez; uzaklaşıp gelince yeniden) */
@@ -15299,7 +15387,16 @@ function tarifLook(key) {
 function tarifPush(push) {
   if (!tarifOn() || !S.started || !S.tarif) return;
   var k, i;
-  for (k in S.tarif.ocak) (function (key) {
+  for (i = 0; i < RFX.length; i++) (function (f) {   /* restoranın üstünde yükselen tabak */
+    push(f.x + f.y + 2.5, function () {
+      if (f.t < 0) return;
+      var t = f.t / 1.4;
+      ctx.globalAlpha = t > 0.65 ? Math.max(0, (1 - t) / 0.35) : 1;
+      drawDish({ x: R(pX(f.x, f.y)), y: R(pY(f.x, f.y, 52 + t * 16)), dish: f.d, s: 2 });
+      ctx.globalAlpha = 1;
+    });
+  })(RFX[i]);
+  if (TARIF_STALL) for (k in S.tarif.ocak) (function (key) {
     var p = tarifPos(key), c = counterByKey(key); if (!p || !c || AREAS[c.z].locked) return;
     push(p.x + p.y, function () { quietDraw(c.z, p.x, p.y, function () { var o = tarifLook(key); drawStove(o); tarifOver(o); }); });
   })(k);
@@ -15437,7 +15534,7 @@ function tarifCanvas(cv, fn) {
 function tarifTapStart(e) { tfTap0 = { id: e.pointerId, x: e.clientX, y: e.clientY, t: Date.now() }; }
 function tarifTapEnd(e) {
   var t = tfTap0; tfTap0 = null;
-  if (!t || t.id !== e.pointerId || paused || !tarifUnlocked() || !S.started || !S.tarif) return;
+  if (!TARIF_STALL || !t || t.id !== e.pointerId || paused || !tarifUnlocked() || !S.started || !S.tarif) return;
   if (Date.now() - t.t > 450 || Math.hypot(e.clientX - t.x, e.clientY - t.y) > 12) return;
   var v = arrVirt(e.clientX, e.clientY), best = null, bd = 1e9;
   for (var k in S.tarif.ocak) {
@@ -15450,7 +15547,7 @@ function tarifTapEnd(e) {
 
 /* ---------- YAPI › Geliştirme kartları ---------- */
 function tarifBarCards(out) {
-  if (!tarifOn()) return;
+  if (!tarifOn() || !TARIF_STALL) return;            /* ocak kartları kapalı (Güveç Ocağı restorana taşındı) */
   var q = tarifQ();
   if (!tarifUnlocked()) {                              /* Fümehane kurulana dek kilitli (Füme Makinesi kartıyla tutarlı) */
     var k0 = TARIF_CTRS.filter(function (k) { var c = counterByKey(k); return !!c && !AREAS[c.z].locked && c.open && !!c.fish; })[0];
@@ -15478,12 +15575,13 @@ var tfBtn = null;
 function tarifOpen() { var e = document.getElementById('tarifScr'); return !!e && !e.classList.contains('hidden'); }
 function tarifHud() {
   if (!tfBtn) return;
-  tfBtn.classList.toggle('hidden', !(tarifUnlocked() && S.started && S.tarif && tarifStoveN() > 0));
+  tfBtn.classList.toggle('hidden', !(tarifUnlocked() && S.started && S.tarif));
   if (tfBtn.dataset.l !== lang) { tfBtn.dataset.l = lang; tfBtn.setAttribute('aria-label', T('tfBtnLbl')); }
 }
 function tarifShow(tab, key) {
   if (!tarifUnlocked() || !S.started) return;
-  tf.tab = tab || tf.tab || 'rec'; tf.sel = key || null;
+  tf.tab = tab === 'ocak' ? 'menu' : (tab || tf.tab || 'rec'); tf.sel = key || null;
+  if (tf.tab === 'ocak') tf.tab = 'menu';
   if (tab !== 'try') tf.res = null;
   if (barTab) closeBar();
   tarifRender();
@@ -15501,7 +15599,7 @@ function tarifRender() {
   document.getElementById('tfTitle').textContent = T('tfTitle');
   document.getElementById('tfClose').setAttribute('aria-label', T('ok'));
   var tabs = [['rec', T('tfTabRec') + ' <small>' + TARIFS.filter(function (r) { return tarifKnown(r.id); }).length + '/' + TARIFS.length + '</small>'],
-    ['try', T('tfTabTry')], ['kiler', T('tfTabKiler')], ['ocak', T('tfTabOcak') + (tarifStoveN() ? ' <small>' + tarifStoveN() + '</small>' : '')]];
+    ['try', T('tfTabTry')], ['kiler', T('tfTabKiler')], ['menu', T('tfTabMenu') + ' <small>' + tarifMenuList().length + '/' + tarifRestoLv() + '</small>']];
   document.getElementById('tfTabs').innerHTML = tabs.map(function (t) { return '<button class="tab' + (t[0] === tf.tab ? ' on' : '') + '" data-tt="' + t[0] + '">' + t[1] + '</button>'; }).join('');
   var arts = [];                                   /* [tuval sırası, çizim] */
   if (tf.tab === 'rec') {
@@ -15509,8 +15607,7 @@ function tarifRender() {
     TARIFS.forEach(function (r) {
       var kn = tarifKnown(r.id);
       h += '<div class="tfRec' + (kn ? '' : ' unk') + '"><canvas width="48" height="36"></canvas><div><b>' + (kn ? escH(NM(r.n)) : '?????') + '</b>';
-      if (r.kitchen) h += '<small>' + escH(kn ? T('tfKitchen') : T('tfKitchenLock')) + '</small>';
-      else if (kn) h += '<small>' + escH(NM(FISH[r.f].n) + ' + ' + tarifIngList(r) + ' · ' + T('tfMul', { m: tarifM(r.m) })) + (TARIF_CTRS.some(function (k) { return tarifCtrFish(k) === r.f; }) ? '' : ' · ' + escH(T('tfNoStall'))) + '</small>';
+      if (kn) h += '<small>' + escH((r.kitchen ? T('tfAnyFish') : NM(FISH[r.f].n)) + ' + ' + tarifIngList(r) + ' · ' + T('tfMul', { m: tarifM(r.m) }) + (q.menu.indexOf(r.id) >= 0 && q.menu.indexOf(r.id) < tarifRestoLv() ? ' · ' + T('tfOnMenu') : '')) + '</small>';
       else h += '<small class="tfHint">' + escH(T('tfHint', { h: NM(r.h) })) + '</small>';
       h += '</div></div>';
       arts.push(function (cv) { tarifCanvas(cv, function () { if (kn) drawDish({ x: 24, y: 20, dish: r.id, s: 3 }); else { ctx.globalAlpha = 0.18; drawDish({ x: 24, y: 20, dish: r.id, s: 3 }); ctx.globalAlpha = 1; } }); });
@@ -15529,28 +15626,29 @@ function tarifRender() {
     h += '</div><button class="go tfCook" id="tfCook">' + escH(T('tfCook')) + '</button>';
     if (tf.res) h += tarifResHTML(tf.res, arts);
   } else if (tf.tab === 'kiler') {
-    h += '<p class="tfSub">' + escH(T('tfCapNote', { a: tarifCap(), b: DEPOT.lvl >= 1 ? T('tfCapDepoOK') : T('tfCapDepo') })) + '</p>';
+    h += '<p class="tfSub">' + escH(T('tfCapNote', { a: tarifCap(), b: tarifCap() > TARIF_CAP[0] ? T('tfCapDepoOK') : T('tfCapDepo') })) + '</p>';
     TARIF_ING.forEach(function (g) {
       var n = tarifStock(g.id);
       h += '<div class="tfRec"><canvas width="36" height="36"></canvas><div><b>' + escH(NM(g.n)) + '</b><small>' + escH(T('tfStock', { a: n, b: tarifCap() }) + ' · ' + T('tfUnit', { c: money(g.p) })) + '</small>' +
         '<div class="tfBuyRow">' + TARIF_PACKS.map(function (p) { return '<button class="tfBtn' + (n + p > tarifCap() && n >= tarifCap() ? ' no' : '') + '" data-tb="' + g.id + '" data-tn="' + p + '">' + escH(T('tfBuy', { n: p, c: money(p * g.p) })) + '</button>'; }).join('') + '</div></div></div>';
       arts.push(function (cv) { tarifCanvas(cv, function () { tarifIngArt(g.id, 18, 19, 3); }); });
     });
-  } else {
-    var keys = TARIF_CTRS.filter(function (k) { return q.ocak[k] && (!tf.sel || tf.sel === k); });
-    if (!keys.length) h += '<p class="tfSub">' + escH(T('tfOcakNone')) + '</p>';
-    keys.forEach(function (k) {
-      var o = q.ocak[k], c = counterByKey(k), f = tarifCtrFish(k), rs = tarifFor(f).filter(function (r) { return tarifKnown(r.id); });
-      h += '<div class="tfOcak' + (tf.sel === k ? ' sel' : '') + '"><div class="tfRec"><canvas width="48" height="36"></canvas><div><b>' + escH(T('tfStoveT', { s: tarifCtrName(k) })) + '</b><small>' +
-        escH(T('tfSt_' + tarifState(k)) + (c ? ' · ' + T('tfDishes', { n: tarifDishes(c), m: tarifShelfCap(c) }) : '')) + '</small><small>' +
-        escH(o.r ? T('tfRecipe', { n: NM(TARIF_BY[o.r].n) }) + ' · ' + tarifIngList(TARIF_BY[o.r]) + ' · ' + T('tfMul', { m: tarifM(TARIF_BY[o.r].m) }) : T('tfNoRecipe')) + '</small></div></div>';
-      h += '<div class="tfLbl">' + escH(T('tfPick')) + '</div><div class="tfGrid">';
-      if (!rs.length) h += '<small class="tfHint" style="grid-column:1/-1">' + escH(T('tfNoKnown')) + '</small>';
-      rs.forEach(function (r) { h += '<button class="tfBtn' + (o.r === r.id ? ' on' : '') + '" data-to="' + k + '" data-tr="' + r.id + '">' + escH(NM(r.n)) + '</button>'; });
-      h += '<button class="tfBtn' + (!o.r ? ' on' : '') + '" data-to="' + k + '" data-tr="">' + escH(T('tfNone')) + '</button></div></div>';
-      arts.push(function (cv) { tarifCanvas(cv, function () { drawStove(tarifCardLook(k)); }); });
-    });
-    if (tf.sel) h += '<button class="tfBtn tfAll" data-tall="1">' + escH(T('tfAll')) + '</button>';
+  } else {                                         /* MENÜ: bütün restoranlar için ortak; yer sayısı = restoran seviyesi */
+    var slots = tarifRestoLv(), known = TARIFS.filter(function (r) { return tarifKnown(r.id); });
+    h += '<p class="tfSub">' + escH(T('tfMenuSub', { n: slots })) + '</p>';
+    for (var si = 0; si < slots; si++) {
+      var mid = q.menu[si], mr = mid && TARIF_BY[mid] && tarifKnown(mid) ? TARIF_BY[mid] : null;
+      h += '<div class="tfOcak"><div class="tfRec"><canvas width="48" height="36"></canvas><div><b>' + escH(T('tfSlot', { n: si + 1 }) + ' · ' + (mr ? NM(mr.n) : T('tfEmptySlot'))) + '</b><small>' +
+        escH(mr ? (mr.kitchen ? T('tfAnyFish') : NM(FISH[mr.f].n)) + ' + ' + tarifIngList(mr) + ' · ' + T('tfMul', { m: tarifM(mr.m) }) + (tarifHas(mr) ? '' : ' · ' + T('tfNoStockShort')) : T('tfMenuPick')) + '</small></div></div>';
+      h += '<div class="tfGrid tfG2">';
+      known.forEach(function (r) {
+        var at = q.menu.indexOf(r.id);
+        h += '<button class="tfBtn tfMB' + (at === si ? ' on' : '') + (at >= 0 && at !== si ? ' no' : '') + '" data-tm="' + si + '" data-tr="' + r.id + '"><b>' + escH(NM(r.n)) + '</b><small>' +
+          escH((r.kitchen ? T('tfAnyFish') : NM(FISH[r.f].n)) + ' · ' + tarifIngList(r) + ' · ×' + tarifM(r.m)) + '</small></button>';
+      });
+      h += '<button class="tfBtn tfMB' + (!mr ? ' on' : '') + '" data-tm="' + si + '" data-tr=""><b>' + escH(T('tfNone')) + '</b></button></div></div>';
+      arts.push((function (r) { return function (cv) { tarifCanvas(cv, function () { if (r) drawDish({ x: 24, y: 20, dish: r.id, s: 3 }); else { ctx.globalAlpha = 0.18; drawDish({ x: 24, y: 20, dish: 'hamsitava', s: 3 }); ctx.globalAlpha = 1; } }); }; })(mr));
+    }
   }
   var body = document.getElementById('tfBody');
   body.innerHTML = PX(h);
@@ -15566,10 +15664,10 @@ function tarifCardLook(k) {
 }
 function tarifResHTML(r, arts) {
   if (r.ok) {
-    var hasStove = TARIF_CTRS.some(function (k) { return tarifQ().ocak[k] && tarifCtrFish(k) === r.r.f; });
+    var inMenu = tarifQ().menu.indexOf(r.r.id) >= 0, freeSlot = tarifQ().menu.slice(0, tarifRestoLv()).indexOf(null) >= 0;
     var h = '<div class="tfRes ok"><canvas width="60" height="42"></canvas>' + (r.already ? '<p>' + escH(T('tfKnownAlready', { n: NM(r.r.n) })) + '</p>' :
       '<div class="tfStamp">' + escH(T('tfNewT')) + '</div><p><b>' + escH(T('tfNewP', { n: NM(r.r.n), m: tarifM(r.r.m) })) + '</b><br><small>' + escH(T('tfRep', { n: TARIF_REP })) + '</small></p>');
-    h += hasStove ? '<button class="tfBtn on" data-tassign="' + r.r.id + '">' + escH(T('tfAssign')) + '</button>' : '<small>' + escH(T(TARIF_CTRS.some(function (k) { return tarifCtrFish(k) === r.r.f; }) ? 'tfNoStove' : 'tfNoStall')) + '</small>';
+    h += inMenu ? '<small>' + escH(T('tfOnMenu')) + '</small>' : freeSlot ? '<button class="tfBtn on" data-tassign="' + r.r.id + '">' + escH(T('tfAssign')) + '</button>' : '<small>' + escH(T('tfNoStove')) + '</small>';
     arts.push(function (cv) { tarifCanvas(cv, function () { drawDish({ x: 30, y: 24, dish: r.r.id, s: 4 }); }); });
     return h + '</div>';
   }
@@ -15590,13 +15688,11 @@ function tarifBindUI(root) {
       tf.res = tarifTry(tf.fish, tf.ings);
       if (tf.res.err) sfx.bad();
     } else if (d.tb) tarifBuy(d.tb, +d.tn);
-    else if (d.to) { if (tarifSetRecipe(d.to, d.tr || null)) sfx.tap(); else sfx.bad(); }
+    else if (d.tm !== undefined) { if (tarifSetMenu(+d.tm, d.tr || null)) sfx.tap(); else sfx.bad(); }
     else if (d.tassign) {
-      var id = d.tassign, r = TARIF_BY[id], ks = TARIF_CTRS.filter(function (q) { return tarifQ().ocak[q] && tarifCtrFish(q) === r.f; });
-      ks.forEach(function (q) { tarifSetRecipe(q, id); });
-      if (ks.length) { toast(T('tfAssigned', { n: NM(r.n), s: tarifCtrName(ks[0]) })); sfx.buy(); tf.tab = 'ocak'; tf.sel = ks[0]; tf.res = null; }
-    } else if (d.tall) tf.sel = null;
-    else return;
+      var sl = tarifMenuAdd(d.tassign);
+      if (sl >= 0) { toast(T('tfAssigned', { n: NM(TARIF_BY[d.tassign].n) })); sfx.buy(); tf.tab = 'menu'; tf.sel = null; tf.res = null; } else sfx.bad();
+    } else return;
     tarifRender();
   };
 }
@@ -15615,47 +15711,53 @@ if (tarifOn()) ACH.push(
   { id: 'tf_sofra', c: 'buy', ic: 'tdefter', r: { rep: 5 }, chk: function () { return !!S.tarif && tarifFound() >= 4; },
     t: { tr: 'Karadeniz Sofrası', en: 'Black Sea Table' }, d: { tr: '4 tarif keşfet.', en: 'Discover 4 recipes.' } }
 );
-HELP.tarif = { ic: '🍲', tr: ['TARİF DEFTERİ', 'Güveç Ocağı, tezgâhtaki filetoyu Kiler malzemeleriyle pişirip yemeğe çevirir; yemek aynı tezgâhta daha pahalı satılır.',
-  'Tarifi DENE sayfasında bul: bir balık ve 1–2 malzeme seç, PİŞİR. Yanlışta malzeme gider, balık gitmez. Malzemeyi KİLER\'den al, ocağın tarifini OCAKLAR\'dan seç.'],
-  en: ['RECIPE BOOK', 'The Stew Stove cooks the stall\'s fillets with Pantry ingredients into dishes; a dish sells for more at the same stall.',
-  'Find recipes on the TRY page: pick a fish and 1–2 ingredients, then COOK. A wrong try uses up the ingredients, never the fish. Buy ingredients in the PANTRY, set each stove\'s recipe under STOVES.'] };
+HELP.tarif = { ic: '🍲', tr: ['TARİF DEFTERİ', 'Restoran, aldığı balığın tarifi MENÜ\'de varsa ve kilerde malzemesi duruyorsa onu yemek yapıp çarpanla satar.',
+  'Tarifi DENE sayfasında bul: bir balık ve 1–2 malzeme seç, PİŞİR. Yanlışta malzeme gider, balık gitmez. Malzemeyi KİLER\'den al, tarifi MENÜ\'ye koy; menü yeri restoran seviyesi kadardır.'],
+  en: ['RECIPE BOOK', 'When the restaurant takes a fish whose recipe is on the MENU and the ingredients are in the pantry, it cooks a dish and sells it at the multiplier.',
+  'Find recipes on the TRY page: pick a fish and 1–2 ingredients, then COOK. A wrong try uses up the ingredients, never the fish. Buy ingredients in the PANTRY and put recipes on the MENU; slots equal the restaurant level.'] };
 
 /* ---------- metinler (TR/EN) ---------- */
 Object.assign(STR.tr, {
-  tfTitle: 'TARİF DEFTERİ', tfTabRec: 'TARİFLER', tfTabTry: 'DENE', tfTabKiler: 'KİLER', tfTabOcak: 'OCAKLAR',
-  tfSub: 'Hacer Teyze\'nin defteri. Balığı kiler malzemesiyle pişir, tezgâhta yemek olarak sat.',
-  tfHint: 'İpucu: {h}', tfMul: 'fiyat ×{m}', tfKitchen: 'Mutfak Ocağı\'nda palamut + somon filetosundan pişer.', tfKitchenLock: 'Balıkçı Mutfağı açılınca öğrenilir.',
-  tfNoStall: 'bu balığın tezgâhı yok', tfFish: 'BALIK', tfIng: 'MALZEME (1–2)', tfCook: 'PİŞİR',
+  tfTitle: 'TARİF DEFTERİ', tfTabRec: 'TARİFLER', tfTabTry: 'DENE', tfTabKiler: 'KİLER', tfTabMenu: 'MENÜ',
+  tfSub: 'Hacer Teyze\'nin defteri. Balığı kiler malzemesiyle dene, tarifi restoranının menüsüne koy.',
+  tfHint: 'İpucu: {h}', tfMul: 'fiyat ×{m}', tfKitchen: 'Restoranla birlikte bilinir: her balığa ×1,3.', tfKitchenLock: 'Restoran tamamlanınca öğrenilir.',
+  tfNoStall: 'bu balığın tezgâhı yok', tfAnyFish: 'Her balık', tfOnMenu: 'menüde', tfNoStockShort: 'kiler boş',
+  tfMenuSub: 'Bütün restoranların ortak menüsü: {n} yer (restoran seviyesi kadar). Restoran bir balık aldığında menüde tarifi ve kilerde malzemesi varsa yemek yapar, çarpanla satar.',
+  tfSlot: 'Yer {n}', tfEmptySlot: 'boş', tfMenuPick: 'Aşağıdan bir tarif seç.', tfMenuLine: 'Menü: {m}', tfMenuEmpty: 'boş',
+  tfRefund: 'Güveç Ocakları restorana taşındı, bedeli iade edildi ({c}).', tfFish: 'BALIK', tfIng: 'MALZEME (1–2)', tfCook: 'PİŞİR',
   tfPickFish: 'Önce bir balık seç.', tfPickIng: '1 ya da 2 malzeme seç.', tfNoStock: 'Kilerde {n} yok: KİLER sayfasından al.',
   tfKnownAlready: 'Bu tarifi zaten biliyorsun: {n}', tfNewT: 'YENİ TARİF!', tfNewP: '{n} · fiyat ×{m}', tfRep: '+{n} itibar',
-  tfAssign: 'OCAĞA ATA', tfAssigned: '{n} → {s} ocağı', tfNoStove: 'Bu balığın tezgâhına YAPI › Geliştirme\'den bir Güveç Ocağı kur.',
+  tfAssign: 'MENÜYE EKLE', tfAssigned: '{n} menüye eklendi', tfNoStove: 'Menüde boş yer yok: restoranı yükselt ya da MENÜ\'den bir tarifi kaldır.',
   tfFail: 'Olmadı… Hacer Teyze: "{h}"', tfSpent: 'Harcanan: {i}',
   tfStock: 'Stok {a}/{b}', tfUnit: '{c}/adet', tfBuy: '+{n} · {c}', tfFull: 'Kiler dolu (malzeme başına {n})', tfBought: 'Kilere {n} {i} geldi',
-  tfCapNote: 'Malzeme başına en çok {a} ({b}).', tfCapDepo: 'Depo kurulunca 100', tfCapDepoOK: 'Depo kurulu',
+  tfCapNote: 'Malzeme başına en çok {a} ({b}).', tfCapDepo: 'Depoda Kiler bölmesi olunca 100', tfCapDepoOK: 'Depoda Kiler bölmesi var',
   tfOcakNone: 'Henüz ocak yok. YAPI › Geliştirme\'den bir tezgâha Güveç Ocağı kur.', tfRecipe: 'Tarif: {n}', tfNoRecipe: 'Tarif seçilmedi',
   tfPick: 'BU OCAĞIN TARİFİ', tfNone: 'YOK', tfNoKnown: 'Bu balığın bilinen tarifi yok: DENE sayfasında dene.', tfAll: 'TÜM OCAKLAR',
   tfDishes: 'raftaki yemek {n}/{m}', tfStoveT: 'Güveç Ocağı · {s}', tfStoveShort: 'Güveç Ocağı',
   tfStoveD: 'Tezgâhtaki filetoyu kilerle pişirip yemek yapar (4 sn\'de 1). Yemek daha pahalı satılır.',
-  tfStoveBuilt: 'Güveç Ocağı kuruldu: {s}', tfUnlock: '📖 Tarif Defteri açıldı! Hacer Teyze\'nin tariflerini keşfet, tezgâhına Güveç Ocağı kur.', tfStovePage: 'TARİF DEFTERİ', tfBtnLbl: 'Tarif Defteri',
+  tfStoveBuilt: 'Güveç Ocağı kuruldu: {s}', tfUnlock: '📖 Tarif Defteri açıldı! Hacer Teyze\'nin tariflerini keşfet, restoranının menüsüne koy.', tfStovePage: 'TARİF DEFTERİ', tfBtnLbl: 'Tarif Defteri',
   tfSt_cook: 'Pişiriyor', tfSt_kiler: 'Kiler boş', tfSt_wait: 'Fileto bekliyor', tfSt_full: 'Raf dolu (en çok %50 yemek)', tfSt_idle: 'Tarif seç',
   tfSt_nobody: 'Satıcı bekliyor', tfSt_off: 'Tezgâh kapalı', tfStKiler: 'Kiler boş', tfStNobody: 'Satıcı yok', tfStIdle: 'Tarif seç'
 });
 Object.assign(STR.en, {
-  tfTitle: 'RECIPE BOOK', tfTabRec: 'RECIPES', tfTabTry: 'TRY', tfTabKiler: 'PANTRY', tfTabOcak: 'STOVES',
-  tfSub: 'Aunt Hacer\'s notebook. Cook fish with pantry ingredients and sell it as a dish at the stall.',
-  tfHint: 'Hint: {h}', tfMul: 'price ×{m}', tfKitchen: 'Cooked on the Kitchen stove from bonito + salmon fillets.', tfKitchenLock: 'Learned when the Fishermen\'s Kitchen opens.',
-  tfNoStall: 'no stall sells this fish', tfFish: 'FISH', tfIng: 'INGREDIENTS (1–2)', tfCook: 'COOK',
+  tfTitle: 'RECIPE BOOK', tfTabRec: 'RECIPES', tfTabTry: 'TRY', tfTabKiler: 'PANTRY', tfTabMenu: 'MENU',
+  tfSub: 'Aunt Hacer\'s notebook. Try fish with pantry ingredients and put the recipe on your restaurant\'s menu.',
+  tfHint: 'Hint: {h}', tfMul: 'price ×{m}', tfKitchen: 'Known with the Restaurant: ×1.3 on any fish.', tfKitchenLock: 'Learned once a Restaurant is built.',
+  tfNoStall: 'no stall sells this fish', tfAnyFish: 'Any fish', tfOnMenu: 'on the menu', tfNoStockShort: 'pantry empty',
+  tfMenuSub: 'One menu for all restaurants: {n} slot(s) (the restaurant level). When a restaurant takes a fish that has a recipe on the menu and the ingredients are in the pantry, it cooks the dish and sells it at the multiplier.',
+  tfSlot: 'Slot {n}', tfEmptySlot: 'empty', tfMenuPick: 'Pick a recipe below.', tfMenuLine: 'Menu: {m}', tfMenuEmpty: 'empty',
+  tfRefund: 'Stew Stoves moved to the restaurant, cost refunded ({c}).', tfFish: 'FISH', tfIng: 'INGREDIENTS (1–2)', tfCook: 'COOK',
   tfPickFish: 'Pick a fish first.', tfPickIng: 'Pick 1 or 2 ingredients.', tfNoStock: 'No {n} in the pantry: buy some on the PANTRY page.',
   tfKnownAlready: 'You already know this one: {n}', tfNewT: 'NEW RECIPE!', tfNewP: '{n} · price ×{m}', tfRep: '+{n} reputation',
-  tfAssign: 'SET ON STOVE', tfAssigned: '{n} → {s} stove', tfNoStove: 'Build a Stew Stove for this fish\'s stall under BUILD › Upgrades.',
+  tfAssign: 'ADD TO MENU', tfAssigned: '{n} added to the menu', tfNoStove: 'No free menu slot: upgrade the restaurant or remove a recipe on the MENU page.',
   tfFail: 'Not quite… Aunt Hacer: "{h}"', tfSpent: 'Used up: {i}',
   tfStock: 'Stock {a}/{b}', tfUnit: '{c} each', tfBuy: '+{n} · {c}', tfFull: 'Pantry full ({n} per ingredient)', tfBought: '{n} {i} added to the pantry',
-  tfCapNote: 'At most {a} per ingredient ({b}).', tfCapDepo: '100 once the Depot is built', tfCapDepoOK: 'Depot built',
+  tfCapNote: 'At most {a} per ingredient ({b}).', tfCapDepo: '100 once the Depot has a Pantry bay', tfCapDepoOK: 'Depot has a Pantry bay',
   tfOcakNone: 'No stoves yet. Build a Stew Stove at a stall under BUILD › Upgrades.', tfRecipe: 'Recipe: {n}', tfNoRecipe: 'No recipe set',
   tfPick: 'THIS STOVE\'S RECIPE', tfNone: 'NONE', tfNoKnown: 'No known recipe for this fish yet: try one on the TRY page.', tfAll: 'ALL STOVES',
   tfDishes: 'dishes on display {n}/{m}', tfStoveT: 'Stew Stove · {s}', tfStoveShort: 'Stew Stove',
   tfStoveD: 'Cooks the stall\'s fillets with pantry ingredients into dishes (1 every 4 s). Dishes sell for more.',
-  tfStoveBuilt: 'Stew Stove built: {s}', tfUnlock: '📖 Recipe Book unlocked! Discover Aunt Hacer\'s recipes and build a Stew Stove at your stall.', tfStovePage: 'RECIPE BOOK', tfBtnLbl: 'Recipe Book',
+  tfStoveBuilt: 'Stew Stove built: {s}', tfUnlock: '📖 Recipe Book unlocked! Discover Aunt Hacer\'s recipes and put them on your restaurant\'s menu.', tfStovePage: 'RECIPE BOOK', tfBtnLbl: 'Recipe Book',
   tfSt_cook: 'Cooking', tfSt_kiler: 'Pantry empty', tfSt_wait: 'Waiting for fillets', tfSt_full: 'Display full (max 50% dishes)', tfSt_idle: 'Pick a recipe',
   tfSt_nobody: 'Waiting for a vendor', tfSt_off: 'Stall closed', tfStKiler: 'Pantry empty', tfStNobody: 'No vendor', tfStIdle: 'Pick a recipe'
 });
@@ -15691,7 +15793,8 @@ Object.assign(STR.en, {
       'background:rgba(198,40,40,.06);animation:tfStamp .55s cubic-bezier(.2,1.6,.4,1) both}' +
     '@keyframes tfStamp{0%{transform:scale(2.6) rotate(-22deg);opacity:0}55%{opacity:1}100%{transform:scale(1) rotate(-8deg);opacity:1}}' +
     '.tfOcak{padding:2px 4px 8px;margin-bottom:6px;border-bottom:2px solid rgba(90,50,20,.3)}.tfOcak.sel{background:rgba(255,201,74,.16)}' +
-    '.tfAll{width:100%;margin-top:8px}#tarifBtn{font-size:16px}';
+    '.tfAll{width:100%;margin-top:8px}#tarifBtn{font-size:16px}' +
+    '.tfG2{grid-template-columns:repeat(2,1fr)}.tfMB{text-align:left;padding:5px 6px}.tfMB b{display:block;font-size:11.5px;line-height:1.25}.tfMB small{display:block;font-size:10px;line-height:1.3;opacity:.85;margin-top:2px}';
   document.head.appendChild(css);
   var ov = document.createElement('div');
   ov.className = 'overlay hidden'; ov.id = 'tarifScr';
@@ -15713,6 +15816,8 @@ function tarifBT() {
     cap: tarifCap, stoveCost: tarifStoveCost, pos: tarifPos, dishes: function (k) { var c = counterByKey(k); return c ? tarifDishes(c) : 0; }, shelfCap: function (k) { var c = counterByKey(k); return c ? tarifShelfCap(c) : 0; },
     open: tarifShow, close: tarifClose, isOpen: tarifOpen, save: tarifSave, load: tarifLoad, ordMul: tarifOrdMul, known: tarifKnown, found: tarifFound,
     itemKey: tarifItemKey, keyItem: tarifKeyItem, fx: TFX, tov: function () { return TOV; }, stand: tfStand,
+    menu: tarifMenuList, setMenu: tarifSetMenu, menuAdd: tarifMenuAdd, pick: tarifRestoPick, menuLine: tarifMenuLine, restoLv: tarifRestoLv, refund: function () { return tfRefund; },
+    rfx: RFX, floats: function () { return floats; }, STALL: function () { return TARIF_STALL; },
     K: { COOK: TARIF_COOK, SHARE: TARIF_SHARE, REP: TARIF_REP, COST: TARIF_COST, CAP: TARIF_CAP, PACKS: TARIF_PACKS, POS: TARIF_POS, CTRS: TARIF_CTRS } };
 }
 
