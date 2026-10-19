@@ -1906,7 +1906,7 @@ var FL_COST = 350, FL_GROW = 1.3, FL_FLOW = 0.02, BB_COST = [1400, 2800, 5600], 
 function roadFlow() { return clamp(S.roadFl | 0, 0, ROAD_FL.length) * FL_FLOW + clamp(S.roadBb | 0, 0, ROAD_BB.length) * BB_FLOW; }
 function flCost() { return Math.round(FL_COST * Math.pow(FL_GROW, S.roadFl | 0)); }
 var DECOR = [
-  { id: 'bayrak', z: 0, x: ROAD_VX, y: 23.5, road: 1,  cost: 600,  n: { tr: 'Bayrak Direği', en: 'Flag Pole' },   icon: '🇹🇷', got: false },
+  { id: 'bayrak', z: 0, x: ROAD_VX, y: 23.5, road: 1,  cost: 600,  n: { tr: 'Bayrak Direği', en: 'Flag Pole' },   icon: '🚩', got: false },
   { id: 'tekne',  z: 0, x: 4.2, y: -1.25, fixed: 1, cost: 1300, n: { tr: 'Balıkçı Teknesi', en: 'Fishing Boat' }, icon: '⛵', got: false },
   { id: 'bank',   z: 0, x: ROAD_VX, y: 4.9, road: 1,  cost: 400,  n: { tr: 'Bank', en: 'Bench' },                icon: '🪑', got: false },
   { id: 'simit',  z: 1, x: ROAD_VX, y: 5.9, road: 1,  cost: 900,  n: { tr: 'Simit Arabası', en: 'Simit Cart' },  icon: '🥯', got: false },
@@ -4779,6 +4779,35 @@ function updateFx(dt) {
 var F7 = '7px "Pixelify Sans",monospace',
     F8 = '8px "Pixelify Sans",monospace', F10 = '10px "Pixelify Sans",monospace';
 function px(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(R(x), R(y), Math.max(1, R(w)), Math.max(1, R(h))); }
+/* Hamsi Koyu bayrağı (oyunun logosu): lacivert deniz, üstte kırmızı-krem tente şeridi, gümüş hamsi, turuncu kuyruk, altın sikke.
+   hkFlagPx(i, j, w, h): bayrağın (i, j) pikselinin rengi; her boyda (9x6 … 28x18) okunur kalacak şekilde ölçeklenir. */
+function hkFlagPx(i, j, w, h) {
+  var st = h >= 9 ? 2 : 1;                                             /* tente şeridi kalınlığı */
+  if (j < st) return (Math.floor(i / 2) % 2) ? '#f4e9d2' : '#d9443a';
+  var cy = st + Math.floor((h - st) / 2), hh = h >= 16 ? 3 : h >= 10 ? 2 : h >= 8 ? 1 : 0;
+  var bl = Math.round(w * 0.32), br = Math.round(w * 0.72), dj = j - cy;
+  if (i >= bl && i <= br) {                                             /* tombul gövde: elips */
+    var t = (i - bl + 0.5) / (br - bl + 1), th = Math.round((hh + 0.4) * Math.sqrt(Math.max(0, 1 - Math.pow(2 * t - 1, 2))));
+    if (hh >= 2 && dj === -th - 1 && t > 0.35 && t < 0.6) return '#f08a24';                     /* sırt yüzgeci */
+    if (Math.abs(dj) <= th) {
+      if (hh && i === br - Math.max(1, Math.floor(hh / 2)) && dj === -Math.max(0, Math.floor(th / 2))) return '#1b2a36';  /* göz */
+      if (dj < -Math.floor(th / 2)) return '#9fb0bd';                                          /* sırt */
+      if (dj > Math.floor(th / 2)) return '#f4f7f9';                                           /* karın */
+      return t > 0.2 && t < 0.75 && hh >= 2 ? '#b4c8d6' : '#d5dee5';                           /* yan şerit */
+    }
+  }
+  var k = bl - 1 - i;                                                   /* kuyruk: gövdeden geriye yelpaze */
+  if (k >= 0 && k <= Math.max(1, hh)) { var span = Math.min(hh, k); if (Math.abs(dj) <= span && (k < 1 || Math.abs(dj) >= Math.min(1, span) || hh < 2)) return k === 0 ? '#e07a18' : '#f6a640'; }
+  if (w >= 14 && i >= w - 4 && i <= w - 3 && j >= st + 1 && j <= st + 2) return (i === w - 4 && j === st + 1) ? '#fff2b0' : '#f2c14e';  /* sikke */
+  return j === h - 1 ? '#1a4a70' : '#235d8a';
+}
+/* klasik çizim: dalgalanan Hamsi Koyu bayrağı (sol üst köşe x, y) */
+function hkFlag(x, y, w, h) {
+  for (var i = 0; i < w; i++) {
+    var wv = Math.round(Math.sin(i * 0.6 - gameT * 4.2) * (i / w));
+    for (var j = 0; j < h; j++) px(x + i, y + j + wv, 1, 1, hkFlagPx(i, j, w, h));
+  }
+}
 function dot(x, y, c) { ctx.fillStyle = c; ctx.fillRect(R(x), R(y), 1, 1); }
 function quad(pts, c) {
   ctx.beginPath(); ctx.moveTo(R(pts[0][0]), R(pts[0][1]));
@@ -6075,8 +6104,7 @@ function drawBoat(b) {
     px(sx + 1, sy - 17, 8, 9, '#e8e2d0');                /* yelken */
     px(sx + 1, sy - 17, 8, 1, PAL.madder);
   } else {
-    px(sx + 1, sy - 16, 6, 4, '#e30a17');                /* bayrak */
-    px(sx + 3, sy - 15, 2, 2, '#ffffff');
+    hkFlag(sx + 1, sy - 16, 7, 5);                      /* bayrak: Hamsi Koyu */
   }
   px(sx + 8, sy - 6, 1, 2, phase2(gameT, 1) ? '#5fd37a' : '#2a6a3c');  /* sancak feneri */
 }
@@ -7073,7 +7101,7 @@ function drawKoop(X, Y, lv, sx, sy) {
     var fx = x1 + 0.28, fy = y1 + 0.28, fz = lv >= 5 ? 46 : 38;
     vline(fx, fy, 0, fz, '#d8d2c4');
     var fsx = R(pX(fx, fy)) + 1, fsy = R(pY(fx, fy, fz)), wv = R(Math.sin(t * 2));
-    px(fsx, fsy, 9, 6, '#e30a17'); px(fsx + 3 + wv, fsy + 2, 2, 2, '#ffffff');
+    hkFlag(fsx, fsy, 9, 6);
   }
   return top;
 }
@@ -7285,7 +7313,7 @@ function drawOffice() {
   /* bayrak */
   vline(x1 + 0.2, y0 + 0.1, 0, 46, '#d8d2c4');
   var fsx = R(pX(x1 + 0.2, y0 + 0.1)), fsy = R(pY(x1 + 0.2, y0 + 0.1, 46)), wv = R(Math.sin(gameT * 2));
-  px(fsx + 1, fsy, 10, 6, '#e30a17'); px(fsx + 4 + wv, fsy + 2, 2, 2, '#ffffff');
+  hkFlag(fsx + 1, fsy, 10, 6);
   if (dist2(player.x, player.y, o.x, o.y + 1.1) < 4) uiLabel(o.x, o.y, 48, T('office'), PAL.gold, 1);
   if (na) uiBadge(bx, by, 16, na + '/' + maxActive(), '#9df5b0');
 }
@@ -7355,8 +7383,7 @@ function drawProject() {
     for (var f = 0; f < 3; f++) {
       var fx2 = R(pX(p.x - 0.8 + f * 0.8, p.y - p.h / 2)), fy2 = R(pY(p.x - 0.8 + f * 0.8, p.y - p.h / 2, 34));
       px(fx2, fy2 - 10, 1, 10, '#6b5334');
-      px(fx2 + 1, fy2 - 10, 6, 4, f % 2 ? '#e30a17' : PAL.saffron);
-      if (f % 2) px(fx2 + 3, fy2 - 9, 2, 2, '#ffffff');
+      if (f % 2) hkFlag(fx2 + 1, fy2 - 10, 7, 5); else px(fx2 + 1, fy2 - 10, 6, 4, PAL.saffron);
     }
   } else {
     var kx = R(pX(x + p.w, y)), ky = R(pY(x + p.w, y, 0));
@@ -7377,11 +7404,7 @@ function drawDecor(d) {
   var sx = R(pX(d.x, d.y)), sy = R(pY(d.x, d.y, 0));
   if (d.id === 'bayrak') {
     px(sx - 1, sy - 34, 2, 34, '#d8d2c4');
-    var wv = Math.sin(gameT * 2) * 1;
-    px(sx + 1, sy - 34, 14, 9, '#e30a17');
-    px(sx + 5 + wv, sy - 31, 3, 3, '#ffffff');
-    px(sx + 8 + wv, sy - 32, 2, 1, '#ffffff'); px(sx + 8 + wv, sy - 28, 2, 1, '#ffffff');
-    px(sx + 6 + wv, sy - 30, 3, 1, '#e30a17');
+    hkFlag(sx + 1, sy - 34, 14, 9);                      /* Hamsi Koyu bayrağı */
   } else if (d.id === 'tekne') {
     drawBoat({ x: d.x, y: d.y - 1.6, r: 1 });
   } else if (d.id === 'bank') {
@@ -11259,7 +11282,7 @@ function drawHut() {
   if (L >= 5) {                                                                                               /* bayrak */
     vline(x1 + 0.1, y0 + 0.1, 0, 30, '#d8d2c4');
     var fsx = R(pX(x1 + 0.1, y0 + 0.1)), fsy = R(pY(x1 + 0.1, y0 + 0.1, 30)), wv = R(Math.sin(gameT * 2));
-    px(fsx + 1, fsy, 8, 5, '#e30a17'); px(fsx + 4 + wv, fsy + 2, 2, 1, '#ffffff');
+    hkFlag(fsx + 1, fsy, 9, 6);
   }
   if (nearDoor(o.door)) uiLabel(o.x, o.y, H + 12 + L, T('hutName') + ' ' + T('level') + L, '#ffd9a8', 1);
 }
