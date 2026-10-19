@@ -787,6 +787,358 @@ HKA.drawShopBag = function (f) {
   return true;
 };
 
+/* =====================================================================
+   EVCİL HAYVANLAR (v2.18-deneme): kedi (tekir, kara, sarman, boz) ve Karabaş
+   o: {k, x, y, dir, st, own, stray, coat, tabby, n, t, carry, love, sulk}
+   Ölçü (ince piksel, çapa = ayak ortası, yüz sağa): kedi oturuş ~28, köpek oturuş ~36 yükseklik
+   (klasik drawPet'in 2 katı). Kalp / ad / HAV oyun tarafında çizilir.
+   ===================================================================== */
+var PETS = new Map(), PETS_MAX = 400;
+HKA.onReset(function () { PETS.clear(); BOWL = null; });
+var PET_RED = '#c62828', PET_REDL = '#e2483a', PET_REDD = '#8a1414', PET_TAG = '#e6be59', PET_TAGL = '#fff2b0';
+var PINK = '#e8a0a0', PINKD = '#c47878', NOSE_C = '#d98a8a';
+var DOG = { a: '#2a2320', L: '#4a3f37', L2: '#5e5249', D: '#171111', t: '#b06a32', tL: '#cf8a4a', tD: '#7e4720', nose: '#120c0c', eye: '#3a2216' };
+
+function petBuf(d) {
+  var b = L.buf();
+  var o = {
+    b: b,
+    p: function (x, y, c) { b.set(d > 0 ? x : -x - 1, y, c); },
+    del: function (x, y) { b.del(d > 0 ? x : -x - 1, y); },
+    r: function (x, y, w, h, c) { for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) b.set(d > 0 ? x + i : -(x + i) - 1, y + j, c); },
+    /* gölgeli elips: f(nx, ny) → renk; nx ekran yönünde (ışık hep sol üstten) */
+    el: function (cx, cy, rx, ry, f) {
+      for (var y = -ry; y <= ry; y++) for (var x = -rx; x <= rx; x++) {
+        if ((x * x) / (rx * rx + 0.35) + (y * y) / (ry * ry + 0.35) > 1) continue;
+        var nx = (d > 0 ? x : -x) / (rx || 1), c = typeof f === 'function' ? f(nx, y / (ry || 1), x, y) : f;
+        if (c) o.p(cx + x, cy + y, c);
+      }
+    },
+    /* nokta listesi (kalın çizgi): [[x, y], …], w kalınlık */
+    path: function (pts, w, c) { for (var i = 0; i < pts.length; i++) o.r(pts[i][0], pts[i][1], w, w, typeof c === 'function' ? c(i, pts.length) : c); }
+  };
+  return o;
+}
+function shader(base, lt, dk) {
+  var l = lite(base, lt || 0.22), dd = dark(base, dk || 0.26);
+  return function (nx, ny) { var s = nx * 0.6 + ny * 0.8; return s < -0.45 ? l : s > 0.5 ? dd : base; };
+}
+/* ağızdaki / yerdeki küçük balık (yatay, baş sağda) */
+function petFish(q, cx, cy, f, lying) {
+  var F = (G().FISH && (G().FISH[f] || G().FISH.hamsi)) || { col: '#7f97a6', bel: '#dfe8ec' };
+  var col = F.col || '#7f97a6', bel = F.bel || '#dfe8ec', back = dark(col, 0.2);
+  var len = 12;
+  for (var i = 0; i < len; i++) {
+    var t = i / (len - 1), hh = t < 0.15 || t > 0.85 ? 0 : 1;
+    var X = cx - 6 + i, Y = cy + (lying ? 0 : (i < 3 || i > 9 ? 1 : 0));   /* ağızda: iki ucu hafif sarkar */
+    q.p(X, Y - hh, back); q.p(X, Y, i > 1 && i < 10 ? lite(col, 0.3) : col);
+    if (hh) q.p(X, Y + 1, bel);
+  }
+  /* kuyruk (solda) ve göz (sağda) */
+  var ty = cy + (lying ? 0 : 1);
+  q.p(cx - 7, ty - 1, dark(col, 0.1)); q.p(cx - 7, ty + 1, dark(col, 0.1)); q.p(cx - 8, ty - 2, dark(col, 0.1)); q.p(cx - 8, ty + 2, dark(col, 0.1));
+  q.p(cx + 4, ty - 1, '#16222b');
+}
+
+/* ---------------- KEDİ ---------------- */
+function buildPetCat(o, d, st, f, carryF) {
+  var q = petBuf(d), p = q.p, r = q.r, el = q.el;
+  var a = col(o.coat, '#8b8f96'), A = L.hx(a), lum = A[0] * 0.3 + A[1] * 0.59 + A[2] * 0.11, darkCoat = lum < 90;
+  var cL = lite(a, 0.24), cD = dark(a, 0.26), cD2 = dark(a, 0.42), st2 = dark(a, darkCoat ? 0.5 : 0.36);
+  var chest = darkCoat ? lite(a, 0.14) : lite(a, 0.5), chestD = darkCoat ? a : lite(a, 0.28);
+  var eye = darkCoat ? '#e8d24a' : (A[0] > A[2] + 40 ? '#c89a2a' : '#6aa04a'), pupil = '#141414';
+  var sh = shader(a), tab = !!o.tabby, own = !!o.own, sulk = !!o.sulk, happy = o.love > 0 && !sulk, stray = !!o.stray && !own;
+  /* kulak: (cx, y0) tepe; flat → yana yatık (küs) */
+  function ear(cx, y0, far, flat) {
+    var c1 = far ? cD : a, c2 = far ? cD2 : cD;
+    if (flat) { r(cx - 2, y0 + 2, 4, 1, c1); r(cx - 3, y0 + 3, 5, 1, c1); p(cx - 1, y0 + 3, PINKD); return; }
+    p(cx, y0, c1); r(cx - 1, y0 + 1, 2, 1, c1); p(cx + 1, y0 + 1, c2); r(cx - 1, y0 + 2, 3, 1, c1); p(cx, y0 + 2, far ? PINKD : PINK);
+    if (!far && stray) q.del(cx, y0);                                   /* sokak kedisi: kesik kulak ucu */
+  }
+  function eyes(ex, ey, closed) {                                            /* ex: yakın göz sol sütunu */
+    if (closed || happy) { p(ex, ey + 1, cD2); p(ex + 1, ey, cD2); p(ex - 3, ey + 1, cD2); if (happy) { p(ex + 2, ey + 1, cD2); p(ex - 2, ey, cD2); } return; }
+    if (sulk) { r(ex, ey, 2, 1, cD2); r(ex, ey + 1, 2, 1, eye); p(ex + 1, ey + 1, pupil); p(ex - 3, ey + 1, eye); p(ex - 3, ey, cD2); return; }
+    r(ex, ey, 2, 2, eye); p(ex + 1, ey, pupil); p(ex + 1, ey + 1, pupil); p(ex, ey, lite(eye, 0.6));
+    p(ex - 3, ey, eye); p(ex - 3, ey + 1, pupil);
+  }
+  if (st === 'sleep') {                                                      /* kıvrılmış somun, nefes alır */
+    var by = f ? -6 : -5, ry = f ? 5 : 4;
+    el(-1, by, 9, ry, sh);
+    if (tab) for (var s = -6; s <= 3; s += 3) { r(s, by - ry + 1, 1, 3, st2); }
+    el(7, -5, 4, 3, sh);                                                     /* baş, patilerin üstünde */
+    ear(5, -10, true, false); ear(9, -10, false, false);
+    el(10, -3, 2, 1, chest);
+    p(7, -5, cD2); p(8, -5, cD2); p(10, -5, cD2); p(12, -4, NOSE_C);
+    if (tab) { p(6, -8, st2); p(8, -8, st2); }
+    r(-9, -2, 14, 2, a); r(-9, -1, 14, 1, cD); r(3, -2, 3, 2, cL); p(5, -2, chest);   /* kuyruk önden sarılır */
+    r(8, -1, 4, 1, chest);                                                   /* pati */
+    if (own) { p(4, -6, PET_RED); p(4, -5, PET_RED); p(4, -4, PET_TAG); }
+    q.b.outline(0.55);
+    return q.b;
+  }
+  if (st === 'walk' || st === 'eat') {
+    var eat = st === 'eat', bob = !eat && (f & 1) ? -1 : 0;
+    var LO = eat ? [0, 0] : [[1, -1], [0, 0], [-1, 1], [0, 0]][f];          /* çapraz adım */
+    var lift = eat ? [0, 0, 0, 0] : f === 1 ? [0, 1, 1, 0] : f === 3 ? [1, 0, 0, 1] : [0, 0, 0, 0];
+    /* kuyruk: sırttan yukarı kıvrık, ucu sallanır */
+    var sw = eat ? 0 : (f === 1 ? 1 : f === 3 ? -1 : 0), tb = bob;
+    var tail = sulk ? [[-9, -11], [-11, -10], [-13, -9], [-15, -8], [-17, -7]] :
+      [[-9, -12], [-10, -13], [-11, -14], [-12, -16], [-12, -18], [-12 + sw, -20], [-11 + sw, -22]];
+    for (var ti = 0; ti < tail.length; ti++) r(tail[ti][0], tail[ti][1] + tb, 2, 2, ti === tail.length - 1 ? cL : (ti > 2 ? a : cD));
+    /* uzak bacaklar (koyu) */
+    r(-6 + LO[1], -7 + bob, 2, 7 - lift[0] - bob, cD); r(-6 + LO[1], -1 - lift[0], 2, 1, cD2);
+    r(3 + LO[0], -7 + bob, 2, 7 - lift[2] - bob, cD); r(3 + LO[0], -1 - lift[2], 2, 1, cD2);
+    el(0, -10 + bob, 8, 4, sh);                                              /* gövde */
+    r(-5, -7 + bob, 10, 1, chestD);
+    if (tab) for (var s2 = -5; s2 <= 4; s2 += 3) r(s2, -14 + bob, 1, 3, st2);
+    /* yakın bacaklar */
+    r(-3 - LO[1], -7 + bob, 2, 7 - lift[1] - bob, a); r(-3 - LO[1], -1 - lift[1], 2, 1, chest);
+    r(6 - LO[0], -7 + bob, 2, 7 - lift[3] - bob, a); r(6 - LO[0], -1 - lift[3], 2, 1, chest);
+    /* baş */
+    var hx = eat ? 12 : 10, hy = (eat ? -7 : sulk ? -13 : -15) + bob;
+    if (!eat) { r(6, hy + 2, 3, 5, a); }                                     /* boyun */
+    el(hx, hy, 5, 4, sh);
+    ear(hx - 3, hy - 7, true, sulk); ear(hx + 1, hy - 7, false, sulk);
+    el(hx + 3, hy + 2, 2, 2, chest);
+    eyes(hx + 1, hy - 1, eat);
+    p(hx + 5, hy + 1, NOSE_C);
+    if (tab) { p(hx - 1, hy - 4, st2); p(hx + 1, hy - 4, st2); p(hx - 3, hy - 1, st2); }
+    if (own) { r(hx - 4, hy + 1, 2, 4, PET_RED); p(hx - 4, hy + 1, PET_REDL); p(hx - 3, hy + 5, PET_TAG); }
+    if (carryF) petFish(q, eat ? hx + 4 : hx + 4, eat ? 0 : hy + 4, carryF, eat);
+    q.b.outline(0.55);
+    return q.b;
+  }
+  /* oturuş */
+  var tw = f & 1, hd = sulk ? 2 : 0, blink = f & 2;
+  var tl = sulk ? [[-9, -3], [-11, -3], [-13, -3], [-15, -2]] :
+    [[-9, -3], [-11, -4], [-12, -6], [-12, -8], [-12, -10], [-11 - tw * 2, -12], [-10 - tw * 3, -13]];
+  for (var k = 0; k < tl.length; k++) r(tl[k][0], tl[k][1], 2, 2, k === tl.length - 1 ? cL : k < 2 ? cD : a);
+  el(-3, -6, 7, 5, sh);                                                      /* kalça */
+  el(0, -12, 5, 6, sh);                                                      /* gövde (dik) */
+  el(3, -11, 2, 5, function (nx, ny) { return ny > 0.5 ? chestD : chest; });   /* göğüs */
+  if (tab) { r(-5, -15, 3, 1, st2); r(-6, -12, 3, 1, st2); r(-7, -9, 3, 1, st2); p(-9, -6, st2); p(-8, -5, st2); }
+  r(5, -6, 2, 6, cD); r(5, -1, 3, 1, cD2);                                   /* uzak ön ayak */
+  r(1, -7, 2, 7, a); r(1, -7, 1, 7, cL); r(0, -1, 4, 1, chest);              /* yakın ön ayak */
+  r(-5, -2, 4, 2, a); r(-5, -1, 4, 1, chest);                                /* arka pati */
+  var hy2 = -21 + hd;
+  el(4, hy2, 6, 5, sh);                                                      /* baş */
+  ear(1, hy2 - 8 + (sulk ? 1 : 0), true, sulk); ear(7, hy2 - 8 + (sulk ? 1 : 0), false, sulk);
+  el(8, hy2 + 3, 3, 2, chest);                                               /* ağız çevresi */
+  eyes(7, hy2 - 1, blink);
+  p(10, hy2 + 2, NOSE_C); p(9, hy2 + 3, cD2);
+  if (tab) { p(3, hy2 - 4, st2); p(5, hy2 - 4, st2); p(4, hy2 - 3, st2); p(0, hy2, st2); }
+  if (own) { r(1, -16 + hd, 7, 1, PET_REDL); r(1, -15 + hd, 7, 1, PET_RED); r(5, -14 + hd, 2, 2, PET_TAG); p(5, -14 + hd, PET_TAGL); }
+  if (carryF) petFish(q, 12, hy2 + 5, carryF, false);
+  q.b.outline(0.55);
+  return q.b;
+}
+
+/* ---------------- KÖPEK: Karabaş (siyah sırt, kahve bacak / ağız / kaş, düşük kulak, kıvrık kuyruk) ---------------- */
+function buildPetDog(o, d, st, f, carryF) {
+  var q = petBuf(d), p = q.p, r = q.r, el = q.el, C = DOG;
+  var sh = shader(C.a, 0.16, 0.3), tanS = shader(C.t, 0.2, 0.24);
+  var own = !!o.own, sulk = !!o.sulk, happy = o.love > 0 && !sulk;
+  function shine(nx, ny) { var s = nx * 0.6 + ny * 0.8; return s < -0.62 ? C.L2 : s < -0.3 ? C.L : s > 0.55 ? C.D : C.a; }
+  /* baş: (hx, hy) kafa merkezi; up: ağız açık (havlama); low: küs */
+  function head(hx, hy, mouth, lidClosed) {
+    /* düşük kulak (başın arkasında sarkık) */
+    if (sulk) { el(hx - 5, hy - 1, 3, 2, function (nx) { return nx < -0.3 ? C.L : C.D; }); }
+    el(hx, hy, 6, 5, shine);
+    /* ağız (kahve) */
+    if (mouth) {
+      el(hx + 7, hy, 3, 2, tanS); r(hx + 10, hy - 1, 1, 2, C.nose); p(hx + 10, hy - 1, '#5a4a40');
+      r(hx + 5, hy + 3, 5, 2, '#6a1a14'); p(hx + 6, hy + 4, '#e07a7a'); p(hx + 7, hy + 4, '#e07a7a');      /* açık ağız, dil */
+      r(hx + 4, hy + 5, 5, 2, C.tD); r(hx + 4, hy + 5, 5, 1, C.t);                                       /* alt çene */
+    } else {
+      el(hx + 7, hy + 2, 3, 2, tanS); r(hx + 10, hy, 2, 2, C.nose); p(hx + 10, hy, '#5a4a40');
+      r(hx + 6, hy + 4, 4, 1, C.tD);
+      if (happy) { p(hx + 7, hy + 5, '#e07a7a'); p(hx + 8, hy + 5, '#e07a7a'); p(hx + 7, hy + 6, '#c85a5a'); }
+    }
+    /* kaş lekeleri ve gözler */
+    p(hx + 2, hy - 4, C.tL); p(hx + 3, hy - 4, C.t); p(hx - 2, hy - 4, C.tD);
+    var ey = hy - 2;
+    if (lidClosed || happy) { p(hx + 2, ey + 1, C.tL); p(hx + 3, ey, C.tL); p(hx + 4, ey + 1, C.tL); p(hx - 2, ey + 1, C.tD); }
+    else if (sulk) { r(hx + 2, ey, 2, 1, C.D); r(hx + 2, ey + 1, 2, 1, C.eye); p(hx - 2, ey + 1, C.eye); }
+    else { r(hx + 2, ey, 2, 2, C.eye); p(hx + 2, ey, '#f4eedd'); p(hx - 2, ey, C.eye); p(hx - 2, ey + 1, C.eye); }
+    /* yanak / yakın kulak: sarkık, kahve kenarlı */
+    if (!sulk) {
+      el(hx - 2, hy + 1, 2, 4, function (nx, ny) { return nx < -0.4 ? C.L : ny > 0.6 ? C.D : '#211a17'; });
+      p(hx - 2, hy + 5, C.tD);
+    } else { r(hx - 6, hy - 2, 4, 2, '#211a17'); p(hx - 7, hy - 1, C.L); }
+  }
+  if (st === 'sleep') {                                                      /* kıvrılmış, başı patilerinde (Zzz yok) */
+    var by = f ? -8 : -7, ry = f ? 7 : 6;
+    r(-14, -3, 6, 3, C.a); r(-15, -2, 2, 2, C.L);                             /* kuyruk arkadan */
+    el(-1, by, 12, ry, shine);
+    for (var ax = -10; ax <= 5; ax++) {                                       /* sırt parıltısı: kıvrımı okutur */
+      var ay = Math.round(by - ry * Math.sqrt(Math.max(0, 1 - (ax + 1) * (ax + 1) / 150)) + 1);
+      p(ax, ay, ax < -2 ? C.L2 : C.L);
+    }
+    r(-6, by + 1, 7, 1, C.L); p(-7, by + 2, C.L);                             /* iç kıvrım çizgisi */
+    r(-8, -2, 5, 2, C.t); r(-8, -2, 5, 1, C.tL);                              /* arka pati */
+    r(2, -2, 10, 2, C.t); r(2, -2, 10, 1, C.tL); p(7, -2, C.tD);              /* ön patiler */
+    el(8, -6, 5, 4, shine);                                                   /* baş */
+    el(13, -4, 3, 2, tanS); r(16, -6, 2, 2, C.nose);
+    r(9, -7, 2, 1, C.tL); p(11, -8, C.tL); p(9, -9, C.t); p(10, -9, C.t);     /* kapalı göz, kaş */
+    el(5, -5, 2, 3, function (nx) { return nx < -0.4 ? C.L : '#211a17'; });  /* kulak */
+    if (own) { r(3, -3, 2, 2, PET_RED); p(4, -1, PET_TAG); }
+    q.b.outline(0.6);
+    return q.b;
+  }
+  if (st === 'walk' || st === 'eat') {
+    var eat = st === 'eat', bob = !eat && (f & 1) ? -1 : 0;
+    var LO = eat ? [0, 0] : [[2, -2], [0, 0], [-2, 2], [0, 0]][f];
+    var lift = eat ? [0, 0, 0, 0] : f === 1 ? [0, 2, 2, 0] : f === 3 ? [2, 0, 0, 2] : [0, 0, 0, 0];
+    /* kuyruk: sırtın üstüne kıvrık (çoban köpeği), salınır; küsken aşağıda */
+    var wg = (f & 1) ? 1 : 0;
+    var tail = sulk ? [[-11, -18], [-13, -16], [-14, -14], [-15, -12], [-15, -10]] :
+      [[-10, -20], [-12, -22], [-13, -24], [-13 + wg, -26], [-12 + wg, -28], [-10 + wg, -29], [-8 + wg, -28]];
+    for (var ti = 0; ti < tail.length; ti++) r(tail[ti][0], tail[ti][1] + bob, 3, 3, ti < 2 ? C.a : ti === tail.length - 1 ? C.tD : (ti === 3 ? C.L : C.a));
+    /* bacak: üstte kalın (but / omuz), altta ince, arka bacakta diz (hock) kırığı, 3 px pati */
+    function leg(x, lift, near, back) {
+      var c = near ? C.t : C.tD, top = -13 + bob, bot = -2 - lift;
+      for (var y = top; y <= bot; y++) {
+        var lw = y < top + 5 ? 3 : 2, ox = back && y > top + 7 ? -1 : back ? 0 : (y < top + 5 ? 0 : 1);
+        r(x + ox, y, lw, 1, c);
+        if (near) p(x + ox, y, y < top + 4 ? C.a : C.tL);
+      }
+      r(x + (back ? -1 : 0), bot + 1, 3, 1, near ? C.tL : dark(C.tD, 0.25));
+    }
+    leg(-9 + LO[1], lift[0], false, true); leg(3 + LO[0], lift[2], false, false);
+    el(-1, -17 + bob, 10, 6, shine);                                          /* gövde */
+    r(-8, -12 + bob, 3, 2, '#211a17');                                        /* kalça gölgesi */
+    el(0, -12 + bob, 6, 1, C.tD);                                             /* kahve karın */
+    leg(-6 - LO[1], lift[1], true, true); leg(6 - LO[0], lift[3], true, false);
+    if (eat) {
+      el(9, -16, 3, 4, shine);                                               /* boyun öne eğik */
+      head(14, -10, false, true);
+    } else {
+      el(8, -21 + bob, 4, 4, shine);                                         /* boyun */
+      head(12, (sulk ? -22 : -26) + bob, false, false);
+    }
+    if (own) {
+      if (eat) { r(10, -14, 2, 5, PET_RED); p(10, -14, PET_REDL); p(11, -9, PET_TAG); }
+      else { r(8, (sulk ? -20 : -24) + bob, 2, 6, PET_RED); p(8, (sulk ? -20 : -24) + bob, PET_REDL); p(9, (sulk ? -14 : -18) + bob, PET_TAG); p(10, (sulk ? -14 : -18) + bob, PET_TAGL); }
+    }
+    if (carryF) petFish(q, eat ? 22 : 21, eat ? 0 : (sulk ? -16 : -20) + bob, carryF, eat);
+    q.b.outline(0.6);
+    return q.b;
+  }
+  /* oturuş / havlama */
+  var bark = st === 'bark' && (f & 1), wag = !sulk && st !== 'bark' && (f & 1), blink = f & 2;
+  var tl = sulk ? [[-12, -3], [-15, -2], [-18, -2]] : wag ? [[-12, -4], [-15, -5], [-17, -7], [-18, -9]] : [[-12, -3], [-15, -3], [-18, -4], [-19, -6]];
+  for (var k = 0; k < tl.length; k++) r(tl[k][0], tl[k][1], 3, 3, k === tl.length - 1 ? C.tD : C.a);
+  el(-6, -8, 7, 7, shine);                                                    /* kalça */
+  r(-7, -2, 6, 2, C.t); r(-7, -2, 6, 1, C.tL);                                /* arka pati */
+  el(0, -15, 6, 9, shine);                                                    /* dik gövde */
+  el(3, -14, 3, 6, tanS);                                                     /* kahve göğüs */
+  r(5, -9, 3, 3, C.tD); r(6, -6, 2, 5, C.tD); r(5, -1, 4, 1, dark(C.tD, 0.3));          /* uzak ön ayak */
+  r(1, -11, 3, 4, C.t); r(2, -7, 2, 6, C.t); p(1, -11, C.tL); r(2, -7, 1, 6, C.tL); r(1, -1, 4, 1, C.tL);   /* yakın ön ayak */
+  var hu = bark ? -2 : sulk ? 3 : 0;
+  head(6, -28 + hu, bark, blink && !bark);
+  if (own) { r(1, -22 + Math.max(0, hu), 9, 1, PET_REDL); r(1, -21 + Math.max(0, hu), 9, 1, PET_RED); r(6, -20 + Math.max(0, hu), 2, 2, PET_TAG); p(6, -20 + Math.max(0, hu), PET_TAGL); }
+  if (carryF) petFish(q, 17, -21 + hu, carryF, false);
+  q.b.outline(0.6);
+  return q.b;
+}
+
+/* mama kabı (çapa: kabın alt ortası) */
+var BOWL = null;
+function bowlSpr() {
+  return BOWL || (BOWL = L.sprite('kr:bowl|' + G().K, function (b) {
+    b.rect(-6, -4, 12, 4, '#c9952f'); b.rect(-5, 0, 10, 1, '#8a6420');
+    b.rect(-6, -4, 12, 1, '#e6be59'); b.rect(-6, -3, 2, 3, '#e0b048'); b.rect(4, -3, 2, 3, '#a87a24');
+    b.rect(-5, -6, 10, 2, '#8a5a30');                                          /* mama */
+    b.set(-3, -6, '#b07a42'); b.set(0, -7, '#b07a42'); b.set(2, -6, '#6a4220'); b.set(-1, -6, '#d89a5a'); b.set(3, -7, '#8a5a30'); b.set(-4, -7, '#8a5a30');
+    b.outline(0.55);
+  }));
+}
+
+HKA.drawPet = function (o) {
+  var H = G(); if (H.K !== 2 || !o) return false;
+  init();
+  var dog = o.k === 'dog', d = o.dir > 0 ? 1 : -1;
+  var st = o.st === 'walk' || o.st === 'sleep' || o.st === 'eat' ? o.st : (o.st === 'bark' && dog ? 'bark' : 'sit');
+  var t = typeof o.t === 'number' ? o.t : H.t, f = 0;
+  if (st === 'walk') f = Math.floor(t * 8) & 3;
+  else if (st === 'sleep') f = H.phase2(t, 0.6);
+  else if (st === 'eat') f = 0;
+  else if (st === 'bark') f = H.phase2(t, 5);
+  else {                                                                       /* oturuş: kuyruk / göz kırpma */
+    f = dog ? H.phase2(t, 4) : H.phase2(t, 1.2);
+    if ((t % 3.7) < 0.14) f |= 2;
+  }
+  var bowl = o.carry && o.carry.k === 'bowl', carryF = o.carry && !bowl ? (o.carry.f || 'hamsi') : '';
+  var sulk = !!o.sulk, happy = o.love > 0 && !sulk;
+  var key = (dog ? 'd' : 'c' + (o.coat || '') + (o.tabby ? 't' : '')) + '|' + d + st + f + (o.own ? 'o' : '') + (o.stray ? 's' : '') + (sulk ? 'k' : '') + (happy ? 'h' : '') + '|' + carryF;
+  var s = PETS.get(key);
+  if (!s) {
+    if (PETS.size >= PETS_MAX) PETS.clear();
+    s = (dog ? buildPetDog : buildPetCat)(o, d, st, f, carryF).toSprite(); PETS.set(key, s);
+  }
+  var R = Math.round, sx = R(H.pX(o.x, o.y)), sy = R(H.pY(o.x, o.y, 0));
+  gShadow(o.x, o.y, dog ? 0.5 : 0.36);
+  var hop = st === 'bark' && f ? 1 : 0;                                       /* havlarken hafif sıçrama */
+  L.blit(s, sx, sy - hop);
+  if (bowl) L.blit(bowlSpr(), sx + d * (dog ? 11 : 9), sy);
+  if (st === 'sleep' && !dog && H.phase2(H.t, 0.5)) {                          /* kedi: küçük z (koy kedileri gibi) */
+    var zc = '#f4eedd', zx = sx - d * 6, zy = sy - 10;
+    L.fr(zx, zy, 0, 0, 4, 1, zc); L.fr(zx, zy, 2, 1, 1, 1, zc); L.fr(zx, zy, 1, 2, 1, 1, zc); L.fr(zx, zy, 0, 3, 4, 1, zc);
+  }
+  return true;
+};
+
+/* =====================================================================
+   GAZETECİ ÇOCUK (v2.16): ince kişi + kısa pantolon (dizler açık), çapraz askılı gazete çantası, elde katlı gazete
+   ===================================================================== */
+var NB = new Map(), nbF = null;
+HKA.onReset(function () { NB.clear(); nbF = null; });
+function buildNewsOver(o, f, lf, lb, act, hold) {
+  var b = L.buf(), skin = col(o.skin, '#e0a878'), skS = dark(skin, 0.2);
+  function r(x, y, w, h, c) { b.rect(f > 0 ? x : -x - w, y, w, h, c); }
+  function p(x, y, c) { b.set(f > 0 ? x : -x - 1, y, c); }
+  /* dizler (kısa pantolon): bacaklar aynalanmaz, kişi çiziminin bacak sütunları */
+  b.rect(-7, -8 - lf, 6, 3, skin); b.rect(-7, -8 - lf, 1, 3, lite(skin, 0.15)); b.rect(-7, -8 - lf, 6, 1, dark(skin, 0.3));
+  b.rect(1, -8 - lb, 6, 3, skS); b.rect(1, -8 - lb, 6, 1, dark(skin, 0.4));
+  /* askı: ön omuzdan arka kalçaya */
+  for (var i = 0; i < 13; i++) { p(5 - i, -26 + i, '#4a3322'); p(5 - i, -25 + i, '#6a4a32'); }
+  /* çanta (arka kalça) */
+  r(-15, -21, 9, 3, '#e8dcc0'); r(-14, -22, 3, 1, '#f6eedc'); r(-10, -23, 3, 2, '#d8ccb0'); r(-14, -21, 7, 1, '#2c231a');   /* taşan gazeteler */
+  r(-16, -18, 11, 10, '#8a6a3c'); r(-16, -18, 11, 2, '#a8834e'); r(-16, -18, 1, 10, '#9a784a'); r(-6, -16, 1, 8, '#6a4e2a');
+  r(-16, -9, 11, 1, '#5a4024'); r(-12, -15, 3, 2, P2().brass || '#c9952f'); p(-12, -15, '#e6be59');
+  /* elde katlı gazete */
+  if (hold) {
+    var hy = act ? -29 : -21;
+    r(8, hy, 6, 8, '#e8dcc0'); r(8, hy, 6, 2, '#2c231a'); r(9, hy + 3, 4, 1, '#8f7a57'); r(9, hy + 5, 3, 1, '#8f7a57');
+    p(12, hy + 5, '#a8281e'); r(13, hy, 1, 8, '#c9bc9c');
+  }
+  b.outline(0.55);
+  return b.toSprite();
+}
+function P2() { return PAL || G().PAL; }
+HKA.drawNewsboy = function (bb) {
+  var H = G(); if (H.K !== 2) return false;
+  init();
+  if (!nbF) nbF = { look: H.v('GZ_LOOK'), at: H.v('drawPersonAt'), T: H.v('T'), say: H.v('GZ_SAY') };
+  var o = {}; for (var k in nbF.look) o[k] = nbF.look[k];
+  var moving = Math.abs(bb.vx) + Math.abs(bb.vy) > 0;
+  o.face = bb.face; o.walk = moving;
+  nbF.at(bb, o, function () {
+    var R = Math.round, sx = R(H.pX(bb.x, bb.y)), sy = R(H.pY(bb.x, bb.y, 0)), f = bb.face > 0 ? 1 : -1;
+    var wf = moving ? (Math.floor((bb.bob || 0) * 0.16 * ANIM.walkFps) & 3) : 0, W = moving ? WALK[wf] : null;
+    var Wk = W && (wf === 0 || wf === 2) ? W : null, lf = Wk && Wk.fl > 0 ? 2 : 0, lb = Wk && Wk.bl > 0 ? 2 : 0;
+    var hold = bb.ph !== 'out', act = !!bb.act;
+    var key = f + '|' + lf + lb + '|' + (act ? 1 : 0) + (hold ? 1 : 0), s = NB.get(key);
+    if (!s) { s = buildNewsOver(o, f, lf, lb, act, hold); NB.set(key, s); }
+    L.blit(s, sx, sy + (W ? W.body : 0));
+  });
+  var uiQ = H.v('uiQ'), T = nbF.T;
+  var say = (bb.ph === 'in' ? bb.t % 6 < nbF.say : bb.sayT < nbF.say) ? T(bb.morn ? 'gzYellMorn' : 'gzYell') : null;
+  if (say) uiQ.push({ t: 4, x: bb.x, y: bb.y, z: 42, s: '“' + say + '”', c: '#ffe2c8', a: 1 });
+  if (bb.ph !== 'out') uiQ.push({ t: 4, x: bb.x, y: bb.y, z: 29, s: '📰 ' + T('gzBoy'), c: '#ffc94a', a: 0.95 });
+  return true;
+};
+
 /* test / tanı */
-HKA.karakterStats = function () { return { outfits: OUT.size, builds: builds, cats: CATS.size, emotes: EMO.size }; };
+HKA.karakterStats = function () { return { outfits: OUT.size, builds: builds, cats: CATS.size, emotes: EMO.size, pets: PETS.size }; };
 })();
