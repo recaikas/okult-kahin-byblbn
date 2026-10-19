@@ -478,6 +478,9 @@ function resize() {
   VH = cvs.clientHeight || window.innerHeight;
   var base = clamp(Math.round(VW / 330), 2, 4);
   PXS = clamp(base + (zoomLvl - 2), 1, 6);
+  /* v2.18-deneme: dar ekranda (telefon, taban 2) varsayılan yakınlık ~%25 artar (2 → 2,5): istasyonlar ayrık görünür, oyuncu yerini seçebilir.
+     "−" eski varsayılana (2) döner, "+" 3,5. Geniş ekranda (taban ≥ 3) değişmez. */
+  if (base === 2) PXS = [2, 2, 2.5, 3.5][clamp(zoomLvl, 1, 3)];
   W = Math.ceil(VW / PXS); H = Math.ceil(VH / PXS);
   cvs.width = W * FK; cvs.height = H * FK; curK = FK;
   ctx.imageSmoothingEnabled = false;
@@ -3657,6 +3660,7 @@ function updatePlayer(dt) {
   if (S.ctrl === 0) ctrlWalk += mv;
 
   var acted = false, i;
+  emekPickActive();                                  /* v2.18-deneme: oyuncunun tek aktif istasyonu */
   /* §8: para taşıyorken kasa önceliklidir */
   if (hasCarry(player, isMoney) && dist2(player.x, player.y, safe.x, safe.y) < 3.2) {
     iDeposit(player, dt);
@@ -3664,30 +3668,30 @@ function updatePlayer(dt) {
   }
   for (i = 0; i < spots.length; i++) {
     var s = spots[i]; if (AREAS[s.z].locked || zoneAuto(i)) continue;
-    if (dist2(player.x, player.y, s.x, s.y + 0.9) < 1.6) acted = (emek() ? iPull(player, s, dt) : iPickFish(player, s, dt)) || acted;   /* v2.18-deneme: başında durunca tek tek */
+    if (nearSt('n' + i, s.x, s.y + 0.9, 1.6)) acted = (emek() ? iPull(player, s, dt) : iPickFish(player, s, dt)) || acted;   /* v2.18-deneme: başında durunca tek tek */
   }
   for (i = 0; i < XNETS.length; i++) {
     var xs = XNETS[i]; if (!xnetOn(xs) || zoneAuto(xs.z)) continue;
-    if (dist2(player.x, player.y, xs.x, xs.y + 0.9) < 1.6) acted = (emek() ? iPull(player, xs, dt) : iPickFish(player, xs, dt)) || acted;
+    if (nearSt('x' + i, xs.x, xs.y + 0.9, 1.6)) acted = (emek() ? iPull(player, xs, dt) : iPickFish(player, xs, dt)) || acted;
   }
   acted = emekPlayerBox(dt) || acted;                /* v2.18-deneme: ağ sandığından al */
   for (i = 0; i < tables.length; i++) {
     var tb = tables[i]; if (AREAS[tb.z].locked || zoneAuto(i)) continue;
-    if (dist2(player.x, player.y, tb.x, tb.y) < 1.6) acted = iDropTable(player, tb, dt) || acted;
-    if (dist2(player.x, player.y, tb.mat.x, tb.mat.y) < 1.5) acted = iPickMat(player, tb.mat, dt) || acted;
+    if (nearSt('t' + i, tb.x, tb.y, 1.6)) acted = iDropTable(player, tb, dt) || acted;
+    if (nearSt('m' + i, tb.mat.x, tb.mat.y, 1.5)) acted = iPickMat(player, tb.mat, dt) || acted;
   }
   if (!AREAS[smoker.z].locked && !zoneAuto(smoker.z)) {
-    if (dist2(player.x, player.y, smoker.x, smoker.y) < 1.6) acted = iDropSmoker(player, dt) || acted;
-    if (dist2(player.x, player.y, smoker.mat.x, smoker.mat.y) < 1.5) acted = iPickMat(player, smoker.mat, dt) || acted;
+    if (nearSt('s', smoker.x, smoker.y, 1.6)) acted = iDropSmoker(player, dt) || acted;
+    if (nearSt('sm', smoker.mat.x, smoker.mat.y, 1.5)) acted = iPickMat(player, smoker.mat, dt) || acted;
   }
   if (!AREAS[kitchen.z].locked && !zoneAuto(kitchen.z)) {
-    if (dist2(player.x, player.y, kitchen.x, kitchen.y) < 1.6) acted = iDropKitchen(player, dt) || acted;
-    if (dist2(player.x, player.y, kitchen.mat.x, kitchen.mat.y) < 1.5) acted = iPickMat(player, kitchen.mat, dt) || acted;
+    if (nearSt('k', kitchen.x, kitchen.y, 1.6)) acted = iDropKitchen(player, dt) || acted;
+    if (nearSt('km', kitchen.mat.x, kitchen.mat.y, 1.5)) acted = iPickMat(player, kitchen.mat, dt) || acted;
   }
   for (i = 0; i < counters.length; i++) {
     var c = counters[i]; if (AREAS[c.z].locked || !c.open) continue;
-    if (dist2(player.x, player.y, c.x, c.y) < 1.8 && !(c.fish && zoneAuto(zoneOfFish(c.fish)))) acted = iDropCounter(player, c, dt) || acted;
-    if (dist2(player.x, player.y, c.tray.x, c.tray.y) < 1.5) acted = iCollectTray(player, c, dt) || acted;
+    if (nearSt('c' + i, c.x, c.y, 1.8) && !(c.fish && zoneAuto(zoneOfFish(c.fish)))) acted = iDropCounter(player, c, dt) || acted;
+    if (nearSt('c' + i, c.tray.x, c.tray.y, 1.5)) acted = iCollectTray(player, c, dt) || acted;
   }
   if (dist2(player.x, player.y, safe.x, safe.y) < 1.8) acted = iDeposit(player, dt) || acted;
   if (DEPOT.lvl && atDoor(player, DEPOT.door, 1.1)) acted = iDepotIn(player, dt) || acted;
@@ -3957,6 +3961,7 @@ function aiTezgahtar(w, sp, dt) {
 }
 /* bölgesinde boşta bekleme noktası */
 function idleAtZone(w, sp, dt) {
+  if (emek() && w.role === 'hamal') { var hs = hamalIdleSpot(w.zone); goTo(w, hs.x, hs.y, sp, dt, 0.25); return; }   /* v2.18-deneme: hamal masanın önünde durmasın */
   var t = zoneTable(w.zone) || tables[0];
   goTo(w, t.x + 1.4, t.y + 1.2, sp, dt, 1.1);
 }
@@ -3979,7 +3984,8 @@ function zoneCounter(z) {
 function aiFiletocu(w, sp, dt) {
   if (!w.table || AREAS[w.table.z].locked) assignFiletocu(w);
   if (!w.table) { idleAtZone(w, sp, dt); return; }
-  goTo(w, w.table.x + 0.8, w.table.y + 0.15, sp, dt, 0.25);
+  var fs = filetocuSpot(w.table);
+  goTo(w, fs.x, fs.y, sp, dt, 0.25);
 }
 
 /* =========================================================
@@ -7340,6 +7346,7 @@ function render() {
   drawYardGround();
   if (ARR.on) arrDrawGround();             /* v2.17: düzenleme modu — geçerli alan ızgarası + ayak izleri */
 
+  if (S.started && emek()) drawEmekActive();       /* v2.18-deneme: aktif istasyonun vurgu halkası */
   var list = [], i;
   function push(d, fn) { list.push({ d: d, f: fn }); }
 
@@ -13399,7 +13406,11 @@ spots.forEach(function (s, i) { s.box = []; s.bx = NET_BOX[i][0]; s.by = NET_BOX
 XNETS.forEach(function (s, i) { s.box = []; s.bx = XNET_BOX[i][0]; s.by = XNET_BOX[i][1]; });
 function allNets() { return spots.concat(XNETS); }
 function emNetOn(s) { return s.xn ? xnetOn(s) : !AREAS[s.z].locked; }
-function netStand(s) { return { x: s.x + 0.5, y: s.y + 1.3 }; }
+/* personel durma noktaları (Emekçi Mod): oyuncunun tipik durduğu yerden (ağ: sırt tarafı, masa: ön, tezgâh: batı) ≥0,6 karo ayrık.
+   Balıkçı ağın yan/arka kenarında, Filetocu masanın arkasında, Tezgâhtar tezgâhın kuzey-batı ucunda, Hamal hasırın güneyinde bekler. */
+function netStand(s) { return s.face === 'n' ? { x: s.x - 0.6, y: s.y + 0.55 } : { x: s.x + 0.55, y: s.y + 0.3 }; }
+function filetocuSpot(t) { return emek() ? { x: t.x + 0.35, y: t.y - 0.5 } : { x: t.x + 0.8, y: t.y + 0.15 }; }
+function hamalIdleSpot(z) { var t = zoneTable(z) || tables[0]; return { x: t.mat.x + 0.1, y: t.mat.y + 0.95 }; }
 function boxCap(s) {
   var m = 1;
   for (var i = 0; i < workers.length; i++) if (workers[i].role === 'balikci' && workers[i].zone === s.z) m = Math.max(m, wLvMul(workers[i]));
@@ -13465,27 +13476,120 @@ function emekPlayerBox(dt) {
   var nets = allNets(), acted = false;
   for (var i = 0; i < nets.length; i++) {
     var s = nets[i]; if (!s.box.length || !emNetOn(s) || zoneAuto(s.z)) continue;
-    if (dist2(player.x, player.y, s.bx, s.by) < 0.8) acted = iPickBox(player, s, dt) || acted;
+    if (nearSt('b' + i, s.bx, s.by, 0.8)) acted = iPickBox(player, s, dt) || acted;
   }
   return acted;
 }
 
+/* ---------- tek istasyon kuralı: oyuncu aynı anda yalnız BİR istasyonda çalışır ----------
+   Aktif istasyon = erişiminde olduğu, yapacak işi olan istasyonlardan merkezi en yakın olan. Kilit: bir istasyon aktifken,
+   işi sürdükçe ve erişim yarıçapı + EM_HYST'ten uzaklaşılmadıkça başkasına geçmez (keserken açı değiştirince hasırdan toplamaya
+   başlamasın). Diğer istasyonların oyuncuya bağlı eylemi (çekme, sandıktan/hasırdan alma, bırakma, kesim/satış hızı) o an çalışmaz.
+   Kimlikler: n/x ağ, b sandık, t masa, m hasır, s/sm füme, k/km mutfak, c tezgâh (+ kasası). Kapalıyken emA hep null, mesafe eski. */
+var EM_HYST = 0.3;
+var emA = null;                                       /* { id, x, y, r, x2, y2, r2, w, rr } */
+function nearSt(id, x, y, r2) { return emek() ? emReach(id, x, y, r2) : dist2(player.x, player.y, x, y) < r2; }
+function emReach(id, x, y, r2) {
+  if (!emA || emA.id !== id) return false;
+  var r = Math.sqrt(r2) + EM_HYST;
+  return dist2(player.x, player.y, x, y) < r * r;
+}
+function emStIn(st, ext) {
+  var r = st.r + ext, d = dist2(player.x, player.y, st.x, st.y);
+  if (d < r * r) return true;
+  if (st.x2 === undefined) return false;
+  r = st.r2 + ext; d = dist2(player.x, player.y, st.x2, st.y2);
+  return d < r * r;
+}
+function emStDist(st) {
+  var d = dist2(player.x, player.y, st.x, st.y);
+  if (st.x2 !== undefined) d = Math.min(d, dist2(player.x, player.y, st.x2, st.y2));
+  return d;
+}
+function emSt(L, id, w, x, y, r2, rr, x2, y2, r22) {
+  L.push({ id: id, w: !!w, x: x, y: y, r: Math.sqrt(r2), rr: rr, x2: x2, y2: y2, r2: r22 === undefined ? 0 : Math.sqrt(r22) });
+}
+function emAnyFits(items, filt) { for (var i = 0; i < items.length; i++) if (fits(player, items[i]) && (!filt || filt(items[i]))) return true; return false; }
+function emCutWork(tb) {                              /* masada kesilecek iş var mı (hasır doluysa yok: oyuncu toplamaya geçebilsin) */
+  if (tb.cur) return true;
+  var pc = pileCap(tb);
+  for (var j = 0; j < tb.inn.length; j++) if (pileCount(tb, tb.inn[j].f) <= pc - FISH[tb.inn[j].f].out) return true;
+  return false;
+}
+function emWaiting(c) {                              /* tezgâhta bekleyen müşteri var mı (satış hızı oyuncuya bağlı) */
+  for (var q = 0; q < c.slots.length; q++) if (c.slots[q] && c.slots[q].state === 'wait') return true;
+  return false;
+}
+function emStations() {
+  var L = [], nets = allNets(), i, s, tb, c;
+  for (i = 0; i < nets.length; i++) {
+    s = nets[i]; if (!emNetOn(s) || zoneAuto(s.z)) continue;
+    emSt(L, i < spots.length ? 'n' + i : 'x' + (i - spots.length), s.stock.length && fits(player, s.stock[s.stock.length - 1]), s.x, s.y + 0.9, 1.6, 0.7);
+    emSt(L, 'b' + i, s.box.length && emAnyFits(s.box), s.bx, s.by, 0.8, 0.5);
+  }
+  for (i = 0; i < tables.length; i++) {
+    tb = tables[i]; if (AREAS[tb.z].locked || zoneAuto(i)) continue;
+    var drop = tb.inn.length < tb.max && hasCarry(player, function (it) { return tableTakes(tb, it); });
+    var cut = emCutWork(tb) && !filetocuAt(tb);                    /* Filetocu kesiyorsa oyuncuyu masaya kilitleme */
+    emSt(L, 't' + i, drop || cut, tb.x, tb.y, 1.6, 0.75);
+    emSt(L, 'm' + i, tb.mat.items.length && emAnyFits(tb.mat.items), tb.mat.x, tb.mat.y, 1.5, 0.6);
+  }
+  if (!AREAS[smoker.z].locked && !zoneAuto(smoker.z)) {
+    emSt(L, 's', smoker.inn.length < smoker.max && hasCarry(player, smokable), smoker.x, smoker.y, 1.6, 0.7);
+    emSt(L, 'sm', smoker.mat.items.length && emAnyFits(smoker.mat.items), smoker.mat.x, smoker.mat.y, 1.5, 0.6);
+  }
+  if (!AREAS[kitchen.z].locked && !zoneAuto(kitchen.z)) {
+    emSt(L, 'k', hasCarry(player, kitchenTakes), kitchen.x, kitchen.y, 1.6, 0.7);
+    emSt(L, 'km', kitchen.mat.items.length && emAnyFits(kitchen.mat.items), kitchen.mat.x, kitchen.mat.y, 1.5, 0.6);
+  }
+  for (i = 0; i < counters.length; i++) {
+    c = counters[i]; if (AREAS[c.z].locked || !c.open) continue;
+    var w = c.tray.items.length > 0 || emWaiting(c);
+    if (!w && c.buffer.length < counterMax(c) && !(c.fish && zoneAuto(zoneOfFish(c.fish))) && hasCarry(player, function (it) { return acceptsAt(c, it); })) w = true;
+    emSt(L, 'c' + i, w, c.x, c.y, 1.8, 0.8, c.tray.x, c.tray.y, 1.5);
+  }
+  return L;
+}
+function emekPickActive() {
+  if (!emek()) { emA = null; return; }
+  var L = emStations(), i, cur = null, best = null, bd = 1e9, d;
+  if (emA) for (i = 0; i < L.length; i++) if (L[i].id === emA.id) { cur = L[i]; break; }
+  if (cur && cur.w && emStIn(cur, EM_HYST)) { emA = cur; return; }       /* kilit: işi sürüyor, erişimden çok uzaklaşmadı */
+  for (i = 0; i < L.length; i++) {
+    if (!L[i].w || !emStIn(L[i], 0)) continue;
+    d = emStDist(L[i]); if (d < bd) { bd = d; best = L[i]; }
+  }
+  emA = best;
+}
+/* aktif istasyonun altında ince vurgu halkası (yerde; nesnelerin altında kalır) */
+function drawEmekActive() {
+  if (!emA) return;
+  var sx = R(pX(emA.x, emA.y)), sy = R(pY(emA.x, emA.y, 0)), pulse = 0.5 + 0.5 * Math.sin(gameT * 4);
+  ctx.save();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255,201,74,' + (0.5 + pulse * 0.3).toFixed(2) + ')';
+  ctx.beginPath(); ctx.ellipse(sx, sy, emA.rr * 17, emA.rr * 8.5, 0, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = 'rgba(10,26,39,.35)';
+  ctx.beginPath(); ctx.ellipse(sx, sy + 1, emA.rr * 17, emA.rr * 8.5, 0, 0, TAU); ctx.stroke();
+  ctx.restore();
+}
+
 /* ---------- başında kim var ---------- */
-function vendorSpot(c) { return { x: c.x - 0.95, y: c.y + 0.1 }; }
+function vendorSpot(c) { return { x: c.x - 0.95, y: c.y - 0.75 }; }
 function vendorAt(c) {
   var p = vendorSpot(c);
   for (var i = 0; i < workers.length; i++) { var w = workers[i]; if (w.role === 'tezgahtar' && w.stall === c.key && dist2(w.x, w.y, p.x, p.y) < 0.3) return w; }
   return null;
 }
 function filetocuAt(t) {
-  for (var i = 0; i < workers.length; i++) { var w = workers[i]; if (w.role === 'filetocu' && w.table === t && dist2(w.x, w.y, t.x + 0.8, t.y + 0.15) < 0.3) return w; }
+  for (var i = 0; i < workers.length; i++) { var w = workers[i]; if (w.role === 'filetocu' && w.table === t && dist2(w.x, w.y, filetocuSpot(t).x, filetocuSpot(t).y) < 0.3) return w; }
   return null;
 }
 function mgrAt(o) { var a = mgrAct[o.z]; return !!(a && a.fill && a.fill.o === o && a.atFill); }
 /* masa: başında biri yoksa 0 (kesmez) */
 function emekCutMul(t) {
   var m = 0, by = '', w = filetocuAt(t);
-  if (dist2(player.x, player.y, t.x, t.y) < 1.6) { m = knifeMul(); by = 'p'; }
+  if (emReach('t' + tables.indexOf(t), t.x, t.y, 1.6)) { m = knifeMul(); by = 'p'; }
   if (w) { var wm = wLvMul(w) * workerSpeedMul(); if (wm > m) { m = wm; by = 'w'; } }
   if (!m && mgrAt(t)) { m = EMEK_MGR; by = 'm'; }
   emekMark(t, by, t.cur ? clamp(t.t / FISH[t.cur.f].cut, 0, 1) : 0);
@@ -13494,7 +13598,7 @@ function emekCutMul(t) {
 /* tezgâh: satıcı varsa 1 (usta/ses çarpanıyla), yoksa 0,35 */
 function emekSellMul(c) {
   var m = 0, by = '', v = vendorAt(c);
-  if (dist2(player.x, player.y, c.x, c.y) < 1.8) { m = voiceMul(); by = 'p'; }
+  if (emReach('c' + counters.indexOf(c), c.x, c.y, 1.8)) { m = voiceMul(); by = 'p'; }
   if (v) { var vm = wLvMul(v) * workerSpeedMul(); if (vm > m) { m = vm; by = 'w'; } }
   if (!m && mgrAt(c)) { m = EMEK_MGR; by = 'm'; }
   c._att = m > 0;
@@ -13525,7 +13629,7 @@ function aiVendorE(w, sp, dt) {
   }
   if (hasCarry(w, isGoods)) {                                        /* eski moddan elinde kalan mal: tezgâha ya da hasıra */
     var dc = c && hasCarry(w, function (it) { return acceptsAt(c, it); }) && c.buffer.length < counterMax(c) ? c : null;
-    if (dc) { if (goTo(w, dc.x - 0.5, dc.y - 0.6, sp, dt, 1.0)) iStock(w, dc, dt); return; }
+    if (dc) { if (goTo(w, dc.x - 0.6, dc.y + 0.8, sp, dt, 0.8)) iStock(w, dc, dt); return; }
     var m0 = zoneTable(w.zone) && zoneTable(w.zone).mat;
     if (m0 && goTo(w, m0.x, m0.y, sp, dt, 0.8)) { var gi = popCarry(w, isGoods); if (gi) m0.items.push(gi); }
     return;
@@ -13583,7 +13687,7 @@ function aiHamalE(w, sp, dt) {
   if (hasCarry(w, isGoods)) {                                        /* tezgâha bırak */
     var dc = w.ej && w.ej.c && w.ej.c.open && w.ej.c.buffer.length < counterMax(w.ej.c) && hasCarry(w, function (it) { return acceptsAt(w.ej.c, it); }) ? w.ej.c : null;
     if (!dc) mgrZoneCounters(w.zone).forEach(function (q) { if (q.buffer.length < counterMax(q) && hasCarry(w, function (it) { return acceptsAt(q, it); }) && (!dc || q.buffer.length < dc.buffer.length)) dc = q; });
-    if (dc) { w.ej = { k: 'ctr', c: dc }; if (goTo(w, dc.x - 0.5, dc.y - 0.6, sp, dt, 1.0)) iStock(w, dc, dt); return; }
+    if (dc) { w.ej = { k: 'ctr', c: dc }; if (goTo(w, dc.x - 0.6, dc.y + 0.8, sp, dt, 0.8)) iStock(w, dc, dt); return; }
     var bm = t && t.mat;                                              /* teslim yeri yok: hasıra geri */
     if (bm && goTo(w, bm.x, bm.y, sp, dt, 0.8)) { var gi = popCarry(w, isGoods); if (gi) { bm.items.push(gi); fly(w.x, w.y, carryTopZ(w, w.carry.length + 1), bm.x, bm.y, 6, gi, 0.26); } }
     return;
@@ -13606,7 +13710,7 @@ function emekMgrFill(z) {
     if (!has) { var vp = vendorSpot(cs[i]); return { k: 'ctr', o: cs[i], x: vp.x, y: vp.y }; }
   }
   var t = zoneTable(z);
-  if (t && !AREAS[t.z].locked && !roleCount(z, 'filetocu')) return { k: 'tbl', o: t, x: t.x + 0.8, y: t.y + 0.15 };
+  if (t && !AREAS[t.z].locked && !roleCount(z, 'filetocu')) return { k: 'tbl', o: t, x: filetocuSpot(t).x, y: filetocuSpot(t).y };
   if (!roleCount(z, 'balikci') && spots[z]) { var st = netStand(spots[z]); return { k: 'net', o: spots[z], x: st.x, y: st.y }; }
   return null;
 }
@@ -15727,7 +15831,8 @@ window.BT = {
 /* v2.18-deneme — Emekçi Mod test kancaları */
 window.BT.emek = {
   on: emek, set: function (v) { S.emek = v ? 1 : 0; syncEmekUI(); }, setUI: emekSet, step: function (dt, n) { for (var i = 0; i < (n || 1); i++) gameStep(dt, true); },
-  keys: keys, nets: allNets, boxCap: boxCap, netStand: netStand, vendorSpot: vendorSpot, cutMul: emekCutMul, sellMul: emekSellMul,
+  keys: keys, nets: allNets, boxCap: boxCap, netStand: netStand, vendorSpot: vendorSpot, filetocuSpot: filetocuSpot, hamalIdleSpot: hamalIdleSpot,
+  active: function () { return emA ? emA.id : null; }, pick: emekPickActive, HYST: EM_HYST, cutMul: emekCutMul, sellMul: emekSellMul,
   lvUp: emekLvUp, ustaCost: ustaCost, wage: workerWage, rolePrice: rolePrice, cost: emekCost, gift: emekGiftCheck, cardOpen: emekCardOpen,
   hamalJob: hamalJob, mgrFill: emekMgrFill, awayMul: emekAwayMul, pullT: pullT, padLvl: padLvl, retCompute: retCompute,
   K: { PULL_T: PULL_T, BOX_CAP: BOX_CAP, SELL_T: EMEK_SELL_T, IDLE_SELL: EMEK_IDLE_SELL, START: EMEK_START, PRICE: EMEK_PRICE }

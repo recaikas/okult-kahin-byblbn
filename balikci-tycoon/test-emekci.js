@@ -115,12 +115,82 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     for (let i = 0; i < 4; i++) t.inn.push({ k: 'fish', f: 'hamsi' });
     const w = BT.hire('filetocu', true, 0);
     BT.emek.step(0.05, 120);
-    o.fil = t.mat.items.length; o.filAt = Math.hypot(w.x - (t.x + 0.8), w.y - (t.y + 0.15)).toFixed(2);
+    o.fil = t.mat.items.length; const fs0 = BT.emek.filetocuSpot(t); o.filAt = Math.hypot(w.x - fs0.x, w.y - fs0.y).toFixed(2);
     return o;
   });
   ok(R.tbl.alone.mat === 0 && R.tbl.alone.tt === 0, 'masa başında kimse yokken kesti ' + JSON.stringify(R.tbl));
   ok(R.tbl.player >= 3, 'oyuncu başındayken kesmedi ' + JSON.stringify(R.tbl));
   ok(R.tbl.fil >= 3, 'Filetocu varken kesmedi ' + JSON.stringify(R.tbl));
+
+  /* ---- 2b) tek istasyon kuralı: masada keserken hasır/sandık erişimine kayınca yalnız masa çalışır ---- */
+  const oneSt = () => p.evaluate(() => {
+    const t = BT.tables[0], P = BT.player, s = BT.spots[0], E = BT.emek, o = {};
+    const rate0 = s.rate; BT.workers.length = 0; t.worker = null; BT.S.tut = 99; s.rate = 1e9; s.stock.length = 0;
+    const far = () => { P.x = 9; P.y = 5.5; E.step(0.05, 2); };
+    const setup = () => {
+      far(); P.carry.length = 0; t.inn.length = 0; t.cur = null; t.t = 0; t.mat.items.length = 0;
+      for (let i = 0; i < 6; i++) t.inn.push({ k: 'fish', f: 'hamsi' });
+      for (let i = 0; i < 4; i++) t.mat.items.push({ k: 'fileto', f: 'hamsi' });
+      s.box.length = 0; for (let i = 0; i < 5; i++) s.box.push({ k: 'fish', f: 'hamsi' });
+    };
+    const left = () => t.inn.length + (t.cur ? 1 : 0);
+    /* a) masada başla, sandık erişimine (masa ∩ sandık) kay: sandıktan alma yok, kesim sürüyor */
+    setup(); P.x = 5.7; P.y = 1.7; E.step(0.05, 3); o.a0 = E.active();
+    P.x = 4.3; P.y = 1.7; const l0 = left(); E.step(0.05, 10);
+    o.a = { act: E.active(), box: s.box.length, carry: P.carry.length, cut: l0 - left() };
+    /* b) masa ∩ hasır: hasırdan toplama yok; masa boşalana kadar hiç fileto sırtlanmaz; boşalınca toplanır */
+    setup(); P.x = 5.7; P.y = 1.7; E.step(0.05, 3);
+    P.x = 6.4; P.y = 2.0; o.b0 = [Math.hypot(P.x - t.x, P.y - t.y).toFixed(2), Math.hypot(P.x - t.mat.x, P.y - t.mat.y).toFixed(2)];
+    let during = 0, maxMat = 0, n = 0;
+    while (left() > 0 && n++ < 400) { E.step(0.05, 1); during = Math.max(during, P.carry.length); maxMat = Math.max(maxMat, t.mat.items.length); }
+    o.b = { during, act: E.active(), mat: t.mat.items.length, maxMat, carryBefore: P.carry.length };
+    E.step(0.05, 40);
+    o.after = { carry: P.carry.length, mat: t.mat.items.length, act: E.active() };
+    /* c) erişim yarıçapı + 0,3 dışına çıkınca kilit düşer: sandık (yakın) devreye girer */
+    setup(); P.x = 5.7; P.y = 1.7; E.step(0.05, 3); P.x = 3.4; P.y = 2.3; E.step(0.05, 6);
+    o.c = { act: E.active(), carry: P.carry.length };
+    far(); P.carry.length = 0; s.rate = rate0; s.box.length = 0; t.mat.items.length = 0; t.inn.length = 0; t.cur = null;
+    return o;
+  });
+  R.one = await oneSt();
+  ok(R.one.a0 === 't0' && R.one.a.act === 't0' && R.one.a.box === 5 && R.one.a.carry === 0 && R.one.a.cut >= 1, 'tek istasyon: keserken sandık erişimine kayınca ' + JSON.stringify(R.one));
+  ok(R.one.b.during === 0 && R.one.b.maxMat >= 8, 'tek istasyon: kesim sürerken hasırdan fileto toplandı ' + JSON.stringify(R.one));
+  ok(R.one.after.carry >= 5 && R.one.after.mat <= 4, 'tek istasyon: masa boşalınca hasır toplanmadı ' + JSON.stringify(R.one));
+  ok(R.one.c.act === 'b0' && R.one.c.carry >= 1, 'tek istasyon: kilit erişim+0,3 dışında düşmedi ' + JSON.stringify(R.one));
+  /* kapalı mod: eski davranış (kilit yok; masa keserken hasırdan da toplar) */
+  R.oneOff = await p.evaluate(() => {
+    const t = BT.tables[0], P = BT.player, s = BT.spots[0], E = BT.emek;
+    E.set(false);
+    BT.workers.length = 0; t.worker = null; P.carry.length = 0; t.cur = null; t.t = 0;
+    P.x = 9; P.y = 5.5; E.step(0.05, 2);
+    t.inn.length = 0; for (let i = 0; i < 6; i++) t.inn.push({ k: 'fish', f: 'hamsi' });
+    t.mat.items.length = 0; for (let i = 0; i < 4; i++) t.mat.items.push({ k: 'fileto', f: 'hamsi' });
+    P.x = 6.4; P.y = 2.0; E.step(0.05, 8);
+    const o = { act: E.active(), carry: P.carry.length, left: t.inn.length + (t.cur ? 1 : 0) };
+    E.set(true); P.carry.length = 0; t.inn.length = 0; t.cur = null; t.mat.items.length = 0; P.x = 9; P.y = 5.5; E.step(0.05, 2);
+    return o;
+  });
+  ok(R.oneOff.act === null && R.oneOff.carry >= 4 && R.oneOff.left > 0, 'kapalı modda eski davranış (kesim sürerken toplar) ' + JSON.stringify(R.oneOff));
+  /* personel noktaları: birbirinden ve oyuncunun tipik durduğu yerden ≥ 0,6 karo */
+  R.spots = await p.evaluate(() => {
+    const E = BT.emek, bad = [], pts = {};
+    for (let z = 0; z < 4; z++) {
+      const s = BT.spots[z], t = BT.tables[z], c = BT.counters.find(q => q.key === 'b' + z) || BT.counters[0];
+      const W = { balikci: E.netStand(s), filetocu: E.filetocuSpot(t), hamal: E.hamalIdleSpot(z), tezgahtar: E.vendorSpot(c) };
+      const Pl = { net: { x: s.x + 0.3, y: s.y + 1.2 }, tbl: { x: t.x + 0.4, y: t.y + 0.5 }, mat: { x: t.mat.x - 0.3, y: t.mat.y + 0.45 }, ctr: { x: c.x - 0.9, y: c.y + 0.2 } };
+      const nm = Object.keys(W);
+      for (let i = 0; i < nm.length; i++) {
+        for (let j = i + 1; j < nm.length; j++) if (Math.hypot(W[nm[i]].x - W[nm[j]].x, W[nm[i]].y - W[nm[j]].y) < 0.6) bad.push(z + ':' + nm[i] + '/' + nm[j]);
+        for (const k in Pl) if (Math.hypot(W[nm[i]].x - Pl[k].x, W[nm[i]].y - Pl[k].y) < 0.6) bad.push(z + ':' + nm[i] + '~' + k);
+      }
+      if (z === 0) for (const k in W) if (!BT.canStand(W[k].x, W[k].y)) bad.push('stand:' + k);
+      pts[z] = W;
+    }
+    return { bad };
+  });
+  ok(!R.spots.bad.length, 'personel durma noktaları üst üste ' + JSON.stringify(R.spots));
+  R.zoom = await p.evaluate(() => { const d = BT.dbg(); return { PXS: d.PXS, VW: d.VW }; });
+  ok(R.zoom.VW > 400 || R.zoom.PXS === 2.5, 'telefon varsayılan yakınlığı 2,5 değil ' + JSON.stringify(R.zoom));
 
   /* ---- 3) tezgâh hızı ---- */
   R.ctr = await p.evaluate(() => {
@@ -192,9 +262,11 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     BT.workers.length = 0; BT.tables.forEach(q => { q.worker = null; }); BT.customers.length = 0; c.slots.fill(null);
     o.price = [BT.emek.cost(1300), BT.emek.cost(120)];
     P.x = t.x + 0.4; P.y = t.y + 0.5; t.cur = { k: 'fish', f: 'hamsi' }; t.t = 0;
+    BT.emek.pick();                                         /* tek istasyon kuralı: aktif istasyon seçilsin */
     o.knife0 = BT.emek.cutMul(t); pad('knf').lvl = 2; o.knife2 = BT.emek.cutMul(t); pad('knf').lvl = 0; t.cur = null;
     o.pull0 = BT.emek.pullT(); pad('hnd').lvl = 2; o.pull2 = BT.emek.pullT(); pad('hnd').lvl = 0;
-    P.x = c.x - 0.9; P.y = c.y + 0.2; pad('voc').lvl = 3; o.voice3 = BT.emek.sellMul(c); pad('voc').lvl = 0;
+    P.x = c.x - 0.9; P.y = c.y + 0.2; c.slots[0] = { state: 'wait', ord: { k: 'fileto', f: 'hamsi', need: 5, got: 0 } }; BT.emek.pick();
+    pad('voc').lvl = 3; o.voice3 = BT.emek.sellMul(c); pad('voc').lvl = 0; c.slots[0] = null;
     /* müdür: eksik rolü yarı hızla doldurur (önce tezgâh, sonra masa) */
     BT.S.mgr[0] = { n: 'Test Bey', a: 'value', b: 'pat', wage: 35, look: 0 };
     P.x = 3.2; P.y = 4.4;
@@ -226,7 +298,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     const t = BT.tables[0], P = BT.player, o = {};
     P.x = 2.6; P.y = 4.6; BT.S.cash = 50000;
     const w = BT.hire('filetocu', true, 0);
-    w.x = t.x + 0.8; w.y = t.y + 0.15;
+    w.x = BT.emek.filetocuSpot(t).x; w.y = BT.emek.filetocuSpot(t).y;
     t.inn.length = 0; t.cur = { k: 'fish', f: 'hamsi' }; t.t = 0;
     o.mul1 = +BT.emek.cutMul(t).toFixed(3); o.wage1 = BT.emek.wage(w); o.cost1 = BT.emek.ustaCost(w);
     const c0 = BT.S.cash; o.up = BT.emek.lvUp(w); o.paid = c0 - BT.S.cash;
