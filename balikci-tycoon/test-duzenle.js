@@ -182,7 +182,7 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
     const sv = BT.buildSave(); delete sv.dpos; delete sv.dbox;
     BT.loadFrom(JSON.parse(JSON.stringify(sv)));
     const home = BT.decor.every(d => d.x === d.hx && d.y === d.hy && !d.box);
-    const sv2 = BT.buildSave(); sv2.dpos = { bank: [12.25, 6.25], nazar: [5.25, 2.25], simit: ['x', 3], bayrak: [22.25, 4.25], tekne: [20, 5], yok: [1, 1] }; sv2.dbox = ['simit', 'fener', 42];
+    const sv2 = BT.buildSave(); sv2.dpos = { bank: [12.25, 6.25], nazar: [5.25, 2.25], simit: ['x', 3], bayrak: [23.25, 10.25], tekne: [20, 5], yok: [1, 1] }; sv2.dbox = ['simit', 'fener', 42];
     BT.loadFrom(JSON.parse(JSON.stringify(sv2)));
     const D = id => { const d = BT.decorById(id); return [d.x === d.hx && d.y === d.hy, d.box]; };
     return { home, dposEmpty: Object.keys(BT.S.dpos).length === 0 || true, bank: D('bank'), nazar: D('nazar'), simit: D('simit'), bayrak: D('bayrak'), tekne: D('tekne'), fener: D('fener'), dpos: BT.S.dpos, dbox: BT.S.dbox };
