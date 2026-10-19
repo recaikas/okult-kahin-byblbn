@@ -1700,7 +1700,7 @@ var ROLES = {
   /* v2.0 — Aşçı: yalnız Balıkçı Mutfağı'nda; ocağı %60 hızlandırır */
   asci:      { id: 'asci',      n: { tr: 'Aşçı', en: 'Cook' },        icon: '🍳', wage: 24, speed: 2.3, cap: 4, price: 700, zone: true, only: 3, d: { tr: 'Mutfağı %60 hızlandırır', en: 'Kitchen 60% faster' } },
   /* v0.7 — depo personeli (meydanda çalışır, bölge kadrosuna sayılmaz; sınırı depo seviyesi) */
-  depocu:    { id: 'depocu',    n: { tr: 'Depo Hamalı', en: 'Depot Porter' }, icon: '📦', wage: 16, speed: 2.6, cap: 10, price: 900, zone: false, d: { tr: 'Fazlayı depoya, depodan tezgâha', en: 'Surplus → depot → stalls' } },
+  depocu:    { id: 'depocu',    n: { tr: 'Depo Hamalı', en: 'Depot Porter' }, icon: '📦', wage: 16, speed: 2.6, cap: 10, price: 900, zone: false, d: { tr: 'Fazla balığı Ambar\'a, filetoyu Soğuk Oda\'ya, depodan tezgâha', en: 'Surplus fish → store, fillets → cold room, depot → stalls' } },
   sevkiyat:  { id: 'sevkiyat',  n: { tr: 'Sevkiyatçı', en: 'Dispatcher' },   icon: '🚚', wage: 18, speed: 2.7, cap: 10, price: 1100, zone: false, d: { tr: 'Kontrat malını depodan teslim eder', en: 'Depot → contract delivery' } },
   /* v1.9.4 — Hal Hamalı: Hal'den alınan malı Hal paletinden depoya taşır (depo kadrosundan ayrı, en çok 2) */
   halhamal:  { id: 'halhamal',  n: { tr: 'Hal Hamalı', en: 'Market Porter' }, icon: '🛒', wage: 14, speed: 2.5, cap: 12, price: 900, zone: false, d: { tr: 'Hal paleti → Depo', en: 'Market pallet → depot' } },
@@ -2304,7 +2304,11 @@ function insPos(id, e) {
     return { x: p.x, y: p.y, w: r.foot * 1.7, h: r.foot * 1.7, hh: Math.max(r.h, SERV_MAT[Math.min(4, e.lv - 1)].h) + 6, up: !!st };
   }
   if (id === 'hut') return { x: HUT.x, y: HUT.y, w: HUT.w + 0.5, h: HUT.h + 0.5, hh: 13 + e.lv * 1.5 + 8, up: HUT.lvl > 0 };
-  if (id === 'depot') return { x: DEPOT.x, y: DEPOT.y, w: DEPOT.w + 0.5, h: DEPOT.h + 0.5, hh: 22 + e.lv * 2, up: DEPOT.lvl > 0 };
+  if (id === 'depot') {
+    var dw = e.lv >= 2 ? depotWing(e.lv) : null;                     /* v2.18-deneme: yeni bölme kendi arsasında yükselir */
+    if (dw && dw.x !== undefined) return { x: dw.x, y: dw.y, w: dw.w + 0.4, h: dw.h + 0.4, hh: dw.H + 10, up: false };
+    return { x: DEPOT.x, y: DEPOT.y, w: DEPOT.w + 0.5, h: DEPOT.h + 0.5, hh: 22 + e.lv * 2, up: DEPOT.lvl > 0 };
+  }
   if (id === 'whall') return { x: WHALL.x, y: WHALL.y, w: WHALL.w + 0.5, h: WHALL.h + 0.5, hh: 30, up: false };
   if (id === 'office') return { x: office.x, y: office.y, w: office.w + 0.5, h: office.h + 0.5, hh: 40, up: false };
   return null;
@@ -2335,7 +2339,7 @@ function insApply(id, lv, instant, e) {
     if (instant) toast(T(lv === 1 ? 'hutBuilt' : 'hutUp', { l: lv }));
   } else if (id === 'depot') {
     DEPOT.lvl = lv; sfx.build(); addPuff(DEPOT.x, DEPOT.y, '#ffc94a');
-    if (instant) toast(T(lv === 1 ? 'depotBuilt' : 'depotUp', { l: lv, c: depotCap() }));
+    if (instant) toast(T(lv === 1 ? 'depotBuilt' : 'depotUp', { l: lv, c: depotCap(), n: depotWingName(lv) }));
   } else if (id === 'whall') {
     WHALL.built = true; sfx.build(); addPuff(WHALL.x, WHALL.y, '#ffc94a');
     if (instant) toast(T('whallBuilt'));
@@ -2618,6 +2622,7 @@ function beginNextDay(skipPrep) {
   if ([2, 3, 5, 7, 10, 14, 21, 30].indexOf(day.n) >= 0) progEv('gun' + day.n);
   pickFeatured();
   pickSpecials();
+  toptanDay();                                     /* v2.18-deneme: günlük toptan kuru + parti sayacı */
   day.market = isMarketDay(day.n);
   insDue();                                        /* v2.18-deneme: gün başında biten inşaatlar tamamlanır */
   day.st = newDayStats();
@@ -3302,7 +3307,7 @@ function buildSave() {
     served: S.served, lost: S.lost, caught: S.caught, tut: S.tut,
     earned: Math.round(S.earned), company: S.company, runId: S.runId, ctrl: S.ctrl,
     auto: (S.auto || []).map(function (v) { return v ? 1 : 0; }), hero: S.hero || null,
-    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.shelf, WHALL.built ? 1 : 0, WHALL.pal], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, custSeen: S.custSeen || {}, specN: S.specN || {}, custNewF: S.custNewF ? 1 : 0, stallSt: S.stallSt || {}, help: S.help || {}, jobs: S.jobs || [], mx: S.mx || null, tax: S.tax || null, gz: S.gz || null, specForce: S.specForce || null, ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
+    meydan: [HUT.lvl, DEPOT.lvl, DEPOT.cold, WHALL.built ? 1 : 0, WHALL.pal, depotSaveExtra()], autoMin: S.autoMin || 0, met: S.met || [], names: S.names || [], story: S.story || null, custSeen: S.custSeen || {}, specN: S.specN || {}, custNewF: S.custNewF ? 1 : 0, stallSt: S.stallSt || {}, help: S.help || {}, jobs: S.jobs || [], mx: S.mx || null, tax: S.tax || null, gz: S.gz || null, specForce: S.specForce || null, ch: [S.chSeen ? 1 : 0, S.chSeenPct | 0, S.ch1 ? 1 : 0], specLast: S.specLast || {}, mgr: (S.mgr || []).map(function (m) { return m ? { n: m.n, a: m.a, b: m.b, wage: m.wage, look: m.look | 0 } : null; }), env: S.env | 0, fumeM: (S.fumeM || [0, 0, 0]).map(function (v) { return v ? 1 : 0; }),
     areas: AREAS.map(function (a) { return [a.locked ? 1 : 0, a.lvl]; }),
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
@@ -3423,8 +3428,8 @@ function loadFrom(d) {
     var md = Array.isArray(d.meydan) ? d.meydan : [0, 0, {}, 0];
     HUT.lvl = clamp(parseInt(md[0], 10) || 0, 0, HUT_LV.length);
     DEPOT.lvl = clamp(parseInt(md[1], 10) || 0, 0, DEPOT_LV.length);
-    DEPOT.shelf = {};
-    if (md[2] && typeof md[2] === 'object') for (var sk in md[2]) { var sn = parseInt(md[2][sk], 10); if (sn > 0 && /^(fileto|fume)\|[a-z]+$/.test(sk) && FISH[sk.split('|')[1]]) DEPOT.shelf[sk] = sn; }
+    DEPOT.shelf = (md[2] && typeof md[2] === 'object' && !Array.isArray(md[2])) ? md[2] : {};     /* v2.18-deneme: eski raf içeriği türüne göre ham/soğuk diye dağıtılır (setter) */
+    depotLoadExtra(md[5]);
     WHALL.built = !!md[3];
     WHALL.pal = {};
     if (md[4] && typeof md[4] === 'object') for (var pk in md[4]) { var pn = parseInt(md[4][pk], 10); if (pn > 0 && /^(fileto|fume)\|[a-z]+$/.test(pk) && FISH[pk.split('|')[1]]) WHALL.pal[pk] = Math.min(pn, 999); }
@@ -7797,7 +7802,7 @@ function applyLang() {
   el.dtBuild.textContent = T('barBuild');
   el.dtServ.textContent = T('barServ');
   var oft = document.querySelectorAll('#ofTabs .tab');
-  var ofn = ['tabMarket', 'tabCo', 'tabCtr', 'tabPort', 'tabNews', 'tabHold'];
+  var ofn = ['tabMarket', 'tabCo', 'tabCtr', 'tabPort', 'tabNews', 'tabHold', 'tabToptan'];
   for (var q = 0; q < oft.length; q++) oft[q].textContent = T(ofn[q]);
   document.getElementById('ofTitle').textContent = T('office');
   document.getElementById('tradeLbl').textContent = T('trade');
@@ -9676,6 +9681,8 @@ function renderOffice() {
     h += '<div class="stat"><div>' + T('portV') + '<b>' + money(tot) + '</b></div>' +
       '<div>' + T('money') + '<b>' + money(S.cash) + '</b></div>' +
       '<div>' + T('privInc') + '<b>' + money(privIncome()) + '</b></div></div>';
+  } else if (ofTab === 'toptan') {
+    h += toptanHtml();                                                    /* v2.18-deneme: MODÜLER DEPO › TOPTAN */
   } else if (ofTab === 'news') {
     if (!M.news.length) h += '<div class="empty">' + T('noNews') + '</div>';
     for (i = 0; i < Math.min(M.news.length, 18); i++) {
@@ -9750,6 +9757,9 @@ function renderOffice() {
       for (var q = 0; q < M.offers.length; q++) if (M.offers[q].id === b.dataset.o) { acceptContract(M.offers[q]); break; }
       renderOffice();
     };
+  });
+  Array.prototype.forEach.call(body.querySelectorAll('[data-tp]'), function (b) {
+    b.onclick = function () { toptanSell(b.dataset.tp); renderOffice(); };
   });
   var pb = body.querySelector('[data-p]');
   if (pb) pb.onclick = function () { buyPrivate(); renderOffice(); };
@@ -10836,11 +10846,15 @@ function updateIntro(dt) {
 /* v1.9.2 — meydan yerleşimi: kuzeyde kulübe + depo, güneyde ofis + hal, ortası yürüyüş alanı; kapılar ön (güney) cephede.
    Ekranda yatay konum x - y: yan yana binalar bu eksende ayak izlerinden fazla ayrık (üst üste binmez). */
 var HUT = { x: 16.1, y: 1.1, w: 1.5, h: 1.2, lvl: 0, door: { x: 16.45, y: 2.25 } };
-var DEPOT = { x: 20.0, y: 1.4, w: 2.4, h: 1.8, lvl: 0, door: { x: 19.6, y: 2.95 }, shelf: {} };
+var DEPOT = { x: 20.0, y: 1.4, w: 2.4, h: 1.8, lvl: 0, door: { x: 19.6, y: 2.95 }, raw: {}, cold: {} };   /* v2.18-deneme MODÜLER DEPO: raw = ham balık (Ambar), cold = fileto/füme (Soğuk Oda); shelf = cold'a bakan eski ad (aşağıda) */
 var WHALL = { x: 19.9, y: 6.8, w: 2.4, h: 1.6, built: false, door: { x: 19.5, y: 8.15 }, pal: {} };   /* pal: Hal'den alınıp depoya taşınmayı bekleyen mal */
 office.x = 16.4; office.y = 8.1; office.z = 0;           /* Ticaret Merkezi meydana taşındı */
 var HUT_LV = [{ c: 1500, l: 2 }, { c: 4000, l: 3 }, { c: 9000, l: 5 }, { c: 18000, l: 7 }, { c: 36000, l: 9 }];
-var DEPOT_LV = [{ c: 3000, l: 3, cap: 30 }, { c: 8000, l: 5, cap: 60 }, { c: 20000, l: 6, cap: 100 }, { c: 45000, l: 8, cap: 160 }];
+/* v2.18-deneme: seviye = bölme. cap = o seviyedeki TOPLAM raf (ham + soğuk; kiler ayrı sayılır), raw/cold bölme kapasiteleri, k bölme kimliği.
+   Sv1'de Soğuk Oda yoktur: Ambar'ın 30'u fileto/füme ile ortak raftır (eski kayıt ve erken oyun bozulmasın); Sv2'den ayrılır. */
+var DEPOT_LV = [{ c: 3000, l: 3, cap: 30, raw: 30, cold: 0, k: 'ambar' }, { c: 8000, l: 5, cap: 60, raw: 30, cold: 30, k: 'soguk' },
+  { c: 20000, l: 6, cap: 60, raw: 30, cold: 30, kiler: 100, k: 'kiler' }, { c: 45000, l: 8, cap: 140, raw: 80, cold: 60, k: 'uzanti' },
+  { c: 90000, l: 9, cap: 140, raw: 80, cold: 60, rampa: 1, k: 'rampa' }];
 var WHALL_COST = 6000, WHALL_LV = 4;
 var DEPOT_ROLES = ['depocu', 'sevkiyat'];
 
@@ -10865,25 +10879,49 @@ function hutBonus() { return HUT.lvl; }                          /* her bölgede
 function hutNext() { return HUT.lvl < HUT_LV.length ? HUT_LV[HUT.lvl] : null; }
 
 /* ---------- depo ---------- */
-function depotCap() { return DEPOT.lvl ? DEPOT_LV[DEPOT.lvl - 1].cap : 0; }
-function depotCount() { var n = 0; for (var k in DEPOT.shelf) n += DEPOT.shelf[k]; return n; }
-function depotFree() { return Math.max(0, depotCap() - depotCount()); }
+/* v2.18-deneme MODÜLER DEPO: iki ayrı depolama. depotCap/depotCount = TOPLAM (restoran fazlası, Hal alt yazısı bakar);
+   depotFree = MAL (fileto/füme) için boş yer, rawFree = ham balık için. Sv1'de ikisi ortak 30'luk raftır. */
+function depotRow() { return DEPOT.lvl ? DEPOT_LV[DEPOT.lvl - 1] : null; }
+function sumKeys(o) { var n = 0; for (var k in o) n += o[k]; return n; }
+function rawCount() { return sumKeys(DEPOT.raw); }
+function coldCount() { return sumKeys(DEPOT.cold); }
+function rawCap() { var r = depotRow(); return r ? r.raw : 0; }
+function coldCap() { var r = depotRow(); return r ? (DEPOT.lvl === 1 ? r.raw : r.cold) : 0; }
+function depotCap() { var r = depotRow(); return r ? r.cap : 0; }
+function depotCount() { return rawCount() + coldCount(); }
+function rawFree() { return Math.max(0, DEPOT.lvl === 1 ? depotCap() - depotCount() : rawCap() - rawCount()); }
+function depotFree() { return Math.max(0, DEPOT.lvl === 1 ? depotCap() - depotCount() : coldCap() - coldCount()); }
+function depotHasKiler() { return DEPOT.lvl >= 3; }
 function depotNext() { return DEPOT.lvl < DEPOT_LV.length ? DEPOT_LV[DEPOT.lvl] : null; }
 function depotStaffCap() { return DEPOT.lvl; }
 function depotStaff() { var n = 0; for (var i = 0; i < workers.length; i++) if (DEPOT_ROLES.indexOf(workers[i].role) >= 0) n++; return n; }
 function keyItem(k) { var p = k.split('|'); return { k: p[0], f: p[1] }; }
-function depotPut(it) { var k = itemKey(it); DEPOT.shelf[k] = (DEPOT.shelf[k] || 0) + 1; }
+function depotStoreOf(k) { return k.indexOf('fish|') === 0 ? DEPOT.raw : DEPOT.cold; }
+function depotPut(it) { var k = itemKey(it), st = depotStoreOf(k); st[k] = (st[k] || 0) + 1; }
 function depotTake(k) {
-  if (!DEPOT.shelf[k]) return null;
-  if (--DEPOT.shelf[k] <= 0) delete DEPOT.shelf[k];
+  var st = depotStoreOf(k);
+  if (!st[k]) return null;
+  if (--st[k] <= 0) delete st[k];
   return keyItem(k);
 }
+/* eski ad: DEPOT.shelf = soğuk raf (fileto/füme). Atanırsa içerik türüne göre ham/soğuk diye dağıtılır (eski kod ve eski kayıt) */
+Object.defineProperty(DEPOT, 'shelf', {
+  configurable: true, enumerable: false,
+  get: function () { return DEPOT.cold; },
+  set: function (o) {
+    DEPOT.raw = {}; DEPOT.cold = {};
+    if (o && typeof o === 'object') for (var k in o) { var n = parseInt(o[k], 10); if (n > 0 && /^(fileto|fume|fish)\|[a-z]+$/.test(k) && FISH[k.split('|')[1]]) depotStoreOf(k)[k] = n; }
+  }
+});
 function atDoor(a, d, r) { return dist2(a.x, a.y, d.x, d.y) < (r || 1.0); }
 /* rafa koy (oyuncu ya da depo hamalı) */
 function iDepotIn(a, dt) {
-  if (!DEPOT.lvl || depotFree() <= 0 || !hasCarry(a, isGoods)) return false;
+  if (!DEPOT.lvl) return false;
+  /* mal (fileto/füme) Soğuk Oda'ya; ham balığı yalnız Depo Hamalı Ambar'a koyar (oyuncunun sırtındaki balık kapıda raflanmaz) */
+  var ok = function (it) { return isGoods(it) ? depotFree() > 0 : it.k === 'fish' && !a.isPlayer && rawFree() > 0; };
+  if (!hasCarry(a, ok)) return false;
   return tryTake(a, dt, function () {
-    var it = popCarry(a, isGoods);
+    var it = popCarry(a, ok); if (!it) return;
     depotPut(it);
     fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), DEPOT.x, DEPOT.y, 12, it, 0.24); sfx.drop();
   });
@@ -10975,6 +11013,7 @@ function aiDepocu(w, sp, dt) {
     if (goTo(w, c.x - 0.5, c.y - 0.6, sp, dt, 1.0)) { if (!iDropCounter(w, c, dt)) { w.task = 'store'; w.mode = 'drop'; } }
     return;
   }
+  if (w.task === 'raw') { aiDepocuRaw(w, sp, dt); return; }
   if (w.task === 'store') {
     if (w.mode === 'load') {
       var m = w.mat;
@@ -10991,10 +11030,13 @@ function aiDepocu(w, sp, dt) {
   }
   /* yeni iş seç */
   if (hasCarry(w, isGoods)) { w.task = 'store'; w.mode = 'drop'; return; }
+  if (hasCarry(w, isFish)) { w.task = 'raw'; w.mode = 'drop'; w.net2 = null; return; }
   var need = depotRefillTarget(w);
   if (need) { w.task = 'refill'; w.tc = need.c; w.k = need.k; w.mode = 'load'; return; }
   var m2 = depotFree() > 0 ? surplusMat(w) : null;
   if (m2) { w.task = 'store'; w.mat = m2; w.mode = 'load'; return; }
+  var n2 = rawRoom(w) > 0 ? rawSurplusNet(w) : null;                       /* v2.18-deneme: tezgâh ve masa doluyken ağdaki fazla ham balık → Ambar */
+  if (n2) { w.task = 'raw'; w.net2 = n2; w.mode = 'load'; return; }
   idleAtDepot(w, sp, dt);
 }
 /* Sevkiyatçı: ticaret kontratlarının ürününü depodan alıp Ticaret Merkezi'ne teslim eder */
@@ -11122,7 +11164,7 @@ function meydanCards(out) {
     buyTxt: HUT.lvl ? T('upgrade') : T('build'), go: function () { insMeydanBuy('hut'); } });
   nx = depotNext();
   out.push({ id: 'mdep', ic: '📦', t: DEPOT.lvl ? T('depotName') + '  ' + T('level') + DEPOT.lvl + (nx ? '→' + (DEPOT.lvl + 1) : '') : T('depotName'),
-    s: DEPOT.lvl ? T('depotD2', { a: depotCount(), b: depotCap(), n: nx ? nx.cap : depotCap() }) : T('depotD'),
+    s: DEPOT.lvl ? depotCardText(nx) : T('depotD'),
     cost: nx ? upCost(nx.c) : 0, owned: !nx, blocked: nx && lvNow < nx.l, why: nx ? T('needLv', { l: nx.l }) : '',
     buyTxt: DEPOT.lvl ? T('upgrade') : T('build'), go: function () { insMeydanBuy('depot'); } });
   if (DEPOT.lvl) {
@@ -11251,8 +11293,8 @@ function drawHut() {
 function drawDepot() {
   var o = DEPOT, L = o.lvl, k;
   if (!L) { plotOutline(o, '📦 ' + T('depotName') + ' • ' + T('buildAt')); return; }
-  /* sv1 küçük sundurmalı depo; sv2+ tam boy; sv3 çatı ışıklığı; sv4 yan ek + rampa */
-  var sw = L === 1 ? 0.75 : 1, W = o.w * sw, D = o.h * sw, H = [0, 15, 18, 20, 21][L];
+  /* sv1 küçük sundurmalı depo (Ambar); sv2+ tam boy; sv3 çatı ışıklığı; bölmeler yanına kanat olarak eklenir */
+  var sw = L === 1 ? 0.75 : 1, W = o.w * sw, D = o.h * sw, H = [0, 15, 18, 19, 20, 20][L];
   var x1 = o.x + o.w / 2, y1 = o.y + o.h / 2, x0 = x1 - W, y0 = y1 - D, dx = o.door.x;
   shadow(x0 + W / 2, y0 + D / 2, 1.5 * sw);
   isoQuad(x0 - 0.1, y0 - 0.1, W + 0.2, D + 0.35, 0.4, '#a8a08c');                                               /* beton zemin */
@@ -11265,17 +11307,11 @@ function drawDepot() {
   if (L >= 3) winF(x0 + 0.25, x0 + 0.6, y1, 0, 10, '#3c4650', '#2c343c');                                     /* ikinci kapı */
   roofGableX(x0 - 0.1, x1 + 0.1, y0 - 0.1, y1 + 0.1, H, 6 + L, PAL.zinc, PAL.zincDark, '#a8a18f', '#6c767d', 6);
   if (L >= 3) roofPlane([[o.x - 0.4, y1 - D / 4, H + 3], [o.x + 0.4, y1 - D / 4, H + 3], [o.x + 0.4, y1 - 0.1, H + 1], [o.x - 0.4, y1 - 0.1, H + 1]], '#9fbfcc', '#6c8a96', 3);   /* ışıklık */
-  if (L >= 2) {                                                                                               /* yan yükleme rampası */
-    isoBox(x1, o.y - 0.45, 0.35, 0.9, 0, 4, '#b9b3a4', '#8e897c', '#a39d8f');
-    winR(x1 + 0.001, o.y - 0.3, o.y + 0.3, 4, 14, '#5d6a75', '#2c343c');
-  }
-  if (L >= 4) {                                                                                               /* forklift rampada */
-    isoBox(x1 + 0.05, o.y + 0.5, 0.28, 0.3, 0, 6, '#e6b93a', '#a8841f', '#c99f2c');
-    vline(x1 + 0.05, o.y + 0.55, 0, 12, PAL.iron);
-  }
+  /* v2.18-deneme: yan rampa / forklift kalktı — Sv2+ bölmeler ayrı kanat olarak yanına eklenir (drawDepotWing) */
   /* doluluk: kapı önünde sandık yığını (rafların ne kadar dolu olduğu görünür) */
   var fillN = Math.min(8, Math.ceil(depotCount() / Math.max(1, depotCap()) * 8));
   for (k = 0; k < fillN; k++) crate(dx + 0.55 + (k % 2) * 0.24, y1 + 0.25 + Math.floor(k / 4) * 0.02, Math.floor((k % 4) / 2) * 4, k % 2 ? '#c9a15e' : '#a8793e');
+  wingSign(x0 + 0.12, y1 + 0.15, T('wsAmbar'), o.x, o.y);                                                      /* v2.18-deneme: Ambar tabelası */
   if (nearDoor(o.door)) uiLabel(o.x, o.y, H + 14, T('depotName') + ' ' + depotCount() + '/' + depotCap(), '#ffd9a8', 1);
   var fc = depotFishLine();                                                                                    /* v1.9.8: balık başına sayı */
   if (fc && dist2(player.x, player.y, o.x, o.y) < 30) uiLabel(o.x, o.y, H + (nearDoor(o.door) ? 4 : 14), fc, '#e8f4ff', 0.95);
@@ -11283,7 +11319,8 @@ function drawDepot() {
 /* depodaki mal, balık türüne göre (fileto + füme birlikte): "🐟4 🐠2 🍣1" */
 function depotFishLine() {
   var n = {}, k, out = [];
-  for (k in DEPOT.shelf) { var f = keyItem(k).f; if (FISH[f]) n[f] = (n[f] || 0) + DEPOT.shelf[k]; }
+  for (k in DEPOT.cold) { var f = keyItem(k).f; if (FISH[f]) n[f] = (n[f] || 0) + DEPOT.cold[k]; }
+  for (k in DEPOT.raw) { var f2 = keyItem(k).f; if (FISH[f2]) n[f2] = (n[f2] || 0) + DEPOT.raw[k]; }
   for (k in FISH) if (n[k]) out.push(FISH[k].ic + n[k]);
   return out.join(' ');
 }
@@ -11343,9 +11380,261 @@ function drawWoodSign(o, seed) {
      okunmaz bir karalama olarak dünya pikselleriyle çizilir, tabelayla birlikte hareket eder */
   signScrawl(sx - 8, sy - 16, 18, '#4a2f1c', seed);
 }
+/* =========================================================
+   v2.18-deneme — MODÜLER DEPO (DEPO_REKLAM_RESTORAN_TASARIM.md Bölüm B)
+   Depo seviyesi artık BÖLME ekler (Sv = bölme sayısı; inşaat süresi yine Sv gün):
+     Sv1 Ham Balık Ambarı (ana bina) • Sv2 Soğuk Oda • Sv3 Kiler • Sv4 Ambar Uzantısı • Sv5 Sevkiyat Rampası.
+   • Ayrık depolama: DEPOT.raw (ham balık, Ambar) ve DEPOT.cold (fileto/füme, Soğuk Oda). Sv1'de Soğuk Oda yoktur: Ambar'ın 30'u
+     fileto/füme ile ortak raftır. Eski DEPOT.shelf = DEPOT.cold (atanırsa türüne göre dağıtılır); depotCap/depotCount toplam,
+     depotFree = mal (fileto/füme) için, rawFree = ham balık için boş yer. Kiler: depotHasKiler() (kiler sınırını restoran okur).
+   • Depo Hamalı (depocu; kadro sınırı = bölme sayısı): tezgâh ve masa doluyken ağdaki / ağ sandığındaki fazla HAM balığı Ambar'a,
+     tezgâh doluyken hasırdaki fazla filetoyu Soğuk Oda'ya taşır (Emekçi Mod'da da kapalıyken de).
+   • Ticaret Ofisi › TOPTAN: Ambar'daki ham balık 10'luk partiyle FISH.val × 0,6 × günlük kur, Soğuk Oda'daki fileto/füme prodValue × 0,8 × kur;
+     kur 0,8–1,2 gün başında belirlenir ve kayda yazılır; günde 3 parti (Rampa ile 4); Rampa fiyatı +%10.
+   • Çizim: bölmeler ana binanın doğusuna/güneydoğusuna kanat kanat dizilir (layoutRects'te yerleri hep ayrılı); her kanat ayrı çatı rengi + tabela.
+     İnce mod: HKA.drawDepotWing(o) (o: {k:'ambar'|'soguk'|'kiler'|'uzanti'|'rampa', x, y, w, h, fill: 0–1, t}); klasik çizim burada.
+   • Kayıt: meydan[2] = soğuk raf (eski adıyla), meydan[5] = { r: ham raf, kur, kp: dünkü kur, td: kur günü, pt: bugünkü parti }.
+   ========================================================= */
+Object.assign(STR.tr, {
+  wAmbar: 'Ham Balık Ambarı', wSoguk: 'Soğuk Oda', wKiler: 'Kiler', wUzanti: 'Ambar Uzantısı', wRampa: 'Sevkiyat Rampası',
+  wsAmbar: 'Ambar', wsSoguk: 'Soğuk Oda', wsKiler: 'Kiler', wsUzanti: 'Uzantı', wsRampa: 'Rampa',
+  weAmbar: 'ham balık {n}', weSoguk: 'fileto ve füme için {n} yer', weKiler: 'kiler sınırı {n}', weUzanti: 'ham +50, soğuk +30', weRampa: 'toptan +%10 fiyat, günde +1 parti',
+  depotD: 'Ham Balık Ambarı: fazla balığı saklar, Depo Hamalı taşır. Sonra Soğuk Oda, Kiler, Uzantı ve Rampa eklenir',
+  depotD2: 'Ham {r}/{rc} • Soğuk {c}/{cc} → {w}: {e}', depotD2Max: 'Ham {r}/{rc} • Soğuk {c}/{cc} • bütün bölmeler kurulu',
+  depotBuilt: '📦 Ham Balık Ambarı kuruldu — fazla balık ve ürün artık rafta', depotUp: '📦 {n} hazır (Depo Sv {l})',
+  depotStaffFull: 'Depo kadrosu dolu — yeni bölme ekle',
+  tabToptan: 'TOPTAN', tpTitle: 'Depo toptan satışı', tpHead: 'Bugün {n} toptan: {v} {a}', tpKur: 'Günlük kur ×{k}', tpLeft: 'Bugünkü parti: {a}/{b}',
+  tpRaw: 'AMBAR • ham balık', tpCold: 'SOĞUK ODA • fileto / füme', tpRow: 'Depoda {n} • tanesi {u}', tpBatch: '{n}\'LUK PARTİ SAT • {v}', tpNone: 'Depoda satılacak mal yok. Depo Hamalı fazla balığı Ambar\'a taşır.',
+  tpNoDepot: 'Önce meydana Depo kur', tpNoParty: 'Bugünkü partiler bitti. Yarın yeni kur, yeni parti.', tpSold: '{n} {p} toptan satıldı: +{v}',
+  tpRamp: 'Rampa: +%10 fiyat, günde 4 parti', tpNoRamp: 'Sevkiyat Rampası: +%10 fiyat ve günde +1 parti',
+  tpNote: 'Toptan fiyat: ham balık değerinin %60\'ı, fileto/füme %80\'i, hepsi günlük kurla çarpılır.'
+});
+Object.assign(STR.en, {
+  wAmbar: 'Raw Fish Store', wSoguk: 'Cold Room', wKiler: 'Pantry', wUzanti: 'Store Annex', wRampa: 'Shipping Ramp',
+  wsAmbar: 'Store', wsSoguk: 'Cold Room', wsKiler: 'Pantry', wsUzanti: 'Annex', wsRampa: 'Ramp',
+  weAmbar: 'raw fish {n}', weSoguk: '{n} slots for fillet and smoked', weKiler: 'pantry limit {n}', weUzanti: 'raw +50, cold +30', weRampa: 'wholesale +10% price, +1 batch a day',
+  depotD: 'Raw Fish Store: keeps surplus fish, Depot Porters carry it in. Cold Room, Pantry, Annex and Ramp come next',
+  depotD2: 'Raw {r}/{rc} • Cold {c}/{cc} → {w}: {e}', depotD2Max: 'Raw {r}/{rc} • Cold {c}/{cc} • every wing built',
+  depotBuilt: '📦 Raw Fish Store built — surplus fish and goods now sit on shelves', depotUp: '📦 {n} ready (Depot Lv {l})',
+  depotStaffFull: 'Depot crew full — add a wing',
+  tabToptan: 'WHOLESALE', tpTitle: 'Depot wholesale', tpHead: 'Today {n} wholesale: {v} {a}', tpKur: 'Daily rate ×{k}', tpLeft: 'Batches today: {a}/{b}',
+  tpRaw: 'STORE • raw fish', tpCold: 'COLD ROOM • fillet / smoked', tpRow: 'In depot {n} • each {u}', tpBatch: 'SELL BATCH OF {n} • {v}', tpNone: 'Nothing in the depot to sell. Depot Porters bring surplus fish to the Store.',
+  tpNoDepot: 'Build the Depot on the square first', tpNoParty: 'Today\'s batches are done. New rate and batches tomorrow.', tpSold: '{n} {p} sold wholesale: +{v}',
+  tpRamp: 'Ramp: +10% price, 4 batches a day', tpNoRamp: 'Shipping Ramp: +10% price and +1 batch a day',
+  tpNote: 'Wholesale price: 60% of raw fish value, 80% for fillet/smoked, all times the daily rate.'
+});
+/* kanatlar: Sv2+ ana binanın doğusuna / güneydoğusuna (x−y ≤ 23,4: kameranın ulaşamadığı uca taşmaz; hayvan evleri x≈21,75'in doğusu; Hal'in ekran payı dışında).
+   wall = [üst, sol, sağ], roof = [ön, arka], H = duvar yüksekliği (px) */
+var DEPOT_WINGS = [
+  { k: 'ambar', lv: 1, n: 'wAmbar', s: 'wsAmbar' },
+  { k: 'soguk', lv: 2, n: 'wSoguk', s: 'wsSoguk', x: 22.6, y: 1.3, w: 2.0, h: 1.6, H: 17, wall: ['#dbe6ec', '#9fb0bd', '#bccad4'], roof: ['#8fb8d8', '#5e86a6'], line: '#6f8fa6' },
+  { k: 'kiler', lv: 3, n: 'wKiler', s: 'wsKiler', x: 23.2, y: 3.3, w: 1.8, h: 1.4, H: 15, wall: ['#dccaa4', '#a99268', '#c4af88'], roof: ['#b5593a', '#7e3a24'], line: '#8a6a44' },
+  { k: 'uzanti', lv: 4, n: 'wUzanti', s: 'wsUzanti', x: 23.5, y: 5.5, w: 2.0, h: 1.5, H: 18, wall: ['#c9c2b0', '#8a8474', '#a8a18f'], roof: ['#6f8f6a', '#4d6a49'], line: '#5d6a58' },
+  { k: 'rampa', lv: 5, n: 'wRampa', s: 'wsRampa', x: 24.5, y: 7.7, w: 1.9, h: 1.2, H: 12, wall: ['#bdb7a8', '#8e897c', '#a39d8f'], roof: ['#d9a43a', '#a2761d'], line: '#8a6a1d' }
+];
+function depotWing(k) { for (var i = 0; i < DEPOT_WINGS.length; i++) if (DEPOT_WINGS[i].k === k || DEPOT_WINGS[i].lv === k) return DEPOT_WINGS[i]; return null; }
+function depotWingName(lv) { var w = depotWing(lv); return w ? T(w.n) : ''; }
+function depotWingFill(w) {
+  if (w.k === 'ambar') return clamp((DEPOT.lvl === 1 ? depotCount() : rawCount()) / Math.max(1, rawCap()), 0, 1);
+  if (w.k === 'soguk') return clamp(coldCount() / Math.max(1, coldCap()), 0, 1);
+  if (w.k === 'uzanti') return clamp(depotCount() / Math.max(1, rawCap() + coldCap()), 0, 1);
+  if (w.k === 'rampa') return clamp(toptanUsed() / Math.max(1, toptanMax()), 0, 1);
+  return 0;
+}
+function depotWingObj(w) { return { k: w.k, x: w.x, y: w.y, w: w.w, h: w.h, fill: depotWingFill(w), t: gameT }; }
+/* YAPI kartı: durum + sıradaki bölme */
+function depotCardText(nx) {
+  var o = { r: rawCount(), rc: rawCap(), c: coldCount(), cc: coldCap() };
+  if (!nx) return T('depotD2Max', o);
+  var w = depotWing(DEPOT.lvl + 1);
+  o.w = T(w.n); o.e = T('we' + w.k.charAt(0).toUpperCase() + w.k.slice(1), { n: w.k === 'soguk' ? nx.cold : w.k === 'kiler' ? nx.kiler : nx.raw });
+  return T('depotD2', o);
+}
+/* ---------- Depo Hamalı: ham balık ---------- */
+var RAW_MIN = 3;                                   /* ağda / sandıkta en az bu kadar balık varken fazla sayılır */
+function rawRoom(w) {                              /* Ambar'da, tüm hamalların elindekiler düşülünce kalan yer */
+  var n = rawFree();
+  for (var i = 0; i < workers.length; i++) if (workers[i].role === 'depocu') for (var j = 0; j < workers[i].carry.length; j++) if (workers[i].carry[j].k === 'fish') n--;
+  return n;
+}
+/* bu türe masada yer yok ve bölgenin açık tezgâhları dolu mu? (balık akışı tıkalı → fazla) */
+function rawBlocked(z, f) {
+  var t = zoneTable(z); if (!t || AREAS[t.z].locked) return false;
+  if (tableRoom(t, f, null) > 0) return false;
+  var cs = mgrZoneCounters(z);
+  for (var i = 0; i < cs.length; i++) if (cs[i].buffer.length < counterMax(cs[i]) - 2) return false;
+  return true;
+}
+/* ağ s için alınacak fazla balık: { arr, i } (önce sandık, sonra ağ stoğu) ya da null */
+function rawSurplusPick(s, a) {
+  var box = s.box || [], n = box.length + s.stock.length, lists = [box, s.stock], q, i;
+  if (n < RAW_MIN || (s.xn ? !xnetOn(s) : AREAS[s.z].locked)) return null;
+  for (q = 0; q < 2; q++) for (i = lists[q].length - 1; i >= 0; i--) {
+    var it = lists[q][i];
+    if (it && it.k === 'fish' && FISH[it.f] && (!a || fits(a, it)) && rawBlocked(s.z, it.f)) return { arr: lists[q], i: i };
+  }
+  return null;
+}
+function rawSurplusNet(w) {
+  var nets = spots.concat(XNETS), best = null, bd = 1e9, i;
+  for (i = 0; i < nets.length; i++) {
+    if (!rawSurplusPick(nets[i], null)) continue;
+    var d = dist2(w.x, w.y, nets[i].x, nets[i].y);
+    if (d < bd) { bd = d; best = nets[i]; }
+  }
+  return best;
+}
+function iPickRaw(a, s, dt) {
+  var p = rawSurplusPick(s, a); if (!p) return false;
+  return tryTake(a, dt, function () {
+    var q = rawSurplusPick(s, a); if (!q) return;
+    var it = q.arr.splice(q.i, 1)[0]; a.carry.push(it);
+    fly(q.arr === s.stock ? s.x : s.bx, q.arr === s.stock ? s.y + 0.9 : s.by, 7, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.26); sfx.pick();
+  });
+}
+/* iş: 'load' (ağdan / sandıktan fazla balığı topla) → 'drop' (Ambar kapısında rafla) */
+function aiDepocuRaw(w, sp, dt) {
+  var full = carryW(w) >= ROLES.depocu.cap - 0.5, s = w.net2;
+  if (w.mode === 'load') {
+    var p = s && !full && rawRoom(w) > 0 ? rawSurplusPick(s, w) : null;
+    if (p) {
+      var inBox = p.arr === s.box, sx = inBox ? s.bx + 0.35 : s.x + 0.5, sy = inBox ? s.by + 0.45 : s.y + 1.3;
+      if (goTo(w, sx, sy, sp, dt, 0.8)) { if (!iPickRaw(w, s, dt)) w.mode = 'drop'; }
+      return;
+    }
+    w.mode = 'drop';
+  }
+  if (!hasCarry(w, isFish)) { w.task = null; w.net2 = null; return; }
+  if (rawFree() <= 0) {                                                /* yer kalmadı (başka yoldan doldu): balığı ağa geri bırak */
+    if (s) { var back = popCarry(w, isFish); while (back) { s.stock.push(back); back = popCarry(w, isFish); } }
+    else w.carry = w.carry.filter(function (it) { return !isFish(it); });
+    w.task = null; w.net2 = null; return;
+  }
+  if (goTo(w, DEPOT.door.x, DEPOT.door.y, sp, dt, 0.7)) iDepotIn(w, dt);
+}
+/* ---------- TOPTAN (Ticaret Ofisi) ---------- */
+var TOPTAN_BATCH = 10, TOPTAN_PARTI = 3, TOPTAN_RAW = 0.6, TOPTAN_COLD = 0.8, TOPTAN_RAMPA = 1.1;
+DEPOT.kur = 1; DEPOT.kurPrev = 1; DEPOT.td = 0; DEPOT.parti = 0;
+function toptanDay() {                              /* gün başında: yeni kur (0,8–1,2) + parti sayacı sıfır */
+  if (DEPOT.td === day.n) return;
+  DEPOT.kurPrev = DEPOT.kur;
+  DEPOT.kur = Math.round((0.8 + Math.random() * 0.4) * 100) / 100;
+  DEPOT.td = day.n; DEPOT.parti = 0;
+}
+function toptanKur() { toptanDay(); return DEPOT.kur; }
+function toptanMax() { return TOPTAN_PARTI + (DEPOT.lvl >= 5 ? 1 : 0); }
+function toptanUsed() { toptanDay(); return DEPOT.parti; }
+function toptanLeft() { return Math.max(0, toptanMax() - toptanUsed()); }
+function toptanUnit(k) {                            /* tane başına fiyat (ondalıklı) */
+  var it = keyItem(k);
+  var base = it.k === 'fish' ? FISH[it.f].val * TOPTAN_RAW : prodValue(it.k, it.f) * TOPTAN_COLD;
+  return base * toptanKur() * (DEPOT.lvl >= 5 ? TOPTAN_RAMPA : 1);
+}
+function toptanKeys() {
+  var out = [], k;
+  for (k in DEPOT.raw) if (DEPOT.raw[k] > 0) out.push(k);
+  for (k in DEPOT.cold) if (DEPOT.cold[k] > 0) out.push(k);
+  return out;
+}
+function toptanSell(k) {                            /* bir parti (en çok 10 adet); satılan para ya da 0 */
+  if (!DEPOT.lvl) return 0;
+  var st = depotStoreOf(k);
+  if (!(st[k] > 0) || toptanLeft() <= 0) return 0;
+  var n = Math.min(TOPTAN_BATCH, st[k]), v = Math.max(1, Math.round(toptanUnit(k) * n)), i;
+  for (i = 0; i < n; i++) depotTake(k);
+  DEPOT.parti++;
+  S.cash += v; earn(v); noteDayIncome(v); sfx.coin();
+  var it = keyItem(k);
+  toast(T('tpSold', { n: n, p: NM(FISH[it.f].n) + ' ' + (it.k === 'fish' ? '' : T(it.k === 'fume' ? 'kFume' : 'kFileto')), v: money(v) }));
+  save();
+  return v;
+}
+function toptanArrow() { return DEPOT.kur > DEPOT.kurPrev + 0.004 ? '↑' : DEPOT.kur < DEPOT.kurPrev - 0.004 ? '↓' : '→'; }
+function fmtDec1(v) { var s = (Math.round(v * 10) / 10).toFixed(1); return '$' + (lang === 'tr' ? s.replace('.', ',') : s); }
+function fmtKur(v) { var s = v.toFixed(2); return lang === 'tr' ? s.replace('.', ',') : s; }
+function toptanHtml() {
+  var h = '', ks = toptanKeys(), i, first = LINES.length ? LINES[0].f : 'hamsi';
+  if (!DEPOT.lvl) return '<div class="empty">' + T('tpNoDepot') + '</div>';
+  h += '<div class="crow" style="cursor:default"><div class="nm"><b>' + T('tpHead', { n: NM(FISH[first].n).toLowerCase(), v: fmtDec1(toptanUnit('fish|' + first)), a: toptanArrow() }) + '</b>' +
+    '<small>' + T('tpKur', { k: fmtKur(toptanKur()) }) + ' • ' + T('tpLeft', { a: toptanLeft(), b: toptanMax() }) + '</small></div></div>';
+  h += '<div class="note">' + (DEPOT.lvl >= 5 ? T('tpRamp') : T('tpNoRamp')) + '</div>';
+  if (!ks.length) h += '<div class="empty">' + T('tpNone') + '</div>';
+  var lastKind = '';
+  for (i = 0; i < ks.length; i++) {
+    var k = ks[i], it = keyItem(k), n = depotStoreOf(k)[k], b = Math.min(TOPTAN_BATCH, n), tot = Math.max(1, Math.round(toptanUnit(k) * b));
+    var kind = it.k === 'fish' ? 'tpRaw' : 'tpCold';
+    if (kind !== lastKind) { h += '<div class="note"><b>' + T(kind) + '</b></div>'; lastKind = kind; }
+    h += '<div class="ctrc"><b>' + FISH[it.f].ic + ' ' + NM(FISH[it.f].n) + (it.k === 'fish' ? '' : ' ' + T(it.k === 'fume' ? 'kFume' : 'kFileto')) + '</b>' +
+      '<small>' + T('tpRow', { n: n, u: fmtDec1(toptanUnit(k)) }) + '</small>' +
+      '<button class="go2" data-tp="' + k + '"' + (toptanLeft() > 0 ? '' : ' disabled') + '>' + T('tpBatch', { n: b, v: money(tot) }) + '</button></div>';
+  }
+  if (ks.length && toptanLeft() <= 0) h += '<div class="note">' + T('tpNoParty') + '</div>';
+  h += '<div class="note">' + T('tpNote') + '</div>';
+  return h;
+}
+/* ---------- kayıt ---------- */
+function depotSaveExtra() { return { r: DEPOT.raw, kur: DEPOT.kur, kp: DEPOT.kurPrev, td: DEPOT.td, pt: DEPOT.parti }; }
+function depotLoadExtra(x) {
+  var k;
+  DEPOT.raw = {}; DEPOT.kur = 1; DEPOT.kurPrev = 1; DEPOT.td = 0; DEPOT.parti = 0;
+  if (!x || typeof x !== 'object' || Array.isArray(x)) return;
+  if (x.r && typeof x.r === 'object') for (k in x.r) { var n = parseInt(x.r[k], 10); if (n > 0 && /^fish\|[a-z]+$/.test(k) && FISH[k.split('|')[1]]) DEPOT.raw[k] = Math.min(n, 999); }
+  var kr = parseFloat(x.kur), kp = parseFloat(x.kp);
+  if (isFinite(kr)) DEPOT.kur = clamp(kr, 0.8, 1.2);
+  DEPOT.kurPrev = isFinite(kp) ? clamp(kp, 0.8, 1.2) : DEPOT.kur;
+  var td = parseInt(x.td, 10), pt = parseInt(x.pt, 10);
+  if (td > 0) { DEPOT.td = td; DEPOT.parti = clamp(pt || 0, 0, 9); }
+}
+/* ---------- çizim (klasik; ince modda HKA.drawDepotWing) ---------- */
+function drawDepotWing(o) {
+  var m = depotWing(o.k); if (!m || m.x === undefined) return;
+  var x0 = o.x - o.w / 2, y0 = o.y - o.h / 2, x1 = x0 + o.w, y1 = y0 + o.h, H = m.H, dx = o.x, k, fl = o.fill || 0;
+  var W = m.wall;
+  shadow(o.x, o.y, o.w * 0.8);
+  isoQuad(x0 - 0.08, y0 - 0.08, o.w + 0.16, o.h + 0.3, 0.4, '#a8a08c');                                       /* beton zemin */
+  isoBox(x0, y0, o.w, o.h, 0, H, W[0], W[1], W[2]);
+  for (k = 1; k < o.w / 0.18; k++) vline(x0 + k * 0.18, y1, 0, H, m.line);                                    /* kaplama çizgileri */
+  wallQ(x0, y1, x1, y1, H - 2, H, m.roof[1]); wallQ(x1, y0, x1, y1, H - 2, H, m.roof[1]);                  /* saçak */
+  if (o.k === 'soguk') {                                                                                      /* yalıtımlı kapı + soğutucu */
+    winF(dx - 0.32, dx + 0.32, y1, 0, 11, '#e8f0f4', '#7e95a6'); px(R(pX(dx + 0.22, y1)), R(pY(dx + 0.22, y1, 5)), 2, 3, '#4a5a66');
+    wallQ(x0, y1, x1, y1, H - 6, H - 4, '#6fb0dc');
+    isoBox(x1 + 0.04, o.y - 0.25, 0.3, 0.5, 0, 8, '#9fb0bd', '#6f8394', '#8497a8');                         /* soğutma ünitesi (yan) */
+    var fan = R(Math.sin((o.t || 0) * 7) * 1.2); px(R(pX(x1 + 0.2, o.y)) - 1 + fan, R(pY(x1 + 0.2, o.y, 6)) - 1, 3, 1, '#e8f0f4');
+  } else if (o.k === 'kiler') {                                                                               /* tahta kapı, küçük pencere, çuvallar */
+    winF(dx - 0.28, dx + 0.28, y1, 0, 10, '#6a4326', '#3a2414'); winF(x0 + 0.2, x0 + 0.5, y1, 6, 12, '#e8d9a8', '#5a4026');
+    for (k = 0; k < 3; k++) isoBox(x1 - 0.55 + (k % 2) * 0.16, y1 + 0.08 + (k >> 1) * 0.1, 0.24, 0.2, 0, 4 + (k >> 1) * 3, '#e6d9b4', '#b8a97c', '#cfc196');
+  } else if (o.k === 'uzanti') {                                                                              /* iki sürgülü kapı + ışıklık */
+    winF(dx - 0.8, dx - 0.1, y1, 0, 12, '#3c4650', '#2c343c'); winF(dx + 0.1, dx + 0.8, y1, 0, 12, '#3c4650', '#2c343c');
+  } else if (o.k === 'rampa') {                                                                               /* açık yükleme rıhtımı + rampa + kamyon */
+    for (k = 0; k < 8; k++) { var a = k / 8, b = (k + 1) / 8; wallQ(x0 + o.w * a, y1, x0 + o.w * b, y1, 2, 5, k % 2 ? '#1c1c1c' : '#f2c230'); }
+    winF(dx - 0.9, dx - 0.2, y1, 0, 9, '#3c4650', '#2c343c');
+    isoBox(dx + 0.15, y1 + 0.05, 0.75, 0.55, 0, 3, '#b9b3a4', '#8e897c', '#a39d8f');
+    isoBox(x0 + 0.1, y1 + 0.3, 0.95, 0.5, 0, 10, '#e8e4da', '#b9b3a4', '#cfc9ba'); isoBox(x0 + 1.05, y1 + 0.3, 0.3, 0.5, 0, 7, '#c4553d', '#8a3a28', '#a84630');
+    px(R(pX(x0 + 0.3, y1 + 0.8)), R(pY(x0 + 0.3, y1 + 0.8, 1)) - 1, 3, 3, '#1c1c1c'); px(R(pX(x0 + 1.1, y1 + 0.8)), R(pY(x0 + 1.1, y1 + 0.8, 1)) - 1, 3, 3, '#1c1c1c');
+  }
+  roofGableX(x0 - 0.1, x1 + 0.1, y0 - 0.1, y1 + 0.1, H, o.k === 'rampa' ? 4 : 6, m.roof[0], m.roof[1], W[2], m.line, 5);
+  if (o.k === 'uzanti') roofPlane([[dx - 0.4, y1 - 0.45, H + 3], [dx + 0.4, y1 - 0.45, H + 3], [dx + 0.4, y1 - 0.1, H + 1], [dx - 0.4, y1 - 0.1, H + 1]], '#9fbfcc', '#6c8a96', 3);   /* ışıklık */
+  var fn = Math.min(6, Math.ceil(fl * 6));                                                                    /* doluluk: kapı önünde sandıklar */
+  if (o.k !== 'rampa' && o.k !== 'kiler') for (k = 0; k < fn; k++) crate(x0 + 0.3 + (k % 3) * 0.24, y1 + 0.28 + (k >> 2) * 0.02, (k % 3 === 2 ? 4 : 0), k % 2 ? '#c9a15e' : '#a8793e');
+  wingSign(x0 + 0.12, y1 + 0.15, T(m.s), o.x, o.y);
+}
+/* tabela: köşe direğinde küçük levha + ad (yakınken) */
+function wingSign(sxw, syw, label, cx, cy) {
+  var sx = R(pX(sxw, syw)), sy = R(pY(sxw, syw, 0));
+  px(sx, sy - 13, 1, 13, '#4a2f1c'); px(sx - 9, sy - 18, 19, 6, '#8a5a33'); px(sx - 8, sy - 17, 17, 4, '#a8734a');
+  if (dist2(player.x, player.y, cx, cy) < 160) uiText(sxw, syw, 16, label, '#ffe9b8', 9, 1, 0, 0, true);
+}
+function pushDepotWings(push) {
+  var i, w, nx = DEPOT.lvl >= 1 && DEPOT.lvl < DEPOT_LV.length ? depotWing(DEPOT.lvl + 1) : null;
+  for (i = 1; i < DEPOT_WINGS.length; i++) (function (wg) {
+    if (wg.lv <= DEPOT.lvl) push(wg.x + wg.y, function () { drawDepotWing(depotWingObj(wg)); });
+    else if (wg === nx && !insBusy('depot')) push(wg.x + wg.y, function () { plotOutline(wg, '📦 ' + T(wg.n) + ' • ' + T('buildAt')); });
+  })(DEPOT_WINGS[i]);
+}
 function pushMeydan(push) {
   push(HUT.x + HUT.y, drawHut);
   push(DEPOT.x + DEPOT.y, drawDepot);
+  pushDepotWings(push);                                       /* v2.18-deneme: MODÜLER DEPO kanatları */
   push(WHALL.x + WHALL.y, drawWhall);
   push(MSIGN.x + MSIGN.y, drawMeydanSign);
   push(YSIGN.x + YSIGN.y, drawYardSign);
@@ -12189,6 +12478,7 @@ var HELP = {
   of_port: { ic: '💼', tr: ['PORTFÖY', 'Elindeki hisseler: kaç adet, ortalama alış fiyatı, şu anki değeri ve kâr/zarar yüzdesi. Altta toplam portföy, kasan ve özel şirket gelirin.'], en: ['PORTFOLIO', 'The shares you hold: count, average buy price, current value and profit/loss. Below: total portfolio, cash and private income.'] },
   of_news: { ic: '📰', tr: ['HABER', 'Hisse fiyatlarını oynatan haberler; yeşil yükseltir, kırmızı düşürür. Al-sat kararından önce buraya bak.'], en: ['NEWS', 'News that moves share prices; green pushes up, red pulls down. Check it before you trade.'] },
   of_hold: { ic: '🏦', tr: ['HOLDİNG', 'Toplam değerin: liman varlığın, portföyün ve bağlı ortaklıkların. Arada çıkan özel şirket tekliflerini satın alırsan her gün gelir getirir.'], en: ['HOLDING', 'Your total worth: harbor assets, portfolio and subsidiaries. Private company offers that pop up bring daily income if you buy them.'] },
+  of_toptan: { ic: '📦', tr: ['TOPTAN', 'Ambardaki ham balığı ve Soğuk Odadaki fileto/füme\'yi 10\'luk partiyle toptan satarsın. Fiyat her gün değişen kura (×0,8–1,2) bağlı; günde 3 parti, Rampa ile 4. Ok, kurun dünden yüksek mi düşük mü olduğunu gösterir.'], en: ['WHOLESALE', 'Sell raw fish from the Store and fillet/smoked from the Cold Room in batches of 10. The price follows a daily rate (x0.8-1.2); 3 batches a day, 4 with the Ramp. The arrow shows whether the rate is above or below yesterday.'] },
   stall: { ic: '🐟', tr: ['TEZGÂHLAR', 'Her tezgâhın bugünkü geliri, gideri ve net kazancı. Oklar düne göre artışı (▲) ya da azalışı (▼) gösterir.', 'Tezgâha dokununca ayrıntı açılır. Yetişemediğin tezgâhı KAPALI yap: o tezgâha müşteri gelmez, ağ o türü üretmez.'], en: ['STALLS', 'Each stall\'s income, expense and net today. Arrows show the rise (▲) or fall (▼) versus yesterday.', 'Tap a stall for details. Switch OFF a stall you can\'t keep up with: no customers come and its net stops.'] },
   cust: { ic: '📖', tr: ['MÜŞTERİ DEFTERİ', 'Koya gelen herkesin koleksiyonu. Hiç görmediğin kara gölgedir (???). Gördüğün ama adını bilmediğin ?????\'dır.', 'Bir özel müşterinin siparişini tamamla: kendini tanıtır, adı deftere yazılır. Kartlara dokununca ayrıntı çıkar.'], en: ['CUSTOMER BOOK', 'A collection of everyone who visits the cove. Unseen ones are shadows (???). Seen but unnamed ones are ?????.', 'Complete a special customer\'s order and they introduce themselves; the name goes in the book. Tap a card for details.'] },
   hal: { ic: '📦', tr: ['BALIK HALİ', 'Toptan mal gelen yer. Paletleri sen taşıyamazsın; Hal Hamalı alır ve depoya ya da tezgâhlara götürür. Hamal yoksa mal doğrudan depoya iner.'], en: ['FISH HALL', 'Where wholesale goods arrive. You can\'t carry the pallets; the Hall Porter takes them to the depot or the stalls. Without one, goods go straight to the depot.'] },
@@ -12905,6 +13195,7 @@ function layoutRects() {
   add('başlangıç noktası', 'start', 0, 4.5, 3.2, 0.25, 0.25);
   /* v2.16: meydan binaları + Şeref Panosu (pano bunlarla çakışmasın) */
   add('Personel Kulübesi', 'hut', 0, HUT.x, HUT.y, HUT.w / 2, HUT.h / 2); add('Depo', 'depot', 0, DEPOT.x, DEPOT.y, DEPOT.w / 2, DEPOT.h / 2);
+  DEPOT_WINGS.forEach(function (w) { if (w.x !== undefined) add('Depo ' + w.k, 'depotw' + w.k, 0, w.x, w.y, w.w / 2, w.h / 2); });   /* v2.18-deneme: modüler depo kanatları (hep ayrılı) */
   add('Balık Hali', 'whall', 0, WHALL.x, WHALL.y, WHALL.w / 2, WHALL.h / 2); add('meydan tabelası', 'msign', 0, MSIGN.x, MSIGN.y, 0.3, 0.2);
   add('Şeref Panosu', 'fame', 0, FAME.x, FAME.y, 0.85, 0.85);   /* ekranda yatay pano: x−y ekseninde ~3.3 karo */
   return R;
@@ -15843,6 +16134,7 @@ function hook(name, f0) {
   drawMeydanGround = hook('drawMeydanGround', drawMeydanGround);
   drawHut = hook('drawHut', drawHut);
   drawDepot = hook('drawDepot', drawDepot);
+  drawDepotWing = hook('drawDepotWing', drawDepotWing);   /* v2.18-deneme: depo kanadı (o: {k:'ambar'|'soguk'|'kiler'|'uzanti'|'rampa', x, y, w, h, fill: 0-1, t}) */
   drawWhall = hook('drawWhall', drawWhall);
   drawWoodSign = hook('drawWoodSign', drawWoodSign);
   drawMgrDesk = hook('drawMgrDesk', drawMgrDesk);
@@ -16125,6 +16417,9 @@ if (netOn()) fbFlush();                                  /* açılışta bekleye
 window.addEventListener('online', function () { if (netOn()) fbFlush(); });   /* bağlantı gelince bekleyen görüşler */
 
 window.BT = {
+  depo: { rawCount: rawCount, coldCount: coldCount, rawCap: rawCap, coldCap: coldCap, rawFree: rawFree, depotFree: depotFree, depotCap: depotCap, depotHasKiler: depotHasKiler, wings: DEPOT_WINGS,
+    toptanSell: toptanSell, toptanUnit: toptanUnit, toptanKur: toptanKur, toptanLeft: toptanLeft, toptanMax: toptanMax, toptanKeys: toptanKeys, toptanDay: toptanDay, toptanHtml: toptanHtml,
+    rawSurplusNet: rawSurplusNet, rawBlocked: rawBlocked },   /* v2.18-deneme: MODÜLER DEPO (test) */
   cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },
   envStage: function () { return envStage(); }, buildSave: buildSave, loadFrom: loadFrom, DEPOT_LV: DEPOT_LV, counterMax: counterMax, queueMax: queueMax, upCost: upCost, envFlow: envFlow, legacyEnvStage: legacyEnvStage, ENV_UPS: ENV_UPS, scenery: scenery, SPECIALS: SPECIALS,
   /* test/önizleme: bir kıyafeti verilen tuvale çiz */
