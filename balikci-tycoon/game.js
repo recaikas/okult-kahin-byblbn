@@ -189,6 +189,8 @@ var STR = {
     tServ: 'LİMAN HİZMET BİNALARI',
     /* v0.4 — hizmet binaları */
     servBuilt: '{n} kuruldu', servUp: '{n} → Lv.{l}', servMoved: '{n} taşındı',
+    /* v2.18-deneme — İNŞAAT */
+    insLock: '🏗 İnşaatta · {d}', insLabel: 'İnşaat · {d}', insStart: '🏗 {n} inşaatı başladı · {d}', insReady: '✅ {n} hazır! (Sv {l})',
     needServ: 'Önce {n} hizmet binası kur', needArea: '{n} bölgesi kapalı', noPlot: 'Uygun boş parsel yok',
     move: 'BAŞKA PARSELE TAŞI', moveHere: 'BURAYA TAŞI', buildHere: 'İNŞA ET',
     maxLv: 'Son seviye', nextLook: 'Sonraki görünüm', dormantB: 'Tekne sistemi gelince aktif',
@@ -394,6 +396,7 @@ var STR = {
     emptyDecor: 'All decor in open areas is owned', emptyUp: 'All open areas are max level',
     tServ: 'HARBOR SERVICE BUILDINGS',
     servBuilt: '{n} built', servUp: '{n} → Lv.{l}', servMoved: '{n} relocated',
+    insLock: '🏗 Under construction · {d}', insLabel: 'Construction · {d}', insStart: '🏗 {n} construction started · {d}', insReady: '✅ {n} is ready! (Lv {l})',
     needServ: 'Build {n} service buildings first', needArea: '{n} area is locked', noPlot: 'No free plot available',
     move: 'MOVE TO ANOTHER PLOT', moveHere: 'MOVE HERE', buildHere: 'BUILD',
     maxLv: 'Max level', nextLook: 'Next look', dormantB: 'Activates with the boat system',
@@ -2080,7 +2083,9 @@ function servFreePlots(id) {
 }
 function servBuild(id, plot) {
   var d = sdef(id); if (!d || sBuilt(id) || !plot || plot.b) return false;
+  if (insBusy(id)) return false;
   plot.b = id;
+  if (!insOff()) { insStart(id, 1, { p: plot.id }); return true; }   /* v2.18-deneme: parsel ayrılır, bina 1 gün sonra kurulur */
   servState[id] = { lvl: 1, plot: plot.id, cons: 2.2, fresh: 1, nextT: d.lv[0].ivl || 0, flash: 0 };
   _seT = -1; rebuildCounters(); reassignWorkers();
   sfx.build(); addPuff(plot.x, plot.y, '#ffc94a');
@@ -2089,7 +2094,8 @@ function servBuild(id, plot) {
 }
 function servUp(id) {
   var d = sdef(id), st = servState[id];
-  if (!d || !st || st.lvl >= 5) return false;
+  if (!d || !st || st.lvl >= 5 || insBusy(id)) return false;
+  if (!insOff()) { insStart(id, st.lvl + 1); return true; }   /* v2.18-deneme: eski seviyeyle çalışır, yeni seviye L gün sonra */
   st.lvl++; st.cons = 1.3; st.fresh = 0; st.flash = 1.8;
   st.nextT = d.lv[st.lvl - 1].ivl || 0;
   _seT = -1; rebuildCounters(); reassignWorkers();
@@ -2253,6 +2259,214 @@ function restoCook(d, st, L) {
 }
 
 /* =========================================================
+   v2.18-deneme — İNŞAAT
+   Hizmet binaları (BİNA sekmesi) ve meydan binaları (YAPI › Meydan) satın alınınca hemen değil, L gün sonra hazır olur
+   (hedef seviye L → L oyun günü). Hem ilk kurulum hem her seviye yükseltmesi. Kapsam dışı: istasyon yükseltmeleri (YÜKSELT),
+   YAPI › Geliştirme/Dekor kartları, bölge (ALAN) açılışları.
+   • Para satın alırken bugünkü gibi düşer. Gün sayımı endDay'de azalır; gün başında (beginNextDay) biten bina tamamlanır.
+   • İlk kurulumda bina çalışmaz (hiçbir etkisi yok; parsel ayrılır). Yükseltmede eski seviye çalışır, yeni seviye bitince devreye girer.
+   • Bir bina aynı anda tek inşaat: kartı kilitli ("🏗 İnşaatta · N gün").
+   • Durum: S.insaat = { bina: { lv: hedef seviye, left: kalan gün [, p: ilk kurulumda parsel] } }. Bina kimlikleri: hizmet binaları
+     (buzhane restoran nakliye koop mezat) + meydan (hut depot whall office).
+   • Hedef/başarım/gazete sayaçları zaten kurulu SEVİYEYE bakar (servCount, HUT.lvl, DEPOT.lvl, WHALL.built, M.office);
+     bina seviyesi yalnız tamamlanınca yükseldiği için hepsi tamamlanmada sayılır.
+   • Test: window.HK_INSAAT_OFF = 1 → inşaat anında biter (eski davranış).
+   • Çizim: klasik iskele burada; ince mod için HKA.drawScaffold(o) kancası (o: {id, x, y, w, h, left, lv, t, up, hh};
+     up = yükseltme (altta bina var), hh = iskele yüksekliği px). Etiketi ("İnşaat · N gün") oyun çizer.
+   ========================================================= */
+var INS_MEYDAN = ['hut', 'depot', 'whall', 'office'];
+function insOff() { return !!window.HK_INSAAT_OFF; }
+function insMap() { if (!S.insaat || typeof S.insaat !== 'object') S.insaat = {}; return S.insaat; }
+function insBusy(id) { return !!insMap()[id]; }
+function insLeft(id) { var e = insMap()[id]; return e ? e.left : 0; }
+function insValid(id) { return !!sdef(id) || INS_MEYDAN.indexOf(id) >= 0; }
+function insDays(n) { return lang === 'tr' ? n + ' gün' : n + (n === 1 ? ' day' : ' days'); }
+function insName(id) {
+  var d = sdef(id); if (d) return NM(d.n);
+  return T(id === 'hut' ? 'hutName' : id === 'depot' ? 'depotName' : id === 'whall' ? 'whall' : 'office');
+}
+/* kartı kilitle: "🏗 İnşaatta · N gün" */
+function insLock(c, id) {
+  c.blocked = true; c.owned = false; c.pick = null; c.go = null; c.cost = undefined;
+  c.why = T('insLock', { d: insDays(insLeft(id)) });
+  return c;
+}
+function insLockCards(out) {
+  var map = { mhut: 'hut', mdep: 'depot', mhal: 'whall', moffice: 'office' };
+  for (var i = 0; i < out.length; i++) if (out[i] && map[out[i].id] && insBusy(map[out[i].id])) insLock(out[i], map[out[i].id]);
+}
+/* iskelenin yeri ve boyu (dünya birimi / px) */
+function insPos(id, e) {
+  var d = sdef(id), st, p, r;
+  if (d) {
+    st = servState[id]; p = plotById(st ? st.plot : e.p); if (!p) return null;
+    r = SERV_MAT[Math.max(1, st ? st.lvl : e.lv) - 1];
+    return { x: p.x, y: p.y, w: r.foot * 1.7, h: r.foot * 1.7, hh: Math.max(r.h, SERV_MAT[Math.min(4, e.lv - 1)].h) + 6, up: !!st };
+  }
+  if (id === 'hut') return { x: HUT.x, y: HUT.y, w: HUT.w + 0.5, h: HUT.h + 0.5, hh: 13 + e.lv * 1.5 + 8, up: HUT.lvl > 0 };
+  if (id === 'depot') return { x: DEPOT.x, y: DEPOT.y, w: DEPOT.w + 0.5, h: DEPOT.h + 0.5, hh: 22 + e.lv * 2, up: DEPOT.lvl > 0 };
+  if (id === 'whall') return { x: WHALL.x, y: WHALL.y, w: WHALL.w + 0.5, h: WHALL.h + 0.5, hh: 30, up: false };
+  if (id === 'office') return { x: office.x, y: office.y, w: office.w + 0.5, h: office.h + 0.5, hh: 40, up: false };
+  return null;
+}
+function insStart(id, lv, extra) {
+  var e = { lv: lv, left: lv };
+  if (extra && extra.p) e.p = extra.p;
+  insMap()[id] = e;
+  var o = insPos(id, e);
+  sfx.build(); if (o) addPuff(o.x, o.y, '#ffc94a');
+  toast(T('insStart', { n: insName(id), d: insDays(lv) }));
+  if (barTab) renderBar();
+  return true;
+}
+/* meydan binası satın alındı (para düşüldü): inşaat başlar; test bayrağı açıksa eski gibi anında */
+function insMeydanBuy(id) {
+  var lv = id === 'hut' ? HUT.lvl + 1 : id === 'depot' ? DEPOT.lvl + 1 : 1;
+  if (insOff()) { insApply(id, lv, true); return; }
+  if (insBusy(id)) return;
+  insStart(id, lv);
+}
+function officeBuy() { if (!insOff()) { if (!insBusy('office')) insStart('office', 1); return; } officeDone(); }
+/* seviye gerçekten yükselir: "kuruldu" etkileri (sayaçlar, başarım, hedef) bu noktada başlar */
+function insApply(id, lv, instant, e) {
+  if (sdef(id)) { servFinish(id, lv, e); return; }
+  if (id === 'hut') {
+    HUT.lvl = lv; sfx.build(); addPuff(HUT.x, HUT.y, '#ffc94a');
+    if (instant) toast(T(lv === 1 ? 'hutBuilt' : 'hutUp', { l: lv }));
+  } else if (id === 'depot') {
+    DEPOT.lvl = lv; sfx.build(); addPuff(DEPOT.x, DEPOT.y, '#ffc94a');
+    if (instant) toast(T(lv === 1 ? 'depotBuilt' : 'depotUp', { l: lv, c: depotCap() }));
+  } else if (id === 'whall') {
+    WHALL.built = true; sfx.build(); addPuff(WHALL.x, WHALL.y, '#ffc94a');
+    if (instant) toast(T('whallBuilt'));
+  } else if (id === 'office') {
+    if (M && !M.office) officeDone();
+  }
+}
+function servFinish(id, lv, e) {
+  var d = sdef(id), st = servState[id], p;
+  if (!d) return;
+  if (!st) {
+    p = plotById(e && e.p);
+    if (!p || (p.b && p.b !== id)) p = servFreePlots(id)[0];
+    if (!p) return;
+    p.b = id;
+    servState[id] = { lvl: 1, plot: p.id, cons: 2.2, fresh: 1, nextT: d.lv[0].ivl || 0, flash: 0 };
+  } else {
+    st.lvl = lv; st.cons = 1.3; st.fresh = 0; st.flash = 1.8; st.nextT = d.lv[lv - 1].ivl || 0;
+  }
+  _seT = -1; rebuildCounters(); reassignWorkers();
+  var pl = plotById(servState[id].plot);
+  if (pl) addPuff(pl.x, pl.y, '#ffc94a');
+  sfx.build();
+}
+/* gün sonu: kalan gün bir azalır */
+function insDayEnd() {
+  var m = insMap(), any = false;
+  for (var id in m) if (m[id].left > 0) { m[id].left--; any = true; }
+  if (any && barTab) renderBar();
+}
+/* gün başı (ve yükleme): kalanı 0 olan inşaatlar tamamlanır */
+function insDue(silent) {
+  var m = insMap(), done = [], id;
+  for (id in m) if (m[id].left <= 0) done.push(id);
+  if (!done.length) return;
+  var msgs = [];
+  done.forEach(function (k) {
+    var e = m[k]; delete m[k];
+    insApply(k, e.lv, false, e);
+    msgs.push(T('insReady', { n: insName(k), l: e.lv }));
+  });
+  _seT = -1;
+  if (silent) return;
+  try { achCheck(); } catch (er) { }
+  msgs.forEach(function (s, i) { if (!i) toast(s); else setTimeout(function () { toast(s); }, i * 2700); });
+  if (S.started) save();
+  if (barTab) renderBar();
+}
+function insSave() {
+  var o = {}, m = insMap();
+  for (var id in m) { var e = m[id]; o[id] = e.p ? { lv: e.lv, left: e.left, p: e.p } : { lv: e.lv, left: e.left }; }
+  return o;
+}
+/* bozuk/eski kayıt güvenli: bilinmeyen bina, tutarsız seviye, geçersiz parsel elenir ya da düzeltilir */
+function insLoad(raw) {
+  var out = {}; S.insaat = out;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return;
+  for (var id in raw) {
+    if (!Object.prototype.hasOwnProperty.call(raw, id) || !insValid(id)) continue;
+    var r = raw[id]; if (!r || typeof r !== 'object' || Array.isArray(r)) continue;
+    var d = sdef(id), lv, p;
+    if (d) { lv = sLvl(id) + 1; if (lv > 5) continue; }
+    else if (id === 'hut') { lv = HUT.lvl + 1; if (lv > HUT_LV.length) continue; }
+    else if (id === 'depot') { lv = DEPOT.lvl + 1; if (lv > DEPOT_LV.length) continue; }
+    else { lv = 1; if (id === 'whall' && WHALL.built) continue; }
+    var left = typeof r.left === 'number' && isFinite(r.left) ? clamp(Math.floor(r.left), 0, lv) : lv, e = { lv: lv, left: left };
+    if (d && !sBuilt(id)) {
+      p = plotById(r.p);
+      if (!p || p.b || !plotActive(p) || p.allow.indexOf(id) < 0) { var alt = servFreePlots(id); p = alt.length ? alt[0] : null; }
+      if (!p) { servRefund += upCost(sCost(d.lv[0].c)); continue; }
+      p.b = id; e.p = p.id;
+    }
+    out[id] = e;
+  }
+}
+/* ---------- çizim (klasik; ince modda HKA.drawScaffold) ---------- */
+function insObj(id, e) {
+  var q = insPos(id, e); if (!q) return null;
+  return { id: id, x: q.x, y: q.y, w: q.w, h: q.h, hh: q.hh, up: q.up, left: e.left, lv: e.lv, t: gameT };
+}
+function pushInsaat(push) {
+  var m = insMap();
+  for (var id in m) (function (k, e) {
+    var o = insObj(k, e); if (!o) return;
+    push(o.x + o.y + 0.5, function () { drawScaffold(o); insLabel(o); });
+  })(id, m[id]);
+}
+function insLabel(o) { uiText(o.x, o.y, o.hh + 9, T('insLabel', { d: insDays(o.left) }), '#ffd54a', 11, 1, 0, 0, true); }
+function insBrace(xa, ya, za, xb, yb, zb, col) {
+  ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.beginPath();
+  ctx.moveTo(R(pX(xa, ya)), R(pY(xa, ya, za))); ctx.lineTo(R(pX(xb, yb)), R(pY(xb, yb, zb))); ctx.stroke();
+}
+function drawScaffold(o) {
+  var x0 = o.x - o.w / 2, y0 = o.y - o.h / 2, x1 = x0 + o.w, y1 = y0 + o.h, H = o.hh || (18 + Math.min(5, o.lv) * 4), k;
+  var wood = '#a8793e', woodD = '#6a4326', plank = '#d2a468', YEL = '#f2c230', BLK = '#1c1c1c';
+  function post(x, y, h) { var sx = R(pX(x, y)), sy = R(pY(x, y, 0)); px(sx - 1, sy - h, 2, h, wood); px(sx, sy - h, 1, h, woodD); }
+  function rail(xa, ya, xb, yb, z) { isoLine(xa, ya, xb, yb, z, plank, 2); isoLine(xa, ya, xb, yb, z - 1, woodD, 1); }
+  /* kuru toprak zemin; ilk kurulumda yükselen temel/duvar (ilerleme = geçen gün oranı) */
+  if (!o.up) {
+    var prog = clamp(1 - o.left / Math.max(1, o.lv), 0, 1);
+    isoQuad(x0, y0, o.w, o.h, 0.4, '#a8966f');
+    isoBox(x0 + 0.14, y0 + 0.14, o.w - 0.28, o.h - 0.28, 0.4, 3 + prog * H * 0.5, '#c9a97a', '#8a6a3f', '#a8834d');
+    px(R(pX(x1 + 0.1, y1 + 0.05)) - 4, R(pY(x1 + 0.1, y1 + 0.05, 0)) - 3, 8, 2, plank);       /* yerdeki kalas yığını */
+    px(R(pX(x1 + 0.1, y1 + 0.05)) - 3, R(pY(x1 + 0.1, y1 + 0.05, 0)) - 5, 7, 2, wood);
+  }
+  /* arka direkler + arka korkuluk, sonra ön yüzler */
+  post(x0, y0, H); rail(x0, y0, x1, y0, H * 0.66); rail(x0, y0, x0, y1, H * 0.66);
+  post(x1, y0, H); post(x0, y1, H);
+  /* çapraz kalaslar (güney ve doğu yüzler) */
+  insBrace(x0, y1, 0, x1, y1, H * 0.66, woodD); insBrace(x1, y1, 0, x0, y1, H * 0.66, woodD);
+  insBrace(x1, y0, 0, x1, y1, H * 0.66, woodD); insBrace(x1, y1, 0, x1, y0, H * 0.66, woodD);
+  rail(x0, y1, x1, y1, H * 0.34); rail(x0, y1, x1, y1, H * 0.66); rail(x0, y1, x1, y1, H);
+  rail(x1, y0, x1, y1, H * 0.34); rail(x1, y0, x1, y1, H * 0.66); rail(x1, y0, x1, y1, H);
+  post(x1, y1, H);
+  /* sarı-siyah uyarı şeridi: zeminde ve üst korkulukta */
+  var n = 10;
+  for (k = 0; k < n; k++) {
+    var a = k / n, b = (k + 1) / n, c = k % 2 ? BLK : YEL;
+    isoLine(x0 + (x1 - x0) * a, y1 + 0.05, x0 + (x1 - x0) * b, y1 + 0.05, 3, c, 3);
+    isoLine(x1 + 0.05, y0 + (y1 - y0) * a, x1 + 0.05, y0 + (y1 - y0) * b, 3, c, 3);
+    wallQ(x0 + (x1 - x0) * a, y1, x0 + (x1 - x0) * b, y1, H - 4, H - 1, c);
+  }
+  /* çekiç: ön köşede sallanır, vuruşta kıvılcım */
+  var sw = Math.sin(o.t * 9), hx0 = R(pX(x1, y1)) + 2, hy0 = R(pY(x1, y1, H * 0.66)) - 2;
+  var ang = -0.5 + sw * 0.8, hx = hx0 + Math.sin(ang) * 7, hy = hy0 - Math.cos(ang) * 7;
+  ctx.strokeStyle = '#4a2f1c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(hx0, hy0); ctx.lineTo(R(hx), R(hy)); ctx.stroke();
+  px(R(hx) - 2, R(hy) - 1, 5, 3, '#8d96a0'); px(R(hx) - 2, R(hy) - 1, 5, 1, '#d8dde2');
+  if (sw < -0.85) { dot(hx0 + 6, hy0 - 2, '#ffe27a'); dot(hx0 + 8, hy0 + 1, '#ffd54a'); dot(hx0 + 5, hy0 + 3, '#fff3b0'); }
+}
+
+/* =========================================================
    v1.2 — BİRLEŞİK SİSTEM (GDD v1.1)
    Merkezi Depo + Otomatik Dağıtım • Balık Pazarı Günü • Sade Gün Geçişi
    Çekirdek döngü değişmez; bu katman tekrarlı taşımayı yönetim kararına çevirir.
@@ -2389,6 +2603,7 @@ function endDay() {
   day.last.pet = petDayEnd();                      /* v2.18-deneme: hayvanların mama ücreti */
   if (M && M.office) closeDay();                 /* borsa günü oyun günüyle aynı */
   if (day.n === 1) gzMark('ilkgun', { n: S.served | 0 });   /* v2.16: ilk günün sonu → ertesi sabah gazetesi */
+  insDayEnd();                                     /* v2.18-deneme: inşaatlarda kalan gün azalır */
   day.phase = 'summary';
   sfx.dayOut();
   gzDayEnd(showDayCard);                           /* v2.16: alınmamış özel sayı gün kartından önce açılır */
@@ -2404,6 +2619,7 @@ function beginNextDay(skipPrep) {
   pickFeatured();
   pickSpecials();
   day.market = isMarketDay(day.n);
+  insDue();                                        /* v2.18-deneme: gün başında biten inşaatlar tamamlanır */
   day.st = newDayStats();
   day.t = 0;
   TAX.on = false;
@@ -3095,6 +3311,7 @@ function buildSave() {
     dpos: S.dpos || {}, dbox: S.dbox || [],           /* v2.17: taşınmış süslerin yeri + Süs Sandığı */
     proj: [Math.round(project.inv), project.stage, project.done ? 1 : 0],
     serv: servSave(),
+    insaat: insSave(),                                /* v2.18-deneme: sürmekte olan inşaatlar {bina: {lv, left}} */
     day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || '', (day.spec || []).join(','), day.sp || 0, day.normals || 0],
     stalls: counters.map(function (c) { return [c.key, c.open ? 1 : 0]; }),
     workers: workers.map(function (w) { return (w.lv | 0) > 1 ? [w.role, w.zone === undefined ? 0 : w.zone, w.lv | 0] : [w.role, w.zone === undefined ? 0 : w.zone]; }),   /* v2.18-deneme: usta seviyesi (yoksa 1) */
@@ -3216,6 +3433,7 @@ function loadFrom(d) {
     decorLoad(d.dpos, d.dbox);                     /* v2.17: eski kayıtta yok → süsler varsayılan yerinde; geçersiz yer → varsayılan */
     if (d.proj) { project.inv = d.proj[0] || 0; project.stage = d.proj[1] || 0; project.done = !!d.proj[2]; }
     servLoad(d.serv);   /* v0.4 §41 — yoksa hiçbir bina kurulmaz, para kesilmez */
+    insLoad(d.insaat);  /* v2.18-deneme: eski kayıtta yok → boş; bozuk kayıt güvenle elenir */
     if (servRefund > 0) { S.cash += servRefund; var rf = servRefund; servRefund = 0; setTimeout(function () { toast(T('servRefund', { n: money(rf) })); save(); }, 1200); }
     rebuildCounters();  /* hedef stoklar yüklenmeden önce tezgâhlar var olmalı */
     loadDay(d);         /* v1.2 §9 — gün, depo ve hedef stoklar korunur */
@@ -3244,6 +3462,7 @@ function loadFrom(d) {
     emekBoxLoad(d.nb);
     petLoad(d.pet);                                 /* v2.18-deneme: eski kayıtta yok → hayvansız */
     tarifLoad(d.tarif);                             /* v2.18-deneme: eski kayıtta yok → boş defter, boş kiler, ocaksız */
+    insDue(true);                                   /* v2.18-deneme: bitmiş (left ≤ 0) inşaat sessizce tamamlanır */
     return true;
   } catch (e) { return false; }
 }
@@ -7375,6 +7594,7 @@ function render() {
     push(d.x + d.y, function () { if (d.pet) drawPetHouse(d); else if (d.gift) drawGiftDecor(d); else drawDecor(d); });   /* v2.18-deneme: hayvan evi */
   })(DECOR[i]);
   pushMeydan(push);
+  pushInsaat(push);                                 /* v2.18-deneme: inşaat iskeleleri */
   drawRoadLamps(push);
   drawRoadShow(push);
   for (i = 0; i < BINS.length; i++) (function (bn) {
@@ -7886,6 +8106,9 @@ function barList() {
     }
     for (i = 0; i < SERV.length; i++) (function (d) {
       var lv = sLvl(d.id);
+      if (!lv && insBusy(d.id)) {                      /* v2.18-deneme: ilk kurulum sürüyor */
+        out.push(insLock({ id: 'sv' + d.id, ic: d.icon, t: NM(d.n), s: NM(d.r) }, d.id)); return;
+      }
       if (lv > 0) {
         var cur = d.lv[lv - 1];
         if (lv >= 5) {
@@ -7896,6 +8119,7 @@ function barList() {
             s: NM(nx.d) + ' • ' + T('nextLook') + ': ' + NM(nx.v),
             cost: upCost(sCost(nx.c)),
             go: function () { servUp(d.id); servSel = d.id; } });
+          if (insBusy(d.id)) insLock(out[out.length - 1], d.id);   /* v2.18-deneme: yükseltme sürüyor */
         }
         if (servFreePlots(d.id).length) {
           out.push({ id: 'mv' + d.id, ic: '↔️', t: T('move'), s: NM(d.n) + ' • ' + T('free'),
@@ -7940,7 +8164,7 @@ function buildHot(sub) {
   var i;
   if (sub === 'up') { for (i = 0; i < AREAS.length; i++) if (!AREAS[i].locked && AREAS[i].lvl < MAXLV && S.cash >= emekCost(AREAS[i].up[AREAS[i].lvl])) return true; return false; }
   if (sub === 'dev') { for (i = 0; i < SLOTS.length; i++) if (slotActive(SLOTS[i]) && !SLOTS[i].b && S.cash >= 900) return true; return false; }
-  if (sub === 'meydan') return !!(M && ((officeReady() && !M.office && S.rep >= ECON.officeRep && S.cash >= upCost(ECON.officeCost)) || (M.office && !M.license && S.rep >= ECON.licenseRep && S.cash >= upCost(ECON.licenseCost))));
+  if (sub === 'meydan') return !!(M && ((officeReady() && !M.office && !insBusy('office') && S.rep >= ECON.officeRep && S.cash >= upCost(ECON.officeCost)) || (M.office && !M.license && S.rep >= ECON.licenseRep && S.cash >= upCost(ECON.licenseCost))));
   return false;
 }
 function setBuildSub(sub) { buildSub = sub; barSlot = null; cfId = null; renderBar(); sfx.tap(); helpOnce('bsub_' + sub); }
@@ -8051,7 +8275,7 @@ function renderProjPanel() {
   });
   bindProjExtra();
 }
-function officeBuy() {
+function officeDone() {
   M.office = true; M.day = 1; M.t = 0; genOffers();
   if (M.credit > 0) {
     var tc = cst('atlas');
@@ -8093,6 +8317,7 @@ function barHot() {
   if (buildHot('meydan')) hot.build = true;
   for (i = 0; i < SERV.length; i++) {
     var sd = SERV[i], slv = sLvl(sd.id);
+    if (insBusy(sd.id)) continue;
     if (slv === 0) { if (!servLockReason(sd) && S.cash >= upCost(sCost(sd.lv[0].c))) hot.serv = true; }
     else if (slv < 5 && S.cash >= upCost(sCost(sd.lv[slv].c))) hot.serv = true;
   }
@@ -10894,12 +11119,12 @@ function meydanCards(out) {
   nx = hutNext();
   out.push({ id: 'mhut', ic: '🏚️', t: HUT.lvl ? T('hutName') + '  ' + T('level') + HUT.lvl + (nx ? '→' + (HUT.lvl + 1) : '') : T('hutName'),
     s: T('hutD', { n: HUT.lvl }), cost: nx ? upCost(nx.c) : 0, owned: !nx, blocked: nx && lvNow < nx.l, why: nx ? T('needLv', { l: nx.l }) : '',
-    buyTxt: HUT.lvl ? T('upgrade') : T('build'), go: function () { HUT.lvl++; sfx.build(); addPuff(HUT.x, HUT.y, '#ffc94a'); toast(T(HUT.lvl === 1 ? 'hutBuilt' : 'hutUp', { l: HUT.lvl })); } });
+    buyTxt: HUT.lvl ? T('upgrade') : T('build'), go: function () { insMeydanBuy('hut'); } });
   nx = depotNext();
   out.push({ id: 'mdep', ic: '📦', t: DEPOT.lvl ? T('depotName') + '  ' + T('level') + DEPOT.lvl + (nx ? '→' + (DEPOT.lvl + 1) : '') : T('depotName'),
     s: DEPOT.lvl ? T('depotD2', { a: depotCount(), b: depotCap(), n: nx ? nx.cap : depotCap() }) : T('depotD'),
     cost: nx ? upCost(nx.c) : 0, owned: !nx, blocked: nx && lvNow < nx.l, why: nx ? T('needLv', { l: nx.l }) : '',
-    buyTxt: DEPOT.lvl ? T('upgrade') : T('build'), go: function () { DEPOT.lvl++; sfx.build(); addPuff(DEPOT.x, DEPOT.y, '#ffc94a'); toast(T(DEPOT.lvl === 1 ? 'depotBuilt' : 'depotUp', { l: DEPOT.lvl, c: depotCap() })); } });
+    buyTxt: DEPOT.lvl ? T('upgrade') : T('build'), go: function () { insMeydanBuy('depot'); } });
   if (DEPOT.lvl) {
     var full = depotStaff() >= depotStaffCap();
     DEPOT_ROLES.forEach(function (r) {
@@ -10910,7 +11135,7 @@ function meydanCards(out) {
   }
   out.push({ id: 'mhal', ic: '🏪', t: T('whall'), s: T('whallD'), cost: upCost(WHALL_COST), owned: WHALL.built,
     blocked: !WHALL.built && (!DEPOT.lvl || lvNow < WHALL_LV), why: !DEPOT.lvl ? T('needDepot') : T('needLv', { l: WHALL_LV }),
-    buyTxt: T('build'), go: function () { WHALL.built = true; sfx.build(); addPuff(WHALL.x, WHALL.y, '#ffc94a'); toast(T('whallBuilt')); } });
+    buyTxt: T('build'), go: function () { insMeydanBuy('whall'); } });
   if (WHALL.built) out.push({ id: 'mrhalhamal', ic: ROLES.halhamal.icon, t: NM(ROLES.halhamal.n) + ' (' + halStaff() + '/' + HAL_STAFF + ')',
     s: NM(ROLES.halhamal.d) + ' • ' + money(ROLES.halhamal.wage) + perMin(), cost: hireCost('halhamal', -1), blocked: halStaff() >= HAL_STAFF, why: T('halStaffFull'),
     go: function () { hire('halhamal', false, -1); save(); } });
@@ -10925,6 +11150,7 @@ function meydanCards(out) {
     out.push({ id: 'mlic', ic: '📜', t: T('license'), s: T('licenseD'), cost: upCost(ECON.licenseCost), go: licenseBuy,
       blocked: !okR2, why: okR2 ? '' : T('needRep', { n: ECON.licenseRep, c: S.rep, l: levelForRep(ECON.licenseRep) }) });
   }
+  insLockCards(out);                                /* v2.18-deneme: inşaattaki meydan binasının kartı kilitlenir */
 }
 
 /* ---------- çizim ---------- */
@@ -15600,6 +15826,7 @@ function hook(name, f0) {
   drawPlot = hook('drawPlot', drawPlot);
   drawVignette = hook('drawVignette', drawVignette);
   drawOffice = hook('drawOffice', drawOffice);
+  drawScaffold = hook('drawScaffold', drawScaffold);   /* v2.18-deneme: inşaat iskelesi (o: {id, x, y, w, h, left, lv, t, up, hh}; etiketi oyun çizer) */
   drawProject = hook('drawProject', drawProject);
   drawDecor = hook('drawDecor', drawDecor);
   drawPet = hook('drawPet', drawPet);                 /* v2.18-deneme: kedi / köpek (o: {k, x, y, dir, st, own, coat, tabby, n, t, carry, love, sulk}) */

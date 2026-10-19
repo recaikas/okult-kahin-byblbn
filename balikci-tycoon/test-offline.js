@@ -8,6 +8,7 @@ const offline = async ctx => {
   await ctx.addInitScript(() => { try { if (!localStorage.getItem('balikci_langpick')) localStorage.setItem('balikci_langpick', '1'); } catch (e) { } });
   /* v2.4: hikâye ziyaretçisi oyunu ara sahneyle durdurur; onu sınamayan testlerde kapalı (test-story-game.js açar) */
   await ctx.addInitScript(() => { window.HK_STORY_OFF = 1; window.HK_HELP_OFF = 1; window.HK_GZ_OFF = 1; window.HK_EMEK_OFF = 1; window.HK_PET_OFF = 1; window.HK_TARIF_OFF = 1; });   /* v2.7: ilk kez ipuçları da (test-ipucu.js açar); v2.16: gazeteci çocuk da (test-gazete.js açar); v2.18-deneme: Emekçi Mod da (test-emekci.js açar), hayvanlar da (test-hayvan.js açar), Tarif Defteri + Güveç Ocağı da (test-tarif.js açar) */
+  await ctx.addInitScript(() => { window.HK_INSAAT_OFF = 1; });   /* v2.18-deneme: inşaat anında biter (eski testler); test-insaat.js bayrağı 0 yapar */
   return ctx.route('**/config.js*', r => r.fulfill({ contentType: 'application/javascript', body: EMPTY_CFG }));
 };
 const chromium = Object.create(pw.chromium);
