@@ -109,10 +109,10 @@ const defCook = () => {
   R.k2 = await p.evaluate(() => ({ cash: BT.S.cash, n: BT.tarif.q().kiler.pirinc, toast: document.getElementById('toast').textContent }));
   ok(R.k2.cash === R.k1.cash && R.k2.n === 50 && /dolu/.test(R.k2.toast), 'kiler sınırı 50 ' + JSON.stringify(R.k2));
   R.k3 = await p.evaluate(() => {
-    const cap0 = BT.tarif.cap(); window.depotHasKiler = () => true;                       /* diğer ajanın Depo Kiler bölmesi */
+    const L0 = BT.DEPOT.lvl; BT.DEPOT.lvl = 0; const cap0 = BT.tarif.cap(); BT.DEPOT.lvl = 3;   /* Depo'nun Kiler bölmesi (Sv3) */
     const cap = BT.tarif.cap(), n = BT.tarif.buy('pirinc', 50), have = BT.tarif.q().kiler.pirinc;
     const c0 = BT.S.cash; BT.S.cash = 1; const no = BT.tarif.buy('domates', 10); BT.S.cash = c0;
-    window.depotHasKiler = () => false; const capF = BT.tarif.cap(); delete window.depotHasKiler; BT.tarif.q().kiler.pirinc = 50;
+    BT.DEPOT.lvl = 2; const capF = BT.tarif.cap(); BT.DEPOT.lvl = L0; BT.tarif.q().kiler.pirinc = 50;
     return { cap0, cap, n, have, no, capF, capNone: BT.tarif.cap(), dom: BT.tarif.q().kiler.domates | 0 };
   });
   ok(R.k3.cap0 === 50 && R.k3.cap === 100 && R.k3.n === 50 && R.k3.have === 100 && R.k3.no === 0 && R.k3.dom === 0 && R.k3.capF === 50 && R.k3.capNone === 50, 'depotHasKiler ile sınır 100 / yoksa 50 ' + JSON.stringify(R.k3));
