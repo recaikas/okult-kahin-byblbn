@@ -184,7 +184,7 @@ const SHOT = process.argv[2];
 
   /* ---- 8) Şeref Panosu ---- */
   R.pano = await p.evaluate(() => ({ frames: BT.gz.frames(), have: ['ilkgun', 'pazar', 'hasmet', 'mudur', 'bolum1'].filter(BT.gz.have).length, clash: BT.layoutClashes(0.1),
-    inMeydan: BT.gz.FAME.x > BT.MEYDAN.x0 && BT.gz.FAME.x < BT.MEYDAN.x1 && BT.gz.FAME.y > BT.MEYDAN.y0 && BT.gz.FAME.y < BT.MEYDAN.y1 }));
+    inMeydan: BT.gz.FAME.x > 15.3 && BT.gz.FAME.x < 17.5 && BT.gz.FAME.y > 9 && BT.gz.FAME.y < 11.5 }));   /* yol vitrininin hemen doğusu (yol kenarı), ofisin güneyi */
   ok(R.pano.frames === 3 && R.pano.have === 3 && !R.pano.clash.length && R.pano.inMeydan, '8: pano çerçeveleri / yerleşim yanlış ' + JSON.stringify(R.pano));
   await p.evaluate(() => { BT.player.x = BT.gz.FAME.x + 1.6; BT.player.y = BT.gz.FAME.y + 0.9; BT.day.t = BT.DAY_LEN * 0.45; });
   await sleep(2200); await shot('seref-panosu.png');

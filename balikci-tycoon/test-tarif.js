@@ -33,7 +33,7 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
   const newGame = async p => {
     await p.goto(URL); await sleep(900);
     await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(700);
-    await p.evaluate(() => { BT.S.tut = 99; BT.S.ctrl = 2; BT.S.cash = 5000; BT.achMute(true); BT.day.t = 10; BT.counters.forEach(c => { c.spawnT = 1e9; }); });
+    await p.evaluate(() => { BT.S.tut = 99; BT.S.ctrl = 2; BT.S.cash = 5000; BT.achMute(true); BT.day.t = 10; BT.counters.forEach(c => { c.spawnT = 1e9; }); if (!window.__keepLock) BT.tarif.q().open = 1; });   /* Tarif sistemi Fümehane kurulunca açılır; test için kapı baştan açık (kilit bölümü ayrı) */
   };
   const noToast = p => p.evaluate(() => document.getElementById('toast').classList.remove('on'));
   const vis = (p, s) => p.evaluate(s => { const e = document.querySelector(s); return !!e && !e.classList.contains('hidden') && getComputedStyle(e).display !== 'none'; }, s);
@@ -289,6 +289,35 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
   ok(/RECIPE BOOK/.test(R.lang.t1) && /RECIPES/.test(R.lang.t1) && /PANTRY/.test(R.lang.t1) && /STOVES/.test(R.lang.t1) && /Fried Anchovy/.test(R.lang.t1) && /Hint: A big fish wants a simple table/.test(R.lang.t1), 'EN defter ' + R.lang.t1.slice(0, 300));
   ok(/Cornmeal/.test(R.lang.t2) && /Collard Greens/.test(R.lang.t2) && /COOK/.test(R.lang.t3) && /Stew Stove/.test(R.lang.t4) && R.lang.ach.join().indexOf('The Kitchen\'s Secret') >= 0 && R.lang.ach.join().indexOf('Black Sea Table') >= 0 && R.lang.help, 'EN sayfalar ' + JSON.stringify([R.lang.t2.slice(0, 80), R.lang.t4.slice(0, 80), R.lang.ach]));
   ok(!/[ğışçöüĞİŞÇÖÜ]/.test(R.lang.t2 + R.lang.t3), 'EN sayfada Türkçe harf ' + R.lang.t3.slice(0, 200));
+
+  /* ================= 9) Açılış kapısı: Tarif sistemi Fümehane kurulunca açılır; Füme Makinesi kartı YAPI › Geliştirme'de ================= */
+  const g = await page(true);
+  await g.addInitScript(() => { window.__keepLock = 1; });
+  await newGame(g);
+  await g.click('.dtab[data-t="build"]'); await sleep(150);
+  await g.evaluate(() => { const b = document.querySelector('#dpSub button[data-s="dev"]'); if (b) b.click(); }); await sleep(150);
+  R.gate = await g.evaluate(() => {
+    const cards = () => [...document.querySelectorAll('#dpCards .dcard')].map(d => d.innerText.replace(/\s+/g, ' '));
+    const cash0 = BT.S.cash, un0 = BT.tarif.unlocked(), st = BT.tarif.buyStove('b0'), op = (BT.tarif.open('rec'), BT.tarif.isOpen());
+    const dev = cards();
+    return { un0, st, op, cash: BT.S.cash === cash0, open0: BT.tarif.q().open, dev, btn: !document.getElementById('tarifBtn').classList.contains('hidden') };
+  });
+  ok(!R.gate.un0 && !R.gate.st && !R.gate.op && R.gate.cash && !R.gate.open0 && !R.gate.btn, 'kilitliyken tarif açık ' + JSON.stringify(R.gate));
+  ok(R.gate.dev.some(t => /Güveç Ocağı/.test(t) && /Önce Fümehane/.test(t)) && R.gate.dev.some(t => /Füme Makinesi/.test(t) && /Önce Fümehane/.test(t)), 'Geliştirme: kilitli ocak + füme makinesi kartları ' + JSON.stringify(R.gate.dev));
+  await g.click('.dtab[data-t="level"]'); await sleep(150);
+  R.gate.up = await g.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].some(d => /Füme Makinesi/.test(d.innerText)));
+  ok(!R.gate.up, 'Füme Makinesi kartı hâlâ YÜKSELT panelinde');
+  R.gate2 = await g.evaluate(() => { BT.closeOverlays(); document.querySelectorAll('.dtab.on').forEach(t => t.click()); BT.areas[2].locked = false; BT.rebuildCounters(); BT.emek.step(0.05, 6); return { un: BT.tarif.unlocked(), open: BT.tarif.q().open, toast: document.getElementById('toast').textContent, notif: BT.M() && BT.M().notif[0] ? BT.M().notif[0].m : '' }; });
+  ok(R.gate2.un && R.gate2.open === 1 && /Tarif Defteri açıldı! Hacer Teyze/.test(R.gate2.toast + R.gate2.notif), 'Fümehane sonrası açılış bildirimi ' + JSON.stringify(R.gate2));
+  R.gate3 = await g.evaluate(() => { BT.S.cash = 5000; const st = BT.tarif.buyStove('b0'); BT.emek.step(0.05, 3); return { st }; });
+  await sleep(400); R.gate3.btn = await g.evaluate(() => !document.getElementById('tarifBtn').classList.contains('hidden'));
+  ok(R.gate3.st && R.gate3.btn, 'Fümehane sonrası ocak kurulur / 🍲 düğmesi görünür ' + JSON.stringify(R.gate3));
+  R.legacy = await g.evaluate(() => { const o = {}; BT.areas[2].locked = true; BT.tarif.load({ known: ['hamsitava'] }); o.a = [BT.tarif.q().open, BT.tarif.unlocked()]; BT.tarif.load({}); o.b = [BT.tarif.q().open, BT.tarif.unlocked()]; BT.tarif.load({ ocak: { b0: { lv: 1, r: null } } }); o.c = [BT.tarif.q().open, BT.tarif.unlocked()]; return o; });
+  ok(R.legacy.a.join() === '1,true' && R.legacy.b.join() === '0,false' && R.legacy.c.join() === '1,true', 'eski kayıt (tarifi/ocağı olan) açık kalmalı ' + JSON.stringify(R.legacy));
+  await g.evaluate(() => { BT.setLang('en'); BT.tarif.q().open = 0; BT.areas[2].locked = false; BT.emek.step(0.05, 3); });
+  R.gateEn = await g.evaluate(() => { const t = document.getElementById('toast').textContent; BT.setLang('tr'); return t; });
+  ok(/Recipe Book unlocked! Discover Aunt Hacer's recipes and build a Stew Stove at your stall\./.test(R.gateEn), 'EN açılış metni ' + R.gateEn);
+  await g.close();
 
   /* ================= kapalıyken (HK_TARIF_OFF): hiçbir şey değişmez ================= */
   const q = await page(false);

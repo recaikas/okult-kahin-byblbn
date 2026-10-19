@@ -4420,7 +4420,7 @@ function investProject(amount) {
 function updateEvents(dt) {
   if (event) { eventT -= dt; if (eventT <= 0) { event = null; nextEvent = rnd(70, 110); } return; }
   nextEvent -= dt;
-  if (nextEvent <= 0 && S.tut >= 5) { event = mxForecastEvent() || pick(EVENTS); eventT = event.dur; toast(T(event.msg)); }
+  if (nextEvent <= 0 && S.tut >= (emek() ? 7 : 5)) { event = mxForecastEvent() || pick(EVENTS); eventT = event.dur; toast(T(event.msg)); }
 }
 var TUTOK = [
   function () { return spots[0].stock.length > 0; },
@@ -4436,6 +4436,21 @@ var TUTOK = [
     return project.inv > 0;
   }
 ];
+/* v2.18-deneme: Emekçi Mod eğitimi — yeni işleyişi tek tek öğretir (Emekçi kapalıyken TUTOK birebir aynı kalır).
+   0 ağın başı • 1 sırta geçiş • 2 masaya bırak • 3 masanın başında kesim • 4 filetoyu tezgâha • 5 tezgâhın önünde satış •
+   6 para topla • 7 ilk personel • 8 diğer roller (ikinci personel) */
+function staffTotal() { var n = 0; for (var i = 0; i < workers.length; i++) if (ROLES[workers[i].role] && ROLES[workers[i].role].zone) n++; return n; }
+var TUTOK_E = [
+  TUTOK[0], TUTOK[1], TUTOK[2],
+  function () { return tables[0].mat.items.length > 0 || hasCarry(player, isGoods) || (counters.length > 0 && counters[0].buffer.length > 0); },
+  function () { return counters.length && counters[0].buffer.length > 0; },
+  function () { return S.served > 0 || S.cash > 0; },
+  function () { return S.cash > 0; },
+  function () { return staffTotal() > 0; },
+  function () { return staffTotal() > 1; }
+];
+function tutList() { return emek() ? TUTOK_E : TUTOK; }
+function tutN() { return tutList().length; }
 function updateCoach(dt) {
   var show = S.started && S.ctrl < 2 && !paused;
   el.coach.classList.toggle('hidden', !show);
@@ -4453,19 +4468,24 @@ function updateCoach(dt) {
 }
 /* eğitim hedef yazısına canlı ilerleme: kaç balık birikti / kaç taşıyorsun */
 function tutProgress() {
+  if (emek()) {
+    if (S.tut === 1 || S.tut === 2) { var n2 = 0; for (var i2 = 0; i2 < player.carry.length; i2++) if (isFish(player.carry[i2])) n2++; return n2 ? ' · 🐟 ' + n2 : ''; }
+    if (S.tut === 4) { var g2 = 0; for (var j2 = 0; j2 < player.carry.length; j2++) if (isGoods(player.carry[j2])) g2++; return g2 ? ' · 🍽 ' + g2 : ''; }
+    return '';
+  }
   if (S.tut === 1 || S.tut === 2) { var n = 0; for (var i = 0; i < player.carry.length; i++) if (isFish(player.carry[i])) n++; return n ? ' · 🐟 ' + n : ''; }
   if (S.tut === 3) { var g = 0; for (var j = 0; j < player.carry.length; j++) if (isGoods(player.carry[j])) g++; return g ? ' · 🍽 ' + g : ''; }
   return '';
 }
 function updateTutorial() {
-  if (S.tut >= TUTOK.length) return;
+  if (S.tut >= tutN()) return;
   /* v1.3: eğitimin çok ötesine geçmiş oyuncuda (sv 3+, otomatik bölge ya da bölüm sonu) yarım kalan eğitim hedefi kapanır */
-  if (repLevel() >= 3 || S.ch1 || zoneAuto(0)) { S.tut = TUTOK.length; return; }
-  if (TUTOK[S.tut]()) {
+  if (repLevel() >= 3 || S.ch1 || zoneAuto(0)) { S.tut = tutN(); return; }
+  if (tutList()[S.tut]()) {
     S.tut++;
     progEv('tut' + S.tut);                                   /* ilerleme olayı: hangi adımda bırakıldı */
     addPuff(player.x, player.y, '#ffc94a');
-    if (S.tut < TUTOK.length) { sfx.star(); toast(TE('tutStepOK')[S.tut - 1] || T('tutNice')); }
+    if (S.tut < tutN()) { sfx.star(); toast(TE('tutStepOK')[S.tut - 1] || T('tutNice')); }
     else { toast(T('tutDone')); save(); }
   }
 }
@@ -7267,8 +7287,16 @@ function drawPuffs() {
    SAHNE
    ========================================================= */
 function tutorialTarget() {
-  if (S.tut >= TUTOK.length) return null;
+  if (S.tut >= tutN()) return null;
   var t = S.tut;
+  if (emek()) {
+    if (t === 0 || t === 1) return { x: spots[0].x, y: spots[0].y + 0.9 };
+    if (t === 2 || t === 3) return { x: tables[0].x, y: tables[0].y };
+    if (t === 4) return hasCarry(player, isGoods) ? { x: counters[0].x, y: counters[0].y } : { x: tables[0].mat.x, y: tables[0].mat.y };
+    if (t === 5) return { x: counters[0].x, y: counters[0].y };
+    if (t === 6) return hasCarry(player, isMoney) ? { x: safe.x, y: safe.y } : { x: counters[0].tray.x, y: counters[0].tray.y };
+    return null;
+  }
   if (t === 0 || t === 1) return { x: spots[0].x, y: spots[0].y + 0.9 };
   if (t === 2) return { x: tables[0].x, y: tables[0].y };
   if (t === 3) return hasCarry(player, isGoods) ? { x: counters[0].x, y: counters[0].y } : { x: tables[0].mat.x, y: tables[0].mat.y };
@@ -7596,9 +7624,9 @@ function syncHUD(dt) {
     el.eventName.textContent = T(event.name);
     el.eventT.textContent = Math.ceil(eventT) + 's';
   } else el.eventChip.classList.add('hidden');
-  if (S.tut < TUTOK.length) {
+  if (S.tut < tutN()) {
     el.objective.classList.remove('hidden');
-    el.objLbl.textContent = T('goal') + ' ' + (S.tut + 1) + '/' + TUTOK.length;
+    el.objLbl.textContent = T('goal') + ' ' + (S.tut + 1) + '/' + tutN();
     el.objText.textContent = TE('tut')[S.tut] + tutProgress();
   } else if (undecidedStalls().length) {
     el.objective.classList.remove('hidden');
@@ -7738,14 +7766,6 @@ function barList() {
         go: function () { barZone = z2; cfId = null; renderBar(); } });
     })(i);
     petBarCard(out);                                                   /* v2.18-deneme: HAYVANLAR kartı */
-    /* --- v1.3: Füme Makinesi (Fümehane açılınca 1. ve 2. bölgeye) --- */
-    FUME_MACH.forEach(function (fm) {
-      if (AREAS[fm.z].locked || fumeMachine(fm.z)) return;
-      var ok = !AREAS[smoker.z].locked;
-      out.push({ id: 'fm' + fm.z, ic: '🔥', t: T('fmT', { n: NM(AREAS[fm.z].n) }), s: T('fmD'), cost: upCost(fm.cost),
-        blocked: !ok, why: T('fmNeed'),
-        go: function () { S.fumeM[fm.z] = 1; sfx.build(); toast(T('fmDone', { n: NM(AREAS[fm.z].n) })); } });
-    });
     /* --- v0.5: personele devret (tam otomasyon) --- */
     for (i = 0; i < zoneCount(); i++) (function (z3) {
       if (!zoneOpen(z3) || !zoneStaff(z3)) return;          /* v1.9.1: personel almadan otomasyon kartı çıkmaz */
@@ -7829,6 +7849,7 @@ function barList() {
           pick: T(d2 ? 'replace' : 'choose'),
           go: function (sx) { return function () { barSlot = sx; cfId = null; renderBar(); }; }(s2) });
       }
+      fumeMachCards(out);                                              /* v2.18-deneme: Füme Makinesi (eskiden YÜKSELT'teydi) */
       tarifBarCards(out);                                              /* v2.18-deneme: Güveç Ocağı · <tezgâh> */
       if (!out.length) out.push({ empty: T('emptyBuild') });
     }
@@ -7879,6 +7900,16 @@ function barList() {
     if (!out.length) out.push({ empty: T('servEmpty') });
   }
   return out;
+}
+/* v1.3: Füme Makinesi (Fümehane açılınca 1. ve 2. bölgeye). v2.18-deneme: YÜKSELT'ten YAPI › Geliştirme'ye taşındı. */
+function fumeMachCards(out) {
+  FUME_MACH.forEach(function (fm) {
+    if (AREAS[fm.z].locked || fumeMachine(fm.z)) return;
+    var ok = !AREAS[smoker.z].locked;
+    out.push({ id: 'fm' + fm.z, ic: '🔥', t: T('fmT', { n: NM(AREAS[fm.z].n) }), s: T('fmD'), cost: upCost(fm.cost),
+      blocked: !ok, why: T('fmNeed'),
+      go: function () { S.fumeM[fm.z] = 1; sfx.build(); toast(T('fmDone', { n: NM(AREAS[fm.z].n) })); } });
+  });
 }
 function slotBuild(sl, id) {
   var d = bdef(id), price = upCost(d.cost);
@@ -11768,7 +11799,7 @@ function updateStory(dt) {
     if (storyVis.state === 'wait' && !storyVis.storyDone && !storyOpenNow()) storyOpen(storyVis);
     return;
   }
-  if (st.step >= STORY_N || S.tut < TUTOK.length || st.last >= (day.n || 1)) return;
+  if (st.step >= STORY_N || S.tut < tutN() || st.last >= (day.n || 1)) return;
   if (day.phase !== 'play' || day.t < STORY_AT) return;
   st.tryT = (st.tryT || 0) - dt; if (st.tryT > 0) return;
   st.tryT = 2;
@@ -12114,7 +12145,7 @@ var GZ_PAPERS = {
     cap: { tr: '▲ Yeni müdür iş başında', en: '▲ The new manager at work' } }
 };
 var GZB = { on: false }, GZD = null, gzWait = -1;            /* gazeteci çocuk · yerdeki gazete · gelişe kalan süre (-1: kurulmadı) */
-var FAME = { x: 16.3, y: 5.9 };                              /* Şeref Panosu: meydanın batı kenarı, köprü tabelası ile ofis arası */
+var FAME = { x: 16.3, y: 11.2 };                             /* Şeref Panosu: meydanın batı kenarı, yol vitrininin hemen doğusu, Ticaret Ofisi'nin güneyi (v2.18-deneme: yol kenarına taşındı) */
 function gzOff() { return !!window.HK_GZ_OFF; }               /* yalnız eski testler (oyun akışı durmasın); test-gazete.js açar */
 function gzFresh() { return { got: {}, miss: {}, q: [], st: {}, last: 0 }; }
 function gzQ() { return S.gz || (S.gz = gzFresh()); }
@@ -13730,12 +13761,15 @@ function drawEmekFx() {
 /* ---------- metinler (TR/EN) ---------- */
 Object.assign(STR.tr, {
   tutE: ['Ağın başında bekle — balık birikiyor',
-         'Ağın başında dur: balıklar tek tek sırtına geçsin',
-         'Balıkları masaya bırak ve başında dur: kesilsin',
-         'Filetoyu tezgâha bırak, önünde dur: satılsın',
-         'Tezgâhın para kasasından geç — para hesabına geçer',
-         'Alt bardan bir yükseltme ya da personel al'],
-  tutStepOKE: ['✓ Balık birikti! Ağın başında dur', '✓ Balıklar sırtında! Kesim masasına götür', '✓ Masa kesiyor! Başında durdukça keser', '🎉 İlk balığın tezgâhta! Önünde durursan hızlı satılır', '✓ Para kasada! Alttaki çubuktan bir şey al'],
+         'Ağın başında dur: balıklar sırtına geçer (sandıktan da alırsın)',
+         'Balıkları kesim masasına bırak',
+         'Masanın başında dur — balıklar kesilsin',
+         'Filetoları tezgâha taşı',
+         'Tezgâhın önünde dur: tam hızda satılır. Yokken yavaş (⏸ Bekliyor)',
+         'Kasadan ya da tepsiden paranı topla',
+         'İlk personel: Tezgâhtar al (YÜKSELT). Sen yokken o satar',
+         'Balıkçı ağı çeker, Filetocu keser, Hamal taşır: personel kartından al'],
+  tutStepOKE: ['✓ Balık birikti! Ağın başında dur', '✓ Balıklar sırtında! Kesim masasına götür', '✓ Balıklar masada! Şimdi başında dur', '✓ Filetolar hazır! Tezgâha taşı', '🎉 İlk balığın tezgâhta! Önünde durursan hızlı satılır', '✓ İlk satış! Parayı kasadan topla', '✓ Para kasada! Şimdi bir personel al', '✓ İlk personelin işbaşında! Diğer roller de var'],
   coachAutoE: 'Eylem beklemek: istasyonun başında dur, iş kendiliğinden ilerler',
   em_wait: 'Bekliyor', em_box: 'SANDIK',
   em_knife: 'KESKİN BIÇAK', em_knifeE: 'Masadayken kesimin +%{p}',
@@ -13756,12 +13790,15 @@ Object.assign(STR.tr, {
 });
 Object.assign(STR.en, {
   tutE: ['Wait by the net — fish are coming',
-         'Stand at the net: fish move onto your back one by one',
-         'Drop the fish on the table and stay: it gets cut',
-         'Put fillets on the stall and stand in front: they sell',
-         'Walk past the stall cash box — money is banked',
-         'Buy an upgrade or hire staff from the bottom bar'],
-  tutStepOKE: ['✓ Fish are in! Stand at the net', '✓ Fish on your back! Take them to the cutting table', '✓ The table is cutting! It cuts while you stay', '🎉 Your first fish is on the stall! Stand in front to sell fast', '✓ Money banked! Buy something from the bottom bar'],
+         'Stand at the net: fish hop on your back (crate too)',
+         'Drop the fish on the cutting table',
+         'Stand at the table — the fish get cut',
+         'Carry the fillets to the stall',
+         'Stand at the stall: full-speed sales. Away = slow (⏸ Waiting)',
+         'Collect your money from the till or tray',
+         'Hire your first staff: a Vendor (UPGRADE). They sell when you are away',
+         'Fisher hauls the net, Filleter cuts, Porter carries: hire from the staff card'],
+  tutStepOKE: ['✓ Fish are in! Stand at the net', '✓ Fish on your back! Take them to the cutting table', '✓ Fish on the table! Now stand there', '✓ Fillets ready! Carry them to the stall', '🎉 Your first fish is on the stall! Stand in front to sell fast', '✓ First sale! Collect the money', '✓ Money banked! Now hire staff', '✓ First hire on the job! More roles to try'],
   coachAutoE: 'Work is waiting: stand at a station and the job runs by itself',
   em_wait: 'Waiting', em_box: 'CRATE',
   em_knife: 'SHARP KNIFE', em_knifeE: 'You cut {p}% faster at the table',
@@ -14502,6 +14539,8 @@ Object.assign(STR.en, {
      (it.dish = tarifId; mal aynı balığın filetosu olarak kalır). Satılınca değeri fileto × çarpan.
      Rafın en çok %50'si yemek olur. Kiler boşsa bekler ("Kiler boş" rozeti). Emekçi Mod'da yalnız tezgâhın başında
      satıcı (oyuncu, Tezgâhtar ya da yerini dolduran müdür) varken çalışır.
+   • Kapı: Tarif sistemi (🍲, ocak kartları, ocak etkileşimi) Fümehane kurulunca açılır (S.tarif.open; bir kez "Tarif Defteri açıldı" bildirimi).
+     Kilitliyken YAPI › Geliştirme'de ocak kartı "Önce Fümehane" diye kilitli durur. Tarif/ocak/kiler verisi olan eski kayıt baştan açıktır.
    • Açılış: HUD'da 📖'nin yanındaki 🍲 (ilk ocak kurulunca görünür), dünyada ocağa dokunmak ya da ocağın başında
      durmak (o ocağın sayfası; ayrılıp gelince yeniden açılır).
    • Kapalıyken (eski testlerde window.HK_TARIF_OFF) hiçbir şey değişmez (yerleşimde ocak yerleri yine ayrılır).
@@ -14553,7 +14592,10 @@ var TARIF_COL = { hamsitava: '#d39a45', hamsipilav: '#efe6cf', karalahana: '#3e6
 var TOV = {}, TFX = [], tfTap0 = null, tfStand = { t: 0, armed: true };
 S.tarif = null;                                     /* S0 anlık görüntüsünden önce: yeni oyun boş başlar */
 function tarifOn() { return !window.HK_TARIF_OFF; }
-function tarifNew() { return { known: [], kiler: {}, ocak: {}, sandik: {} }; }
+function tarifNew() { return { known: [], kiler: {}, ocak: {}, sandik: {}, open: 0 }; }
+/* Açılış kapısı: Tarif sistemi (🍲 düğmesi, ocak kartları, ocak etkileşimi) Fümehane kurulunca açılır (Füme Makinesi
+   kartının "Önce Fümehane" kilidiyle aynı koşul). Tarif/ocak/kiler verisi olan eski kayıt baştan açık sayılır (open=1). */
+function tarifUnlocked() { return tarifOn() && !!(S.tarif && S.tarif.open || !AREAS[smoker.z].locked); }
 function tarifQ() { return S.tarif || (S.tarif = tarifNew()); }
 function tarifKnown(id) { var r = TARIF_BY[id]; if (!r) return false; return r.kitchen ? !AREAS[KITCHEN_Z].locked : tarifQ().known.indexOf(id) >= 0; }
 function tarifFound() { return tarifQ().known.length; }               /* DENE ile bulunanlar (Reis Güveci sayılmaz) */
@@ -14573,7 +14615,7 @@ function tarifCtrName(key) {
 function tarifSave() {
   var q = tarifQ(), oc = {};
   for (var k in q.ocak) oc[k] = { lv: 1, r: q.ocak[k].r || null };
-  return { known: q.known.slice(), kiler: JSON.parse(JSON.stringify(q.kiler)), ocak: oc, sandik: {} };
+  return { known: q.known.slice(), kiler: JSON.parse(JSON.stringify(q.kiler)), ocak: oc, sandik: {}, open: q.open ? 1 : 0 };
 }
 function tarifLoad(d) {
   var q = tarifNew();
@@ -14587,8 +14629,10 @@ function tarifLoad(d) {
       q.ocak[k] = { lv: 1, r: r && !r.kitchen && r.f === tarifCtrFish(k) ? r.id : null };
     });
   }
+  q.open = d && typeof d === 'object' && (d.open || (Array.isArray(d.known) && d.known.length) || tarifStoveN2(q) || Object.keys(q.kiler).length || (d.ocak && typeof d.ocak === 'object' && Object.keys(d.ocak).length)) ? 1 : 0;
   S.tarif = q;
 }
+function tarifStoveN2(q) { var n = 0; for (var k in q.ocak) n++; return n; }
 /* tezgâh rafı kaydı (queueSave/queueLoad): yemek üçüncü parça olarak yazılır, eski sürüm onu yok sayar */
 function tarifItemKey(it) { return itemKey(it) + (it.dish && it.k === 'fileto' ? '|' + it.dish : ''); }
 function tarifKeyItem(k) {
@@ -14658,7 +14702,7 @@ function tarifTry(f, ings) {
 function tarifPos(key) { return TARIF_POS[key] || null; }
 function tarifCanStove(key) {
   var c = counterByKey(key);
-  return tarifOn() && TARIF_CTRS.indexOf(key) >= 0 && !!c && !AREAS[c.z].locked && c.open && !!c.fish;
+  return tarifUnlocked() && TARIF_CTRS.indexOf(key) >= 0 && !!c && !AREAS[c.z].locked && c.open && !!c.fish;
 }
 /* kurulum (ödeme çağırana ait): ilk bilinen tarif kendiliğinden atanır */
 function tarifStoveSet(key) {
@@ -14709,6 +14753,10 @@ function tarifWhy(o, c) {
 function tarifTick(dt) {
   if (!tarifOn() || !S.started || !S.tarif) return;
   var q = S.tarif, k;
+  if (!q.open) {                                      /* Fümehane kurulunca bir kez: Tarif Defteri açıldı */
+    if (AREAS[smoker.z].locked) return;
+    q.open = 1; notify(T('tfUnlock')); sfx.star(); save();
+  }
   for (k in q.ocak) {
     var c = counterByKey(k), v = TOV[k] || (TOV[k] = { t: 0, st: 'off', lit: 0 }), w = tarifWhy(q.ocak[k], c);
     v.st = w.st;
@@ -14903,7 +14951,7 @@ function tarifCanvas(cv, fn) {
 function tarifTapStart(e) { tfTap0 = { id: e.pointerId, x: e.clientX, y: e.clientY, t: Date.now() }; }
 function tarifTapEnd(e) {
   var t = tfTap0; tfTap0 = null;
-  if (!t || t.id !== e.pointerId || paused || !tarifOn() || !S.started || !S.tarif) return;
+  if (!t || t.id !== e.pointerId || paused || !tarifUnlocked() || !S.started || !S.tarif) return;
   if (Date.now() - t.t > 450 || Math.hypot(e.clientX - t.x, e.clientY - t.y) > 12) return;
   var v = arrVirt(e.clientX, e.clientY), best = null, bd = 1e9;
   for (var k in S.tarif.ocak) {
@@ -14918,6 +14966,12 @@ function tarifTapEnd(e) {
 function tarifBarCards(out) {
   if (!tarifOn()) return;
   var q = tarifQ();
+  if (!tarifUnlocked()) {                              /* Fümehane kurulana dek kilitli (Füme Makinesi kartıyla tutarlı) */
+    var k0 = TARIF_CTRS.filter(function (k) { var c = counterByKey(k); return !!c && !AREAS[c.z].locked && c.open && !!c.fish; })[0];
+    if (k0) out.push({ id: 'tf' + k0, ic: ICO('tencere'), t: T('tfStoveT', { s: tarifCtrName(k0) }), s: T('tfStoveD'), cost: tarifStoveCost(),
+      blocked: true, why: T('fmNeed'), go: function () { } });
+    return;
+  }
   TARIF_CTRS.forEach(function (key) {
     if (!q.ocak[key] && !tarifCanStove(key)) return;
     var nm = tarifCtrName(key);
@@ -14938,11 +14992,11 @@ var tfBtn = null;
 function tarifOpen() { var e = document.getElementById('tarifScr'); return !!e && !e.classList.contains('hidden'); }
 function tarifHud() {
   if (!tfBtn) return;
-  tfBtn.classList.toggle('hidden', !(tarifOn() && S.started && S.tarif && tarifStoveN() > 0));
+  tfBtn.classList.toggle('hidden', !(tarifUnlocked() && S.started && S.tarif && tarifStoveN() > 0));
   if (tfBtn.dataset.l !== lang) { tfBtn.dataset.l = lang; tfBtn.setAttribute('aria-label', T('tfBtnLbl')); }
 }
 function tarifShow(tab, key) {
-  if (!tarifOn() || !S.started) return;
+  if (!tarifUnlocked() || !S.started) return;
   tf.tab = tab || tf.tab || 'rec'; tf.sel = key || null;
   if (tab !== 'try') tf.res = null;
   if (barTab) closeBar();
@@ -15096,7 +15150,7 @@ Object.assign(STR.tr, {
   tfPick: 'BU OCAĞIN TARİFİ', tfNone: 'YOK', tfNoKnown: 'Bu balığın bilinen tarifi yok: DENE sayfasında dene.', tfAll: 'TÜM OCAKLAR',
   tfDishes: 'raftaki yemek {n}/{m}', tfStoveT: 'Güveç Ocağı · {s}', tfStoveShort: 'Güveç Ocağı',
   tfStoveD: 'Tezgâhtaki filetoyu kilerle pişirip yemek yapar (4 sn\'de 1). Yemek daha pahalı satılır.',
-  tfStoveBuilt: 'Güveç Ocağı kuruldu: {s}', tfStovePage: 'TARİF DEFTERİ', tfBtnLbl: 'Tarif Defteri',
+  tfStoveBuilt: 'Güveç Ocağı kuruldu: {s}', tfUnlock: '📖 Tarif Defteri açıldı! Hacer Teyze\'nin tariflerini keşfet, tezgâhına Güveç Ocağı kur.', tfStovePage: 'TARİF DEFTERİ', tfBtnLbl: 'Tarif Defteri',
   tfSt_cook: 'Pişiriyor', tfSt_kiler: 'Kiler boş', tfSt_wait: 'Fileto bekliyor', tfSt_full: 'Raf dolu (en çok %50 yemek)', tfSt_idle: 'Tarif seç',
   tfSt_nobody: 'Satıcı bekliyor', tfSt_off: 'Tezgâh kapalı', tfStKiler: 'Kiler boş', tfStNobody: 'Satıcı yok', tfStIdle: 'Tarif seç'
 });
@@ -15115,7 +15169,7 @@ Object.assign(STR.en, {
   tfPick: 'THIS STOVE\'S RECIPE', tfNone: 'NONE', tfNoKnown: 'No known recipe for this fish yet: try one on the TRY page.', tfAll: 'ALL STOVES',
   tfDishes: 'dishes on display {n}/{m}', tfStoveT: 'Stew Stove · {s}', tfStoveShort: 'Stew Stove',
   tfStoveD: 'Cooks the stall\'s fillets with pantry ingredients into dishes (1 every 4 s). Dishes sell for more.',
-  tfStoveBuilt: 'Stew Stove built: {s}', tfStovePage: 'RECIPE BOOK', tfBtnLbl: 'Recipe Book',
+  tfStoveBuilt: 'Stew Stove built: {s}', tfUnlock: '📖 Recipe Book unlocked! Discover Aunt Hacer\'s recipes and build a Stew Stove at your stall.', tfStovePage: 'RECIPE BOOK', tfBtnLbl: 'Recipe Book',
   tfSt_cook: 'Cooking', tfSt_kiler: 'Pantry empty', tfSt_wait: 'Waiting for fillets', tfSt_full: 'Display full (max 50% dishes)', tfSt_idle: 'Pick a recipe',
   tfSt_nobody: 'Waiting for a vendor', tfSt_off: 'Stall closed', tfStKiler: 'Pantry empty', tfStNobody: 'No vendor', tfStIdle: 'Pick a recipe'
 });
@@ -15168,7 +15222,7 @@ Object.assign(STR.en, {
 })();
 /* test kancaları (window.BT'ye, BT kurulduktan sonra eklenir) */
 function tarifBT() {
-  return { on: tarifOn, q: tarifQ, list: TARIFS, ing: TARIF_ING, buy: tarifBuy, tryCook: tarifTry, near: tarifNear, tryFish: tarifTryFish,
+  return { on: tarifOn, unlocked: tarifUnlocked, q: tarifQ, list: TARIFS, ing: TARIF_ING, buy: tarifBuy, tryCook: tarifTry, near: tarifNear, tryFish: tarifTryFish,
     buyStove: tarifBuyStove, setStove: tarifStoveSet, setRecipe: tarifSetRecipe, state: tarifState, why: function (k) { return tarifWhy(tarifQ().ocak[k] || {}, counterByKey(k)).st; },
     cap: tarifCap, stoveCost: tarifStoveCost, pos: tarifPos, dishes: function (k) { var c = counterByKey(k); return c ? tarifDishes(c) : 0; }, shelfCap: function (k) { var c = counterByKey(k); return c ? tarifShelfCap(c) : 0; },
     open: tarifShow, close: tarifClose, isOpen: tarifOpen, save: tarifSave, load: tarifLoad, ordMul: tarifOrdMul, known: tarifKnown, found: tarifFound,

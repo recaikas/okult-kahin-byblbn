@@ -45,6 +45,39 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
   await newGame(p, 1);
   R.boot = await p.evaluate(() => ({ on: BT.emek.on(), roles: BT.zoneRoles(0), cap: BT.zoneStaffCap(0), cost: BT.hireCost('tezgahtar', 0), cash: BT.S.cash, set: document.querySelector('#emekSeg .on') && document.querySelector('#emekSeg .on').dataset.e }));
   ok(R.boot.on && R.boot.roles[0] === 'tezgahtar' && R.boot.roles.indexOf('balikci') >= 0 && R.boot.cap === 4, 'emek açılış ' + JSON.stringify(R.boot));
+  /* ---- 0) oyun başı eğitimi: Emekçi Mod'da 9 adım, tamamlanma koşuluyla sırayla ilerler; kapalıyken eski 6 adım ---- */
+  const tutReset = () => p.evaluate(() => { const S = BT.S; S.ctrl = 2; S.cash = 0; S.served = 0; BT.day.t = 10; BT.counters.forEach(c => { c.spawnT = 1e9; c.buffer.length = 0; }); BT.player.x = 2; BT.player.y = 20; BT.player.carry.length = 0;
+    BT.spots[0].stock.length = 0; BT.tables[0].inn.length = 0; BT.tables[0].mat.items.length = 0; BT.workers.length = 0; BT.tables[0].worker = null; });
+  const tutRead = () => p.evaluate(() => ({ t: BT.S.tut, lbl: document.getElementById('objLbl').textContent, txt: document.getElementById('objText').textContent, vis: !document.getElementById('objective').classList.contains('hidden') }));
+  await tutReset(); await p.evaluate(() => { BT.S.tut = 0; }); await sleep(120);
+  R.tutA = await tutRead();
+  ok(R.tutA.t <= 1 && R.tutA.vis && /HEDEF [12]\/9/.test(R.tutA.lbl) && /^Ağın başında (bekle|dur)/.test(R.tutA.txt), 'eğitim ilk adım (Emekçi) ' + JSON.stringify(R.tutA));
+  await tutReset();
+  R.tutB = await p.evaluate(() => {
+    const S = BT.S, st = [], one = () => { BT.emek.step(0.05, 1); st.push(S.tut); };
+    S.tut = 0;
+    one();                                                                                  /* koşul yok: ilerlemez */
+    BT.spots[0].stock.push({ k: 'fish', f: 'hamsi' }); one();                               /* 0 → 1 */
+    BT.player.carry.push({ k: 'fish', f: 'hamsi' }); one();                                 /* 1 → 2 */
+    BT.player.carry.length = 0; BT.tables[0].inn.push({ k: 'fish', f: 'hamsi' }); one();    /* 2 → 3 */
+    BT.tables[0].inn.length = 0; BT.tables[0].mat.items.push({ k: 'fileto', f: 'hamsi' }); one();   /* 3 → 4 */
+    BT.tables[0].mat.items.length = 0; BT.counters[0].buffer.push({ k: 'fileto', f: 'hamsi' }); one();   /* 4 → 5 */
+    S.served = 1; one();                                                                    /* 5 → 6 */
+    S.cash = 20; one();                                                                     /* 6 → 7 */
+    BT.hire('tezgahtar', true, 0); one();                                                   /* 7 → 8 */
+    BT.hire('hamal', true, 0); one();                                                       /* 8 → 9: eğitim bitti */
+    return { st, n: BT.S.tut };
+  });
+  ok(R.tutB.st.join() === '0,1,2,3,4,5,6,7,8,9', 'eğitim adımları sırayla ilerlemedi ' + JSON.stringify(R.tutB));
+  await tutReset(); await p.evaluate(() => { BT.setLang('en'); BT.S.tut = 7; }); await sleep(120);
+  R.tutC = await tutRead();
+  await p.evaluate(() => { BT.S.tut = 5; }); await sleep(120);
+  R.tutC5 = await tutRead();
+  await tutReset(); await p.evaluate(() => { BT.setLang('tr'); BT.emek.set(false); BT.S.tut = 0; }); await sleep(120);
+  R.tutD = await tutRead();
+  await p.evaluate(() => { BT.emek.set(true); BT.S.tut = 99; }); await tutReset();
+  ok(/GOAL 8\/9/.test(R.tutC.lbl) && /Hire your first staff/.test(R.tutC.txt) && /Waiting/.test(R.tutC5.txt), 'eğitim EN metinleri ' + JSON.stringify([R.tutC, R.tutC5]));
+  ok(/HEDEF 1\/6/.test(R.tutD.lbl) && R.tutD.txt === 'Ağın yanında bekle — balık birikiyor', 'Emekçi kapalıyken eski eğitim ' + JSON.stringify(R.tutD));
   await calm(p);
 
   /* ---- 1) ağ: tek tek ---- */
