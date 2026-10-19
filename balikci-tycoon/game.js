@@ -1912,7 +1912,7 @@ var DECOR = [
   { id: 'caymasa', z: 2, x: ROAD_VX, y: 11.4, road: 1,  cost: 800, n: { tr: 'Çay Masası', en: 'Tea Table' },      icon: '☕', got: false },
   { id: 'heykel', z: 2, x: ROAD_VX, y: 22.5, road: 1,  cost: 2600, n: { tr: 'Balık Heykeli', en: 'Fish Statue' }, icon: '🗿', lv: 6, got: false },
   /* v2.0 — Anadolu kıyı kültürü */
-  { id: 'nazar',  z: 0, x: ROAD_VX, y: 1.2, road: 1,  cost: 450,  n: { tr: 'Nazar Boncuğu', en: 'Evil Eye Charm' }, icon: '🧿', got: false },
+  { id: 'nazar',  z: 0, x: 17.75, y: 7.5, road: 1,  cost: 450,  n: { tr: 'Nazar Boncuğu', en: 'Evil Eye Charm' }, icon: '🧿', got: false },
   { id: 'cesme',  z: 1, x: ROAD_VX, y: 16.0, road: 1,  cost: 1500, n: { tr: 'Osmanlı Çeşmesi', en: 'Ottoman Fountain' }, icon: '⛲', lv: 5, got: false },
   { id: 'kilim',  z: 1, x: ROAD_VX, y: 9.1, road: 1,  cost: 800,  n: { tr: 'Kilim Sergisi', en: 'Kilim Display' }, icon: '🧶', got: false },
   { id: 'fener',  z: 2, x: -1.5, y: 23.3, fixed: 1, cost: 5200, n: { tr: 'Mendirek Feneri', en: 'Breakwater Lighthouse' }, icon: '🗼', lv: 7, got: false },
@@ -3091,6 +3091,7 @@ function buildSave() {
     pads: PADS.map(function (p) { return [Math.round(p.paid), p.lvl || 0, p.price || 0]; }),
     slots: SLOTS.map(function (s) { return s.b; }),
     decor: DECOR.map(function (d) { return d.got ? 1 : 0; }),
+    alp: alpSave(),                                  /* v2.18-deneme: nöbetçi söz sırası */
     dpos: S.dpos || {}, dbox: S.dbox || [],           /* v2.17: taşınmış süslerin yeri + Süs Sandığı */
     proj: [Math.round(project.inv), project.stage, project.done ? 1 : 0],
     serv: servSave(),
@@ -3175,7 +3176,7 @@ function loadFrom(d) {
     S.names = Array.isArray(d.names) ? d.names.filter(function (q) { return typeof q === 'string'; }) : S.met.slice();
     S.mx = mxLoad(d.mx); S.tax = taxLoad(d.tax);   /* v2.14: eski kayıtta yok → sıfır */ S.specForce = typeof d.specForce === 'string' && d.specForce.length < 30 ? d.specForce : null;
     S.jobs = Array.isArray(d.jobs) ? d.jobs.filter(function (q) { return typeof q === 'string'; }) : S.met.slice();   /* v2.8: eski kayıtta tanışılanın mesleği bilinir */
-    S.story = storyLoad(d.story);
+    S.story = storyLoad(d.story); alpLoad(d.alp);
     S.custSeen = numMap(d.custSeen); S.specN = numMap(d.specN); S.custNewF = !!d.custNewF;
     S.stallSt = stallLoad(d.stallSt);
     /* v2.7: ipuçları; eski ve uzun oynanmış kayıtta hepsi görülmüş sayılır (yeni başlayana anlatılır) */
@@ -11610,7 +11611,117 @@ function storyOn() { return !!(window.HK_STORY && STORY_SPECS.st_a) && !window.H
    Yalnız görüntü: yürüme alanının dışında durur, kimseyi engellemez. O gün hikâye ziyaretçisi oysa ikinci kez görünmez. */
 var GUARD = { x: 12.4, y: 0.9, z: 0, vx: 0, vy: 0, bob: 0, face: -1, act: 0, carry: [] };
 var GUARD_FROM = 6, GUARD_BOW = 12;
-function guardOn() { var st = S.story; return !!(STORY_SPECS.st_a && st && st.step >= GUARD_FROM && !(storyVis && storyVis.spec === 'st_a')); }
+/* Aynı anda tek Alp Er Tunga: hikâye ziyaretçisi (kuyrukta, sahnede, SATIŞTAN SONRA giderken de) sahnedeyse nöbetçi çizilmez.
+   Eski kural yalnız storyVis'e bakıyordu; sahne bitince storyVis boşalıyor ama ziyaretçi birkaç sn daha yürüyüp gidiyor, nöbetçi hemen belirip ikizi oluyordu.
+   (Ziyaretçi 7., 8. ve 12. günlerde hikâyenin gereği gelir; nöbetçi onlar sürerken postundan çekilir.) */
+function alpVisitor() {
+  if (storyVis && storyVis.spec === 'st_a') return true;
+  for (var i = 0; i < customers.length; i++) if (customers[i].spec === 'st_a') return true;
+  return false;
+}
+function guardOn() { var st = S.story; return !!(STORY_SPECS.st_a && st && st.step >= GUARD_FROM && !alpVisitor()); }
+/* v2.18-deneme: nöbetçi replikleri — yakınındayken ~60 sn'de bir konuşma balonu (4 sn). Sıra oyuncuya özel karıştırılır ve kayıtla korunur:
+   S.alpOrd = ALP_LINES.length'lik permütasyon, S.alpI = sıradaki indeks; liste bitmeden tekrar yok, bitince yeniden karıştırılır. */
+var ALP_LINES = [
+  ['Bu limanda haksızlık olmayacak!', "There'll be no injustice in this harbour!"],
+  ['Ben buradayken kimse hamsiye el uzatamaz!', "Nobody touches the anchovies while I'm here!"],
+  ['Dağları devirdim, bir martı mı korkutacak?', "I've toppled mountains; a gull won't scare me."],
+  ['Tek başıma yüz kişiye bedelim!', "Alone, I'm worth a hundred men!"],
+  ['Kılıcım paslanmaz, sözüm eğilmez!', "My sword won't rust, my word won't bend!"],
+  ["Haşmet Bey'e söyleyin: nöbette ben varım!", "Tell Mr. Haşmet: I'm on watch!"],
+  ['Bu iskeleye yan bakan, denizi boylar!', 'Whoever eyes this pier ends up in the sea!'],
+  ['Ateş olsam cürmüm kadar yakarım; ama bu liman benim!', "If I were fire I'd burn my share; but this harbour is mine!"],
+  ['Hamsi kokusu… zafer kokusu!', 'The smell of anchovy… the smell of victory!'],
+  ['Yeter! Bu kuyruk böyle ilerlemez!', "Enough! This queue won't move like this!"],
+  ['Ben uyumam; deniz uyur, ben beklerim!', "I don't sleep; the sea sleeps, I keep watch!"],
+  ['Kalkanım dalga, mızrağım rüzgâr!', 'My shield is the wave, my spear the wind!'],
+  ['Korkma! Arkanda Alp Er Tunga var!', 'Fear not! Alp Er Tunga has your back!'],
+  ['Bir gün bu limanın destanı yazılacak!', "One day they'll write the saga of this harbour!"],
+  ['Düşman kapıda değil, tezgâhta! Satın!', "The enemy's not at the gate, it's at the stall! Sell!"],
+  ['Bu ağ boş kalmayacak, yemin olsun!', "This net won't stay empty, I swear it!"],
+  ['Lodos gelse, fırtına gelse… ben buradayım!', "Let the southwester come, the storm come… I'm here!"],
+  ['Atımı denize sürsem, o bile hamsi tutar!', 'Ride my horse into the sea, even it would catch anchovy!'],
+  ['Hiyaaa! Bir martı daha kaçtı!', 'Hiyaaa! Another gull flees!'],
+  ['Ben savaşta yaşlandım, sen kasada yaşlanma!', "I aged in battle; don't you age at the till!"],
+  ['Bu ok yaydan çıktı bir kere!', 'The arrow has left the bow!'],
+  ['Kim demiş Karadeniz sakin diye?', 'Who said the Black Sea is calm?'],
+  ["Turan'ın kılıcı, Hamsi Koyu'nun bekçisi!", 'Sword of Turan, keeper of Anchovy Cove!'],
+  ['Sabır! Balık da zafer de sabırla gelir.', 'Patience! Fish and victory both come with patience.'],
+  ['Bir kere söz verdim: bu liman batmayacak!', "I gave my word once: this harbour won't sink!"],
+  ['Yüz martıyı tek okla düşürürüm… düşürmem, hayvancağız.', "I could down a hundred gulls with one arrow… I won't, poor things."],
+  ['Ölürüm de nöbeti bırakmam!', "I'd die before leaving my post!"],
+  ["Hey gidi günler… Ötüken'de böyle hamsi yoktu.", 'Ah, the old days… Ötüken had no anchovy like this.'],
+  ['Kılıcım keskin. Senin bıçağın?', 'My sword is sharp. And your knife?'],
+  ['Kahramanlar da acıkır. Bir hamsi tava!', 'Heroes get hungry too. One fried anchovy!'],
+  ['Haşmet gelirse önce benden geçecek!', 'If Haşmet comes, he goes through me first!'],
+  ['Bu deniz benim, bu rüzgâr benim, bu kuyruk… müşterinin!', "This sea is mine, this wind is mine, this queue… the customers'!"],
+  ['Gözüm üstünde, tezgâhtar!', "I've got my eye on you, stall-keeper!"],
+  ['Bin yıl beklerim, yeter ki ağ dolsun.', "I'd wait a thousand years, as long as the net fills."],
+  ['Kalk ayağa! Daha gün bitmedi!', "On your feet! The day isn't over!"],
+  ['Ben bir vurdum mu, dalga bile geri çekilir!', 'When I strike, even the wave pulls back!'],
+  ['Kaçan balık büyük olur derler; benden kaçan olmaz!', 'They say the one that got away is big; none gets past me!'],
+  ['Kahraman geri adım atmaz… kuyruk hariç.', 'A hero never steps back… except in the queue.'],
+  ['Kopuzumu getirin, bu limana destan yakacağım!', "Bring my kopuz, I'll sing this harbour a saga!"],
+  ['Yiğit düştüğü yerden kalkar, esnaf battığı yerden!', 'A hero rises where he falls, a merchant where he sinks!'],
+  ['Aslan yattığı yerden belli olur; ben bu iskeleden!', "A lion is known by its den; I'm known by this pier!"],
+  ['Benim adım Alp Er Tunga. Unutma!', "My name is Alp Er Tunga. Don't forget it!"],
+  ['Hırsız mı? Bu limanda mı? Benim nöbetimde mi?', 'A thief? In this harbour? On my watch?'],
+  ['Kalabalık iyi, ama düzen daha iyi!', 'Crowds are good, but order is better!'],
+  ['Yaralı da olsam bu iskeleyi korurum!', "Wounded or not, I'll guard this pier!"],
+  ['Denizden ejderha çıksa… ilk ben karşılarım.', "If a dragon rose from the sea… I'd meet it first."],
+  ['Ok yaydan, söz ağızdan çıkar; ikisi de geri dönmez.', 'Arrow from bow, word from mouth; neither returns.'],
+  ['Yorgunluk mu? O ne? Hiç duymadım.', "Tired? What's that? Never heard of it."],
+  ['Müşteri kral değil; müşteri hakan!', "The customer isn't king; the customer is khan!"],
+  ['Fırtına mı? Ben fırtınayla kahvaltı ederim!', 'A storm? I have storms for breakfast!'],
+  ['Şu dalgaya bak… tıpkı benim gibi: durmuyor!', 'Look at that wave… just like me: never stops!'],
+  ['Bu limanın her tahtası alın teriyle çakıldı!', 'Every plank here was nailed with sweat!'],
+  ['Ben gelmeden martılar kraldı. Artık değil.', 'Before me, the gulls were kings here. Not anymore.'],
+  ['Bir kılıç, bir yay, bir de balık ekmek. Başka ne lazım?', 'A sword, a bow and a fish sandwich. What else?'],
+  ['Haksızlığa susan dilsiz şeytandır!', 'He who stays silent before injustice is a mute devil!'],
+  ['Bu limana söz verdim, sözümü tutarım!', 'I made this harbour a promise, and I keep it!'],
+  ['Gözlerim deniz gibi: her şeyi görür!', 'My eyes are like the sea: they see everything!'],
+  ['Dur yolcu! Önce bir hamsi al, sonra geç!', 'Halt, traveller! Buy an anchovy, then pass!'],
+  ['Ateşle oynama evlat; o ızgara için!', "Don't play with fire, kid; it's for the grill!"],
+  ['Destanlar kılıçla değil, emekle yazılır!', "Sagas aren't written with swords, but with toil!"]
+];
+S.alpOrd = null; S.alpI = 0;                       /* S0 anlık görüntüsünden önce: yeni oyun sırasız başlar */
+var ALP_EVERY = 60, ALP_SHOW = 4, ALP_NEAR = 12, ALP = { t: 45, idx: -1, sayT: 99 };
+function alpPerm(avoid) {
+  var n = ALP_LINES.length, a = [], i, j, t;
+  for (i = 0; i < n; i++) a.push(i);
+  for (i = n - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = a[i]; a[i] = a[j]; a[j] = t; }
+  if (avoid !== undefined && n > 1 && a[0] === avoid) { t = a[0]; a[0] = a[1]; a[1] = t; }   /* yeniden karıştırmada son söz hemen tekrarlanmasın */
+  return a;
+}
+function alpOrdOK(o) {
+  if (!Array.isArray(o) || o.length !== ALP_LINES.length) return false;
+  var seen = {}, i; for (i = 0; i < o.length; i++) { if (typeof o[i] !== 'number' || o[i] % 1 || o[i] < 0 || o[i] >= o.length || seen[o[i]]) return false; seen[o[i]] = 1; }
+  return true;
+}
+function alpNext() {
+  if (!alpOrdOK(S.alpOrd)) { S.alpOrd = alpPerm(); S.alpI = 0; }
+  S.alpI = Math.max(0, S.alpI | 0);
+  if (S.alpI >= S.alpOrd.length) { S.alpOrd = alpPerm(S.alpOrd[S.alpOrd.length - 1]); S.alpI = 0; }
+  var k = S.alpOrd[S.alpI++];
+  if (S.started) save();
+  return k;
+}
+function alpSave() { return alpOrdOK(S.alpOrd) ? { o: S.alpOrd.slice(), i: Math.max(0, S.alpI | 0) } : null; }
+function alpLoad(d) { if (d && alpOrdOK(d.o)) { S.alpOrd = d.o.slice(); S.alpI = clamp(d.i | 0, 0, d.o.length); } else { S.alpOrd = null; S.alpI = 0; } }
+function updateAlp(dt) {
+  ALP.sayT += dt;
+  if (!guardOn() || storyOpenNow() || TAX.on || (intro && intro.on) || dist2(player.x, player.y, GUARD.x, GUARD.y) > ALP_NEAR * ALP_NEAR) return;
+  ALP.t += dt;
+  if (ALP.t < ALP_EVERY) return;
+  ALP.t = 0; ALP.idx = alpNext(); ALP.sayT = 0;
+}
+function alpBalloon() {                                   /* uzun sözler iki satıra bölünür (telefon genişliği) */
+  if (ALP.idx < 0 || ALP.sayT >= ALP_SHOW) return;
+  var tx = ALP_LINES[ALP.idx][lang === 'tr' ? 0 : 1], w = tx.split(' '), best = 0, h = 0, k, a, b;
+  if (tx.length > 32) { for (k = 1; k < w.length; k++) { a = w.slice(0, k).join(' ').length; if (Math.abs(a - tx.length / 2) < Math.abs(best - tx.length / 2) || !best) { best = a; h = k; } } }
+  if (h) { a = w.slice(0, h).join(' '); b = w.slice(h).join(' '); uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: 62, s: b + '”', c: '#ffe2c8', a: 1 }); uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: 62 + 14, s: '“' + a, c: '#ffe2c8', a: 1 }); }
+  else uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: 62, s: '“' + tx + '”', c: '#ffe2c8', a: 1 });
+}
 function drawGuard() {
   var sp = STORY_SPECS.st_a, st = S.story, scan = Math.sin(gameT * 0.35) > 0.82;   /* uzun bekleyiş, kısa bir bakış */
   var o = specOutfit(sp, scan ? -1 : 1); o.walk = false; o.mood = 1;          /* denize (sağ üst) bakar */
@@ -11628,6 +11739,7 @@ function drawGuard() {
     bow(kx + (f > 0 ? -2 : 3), sy - 21);
   } else bow(sx + 6 * f, sy - 24);
   if (dist2(player.x, player.y, GUARD.x, GUARD.y) < 9) uiLabel(GUARD.x, GUARD.y, 44, T('guardLbl'), '#e4b94a', 0.95);
+  alpBalloon();
 }
 function storyOpenNow() { return !!(window.HK_STORY && window.HK_STORY.isOpen()); }
 function storyFresh() { return { step: 0, last: 0, ber: 6, flags: {}, buffs: {}, items: [], pieces: [], known: [] }; }
@@ -11800,6 +11912,7 @@ function storyApply(r, n) {
 }
 function updateStory(dt) {
   updateDolph(dt);
+  updateAlp(dt);
   if (!storyOn()) return;
   var st = stQ();
   if (storyVis && storyVis.dolphin) {                    /* v2.15: yunus kıyıda bekliyor; gün biterse dalıp gider */
@@ -12157,7 +12270,7 @@ var GZ_PAPERS = {
     cap: { tr: '▲ Yeni müdür iş başında', en: '▲ The new manager at work' } }
 };
 var GZB = { on: false }, GZD = null, gzWait = -1;            /* gazeteci çocuk · yerdeki gazete · gelişe kalan süre (-1: kurulmadı) */
-var FAME = { x: 16.3, y: 11.2 };                             /* Şeref Panosu: meydanın batı kenarı, yol vitrininin hemen doğusu, Ticaret Ofisi'nin güneyi (v2.18-deneme: yol kenarına taşındı) */
+var FAME = { x: 24.75, y: 12.0 };                            /* Şeref Panosu: Hizmet Sahası'nın kuzeydoğu köşesinin doğusu, kumsal. Eski yer (16.3, 11.2) ekranda yol panosu, Buzhane + etiketi, Ofis ve lambalarla iç içeydi; burada ekranda hiçbir bina/pano/etiket/süsle (en üst seviye, hepsi kurulu) örtüşmez (v2.18-deneme) */
 function gzOff() { return !!window.HK_GZ_OFF; }               /* yalnız eski testler (oyun akışı durmasın); test-gazete.js açar */
 function gzFresh() { return { got: {}, miss: {}, q: [], st: {}, last: 0 }; }
 function gzQ() { return S.gz || (S.gz = gzFresh()); }
@@ -14039,11 +14152,17 @@ function petPat(c) { if (!c || !S.pet || !S.pet.l.length) return 1; var p = petA
 /* tezgâhın önündeki yer (kedi tezgâhın güney ucunda, köpek arkasında yatar) */
 function petSpot(p, c) {
   c = c || petCtr(p); if (!c) return null;
-  if (c.key === 'hal') { var tp = trayPos(c); return p.k === 'cat' ? { x: tp.x + 0.25, y: tp.y + 0.75 } : { x: tp.x - 0.7, y: tp.y + 0.95 }; }
-  return p.k === 'cat' ? { x: c.x + 0.42, y: c.y + 1.62 } : { x: c.x - 0.55, y: c.y + 1.62 };
+  if (c.key === 'hal') { var tp = trayPos(c); return petNear(p.k === 'cat' ? tp.x + 0.25 : tp.x - 0.7, p.k === 'cat' ? tp.y + 0.75 : tp.y + 0.95); }
+  return petNear(p.k === 'cat' ? c.x + 0.42 : c.x - 0.55, c.y + 1.62);   /* v2.18-deneme: her hedef yürünebilir (ör. 2. tezgâhın önü bölge sınırına düşüyordu) */
+}
+/* en yakın yürünebilir nokta (canStand): hedefler yalnız buradan seçilir */
+function petNear(x, y) {
+  if (canStand(x, y)) return { x: x, y: y };
+  for (var r = 0.25; r <= 8; r += 0.25) for (var k = 0; k < 16; k++) { var a = k * Math.PI / 8, nx = x + Math.cos(a) * r, ny = y + Math.sin(a) * r; if (canStand(nx, ny)) return { x: nx, y: ny }; }
+  return { x: 6.4, y: 5 };
 }
 function petHome(p) { var d = decorById(p.h); return d && d.got && !d.box ? { x: d.x + (p.k === 'cat' ? 0.05 : 0.1), y: d.y + 0.62 } : null; }
-function petRoamPt(k) { var b = PET_ROAM[k]; return { x: rnd(b.x0, b.x1), y: rnd(b.y0, b.y1) }; }
+function petRoamPt(k) { var b = PET_ROAM[k]; return petNear(rnd(b.x0, b.x1), rnd(b.y0, b.y1)); }
 function petHouseNames() {
   DECOR.forEach(function (d) { if (d.pet) d.n = { tr: d.pet === 'cat' ? 'Kedi Evi' : 'Köpek Kulübesi', en: d.pet === 'cat' ? 'Cat House' : 'Dog Kennel' }; });
   petQ().l.forEach(function (p) { var d = decorById(p.h); if (d) d.n = { tr: (p.k === 'cat' ? 'Kedi Evi' : 'Kulübe') + ' · ' + p.n, en: (p.k === 'cat' ? 'Cat House' : 'Kennel') + ' · ' + p.n }; });
@@ -14112,15 +14231,21 @@ function petWander(p, dt, box) {
   p.t -= dt;
   if (p.t > 0) return;
   p.t = rnd(2.5, 7);
-  if (Math.random() < 0.55) { var r = { x: rnd(box.x0, box.x1), y: rnd(box.y0, box.y1) }; p.tx = r.x; p.ty = r.y; }
+  if (Math.random() < 0.55) { var r = petNear(rnd(box.x0, box.x1), rnd(box.y0, box.y1)); p.tx = r.x; p.ty = r.y; }
   else p.st = Math.random() < 0.6 ? 'sit' : 'sleep';
 }
-/* düz yürüyüş (İskele kenarında doğuya geçerken önce kıyı hizasına) */
+/* yürüyüş: bölge ↔ meydan arası insanlar gibi köprüden (routeVia); 3 sn ilerleme olmazsa en yakın yürünebilir noktaya ışınlanır
+   (true döner: hedefe vardı say → çağıran yeni hedef seçer). Eski sürüm kıyı hizasında 10.23'te gidip geliyordu. */
 function petStep(p, tx, ty, spd, dt) {
-  var wx = tx, wy = ty;
-  if ((p.x < 10.05) !== (tx < 10.05)) { wx = 10.35; wy = p.x < 10.05 ? p.y : ty; if (Math.abs(p.x - 10.35) < 0.12) { wx = tx; wy = ty; } }
+  if (p.wdA === undefined || p.at - p.wdA > 0.6) { p.wdx = p.x; p.wdy = p.y; p.wdT = 0; }   /* yürüyüş kesintisiz değilse sayaç sıfır */
+  p.wdA = p.at; p.wdT += dt;
+  if (p.wdT >= 3) {
+    if (Math.hypot(p.x - p.wdx, p.y - p.wdy) < 0.25) { var s = petNear(tx, ty); p.x = s.x; p.y = s.y; p.wdx = p.x; p.wdy = p.y; p.wdT = 0; return true; }
+    p.wdx = p.x; p.wdy = p.y; p.wdT = 0;
+  }
+  var wp = routeVia(p, tx, ty), wx = wp ? wp.x : tx, wy = wp ? wp.y : ty;
   var dx = wx - p.x, dy = wy - p.y, L = Math.hypot(dx, dy);
-  if (L < 0.06) { if (wx === tx && wy === ty) { p.x = tx; p.y = ty; return true; } p.x = wx; p.y = wy; return false; }
+  if (L < 0.06) { p.x = wx; p.y = wy; return !wp; }
   var v = Math.min(L, spd * dt);
   p.x += dx / L * v; p.y += dy / L * v; p.st = 'walk';
   var sx = pX(dx, dy); if (Math.abs(sx) > 0.01) p.dir = sx > 0 ? 1 : -1;
@@ -14292,7 +14417,7 @@ function petStealStep(p, c, dt) {
       addFloat(c.x + 0.6, c.y + 0.2, '−1', '#ff8a7a');
     }
   } else if (p.ph === 1) {                         /* kaçar */
-    if (petStep(p, sp.x - 1.4, sp.y + 1.1, 2.6, dt)) { p.ph = 2; p.t = 3.6; p.st = 'eat'; }
+    var fl = petNear(sp.x - 1.4, sp.y + 1.1); if (petStep(p, fl.x, fl.y, 2.6, dt)) { p.ph = 2; p.t = 3.6; p.st = 'eat'; }
   } else {                                         /* afiyetle yer, sonra yerine döner */
     p.st = 'eat'; p.t -= dt;
     if (p.t <= 0) { p.carry = null; p.act = null; p.t = rnd(3, 6); }
@@ -14573,12 +14698,13 @@ function petCard(p, isNew) {
   petCardP = p;
   var c = petCtr(p);
   document.getElementById('petT').textContent = isNew ? T('petNewT') : T('petRenameT');
-  document.getElementById('petP').textContent = isNew ? T('petNewP', { n: p.n }) + ' ' + (c ? T('petNewS', { s: petCtrName(c) }) : '') : T('petRenameP');
+  document.getElementById('petP').textContent = isNew ? T('petNewP', { n: p.n }) + ' ' + (c ? T('petNewS', { s: petCtrName(c) }) : '') : T('petRenameP');   /* yeni dostta ad kutusu boş: öneri yer tutucu */
   document.getElementById('petIc').innerHTML = PX(p.k === 'cat' ? '🐱' : '🐶');
-  var inp = document.getElementById('petIn'); inp.value = p.n; inp.placeholder = petDefName(p.k, p.i);
-  document.getElementById('petLbl').textContent = T('petNameLbl');
+  var inp = document.getElementById('petIn'); inp.value = isNew ? '' : p.n; inp.placeholder = isNew ? p.n : petDefName(p.k, p.i);
+  document.getElementById('petLbl').textContent = T(isNew ? 'petNameNew' : 'petNameLbl');
   document.getElementById('petGo').textContent = T('petGo');
   document.getElementById('petScr').classList.remove('hidden');
+  try { if (isNew && window.matchMedia('(pointer:fine)').matches) inp.focus(); } catch (e) { }   /* dokunmatikte klavye kendiliğinden açılmaz */
   syncPause();
 }
 function petCardClose() {
@@ -14612,8 +14738,8 @@ Object.assign(STR.tr, {
   petFeedBtn: 'MAMA KOY ({c})', petFedN: 'Mama koydun ({a}/{b}). Yarın yine gel!', petBack: '{n} mamasını yedi, tezgâhına döndü!',
   petStrayCat: '🐱 Koyda aç bir sokak kedisi dolaşıyor. Yanına git, mama koy!', petStrayDog: '🐶 Koya bir sokak köpeği geldi. Yanına git, mama koy!',
   petStrayC: 'Sokak kedisi', petStrayD: 'Sokak köpeği', petStrayInfo: 'İskele\'de dolaşıyor · mama {a}/{b} gün · {c}',
-  petNewT: '🐾 YENİ DOST!', petNewP: '{n} artık senin! Bir tezgâha ata, evini yerleştir.', petNewS: 'Şimdilik {s} tezgâhında; evi Süs Sandığı\'nda.',
-  petRenameT: '✎ ADINI DEĞİŞTİR', petRenameP: 'Dostuna yeni bir ad ver.', petNameLbl: 'ADI', petGo: 'TAMAM', petNamed: 'Adı artık {n}',
+  petNewT: '🐾 YENİ DOST!', petNewP: '{n} artık senin! Adını sen koymak istersen aşağıya yaz; yazmazsan öneri kalır. Sonra bir tezgâha ata, evini yerleştir.', petNewS: 'Şimdilik {s} tezgâhında; evi Süs Sandığı\'nda.',
+  petRenameT: '✎ ADINI DEĞİŞTİR', petRenameP: 'Dostuna yeni bir ad ver.', petNameLbl: 'ADI', petNameNew: 'Adını sen koy', petGo: 'TAMAM', petNamed: 'Adı artık {n}',
   petRename: 'Adını değiştir', petAssign: 'TEZGÂHA ATA', petLoveBtn: 'SEV ❤', petLoved: '{n} mırıl mırıl… keyfi arttı', petLoveMax: '{n} bugün yeterince sevildi',
   petAssigned: '{n} → {s}', petNoCtr: 'Boş tezgâh yok: her tezgâhta en çok bir kedi ve bir köpek', petNoStall: 'Tezgâhsız',
   petMoodH: 'Keyfi yerinde', petMoodM: 'Keyfi yarım', petMoodS: 'Küs: mama bekliyor', petHouseOK: 'evi yerinde', petHouseBox: 'evi sandıkta',
@@ -14628,8 +14754,8 @@ Object.assign(STR.en, {
   petFeedBtn: 'PUT OUT FOOD ({c})', petFedN: 'You put out food ({a}/{b}). Come back tomorrow!', petBack: '{n} ate the food and went back to the stall!',
   petStrayCat: '🐱 A hungry stray cat is roaming the cove. Go and put out some food!', petStrayDog: '🐶 A stray dog came to the cove. Go and put out some food!',
   petStrayC: 'Stray cat', petStrayD: 'Stray dog', petStrayInfo: 'Roaming the pier · fed {a}/{b} days · {c}',
-  petNewT: '🐾 A NEW FRIEND!', petNewP: '{n} is yours now! Assign a stall and place its house.', petNewS: 'For now at the {s} stall; its house is in the Decor Chest.',
-  petRenameT: '✎ RENAME', petRenameP: 'Give your friend a new name.', petNameLbl: 'NAME', petGo: 'OK', petNamed: 'Now called {n}',
+  petNewT: '🐾 A NEW FRIEND!', petNewP: '{n} is yours now! Type your own name below, or leave it blank to keep the suggestion. Then assign a stall and place its house.', petNewS: 'For now at the {s} stall; its house is in the Decor Chest.',
+  petRenameT: '✎ RENAME', petRenameP: 'Give your friend a new name.', petNameLbl: 'NAME', petNameNew: 'Name it yourself', petGo: 'OK', petNamed: 'Now called {n}',
   petRename: 'Rename', petAssign: 'ASSIGN STALL', petLoveBtn: 'PET ❤', petLoved: '{n} purrs… happier now', petLoveMax: '{n} has had enough cuddles today',
   petAssigned: '{n} → {s}', petNoCtr: 'No free stall: at most one cat and one dog per stall', petNoStall: 'No stall',
   petMoodH: 'Happy', petMoodM: 'So-so', petMoodS: 'Sulking: wants food', petHouseOK: 'house placed', petHouseBox: 'house in chest',
@@ -14642,7 +14768,7 @@ Object.assign(STR.en, {
 (function () {
   var css = document.createElement('style'); css.id = 'petCss';
   css.textContent = '#petScr{z-index:12}#petScr .card p{font-size:12px;line-height:1.45}#petIc{display:flex;justify-content:center;margin:2px 0 4px}#petIc .pxi{width:48px;height:48px}' +
-    '#petLbl{display:block;font-size:10px;letter-spacing:1.5px;color:var(--ink2);margin:8px 0 3px}#petIn{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:9px 10px;background:#0f2233;color:var(--ink);border:2px solid var(--edge)}' +
+    '#petLbl{display:block;font-size:14px;letter-spacing:.5px;color:#f2d488;margin:10px 0 5px}#petIn{width:100%;box-sizing:border-box;font:inherit;font-size:18px;padding:12px 10px;background:#0f2233;color:var(--ink);border:2px solid #f2d488;margin-bottom:6px}#petIn::placeholder{color:#7f93a4;opacity:1}' +
     '.dcard.petCard{flex-basis:184px}.petBar{height:7px;background:#0a1a27;border:1px solid var(--edge);margin:3px 0 1px}.petBar i{display:block;height:100%}' +
     '.petBtns{display:flex;gap:4px}.petBtns .buy,.petBtns .alt{flex:1;font-size:10.5px;padding:6px 1px;min-height:44px;letter-spacing:.2px}' +
     '.pren{background:none;border:0;color:var(--gold);font:inherit;font-size:12px;padding:0 4px;min-width:28px;min-height:24px;cursor:pointer}' +
@@ -15793,6 +15919,7 @@ window.BT = {
   mx: function () { return { cfg: SPEC_CFG, st: S.mx, horonT: horonT, liveT: liveT, force: S.specForce, insp: day.insp, mxRep: day.mxRep || 0 }; }, mxInspect: mxInspect, mxNewDay: mxNewDay, custDrain: custDrain, specArrive: specArrive,
   specJob: function (id) { return specJob(specById(id)); },
   custBook: function () { return custBookData(); }, openCustBook: function () { openCustBook(); }, finishOrder: finishOrder, notifsAll: function () { return el.toast.textContent; },
+  alp: function () { return { st: ALP, ord: S.alpOrd, i: S.alpI, lines: ALP_LINES, vis: alpVisitor() }; }, alpNext: alpNext, alpSave: alpSave, alpTick: updateAlp,
   dolph: function () { return dolph; }, story: function () { return { st: S.story, vis: storyVis, on: storyOn(), open: storyOpenNow(), mute: storyMute, netMul: storyNetMul(), name: function (id) { return specName(specById(id)); } }; }, storySet: function (o) { var st = stQ(); for (var k in o) st[k] = o[k]; },
   snd: function () { return { vol: { mus: VOL.mus, sfx: VOL.sfx, amb: VOL.amb }, buses: !!(musBus && sfxBus && ambBus), stat: { asked: sfxStat.asked, played: sfxStat.played }, musDst: !!(music.gain && musBus) }; },
   sfxFrom: sfxFrom, sfx: sfx, REP_LEVELS: REP_LEVELS, repLevel: function () { return repLevel(); }, repCapped: function () { return repCapped(); }, notifs: function () { return M ? M.notif.map(function (n) { return n.m; }) : []; },
@@ -15897,7 +16024,7 @@ Object.assign(window.BT, {
 Object.assign(window.BT, {
   pet: { on: petsOn, q: petQ, list: function () { return petQ().l; }, stray: function (k) { return STRAY[k]; }, gulls: PGULL, fx: PETFX,
     feedNear: petFeedNear, target: petFeedTarget, adopt: petAdopt, love: petLove, assign: petAssign, next: petAssignNext, dayEnd: petDayEnd,
-    flow: function (key) { return petFlow(counterByKey(key)); }, pat: function (key) { return petPat(counterByKey(key)); }, eff: petEff, spot: petSpot,
+    flow: function (key) { return petFlow(counterByKey(key)); }, pat: function (key) { return petPat(counterByKey(key)); }, eff: petEff, spot: petSpot, roamPt: petRoamPt, near: petNear,
     gullGo: function (key) { petGullGo(counterByKey(key)); }, save: petSave, load: petLoad, card: petCardOpen, cardClose: petCardClose, tick: petTick,
     barOpen: function () { openBar('level'); barPet = true; renderBar(); }, lines: PET_TAX_LINES,
     K: { DAY: PET_DAY, FEED: PET_FEED, FEED_DAYS: PET_FEED_DAYS, FEE: PET_FEE, PAT: PET_PAT, FLOW: PET_FLOW, CAP: PET_FLOW_CAP, GULL_PM: PET_GULL_PM, NAMES: PET_NAMES } }

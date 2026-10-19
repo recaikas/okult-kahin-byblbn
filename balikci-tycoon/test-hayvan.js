@@ -63,9 +63,10 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
   R.adopt = await p.evaluate(() => {
     const l = BT.pet.list(), h = BT.decorById('kedievi0');
     return { n: l.length, name: l[0] && l[0].n, k: l[0] && l[0].k, c: l[0] && l[0].c, card: BT.pet.card(), title: document.getElementById('petT').textContent, txt: document.getElementById('petP').textContent,
-      house: [h.got, h.box], dbox: BT.S.dbox.slice(), stray: !!BT.pet.stray('cat'), sd: BT.pet.q().sd.cat.length, paused: BT.paused(), shop: BT.pads.some(q => q.kind === 'decor' && BT.decor[q.decor].pet) };
+      inp: { v: document.getElementById('petIn').value, ph: document.getElementById('petIn').placeholder, lbl: document.getElementById('petLbl').textContent }, house: [h.got, h.box], dbox: BT.S.dbox.slice(), stray: !!BT.pet.stray('cat'), sd: BT.pet.q().sd.cat.length, paused: BT.paused(), shop: BT.pads.some(q => q.kind === 'decor' && BT.decor[q.decor].pet) };
   });
   ok(R.adopt.n === 1 && R.adopt.name === 'Pamuk' && R.adopt.k === 'cat' && R.adopt.card && /Pamuk artık senin/.test(R.adopt.txt) && R.adopt.paused, 'sahiplenme kartı ' + JSON.stringify(R.adopt));
+  ok(R.adopt.inp.v === '' && R.adopt.inp.ph === 'Pamuk' && /Adını sen koy/.test(R.adopt.inp.lbl), 'ad kutusu boş + öneri yer tutucu değil ' + JSON.stringify(R.adopt.inp));
   ok(R.adopt.house[0] && R.adopt.house[1] && R.adopt.dbox.indexOf('kedievi0') >= 0 && !R.adopt.shop, 'kedi evi Süs Sandığı\'na gelmedi ' + JSON.stringify(R.adopt));
   ok(!R.adopt.stray && R.adopt.sd === 0 && R.adopt.c === 'b0', 'sahiplenme sonrası sokak kedisi / atama ' + JSON.stringify(R.adopt));
   await p.click('#petGo'); await sleep(150);
@@ -288,6 +289,34 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
   ok(Math.abs(R.rule.flow - 0.10) < 1e-9 || R.rule.flow <= 0.10 + 1e-9, 'toplam popülerlik tavanı +%10 aşıldı ' + JSON.stringify(R.rule));
   R.cap = await p.evaluate(() => { const sv = BT.buildSave(); sv.pet.l.forEach(q => { q.m = 90; }); sv.pet.l.push({ k: 'dog', n: 'Paşa', m: 90, c: 'b1' }); BT.areas[2].locked = false; BT.loadFrom(sv); BT.rebuildCounters(); return +(BT.counters.reduce((s, c) => s + BT.pet.flow(c.key) - 1, 0)).toFixed(4); });
   ok(Math.abs(R.cap - 0.10) < 1e-9, 'tavan: 2 kedi + 2 köpek toplamı +%10 olmalı ' + R.cap);
+
+  /* ================= 7) takılmaz: kedi / köpek her yere varır, 10 sn içinde yerinden oynar ================= */
+  R.walk = await p.evaluate(() => {
+    BT.S.ctrl = 2; BT.areas.forEach(a => { a.locked = false; }); BT.rebuildCounters(); BT.counters.forEach(c => BT.setStall(c.key, true));
+    const sv = BT.buildSave();
+    sv.pet = { l: [{ k: 'cat', n: 'Pamuk', m: 90, c: 'b1' }, { k: 'cat', n: 'Duman', m: 90, c: 'b0' }, { k: 'dog', n: 'Karabaş', m: 90, c: 'b1' }, { k: 'dog', n: 'Paşa', m: 90, c: 'b2' }], sd: { cat: [], dog: [] }, nx: { cat: 99, dog: 99 }, f: {} };
+    BT.loadFrom(JSON.parse(JSON.stringify(sv)));
+    BT.day.phase = 'play'; BT.day.t = 10; BT.counters.forEach(c => { c.spawnT = 1e9; });
+    const L = BT.pet.list(), out = { start: [], moved: [], arrived: [], safe: [], tPos: [] };
+    L.forEach(p => { p.x = 21.8; p.y = 5 + L.indexOf(p) * 0.3; p.st = 'sit'; p.t = 1; });   /* gece evinden sabaha: doğu kumdan tezgâha */
+    out.start = L.map(p => [p.x, p.y]);
+    L.forEach(p => { const c = BT.counters.find(c => c.key === p.c); out.safe.push(BT.canStand(BT.pet.spot(p, c).x, BT.pet.spot(p, c).y)); });
+    BT.emek.step(0.05, 200);                                        /* 10 sn */
+    out.moved = L.map((p, i) => Math.hypot(p.x - out.start[i][0], p.y - out.start[i][1]) > 1.5);
+    BT.emek.step(0.05, 1000);                                       /* +50 sn: hepsi tezgâhında */
+    out.arrived = L.map(p => { const c = BT.counters.find(c => c.key === p.c), s = BT.pet.spot(p, c); return +Math.hypot(p.x - s.x, p.y - s.y).toFixed(2); });
+    return out;
+  });
+  ok(R.walk.safe.every(Boolean), 'hayvan hedefi yürünemez noktaya düştü ' + JSON.stringify(R.walk));
+  ok(R.walk.moved.every(Boolean), 'hayvan 10 sn içinde yerinden oynamadı (takıldı) ' + JSON.stringify(R.walk));
+  ok(R.walk.arrived.every(d => d < 0.3), 'hayvan tezgâhındaki yerine varamadı ' + JSON.stringify(R.walk));
+  R.roam = await p.evaluate(() => {
+    const bad = [], pts = [];
+    for (let i = 0; i < 400; i++) ['cat', 'dog'].forEach(k => { const r = BT.pet.roamPt(k); pts.push(r); if (!BT.canStand(r.x, r.y)) bad.push(k + ':' + r.x.toFixed(2) + ',' + r.y.toFixed(2)); });
+    BT.pet.q(); const s = BT.pet.stray('cat') || BT.pet.stray('dog');
+    return { bad, n: pts.length };
+  });
+  ok(R.roam.bad.length === 0, 'dolaşma hedefi yürünemez ' + JSON.stringify(R.roam));
 
   /* İngilizce metinler */
   R.en = await p.evaluate(() => { const L = BT.STR.en; return ['petHead', 'petFeedBtn', 'petNewP', 'petAssign', 'petLoveBtn', 'petSteal', 'petGullT', 'petSulkT', 'petRule'].map(k => L[k]); });
