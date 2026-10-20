@@ -109,3 +109,8 @@ Her istasyon ayrı satın alınır ve seviyelenir; seviye eşzamanlı tabak say�
 - Klasik çizim game.js'te.
 - İnce mod kancaları: `HKA.drawLokanta(o)`, `HKA.drawLokTable(o)`, `HKA.drawLokStation(o)`, `HKA.drawLokCrew(o)`. Garson: beyaz gömlek, siyah yelek; aşçı: beyaz önlük ve kep.
 - İnce çizimleri ana sanatçı yapar.
+
+## Aşama 1 — uygulama notları (deneme-emekci)
+- **Konum:** `AREAS[4]` (`sahil`), x 0–10, y 23.5–29.5: Mutfak iskelesinin güneyine uzanan ahşap teras. Güneydeki/doğudaki kum şeridi 2–2,3 karo olduğundan (LANDY 24,5, SERVYARD sınırı 21,9) boş kuma sığmadı; iskele devamı olarak suyun üstünde. Kamera `maxOpenY` ile kendiliğinden uzar. Müşteri patikası yolun güney ucundan (x 10–13, y 21.5–24.5) kapıya (9.3, 24.1) iner.
+- **Seviyeler:** `S.lok.lv` (1–5) menü yeri, kadro sınırı (3 + lv) ve gelme hızını belirler; `S.lok.tb` masa seviyesi (2/4/6/9/12), lv + 1'i geçemez. İkisi de, istasyonlar da inşaat kuralına uyar (L. seviye L gün).
+- **Aşama 2'ye bırakılanlar:** olaylar (rezervasyon, Muhtar, eleştirmen: `S.lok.res`, `S.lok.star` hazır; gelme hızı yıldızı zaten ±%10 okur), masa dışı yükseltmeler (teras `lokPatMul`, meze, saz, dolap 24: `S.lok.dl` hazır), Balık Büfesi adı + menünün büfeden lokantaya taşınması (Tarif Defteri şimdilik lokanta açılınca da açılır; defterdeki MENÜ sekmesi aynen duruyor), kedi etkisi.
