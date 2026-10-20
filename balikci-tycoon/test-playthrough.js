@@ -222,7 +222,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
     await hireZone(1);
   });
   await playDay('gün C');
-  await stage('Seviye 5 — müdürler', 60000, 400, async () => {
+  await stage('Seviye 5 — müdürler', 200000, 400, async () => {
     await buyAll('area');                                           /* v2.0: Balıkçı Mutfağı (itibar 60) — meydandan önce: v2.18 meydanı (depo bölmeleri, İlan Bürosu) bütçeyi yiyor */
     await buyAll('build', 'meydan', null, 6);
     await hireZone(2);
