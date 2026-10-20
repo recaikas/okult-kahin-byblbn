@@ -11,7 +11,7 @@ Eylem **beklemek**tir, dokunmak değil. Oyuncu istasyonun etki alanında durur, 
 
 | İstasyon | Emekçi Mod'da | Başında kim varsa çalışır |
 |---|---|---|
-| **Ağ** | Ağ yine kendiliğinden dolar (`spot.stock`). Ama balıklar sırta bir anda geçmez: başında durunca **tek tek** geçer, her biri ~0,2 sn (`PULL_T`), sırta uçma animasyonuyla. | Oyuncu ya da **Balıkçı** (yeni rol). Balıkçı balıkları ağın yanındaki **sandığa** koyar (sandık sınırı 12). Oyuncu sandıktan da alabilir. |
+| **Ağ** | Ağ yalnız **başında biri varken** dolar (`spot.stock`, `netManned`): oyuncu, Balıkçı ya da müdür. Başı boş ağ dolmaz; yoksa Balıkçı'ya gerek kalmıyordu. Ama balıklar sırta bir anda geçmez: başında durunca **tek tek** geçer, her biri ~0,2 sn (`PULL_T`), sırta uçma animasyonuyla. | Oyuncu ya da **Balıkçı** (yeni rol). Balıkçı balıkları ağın yanındaki **sandığa** koyar (sandık sınırı 12). Oyuncu sandıktan da alabilir. |
 | **Kesim masası** | Masa yalnız başında biri varken keser (`t.t` yalnız o zaman ilerler). | Oyuncu (masanın alanında duruyorsa) ya da **Filetocu**. Filetocu artık hızlandırıcı değil, asıl kesen; hızı 1,0. Oyuncu kesimi 1,0. "Keskin bıçak" yükseltmesi oyuncunun kesimini hızlandırır. |
 | **Tezgâh** | Satış hızı: başında biri varsa %100. Yoksa **%35**: müşteri bekler, satış yavaş ilerler; müşteri sabrı satıcısız tezgâhta da normal hızın %60'ıyla azalır. | Oyuncu (tezgâhın önünde) ya da **Tezgâhtar** (yeni anlamı: tezgâhın arkasında satıcı). |
 | **Kasa / tepsi** | Bugünkü gibi. | Oyuncu ya da Tahsildar. |

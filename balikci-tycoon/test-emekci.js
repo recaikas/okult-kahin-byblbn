@@ -1,5 +1,5 @@
 /* v2.18-deneme — Emekçi Mod (EMEKCI_TASARIM.md §7):
-   1) ağın başında durunca balıklar tek tek (~0,2 sn) sırta geçer; uzaklaşınca durur
+   1) ağın başında durunca balıklar tek tek (~0,2 sn) sırta geçer; uzaklaşınca durur; başı boş ağ dolmaz
    2) masa başında kimse yokken kesmez; oyuncu durunca keser; Filetocu varken keser
    3) tezgâh satıcısızken ≈%35 hızla satar (sabır %60 hızla azalır); oyuncu ya da Tezgâhtar varken tam hız
    4) Hamal önceliği: boşalan tezgâha önce taşır
@@ -127,6 +127,24 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
   ok(R.net.n1 >= 4 && R.net.n1 <= 6 && !R.net.st.length, 'ağ tek tek değil ' + JSON.stringify(R.net));
   ok(R.net.gaps[0] >= 0.15 && R.net.gaps[1] - R.net.gaps[0] >= 0.15 && R.net.gaps[1] - R.net.gaps[0] <= 0.26, 'çekme aralığı ~0,2 sn değil ' + JSON.stringify(R.net.gaps));
   ok(R.net.n2 === R.net.n1, 'uzaklaşınca durmadı ' + JSON.stringify(R.net));
+
+  /* ---- 1b) ağ başı boşken dolmaz; oyuncu ya da Balıkçı başındayken dolar (hata: başı boş ağ dolup Balıkçı'yı gereksiz kılıyordu) ---- */
+  R.netIdle = await p.evaluate(() => {
+    const s = BT.spots[0], P = BT.player, o = {};
+    BT.workers.length = 0; P.carry.length = 0; s.stock.length = 0; s.box.length = 0; s.t = 0;
+    P.x = 3.2; P.y = 4.4; BT.emek.step(0.05, 100);                 /* 5 sn kimse yok */
+    o.alone = s.stock.length + s.box.length;
+    P.x = s.x + 0.3; P.y = s.y + 1.2; BT.emek.step(0.05, 100);     /* 5 sn oyuncu başında */
+    o.player = s.stock.length + P.carry.length;
+    P.x = 3.2; P.y = 4.4; P.carry.length = 0; s.stock.length = 0;
+    const w = BT.hire('balikci', true, 0); BT.emek.step(0.05, 200);  /* yürür + çeker */
+    o.bal = s.stock.length + s.box.length;
+    BT.workers.length = 0;
+    return o;
+  });
+  ok(R.netIdle.alone === 0, 'ağ başında kimse yokken doldu ' + JSON.stringify(R.netIdle));
+  ok(R.netIdle.player >= 3, 'oyuncu başındayken ağ dolmadı ' + JSON.stringify(R.netIdle));
+  ok(R.netIdle.bal >= 3, 'Balıkçı başındayken ağ dolmadı ' + JSON.stringify(R.netIdle));
 
   /* ---- 2) masa ---- */
   R.tbl = await p.evaluate(() => {
@@ -503,7 +521,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
         else if (on && !BT.workers.some(w => w.role === 'filetocu') && (t0.inn.length || t0.cur)) tgt = tblPt;
         else if (t0.mat.items.length && fish === 0) tgt = tblPt;
         else if (fish > 0 && t0.inn.length >= t0.max && t0.mat.items.length >= BT.pileCap(t0) - 1) tgt = [BT.BINS[0].x, BT.BINS[0].y];   /* kilit: fazlayı çöpe */
-        else if (fish > 0 && (fish >= cap || t0.inn.length + fish >= t0.max || (!s0.stock.length && !s0.box.length))) tgt = tblPt;
+        else if (fish > 0 && (fish >= cap || t0.inn.length + fish >= t0.max || (!on && !s0.stock.length && !s0.box.length))) tgt = tblPt;   /* Emekçi: ağ başı boşken dolmaz, sırt dolana dek ağda bekler */
         else if (fish === 0 && s0.box.length) tgt = [s0.bx, s0.by];
         else tgt = netPt;
         press(tgt[0], tgt[1]);

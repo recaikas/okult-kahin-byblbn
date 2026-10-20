@@ -4314,7 +4314,7 @@ function spotPick(i) {
 function updateStations(dt) {
   var i, s, t, fishMul = event ? event.fishMul : 1;
   for (i = 0; i < spots.length; i++) {
-    s = spots[i]; if (AREAS[s.z].locked) continue;
+    s = spots[i]; if (AREAS[s.z].locked || !netManned(s, 'n' + i)) continue;
     if (s.stock.length >= areaStock(s.z)) { s.t = 0; continue; }
     s.t += dt * fishMul * areaNetMul(s.z);
     if (s.t >= s.rate) {
@@ -4329,7 +4329,7 @@ function updateStations(dt) {
     }
   }
   for (i = 0; i < XNETS.length; i++) {
-    s = XNETS[i]; if (!xnetOn(s)) continue;
+    s = XNETS[i]; if (!xnetOn(s) || !netManned(s, 'x' + i)) continue;
     if (s.stock.length >= areaStock(s.z)) { s.t = 0; continue; }
     s.t += dt * fishMul * areaNetMul(s.z);
     if (s.t >= s.rate) {
@@ -14559,6 +14559,7 @@ setInterval(retTick, 1000);
 function emek() { return !window.HK_EMEK_OFF && S.emek !== 0; }
 var emekLoading = false;                      /* loadFrom: bu daldaki kayıt mod kapalıyken açılsa da kadro düşmesin */
 var PULL_T = 0.2, HANDS_T = [0.2, 0.14, 0.1], BOX_CAP = 12;
+var BAL_TURN = 6;                                     /* Balıkçı birden çok ağlı bölgede bir ağdan kaç balık çekip sıradakine geçer */
 var EMEK_SELL_T = 0.45, EMEK_IDLE_SELL = 0.35, EMEK_IDLE_PAT = 0.6, EMEK_MGR = 0.5, EMEK_PRICE = 0.75, EMEK_START = 0;
 var EMEK_ZONE_ROLES = ['tezgahtar', 'balikci', 'filetocu', 'hamal', 'kasiyer'];   /* sıra = kart sırası: ilk kiralanan tezgâhtar */
 /* fiyatlar bot ölçümüyle ayarlandı (taslak 300/420/360/360 ile ilk kiralama ~1,7 dk çıkıyordu; hedef 3–5 dk). Beş rol olduğu için
@@ -14625,6 +14626,17 @@ function emekBoxLoad(d) {
       if (it && it.k === 'fish' && FISH[it.f] && zoneOfFish(it.f) === s.z && s.box.length < BOX_CAP * USTA_MUL[2]) s.box.push(it);
     });
   });
+}
+/* ağ yalnız başında biri varken balık çeker (Emekçi Mod): oyuncu ağın erişiminde ve başka istasyonda çalışmıyorsa, ağın
+   Balıkçısı durma noktasındaysa ya da müdür bu ağı dolduruyorsa. Başı boş ağ dolmaz: yoksa Balıkçı'ya gerek kalmıyordu. */
+function netManned(s, id) {
+  if (!emek() || zoneAuto(s.z)) return true;
+  if (emA ? emA.id === id : dist2(player.x, player.y, s.x, s.y + 0.9) < 1.6) return true;
+  for (var i = 0; i < workers.length; i++) {
+    var w = workers[i]; if (w.role !== 'balikci' || w.net !== s) continue;
+    var st = netStand(s); if (dist2(w.x, w.y, st.x, st.y) < 0.3) return true;
+  }
+  return mgrAt(s);
 }
 /* istasyon işareti (çizim için): bu karede başında kim var, iş ne kadar ilerledi */
 function emekMark(o, by, pr) { if (!by) return; o._et = gameT; o._eb = by; o._ep = pr; }
@@ -14805,10 +14817,13 @@ function emekSellMul(c) {
 function aiBalikci(w, sp, dt) {
   var nets = zoneNets(w.zone).filter(emNetOn), i, s = w.net && nets.indexOf(w.net) >= 0 ? w.net : null;
   if (!nets.length) { idleAtZone(w, sp, dt); return; }
-  if (!s || !s.stock.length || s.box.length >= boxCap(s)) {            /* bölgede birden çok ağ: en dolu, sandığı yer olan */
-    var best = null;
-    for (i = 0; i < nets.length; i++) if (nets[i].stock.length && nets[i].box.length < boxCap(nets[i]) && (!best || nets[i].stock.length > best.stock.length)) best = nets[i];
-    s = best || s || nets[0];
+  /* başı boş ağ dolmaz (netManned): bölgede birden çok ağ varsa Balıkçı nöbetleşir — sandık dolunca ya da BAL_TURN balık
+     çekince sandığında yer olan sıradaki ağa geçer */
+  if (!s || s.box.length >= boxCap(s) || (nets.length > 1 && (w._pc || 0) - (w._pc0 || 0) >= BAL_TURN)) {
+    var k = s ? nets.indexOf(s) : -1, nx = null;
+    for (i = 1; i <= nets.length && !nx; i++) { var c = nets[(k + i) % nets.length]; if (c.box.length < boxCap(c)) nx = c; }
+    s = nx || s || nets[0];
+    w._pc0 = w._pc || 0;
   }
   w.net = s;
   var st = netStand(s);
