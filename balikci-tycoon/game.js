@@ -5674,6 +5674,15 @@ var scenery = [], grass = [];
   for (i = 0; i < 9; i++) gulls.push({ x: rnd(-20, 12), y: rnd(-18, 6), vx: rnd(0.5, 1.1), vy: rnd(0.1, 0.4), f: rnd(0, 6) });
 })();
 
+/* Manzara üretimde bölgelerin kilitli (kum) olduğu varsayımıyla serpilir; bölge açılınca iskelesi kumun üstüne biner.
+   Açılmış bölgenin zemininin içine düşen manzara (ağaç, kaya, sepet…) çizilmez ve yol engeli sayılmaz. */
+function sceneryOnDeck(o) {
+  for (var i = 0; i < AREAS.length; i++) {
+    var a = AREAS[i];
+    if (!a.locked && o.x > a.x0 - 0.4 && o.x < a.x1 + 0.4 && o.y > a.y0 - 0.4 && o.y < a.y1 + 0.4) return true;
+  }
+  return false;
+}
 /* uzak sahil: beyaz evler, kırmızı çatılar, minare, servi (parallax) */
 function drawVillage() {
   camT(0, 0);
@@ -7639,7 +7648,7 @@ function render() {
       AREA_LAMPS[AREAS.indexOf(ar)].forEach(function (lp) { push(lp.x + lp.y, function () { drawLamp(lp.x, lp.y); }); });
     }
   })(AREAS[i]);
-  for (i = 0; i < scenery.length; i++) (function (d) { push(d.x + d.y - 0.1, function () { drawScenery(d); }); })(scenery[i]);
+  for (i = 0; i < scenery.length; i++) (function (d) { if (sceneryOnDeck(d)) return; push(d.x + d.y - 0.1, function () { drawScenery(d); }); })(scenery[i]);
   for (i = 0; i < SLOTS.length; i++) (function (s) {
     if (!slotActive(s)) return; push(s.x + s.y, function () { drawSlot(s); });
   })(SLOTS[i]);
@@ -10964,6 +10973,9 @@ function depotFree() { return Math.max(0, DEPOT.lvl === 1 ? depotCap() - depotCo
 function depotHasKiler() { return DEPOT.lvl >= 3; }
 function depotNext() { return DEPOT.lvl < DEPOT_LV.length ? DEPOT_LV[DEPOT.lvl] : null; }
 function depotStaffCap() { return DEPOT.lvl; }
+/* Rol başına ayrı kadro sınırı: Depo Hamalı = bölme sayısı; Sevkiyatçı = modüler depo öncesi sınır (depo seviyesi, en az 1) */
+function depotRoleCap(r) { return r === 'sevkiyat' ? Math.max(1, DEPOT.lvl) : DEPOT.lvl; }
+function depotRoleStaff(r) { var n = 0; for (var i = 0; i < workers.length; i++) if (workers[i].role === r) n++; return n; }
 function depotStaff() { var n = 0; for (var i = 0; i < workers.length; i++) if (DEPOT_ROLES.indexOf(workers[i].role) >= 0) n++; return n; }
 function keyItem(k) { var p = k.split('|'); return { k: p[0], f: p[1] }; }
 function depotStoreOf(k) { return k.indexOf('fish|') === 0 ? DEPOT.raw : DEPOT.cold; }
@@ -11238,10 +11250,10 @@ function meydanCards(out) {
     cost: nx ? upCost(nx.c) : 0, owned: !nx, blocked: nx && lvNow < nx.l, why: nx ? T('needLv', { l: nx.l }) : '',
     buyTxt: DEPOT.lvl ? T('upgrade') : T('build'), go: function () { insMeydanBuy('depot'); } });
   if (DEPOT.lvl) {
-    var full = depotStaff() >= depotStaffCap();
     DEPOT_ROLES.forEach(function (r) {
-      out.push({ id: 'mr' + r, ic: ROLES[r].icon, t: NM(ROLES[r].n) + ' (' + depotStaff() + '/' + depotStaffCap() + ')',
-        s: NM(ROLES[r].d) + ' • ' + money(ROLES[r].wage) + perMin(), cost: hireCost(r, -1), blocked: full, why: T('depotStaffFull'),
+      var full = depotRoleStaff(r) >= depotRoleCap(r);
+      out.push({ id: 'mr' + r, ic: ROLES[r].icon, t: NM(ROLES[r].n) + ' (' + depotRoleStaff(r) + '/' + depotRoleCap(r) + ')',
+        s: NM(ROLES[r].d) + ' • ' + money(ROLES[r].wage) + perMin(), cost: hireCost(r, -1), blocked: full, why: T(r === 'sevkiyat' ? 'depotStaffFullSv' : 'depotStaffFullDp'),
         go: function () { hire(r, false, -1); save(); } });
     });
   }
@@ -11473,7 +11485,7 @@ Object.assign(STR.tr, {
   depotD: 'Ham Balık Ambarı: fazla balığı saklar, Depo Hamalı taşır. Sonra Soğuk Oda, Kiler, Uzantı ve Rampa eklenir',
   depotD2: 'Ham {r}/{rc} • Soğuk {c}/{cc} → {w}: {e}', depotD2Max: 'Ham {r}/{rc} • Soğuk {c}/{cc} • bütün bölmeler kurulu',
   depotBuilt: '📦 Ham Balık Ambarı kuruldu — fazla balık ve ürün artık rafta', depotUp: '📦 {n} hazır (Depo Sv {l})',
-  depotStaffFull: 'Depo kadrosu dolu — yeni bölme ekle',
+  depotStaffFull: 'Depo kadrosu dolu — yeni bölme ekle', depotStaffFullDp: 'Hamal kadrosu dolu — yeni bölme ekle', depotStaffFullSv: 'Sevkiyat kadrosu dolu',
   tabToptan: 'TOPTAN', tpTitle: 'Depo toptan satışı', tpHead: 'Bugün {n} toptan: {v} {a}', tpKur: 'Günlük kur ×{k}', tpLeft: 'Bugünkü parti: {a}/{b}',
   tpRaw: 'AMBAR • ham balık', tpCold: 'SOĞUK ODA • fileto / füme', tpRow: 'Depoda {n} • tanesi {u}', tpBatch: '{n}\'LUK PARTİ SAT • {v}', tpNone: 'Depoda satılacak mal yok. Depo Hamalı fazla balığı Ambar\'a taşır.',
   tpNoDepot: 'Önce meydana Depo kur', tpNoParty: 'Bugünkü partiler bitti. Yarın yeni kur, yeni parti.', tpSold: '{n} {p} toptan satıldı: +{v}',
@@ -11487,7 +11499,7 @@ Object.assign(STR.en, {
   depotD: 'Raw Fish Store: keeps surplus fish, Depot Porters carry it in. Cold Room, Pantry, Annex and Ramp come next',
   depotD2: 'Raw {r}/{rc} • Cold {c}/{cc} → {w}: {e}', depotD2Max: 'Raw {r}/{rc} • Cold {c}/{cc} • every wing built',
   depotBuilt: '📦 Raw Fish Store built — surplus fish and goods now sit on shelves', depotUp: '📦 {n} ready (Depot Lv {l})',
-  depotStaffFull: 'Depot crew full — add a wing',
+  depotStaffFull: 'Depot crew full — add a wing', depotStaffFullDp: 'Porter crew full — add a wing', depotStaffFullSv: 'Dispatch crew full',
   tabToptan: 'WHOLESALE', tpTitle: 'Depot wholesale', tpHead: 'Today {n} wholesale: {v} {a}', tpKur: 'Daily rate ×{k}', tpLeft: 'Batches today: {a}/{b}',
   tpRaw: 'STORE • raw fish', tpCold: 'COLD ROOM • fillet / smoked', tpRow: 'In depot {n} • each {u}', tpBatch: 'SELL BATCH OF {n} • {v}', tpNone: 'Nothing in the depot to sell. Depot Porters bring surplus fish to the Store.',
   tpNoDepot: 'Build the Depot on the square first', tpNoParty: 'Today\'s batches are done. New rate and batches tomorrow.', tpSold: '{n} {p} sold wholesale: +{v}',
@@ -13731,7 +13743,7 @@ function arrStatic() {
   ROAD_FL.forEach(function (y) { rc(ROAD_VX, y, 0.2, 0.3); });                     /* çiçeklikler */
   ROAD_BB.forEach(function (y) { rc(ROAD_VX, y, 0.2, 0.62); });                    /* reklam panoları */
   rc(YSIGN.x, YSIGN.y, 0.3, 0.2);                                                  /* saha tabelası */
-  scenery.forEach(function (o) { rc(o.x, o.y, 0.3, 0.3); });                       /* servi, kaya, sandal… */
+  scenery.forEach(function (o) { if (!sceneryOnDeck(o)) rc(o.x, o.y, 0.3, 0.3); });                       /* servi, kaya, sandal… */
   /* meydan personeli: köprü ucundan kapılara düz yürür */
   var B = [15.8, (BRIDGE.y0 + BRIDGE.y1) / 2];
   [HUT.door, DEPOT.door, WHALL.door].forEach(function (d) { lanes.push([B[0], B[1], d.x, d.y, 0.35]); rings.push([d.x, d.y, 1.0]); });
@@ -16927,7 +16939,7 @@ window.BT = {
     toptanSell: toptanSell, toptanUnit: toptanUnit, toptanKur: toptanKur, toptanLeft: toptanLeft, toptanMax: toptanMax, toptanKeys: toptanKeys, toptanDay: toptanDay, toptanHtml: toptanHtml,
     rawSurplusNet: rawSurplusNet, rawBlocked: rawBlocked },   /* v2.18-deneme: MODÜLER DEPO (test) */
   cam: function () { return { x: camX, y: camY, tx: camTX, ty: camTY }; },
-  envStage: function () { return envStage(); }, buildSave: buildSave, loadFrom: loadFrom, DEPOT_LV: DEPOT_LV, counterMax: counterMax, queueMax: queueMax, upCost: upCost, envFlow: envFlow, legacyEnvStage: legacyEnvStage, ENV_UPS: ENV_UPS, scenery: scenery, SPECIALS: SPECIALS,
+  envStage: function () { return envStage(); }, buildSave: buildSave, loadFrom: loadFrom, DEPOT_LV: DEPOT_LV, counterMax: counterMax, queueMax: queueMax, upCost: upCost, envFlow: envFlow, legacyEnvStage: legacyEnvStage, ENV_UPS: ENV_UPS, scenery: scenery, sceneryOnDeck: sceneryOnDeck, depotRoleCap: depotRoleCap, depotRoleStaff: depotRoleStaff, SPECIALS: SPECIALS,
   /* test/önizleme: bir kıyafeti verilen tuvale çiz */
   drawOutfitOn: function (cv, o, t) { var old = ctx, oldK = curK, g = cv.getContext('2d'); ctx = g; curK = cv.dataset && cv.dataset.k ? +cv.dataset.k : 1; try { if (curK > 1) g.setTransform(curK, 0, 0, curK, Math.round(cv.width / curK / 2) * curK, cv.height - 4 * curK); else g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), cv.height - 4); drawPerson({ x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: t || 0, act: 0, carry: [] }, o); } catch (e) { } ctx = old; curK = oldK; },
   specOutfit: function (id, face) { return specOutfit(specById(id), face || 1); },

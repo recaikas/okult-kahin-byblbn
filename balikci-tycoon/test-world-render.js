@@ -33,12 +33,24 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
       return { fine: window.HKG ? HKG.K : 1, colors: cols.size, landPct: +(land/total*100).toFixed(1), woodPct: +(wood/total*100).toFixed(1), personPx: person,
                cam: { x: Math.round(BT.cam().x), y: Math.round(BT.cam().y) } };
     });
+    /* v2.18-deneme: açık bölge iskelesinin içinde manzara (ağaç vb.) çizilmez; kilitliyken (kum) kalır */
+    res.deck = await p.evaluate(() => {
+      const inZ = o => BT.areas.some(a => o.x > a.x0 && o.x < a.x1 && o.y > a.y0 && o.y < a.y1);
+      const lockedHid = BT.scenery.filter(o => BT.sceneryOnDeck(o)).length;
+      const before = BT.scenery.filter(inZ).length;                 /* kilitli kum üzerindeki manzara (mutfak kumunda var) */
+      BT.areas.forEach(a => { a.locked = false; });
+      const inside = BT.scenery.filter(inZ), shown = inside.filter(o => !BT.sceneryOnDeck(o)).length;
+      const trees = inside.filter(o => o.t === 'cam' || o.t === 'servi').length;
+      const outsideHid = BT.scenery.filter(o => !inZ(o) && BT.sceneryOnDeck(o)).length;
+      return { lockedHid, before, inside: inside.length, shown, trees, outsideHid };
+    });
     out[vp.width + 'x' + vp.height + (vis ? '-ince' : '')] = res;
     await p.close();
   }
   /* v1.3: ufuk dünyaya bağlandı — geniş ekranda üstü gökyüzü + kasaba kaplar, kum oranı biraz düşer.
      v1.9.2: meydan büyüdü (kumun bir kısmı taş zemin): geniş ekranda kum %2.8 → %2.0 */
-  const ok = Object.values(out).every(r => r.fine > 1 ? r.colors > 300 : (r.landPct > 1.5 && r.woodPct > 2 && r.personPx > 5));
+  const deckOk = Object.values(out).every(r => r.deck.lockedHid === 0 && r.deck.inside > 0 && r.deck.shown === 0);
+  const ok = deckOk && Object.values(out).every(r => r.fine > 1 ? r.colors > 300 : (r.landPct > 1.5 && r.woodPct > 2 && r.personPx > 5));
   console.log(JSON.stringify({ out, WORLD_OK: ok, errs: [...new Set(errs)] }, null, 1));
   process.exit(ok && !errs.length ? 0 : 1);
 })();
