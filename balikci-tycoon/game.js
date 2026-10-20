@@ -3710,7 +3710,7 @@ function canStand(x, y) {
 /* v2.21-deneme: OYUNCU serbest gezer — tüm kara + açık iskele zemini; iskele kenar çiti ve kumsal↔iskele geçişi engel değil (köprü zorunlu değil).
    Yalnız kilitli bölgelerin iskelesine (ve kilitli lokantaya) girilmez. Personel/müşteri eski canStand + routeVia kuralıyla yürür. */
 function canStandFree(x, y) {
-  if (x < -0.3 || y < -0.3 || x > LANDX - 0.4 || y > LANDY - 0.4) return false;
+  if (x < -0.3 || y < -0.3 || x > LANDX - 0.4 || y > LANDY - 0.4 || x - y > LAND_UMAX) return false;   /* doğu ucu su */
   for (var i = 0; i < AREAS.length; i++) {
     var a = AREAS[i]; if (!a.locked) continue;
     if (x > (a.lok ? a.x0 : -1) && x < a.x1 && y > a.y0 && y < a.y1) return false;
