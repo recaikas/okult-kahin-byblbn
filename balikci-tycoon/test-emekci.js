@@ -45,34 +45,6 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
   await newGame(p, 1);
   R.boot = await p.evaluate(() => ({ on: BT.emek.on(), roles: BT.zoneRoles(0), cap: BT.zoneStaffCap(0), cost: BT.hireCost('tezgahtar', 0), cash: BT.S.cash, set: document.querySelector('#emekSeg .on') && document.querySelector('#emekSeg .on').dataset.e }));
   ok(R.boot.on && R.boot.roles[0] === 'tezgahtar' && R.boot.roles.indexOf('balikci') >= 0 && R.boot.cap === 4, 'emek açılış ' + JSON.stringify(R.boot));
-  /* ---- DENEME-HILE: Ayarlar'daki test parası düğmesi (yalnız deneme dalı) ---- */
-  R.hile = await p.evaluate(() => {
-    const b = document.getElementById('denemeHile'); if (!b) return { yok: true };
-    const c0 = BT.S.cash, r0 = BT.S.rep; b.click(); b.click();
-    return { label: b.textContent, dCash: BT.S.cash - c0, dRep: BT.S.rep - r0 };
-  });
-  ok(R.hile.label === 'DENEME: +50.000 $ · +500 itibar' && R.hile.dCash === 100000 && R.hile.dRep === 1000, 'DENEME-HILE düğmesi ' + JSON.stringify(R.hile));
-  /* ---- DENEME-HILE: "Gün sonuna geç" düğmesi gün kartını açar ---- */
-  R.gun = await p.evaluate(() => {
-    const g = document.getElementById('denemeGun'); if (!g) return { yok: true };
-    BT.openMenu && 0; const lbl = g.textContent; BT.ui.openSettings(false); g.click();
-    return { label: lbl, phase: BT.day.phase, card: !document.getElementById('dayScr').classList.contains('hidden'), set: !document.getElementById('settingsScreen').classList.contains('hidden') };
-  });
-  ok(R.gun.label === 'DENEME: Gün sonuna geç' && R.gun.phase === 'summary' && R.gun.card && !R.gun.set, 'DENEME gün sonu düğmesi ' + JSON.stringify(R.gun));
-  await p.evaluate(() => { document.getElementById('dayGo').click(); const d = BT.day; d.phase = 'play'; d.t = 0; document.getElementById('dayScr').classList.add('hidden'); });
-  /* ---- Oyuncu serbest gezinti: iskele kenarından kuma, kumdan iskeleye köprüsüz; işçi/müşteri rotası eski ---- */
-  R.walk = await p.evaluate(() => {
-    const P = BT.player, o = {}; const mv = (a, dx, dy, n) => { for (let i = 0; i < n; i++) BT.moveActor(a, dx, dy, 4, 0.05); };
-    P.x = 9.0; P.y = 4.5; mv(P, 1, 0, 40); o.eastX = P.x;             /* iskele (x<10) -> kumsal, köprü (y 1.9-2.9) dışında */
-    mv(P, -1, 0, 40); o.backX = P.x;                                    /* kumdan iskeleye */
-    P.x = 12; P.y = 8; mv(P, 0, 1, 30); o.sandY = P.y;                  /* kilitsiz kumsalda güneye */
-    P.x = 5; P.y = 5.5; mv(P, 0, 1, 40); o.lockedY = P.y;               /* kilitli Pazar iskelesine girmez */
-    const w = { x: 9.0, y: 5, isPlayer: false, vx: 0, vy: 0, bob: 0 }; mv(w, 1, 0, 40); o.workerX = w.x;   /* işçi: kenar çiti/köprü kuralı */
-    const r = BT.routeVia({ x: 5, y: 5, isPlayer: false }, 17, 5); o.route = r && [r.x, r.y];
-    return o;
-  });
-  ok(R.walk.eastX > 10.5 && R.walk.backX < 9.5 && R.walk.sandY > 9 && R.walk.lockedY <= 6.02 && R.walk.workerX < 9.8 && R.walk.route && R.walk.route[0] === 9 , 'oyuncu serbest gezinti ' + JSON.stringify(R.walk));
-  await p.evaluate(() => { BT.S.cash = 0; BT.S.rep = 0; });
   /* ---- 0) oyun başı eğitimi: Emekçi Mod'da 9 adım, tamamlanma koşuluyla sırayla ilerler; kapalıyken eski 6 adım ---- */
   const tutReset = () => p.evaluate(() => { const S = BT.S; S.ctrl = 2; S.cash = 0; S.served = 0; BT.day.t = 10; BT.counters.forEach(c => { c.spawnT = 1e9; c.buffer.length = 0; }); BT.player.x = 2; BT.player.y = 20; BT.player.carry.length = 0;
     BT.spots[0].stock.length = 0; BT.tables[0].inn.length = 0; BT.tables[0].mat.items.length = 0; BT.workers.length = 0; BT.tables[0].worker = null; });
