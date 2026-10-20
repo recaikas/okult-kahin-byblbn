@@ -882,11 +882,32 @@ HKA.drawCounter = function (c) {
   var sw2 = Math.sin(T() * G().ANIM.waveFps) * 0.8;
   L.blit(scaleSpr(sw2 > 0.35 ? 2 : sw2 < -0.35 ? 0 : 1), sx, sy);
   if (/^b\d$/.test(c.key)) gf('drawStallSign')(c);
-  gf('drawStack')(c.x, c.y, c.buffer, 12, 3.2);
+  gf('drawStack')(c.x, c.y, gf('shelfItems')(c), 12, 3.2);
   var NM = gf('NM'), FISH = G().FISH, Tt = gf('T');
-  gf('labelAt')(c.x, c.y - 1.5, 46, (c.fish ? NM(FISH[c.fish].n) : Tt('stStall')) + ' ' + c.buffer.length + '/' + gf('counterMax')(c), '#ffd9a8', '' + c.buffer.length);
+  gf('labelAt')(c.x, c.y - 1.5, 46, (c.fish ? NM(FISH[c.fish].n) : Tt('stStall')) + ' ' + gf('shelfN')(c) + '/' + gf('counterMax')(c), '#ffd9a8', '' + gf('shelfN')(c));
   if (c.fish && gf('zoneAuto')(gf('zoneOfFish')(c.fish))) gf('labelAt')(c.x, c.y - 1.5, 58, Tt('autoBadge'), '#ffc94a', 'auto');
+  if (gf('hasCrate')(c)) gf('drawFumeCrate')(gf('crateObj')(c));      /* v2.18-deneme: füme kasası */
   gf('drawTray')(c);
+};
+/* --- FÜME KASASI (v2.18-deneme): füme satan tezgâhın yanında küçük ahşap kasa; içinde füme mallar yığılı, ×n rozetli --- */
+function fumeCrateSpr() {
+  return spr('fcrate|' + G().K, 0, 0, function (b) {
+    var x0 = -0.22, y0 = -0.2, w = 0.44, h = 0.4, p = P();
+    box(b, x0, y0, w, h, 0, 6, function (u, v) { return (u < 0.5 || v < 0.5) ? '#b07a44' : (Math.floor(u * 0.5 + v * 0.35) % 2 ? '#8a5a30' : '#9a6a38'); }, woodH('#5d3c1c', 3), woodH('#7a4f28', 3));
+    hl(b, x0, y0 + h, x0 + w, y0 + h, 5.4, p.woodLite);                                    /* ağız çıtası */
+    vl(b, x0, y0 + h, 0, 6, '#4a2f18', 2); vl(b, x0 + w, y0 + h, 0, 6, '#3a2410', 2); vl(b, x0 + w, y0, 0, 6, '#3a2410', 1);
+    var tx = R(fx(x0 + w, (y0 + y0 + h) / 2)), ty = R(fy(x0 + w, (y0 + y0 + h) / 2, 3));  /* mühür: yan yüzde küçük pirinç levha */
+    b.rect(tx - 2, ty, 4, 3, p.brass); b.set(tx - 2, ty, p.brassLite);
+    b.outline(0.55);
+  });
+}
+HKA.drawFumeCrate = function (o) {
+  gf('shadow')(o.x, o.y, 0.34);
+  at(fumeCrateSpr(), o.x, o.y, 0);
+  var n = o.items.length, show = Math.min(n, 5), sx = pX(o.x, o.y);
+  for (var i = 0; i < show; i++) drawIt(o.items[n - show + i], sx, pY(o.x, o.y, 8 + i * 2.6));
+  if (n) gf('uiBadge')(o.x, o.y, 6 + show * 2.6 + 9, 'x' + n, '#d8d2c4');
+  gf('labelAt')(o.x, o.y + 0.45, 14, gf('T')('fumeCrate') + ' ' + n + '/' + o.cap, '#d8d2c4', '');
 };
 HKA.drawCounterClosed = function (c) {
   var sx = R(pX(c.x, c.y)), sy = R(pY(c.x, c.y, 12));
