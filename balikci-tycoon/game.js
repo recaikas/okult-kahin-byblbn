@@ -14916,30 +14916,7 @@ function emekSet(on) {
   if (on) emekGiftCheck();
 }
 
-/* >>> DENEME-HILE: canlıya AKTARILMAZ >>> */
-/* Yalnız deneme dalı: Ayarlar'da Emekçi Mod'un altında sınırsız basılabilen test parası düğmesi (+50.000 $ · +500 itibar).
-   Düğme JS ile kurulur (index.html'e dokunulmaz). Canlıya aktarırken bu bloğu (başlangıç/bitiş işaretleri arası) tamamen sil. */
-function denemeHileSync() {
-  var note = document.getElementById('emekNote'); if (!note || !note.parentNode) return;
-  var b = document.getElementById('denemeHile');
-  if (!b) {
-    b = document.createElement('button'); b.className = 'alt'; b.id = 'denemeHile'; b.type = 'button';
-    b.style.marginTop = '8px';
-    b.addEventListener('click', denemeHile);
-    note.parentNode.insertBefore(b, note.nextSibling);
-  }
-  b.textContent = lang === 'tr' ? 'DENEME: +50.000 $ · +500 itibar' : 'TEST: +$50,000 · +500 rep';
-}
-function denemeHile() {
-  if (!S.started) return;
-  S.cash += 50000; S.rep += 500;
-  checkRepLevel(); syncHUD(0); sfx.tap();
-  toast(lang === 'tr' ? 'Deneme: +50.000 $ · +500 itibar' : 'Test: +$50,000 · +500 rep');
-  save(); renderBar();
-}
-(function () { var f = syncEmekUI; syncEmekUI = function () { f(); denemeHileSync(); }; })();
-denemeHileSync();
-/* <<< DENEME-HILE <<< */
+
 
 /* ---------- çizim: ağ sandığı, ⏸ Bekliyor rozeti, çalışma halkası ---------- */
 function emekPushBoxes(push) {

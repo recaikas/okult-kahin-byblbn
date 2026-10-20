@@ -31,7 +31,7 @@
       if (window.BT_NATIVE) window.BT_NATIVE.ready(); return;
     }
     var s = document.createElement('script');
-    s.src = FILES[i] + '?r=' + Date.now();   /* >>> DENEME-HILE: canlıya AKTARILMAZ (deneme linki hep en yeni dosyayı çeksin; canlıda eski satır: FILES[i] + (FILES[i] === MUST && tries ? '?r=' + Date.now() : '')) <<< */
+    s.src = FILES[i] + (FILES[i] === MUST && tries ? '?r=' + Date.now() : '');
     s.onload = function () { load(i + 1); };
     s.onerror = function () {
       if (FILES[i] !== MUST) { load(i + 1); return; }
