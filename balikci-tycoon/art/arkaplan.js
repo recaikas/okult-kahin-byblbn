@@ -675,7 +675,7 @@ HKA.drawLand = function () {
 /* =====================================================================
    YOL (çevre kademesine göre: toprak → çakıl → arnavut kaldırımı + bordür)
    ===================================================================== */
-var RX0 = 10.2, RX1 = 14.6, RY0 = -0.5, RY1 = 31.6;   /* v2.20-deneme: yol lokantanın kapısına kadar uzar (game.js ROAD_Y1 ile aynı) */
+var RX0 = 10.2, RX1 = 14.6, RY0 = -0.5, RY1 = 24.3;   /* game.js ROAD_Y1 ile aynı */
 function buildRoad(e) {
   var r = worldRas(RX0, RY0, RX1 + 0.1, RY1, 1, 4);
   var DIRT = [C('#c4a878'), C('#ccb284'), C('#b89d6e')], RUT = C('#9c8259'), RIDGE = C('#d4bb8c');
