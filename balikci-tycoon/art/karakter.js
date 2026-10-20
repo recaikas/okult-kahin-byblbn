@@ -209,7 +209,7 @@ function build(o, pose, arm, fx, mood) {
       if (o.phone) {
         sleeve(8 + bo, TT + 1, 6, rr); rf(7 + bo, HY + 10, 4, TT + 2 - HY - 10, rr ? svD : sv);
         hand = { x: 6 + bo, y: HY + 7 };
-      } else if (o.mic) {
+      } else if (o.mic || o.bell) {
         sleeve(8 + bo, TT + 1, 9, rr); hand = { x: 8 + bo, y: TT + 4 };
       } else if (o.tray) {
         sleeve(8 + bo, TT + 1, 9, rr); rf(10 + bo, TT + 6, 4, 4, rr ? svD : sv); hand = { x: 11 + bo, y: TT + 6 };
@@ -223,7 +223,7 @@ function build(o, pose, arm, fx, mood) {
 
   var sv = coat2, svL = lite(coat2, 0.16), svD = dark(coat2, 0.2);
   var carrying = arm === 1;
-  var raise = arm === 0 && (o.mic || o.phone || o.notebook || o.tray);   /* yöndeki kol bir şey tutuyor */
+  var raise = arm === 0 && (o.mic || o.phone || o.notebook || o.tray || o.bell);   /* yöndeki kol bir şey tutuyor (v2.19: tellal zili) */
   var hand = { x: 9, y: TT + 13 };                    /* yöndeki elin yeri (sağa bakış koordinatı) */
   var armsEarly = belly && !carrying;          /* göbekte kollar göbeğin arkasında kalır */
 
@@ -367,6 +367,16 @@ function build(o, pose, arm, fx, mood) {
     rf(mx + 1, my - 6, 2, 10, '#2a2a2a'); rf(mx, my - 10, 4, 4, '#9aa4ac'); rf(mx, my - 10, 4, 1, '#d4dadf');
     pf(mx + 1, my - 8, '#5a636b'); pf(mx + 3, my - 8, '#5a636b'); pf(mx + 2, my - 7, '#5a636b');
     handAt(mx, my, fx > 0);
+  }
+  if (o.bell && raise) {                              /* v2.19-deneme: tellal zili — elde sap, altta tunç çan; o.bell 1|2 sallanma karesi */
+    var bx = hand.x + 1, by = hand.y + 2, sw = o.bell === 2 ? 1 : -1;
+    rf(bx + 1, by - 5, 2, 6, '#6a4424'); pf(bx + 1, by - 5, '#8a5a32'); rf(bx, by - 6, 4, 1, '#4a2f1c');
+    var bc = '#c9952f', bL = '#f0cf6a', bD = '#8a6420';
+    rf(bx + sw, by + 1, 4, 2, bc); rf(bx - 1 + sw, by + 3, 6, 2, bc); rf(bx - 2 + sw, by + 5, 8, 2, bc);
+    pf(bx + sw, by + 1, bL); rf(bx - 1 + sw, by + 3, 1, 2, bL); rf(bx - 2 + sw, by + 5, 1, 2, bL);
+    rf(bx + 4 + sw, by + 3, 1, 2, bD); rf(bx + 5 + sw, by + 5, 1, 2, bD); rf(bx - 3 + sw, by + 7, 10, 1, bD);
+    pf(bx + 1 + sw * 2, by + 8, '#4a3a18'); pf(bx + 2 + sw * 2, by + 8, '#4a3a18');
+    handAt(hand.x, hand.y, fx > 0);
   }
 
   /* ---------- saç (arka katman) ---------- */
@@ -1136,6 +1146,32 @@ HKA.drawNewsboy = function (bb) {
   var say = (bb.ph === 'in' ? bb.t % 6 < nbF.say : bb.sayT < nbF.say) ? T(bb.morn ? 'gzYellMorn' : 'gzYell') : null;
   if (say) uiQ.push({ t: 4, x: bb.x, y: bb.y, z: 42, s: '“' + say + '”', c: '#ffe2c8', a: 1 });
   if (bb.ph !== 'out') uiQ.push({ t: 4, x: bb.x, y: bb.y, z: 29, s: '📰 ' + T('gzBoy'), c: '#ffc94a', a: 0.95 });
+  return true;
+};
+
+/* v2.19-deneme — TELLAL (İlan Bürosu): fesli, yelekli, göbekli; yöndeki elde sallanan tunç zil (karakter çiziminin o.bell'i).
+   o: {x, y, z, face, walk, bob, vx, vy, say, t, bell}. Replik + ad etiketi klasikteki gibi uiQ'ya. */
+var TLF = null;
+HKA.onReset(function () { TLF = null; });
+HKA.drawTellal = function (o) {
+  var H = G(); if (H.K !== 2) return false;
+  init();
+  if (!TLF) TLF = { look: H.v('TELLAL_LOOK'), at: H.v('drawPersonAt') };
+  if (!TLF.look || !TLF.at) return false;
+  var l = {}, k; for (k in TLF.look) l[k] = TLF.look[k];
+  var t = o.t || H.t, ring = !!(o.say || o.bell), up = Math.sin(t * 9) > 0;
+  l.face = o.face; l.walk = o.walk; l.bell = ring && up ? 2 : 1;
+  TLF.at(o, l);
+  if (ring) {                                         /* çın çın: zilin yanında kısa ses çizgileri */
+    var R = Math.round, f = o.face > 0 ? 1 : -1, sx = R(H.pX(o.x, o.y)), sy = R(H.pY(o.x, o.y, o.z || 0));
+    var bx = f > 0 ? 12 : -14, al = up ? 0.9 : 0.5, c = 'rgba(255,226,140,' + al + ')';
+    L.fr(sx, sy, bx + f * 6, -24, 1, 3, c); L.fr(sx, sy, bx + f * 8, -26, 1, 5, c); L.fr(sx, sy, bx - f * 3, -27, 1, 2, c);
+  }
+  var uiQ = H.v('uiQ'), tr = H.v('lang') !== 'en';
+  if (uiQ) {
+    if (o.say) uiQ.push({ t: 4, x: o.x, y: o.y, z: 42, s: '“' + o.say + '”', c: '#ffe2c8', a: 1 });
+    uiQ.push({ t: 4, x: o.x, y: o.y, z: 29, s: '🔔 ' + (tr ? 'Tellal' : 'Crier'), c: '#ffc94a', a: 0.9 });
+  }
   return true;
 };
 

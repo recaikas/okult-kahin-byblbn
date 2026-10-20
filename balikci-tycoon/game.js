@@ -17796,7 +17796,7 @@ function lokPush(push) {
     push(d.x + d.y, function () {
       var g = t.g, ord = g && g.ord, a = 0;
       t.pay.forEach(function (m) { a += m.v; });
-      drawLokTable({ i: d.i, x: d.x, y: d.y, seats: d.seats, st: t.st === 'held' ? 'seat' : t.st, meze: lokUpOn('mez'), n: g ? g.n : 0, plates: t.plates, want: ord ? ord.n : 0, dirty: t.dirty, pay: a, payItems: t.pay, mood: g ? g.mood : 1, dish: ord ? ord.rec : t.last, t: gameT });
+      drawLokTable({ i: d.i, x: d.x, y: d.y, seats: d.seats, st: t.st === 'held' ? 'seat' : (t.st === 'seat' && g && (g.st === 'wait' || g.st === 'eat') ? g.st : t.st), meze: lokUpOn('mez'), n: g ? g.n : 0, plates: t.plates, want: ord ? ord.n : 0, dirty: t.dirty, pay: a, payItems: t.pay, mood: g ? g.mood : 1, dish: ord ? ord.rec : t.last, t: gameT });
     });
   })(lokTRT(i), LOK_T[i]);
   LKR.grp.forEach(function (g) {
@@ -18157,7 +18157,7 @@ function hook(name, f0) {
 })();
 /* v2.19-deneme: tabak / kirli tabak ince modda da klasik çizilir (HKA.drawItem bilmediği türü para sanır) */
 (function () {
-  var di0 = drawItem, ds0 = drawStack, lk = function (it) { return it && (it.k === 'plate' || it.k === 'dirty'); };
+  var di0 = drawItem, ds0 = drawStack, lk = function (it) { return it && (it.k === 'plate' || it.k === 'dirty') && !(curK > 1 && window.HKA && HKA.drawItem); };   /* ince mod: HKA.drawItem tabakları kendisi çizer */
   drawItem = function (it, x, y) { if (lk(it)) { if (it.k === 'plate') drawLokPlateItem(x, y, it.d); else drawLokDirtyItem(x, y); return; } return di0(it, x, y); };
   drawStack = function (x, y, items, baseZ, gap) {
     var hit = false, i; for (i = 0; i < items.length; i++) if (lk(items[i])) { hit = true; break; }
