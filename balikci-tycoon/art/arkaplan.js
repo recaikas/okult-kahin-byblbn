@@ -571,8 +571,8 @@ function chunkStep(k) {
     for (var i = 0; i < CS; i++) {
       var fx = fx0 + i, u = (fx + 0.5) / K, x = (v / 6 + u / 12) / 2, y = (v / 6 - u / 12) / 2;
       if (x < X0 - MG || x > X1 + MG || y < Y0 - MG || y > Y1 + MG) continue;
-      var c = landPix(landD(x, y), fx, fy);
-      if (c) r.setI(i, j, c, PA);
+      var pc = landPix(landD(x, y), fx, fy);   /* (c değil: c parça kaydı; bütçe dolunca c.j yazılır) */
+      if (pc) r.setI(i, j, pc, PA);
     }
   }
   /* süs: oyunun ot noktaları → ot öbeği / çakıl / taş (dünya konumları sabit) */
@@ -675,7 +675,7 @@ HKA.drawLand = function () {
 /* =====================================================================
    YOL (çevre kademesine göre: toprak → çakıl → arnavut kaldırımı + bordür)
    ===================================================================== */
-var RX0 = 10.2, RX1 = 14.6, RY0 = -0.5, RY1 = 24.3;
+var RX0 = 10.2, RX1 = 14.6, RY0 = -0.5, RY1 = 24.3;   /* game.js ROAD_Y1 ile aynı */
 function buildRoad(e) {
   var r = worldRas(RX0, RY0, RX1 + 0.1, RY1, 1, 4);
   var DIRT = [C('#c4a878'), C('#ccb284'), C('#b89d6e')], RUT = C('#9c8259'), RIDGE = C('#d4bb8c');
@@ -683,7 +683,7 @@ function buildRoad(e) {
   var STN = ['#bab3a3', '#aca594', '#c6bfaf', '#a39b89', '#bfb6a0', '#b4ae9f'].map(C), MORT = C('#8b8373'), MOSS = C('#8f9a6a');
   var CURB = C('#d8d2c4'), CURBL = C('#ece6d8'), CURBD = C('#a29a88'), CURBF = C('#8f8778');
   var holes = [];
-  for (var hi = 0; hi < 14; hi++) { var r2 = (hi * 7.31) % 1; holes.push([10.6 + r2 * 3.6, 1 + hi * 1.6, hi % 3 === 0]); }
+  for (var hi = 0; hi < 19; hi++) { var r2 = (hi * 7.31) % 1; holes.push([10.6 + r2 * 3.6, 1 + hi * 1.6, hi % 3 === 0]); }
   var PUD = C('#8fb6be'), PUDL = C('#c8e2e8'), HOLE = C('#8a7250'), HOLER = C('#ad9264');
   eachXY(r, 0, function (x, y, fx, fy) {
     if (y < RY0 || y >= RY1) return null;
