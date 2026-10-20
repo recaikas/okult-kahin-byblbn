@@ -218,14 +218,14 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
     await buyAll('build', 'up');
     await buildSlots();
     await buyAll('build', 'meydan', null, 6);
-    await buyAll('level', null, /Füme Makinesi/, 2);
+    await buyAll('build', 'dev', /Füme Makinesi/, 2);
     await hireZone(1);
   });
   await playDay('gün C');
-  await stage('Seviye 5 — müdürler', 60000, 400, async () => {
+  await stage('Seviye 5 — müdürler', 200000, 400, async () => {
+    await buyAll('area');                                           /* v2.0: Balıkçı Mutfağı (itibar 60) — meydandan önce: v2.18 meydanı (depo bölmeleri, İlan Bürosu) bütçeyi yiyor */
     await buyAll('build', 'meydan', null, 6);
     await hireZone(2);
-    await buyAll('area');                                           /* v2.0: Balıkçı Mutfağı (itibar 60) */
     log('  Mutfak açık mı:', await p.evaluate(() => !BT.areas[3].locked));
     await hireZone(3);
     for (const z of [0, 1, 2, 3]) await hireMgr(z);
@@ -253,7 +253,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
     await buyAll('level', null, UPG, 30);
     await buyAll('build', 'meydan', null, 8);
     await investProject();
-    await buyAll('level', null, /Füme Makinesi/, 2);
+    await buyAll('build', 'dev', /Füme Makinesi/, 2);
     for (const z of [0, 1, 2, 3]) if (!(await p.evaluate(z => BT.mgr(z), z))) { await hireZone(z); await hireMgr(z, true); }
   } catch (e) { if (e.message !== 'INTRO') throw e; log('  (sayaç doldu, gazete açıldı)'); } });
   let c = await chapter();

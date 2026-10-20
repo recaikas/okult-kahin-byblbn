@@ -66,9 +66,9 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
     return BT.BINS.map((bn, i) => { let m = 9, w = ''; C.forEach(c => { const v = Math.hypot(c[0] - bn.x, c[1] - bn.y) - c[2] - Math.sqrt(0.85); if (v < m) { m = v; w = c[3]; } }); return [i, +m.toFixed(2), w]; });
   });
   ok(R.reach.every(r => r[1] >= 0.2), 'kovanın etki alanı bir istasyonunkine giriyor ' + JSON.stringify(R.reach));
-  /* yerleşim kuralı: bölgenin hasırına 2–4 karo, kovalar arası en az 3.5 karo */
+  /* yerleşim kuralı (v2.19-deneme, kovalar köşede): bölgenin hasırına 2–5,5 karo, kovalar arası en az 3.5 karo */
   R.std = await p.evaluate(() => BT.BINS.map((bn, i) => { const m = BT.tables[bn.z].mat; return [+Math.hypot(m.x - bn.x, m.y - bn.y).toFixed(2), +Math.min(...BT.BINS.filter((o, j) => j !== i).map(o => Math.hypot(o.x - bn.x, o.y - bn.y))).toFixed(2)]; }));
-  ok(R.std.every(r => r[0] >= 2 && r[0] <= 4 && r[1] >= 3.5), 'kova yerleşim kuralına uymuyor ' + JSON.stringify(R.std));
+  ok(R.std.every(r => r[0] >= 2 && r[0] <= 5.5 && r[1] >= 3.5), 'kova yerleşim kuralına uymuyor ' + JSON.stringify(R.std));
   await b.close();
   console.log(JSON.stringify({ R, errs }, null, 1));
   console.log(fail.length || errs.length ? 'TRASH_FAIL ' + JSON.stringify(fail) : 'TRASH_OK');
