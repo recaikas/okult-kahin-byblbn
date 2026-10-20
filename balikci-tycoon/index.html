@@ -76,6 +76,15 @@
   .hud{max-width:100vw;overflow:hidden}
   .hud .chip{flex-shrink:1}
 
+  /* v2.18-deneme: İlan Bürosu — HUD rozeti "📣 N gün" + panel satırları */
+  #adChip{position:fixed;left:6px;top:calc(84px + env(safe-area-inset-top,0px));z-index:5;pointer-events:none;
+    background:#3d2410;border:2px solid #160b03;color:#ffd9a0;padding:2px 7px;font-size:11px;white-space:nowrap}
+  #adRows .trow .stp{flex-direction:column;align-items:flex-end;gap:2px;min-width:74px}
+  #adRows .trow .stp small{font-size:9.5px;color:var(--ink2)}
+  #adRows .trow button.pub{min-width:74px;font-size:10.5px;letter-spacing:.5px;padding:0 6px}
+  #adRows .trow button.pub:disabled{opacity:.45;cursor:default}
+  #adRows .trow.live{border-color:var(--gold)}
+  #adRows .trow.lock{opacity:.6}
   #objective{position:fixed;left:50%;transform:translateX(-50%);
     top:calc(46px + env(safe-area-inset-top,0px));z-index:5;pointer-events:none;
     background:rgba(16,36,52,.86);border:2px solid var(--edge);border-top-color:var(--edge2);
@@ -772,6 +781,7 @@
   <button class="btn" id="menuBtn">☰</button>
 </div>
 
+<div id="adChip" class="hidden"></div>
 <div id="objective" class="hidden"><span class="lbl" id="objLbl">HEDEF</span><span id="objText">—</span></div>
 <div id="queueHint" class="hidden"></div>
 <div id="toast"></div>
@@ -1037,6 +1047,15 @@
     <p id="halSub">—</p>
     <div id="halRows"></div>
     <button class="go" id="halClose">KAPAT</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="adScr">
+  <div class="card">
+    <h2 id="adTitle">İLAN BÜROSU</h2>
+    <p id="adSub">—</p>
+    <div id="adRows"></div>
+    <button class="go" id="adClose">KAPAT</button>
   </div>
 </div>
 
