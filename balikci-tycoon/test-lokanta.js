@@ -21,7 +21,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
   const ok = (c, m) => { if (!c) fail.push(m); };
   const page = async (o = {}) => {
     const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
-    await ctx.addInitScript(o => { window.HK_LOK_OFF = 0; window.HK_TARIF_OFF = 0; window.HK_EMEK_OFF = o.emekOff ? 1 : 0; window.HK_INSAAT_OFF = o.insaat ? 0 : 1; window.HK_HELP_OFF = 1; }, o);
+    await ctx.addInitScript(o => { window.HK_LOK_OFF = 0; window.HK_LOK_EVOFF = o.ev ? 0 : 1; window.HK_TARIF_OFF = 0; window.HK_EMEK_OFF = o.emekOff ? 1 : 0; window.HK_INSAAT_OFF = o.insaat ? 0 : 1; window.HK_HELP_OFF = 1; }, o);
     const p = await ctx.newPage();
     p.on('pageerror', e => errs.push('PE: ' + e.message));
     p.on('console', m => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errs.push('C: ' + m.text()); });
@@ -506,8 +506,9 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     p.on('pageerror', e => errs.push('PE10: ' + e.message));
     p.on('console', m => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errs.push('C10: ' + m.text()); });
     await newGame(p); await prep(p);
-    await kit(p, { st: ['tava', 'izgara', 'tencere', 'firin'], menu: ['hamsitava'], lv: 2 });
+    await kit(p, { st: ['tava', 'izgara', 'tencere', 'firin'], menu: ['hamsitava'], lv: 5 });
     await p.evaluate(() => {
+      const L0 = BT.lok; for (let i = 0; i < 4; i++) L0.buy('lok_tb'); ['lok_ter', 'lok_mez', 'lok_saz', 'lok_dol'].forEach(id => L0.buy(id)); L0.q().star = 4; L0.q().res = { st: 'on', n: 12, rec: 'hamsitava', kind: 'dugun', w: 0, due: BT.day.n, got: 2 };
       window.__H = {}; window.HKA = window.HKA || {};
       ['drawLokanta', 'drawLokTable', 'drawLokStation', 'drawLokCrew', 'drawLokFix'].forEach(n => { const old = window.HKA[n]; window.HKA[n] = function (o) { (window.__H[n] = window.__H[n] || []).push(o); return false; }; });
       const L = BT.lok; ['lk_asci', 'lk_garson', 'lk_bulasik', 'lk_sef'].forEach(r => L.hire(r)); L.q().dolap.hamsi = 12; L.R.arr = 0.1;
@@ -524,13 +525,430 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       out.station = f('drawLokStation', o => ['tava', 'izgara', 'tencere', 'firin'].includes(o.id) && 'busy' in o && 'prog' in o && 'wait' in o && 'lv' in o && 'cook' in o);
       out.crew = f('drawLokCrew', o => ['asci', 'garson', 'bulasik', 'sef'].includes(o.role) && o.a && o.outfit && 'lv' in o && 'plates' in o);
       out.fix = H.drawLokFix ? [...new Set(H.drawLokFix.map(o => o.k))].sort().join() : '';
+      const fx = k => (H.drawLokFix || []).filter(o => o.k === k);
+      out.ter = [...new Set(fx('teras').map(o => o.part))].sort().join(); out.rail = fx('teras').filter(o => o.part === 'rail').every(o => o.x1 > o.x0 && typeof o.y === 'number');
+      out.umb = fx('teras').filter(o => o.part === 'umb').length; out.meze = fx('meze').every(o => o.x === 0.8 && typeof o.t === 'number') && fx('meze').length > 0;
+      out.saz = fx('saz').every(o => o.x === 9.5 && 'night' in o && typeof o.t === 'number') && fx('saz').length > 0;
+      out.big = fx('dolap').every(o => o.big === true); out.sign = fx('sign').every(o => o.star === 4 && o.res && o.res.kind === 'dugun' && o.res.got >= 2 && o.res.n === 12);
+      out.tmeze = (H.drawLokTable || []).every(o => o.meze === true); out.deckUp = H.drawLokanta.every(o => o.up && o.up.ter && o.up.mez && o.up.saz && o.up.dol);
       return out;
     });
     ok(h.fine > 1, 'ince mod açık (K>1): ' + h.fine);
     ok(h.drawLokanta > 0 && h.drawLokTable > 0 && h.drawLokStation > 0 && h.drawLokCrew > 0 && h.drawLokFix > 0, 'beş kanca da çağrılır: ' + JSON.stringify(h));
     ok(h.deck && h.table && h.station && h.crew, 'kanca parametreleri: ' + JSON.stringify(h));
-    ok(['board', 'dolap', 'kasa', 'pass', 'sign', 'sink'].every(k => h.fix.split(',').includes(k)), 'drawLokFix türleri: ' + h.fix);
+    ok(['board', 'dolap', 'kasa', 'pass', 'sign', 'sink', 'teras', 'meze', 'saz'].every(k => h.fix.split(',').includes(k)), 'drawLokFix türleri (teras/meze/saz dahil): ' + h.fix);
+    ok(h.ter === 'rail,umb' && h.rail && h.umb >= 1 && h.meze && h.saz && h.big && h.sign && h.tmeze && h.deckUp, 'Aşama 2 kanca parametreleri: ' + JSON.stringify([h.ter, h.rail, h.umb, h.meze, h.saz, h.big, h.sign, h.tmeze, h.deckUp]));
     await ctx.close();
+  }
+
+  /* ===== 12) AŞAMA 2 — olaylar: rezervasyon, Muhtarın sofrası, Gurme Eleştirmen ===== */
+  {
+    const p = await page(); await newGame(p); await prep(p);
+    await kit(p, { st: ['tava', 'izgara', 'tencere', 'firin'], menu: ['hamsitava', 'hamsipilav'], lv: 2 });
+    /* 12a) rezervasyon: kart (Sv≥2, gün başı) → reddet / kabul → ertesi gün teslim sayacı */
+    const a = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(), S = BT.S, out = {};
+      BT.day.n = 10; q.ed = 0; q.rd = 0; q.mu = 9;
+      window.HK_LOK_EVOFF = 0; const r0 = Math.random; Math.random = () => 0.01; L.dayStart(); Math.random = r0;
+      out.card = L.evOpen(); out.paused = BT.paused(); out.res = JSON.parse(JSON.stringify(q.res)); out.ed = q.ed; out.rd = q.rd;
+      out.txt = document.getElementById('lokEvP').textContent; out.title = document.getElementById('lokEvT').textContent;
+      out.btns = [document.getElementById('lokEvYes').textContent, document.getElementById('lokEvNo').textContent];
+      out.inMenu = L.menu().includes(q.res.rec); out.muT = L.R.muT;
+      out.names = L.WED.every(w => w.tr && w.en && /'/.test(w.tr) && /'s$/.test(w.en));
+      const rep0 = S.rep; L.resAnswer(false);
+      out.decl = { res: JSON.stringify(q.res), card: L.evOpen(), paused: BT.paused(), rep: S.rep === rep0 };
+      /* aynı gün ikinci kart yok (q.ed aynı), 3 gün dolmadan yok */
+      q.res = {}; Math.random = () => 0.01; L.dayStart(); Math.random = r0; out.again = L.evOpen();
+      BT.day.n = 12; q.ed = 0; Math.random = () => 0.01; L.dayStart(); Math.random = r0; out.cool = L.evOpen();
+      BT.day.n = 13; q.ed = 0; Math.random = () => 0.9; L.dayStart(); Math.random = r0; out.unlucky = L.evOpen();     /* şans tutmadı */
+      q.lv = 1; BT.day.n = 20; q.ed = 0; q.rd = 0; Math.random = () => 0.01; L.dayStart(); Math.random = r0; out.lv1 = L.evOpen(); q.lv = 2;   /* Sv1: olay yok */
+      window.HK_LOK_EVOFF = 1; BT.day.n = 30; q.ed = 0; q.rd = 0; Math.random = () => 0.01; L.dayStart(); Math.random = r0; out.off = L.evOpen();
+      return out;
+    });
+    ok(a.card && a.paused && a.res.st === 'offer' && a.res.n >= 12 && a.res.n <= 16 && a.res.due === 11 && a.inMenu && a.ed === 10 && a.rd === 10, 'Sv2 gün başı rezervasyon kartı (oyun durur): ' + JSON.stringify(a.res));
+    ok(/Yarın akşam/.test(a.txt) && /(düğünü|nişanı)/.test(a.txt) && new RegExp(a.res.n + ' tabak').test(a.txt) && /KABUL/.test(a.btns[0]) && /REDDET/.test(a.btns[1]) && /rezervasyon/i.test(a.title), 'kart metni TR: ' + a.txt);
+    ok(a.names, 'isim listesi TR/EN tamlayan biçiminde');
+    ok(a.decl.res === '{}' && !a.decl.card && !a.decl.paused && a.decl.rep, 'reddet: kart kapanır, ceza yok: ' + JSON.stringify(a.decl));
+    ok(!a.again && !a.cool && !a.unlucky && !a.lv1 && !a.off, 'aynı gün/3 gün içinde/şanssız/Sv1/HK_LOK_EVOFF: kart yok: ' + JSON.stringify([a.again, a.cool, a.unlucky, a.lv1, a.off]));
+    const b = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(), S = BT.S, out = {};
+      window.HK_LOK_EVOFF = 1; BT.day.n = 40; q.ed = 40; q.res = {}; L.R.muT = 0;
+      out.offer = L.resOffer(); const r = JSON.parse(JSON.stringify(q.res));
+      const rep0 = S.rep; out.acc = L.resAnswer(true); out.on = JSON.parse(JSON.stringify(q.res)); out.rep = S.rep === rep0; out.closed = !L.evOpen();
+      out.today0 = L.resToday(); out.dayEndEarly = (L.dayEnd(), q.res.st);                                          /* kabul günü bitince henüz başarısız sayılmaz */
+      BT.day.n = 41; q.ed = 41; out.today = L.resToday();
+      const f1 = L.flow(), keep = q.res; q.res = {}; const f0 = L.flow(); q.res = keep; out.flowK = f1 / f0;
+      /* tabak sayaç: yanlış yemek / başka gün sayılmaz; doğru yemek sayılır */
+      L.resDeliver({ d: 'levrekbugulama' }); out.wrong = q.res.got;
+      L.resDeliver({ d: q.res.rec }); out.got1 = q.res.got;
+      BT.day.n = 42; L.resDeliver({ d: q.res.rec }); out.otherDay = q.res.got; BT.day.n = 41;
+      return Object.assign(out, { n: r.n, rec: r.rec });
+    });
+    ok(b.offer && b.acc && b.on.st === 'on' && b.on.due === 41 && b.rep && b.closed, 'kabul: yarın için sayaç kurulur: ' + JSON.stringify(b));
+    ok(b.dayEndEarly === 'on' && !b.today0 && b.today, 'teslim günü yarın: kabul günü sonunda başarısız sayılmaz: ' + JSON.stringify([b.dayEndEarly, b.today0, b.today]));
+    ok(Math.abs(b.flowK - 1.3) < 0.02, 'rezervasyon günü misafir akışı ×1,3: ' + b.flowK);
+    ok(b.wrong === 0 && b.got1 === 1 && b.otherDay === 1, 'yalnız bugün ve doğru yemek teslim sayılır: ' + JSON.stringify([b.wrong, b.got1, b.otherDay]));
+    /* gerçek teslim: masaya iDropPlate */
+    const c = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(), out = {}; q.res.got = 0; BT.player.carry.length = 0;
+      let hit = 0; const ids = [];
+      for (let k = 0; k < 14; k++) {                                                    /* eğilim: misafirler o yemeği ister */
+        L.R.grp.length = 0; L.R.board.length = 0; L.R.pass.length = 0; L.R.t.forEach(t => { t.st = 'free'; t.g = null; t.plates = 0; t.dirty = 0; t.pay = []; });
+        const g = L.spawn('aile'); for (let i = 0; i < 160 && !g.ord; i++) BT.emek.step(0.05, 1);
+        if (g.ord) { ids.push(g.ord.rec); if (g.ord.rec === q.res.rec) hit++; }
+      }
+      out.hit = hit; out.n = ids.length;
+      L.R.grp.length = 0; L.R.board.length = 0; L.R.t.forEach(t => { t.st = 'free'; t.g = null; t.plates = 0; });
+      const g = L.spawn('aile'); for (let i = 0; i < 160; i++) BT.emek.step(0.05, 1);
+      g.ord.rec = q.res.rec; g.ord.n = g.n; q.res.got = 0;
+      BT.player.carry.length = 0; BT.player.carry.push({ k: 'plate', f: 'hamsi', d: q.res.rec, tb: g.tb, ord: g.ord });
+      BT.player.x = L.TB[g.tb].sx; BT.player.y = L.TB[g.tb].sy;
+      for (let i = 0; i < 12; i++) BT.emek.step(0.05, 1);
+      out.real = q.res.got; return out;
+    });
+    ok(c.n >= 12 && c.hit >= 8, 'rezervasyon günü siparişler o yemeğe kayar: ' + JSON.stringify(c));
+    ok(c.real === 1, 'masaya teslim edilen tabak sayacı artırır: ' + c.real);
+    const d = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(), S = BT.S, out = {};
+      L.R.grp.length = 0; L.R.t.forEach(t => { t.st = 'free'; t.g = null; });
+      const r = q.res, rew = L.resReward(r), c0 = S.cash, rep0 = S.rep; q.res.got = r.n - 1;
+      L.resDeliver({ d: r.rec });
+      out.win = { cash: S.cash - c0 === rew, rew, rep: S.rep - rep0 === 10, res: JSON.stringify(q.res), toast: document.getElementById('toast').textContent, perPlate: rew / (r.n * L.plateVal(r.rec)) };
+      /* başarısızlık: gün sonunda yetmedi → itibar − */
+      BT.day.n = 50; q.ed = 50; q.res = {}; L.resOffer(); L.resAnswer(true); BT.day.n = 51; q.ed = 51; q.res.got = 3;
+      const rep1 = S.rep; L.dayEnd();
+      out.fail = { rep: S.rep - rep1, res: JSON.stringify(q.res), toast: document.getElementById('toast').textContent };
+      /* kaçırılan gün (yükleme): gün başında başarısız sayılır */
+      BT.day.n = 60; q.ed = 60; q.res = { st: 'on', n: 12, rec: 'hamsitava', kind: 'dugun', w: 0, due: 59, got: 2 }; q.ed = 0; const rep2 = S.rep; L.dayStart(); out.stale = { rep: S.rep - rep2, res: JSON.stringify(q.res) };
+      /* kayıt */
+      BT.day.n = 70; q.ed = 70; q.res = { st: 'on', n: 14, rec: 'hamsipilav', kind: 'nisan', w: 2, due: 71, got: 5 };
+      const sv = JSON.parse(JSON.stringify(BT.buildSave())); out.saved = sv.lok.res;
+      const keep = JSON.parse(JSON.stringify(sv)); BT.lok.X.resetWorld(); BT.loadFrom(keep); out.loaded = JSON.parse(JSON.stringify(L.q().res));
+      const bad = JSON.parse(JSON.stringify(sv)); bad.lok.res = { st: 'on', rec: 'nope', n: 5, due: 3 }; BT.lok.X.resetWorld(); BT.loadFrom(bad); out.bad = JSON.stringify(L.q().res);
+      const bad2 = JSON.parse(JSON.stringify(sv)); bad2.lok.res = 'x'; BT.lok.X.resetWorld(); BT.loadFrom(bad2); out.bad2 = JSON.stringify(L.q().res);
+      const bad3 = JSON.parse(JSON.stringify(sv)); bad3.lok.res = { st: 'on', rec: 'hamsitava', n: 'çok', due: -5, got: 9999, kind: 'x', w: 99 }; BT.lok.X.resetWorld(); BT.loadFrom(bad3); out.bad3 = JSON.parse(JSON.stringify(L.q().res));
+      return out;
+    });
+    ok(d.win.cash && d.win.rep && d.win.res === '{}' && /harika/.test(d.win.toast) && d.win.perPlate > 0.85 && d.win.perPlate < 0.95, 'tamamlanınca ödül + itibar +10: ' + JSON.stringify(d.win));
+    ok(d.fail.rep === -8 && d.fail.res === '{}' && /yetişti/.test(d.fail.toast), 'yetişmezse itibar −8: ' + JSON.stringify(d.fail));
+    ok(d.stale.rep === -8 && d.stale.res === '{}', 'kaçırılan gün başarısız sayılır: ' + JSON.stringify(d.stale));
+    ok(d.saved.st === 'on' && d.saved.n === 14 && d.saved.got === 5 && d.saved.due === 71 && d.loaded.rec === 'hamsipilav' && d.loaded.got === 5 && d.loaded.kind === 'nisan' && d.loaded.due === 71, 'rezervasyon kaydı/yüklemesi: ' + JSON.stringify([d.saved, d.loaded]));
+    ok(d.bad === '{}' && d.bad2 === '{}' && d.bad3.st === 'on' && d.bad3.n >= 1 && d.bad3.got <= 99 && d.bad3.kind === 'dugun' && d.bad3.w <= 7 && d.bad3.due >= 1, 'bozuk rezervasyon güvenle düzeltilir: ' + JSON.stringify([d.bad, d.bad2, d.bad3]));
+    /* EN kart + tabela sayacı */
+    const e = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(); BT.setLang('en'); BT.day.n = 80; q.ed = 80; q.res = {}; q.rd = 0; L.resOffer();
+      const o = { txt: document.getElementById('lokEvP').textContent, title: document.getElementById('lokEvT').textContent, b: [document.getElementById('lokEvYes').textContent, document.getElementById('lokEvNo').textContent] };
+      L.resAnswer(true); o.on = document.getElementById('toast').textContent;
+      BT.day.n = 81; q.ed = 81; q.res.got = 3; const got = []; const stub = f => got.push(f); L.push(stub); o.pushed = got.length;
+      BT.setLang('tr'); q.res = {}; return o;
+    });
+    ok(/Tomorrow evening/.test(e.txt) && /(wedding|engagement party)/.test(e.txt) && /plates of/.test(e.txt) && e.b[0] === 'ACCEPT' && e.b[1] === 'DECLINE' && /booking/i.test(e.title) && /Booking accepted/.test(e.on), 'rezervasyon kartı EN: ' + JSON.stringify(e));
+    await p.close();
+  }
+
+  {
+    /* 12b) Muhtarın sofrası: haftada bir, 6 kişi, iki komşu masa birleşir; hızlı servis → itibar */
+    const p = await page(); await newGame(p); await prep(p);
+    await kit(p, { st: ['tava', 'izgara', 'tencere', 'firin'], menu: ['hamsitava', 'hamsipilav'], lv: 2 });
+    const m = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(), S = BT.S, out = {};
+      L.buy('lok_tb'); L.buy('lok_tb');                                                    /* 6 masa */
+      out.keys = Object.keys(L.G).join(); out.g6 = L.G.muhtar && L.G.muhtar.n; out.tb = L.tbl();
+      /* haftada bir */
+      window.HK_LOK_EVOFF = 0; const r0 = Math.random; Math.random = () => 0.99; BT.day.n = 20;
+      q.mu = 17; q.ed = 0; L.dayStart(); out.t3 = L.R.muT;
+      q.mu = 13; q.ed = 0; L.dayStart(); out.t7 = L.R.muT; Math.random = r0; window.HK_LOK_EVOFF = 1;
+      /* iki komşu masa yok */
+      L.trt(1).st = 'seat'; L.trt(2).st = 'seat'; L.trt(4).st = 'seat'; out.noPair = L.freePair() === null; L.trt(1).st = 'free'; L.trt(2).st = 'free'; L.trt(4).st = 'free';
+      const pr = L.freePair(); out.pair = pr ? [pr.a.i, pr.b.i] : null;
+      L.R.t.forEach(t => { t.st = 'free'; t.g = null; t.plates = 0; t.dirty = 0; t.pay = []; });
+      L.R.arr = 1e9; L.R.grp.length = 0;
+      q.mu = 0; const g = L.muhtarCome(); out.type = g && g.type; out.n = g && g.n; out.mu = q.mu; out.dup = L.muhtarCome() === null;
+      out.name = g && L.MUH[g.nm].tr; out.toast = document.getElementById('toast').textContent;
+      for (let i = 0; i < 500 && g.st !== 'wait'; i++) BT.emek.step(0.05, 1);
+      out.st = g.st; out.tb = g.tb; out.tb2 = g.tb2; out.b = L.trt(g.tb2).st; out.a = L.trt(g.tb).st; out.ordN = g.ord && g.ord.n;
+      const seats = []; for (let k = 0; k < 6; k++) { const s = L.gSeat(g, k); seats.push(s.x.toFixed(2) + ',' + s.y.toFixed(2)); }
+      out.seatsUniq = new Set(seats).size; out.adj = Math.abs(g.tb - g.tb2) === 1 && Math.floor(g.tb / 4) === Math.floor(g.tb2 / 4);
+      out.sitting = g.mem.every(mm => mm.sit);
+      /* hızlı servis */
+      const t = L.trt(g.tb), ord = g.ord, rep0 = S.rep; t.plates = 5; ord.deliv = 5;
+      BT.player.carry.length = 0; BT.player.carry.push({ k: 'plate', f: 'hamsi', d: ord.rec, tb: g.tb, ord });
+      BT.player.x = L.TB[g.tb].sx; BT.player.y = L.TB[g.tb].sy;
+      for (let i = 0; i < 10; i++) BT.emek.step(0.05, 1);
+      out.eat = g.st; out.fast = g.fast; out.repFast = S.rep - rep0; out.toastFast = document.getElementById('toast').textContent;
+      BT.player.x = 0.5; BT.player.y = 2; for (let i = 0; i < 20 * 16; i++) BT.emek.step(0.05, 1);
+      out.paid = !!g.paid; out.bFree = L.trt(g.tb2).st === 'free'; out.dirty = L.trt(g.tb).dirty; out.pay = L.trt(g.tb).pay.reduce((s, x) => s + x.v, 0) > 0;
+      return out;
+    });
+    ok(m.keys === 'aile,turist,kahve,is' && m.g6 === 6, 'Muhtar grubu rastgele akışta değil, 6 kişi: ' + JSON.stringify([m.keys, m.g6, m.tb]));
+    ok(m.t3 === 0 && m.t7 > 0, 'haftada bir: 3 gün sonra yok, 7 gün sonra zamanlanır: ' + JSON.stringify([m.t3, m.t7]));
+    ok(m.noPair && m.pair && m.pair[1] === m.pair[0] + 1, 'iki komşu boş masa aranır: ' + JSON.stringify([m.noPair, m.pair]));
+    ok(m.type === 'muhtar' && m.n === 6 && m.mu > 0 && m.dup && /Muhtar/.test(m.name) && /geliyor/.test(m.toast), 'Muhtar gelir (tekrar yok), isim listeden: ' + JSON.stringify([m.type, m.name, m.toast]));
+    ok(m.st === 'wait' && m.tb2 !== null && m.b === 'held' && m.a === 'seat' && m.ordN === 6 && m.seatsUniq === 6 && m.adj && m.sitting, '6 kişi iki komşu masaya oturur, 6 farklı koltuk: ' + JSON.stringify([m.st, m.tb, m.tb2, m.b, m.seatsUniq, m.adj, m.sitting]));
+    ok(m.eat === 'eat' && m.fast === true && m.repFast === 6 && /memnun/.test(m.toastFast), 'hızlı servis: popülerlik +6: ' + JSON.stringify([m.eat, m.fast, m.repFast, m.toastFast]));
+    ok(m.paid && m.bFree && m.dirty === 6 && m.pay, 'yemek bitince ikinci masa boşalır, ilk masada 6 kirli tabak + ödeme: ' + JSON.stringify([m.paid, m.bFree, m.dirty, m.pay]));
+    const m2 = await p.evaluate(() => {
+      const L = BT.lok, S = BT.S, out = {};
+      L.R.grp.length = 0; L.R.board.length = 0; L.R.pass.length = 0; L.R.t.forEach(t => { t.st = 'free'; t.g = null; t.plates = 0; t.dirty = 0; t.pay = []; });
+      const g = L.muhtarCome(); for (let i = 0; i < 500 && g.st !== 'wait'; i++) BT.emek.step(0.05, 1);
+      const t = L.trt(g.tb), ord = g.ord, rep0 = S.rep; g.t0 -= g.patMax;                      /* uzun beklendi */
+      t.plates = 5; ord.deliv = 5; BT.player.carry.length = 0; BT.player.carry.push({ k: 'plate', f: 'hamsi', d: ord.rec, tb: g.tb, ord });
+      BT.player.x = L.TB[g.tb].sx; BT.player.y = L.TB[g.tb].sy;
+      for (let i = 0; i < 10; i++) BT.emek.step(0.05, 1);
+      out.slow = { st: g.st, fast: g.fast, rep: S.rep - rep0 };
+      /* masalar doluyken kuyrukta bekler, boşalınca oturur */
+      L.R.grp.length = 0; L.R.t.forEach(t2 => { t2.st = 'free'; t2.g = null; t2.dirty = 0; t2.pay = []; }); [1, 2, 4].forEach(i => { L.trt(i).st = 'dirty'; L.trt(i).dirty = 1; });
+      const g2 = L.muhtarCome(); for (let i = 0; i < 300; i++) BT.emek.step(0.05, 1);
+      out.queued = g2.st; L.trt(1).st = 'free'; L.trt(1).dirty = 0; BT.player.x = 0.5; BT.player.y = 2; for (let i = 0; i < 60; i++) BT.emek.step(0.05, 1);
+      out.seated = [g2.st, g2.tb, g2.tb2];
+      return out;
+    });
+    ok(m2.slow.st === 'eat' && m2.slow.fast === false && m2.slow.rep === 2, 'yavaş servis: küçük bonus (+2): ' + JSON.stringify(m2.slow));
+    ok(m2.queued === 'queue' && (m2.seated[0] === 'seat' || m2.seated[0] === 'wait') && m2.seated[2] !== null, 'boş çift yokken kuyrukta bekler, çift boşalınca oturur: ' + JSON.stringify([m2.queued, m2.seated]));
+    await p.close();
+  }
+
+  {
+    /* 12c) Gurme Eleştirmen: bekleme + tarif çarpanı + masa temizliği → 1–5 yıldız; tabela, akış ±%10, toast, başarım */
+    const p = await page(); await newGame(p); await prep(p);
+    await kit(p, { st: ['tava', 'izgara', 'tencere', 'firin'], menu: ['hamsitava', 'hamsipilav', 'levrekbugulama'], lv: 3 });
+    const e = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(), S = BT.S, out = {}, R0 = Math.random;
+      out.keys = Object.keys(L.G).join();
+      const st = (serve, rec, dm) => L.criticStars({ serve, patMax: 70, ord: { rec }, dm });
+      out.stars = [st(1, 'hamsipilav', 0), st(25, 'hamsitava', 0), st(40, 'hamsipilav', 5), st(50, 'hamsitava', 3), st(30, 'hamsitava', 1), L.criticStars({ serve: 1, patMax: 70, ord: null, dm: 0 })];
+      /* masa temizliği: kirli masa sayısı */
+      L.trt(0).dirty = 2; L.trt(1).dirty = 1; out.dirtyN = [L.dirtyN(), L.dirtyN(0)]; L.trt(0).dirty = 0; L.trt(1).dirty = 0;
+      /* gün başı: Sv≥3 + şans → zamanlanır; Sv2'de değil */
+      window.HK_LOK_EVOFF = 0; BT.day.n = 30; q.ed = 0; q.mu = 29; q.rd = 29; Math.random = () => 0.01; L.dayStart(); out.crT3 = L.R.crT;
+      q.lv = 2; q.ed = 0; L.dayStart(); out.crT2 = L.R.crT; q.lv = 3; Math.random = () => 0.9; q.ed = 0; L.dayStart(); out.crTno = L.R.crT; Math.random = R0; window.HK_LOK_EVOFF = 1;
+      /* gerçek ziyaret: temiz salon + hızlı servis + pahalı yemek → 5 yıldız */
+      L.R.grp.length = 0; L.R.board.length = 0; L.R.t.forEach(t => { t.st = 'free'; t.g = null; t.plates = 0; t.dirty = 0; t.pay = []; });
+      q.star = 0; q.gs = 0; L.R.arr = 1e9;
+      const g = L.criticCome(); out.type = g && g.type; out.n = g && g.n; out.name = L.CRIT[g.nm].tr; out.dup = L.criticCome() === null; out.cToast = document.getElementById('toast').textContent;
+      for (let i = 0; i < 400 && g.st !== 'wait'; i++) BT.emek.step(0.05, 1);
+      const t = L.trt(g.tb), ord = g.ord; ord.rec = 'hamsipilav'; t.plates = g.n - 1; ord.deliv = g.n - 1;
+      BT.player.carry.length = 0; BT.player.carry.push({ k: 'plate', f: 'hamsi', d: 'hamsipilav', tb: g.tb, ord });
+      BT.player.x = L.TB[g.tb].sx; BT.player.y = L.TB[g.tb].sy;
+      const rep0 = S.rep;
+      for (let i = 0; i < 20 * 18; i++) BT.emek.step(0.05, 1);
+      out.rated = g.rated; out.star = q.star; out.gs = q.gs; out.rep = S.rep - rep0; out.toast = document.getElementById('toast').textContent; out.deck = L.deck().star;
+      const f5 = L.flow(); q.star = 3; const f3 = L.flow(); q.star = 1; const f1 = L.flow(); q.star = 5; out.flow = [f5 / f3, f1 / f3];
+      BT.achMute(false); BT.achCheck(); out.ach = BT.ach().includes('lk_gurme'); BT.achMute(true);
+      return out;
+    });
+    ok(e.keys === 'aile,turist,kahve,is', 'Eleştirmen rastgele akışta değil: ' + e.keys);
+    ok(e.stars.join() === '5,4,3,1,2,1', 'yıldız formülü (bekleme+çarpan+temizlik): ' + e.stars.join());
+    ok(e.dirtyN.join() === '2,1', 'kirli masa sayısı: ' + e.dirtyN.join());
+    ok(e.crT3 > 0 && e.crT2 === 0 && e.crTno === 0, 'Eleştirmen yalnız Sv≥3 ve şansla gelir: ' + JSON.stringify([e.crT3, e.crT2, e.crTno]));
+    ok(e.type === 'elestirmen' && e.n === 1 && e.dup && /Hanım|Bey/.test(e.name) && /Gurme Eleştirmen/.test(e.cToast), 'Eleştirmen gelir (tekrar yok): ' + JSON.stringify([e.type, e.name, e.cToast]));
+    ok(e.rated === 5 && e.star === 5 && e.gs === 5 && /5\/5/.test(e.toast) && /★★★★★/.test(e.toast) && e.rep >= 6 && e.deck === 5, '5 yıldız: tabela, toast, itibar: ' + JSON.stringify([e.rated, e.star, e.toast, e.rep, e.deck]));
+    ok(Math.abs(e.flow[0] - 1.1) < 0.01 && Math.abs(e.flow[1] - 0.9) < 0.01, 'lokFlow yıldızla ±%10: ' + JSON.stringify(e.flow));
+    ok(e.ach, 'başarım "Gurmenin Gözdesi" açıldı');
+    const f = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(), S = BT.S, out = {};
+      /* kötü ziyaret: kirli salon + yavaş servis + sabır taşar → 1 yıldız; itibar düşer */
+      L.R.grp.length = 0; L.R.board.length = 0; L.R.pass.length = 0; L.R.t.forEach(t => { t.st = 'free'; t.g = null; t.plates = 0; t.dirty = 0; t.pay = []; });
+      const g = L.criticCome(); for (let i = 0; i < 400 && g.st !== 'wait'; i++) BT.emek.step(0.05, 1);
+      const rep0 = S.rep; g.pat = 0.02; for (let i = 0; i < 10; i++) BT.emek.step(0.05, 1);
+      out.angry = g.angry; out.rated = g.rated; out.star = q.star; out.rep = S.rep - rep0; out.toast = document.getElementById('toast').textContent; out.gs = q.gs;
+      /* kayıt */
+      q.star = 4; q.gs = 5; q.mu = 33; q.ed = 44;
+      const sv = JSON.parse(JSON.stringify(BT.buildSave())); out.saved = [sv.lok.star, sv.lok.gs, sv.lok.mu, sv.lok.ed];
+      BT.lok.X.resetWorld(); BT.loadFrom(JSON.parse(JSON.stringify(sv))); const q2 = L.q(); out.loaded = [q2.star, q2.gs, q2.mu, q2.ed];
+      const bad = JSON.parse(JSON.stringify(sv)); bad.lok.star = 99; bad.lok.gs = 'x'; bad.lok.mu = -3; BT.lok.X.resetWorld(); BT.loadFrom(bad); out.bad = [L.q().star, L.q().gs, L.q().mu];
+      return out;
+    });
+    ok(f.angry === true && f.rated === 1 && f.star === 1 && f.rep < 0 && f.gs === 5, 'sabır taşan eleştirmen 1 yıldız verir, itibar düşer: ' + JSON.stringify(f));
+    ok(f.saved.join() === '4,5,33,44' && f.loaded.join() === '4,5,33,44' && f.bad[0] === 5 && f.bad[1] === 0 && f.bad[2] === 0, 'yıldız / en iyi puan / Muhtar günü kaydı: ' + JSON.stringify([f.saved, f.loaded, f.bad]));
+    await p.close();
+  }
+
+  /* ===== 13) AŞAMA 2 — yükseltmeler: teras, meze vitrini, saz köşesi, soğuk dolap 24 ===== */
+  {
+    const p = await page(); await newGame(p); await prep(p);
+    await kit(p, { st: ['tava'], menu: ['hamsitava'], lv: 2 });
+    const u0 = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(), S = BT.S, out = {};
+      out.keys = L.UPK.join(); out.cap0 = L.cap(); out.pm0 = L.patMul();
+      out.whyLv = [L.why('lok_ter'), L.why('lok_saz'), L.why('lok_mez'), L.why('lok_dol')];                      /* Sv2: teras Sv3, saz Sv5 */
+      const c0 = S.cash; L.buy('lok_ter'); out.refused = S.cash === c0 && !L.upOn('ter');
+      out.costs = ['lok_ter', 'lok_mez', 'lok_saz', 'lok_dol'].map(id => L.cost(id));
+      out.panel = (L.openPanel(), document.getElementById('lokRows').innerText.replace(/\s+/g, ' ')); L.closePanel();
+      L.buy('lok_lv'); out.whyLv3 = [L.why('lok_ter'), L.why('lok_saz')]; L.buy('lok_lv'); L.buy('lok_lv'); out.whyLv5 = [L.why('lok_ter'), L.why('lok_saz')];
+      return out;
+    });
+    ok(u0.keys === 'ter,mez,saz,dol' && u0.cap0 === 12 && u0.pm0 === 1, 'başlangıç: dolap 12, sabır ×1: ' + JSON.stringify(u0).slice(0, 200));
+    ok(u0.whyLv.join() === 'lv,lv,,' && u0.refused, 'Sv2: teras (Sv3) ve saz (Sv5) kilitli, meze/dolap serbest: ' + u0.whyLv.join());
+    ok(u0.whyLv3.join() === ',lv' && u0.whyLv5.join() === ',', 'teras Sv3\'te, saz Sv5\'te açılır: ' + JSON.stringify([u0.whyLv3, u0.whyLv5]));
+    ok(u0.costs.every(c => c > 0) && u0.costs[2] > u0.costs[0] && u0.costs[0] > u0.costs[1], 'bedeller Emekçi ölçeğinde: ' + u0.costs.join());
+    ok(/GELİŞTİRMELER/.test(u0.panel) && /Teras/.test(u0.panel) && /Meze Vitrini/.test(u0.panel) && /Saz Köşesi/.test(u0.panel) && /Büyük Soğuk Dolap/.test(u0.panel) && /OLAYLAR/.test(u0.panel) && /Muhtarın sofrası/.test(u0.panel) && /Gurme Eleştirmen/.test(u0.panel) && /Önce Lokanta Sv 3/.test(u0.panel), 'LOKANTA paneli yükseltme + olay bölümleri: ' + u0.panel.slice(0, 240));
+    /* etkiler (Sv5, 12 masa) */
+    const u1 = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(), S = BT.S, out = {}, R0 = Math.random;
+      for (let i = 0; i < 4; i++) L.buy('lok_tb'); out.tbN = L.tbl();
+      const measure = () => {
+        L.R.grp.length = 0; L.R.board.length = 0; L.R.pass.length = 0; L.R.t.forEach(t => { t.st = 'free'; t.g = null; t.plates = 0; t.dirty = 0; t.pay = []; });
+        BT.player.carry.length = 0; L.R.arr = 1e9;
+        const g = L.spawn('aile'); for (let i = 0; i < 160 && !(g.ord && g.st === 'wait'); i++) BT.emek.step(0.05, 1);
+        const t = L.trt(g.tb); g.ord.rec = 'hamsitava'; t.plates = g.n; Math.random = () => 0.5; L.startEat(t); Math.random = R0; g.serve = 0;
+        const eat = g.eatMax; L.payOut(t);
+        return { eat, pay: t.pay.reduce((a, m) => a + m.v, 0), patMax: g.patMax };
+      };
+      out.base = measure();
+      L.buy('lok_ter'); out.ter = { on: L.upOn('ter'), pm: L.patMul(), m: measure() };
+      L.buy('lok_mez'); out.mez = { on: L.upOn('mez'), m: measure() };
+      L.buy('lok_saz'); out.saz = { on: L.upOn('saz'), m: measure() };
+      L.buy('lok_dol'); out.dol = { on: L.upOn('dol'), cap: L.cap(), dl: q.dl, why: L.why('lok_dol') };
+      out.max = ['lok_ter', 'lok_mez', 'lok_saz'].map(id => L.why(id));
+      out.room0 = L.room('hamsi'); q.dolap = {}; out.room1 = L.room('hamsi'); L.putDolap('hamsi', 20); out.dolapN = L.dolapN();
+      out.save = JSON.parse(JSON.stringify(BT.buildSave().lok));
+      return out;
+    });
+    const near = (a, b, t) => Math.abs(a - b) <= (t || 2);
+    ok(u1.tbN === 12, '12 masa kuruldu: ' + u1.tbN);
+    ok(u1.ter.on && u1.ter.pm === 1.15 && Math.abs(u1.ter.m.patMax / u1.base.patMax - 1.15) < 0.001, 'teras: yeni gelen grubun sabrı +%15: ' + JSON.stringify([u1.base.patMax, u1.ter.m.patMax]));
+    ok(u1.ter.m.pay === u1.base.pay && u1.ter.m.eat === u1.base.eat, 'teras ödeme/oturuşu değiştirmez');
+    ok(u1.mez.on && near(u1.mez.m.pay, u1.base.pay * 1.1, 3) && u1.mez.m.eat === u1.base.eat, 'meze vitrini: ödeme +%10: ' + JSON.stringify([u1.base.pay, u1.mez.m.pay]));
+    ok(u1.saz.on && near(u1.saz.m.pay, u1.mez.m.pay * 1.25, 4) && Math.abs(u1.saz.m.eat / u1.mez.m.eat - 1.15) < 0.001, 'saz köşesi: harcama +%25, oturuş ×1,15 (masa dönüşü −%15): ' + JSON.stringify([u1.mez.m, u1.saz.m]));
+    ok(u1.dol.on && u1.dol.cap === 24 && u1.dol.dl === 1 && u1.dol.why === 'max' && u1.max.join() === 'max,max,max', 'soğuk dolap 12 → 24, hepsi tek sefer: ' + JSON.stringify([u1.dol, u1.max]));
+    ok(u1.room1 > u1.room0 && u1.dolapN === 20, 'büyük dolap daha çok fileto alır: ' + JSON.stringify([u1.room0, u1.room1, u1.dolapN]));
+    ok(u1.save.up && u1.save.up.ter === 1 && u1.save.up.mez === 1 && u1.save.up.saz === 1 && u1.save.dl === 1, 'kayıt: S.lok.up + dl: ' + JSON.stringify([u1.save.up, u1.save.dl]));
+    /* saz sesi: oturan müşteri + oyuncu yakınken arada çalar; uzakken çalmaz */
+    const sz = await p.evaluate(() => {
+      const L = BT.lok, out = {}; L.R.grp.length = 0; L.R.board.length = 0; L.R.t.forEach(t => { t.st = 'free'; t.g = null; t.plates = 0; t.dirty = 0; t.pay = []; });
+      const g = L.spawn('aile'); for (let i = 0; i < 160 && g.st !== 'wait'; i++) BT.emek.step(0.05, 1);
+      BT.player.x = 8.5; BT.player.y = 27.0; const n0 = L.sazN(); L.R.sazT = 0; BT.emek.step(0.05, 1); out.near = L.sazN() - n0;
+      BT.player.x = 0.5; BT.player.y = 2; L.R.sazT = 0; BT.emek.step(0.05, 1); out.far = L.sazN() - n0 - out.near;
+      out.next = L.R.sazT > 20;
+      return out;
+    });
+    ok(sz.near === 1 && sz.far === 0 && sz.next, 'saz sesi: yakınken bir kez, aralıklı: ' + JSON.stringify(sz));
+    /* yükleme: yükseltmeler korunur; eski kayıtta yok → hepsi kapalı */
+    const ld = await p.evaluate(() => {
+      const L = BT.lok, out = {}; const sv = JSON.parse(JSON.stringify(BT.buildSave()));
+      BT.lok.X.resetWorld(); BT.loadFrom(JSON.parse(JSON.stringify(sv)));
+      out.ok = [L.upOn('ter'), L.upOn('mez'), L.upOn('saz'), L.upOn('dol'), L.cap(), L.patMul()];
+      const old = JSON.parse(JSON.stringify(sv)); delete old.lok.up; delete old.lok.dl; delete old.lok.mu; delete old.lok.gs; delete old.lok.ed; delete old.lok.rd; delete old.lok.res;
+      BT.lok.X.resetWorld(); const r = BT.loadFrom(old);
+      out.old = [r, L.upOn('ter'), L.upOn('mez'), L.upOn('saz'), L.upOn('dol'), L.cap(), L.patMul(), JSON.stringify(L.q().res), L.q().mu];
+      const bad = JSON.parse(JSON.stringify(sv)); bad.lok.up = 'x'; bad.lok.dl = 7; BT.lok.X.resetWorld(); BT.loadFrom(bad);
+      out.bad = [L.upOn('ter'), L.upOn('mez'), L.upOn('saz'), L.cap()];
+      return out;
+    });
+    ok(ld.ok.join() === 'true,true,true,true,24,1.15', 'yükleme: yükseltmeler korunur: ' + ld.ok.join());
+    ok(ld.old.join() === 'true,false,false,false,false,12,1,{},0', 'eski kayıt (up/dl/res yok): yükseltme yok, dolap 12: ' + ld.old.join());
+    ok(ld.bad.join() === 'false,false,false,24', 'bozuk up/dl güvenle düzeltilir: ' + ld.bad.join());
+    await p.close();
+
+    /* inşaat kuralı: yükseltmeler L gün (1. seviye = 1 gün); biten gün başında devreye girer; kayıtta korunur */
+    const p2 = await page(); await newGame(p2); await prep(p2);
+    await kit(p2, { st: ['tava'], menu: ['hamsitava'], lv: 3 });
+    const i0 = await p2.evaluate(() => {
+      const L = BT.lok, S = BT.S, out = {}; window.HK_INSAAT_OFF = 0;
+      const c0 = S.cash; L.buy('lok_ter'); L.buy('lok_dol'); L.buy('lok_mez');
+      out.paid = c0 - S.cash > 0; out.ins = JSON.parse(JSON.stringify(S.insaat));
+      out.on = [L.upOn('ter'), L.upOn('dol'), L.upOn('mez')]; out.cap = L.cap(); out.pm = L.patMul();
+      out.why = L.why('lok_ter'); const c1 = S.cash; L.buy('lok_ter'); out.dup = S.cash === c1;
+      out.scaf = BT.lok.X.beginNextDay ? 1 : 0;
+      const sv = JSON.parse(JSON.stringify(BT.buildSave())); out.saved = Object.keys(sv.insaat || {}).sort().join();
+      BT.lok.X.resetWorld(); BT.loadFrom(JSON.parse(JSON.stringify(sv))); out.loadedIns = Object.keys(BT.S.insaat || {}).sort().join();
+      out.names = ['lok_ter', 'lok_mez', 'lok_saz', 'lok_dol'].map(id => BT.lok.UP[id.slice(4)].n.tr).join();
+      return out;
+    });
+    ok(i0.paid && i0.ins.lok_ter && i0.ins.lok_ter.lv === 1 && i0.ins.lok_ter.left === 1 && i0.ins.lok_dol.left === 1 && i0.ins.lok_mez.left === 1, 'yükseltme inşaata girer (1. seviye = 1 gün): ' + JSON.stringify(i0.ins));
+    ok(i0.on.join() === 'false,false,false' && i0.cap === 12 && i0.pm === 1 && i0.why === 'busy' && i0.dup, 'inşaat sürerken etkisi yok, ikinci alım engelli: ' + JSON.stringify(i0));
+    ok(i0.saved === 'lok_dol,lok_mez,lok_ter' && i0.loadedIns === i0.saved, 'inşaat kaydı korunur: ' + JSON.stringify([i0.saved, i0.loadedIns]));
+    await nextDay(p2);
+    const i1 = await p2.evaluate(() => { const L = BT.lok; return { on: [L.upOn('ter'), L.upOn('dol'), L.upOn('mez')], cap: L.cap(), pm: L.patMul(), ins: Object.keys(BT.S.insaat || {}).join(), toast: document.getElementById('toast').textContent }; });
+    ok(i1.on.join() === 'true,true,true' && i1.cap === 24 && i1.pm === 1.15 && !i1.ins, 'ertesi gün başında yükseltmeler devreye girer: ' + JSON.stringify(i1));
+    await p2.close();
+  }
+
+  /* ===== 14) AŞAMA 2 — Balık Büfesi adı, menünün lokantaya taşınması, eski kayıt ===== */
+  {
+    const p = await page(); await newGame(p); await prep(p);
+    await kit(p, { st: ['tava', 'izgara', 'tencere', 'firin'], menu: ['hamsitava'], lv: 3 });
+    const n = await p.evaluate(() => {
+      const d = BT.SERV.find(x => x.id === 'restoran'), out = { id: d.id, tr: d.n.tr, en: d.n.en };
+      BT.lok.X.openBar('serv'); const cardTr = BT.lok.X.barList().filter(c => /svrestoran|restoran/.test(c.id || '')).map(c => c.t + '|' + (c.s || '')).join(' ## ');
+      BT.setLang('en'); const cardEn = BT.lok.X.barList().filter(c => /svrestoran|restoran/.test(c.id || '')).map(c => c.t + '|' + (c.s || '')).join(' ## '); BT.setLang('tr');
+      out.cardTr = cardTr; out.cardEn = cardEn; return out;
+    });
+    ok(n.id === 'restoran' && n.tr === 'Balık Büfesi' && n.en === 'Fish Buffet', 'BİNA girdisi: id aynı, adı Balık Büfesi / Fish Buffet: ' + JSON.stringify(n));
+    ok(/Balık Büfesi/.test(n.cardTr) && !/Menü:/.test(n.cardTr) && /Fish Buffet/.test(n.cardEn) && !/Menu:/.test(n.cardEn), 'BİNA kartı TR/EN ve menü satırı yok: ' + n.cardTr + ' || ' + n.cardEn);
+    const t = await p.evaluate(() => {
+      const out = {}, q = BT.tarif.q();
+      q.known.push('hamsitava'); q.kiler.misirunu = 9; BT.lok.q().menu.fill(null); BT.lok.menuAdd('hamsitava');
+      out.menu = BT.tarif.menu().map(r => r.id).join(); out.pick = BT.tarif.pick('hamsi');
+      out.unlockedLok = BT.tarif.unlocked(); window.HK_LOK_OFF = 1; out.lokOff = BT.lok.open(); out.unlockedOff = BT.tarif.unlocked(); out.menuOff = BT.tarif.menu().length;
+      window.HK_INSAAT_OFF = 1; BT.S.cash = 9e6; BT.servBuild('restoran', 'p1'); BT.tarif.open('menu'); out.infoOff = document.querySelector('#tfBody').innerText.replace(/\s+/g, ' '); BT.tarif.close();
+      /* büfe (restoran) kurulunca da açılır */
+      out.unlockedBufe = BT.tarif.unlocked();
+      window.HK_LOK_OFF = 0; BT.tarif.open('menu'); out.infoOn = document.querySelector('#tfBody').innerText.replace(/\s+/g, ' ').slice(0, 200); out.tab = document.querySelector('#tfTabs .tab[data-tt="menu"]').innerText.replace(/\s+/g, ' '); BT.tarif.close();
+      BT.setLang('en'); BT.tarif.open('menu'); out.infoEn = document.querySelector('#tfBody').innerText.replace(/\s+/g, ' ').slice(0, 160); BT.tarif.close();
+      window.HK_LOK_OFF = 1; BT.tarif.open('menu'); out.infoOffEn = document.querySelector('#tfBody').innerText.replace(/\s+/g, ' ').slice(0, 200); BT.tarif.close(); window.HK_LOK_OFF = 0; BT.setLang('tr');
+      return out;
+    });
+    ok(t.menu === 'hamsitava' && t.pick === null, 'defter menüsü = lokanta menüsü; büfe tarif uygulamaz: ' + JSON.stringify([t.menu, t.pick]));
+    ok(t.unlockedLok && t.lokOff === false && t.unlockedOff === false && t.menuOff === 0 && t.unlockedBufe, 'Tarif Defteri koşulu: büfe ya da lokanta: ' + JSON.stringify([t.unlockedLok, t.unlockedOff, t.unlockedBufe]));
+    ok(/Menü Sahil Lokantası'nda/.test(t.infoOff) && !/Yer 1/.test(t.infoOff), 'lokanta yokken MENÜ sekmesi bilgisi (TR): ' + t.infoOff.slice(0, 120));
+    ok(/Sahil Lokantası'nın menüsü/.test(t.infoOn) && /MENÜ 1\/3/.test(t.tab), 'lokanta açıkken MENÜ = lokanta menüsü: ' + t.infoOn.slice(0, 100) + ' | ' + t.tab);
+    ok(/Seaside Restaurant's menu/.test(t.infoEn) && /menu lives in the Seaside Restaurant/.test(t.infoOffEn) && !/[ğışçöüİ]/.test(t.infoOffEn), 'MENÜ sekmesi EN: ' + t.infoEn + ' | ' + t.infoOffEn);
+    /* eski kayıt: S.tarif.menu doluysa istasyonu kurulu olanlar lokanta menüsüne aktarılır */
+    const m = await p.evaluate(() => {
+      const L = BT.lok, out = {};
+      const base = JSON.parse(JSON.stringify(BT.buildSave()));
+      const mk = (st, menu, tmenu) => { const sv = JSON.parse(JSON.stringify(base)); sv.lok.menu = menu; Object.assign(sv.lok.st, st); sv.tarif = { known: ['hamsitava', 'hamsipilav', 'levrekbugulama', 'uskumrudolma'], kiler: {}, menu: tmenu, open: 1, rs: 1 }; return sv; };
+      /* istasyon kurulu: aktarılır; boş yer yoksa/kurulu değilse bekler */
+      BT.lok.X.resetWorld(); BT.loadFrom(mk({ tava: 1, tencere: 1, firin: 1 }, [null, null, null, null, null], ['hamsipilav', 'levrekbugulama', 'hamsitava', null, null]));
+      out.a = [L.q().menu.join(), BT.tarif.save().menu.join()];
+      BT.lok.X.resetWorld(); BT.loadFrom(mk({ tava: 1, tencere: 0, firin: 0 }, [null, null, null, null, null], ['hamsipilav', 'levrekbugulama', 'hamsitava', null, null]));
+      out.b = [L.q().menu.join(), BT.tarif.save().menu.join()];
+      window.HK_INSAAT_OFF = 1; BT.S.cash = 9e6; L.buy('lok_tencere'); out.b2 = [L.q().menu.join(), BT.tarif.save().menu.join()];
+      L.buy('lok_firin'); out.b3 = [L.q().menu.join(), BT.tarif.save().menu.join()];
+      /* kayıtta aynı tarif iki yerde / zaten lokanta menüsünde */
+      BT.lok.X.resetWorld(); BT.loadFrom(mk({ tava: 1, tencere: 1, firin: 1 }, ['hamsitava', null, null, null, null], ['hamsitava', 'hamsitava', 'x', 7, null]));
+      out.c = [L.q().menu.join(), BT.tarif.save().menu.join()];
+      /* lokanta hiç yok (eski kayıt): bekleme listesi korunur, hata yok */
+      const old = mk({}, [], ['hamsitava', null, null, null, null]); delete old.lok; old.areas = old.areas.slice(0, 4);
+      BT.lok.X.resetWorld(); const r = BT.loadFrom(old); out.d = [r, BT.lok.open(), BT.tarif.save().menu.join(), BT.tarif.menu().length];
+      return out;
+    });
+    ok(m.a[0] === 'hamsitava,hamsipilav,levrekbugulama,,' === false && m.a[0].split(',').filter(Boolean).sort().join() === 'hamsipilav,hamsitava,levrekbugulama' && m.a[1] === ',,,,', 'eski büfe menüsü lokantaya aktarılır, bekleme listesi boşalır: ' + JSON.stringify(m.a));
+    ok(m.b[0].split(',').filter(Boolean).join() === 'hamsitava' && m.b[1] === 'hamsipilav,levrekbugulama,,,', 'istasyonu olmayanlar bekler: ' + JSON.stringify(m.b));
+    ok(m.b2[0].split(',').filter(Boolean).sort().join() === 'hamsitava,levrekbugulama' && m.b2[1] === 'hamsipilav,,,,', 'Kazan kurulunca levrek girer: ' + JSON.stringify(m.b2));
+    ok(m.b3[0].split(',').filter(Boolean).includes('hamsipilav') && m.b3[1] === ',,,,', 'Taş Fırın kurulunca pilav girer: ' + JSON.stringify(m.b3));
+    ok(m.c[0].split(',').filter(Boolean).join() === 'hamsitava' && m.c[1] === ',,,,', 'tekrar/bozuk girdi güvenle ayıklanır: ' + JSON.stringify(m.c));
+    ok(m.d[0] === true && m.d[1] === false && m.d[2] === 'hamsitava,,,,' && m.d[3] === 0, 'lokanta yokken eski kayıt güvenli: ' + JSON.stringify(m.d));
+    await p.close();
+  }
+
+  /* ===== 15) AŞAMA 2 — TR/EN metinleri ===== */
+  {
+    const p = await page(); await newGame(p); await prep(p);
+    await kit(p, { st: ['tava', 'firin'], menu: ['hamsitava', 'hamsipilav'], lv: 3 });
+    const x = await p.evaluate(() => {
+      const tr = BT.STR.tr, en = BT.STR.en, keys = Object.keys(tr).filter(k => /^lk/.test(k)), out = {};
+      out.n = keys.length; out.miss = keys.filter(k => typeof en[k] !== 'string' || !en[k]).concat(Object.keys(en).filter(k => /^lk/.test(k) && typeof tr[k] !== 'string'));
+      out.same = keys.filter(k => tr[k] === en[k] && !/^lk(Kasa|Pass)$/.test(k));
+      out.lists = [BT.lok.WED, BT.lok.MUH, BT.lok.CRIT].every(l => l.length >= 4 && l.every(o => o.tr && o.en));
+      const g = BT.lok.G; out.gnames = [g.muhtar.t, g.elestirmen.t];
+      const ach = BT.ACH.find(a => a.id === 'lk_gurme'); out.ach = ach && [ach.t.tr, ach.t.en, ach.d.tr, ach.d.en];
+      out.help = BT.STR.tr.tfMenuSub && BT.STR.en.tfMenuSub;
+      BT.setLang('en'); const q = BT.lok.q(); q.res = { st: 'on', n: 14, rec: 'hamsipilav', kind: 'dugun', w: 1, due: BT.day.n + 1, got: 3 }; q.star = 4;
+      BT.lok.openPanel(); out.panelEn = document.getElementById('lokRows').innerText.replace(/\s+/g, ' '); BT.lok.closePanel();
+      BT.setLang('tr'); BT.lok.openPanel(); out.panelTr = document.getElementById('lokRows').innerText.replace(/\s+/g, ' '); BT.lok.closePanel(); q.res = {};
+      return out;
+    });
+    ok(x.n > 60 && !x.miss.length, 'TR/EN lk* anahtarları eşleşiyor: ' + JSON.stringify(x.miss));
+    ok(x.same.length === 0 || x.same.every(k => /^lk(Mezeb|SazB|MeZeB)$/i.test(k)), 'çevrilmemiş (TR = EN) metin: ' + x.same.join());
+    ok(x.lists, 'isim listeleri (düğün, muhtar, eleştirmen) TR/EN dolu');
+    ok(x.gnames[0].tr === 'Muhtar ve Heyeti' && /Headman/.test(x.gnames[0].en) && x.gnames[1].en === 'Gourmet Critic', 'grup adları: ' + JSON.stringify(x.gnames));
+    ok(x.ach && x.ach[0] === 'Gurmenin Gözdesi' && /Gourmet/.test(x.ach[1]) && /5 yıldız/.test(x.ach[2]) && /5 stars/.test(x.ach[3]), 'başarım TR/EN: ' + JSON.stringify(x.ach));
+    ok(/UPGRADES/.test(x.panelEn) && /EVENTS/.test(x.panelEn) && /Terrace/.test(x.panelEn) && /Meze Display/.test(x.panelEn) && /Saz Corner/.test(x.panelEn) && /Big Cooler/.test(x.panelEn) && /Headman's table/.test(x.panelEn) && /Gourmet Critic/.test(x.panelEn) && /plates of Anchovy Pilaf/.test(x.panelEn) && /3\/14/.test(x.panelEn) && !/\blk[A-Z]\w+/.test(x.panelEn) && !/[ğışçöüİ]/.test(x.panelEn.replace(/Ayşe|Gül|İ/g, '')), 'EN panel (yükseltme + olay): ' + x.panelEn.slice(0, 400));
+    ok(/GELİŞTİRMELER/.test(x.panelTr) && /OLAYLAR/.test(x.panelTr) && /3\/14/.test(x.panelTr) && /yarın/.test(x.panelTr) && /★★★★☆/.test(x.panelTr), 'TR panel olay satırları: ' + x.panelTr.slice(0, 300));
+    await p.close();
   }
 
   /* ===== 11) ekran görüntüleri (yalnız klasör verilince): lokanta genel + servis sırasında ===== */
@@ -552,6 +970,22 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       if (i % 20 === 19) await p.evaluate(() => { BT.lok.q().dolap.hamsi = 8; BT.lok.q().dolap.levrek = 4; });
     }
     ok(gotA && gotB, 'ekran görüntüleri alınabildi: ' + gotA + '/' + gotB);
+    await p.close();
+  }
+
+  /* ===== 16) Aşama 2 ekran görüntüsü: teras + saz köşesi + yıldızlı tabela (390x844) ===== */
+  if (SHOT) {
+    const p = await page(); await newGame(p); await prep(p);
+    await kit(p, { st: ['tava', 'izgara', 'tencere', 'firin'], menu: ['hamsitava', 'hamsipilav', 'levrekbugulama'], lv: 5 });
+    await p.evaluate(() => {
+      const L = BT.lok; for (let i = 0; i < 4; i++) L.buy('lok_tb'); ['lok_ter', 'lok_mez', 'lok_saz', 'lok_dol'].forEach(id => L.buy(id));
+      ['lk_asci', 'lk_garson', 'lk_bulasik', 'lk_sef'].forEach(r => L.hire(r));
+      const q = L.q(); q.star = 5; q.gs = 5; q.dolap = { hamsi: 14, levrek: 6 }; q.res = { st: 'on', n: 16, rec: 'hamsipilav', kind: 'dugun', w: 0, due: BT.day.n, got: 7 };
+      BT.player.x = 6.6; BT.player.y = 25.5; BT.day.t = 20; L.R.arr = 1e9;
+      L.spawn('aile'); setTimeout(() => L.spawn('turist'), 500); setTimeout(() => L.spawn('kahve'), 3000); setTimeout(() => L.spawn('is'), 5000);
+    });
+    for (let i = 0; i < 60; i++) { await step(p, 0.1, 5); await p.evaluate(() => { BT.lok.q().dolap.hamsi = 14; BT.player.x = 6.6; BT.player.y = 25.5; }); }
+    await sleep(1200); await shot(p, 'lokanta-teras-saz');
     await p.close();
   }
 
