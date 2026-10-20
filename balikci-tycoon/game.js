@@ -1782,8 +1782,9 @@ var AREAS = [
   { id: 'fume',   n: { tr: 'Fümehane', en: 'Smokehouse' },           x0: 0, y0: 12, x1: 10, y1: 17.5, locked: true,  cost: 4600, rep: 45, lvl: 1, up: [0, 4200, 11000] },
   /* v2.0 — son bölge: palamut + somon → Reis Güveci (kendi ağları, masası, mutfağı, tezgâhı, kadrosu, müdürü) */
   { id: 'mutfak', n: { tr: 'Balıkçı Mutfağı', en: "Fishermen's Kitchen" }, x0: 0, y0: 17.5, x1: 10, y1: 23.5, locked: true, cost: 9500, rep: 350, lvl: 1, up: [0, 7500, 17000] },
-  /* v2.19-deneme — Sahil Lokantası: oyunun en son bölgesi, Mutfak iskelesinin güneyine uzanan teras (tezgâh bölgesi değil: lok:1; seviyesi S.lok.lv) */
-  { id: 'sahil', n: { tr: 'Sahil Lokantası', en: 'Seaside Restaurant' }, x0: 0, y0: 23.5, x1: 10, y1: 29.5, locked: true, cost: 15500, rep: 350, lvl: 1, up: [0, 0, 0], lok: 1 }
+  /* v2.19-deneme — Sahil Lokantası: oyunun en son bölgesi (tezgâh bölgesi değil: lok:1; seviyesi S.lok.lv).
+     v2.20-deneme: iskele değil KARADA — yolun doğusunda, Hizmet Sahası'nın güneyinde: kuzey yarıda badanalı köy evi + ocakbaşı, güney yarıda taş teras */
+  { id: 'sahil', n: { tr: 'Sahil Lokantası', en: 'Seaside Restaurant' }, x0: 15.0, y0: 22.8, x1: 25.0, y1: 32.0, locked: true, cost: 15500, rep: 350, lvl: 1, up: [0, 0, 0], lok: 1 }
 ];
 var MAXLV = 3;
 function areaNetMul(z) { return (1 + (AREAS[z].lvl - 1) * 0.18 + (slotEff(z, 'netrate') || 0) + perkSum('netrate') + perkSum('rate')) * storyNetMul() * mxNetMul(); }
@@ -3694,15 +3695,19 @@ function fly(x0, y0, z0, x1, y1, z1, it, dur) {
   flyers.push({ x0: x0, y0: y0, z0: z0, x1: x1, y1: y1, z1: z1, it: it, t: 0, d: dur || 0.4, h: rnd(18, 30) });
 }
 
+/* v2.20-deneme: lokanta açıkken yürünebilen ek şeritler — (1) Mutfak iskelesinin güneydoğu köşesinden yolu geçip lokantanın kapısına inen kaldırım,
+   (2) Hizmet Sahası'nın güneyinden lokantanın arka avlusuna inen kapı (Depo Hamalı ve yürüyenler iskeleyi dolaşmadan ulaşır) */
+var LOKWALK = [{ x0: 9.3, y0: 21.2, x1: 15.6, y1: 31.3 }, { x0: 23.3, y0: 21.2, x1: 24.6, y1: 23.2 }];
 function canStand(x, y) {
   if (inRect(x, y, BRIDGE, 0.05) || inRect(x, y, MEYDAN, 0.3) || inRect(x, y, SERVYARD, 0.3) || inRect(x, y, YARDPATH, 0.02)) return true;
   for (var i = 0; i < AREAS.length; i++) {
     var a = AREAS[i]; if (a.locked) continue;
     if (x > a.x0 + 0.35 && x < a.x1 - 0.35 && y > a.y0 - 0.02 && y < a.y1 + 0.02) return true;
   }
+  if (!AREAS[4].locked && !window.HK_LOK_OFF) for (i = 0; i < LOKWALK.length; i++) if (inRect(x, y, LOKWALK[i], 0)) return true;
   return false;
 }
-function maxOpenY() { var m = 0; for (var i = 0; i < AREAS.length; i++) if (!AREAS[i].locked) m = Math.max(m, AREAS[i].y1); return m; }
+function maxOpenY() { var m = 0; for (var i = 0; i < AREAS.length; i++) if (!AREAS[i].locked && !AREAS[i].lok) m = Math.max(m, AREAS[i].y1); return m; }
 function moveActor(a, dx, dy, spd, dt) {
   var L = Math.hypot(dx, dy);
   if (L < 0.001) { a.vx = 0; a.vy = 0; return false; }
@@ -4788,6 +4793,10 @@ function clampCam() {
   var maxY = maxOpenY();
   var x0 = pX(0, maxY) - 28, x1 = Math.max(pX(10, 0), pX(MEYDAN.x1, MEYDAN.y0)) + 28;
   var y0 = pY(0, 0, 0) - 46 - HORIZON_GAP - 34, y1 = Math.max(pY(10, maxY, 0), pY(MEYDAN.x1, MEYDAN.y1, 0), pY(SERVYARD.x1, SERVYARD.y1, 0)) + 42;
+  if (!AREAS[4].locked && !window.HK_LOK_OFF) {        /* v2.20-deneme: lokanta alanı (güneydeki teras + kasaba görünümü) kamera sınırına girer */
+    var LA = AREAS[4];
+    y1 = Math.max(y1, pY(LA.x1, LA.y1, 0) + 42); x1 = Math.max(x1, pX(LA.x1, LA.y0) + 28); x0 = Math.min(x0, pX(LA.x0, LA.y1) - 28);
+  }
   var hw = W / 2, ht = H * 0.46, hb = H - H * 0.46;
   if (x1 - x0 < W) camTX = (x0 + x1) / 2; else camTX = clamp(camTX, x0 + hw, x1 - hw);
   if (y1 - y0 < H) camTY = (y0 + y1) / 2; else camTY = clamp(camTY, y0 + ht, y1 - hb);
@@ -5668,13 +5677,17 @@ var scenery = [], grass = [];
   }
   /* kara süsleri: bölgelerin dışında kalan kıyı şeridi */
   function freeLand(fx, fy) {
-    if (fx < -0.4 || fy < -0.4 || fx > LANDX - 0.3 || fy > 24.2) return false;
+    if (fx < -0.4 || fy < -0.4 || fx > LANDX - 0.3 || fy > LANDY - 0.4) return false;
+    var LA = AREAS[4];                               /* v2.20-deneme: Sahil Lokantası alanı + yan geçit hep boş kalır */
+    if (fx > LA.x0 - 0.9 && fx < LA.x1 + 0.9 && fy > LA.y0 - 0.9 && fy < LA.y1 + 0.9) return false;
+    if (fx > 14.4 && fx < 15.7 && fy > 21.5) return false;
     if (fx - fy > 21.5) return false;                /* kameranın ulaşamadığı doğu ucu */
     if (fx > MEYDAN.x0 - 0.7 && fx < MEYDAN.x1 + 0.5 && fy > MEYDAN.y0 - 0.6 && fy < MEYDAN.y1 + 0.6) return false;
     if (fx > SERVYARD.x0 - 0.7 && fx < SERVYARD.x1 + 0.5 && fy > SERVYARD.y0 - 0.6 && fy < SERVYARD.y1 + 0.6) return false;
     if (inRect(fx, fy, YARDPATH, -0.5)) return false;
     if (fx < 10.2 && fy < 17.8) return false;      /* iskele bölgeleri */
-    if (fx > 10.2 && fx < 14.6 && fy > -0.4) return false; /* müşteri yolu */
+    if (fx < 10.2 && fy > 21.6 && fy < 24.0) return false;   /* Mutfak iskelesinin önü */
+    if (fx > 10.2 && fx < 14.6 && fy > -0.4) return false; /* müşteri yolu (güneyde lokantanın kapısına kadar) */
     return true;
   }
   function nearDecor(fx, fy) { for (var q = 0; q < DECOR.length; q++) if (!DECOR[q].gift && Math.hypot(DECOR[q].x - fx, DECOR[q].y - fy) < 1.3) return true; return false; }
@@ -5703,6 +5716,27 @@ var scenery = [], grass = [];
     grass.push({ x: x, y: y, c: srnd() < 0.5 ? '#b9a878' : '#a8b06a' });
   }
   for (i = 0; i < 9; i++) gulls.push({ x: rnd(-20, 12), y: rnd(-18, 6), vx: rnd(0.5, 1.1), vy: rnd(0.1, 0.4), f: rnd(0, 6) });
+  /* v2.20-deneme — güneye genişleyen kara: batıda Mutfak iskelesinin güneyindeki koy kumsalı, yolun iki yanı, lokantanın doğusu.
+     Üretim sırası sona eklendi (eski manzara aynı kalır); lokantanın kendi alanı freeLand'de hariç tutulur. */
+  var bands2 = [[0.2, 9.6, 24.4, 32.4, 11], [10.3, 14.4, 24.3, 32.4, 3], [25.2, 25.7, 22.9, 32.4, 2]];
+  for (bi = 0; bi < bands2.length; bi++) {
+    var b2 = bands2[bi], got2 = 0, tr2 = 0;
+    while (got2 < b2[4] && tr2++ < 400) {
+      x = b2[0] + srnd() * (b2[1] - b2[0]); y = b2[2] + srnd() * (b2[3] - b2[2]);
+      if (x > 10.2 && x < 14.6 && y > -0.4) continue;                  /* yol */
+      if (!freeLand(x, y) || nearDecor(x, y) || nearOther(x, y)) continue;
+      var r3 = srnd();
+      var t3 = r3 < 0.14 ? 'servi' : r3 < 0.3 ? 'cam' : r3 < 0.42 ? 'cali' : r3 < 0.58 ? 'kaya' : r3 < 0.68 ? 'ag' : r3 < 0.78 ? 'sandal' : r3 < 0.88 ? 'sepet' : r3 < 0.94 ? 'varil' : 'hurda';
+      scenery.push({ x: x, y: y, t: t3, s: 0.8 + srnd() * 0.5, up: 1 + Math.floor(srnd() * 3) });
+      got2++;
+    }
+  }
+  for (i = 0; i < 150; i++) {
+    x = rnd(-0.6, LANDX - 0.1); y = rnd(24.4, LANDY - 0.5);
+    if (x > AREAS[4].x0 - 0.3 && x < AREAS[4].x1 + 0.3 && y < AREAS[4].y1 + 0.3) continue;
+    if (x < 10.1 && y < 24.0) continue;
+    grass.push({ x: x, y: y, c: srnd() < 0.5 ? '#b9a878' : '#a8b06a' });
+  }
 })();
 
 /* Manzara üretimde bölgelerin kilitli (kum) olduğu varsayımıyla serpilir; bölge açılınca iskelesi kumun üstüne biner.
@@ -5928,16 +5962,16 @@ function updateEnv(dt) {
 }
 /* müşteri yolu: toprak (çukurlu) → çakıl → arnavut kaldırımı → bordürlü + fenerli */
 function drawRoad() {
-  var e = envStage(), x0 = 10.2, x1 = 14.6, y0 = -0.5, y1 = 24.3;
+  var e = envStage(), x0 = 10.2, x1 = 14.6, y0 = -0.5, y1 = ROAD_Y1;
   isoQuad(x0, y0, x1 - x0, y1 - y0, 0, e === 0 ? '#b89d6e' : e === 1 ? '#bfae88' : '#b3aa96');
   var i, r2 = 0;
   if (e === 0) {                                        /* tekerlek izleri + çukurlar */
     ctx.save(); ctx.strokeStyle = 'rgba(122,98,64,.55)'; ctx.lineWidth = 1;
     [11.4, 13.5].forEach(function (lx2) { ctx.beginPath(); ctx.moveTo(R(pX(lx2, y0)), R(pY(lx2, y0, 0))); ctx.lineTo(R(pX(lx2, y1)), R(pY(lx2, y1, 0))); ctx.stroke(); });
     ctx.restore();
-    for (i = 0; i < 14; i++) { r2 = (i * 7.31) % 1; var hx = 10.6 + r2 * 3.6, hy = 1 + i * 1.6; px(R(pX(hx, hy)) - 2, R(pY(hx, hy, 0)), 5, 2, '#8f7650'); }
+    for (i = 0; i < 19; i++) { r2 = (i * 7.31) % 1; var hx = 10.6 + r2 * 3.6, hy = 1 + i * 1.6; px(R(pX(hx, hy)) - 2, R(pY(hx, hy, 0)), 5, 2, '#8f7650'); }
   } else if (e === 1) {                                 /* çakıl */
-    for (i = 0; i < 120; i++) { r2 = (i * 0.618) % 1; var gx = 10.3 + r2 * 4.2, gy = (i * 0.21) % 24.6 - 0.4; px(R(pX(gx, gy)), R(pY(gx, gy, 0)), 1, 1, i % 2 ? '#9d8e6c' : '#d6c8a4'); }
+    for (i = 0; i < 160; i++) { r2 = (i * 0.618) % 1; var gx = 10.3 + r2 * 4.2, gy = (i * 0.21) % (ROAD_Y1 + 0.3) - 0.4; px(R(pX(gx, gy)), R(pY(gx, gy, 0)), 1, 1, i % 2 ? '#9d8e6c' : '#d6c8a4'); }
   } else {                                              /* arnavut kaldırımı + bordür */
     ctx.save(); ctx.globalAlpha = 0.5; ctx.strokeStyle = '#8f8778'; ctx.lineWidth = 1;
     for (var k = y0 + 0.5; k < y1; k += 0.5) { ctx.beginPath(); ctx.moveTo(R(pX(x0, k)), R(pY(x0, k, 0))); ctx.lineTo(R(pX(x1, k)), R(pY(x1, k, 0))); ctx.stroke(); }
@@ -5950,7 +5984,7 @@ function drawRoad() {
 }
 function drawRoadLamps(push) {
   if (envStage() < 3) return;
-  for (var y = 3.5; y < 22; y += 4.5) (function (ly) { push(14.75 + ly, function () { drawLamp(14.75, ly); }); })(y);
+  for (var y = 3.5; y < 31; y += 4.5) (function (ly) { push(14.75 + ly, function () { drawLamp(14.75, ly); }); })(y);
 }
 /* v1.9.3 — yol vitrini: çiçeklikler (taş saksı + mevsim çiçekleri) ve reklam panoları (işletme adı + amblem) */
 function drawRoadShow(push) {
@@ -6176,7 +6210,8 @@ function drawShoal() {
     px(sx, sy, f.s + 2, f.s, 'rgba(10,45,70,.55)');
   }
 }
-var LANDX = 26.0, LANDY = 24.5;     /* v0.7: doğuda Liman Meydanı için kara genişledi */
+var LANDX = 26.0, LANDY = 33.0;     /* v0.7: doğuda Liman Meydanı için kara genişledi; v2.20-deneme: güneyde Sahil Lokantası için 24,5 → 33 */
+var ROAD_Y1 = 31.6;                 /* müşteri yolunun güney ucu (v2.20-deneme: lokantanın girişine kadar uzar; art/arkaplan.js RY1 ile aynı) */
 function drawLand() {
   quad([[pX(-0.7, -0.7), pY(-0.7, -0.7, 0)], [pX(LANDX, -0.7), pY(LANDX, -0.7, 0)],
         [pX(LANDX, LANDY), pY(LANDX, LANDY, 0)], [pX(-0.7, LANDY), pY(-0.7, LANDY, 0)]], '#cbb98d');
@@ -7676,7 +7711,7 @@ function render() {
   for (var b = 0; b < boats.length; b++) drawBoat(boats[b]);
   drawLand();
   drawRoad();
-  for (var a = 0; a < AREAS.length; a++) { if (AREAS[a].lok && !AREAS[a].locked) drawLokanta(lokDeckObj()); else drawArea(AREAS[a], a); }
+  for (var a = 0; a < AREAS.length; a++) { if (AREAS[a].lok && !AREAS[a].locked) drawLokTerrace(lokTerObj('floor')); else drawArea(AREAS[a], a); }   /* v2.20-deneme: lokanta karada — iskele döşemesi yok */
   drawMeydanGround();
   drawYardGround();
   if (ARR.on) arrDrawGround();             /* v2.17: düzenleme modu — geçerli alan ızgarası + ayak izleri */
@@ -7748,7 +7783,7 @@ function render() {
       if (AREAS[counters[k].z].locked) continue;
       if (Math.abs(yy - counters[k].y) < 1.3) gap = true;
     }
-    if (lokOpen() && Math.abs(yy - LOK.gate.y) < 1.2) gap = true;        /* lokanta kapısı: çit açık */
+    if (lokOpen() && yy > 21.2) gap = true;                                /* lokanta geçidi: Mutfak iskelesinin güneydoğusu açık */
     var az = yy < 6 ? 0 : (yy < 12 ? 1 : 2);
     if (!gap) push(9.95 + yy, function () { fencePost(9.95, yy, AREAS[az].lvl); });
   })(i);
@@ -10995,7 +11030,23 @@ var DEPOT_ROLES = ['depocu', 'sevkiyat'];
    2. ve 3. bölgenin tahsildarı kasaya gitmek için köprüye yönelip köprü ucunda takılıyordu. */
 function onEast(x) { return x > 10.0; }
 /* köprü rotası: bölgeler ↔ meydan arasında giden çalışan önce köprüye yönelir */
+/* v2.20-deneme: lokanta (y > 22,5, yolun doğusu) ↔ kuzey (Meydan/saha) arasında giden işçi (ör. Depo Hamalı) ara noktalardan yürür:
+   Meydan → saha patikası → saha → lokantanın batı geçidi (evin batısı) → ön koridor. Sıra kuzeyden güneye y artar. */
+var LOK_CHAIN = [{ x: 18.1, y: 9.8 }, { x: 18.1, y: 12.7 }, { x: 15.45, y: 21.0 }, { x: 15.4, y: 23.2 }, { x: 15.4, y: 26.45 }];
+function lokRoute(a, tx, ty) {
+  if (AREAS[4].locked || window.HK_LOK_OFF) return null;
+  var aL = a.y > 22.5 && a.x > 14.7, tL = ty > 22.5 && tx > 14.7, C = LOK_CHAIN, i;
+  if (aL === tL) return null;
+  if (tL) {                                                  /* kuzeyden lokantaya */
+    for (i = 0; i < C.length; i++) if (C[i].y > a.y + 0.35) return C[i];
+    return null;
+  }
+  if (a.y >= 26.0 && a.x > 15.7) return C[4];               /* ön koridordan batı geçidine */
+  for (i = C.length - 1; i >= 0; i--) if (C[i].y < a.y - 0.35) return C[i];
+  return null;
+}
 function routeVia(a, tx, ty) {
+  var lw = lokRoute(a, tx, ty); if (lw) return lw;
   var aE = onEast(a.x), tE = onEast(tx);
   if (aE === tE) return null;
   var by = (BRIDGE.y0 + BRIDGE.y1) / 2;
@@ -13802,7 +13853,7 @@ function arrStatic() {
   var rects = [], lanes = [], rings = [], i;
   layoutRects().forEach(function (r) { if (String(r.own).indexOf('dc') !== 0) rects.push(r); });
   function rc(x, y, hx, hy) { rects.push({ x0: x - hx, y0: y - hy, x1: x + hx, y1: y + hy }); }
-  for (i = 3.5; i < 22; i += 4.5) rc(ROAD_VX, i, 0.2, 0.2);                       /* yol fenerleri */
+  for (i = 3.5; i < 31; i += 4.5) rc(ROAD_VX, i, 0.2, 0.2);                       /* yol fenerleri */
   ROAD_FL.forEach(function (y) { rc(ROAD_VX, y, 0.2, 0.3); });                     /* çiçeklikler */
   ROAD_BB.forEach(function (y) { rc(ROAD_VX, y, 0.2, 0.62); });                    /* reklam panoları */
   rc(YSIGN.x, YSIGN.y, 0.3, 0.2);                                                  /* saha tabelası */
@@ -13832,7 +13883,7 @@ function arrBaseWhy(x, y) {
   var st = arrStatic(), i, h = DFP;
   if (x < -0.3 || y < -0.3 || x > LANDX - 0.5 || y > LANDY - 0.45 || x - y > 21.5) return 'su';
   for (i = 0; i < AREAS.length; i++) { var a = AREAS[i]; if (rectHitC(x, y, h, a.x0 - 0.05, a.y0 - 0.05, a.x1 + 0.05, a.y1 + 0.05)) return 'iskele'; }
-  if (x > 10.1 && x < 14.7 && y > -0.6 && y < 24.4) return 'yol';
+  if (x > 10.1 && x < 14.7 && y > -0.6 && y < ROAD_Y1 + 0.1) return 'yol';
   if (rectHitC(x, y, h, BRIDGE.x0 - 0.05, BRIDGE.y0 - 0.05, BRIDGE.x1 + 0.05, BRIDGE.y1 + 0.05)) return 'köprü';
   if (rectHitC(x, y, h, YARDPATH.x0 - 0.05, YARDPATH.y0 - 0.05, YARDPATH.x1 + 0.05, YARDPATH.y1 + 0.05)) return 'patika';
   for (i = 0; i < st.lanes.length; i++) if (segDist(x, y, st.lanes[i]) < st.lanes[i][4] + h) return 'şerit';
@@ -16376,8 +16427,13 @@ function tarifHud() {
 }
 function tarifShow(tab, key) {
   if (!tarifUnlocked() || !S.started) return;
-  tf.tab = tab === 'ocak' ? 'menu' : (tab || tf.tab || 'rec'); tf.sel = key || null;
-  if (tf.tab === 'ocak') tf.tab = 'menu';
+  if (lokOpen()) {                                                   /* v2.20-deneme: lokanta varken tarif sayfaları LOKANTA panelinde (MENÜ / TARİFLER / DENE / KİLER) */
+    if (barTab) closeBar();
+    LKR.tab = tab === 'ocak' || tab === 'menu' ? 'menu' : (tab === 'rec' || tab === 'try' || tab === 'kiler' ? tab : (LKR.tab || 'menu'));
+    if (tab !== 'try') tf.res = null;
+    return openLokPanel(LKR.tab);
+  }
+  tf.tab = tab === 'rec' || tab === 'try' || tab === 'kiler' ? tab : (tf.tab === 'try' || tf.tab === 'kiler' ? tf.tab : 'rec'); tf.sel = key || null;
   if (tab !== 'try') tf.res = null;
   if (barTab) closeBar();
   tarifRender();
@@ -16390,15 +16446,13 @@ function tarifClose() {
   e.classList.add('hidden'); tf.res = null;
   syncPause(); save();
 }
-function tarifRender() {
-  var q = tarifQ(), h = '', i;
-  document.getElementById('tfTitle').textContent = T('tfTitle');
-  document.getElementById('tfClose').setAttribute('aria-label', T('ok'));
-  var tabs = [['rec', T('tfTabRec') + ' <small>' + TARIFS.filter(function (r) { return tarifKnown(r.id); }).length + '/' + TARIFS.length + '</small>'],
-    ['try', T('tfTabTry')], ['kiler', T('tfTabKiler')], ['menu', T('tfTabMenu') + (lokOpen() ? ' <small>' + tarifMenuList().length + '/' + tarifMenuSlots() + '</small>' : '')]];
-  document.getElementById('tfTabs').innerHTML = tabs.map(function (t) { return '<button class="tab' + (t[0] === tf.tab ? ' on' : '') + '" data-tt="' + t[0] + '">' + t[1] + '</button>'; }).join('');
-  var arts = [];                                   /* [tuval sırası, çizim] */
-  if (tf.tab === 'rec') {
+/* kilerde kaç porsiyonluk malzeme kaldığı: her tabak tarifin her malzemesinden 1 harcar */
+function tarifPortions(r) { var n = 1e9; r.ing.forEach(function (g) { n = Math.min(n, tarifStock(g)); }); return n === 1e9 ? 0 : n; }
+function tarifMissing(r) { return r.ing.filter(function (g) { return tarifStock(g) < 1; }).map(function (g) { return NM(TING_BY[g].n); }).join(', '); }
+/* Tarif içeriği (TARİFLER / DENE / KİLER): hem Tarif Defteri (lokanta yokken) hem LOKANTA paneli aynı fonksiyonu çağırır. arts: kanvas çizicileri (sırayla) */
+function tarifTabHTML(tab, arts) {
+  var h = '', i;
+  if (tab === 'rec') {
     h += '<p class="tfSub">' + escH(T('tfSub')) + '</p>';
     TARIFS.forEach(function (r) {
       var kn = tarifKnown(r.id);
@@ -16408,20 +16462,20 @@ function tarifRender() {
       h += '</div></div>';
       arts.push(function (cv) { tarifCanvas(cv, function () { if (kn) drawDish({ x: 24, y: 20, dish: r.id, s: 3 }); else { ctx.globalAlpha = 0.18; drawDish({ x: 24, y: 20, dish: r.id, s: 3 }); ctx.globalAlpha = 1; } }); });
     });
-  } else if (tf.tab === 'try') {
+  } else if (tab === 'try') {
     var fl = tarifTryFish();
     if (tf.fish && fl.indexOf(tf.fish) < 0) tf.fish = null;
     h += '<div class="tfLbl">' + escH(T('tfFish')) + '</div><div class="tfGrid">';
     fl.forEach(function (f) { h += '<button class="tfBtn' + (tf.fish === f ? ' on' : '') + '" data-tf="' + f + '">' + FISH[f].ic + ' ' + escH(NM(FISH[f].n)) + '</button>'; });
     h += '</div><div class="tfLbl">' + escH(T('tfIng')) + '</div><div class="tfGrid">';
     TARIF_ING.forEach(function (g) {
-      var n = tarifStock(g.id);
+      var n = tarifStock(g);
       h += '<button class="tfBtn tfIngB' + (tf.ings.indexOf(g.id) >= 0 ? ' on' : '') + (n ? '' : ' no') + '" data-ti="' + g.id + '"><canvas width="24" height="24"></canvas><span>' + escH(NM(g.n)) + '<small>×' + n + '</small></span></button>';
       arts.push(function (cv) { tarifCanvas(cv, function () { tarifIngArt(g.id, 12, 13, 2); }); });
     });
     h += '</div><button class="go tfCook" id="tfCook">' + escH(T('tfCook')) + '</button>';
     if (tf.res) h += tarifResHTML(tf.res, arts);
-  } else if (tf.tab === 'kiler') {
+  } else {                                                                      /* kiler */
     h += '<p class="tfSub">' + escH(T('tfCapNote', { a: tarifCap(), b: tarifCap() > TARIF_CAP[0] ? T('tfCapDepoOK') : T('tfCapDepo') })) + '</p>';
     TARIF_ING.forEach(function (g) {
       var n = tarifStock(g.id);
@@ -16429,31 +16483,54 @@ function tarifRender() {
         '<div class="tfBuyRow">' + TARIF_PACKS.map(function (p) { return '<button class="tfBtn' + (n + p > tarifCap() && n >= tarifCap() ? ' no' : '') + '" data-tb="' + g.id + '" data-tn="' + p + '">' + escH(T('tfBuy', { n: p, c: money(p * g.p) })) + '</button>'; }).join('') + '</div></div></div>';
       arts.push(function (cv) { tarifCanvas(cv, function () { tarifIngArt(g.id, 18, 19, 3); }); });
     });
-  } else if (!lokOpen()) {                         /* MENÜ: lokanta yokken yalnız bilgi (v2.19-deneme §8) */
-    h += '<div class="tfRec"><canvas width="48" height="36"></canvas><div><b>' + escH(T('tfMenuLokT')) + '</b><small>' + escH(T('tfMenuLok')) + '</small></div></div>';
-    arts.push(function (cv) { tarifCanvas(cv, function () { ctx.globalAlpha = 0.5; drawDish({ x: 24, y: 20, dish: 'hamsipilav', s: 3 }); ctx.globalAlpha = 1; }); });
-  } else {                                         /* MENÜ: Sahil Lokantası'nın menüsü (S.lok.menu); yer sayısı = lokanta seviyesi */
-    var slots = tarifMenuSlots(), known = TARIFS.filter(function (r) { return LOK_REC[r.id] && tarifKnown(r.id); }), lq = lokQ();
-    h += '<p class="tfSub">' + escH(T('tfMenuSub', { n: slots })) + '</p>';
-    for (var si = 0; si < slots; si++) {
-      var mid = lq.menu[si], mr = mid && TARIF_BY[mid] && lokRecOK(mid) ? TARIF_BY[mid] : null;
-      h += '<div class="tfOcak"><div class="tfRec"><canvas width="48" height="36"></canvas><div><b>' + escH(T('tfSlot', { n: si + 1 }) + ' · ' + (mr ? NM(mr.n) : T('tfEmptySlot'))) + '</b><small>' +
-        escH(mr ? (mr.kitchen ? T('tfAnyFish') : NM(FISH[mr.f].n)) + ' + ' + tarifIngList(mr) + ' · ' + T('tfMul', { m: tarifM(mr.m) }) + (tarifHas(mr) ? '' : ' · ' + T('tfNoStockShort')) : T('tfMenuPick')) + '</small></div></div>';
-      h += '<div class="tfGrid tfG2">';
-      known.forEach(function (r) {
-        var at = lq.menu.indexOf(r.id), built = lokRecOK(r.id);
-        h += '<button class="tfBtn tfMB' + (at === si ? ' on' : '') + (at >= 0 && at !== si || !built && at !== si ? ' no' : '') + '" data-tm="' + si + '" data-tr="' + r.id + '"><b>' + escH(NM(r.n)) + '</b><small>' +
-          escH((r.kitchen ? T('tfAnyFish') : NM(FISH[r.f].n)) + ' · ' + tarifIngList(r) + ' · ×' + tarifM(r.m) + (built ? '' : ' · ' + T('lkNoSt'))) + '</small></button>';
-      });
-      h += '<button class="tfBtn tfMB' + (!mr ? ' on' : '') + '" data-tm="' + si + '" data-tr=""><b>' + escH(T('tfNone')) + '</b></button></div></div>';
-      arts.push((function (r) { return function (cv) { tarifCanvas(cv, function () { if (r) drawDish({ x: 24, y: 20, dish: r.id, s: 3 }); else { ctx.globalAlpha = 0.18; drawDish({ x: 24, y: 20, dish: 'hamsitava', s: 3 }); ctx.globalAlpha = 1; } }); }; })(mr));
-    }
   }
-  var body = document.getElementById('tfBody');
+  return h;
+}
+/* LOKANTA › MENÜ: bilinen her tarif, istasyonu, malzemeleri, kilerdeki porsiyon sayısı ve tabak fiyatıyla; menüdekiler üstte, kileri boşalan uyarılı */
+function tarifMenuRow(r, inM, arts) {
+  var st = LOK_REC[r.id], built = lokStLv(st) > 0, por = tarifPortions(r), low = por < 1, h;
+  h = '<div class="tfRec tfMenuRow' + (inM ? ' inm' : '') + (inM && low ? ' warn' : '') + '"><canvas width="48" height="36"></canvas><div><b>' + escH(NM(r.n)) + '</b>' +
+    '<small>' + escH(T('lkStation', { s: NM(LOK_ST[st].n) }) + (built ? '' : ' · ' + T('lkNoSt'))) + '</small>' +
+    '<small>' + escH((r.kitchen ? T('tfAnyFish') : NM(FISH[r.f].n)) + ' + ' + tarifIngList(r)) + '</small>' +
+    '<small class="tfPor' + (low ? ' no' : '') + '">' + (low ? '⚠ ' + escH(T('lkPortNone', { i: tarifMissing(r) })) : escH(T('lkPort', { n: por }))) + ' · <i>' + money(lokPlateVal(r.id)) + '</i> · ' + escH(T('tfMul', { m: tarifM(r.m) })) + '</small></div>' +
+    '<button class="tfBtn tfMBtn' + (inM ? ' on' : '') + '" data-a="menu" data-id="' + r.id + '"' + (!built && !inM ? ' disabled' : '') + '>' + escH(inM ? T('lkMenuDel') : T('lkMenuAdd')) + '</button></div>';
+  arts.push(function (cv) { tarifCanvas(cv, function () { drawDish({ x: 24, y: 20, dish: r.id, s: 3 }); }); });
+  return h;
+}
+function tarifMenuHTML(arts) {
+  var q = lokQ(), slots = tarifMenuSlots(), h = '', i, ids = [], warn = [];
+  for (i = 0; i < slots; i++) if (q.menu[i] && TARIF_BY[q.menu[i]] && lokRecOK(q.menu[i]) && ids.indexOf(q.menu[i]) < 0) ids.push(q.menu[i]);
+  ids.forEach(function (id) { if (tarifPortions(TARIF_BY[id]) < 1) warn.push(NM(TARIF_BY[id].n)); });
+  h += '<p class="tfSub">' + escH(T('lkMenuSub', { a: ids.length, n: slots })) + '</p>';
+  if (warn.length) h += '<div class="tfWarn">⚠ ' + escH(T('lkWarnPantry', { r: warn.join(', ') })) + ' <button class="tfBtn" data-lt="kiler">' + escH(T('tfTabKiler')) + '</button></div>';
+  h += '<div class="tfLbl">' + escH(T('lkSecMenu', { a: ids.length, b: slots })) + '</div>';
+  ids.forEach(function (id) { h += tarifMenuRow(TARIF_BY[id], true, arts); });
+  for (i = ids.length; i < slots; i++) h += '<div class="tfRec unk"><div class="tfEmptyIc">+</div><div><b>' + escH(T('tfSlot', { n: i + 1 }) + ' · ' + T('tfEmptySlot')) + '</b><small>' + escH(T('tfMenuPick')) + '</small></div></div>';
+  var rest = TARIFS.filter(function (r) { return LOK_REC[r.id] && tarifKnown(r.id) && ids.indexOf(r.id) < 0; });
+  h += '<div class="tfLbl">' + escH(T('lkSecAvail')) + '</div>';
+  rest.forEach(function (r) { h += tarifMenuRow(r, false, arts); });
+  if (!rest.length) h += '<div class="tfSub">' + escH(T(ids.length ? 'lkNoMoreRecipe' : 'lkNoRecipe')) + '</div>';
+  return h;
+}
+/* kanvasları çiz + tarif düğmelerini bağla (host: kök eleman) */
+function tarifPaint(body, h, arts) {
   body.innerHTML = PX(h);
   var cvs = body.querySelectorAll('canvas');
-  for (i = 0; i < arts.length && i < cvs.length; i++) arts[i](cvs[i]);
+  for (var i = 0; i < arts.length && i < cvs.length; i++) arts[i](cvs[i]);
   tarifBindUI(body);
+}
+function tfRerender() { if (lokPanelOpen()) renderLokPanel(); else if (tarifOpen()) tarifRender(); }
+function tarifRender() {
+  var h, arts = [];
+  document.getElementById('tfTitle').textContent = T('tfTitle');
+  document.getElementById('tfClose').setAttribute('aria-label', T('ok'));
+  if (['rec', 'try', 'kiler'].indexOf(tf.tab) < 0) tf.tab = 'rec';
+  var tabs = [['rec', T('tfTabRec') + ' <small>' + TARIFS.filter(function (r) { return tarifKnown(r.id); }).length + '/' + TARIFS.length + '</small>'], ['try', T('tfTabTry')], ['kiler', T('tfTabKiler')]];
+  var tb = document.getElementById('tfTabs');
+  tb.innerHTML = tabs.map(function (t) { return '<button class="tab' + (t[0] === tf.tab ? ' on' : '') + '" data-tt="' + t[0] + '">' + t[1] + '</button>'; }).join('');
+  tb.onclick = function (e) { var b = e.target.closest('.tab'); if (!b) return; tf.tab = b.dataset.tt; tf.sel = null; tf.res = null; sfx.tap(); tarifRender(); };
+  h = tarifTabHTML(tf.tab, arts);
+  tarifPaint(document.getElementById('tfBody'), h, arts);
 }
 /* defterdeki ocak resmi: ocak tuvalin ortasında */
 function tarifCardLook(k) {
@@ -16474,7 +16551,6 @@ function tarifResHTML(r, arts) {
   return '<div class="tfRes bad"><p>' + escH(T('tfFail', { h: r.near ? NM(r.near.h) : '' })) + '</p><small>' + escH(T('tfSpent', { i: r.spent.map(function (g) { return NM(TING_BY[g].n); }).join(', ') })) + '</small></div>';
 }
 function tarifBindUI(root) {
-  document.getElementById('tfTabs').onclick = function (e) { var b = e.target.closest('.tab'); if (!b) return; tf.tab = b.dataset.tt; tf.sel = null; tf.res = null; sfx.tap(); tarifRender(); };
   root.onclick = function (e) {
     var b = e.target.closest('button'); if (!b) return;
     var d = b.dataset;
@@ -16487,12 +16563,12 @@ function tarifBindUI(root) {
       tf.res = tarifTry(tf.fish, tf.ings);
       if (tf.res.err) sfx.bad();
     } else if (d.tb) tarifBuy(d.tb, +d.tn);
-    else if (d.tm !== undefined) { if (tarifSetMenu(+d.tm, d.tr || null)) sfx.tap(); else sfx.bad(); }
+    else if (d.lt) { LKR.tab = d.lt; sfx.tap(); }                                  /* menü uyarısından KİLER sekmesine */
     else if (d.tassign) {
       var sl = tarifMenuAdd(d.tassign);
-      if (sl >= 0) { toast(T('tfAssigned', { n: NM(TARIF_BY[d.tassign].n) })); sfx.buy(); tf.tab = 'menu'; tf.sel = null; tf.res = null; } else sfx.bad();
+      if (sl >= 0) { toast(T('tfAssigned', { n: NM(TARIF_BY[d.tassign].n) })); sfx.buy(); tf.sel = null; tf.res = null; LKR.tab = 'menu'; } else sfx.bad();
     } else return;
-    tarifRender();
+    tfRerender();
   };
 }
 
@@ -16510,10 +16586,10 @@ if (tarifOn()) ACH.push(
   { id: 'tf_sofra', c: 'buy', ic: 'tdefter', r: { rep: 5 }, chk: function () { return !!S.tarif && tarifFound() >= 4; },
     t: { tr: 'Karadeniz Sofrası', en: 'Black Sea Table' }, d: { tr: '4 tarif keşfet.', en: 'Discover 4 recipes.' } }
 );
-HELP.tarif = { ic: '🍲', tr: ['TARİF DEFTERİ', 'Tarifler Sahil Lokantası\'nın menüsünde işe yarar: MENÜ\'ye koyduğun yemeği müşteriler sipariş eder, tabak değeri tarif çarpanıyla artar. Balık Büfesi tarif uygulamaz.',
-  'Tarifi DENE sayfasında bul: bir balık ve 1–2 malzeme seç, PİŞİR. Yanlışta malzeme gider, balık gitmez. Malzemeyi KİLER\'den al, tarifi lokantanın MENÜ\'süne koy; menü yeri lokanta seviyesi kadardır.'],
-  en: ['RECIPE BOOK', 'Recipes work on the Seaside Restaurant\'s menu: guests order what you put on the MENU and the plate value rises by the recipe multiplier. The Fish Buffet does not apply recipes.',
-  'Find recipes on the TRY page: pick a fish and 1–2 ingredients, then COOK. A wrong try uses up the ingredients, never the fish. Buy ingredients in the PANTRY and put recipes on the restaurant\'s MENU; slots equal the restaurant level.'] };
+HELP.tarif = { ic: '🍲', tr: ['TARİF DEFTERİ', 'Tarifler Sahil Lokantası\'nın menüsünde işe yarar: LOKANTA panelinin MENÜ sekmesine koyduğun yemeği müşteriler sipariş eder, tabak değeri tarif çarpanıyla artar. Balık Büfesi tarif uygulamaz.',
+  'Tarifi DENE sekmesinde bul: bir balık ve 1–2 malzeme seç, PİŞİR. Yanlışta malzeme gider, balık gitmez. Malzemeyi KİLER\'den al, tarifi MENÜ\'ye koy; MENÜ her yemeğin kilerde kaç porsiyon kaldığını gösterir. Menü yeri lokanta seviyesi kadardır.'],
+  en: ['RECIPE BOOK', 'Recipes work on the Seaside Restaurant\'s menu: guests order what you put on the RESTAURANT panel\'s MENU tab and the plate value rises by the recipe multiplier. The Fish Buffet does not apply recipes.',
+  'Find recipes on the TRY tab: pick a fish and 1–2 ingredients, then COOK. A wrong try uses up the ingredients, never the fish. Buy ingredients in the PANTRY and put recipes on the MENU, which shows how many portions each dish has left in the pantry. Slots equal the restaurant level.'] };
 
 /* ---------- metinler (TR/EN) ---------- */
 Object.assign(STR.tr, {
@@ -16572,10 +16648,10 @@ Object.assign(STR.en, {
     '.tfHead{display:flex;align-items:center;gap:8px;margin:6px 2px 8px}.tfHead b{flex:1;color:#f3d9a0;font-size:18px;letter-spacing:1.5px;text-shadow:2px 2px 0 #2a170b}' +
     '.tfHead .pxi{width:24px;height:24px}#tarifScr .tfHead .btn{min-width:44px;min-height:44px;background:#4a2a15;border-color:#2a170b;color:#f3d9a0}' +
     '#tfTabs .tab{background:#4a2a15;color:#e8cfa0;border-color:#2a170b;min-height:44px;font-size:11px}#tfTabs .tab.on{background:#f3e6c8;color:#6b1e10}' +
-    '#tfBody{background:#f3e6c8 repeating-linear-gradient(180deg,transparent 0 21px,rgba(120,80,40,.16) 21px 22px);color:#4a2c17;border:2px solid #2a170b;' +
+    '.tfPaper{background:#f3e6c8 repeating-linear-gradient(180deg,transparent 0 21px,rgba(120,80,40,.16) 21px 22px);color:#4a2c17;border:2px solid #2a170b;' +
       'padding:8px 9px 10px;min-height:280px;box-shadow:inset 6px 0 0 rgba(160,40,30,.12)}' +
-    '#tfBody .pxi{width:16px;height:16px;vertical-align:-3px}' +
-    '#tfBody .tfSub{font-size:11.5px;line-height:1.45;color:#6f4a2c;margin:0 0 6px;text-align:left}' +
+    '.tfPaper .pxi{width:16px;height:16px;vertical-align:-3px}' +
+    '.tfPaper .tfSub{font-size:11.5px;line-height:1.45;color:#6f4a2c;margin:0 0 6px;text-align:left}' +
     '.tfRec{display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px dashed rgba(90,50,20,.35)}' +
     '.tfRec canvas{width:48px;height:36px;image-rendering:pixelated;flex:none;background:rgba(255,250,235,.55);border:1px solid rgba(90,50,20,.25)}' +
     '.tfRec>div{flex:1;min-width:0}.tfRec b{display:block;color:#5a1e0e;font-size:13px}.tfRec small{display:block;font-size:11px;line-height:1.4;color:#6f4a2c}' +
@@ -16586,10 +16662,10 @@ Object.assign(STR.en, {
     '.tfBtn.on{background:#a83d2b;color:#fff3e0;border-color:#5a1010}.tfBtn.no{opacity:.5}' +
     '.tfIngB{display:flex;align-items:center;gap:3px;text-align:left}.tfIngB canvas{width:24px;height:24px;image-rendering:pixelated;flex:none}.tfIngB small{display:block;opacity:.8}' +
     '.tfBuyRow{display:flex;gap:5px;margin-top:4px}.tfBuyRow .tfBtn{flex:1}' +
-    '#tfBody .go.tfCook{background:linear-gradient(180deg,#d0573e,#a83d2b);border-color:#5a1010;color:#fff3e0;margin-top:10px}' +
+    '.tfPaper .go.tfCook{background:linear-gradient(180deg,#d0573e,#a83d2b);border-color:#5a1010;color:#fff3e0;margin-top:10px}' +
     '.tfRes{margin-top:10px;padding:8px;background:rgba(255,252,240,.6);border:1px dashed #8a5a2c;text-align:center;position:relative}' +
-    '#tfBody .tfRes p{font-size:12.5px;line-height:1.45;margin:4px 0;color:#4a2c17;text-align:center}.tfRes small{font-size:11px;color:#6f4a2c}.tfRes canvas{width:60px;height:42px;image-rendering:pixelated}' +
-    '#tfBody .tfRes.bad p{color:#7a2a18}.tfRes .tfBtn{width:100%;margin-top:6px}' +
+    '.tfPaper .tfRes p{font-size:12.5px;line-height:1.45;margin:4px 0;color:#4a2c17;text-align:center}.tfRes small{font-size:11px;color:#6f4a2c}.tfRes canvas{width:60px;height:42px;image-rendering:pixelated}' +
+    '.tfPaper .tfRes.bad p{color:#7a2a18}.tfRes .tfBtn{width:100%;margin-top:6px}' +
     '.tfStamp{display:inline-block;border:3px double #c62828;color:#c62828;padding:3px 10px;font-size:20px;letter-spacing:2px;transform:rotate(-8deg);' +
       'background:rgba(198,40,40,.06);animation:tfStamp .55s cubic-bezier(.2,1.6,.4,1) both}' +
     '@keyframes tfStamp{0%{transform:scale(2.6) rotate(-22deg);opacity:0}55%{opacity:1}100%{transform:scale(1) rotate(-8deg);opacity:1}}' +
@@ -16600,7 +16676,7 @@ Object.assign(STR.en, {
   var ov = document.createElement('div');
   ov.className = 'overlay hidden'; ov.id = 'tarifScr';
   ov.innerHTML = '<div class="card tfBook"><div class="tfHead">' + ICO('tdefter') + '<b id="tfTitle"></b><button class="btn" id="tfClose">✕</button></div>' +
-    '<div class="ctabs" id="tfTabs"></div><div id="tfBody"></div></div>';
+    '<div class="ctabs" id="tfTabs"></div><div id="tfBody" class="tfPaper"></div></div>';
   document.body.appendChild(ov);
   document.getElementById('tfClose').onclick = function () { sfx.tap(); tarifClose(); };
   ov.addEventListener('click', function (e) { if (e.target === ov) tarifClose(); });
@@ -16608,7 +16684,7 @@ Object.assign(STR.en, {
   tfBtn = document.createElement('button');
   tfBtn.className = 'btn hidden'; tfBtn.id = 'tarifBtn'; tfBtn.textContent = '🍲'; tfBtn.setAttribute('aria-label', 'Tarif Defteri');
   if (cb && cb.parentNode) cb.parentNode.insertBefore(tfBtn, cb.nextSibling);
-  tfBtn.onclick = function () { tarifShow(tf.tab || 'rec', null); };
+  tfBtn.onclick = function () { if (lokOpen()) { if (barTab) closeBar(); openLokPanel(LKR.tab || 'menu'); } else tarifShow(tf.tab || 'rec', null); };   /* v2.20-deneme: lokanta açıkken 🍲 = LOKANTA paneli */
 })();
 /* test kancaları (window.BT'ye, BT kurulduktan sonra eklenir) */
 function tarifBT() {
@@ -16624,9 +16700,11 @@ function tarifBT() {
 
 /* =========================================================
    v2.19-deneme — SAHİL LOKANTASI, AŞAMA 1 (yalnız deneme-emekci dalı; LOKANTA_TASARIM.md)
-   Oyunun en son açılan bölgesi: Balıkçı Mutfağı iskelesinin güneyine uzanan ahşap teras (AREAS[4], x 0–10, y 23.5–29.5).
-   Güneyde kum şeridi yalnız 2,3 karo (y 22–24,5), doğuda 2 karo olduğundan lokanta Mutfak iskelesinin devamı olarak suyun
-   üstüne kuruldu: oyuncu Mutfak'tan yürüyerek geçer, müşteriler yolun güney ucundan ayrı bir patikayla girer.
+   Oyunun en son açılan bölgesi. v2.20-deneme: artık iskele değil, KARADA (AREAS[4], x 15–25, y 22,8–32): kara güneye genişledi (LANDY 33),
+   yol lokantanın kapısına kadar uzar (ROAD_Y1). Alanın kuzey yarısı badanalı Karadeniz köy evi (cumbalı üst kat, kırmızı kiremit, açık
+   ocakbaşı: dolap + 4 istasyon + pass), güney yarısı denize bakan taş teras (12 masa, alçak taş duvar, asma çardak). Bulaşık tezgâhı evin
+   doğusundaki arka avluda. Oyuncu Mutfak iskelesinin güneydoğusundan yolu geçerek (LOKWALK) ya da Hizmet Sahası'nın güneyindeki arka
+   avlu kapısından gelir; müşteriler yolun kuzeyinden inip kapının önünde (yolda) sıra bekler, batı duvarındaki kapıdan girer.
    • Açılış: ALAN sekmesi, Mutfak açık + itibar Sv 5 (350). Bedel mevcut fiyat eğrisinin sonraki adımı (Emekçi Mod ×0,75).
    • Zincir: soğuk dolap (fileto, 12) → sipariş fişi → istasyon (başında aşçı/oyuncu varken pişer) → pass → garson/oyuncu masaya
      → yemek (8–12 sn) → masada ödeme yığını + kirli tabak → şef garson/oyuncu parayı Kasa'ya, bulaşıkçı/oyuncu tabağı bulaşık tezgâhına.
@@ -16660,30 +16738,37 @@ var LOK_ST = {
 };
 var LOK_STK = ['tava', 'izgara', 'tencere', 'firin'];
 var LOK_REC = {};
-LOK_STK.forEach(function (k) { LOK_ST[k].y = 24.35; LOK_ST[k].sx = LOK_ST[k].x; LOK_ST[k].sy = 23.85; LOK_ST[k].rec.forEach(function (r) { LOK_REC[r] = k; }); });
+var LOK_ROW = [27.9, 29.4, 30.9];                       /* masa sıraları (y); her sıranın yürüme şeridi y − 0,8 */
+var LOK_COL = [23.8, 21.8, 19.8, 17.8];                 /* masa sütunları: ilk masalar pass'e (doğuya) yakın */
+LOK_STK.forEach(function (k, i) { LOK_ST[k].x = 17.6 + i * 1.22; LOK_ST[k].y = 25.5; LOK_ST[k].sx = LOK_ST[k].x; LOK_ST[k].sy = 24.85; LOK_ST[k].rec.forEach(function (r) { LOK_REC[r] = k; }); });
+/* v2.20-deneme yerleşimi (belge: LOKANTA_TASARIM.md §yerleşim). Ev: x 15,7–23,65, y 23–26 (ön kenar y 26: açık ocakbaşı); teras: y 26–32;
+   arka avlu: x 23,65–25, y 22,8–26. gate = batı duvarındaki giriş; lane.x = batı şeridinde dikey yürüme şeridi; sıra yolda (q + slot·qd). */
 var LOK = {
-  gate: { x: 9.3, y: 24.1 }, in0: { x: 12.8, y: 21.9 }, in1: { x: 11.6, y: 24.1 }, q: { x: 10.75, y: 24.0 }, aisle: { x: 9.0, y: 25.05 },
-  dolap: { x: 0.95, y: 24.35, hw: 0.5, hh: 0.45, sx: 0.95, sy: 25.15 },
-  pass: { x: 7.55, y: 24.35, hw: 0.65, hh: 0.4, sx: 7.55, sy: 25.15 },
-  kasa: { x: 9.4, y: 25.35, hw: 0.35, hh: 0.4, sx: 9.0, sy: 25.55 },
-  board: { x: 9.6, y: 27.2, hw: 0.2, hh: 0.5, sx: 8.95, sy: 27.2 },
-  sink: { x: 0.95, y: 27.7, hw: 0.5, hh: 0.6, sx: 1.95, sy: 27.7 },
-  idle: { x: 5.9, y: 25.4 },
-  meze: { x: 0.8, y: 26.25, hw: 0.4, hh: 0.4 },          /* Aşama 2: meze vitrini (yalnız yükseltilince çizilir; yer hep ayrılı) */
-  saz: { x: 9.5, y: 28.75, hw: 0.45, hh: 0.45 }          /* Aşama 2: saz köşesi */
+  gate: { x: 15.1, y: 28.6 }, in0: { x: 12.9, y: 22.6 }, lane: { x: 16.45 },
+  q: { x: 13.6, y: 27.4 }, qd: { x: 0, y: -2.3 }, qm: { x: 0.3, y: -0.55 },
+  house: { x: 19.7, y: 24.5, x0: 15.7, y0: 23.0, x1: 23.65, y1: 26.0 },
+  dolap: { x: 16.5, y: 25.5, hw: 0.5, hh: 0.45, sx: 16.5, sy: 26.45 },
+  pass: { x: 22.6, y: 25.5, hw: 0.65, hh: 0.4, sx: 22.6, sy: 26.45 },
+  kasa: { x: 16.0, y: 27.65, hw: 0.35, hh: 0.4, sx: 16.8, sy: 27.65 },
+  board: { x: 15.85, y: 29.9, hw: 0.2, hh: 0.5, sx: 16.45, sy: 29.9 },
+  sink: { x: 24.15, y: 24.5, hw: 0.5, hh: 0.6, sx: 24.15, sy: 25.55 },
+  idle: { x: 19.6, y: 24.1 },
+  meze: { x: 15.95, y: 31.3, hw: 0.4, hh: 0.4 },          /* Aşama 2: meze vitrini (yalnız yükseltilince çizilir; yer hep ayrılı) — teras güneybatı köşesi */
+  saz: { x: 24.2, y: 26.6, hw: 0.45, hh: 0.45 }           /* Aşama 2: saz köşesi — teras kuzeydoğu köşesi (arka avlunun önü) */
 };
 /* Aşama 2 yükseltmeleri (belge §7). lv = gereken lokanta seviyesi, cost = Emekçi öncesi bedel (inşaat: 1. seviye = 1 gün) */
 var LOK_UP = {
-  ter: { lv: 3, cost: 3600, x: 5.0, y: 29.2, n: { tr: 'Teras', en: 'Terrace' }, d: { tr: 'Korkuluk ve şemsiye: müşteri sabrı +%15', en: 'Railing and parasols: guest patience +15%' } },
+  ter: { lv: 3, cost: 3600, x: 20.4, y: 30.1, n: { tr: 'Teras', en: 'Terrace' }, d: { tr: 'Asma çardak ve şemsiyeler: müşteri sabrı +%15', en: 'Vine pergola and parasols: guest patience +15%' } },
   mez: { lv: 1, cost: 2400, x: LOK.meze.x, y: LOK.meze.y, n: { tr: 'Meze Vitrini', en: 'Meze Display' }, d: { tr: 'Her masaya meze: ödeme +%10', en: 'Meze for every table: payment +10%' } },
   saz: { lv: 5, cost: 5600, x: LOK.saz.x, y: LOK.saz.y, n: { tr: 'Saz Köşesi', en: 'Saz Corner' }, d: { tr: 'Müşteri daha uzun oturur (masa dönüşü −%15) ama harcama +%25', en: 'Guests linger (table turnover −15%) but spend +25%' } },
   dol: { lv: 1, cost: 2800, x: LOK.dolap.x, y: LOK.dolap.y, n: { tr: 'Büyük Soğuk Dolap', en: 'Big Cooler' }, d: { tr: 'Soğuk dolap 12 → 24 fileto', en: 'Cooler 12 → 24 fillets' } }
 };
 var LOK_UPK = ['ter', 'mez', 'saz', 'dol'];
 var LOK_PAT_TER = 1.15, LOK_PAY_MEZ = 1.10, LOK_PAY_SAZ = 1.25, LOK_EAT_SAZ = 1.15, LOK_RES_FLOW = 1.3;
+var LOK_TK = { x: 19.65, y: 23.45 };                      /* mutfak sipariş panosu (arka duvarda, davlumbazın üstünde) */
 var LOK_T = [];
 (function () {
-  var cols = [8.0, 6.1, 4.2, 2.3], rows = [26.3, 27.6, 28.9];
+  var cols = LOK_COL, rows = LOK_ROW;
   for (var r = 0; r < 3; r++) for (var c = 0; c < 4; c++) {
     var i = r * 4 + c;
     LOK_T.push({ i: i, x: cols[c], y: rows[r], seats: i % 3 === 2 ? 2 : 4, sx: cols[c], sy: rows[r] - 0.8, hw: 0.6, hh: 0.5 });
@@ -16801,6 +16886,7 @@ function lokLoadWorld() {
     var dn = numIn(dirty[i], 0, 4, true);
     if (dn > 0 && i < lokTblN()) { t.dirty = dn; t.st = 'dirty'; }
   }
+  lokFixWorld();
 }
 /* ---------- alım / seviye (inşaat kuralı: L. seviye L gün) ---------- */
 function lokIns(id) { return id === 'lok_lv' || id === 'lok_tb' || (id.indexOf('lok_') === 0 && (!!LOK_ST[id.slice(4)] || !!LOK_UP[id.slice(4)])); }
@@ -16838,8 +16924,8 @@ function lokBuy(id) {
   return true;
 }
 function lokApply(id, lv, instant) {
-  var q = lokQ(), k, x = 5, y = 26.5;
-  if (id === 'lok_lv') { q.lv = lv; x = LOK.gate.x; y = LOK.gate.y; }
+  var q = lokQ(), k, x = 20, y = 28;
+  if (id === 'lok_lv') { q.lv = lv; x = LOK.house.x; y = LOK.house.y + 1.5; }
   else if (id === 'lok_tb') { q.tb = lv; var nt = LOK_T[LOK_TBN[lv - 1] - 1]; if (nt) { x = nt.x; y = nt.y; } }
   else if (LOK_UP[id.slice(4)]) { k = id.slice(4); if (k === 'dol') q.dl = 1; else q.up[k] = 1; x = LOK_UP[k].x; y = LOK_UP[k].y; }
   else { k = id.slice(4); q.st[k] = lv; x = LOK_ST[k].x; y = LOK_ST[k].y; }
@@ -16858,17 +16944,17 @@ function lokInsName(id) {
   var k = id.slice(4); return LOK_UP[k] ? NM(LOK_UP[k].n) : LOK_ST[k] ? NM(LOK_ST[k].n) : id;
 }
 function lokInsPos(id, e) {
-  if (id === 'lok_lv') return { x: LOK.gate.x, y: LOK.gate.y + 0.2, w: 1.8, h: 1.2, hh: 34, up: true };
+  if (id === 'lok_lv') return { x: LOK.house.x, y: LOK.house.y + 0.2, w: 5.4, h: 2.2, hh: 60, up: true };
   if (id === 'lok_tb') { var t = LOK_T[Math.min(11, LOK_TBN[e.lv - 2] || 0)]; return { x: t.x, y: t.y, w: 1.5, h: 1.2, hh: 18, up: true }; }
   var k = id.slice(4);
-  if (k === 'ter') return { x: LOK_UP.ter.x, y: 29.3, w: 6.4, h: 0.7, hh: 14, up: false };
+  if (k === 'ter') return { x: LOK_UP.ter.x, y: LOK_UP.ter.y, w: 8.4, h: 0.7, hh: 14, up: false };
   if (LOK_UP[k]) return { x: LOK_UP[k].x, y: LOK_UP[k].y, w: 1.3, h: 1.1, hh: 22, up: k === 'dol' };
   return { x: LOK_ST[k].x, y: LOK_ST[k].y, w: 1.2, h: 1.0, hh: 20, up: true };
 }
 /* ---------- kadro ---------- */
 function lokHireRaw(role) {
   var w = hire(role, true, -1); if (!w) return null;
-  w.x = LOK.gate.x - 0.4 + rnd(-0.3, 0.3); w.y = LOK.aisle.y + rnd(0, 0.3); w.lk = 1; w.mode = 'load'; w.lst = null;
+  w.x = LOK.gate.x + 1.0 + rnd(-0.2, 0.2); w.y = LOK.gate.y + rnd(-0.3, 0.3); w.lk = 1; w.mode = 'load'; w.lst = null;
   lokAssignCooks();
   return w;
 }
@@ -17015,10 +17101,26 @@ function lokSpawn(type) {
     var type2 = custById(L.who[i % L.who.length]) || tp;
     g.mem.push({ x: LOK.in0.x + 0.7 * i, y: LOK.in0.y - 0.5 * i, z: 0, vx: 0, vy: 0, bob: rnd(0, 6), face: 1, type: type2, tone: irnd(0, 3), hair: irnd(0, 2), hs: irnd(0, 3), ht: irnd(0, 5), path: [], sit: false });
   }
-  var slot = 0; LKR.grp.forEach(function (o) { if (o.st === 'in' || o.st === 'queue') slot++; });          /* kapının önünde (kum patikasında) sıra bekler */
-  g.mem.forEach(function (m, i2) { m.path = [{ x: LOK.in1.x + 0.9 + slot * 2.0, y: LOK.in1.y }, { x: LOK.q.x + slot * 2.0 + 0.5 * i2, y: LOK.q.y + 0.2 * (i2 % 2) }]; });
+  var slot = 0; LKR.grp.forEach(function (o) { if (o.st === 'in' || o.st === 'queue') slot++; });          /* kapının önünde (yolda) sıra bekler; sıra kuzeye uzar */
+  slot = Math.min(slot, 3);
+  g.mem.forEach(function (m, i2) { var qp = lokQPos(slot, i2); m.path = [{ x: qp.x, y: qp.y - 1.2 }, qp]; });
   LKR.grp.push(g);
   return g;
+}
+function lokQPos(slot, i) { return { x: LOK.q.x + LOK.qd.x * slot + LOK.qm.x * (i % 2), y: LOK.q.y + LOK.qd.y * slot + LOK.qm.y * i }; }
+function lokGTab(g, k) { var ta = LOK_T[g.tb]; return g.tb2 !== null && g.tb2 !== undefined && k >= ta.seats ? LOK_T[g.tb2] : ta; }
+/* kapıdan masaya yürüyüş: batı şeridi (lane.x) → masanın sırasının şeridi (masa y − 0,8) → koltuk. Sandalyelerin arasından geçmez. */
+function lokSeatWay(t, s) {
+  var ly = t.y - 0.8, P = [{ x: LOK.gate.x - 0.6, y: LOK.gate.y }, { x: LOK.gate.x + 0.55, y: LOK.gate.y }, { x: LOK.lane.x, y: LOK.gate.y }];
+  if (Math.abs(ly - LOK.gate.y) > 0.05) P.push({ x: LOK.lane.x, y: ly });
+  P.push({ x: s.x, y: ly }, { x: s.x, y: s.y });
+  return P;
+}
+function lokOutWay(t, s) {                                 /* koltuktan kapıya, oradan yolun kuzeyine */
+  var P = [];
+  if (t) { var ly = t.y - 0.8; P.push({ x: s.x, y: ly }); if (Math.abs(ly - LOK.gate.y) > 0.05) P.push({ x: LOK.lane.x, y: ly }); P.push({ x: LOK.lane.x, y: LOK.gate.y }, { x: LOK.gate.x, y: LOK.gate.y }); }
+  P.push({ x: LOK.gate.x - 1.4, y: LOK.gate.y - 0.6 }, { x: 13.2, y: 25.0 }, { x: LOK.in0.x, y: LOK.in0.y });
+  return P;
 }
 function lokMemStep(m, dt) {                              /* sıradaki noktaya yürür; yol bitince true */
   var wp = m.path[0];
@@ -17052,10 +17154,7 @@ function lokLeave(g, angry, why) {                        /* grup kalkar */
   }
   g.mem.forEach(function (m, i) {
     m.sit = false;
-    var P = [];
-    if (t) { var sp2 = lokGSeat(g, i); P.push({ x: sp2.x, y: LOK.aisle.y }, { x: LOK.aisle.x - 0.3 * i, y: LOK.aisle.y }, { x: LOK.gate.x, y: LOK.gate.y }); }
-    P.push({ x: LOK.in1.x, y: LOK.in1.y }, { x: LOK.in0.x + 0.5, y: LOK.in0.y + 0.8 });
-    m.path = P;
+    m.path = lokOutWay(t ? lokGTab(g, i) : null, t ? lokGSeat(g, i) : null);
   });
   if (angry) {
     q.ls++; S.lost++;
@@ -17087,10 +17186,7 @@ function lokLeave2(g) {                                   /* ödeme sonrası ç�
   var t = g.tb !== null ? LOK_T[g.tb] : null;
   g.mem.forEach(function (m, i) {
     m.sit = false;
-    var P = [];
-    if (t) { var s2 = lokGSeat(g, i); P.push({ x: s2.x, y: LOK.aisle.y }); }
-    P.push({ x: LOK.aisle.x - 0.3 * i, y: LOK.aisle.y }, { x: LOK.gate.x, y: LOK.gate.y }, { x: LOK.in1.x, y: LOK.in1.y }, { x: LOK.in0.x + 0.5, y: LOK.in0.y + 0.8 });
-    m.path = P;
+    m.path = lokOutWay(t ? lokGTab(g, i) : null, t ? lokGSeat(g, i) : null);
   });
 }
 function lokStartEat(t) {
@@ -17112,7 +17208,7 @@ function lokGroupTick(g, dt) {
     if (t && lokMenu().length) {
       t.st = 'seat'; t.g = g; g.tb = t.i; g.st = 'seat'; t.plates = 0;
       if (pr) { pr.b.st = 'held'; pr.b.plates = 0; g.tb2 = pr.b.i; }
-      g.mem.forEach(function (m, k) { var s2 = lokGSeat(g, k); m.path = [{ x: LOK.in1.x - 0.6, y: LOK.in1.y }, { x: LOK.gate.x, y: LOK.gate.y }, { x: Math.min(s2.x, LOK.aisle.x), y: LOK.aisle.y }, { x: s2.x, y: LOK.aisle.y }, { x: s2.x, y: s2.y }]; });
+      g.mem.forEach(function (m, k) { m.path = lokSeatWay(lokGTab(g, k), lokGSeat(g, k)); });
     } else if (g.qPat <= 0 || !lokMenu().length) lokLeave(g, g.qPat <= 0, 'queue');
   } else if (g.st === 'seat') {
     all = true; for (i = 0; i < g.mem.length; i++) if (!lokMemStep(g.mem[i], dt)) all = false;
@@ -17567,32 +17663,221 @@ function lokPlateStack(x, y, items, z, perRow) {          /* pass / bulaşık y�
     if (it.k === 'dirty') drawLokDirtyItem(sx, sy); else drawLokPlateItem(sx, sy, it.d);
   }
 }
-/* zemin: ahşap teras + mutfak şeridi + müşteri patikası. o: {x0, y0, x1, y1, lv, tb, st:{istasyon: sv}, star, t, night, gate:{x,y}, path:[{x0,y0,x1,y1}], kitchen:{x0,y0,x1,y1}} */
-function drawLokanta(o) {
-  var w = o.x1 - o.x0, h = o.y1 - o.y0, k;
-  isoQuad(o.x0, o.y0, w, h, 0, '#b88c55');
-  ctx.save(); ctx.globalAlpha = 0.3; ctx.strokeStyle = '#7d5228'; ctx.lineWidth = 1;
-  for (k = o.y0 + 0.5; k < o.y1; k += 0.5) isoLine(o.x0, k, o.x1, k, 0, '#7d5228', 1);
-  ctx.globalAlpha = 0.16;
-  for (k = o.y0 + 0.5; k < o.y1; k += 1.0) for (var c = 1; c < 5; c++) { var jx = o.x0 + ((c * 2 + (k * 2 | 0)) % 9) + 0.3; isoLine(jx, k - 0.5, jx, k, 0, '#5d3c1c', 1); }
-  ctx.restore();
-  ctx.save(); ctx.globalAlpha = 0.32;                      /* mutfak zemini: açık fayans şeridi */
-  isoQuad(o.kitchen.x0, o.kitchen.y0, o.kitchen.x1 - o.kitchen.x0, o.kitchen.y1 - o.kitchen.y0, 0, '#e2d6b8');
-  ctx.restore();
-  ctx.save(); ctx.globalAlpha = 0.5;                       /* teras kenar şeridi */
-  isoQuad(o.x0 + 0.2, o.y1 - 0.4, w - 0.4, 0.2, 0, PAL.turkuaz);
-  isoQuad(o.x0 + 0.2, o.y0 + 0.2, 0.2, h - 0.4, 0, PAL.turkuaz);
-  ctx.restore();
-  /* yoldan gelen müşteri patikası (kum) + giriş tahtası */
-  for (k = 0; k < o.path.length; k++) { var p = o.path[k]; ctx.save(); ctx.globalAlpha = 0.85; isoQuad(p.x0, p.y0, p.x1 - p.x0, p.y1 - p.y0, 0, k === 2 ? '#9a7545' : '#a98f62'); ctx.restore(); }
-  for (k = 0; k < 6; k++) { var q = o.path[0], dx = q.x0 + 0.3 + k * 0.4; px(R(pX(dx, q.y0 + 0.35)) - 1, R(pY(dx, q.y0 + 0.35, 0)), 2, 1, '#80673f'); }
+/* ---------- v2.20-deneme: köy evi + taş teras (klasik çizim; ince modda HKA.drawLokHouse / HKA.drawLokTerrace) ----------
+   Ev (LOK.house: x 15,7–23,65, y 23–26): arka duvar + açık ocakbaşı (ön kenar y 26) + cumbalı üst kat + kırmızı kiremitli kırma çatı + çatı tabelası.
+   İki parça çağrılır (o.part): 'back' = zemin, arka/batı iç duvar, davlumbaz (istasyonlardan ÖNCE çizilir) | 'front' = doğu duvarı, cumbalı üst kat, çatı, tabela,
+   baca + duman (istasyonlardan SONRA; zemin kat yüksekliği 46 px olduğundan aşçıların başı örtülmez).
+   Teras (alan − ev): o.part 'floor' (zemin: taş döşeme, kapıya patika; yer katmanı) | 'west' (batı alçak duvar, kapı boşluğu) | 'south' (güney + doğu alçak duvar, ışık zinciri direkleri)
+   | 'top' (asma çardak — Teras yükseltmesi — ve üstündeki ışıklar; en son çizilir). */
+var LOK_HG = 46, LOK_HU = 19, LOK_RH = 13;                  /* zemin kat, üst kat, çatı yüksekliği (px) */
+var LOK_PERG = { x0: 16.9, x1: 20.9, y0: 29.65, y1: 31.7 };  /* asma çardak (Teras yükseltmesi): batı yarının 3. (güney) sırası */
+var LOK_GAPY = [28.05, 29.15];                              /* batı duvarındaki giriş boşluğu */
+function lokAreaRect() { var a = AREAS[LOK_Z]; return { x0: a.x0, y0: a.y0, x1: a.x1, y1: a.y1 }; }
+function lokSmoke() { var n = 0; LOK_STK.forEach(function (k) { if (LKS[k] && LKS[k].busy && LKS[k].jobs.length) n++; }); return n / 4; }
+function lokUpObj() { return { ter: lokUpOn('ter'), mez: lokUpOn('mez'), saz: lokUpOn('saz'), dol: lokUpOn('dol') }; }
+/* o: {part: 'back'|'front', x0, y0, x1, y1 (ev ayak izi), area:{x0,y0,x1,y1}, lv, star (0–5), t, night, smoke (0–1: çalışan istasyon oranı), v2} */
+function lokHouseObj(part) {
+  var h = LOK.house, q = lokQ();
+  return { part: part, x0: h.x0, y0: h.y0, x1: h.x1, y1: h.y1, area: lokAreaRect(), lv: q.lv, star: q.star | 0, t: gameT, night: lokNight(), smoke: lokSmoke(), v2: true };
 }
-function lokDeckObj() {
-  var a = AREAS[LOK_Z], q = lokQ(), st = {};
-  LOK_STK.forEach(function (k) { st[k] = lokStLv(k); });
-  return { x0: a.x0, y0: a.y0, x1: a.x1, y1: a.y1, lv: q.lv, tb: lokTblN(), st: st, star: q.star | 0, up: { ter: lokUpOn('ter'), mez: lokUpOn('mez'), saz: lokUpOn('saz'), dol: lokUpOn('dol') }, t: gameT, night: lokNight(), gate: { x: LOK.gate.x, y: LOK.gate.y },
-    path: [{ x0: 10.0, y0: 23.7, x1: 13.2, y1: 24.45 }, { x0: 12.35, y0: 21.5, x1: 13.15, y1: 23.75 }, { x0: 8.55, y0: 23.6, x1: 10.0, y1: 24.5 }],
-    kitchen: { x0: 0.3, y0: 23.75, x1: 8.4, y1: 25.7 } };
+/* o: {part: 'floor'|'west'|'south'|'top', x0, y0, x1, y1 (teras: evin önü → güney kenar), area, tb, up:{ter,mez,saz,dol}, t, night, gate:{x,y}, gap:[y0,y1] (batı duvarı boşluğu), pergola:{x0,x1,y0,y1}, v2} */
+function lokTerObj(part) {
+  var a = AREAS[LOK_Z];
+  var q = lokQ();
+  return { part: part, x0: a.x0, y0: LOK.house.y1, x1: a.x1, y1: a.y1, area: lokAreaRect(), tb: lokTblN(), lv: q.lv, star: q.star | 0, up: lokUpObj(), t: gameT, night: lokNight(),
+    gate: { x: LOK.gate.x, y: LOK.gate.y }, gap: LOK_GAPY, pergola: LOK_PERG, v2: true };
+}
+function lokDeckObj() { return lokTerObj('floor'); }
+function drawLokanta(o) { drawLokTerrace(lokTerObj('floor')); }          /* eski ad: zemin katmanı (artık teras zemini) */
+function wallLine(x0, y0, z0, x1, y1, z1, c, w) {
+  ctx.strokeStyle = c; ctx.lineWidth = w || 1; ctx.beginPath();
+  ctx.moveTo(R(pX(x0, y0)), R(pY(x0, y0, z0))); ctx.lineTo(R(pX(x1, y1)), R(pY(x1, y1, z1))); ctx.stroke();
+}
+function lokWinBlob(x, y, z, w, h, a) {                      /* gece pencere ışığı: yumuşak halka */
+  ctx.save(); ctx.globalAlpha = a; px(R(pX(x, y)) - w / 2 - 2, R(pY(x, y, z)) - h - 2, w + 4, h + 4, '#ffd98f'); ctx.restore();
+}
+function drawLokHouse(o) {
+  var X0 = o.x0, Y0 = o.y0, X1 = o.x1, Y1 = o.y1, HG = LOK_HG, HU = LOK_HU, RH = LOK_RH, t = o.t, night = o.night, k, i, j;
+  var WH = PAL.lime, STN = '#b3a78b', TIM = '#7a4e2a', TIMD = '#5d3c1c', SHU = '#3d7a68';
+  if (o.part !== 'front') {
+    /* ---- iç mekân: taş fayans zemin, arka duvar (taş kaide + badana), batı duvarının içi ---- */
+    isoQuad(X0 + 0.25, Y0 + 0.25, X1 - X0 - 0.5, Y1 - Y0 - 0.25, 0, '#d7ccb0');
+    ctx.save(); ctx.globalAlpha = 0.3;
+    for (k = Y0 + 0.75; k < Y1; k += 0.5) isoLine(X0 + 0.25, k, X1 - 0.25, k, 0, '#9d9176', 1);
+    for (k = X0 + 0.75; k < X1; k += 0.5) isoLine(k, Y0 + 0.25, k, Y1, 0, '#9d9176', 1);
+    ctx.restore();
+    isoQuad(X0 + 0.25, Y1 - 0.12, X1 - X0 - 0.5, 0.12, 0.2, '#8d8068');                       /* ön eşik */
+    wallQ(X0, Y0, X1, Y0, 0, HG, '#eee6d0'); wallQ(X0, Y0, X1, Y0, 0, 10, STN); wallQ(X0, Y0, X1, Y0, 10, 11, '#8d8068');
+    wallQ(X0 + 0.25, Y0, X0 + 0.25, Y1, 0, HG, '#dcd2b8'); wallQ(X0 + 0.25, Y0, X0 + 0.25, Y1, 0, 10, '#a09478');
+    for (k = 1; k < 8; k++) wallLine(X0 + k * (X1 - X0) / 8, Y0, 11, X0 + k * (X1 - X0) / 8, Y0, HG, 'rgba(120,100,70,.10)');   /* sıva çatlakları */
+    /* arka pencere + davlumbaz + raflar */
+    winF(21.9, 22.9, Y0 + 0.01, 18, 36, night ? '#ffd98f' : '#8fb9cf', TIM); wallQ(22.4, Y0 + 0.01, 22.42, Y0 + 0.01, 18, 36, TIM);
+    isoBox(17.0, Y0 + 0.02, 4.8, 0.85, 29, 38, '#d39a54', '#a8693a', '#8a5430');
+    isoBox(17.1, Y0 + 0.02, 4.6, 0.85, 26, 29, '#7d4a28', '#5d3c1c', '#6f4526');
+    for (k = 0; k < 6; k++) px(R(pX(17.3 + k * 0.8, Y0 + 0.9)) - 1, R(pY(17.3 + k * 0.8, Y0 + 0.9, 26)), 2, 5 + (k % 3) * 2, k % 2 ? '#8d959b' : '#b87333');      /* asılı kepçe/tava */
+    isoBox(15.95, Y0 + 0.02, 1.0, 0.3, 24, 26, TIM, TIMD, '#6a4426');
+    for (k = 0; k < 4; k++) { var pxx = R(pX(16.1 + k * 0.22, Y0 + 0.3)), pyy = R(pY(16.1 + k * 0.22, Y0 + 0.3, 26)); px(pxx, pyy - 3, 3, 3, ['#d8d2c0', '#c0503a', '#e8c547', '#7fb069'][k]); }
+    isoBox(22.9, Y0 + 0.02, 0.5, 0.3, 24, 26, TIM, TIMD, '#6a4426');
+    crate(16.4, Y0 + 1.15, 0, '#a9743f'); crate(16.4, Y0 + 1.15, 4, '#b8834a'); crate(16.8, Y0 + 1.15, 0, '#9a6a3a');
+    isoBox(22.75, Y0 + 0.9, 0.5, 0.5, 0, 11, '#9a6a3a', '#6f4526', '#85583a'); px(R(pX(23.0, Y0 + 1.4)) - 3, R(pY(23.0, Y0 + 1.4, 6)), 7, 1, '#4a2f1c');   /* fıçı */
+  }
+  if (o.part === 'back') return;
+  /* ---- doğu duvarı (dış yüz): badana + taş kaide, arka kapı, pencere ---- */
+  wallQ(X1, Y0, X1, Y1, 0, HG, '#ddd3bb'); wallQ(X1, Y0, X1, Y1, 0, 10, '#a99d84'); wallQ(X1, Y0, X1, Y1, 10, 11, '#85795f');
+  winR(X1 + 0.004, Y0 + 0.35, Y0 + 1.15, 0, 31, '#6b4425', TIMD); wallLine(X1 + 0.004, Y0 + 0.75, 2, X1 + 0.004, Y0 + 0.75, 30, '#4a2f1c');
+  winR(X1 + 0.004, Y1 - 1.1, Y1 - 0.4, 17, 34, night ? '#ffd98f' : '#6f9ab4', TIM);
+  /* ---- zemin kat önü: açık ocakbaşı — yalnız köşe direkleri + kirişi (iki ucu), ortası açık ---- */
+  var YF = Y1 + 0.3, XA = X0 - 0.1, XB = X1 + 0.1;
+  isoBox(X0 - 0.02, Y1 - 0.14, 0.22, 0.24, 0, HG - 3, '#a06a3a', TIMD, '#7d4f2a');
+  isoBox(X1 - 0.22, Y1 - 0.14, 0.22, 0.24, 0, HG - 3, '#a06a3a', TIMD, '#7d4f2a');
+  wallQ(X0 - 0.02, Y1, X0 + 0.2, Y1, HG - 18, HG - 3, '#8a5a32'); wallQ(X1 - 0.22, Y1, X1, Y1, HG - 18, HG - 3, '#8a5a32');     /* köşe dirsekleri */
+  wallQ(X0, Y1, X1, Y1, HG - 6, HG - 3, '#8a5a32'); wallQ(X0, Y1, X1, Y1, HG - 3, HG - 2.5, '#5d3c1c');
+  /* ---- cumbalı üst kat ---- */
+  isoBox(XA, Y0, XB - XA, YF - Y0, HG - 3, HG + HU, '#f1ebda', '#efe8d4', '#d9cfb6');
+  wallQ(XA, YF, XB, YF, HG - 3, HG, TIMD);                                                     /* taban kirişi */
+  for (j = 0; j < 7; j++) { var bxx = XA + 0.45 + j * ((XB - XA - 0.9) / 6); isoBox(bxx - 0.07, Y1 - 0.1, 0.14, 0.46, HG - 11, HG - 3, TIM, TIMD, '#6a4426'); }   /* cumba dirsekleri */
+  wallQ(XA, YF, XB, YF, HG + HU - 2, HG + HU, TIMD);                                          /* üst kuşak */
+  wallQ(XB, Y0, XB, YF, HG - 3, HG, TIMD); wallQ(XB, Y0, XB, YF, HG + HU - 2, HG + HU, TIMD);
+  wallQ(XB, Y0, XB, YF, HG, HG + HU, '#d9cfb6');
+  winR(XB + 0.004, Y0 + 0.9, Y0 + 1.7, HG + 5, HG + 15, night ? '#ffd98f' : '#6f9ab4', TIM);
+  var tx = [XA, 17.25, 18.5, 21.1, 22.45, XB - 0.12];                                          /* düşey ahşap gergi (göz dolması) */
+  for (k = 0; k < tx.length; k++) wallQ(tx[k], YF, tx[k] + 0.12, YF, HG, HG + HU, TIM);
+  wallQ(XA, YF, XB, YF, HG + 10, HG + 11, 'rgba(122,78,42,.55)');
+  /* sol/sağ pencereler + panjurlar + çiçeklik */
+  var wins = [[15.75, 16.7], [17.4, 18.35], [21.3, 22.25], [22.7, 23.65]];
+  for (k = 0; k < wins.length; k++) {
+    var w0 = wins[k][0], w1 = wins[k][1];
+    winF(w0, w1, YF + 0.004, HG + 6, HG + 15, night ? '#ffd98f' : '#7ca8c0', TIM);
+    wallQ((w0 + w1) / 2, YF + 0.005, (w0 + w1) / 2 + 0.03, YF + 0.005, HG + 6, HG + 15, TIM); wallQ(w0, YF + 0.005, w1, YF + 0.005, HG + 10.5, HG + 11.3, TIM);
+    wallQ(w0 - 0.2, YF + 0.006, w0 - 0.04, YF + 0.006, HG + 5, HG + 16, SHU); wallQ(w1 + 0.04, YF + 0.006, w1 + 0.2, YF + 0.006, HG + 5, HG + 16, SHU);
+    wallQ(w0 - 0.04, YF + 0.01, w1 + 0.04, YF + 0.01, HG + 3, HG + 6, '#7a4e2a');
+    for (j = 0; j < 4; j++) px(R(pX(w0 + 0.1 + j * 0.25, YF + 0.02)), R(pY(w0 + 0.1 + j * 0.25, YF + 0.02, HG + 6)) - 2, 2, 2, j % 2 ? '#d94a6a' : '#e5533d');
+    if (night) lokWinBlob((w0 + w1) / 2, YF, HG + 6, 12, 12, 0.22);
+  }
+  /* cumba (öne çıkan pencere kasası) */
+  var BX0 = 18.55, BX1 = 21.05, BY = YF + 0.3;
+  isoBox(BX0, YF, BX1 - BX0, 0.3, HG - 1, HG + HU, '#f6f0e0', '#f3ecda', '#d9cfb6');
+  isoQuad(BX0, YF, BX1 - BX0, 0.3, HG - 1, '#8a5a32');
+  wallQ(BX0, BY, BX1, BY, HG - 1, HG + 2, TIMD); wallQ(BX0, BY, BX1, BY, HG + HU - 2, HG + HU, TIMD);
+  for (j = 0; j < 3; j++) {
+    var cx0 = BX0 + 0.12 + j * 0.8, cx1 = cx0 + 0.68;
+    winF(cx0, cx1, BY + 0.004, HG + 5, HG + 15, night ? '#ffd98f' : '#7ca8c0', TIM);
+    wallQ((cx0 + cx1) / 2, BY + 0.005, (cx0 + cx1) / 2 + 0.03, BY + 0.005, HG + 5, HG + 15, TIM);
+    if (night) lokWinBlob((cx0 + cx1) / 2, BY, HG + 5, 9, 12, 0.25);
+  }
+  for (j = 0; j < 4; j++) wallQ(BX0 + j * 0.8 + 0.02, BY, BX0 + j * 0.8 + 0.14, BY, HG, HG + HU, TIM);
+  /* fenerler (zemin kat kirişinden sarkar) */
+  for (k = 0; k < 3; k++) {
+    var lx = [17.1, 20.0, 22.7][k], lsx = R(pX(lx, Y1 + 0.02)), lsy = R(pY(lx, Y1 + 0.02, HG - 6));
+    px(lsx, lsy, 1, 4, TIMD); px(lsx - 2, lsy + 4, 5, 6, '#3a2a1c'); px(lsx - 1, lsy + 5, 3, 4, night ? '#ffd98f' : '#b8a878');
+    if (night) { ctx.save(); ctx.globalAlpha = 0.28; px(lsx - 6, lsy + 1, 13, 13, '#ffd98f'); ctx.restore(); }
+  }
+  /* ---- kırma çatı: kırmızı kiremit ---- */
+  var RX0 = XA - 0.3, RX1 = XB + 0.3, RY0 = Y0 - 0.2, RY1 = YF + 0.5, RZ = HG + HU, ym = (RY0 + RY1) / 2, ri = Math.min((RY1 - RY0) / 2, (RX1 - RX0) / 2);
+  wallQ(RX0, RY1, RX1, RY1, RZ - 2, RZ + 1, '#5d3c1c'); wallQ(RX1, RY0, RX1, RY1, RZ - 2, RZ + 1, '#4a2f1c');          /* saçak alnı */
+  roofHip(RX0, RX1, RY0, RY1, RZ + 1, RH, '#c9553b', '#a63c28', '#7d2a1c', 15);
+  isoLine(RX0 + ri, ym, RX1 - ri, ym, RZ + 1 + RH, '#6d2418', 2); isoLine(RX0 + ri, ym, RX1 - ri, ym, RZ + 2 + RH, '#d9684a', 1);
+  wallLine(RX0, RY1, RZ + 1, RX0 + ri, ym, RZ + 1 + RH, '#7d2c1d'); wallLine(RX1, RY1, RZ + 1, RX1 - ri, ym, RZ + 1 + RH, '#7d2c1d');
+  /* ---- çatı tabelası: mahyada duran pano (SAHİL LOKANTASI) + 5 yıldız ---- */
+  var SX0 = 17.4, SX1 = 22.0, SZ = RZ + 1 + RH, SH = 19;
+  vline(SX0 + 0.3, ym, SZ - 2, SZ + 3, TIMD); vline(SX1 - 0.3, ym, SZ - 2, SZ + 3, TIMD); vline((SX0 + SX1) / 2, ym, SZ - 2, SZ + 2, TIMD);
+  wallQ(SX0 - 0.05, ym + 0.01, SX1 + 0.05, ym + 0.01, SZ + 1, SZ + SH + 1, PAL.edge);
+  wallQ(SX0, ym + 0.02, SX1, ym + 0.02, SZ + 2, SZ + SH, '#7a1f2b'); wallQ(SX0, ym + 0.02, SX1, ym + 0.02, SZ + SH - 1, SZ + SH, '#d9a441');
+  wallQ(SX0, ym + 0.03, SX1, ym + 0.03, SZ + 2, SZ + 3, '#d9a441');
+  var TXT = UP(NM({ tr: 'SAHİL LOKANTASI', en: 'SEASIDE RESTAURANT' })), STAR5 = ['..x..', 'xxxxx', '.xxx.', '.x.x.'];
+  for (j = 0; j < TXT.length; j++) if (TXT.charAt(j) !== ' ') uiText(SX0 + 0.2 + (j + 0.5) * (SX1 - SX0 - 0.4) / TXT.length, ym, SZ + 14.5, TXT.charAt(j), '#ffe9b0', 8, 1, 0, 0);   /* harfler mahya eğiminde */
+  for (j = 0; j < 5; j++) {
+    var on2 = j < o.star, sxw = SX0 + (SX1 - SX0) * (0.5 + (j - 2) * 0.13), ssx = R(pX(sxw, ym)) - 2, ssy = R(pY(sxw, ym, SZ + 8));
+    for (var sr = 0; sr < 4; sr++) for (var sc = 0; sc < 5; sc++) if (STAR5[sr].charAt(sc) === 'x') px(ssx + sc, ssy + sr - 1, 1, 1, on2 ? '#ffd23a' : '#5a2a2e');
+  }
+  if (night) { ctx.save(); ctx.globalAlpha = 0.16; px(R(pX(SX0, ym)) - 2, R(pY(SX0, ym, SZ + SH + 2)), R(pX(SX1, ym) - pX(SX0, ym)) + 4, SH + 5, '#ffd98f'); ctx.restore(); }
+  /* ---- baca + duman ---- */
+  var CHX = 22.55, CHY = 24.25, CZ = RZ + 1 + 3;
+  isoBox(CHX - 0.28, CHY - 0.28, 0.56, 0.56, CZ - 6, CZ + 19, '#b3a78b', '#7d7259', '#968a70');
+  isoQuad(CHX - 0.36, CHY - 0.36, 0.72, 0.72, CZ + 19, '#7d7259'); isoQuad(CHX - 0.2, CHY - 0.2, 0.4, 0.4, CZ + 19.5, '#2a1c12');
+  for (k = 0; k < 3; k++) wallQ(CHX - 0.28, CHY + 0.28, CHX + 0.28, CHY + 0.28, CZ - 2 + k * 6, CZ - 1.4 + k * 6, '#8d8068');
+  var lvl = 0.25 + (o.smoke || 0) * 0.75, bx = pX(CHX, CHY), by = pY(CHX, CHY, CZ + 20);
+  ctx.save();
+  for (i = 0; i < 7; i++) {
+    var ph = ((t * (0.32 + lvl * 0.2) + i / 7) % 1), rr = 1.5 + ph * 4.5;
+    ctx.globalAlpha = (1 - ph) * (0.18 + 0.32 * lvl);
+    px(R(bx + ph * 18 + Math.sin(t * 1.3 + i * 2) * 2) - rr, R(by - ph * 30) - rr, rr * 2, rr * 2, i % 2 ? '#ebe6dc' : '#cfcac0');
+  }
+  ctx.restore();
+}
+function lokStoneWall(x0, y0, x1, y1, h) {
+  isoBox(x0, y0, x1 - x0, y1 - y0, 0, h || 9, '#dcd2b6', '#b9ad90', '#c9bea2');
+}
+function lokBulbs(x0, y0, z0, x1, y1, z1, n, sag, o) {         /* iki nokta arasında sarkan ışık zinciri */
+  var i, u, x, y, z, sx, sy;
+  ctx.save(); ctx.globalAlpha = o.night ? 0.55 : 0.5; ctx.strokeStyle = '#4a3b2a'; ctx.lineWidth = 1; ctx.beginPath();
+  for (i = 0; i <= 12; i++) { u = i / 12; x = x0 + (x1 - x0) * u; y = y0 + (y1 - y0) * u; z = z0 + (z1 - z0) * u - sag * Math.sin(Math.PI * u); if (i) ctx.lineTo(R(pX(x, y)), R(pY(x, y, z))); else ctx.moveTo(R(pX(x, y)), R(pY(x, y, z))); }
+  ctx.stroke(); ctx.restore();
+  for (i = 1; i < n; i++) {
+    u = i / n; x = x0 + (x1 - x0) * u; y = y0 + (y1 - y0) * u; z = z0 + (z1 - z0) * u - sag * Math.sin(Math.PI * u);
+    sx = R(pX(x, y)); sy = R(pY(x, y, z));
+    if (o.night) { ctx.save(); ctx.globalAlpha = 0.22 + 0.06 * Math.sin(o.t * 3 + i); px(sx - 3, sy - 2, 7, 7, '#ffd98f'); ctx.restore(); px(sx - 1, sy, 3, 3, '#fff3c4'); px(sx, sy + 1, 1, 1, '#ffffff'); }
+    else px(sx - 1, sy, 2, 3, i % 2 ? '#e8d9a0' : '#d9c58a');
+  }
+}
+function drawLokTerrace(o) {
+  var A = o.area, k, i, j;
+  if (o.part === 'floor') {
+    /* taş döşeme (meydan taşıyla uyumlu): bütün alan; ev kendi iç zeminini çizer */
+    isoQuad(A.x0, A.y0, A.x1 - A.x0, A.y1 - A.y0, 0, '#cbc0a6');
+    ctx.save(); ctx.globalAlpha = 0.4;
+    for (k = A.y0 + 0.5; k < A.y1; k += 0.5) isoLine(A.x0, k, A.x1, k, 0, '#a2977d', 1);
+    for (k = A.x0 + 0.55; k < A.x1; k += 0.55) isoLine(k, A.y0, k, A.y1, 0, '#a2977d', 1);
+    ctx.restore();
+    ctx.save(); ctx.globalAlpha = 0.5;                                            /* kareli taş şeridi: ev önü + kapıdan giren yürüyüş şeridi */
+    isoQuad(LOK.house.x0, LOK.house.y1, LOK.house.x1 - LOK.house.x0, 1.15, 0, '#b8ad92');
+    isoQuad(A.x0, o.gate.y - 0.42, A.x1 - A.x0, 0.84, 0, '#bdb298');
+    ctx.restore();
+    for (k = 0; k < 26; k++) {                                                    /* derzlerde yosun/ot */
+      var gx = A.x0 + 0.3 + ((k * 7.13) % 1) * (A.x1 - A.x0 - 0.6), gy = A.y0 + 0.4 + ((k * 3.71) % 1) * (A.y1 - A.y0 - 0.8);
+      px(R(pX(gx, gy)), R(pY(gx, gy, 0)), 2, 1, k % 3 ? '#8a9a5a' : '#a3b066');
+    }
+    isoQuad(A.x0 - 0.45, o.gate.y - 0.5, 0.5, 1.0, 0, '#b9ac90');                 /* yoldan kapıya taş patika */
+    return;
+  }
+  if (o.part === 'west') {                                                        /* batı alçak duvarı: yolun kenarı, kapı boşluklu */
+    lokStoneWall(A.x0, A.y0, A.x0 + 0.18, o.gap[0], 9);
+    lokStoneWall(A.x0, o.gap[1], A.x0 + 0.18, A.y1, 9);
+    for (k = 0; k < 3; k++) { var wy = [A.y0 + 0.2, 27.0, 30.6][k]; isoBox(A.x0 - 0.04, wy, 0.26, 0.26, 0, 13, '#e4dac0', '#bdb194', '#cdc2a6'); }
+    return;
+  }
+  if (o.part === 'south') {                                                       /* güney (deniz) ve doğu alçak taş duvar + ışık zinciri direkleri */
+    lokStoneWall(A.x0, A.y1 - 0.3, A.x1, A.y1, 9);
+    lokStoneWall(A.x1 - 0.18, A.y0, A.x1, A.y1 - 0.3, 9);
+    for (k = 0; k < 5; k++) { var px0 = A.x0 + 0.1 + k * (A.x1 - A.x0 - 0.5) / 4; isoBox(px0, A.y1 - 0.36, 0.26, 0.3, 0, 13, '#e4dac0', '#bdb194', '#cdc2a6'); }
+    for (k = 0; k < 3; k++) { var ey = [26.2, 28.9, 31.0][k]; isoBox(A.x1 - 0.24, ey, 0.26, 0.26, 0, 13, '#e4dac0', '#bdb194', '#cdc2a6'); }
+    var pol = [];
+    for (k = 0; k < 5; k++) pol.push([A.x0 + 0.23 + k * (A.x1 - A.x0 - 0.5) / 4, A.y1 - 0.2]);
+    for (k = 0; k < pol.length - 1; k++) lokBulbs(pol[k][0], pol[k][1], 15, pol[k + 1][0], pol[k + 1][1], 15, 8, 4, o);
+    for (k = 0; k < 3; k++) { var e0 = [26.35, 29.05, 31.1][k]; }
+    /* köşe saksıları */
+    var pots = [[A.x1 - 0.55, A.y1 - 0.6], [A.x0 + 0.55, A.y1 - 0.6]];
+    pots.forEach(function (p) { isoBox(p[0] - 0.2, p[1] - 0.2, 0.4, 0.4, 0, 8, '#b4643e', '#8a4528', '#9c5232'); for (var l = 0; l < 6; l++) px(R(pX(p[0], p[1])) - 5 + l * 2, R(pY(p[0], p[1], 8)) - 4 - (l % 3), 2, 2 + l % 2, l % 2 ? '#e5533d' : '#4a7a3a'); });
+    return;
+  }
+  /* 'top': asma çardak (Teras yükseltmesi) + üstündeki ışıklar */
+  var P = o.pergola, tz = 36;
+  if (!o.up || !o.up.ter) return;
+  var px4 = [[P.x0, P.y0], [P.x1, P.y0], [P.x0, P.y1], [P.x1, P.y1], [(P.x0 + P.x1) / 2, P.y1]];
+  for (k = 0; k < px4.length; k++) { isoBox(px4[k][0] - 0.07, px4[k][1] - 0.07, 0.14, 0.14, 0, tz, '#a06a3a', '#6f4526', '#85583a'); }
+  isoBox(P.x0 - 0.07, P.y0 - 0.06, P.x1 - P.x0 + 0.14, 0.12, tz, tz + 3, '#a06a3a', '#6f4526', '#85583a');
+  isoBox(P.x0 - 0.07, P.y1 - 0.06, P.x1 - P.x0 + 0.14, 0.12, tz, tz + 3, '#a06a3a', '#6f4526', '#85583a');
+  isoBox(P.x0 - 0.06, P.y0, 0.12, P.y1 - P.y0, tz, tz + 3, '#a06a3a', '#6f4526', '#85583a');
+  isoBox(P.x1 - 0.06, P.y0, 0.12, P.y1 - P.y0, tz, tz + 3, '#a06a3a', '#6f4526', '#85583a');
+  for (k = 1; k < 8; k++) { var rx = P.x0 + (P.x1 - P.x0) * k / 8; isoLine(rx, P.y0, rx, P.y1, tz + 3.5, '#7d5230', 1); }
+  for (k = 0; k < 34; k++) {                                                      /* asma yaprakları + salkımlar */
+    var u = (k * 0.6180339) % 1, v = (k * 0.7548776) % 1, lx = P.x0 + (P.x1 - P.x0) * u, ly = P.y0 + (P.y1 - P.y0) * v;
+    var lsx = R(pX(lx, ly)), lsy = R(pY(lx, ly, tz + 4));
+    px(lsx - 2, lsy - 1, 4, 3, k % 3 ? '#4f8a3c' : '#6fa24a'); px(lsx - 1, lsy - 2, 2, 1, '#8dbf5a');
+    if (k % 5 === 0) { px(lsx, lsy + 2, 2, 3, '#6a3f86'); px(lsx - 1, lsy + 4, 2, 2, '#7d4f9a'); }
+  }
+  lokBulbs(P.x0, P.y1, tz + 2, P.x1, P.y1, tz + 2, 9, 3, o); lokBulbs(P.x0, P.y0, tz + 2, P.x1, P.y0, tz + 2, 9, 3, o);
+  lokBulbs(P.x0, P.y0, tz + 2, P.x0, P.y1, tz + 2, 4, 3, o); lokBulbs(P.x1, P.y0, tz + 2, P.x1, P.y1, tz + 2, 4, 3, o);
 }
 /* masa. o: {i, x, y, seats: 2|4, st: 'free'|'seat'|'wait'|'eat'|'dirty', n (grup), plates (servis edilen), want (istenen), dirty, pay ($), mood: 0–1, dish: tarifId|null, t, meze: bool (meze vitrini kuruluysa masada meze tabakları)}; muhtar grubu iki komşu masayı kullanır: ikinci masa 'seat' gibi çizilir */
 function drawLokTable(o) {
@@ -17714,13 +17999,13 @@ function drawLokFix(o) {
     var i2;
     if (o.part === 'umb') {
       sy = R(pY(x, y, 0));
-      var ux = R(pX(x + 0.5, y - 0.45)), uy = R(pY(x + 0.5, y - 0.45, 0)), cy2 = R(pY(x, y, 50));
-      px(ux, uy - 46, 1, 40, '#7d5a3a'); px(ux - 1, uy - 7, 3, 2, '#5d3c1c');                                           /* direk */
+      var ux = R(pX(x + 0.5, y - 0.45)), uy = R(pY(x + 0.5, y - 0.45, 0)), cy2 = R(pY(x, y, 40));
+      px(ux, uy - 36, 1, 31, '#7d5a3a'); px(ux - 1, uy - 7, 3, 2, '#5d3c1c');                                           /* direk */
       for (i2 = 0; i2 < 8; i2++) {                                                                                      /* kırmızı-beyaz dilimli kubbe */
-        var hw2 = 5 + i2 * 2, y2 = cy2 + i2;
+        var hw2 = 4 + i2 * 1.6, y2 = cy2 + i2;
         for (var c2 = -hw2; c2 < hw2; c2 += 5) px(sx + c2, y2, Math.min(5, hw2 - c2), 1, (((c2 + 40) / 5) | 0) % 2 ? '#f4f1ea' : '#c0503a');
       }
-      px(sx - 21, cy2 + 8, 42, 1, PAL.edge); px(sx - 4, cy2 - 2, 8, 2, '#c0503a'); px(sx - 1, cy2 - 4, 2, 2, '#7d5a3a');
+      px(sx - 17, cy2 + 8, 34, 1, PAL.edge); px(sx - 4, cy2 - 2, 8, 2, '#c0503a'); px(sx - 1, cy2 - 4, 2, 2, '#7d5a3a');
     } else {
       var n2 = Math.max(1, Math.round((o.x1 - o.x0) / 0.55));
       isoLine(o.x0, o.y, o.x1, o.y, 11, '#e8e2d2', 2); isoLine(o.x0, o.y, o.x1, o.y, 5, '#b8b0a0', 1);
@@ -17747,41 +18032,41 @@ function drawLokFix(o) {
     px(sx + 5, sy - 26, 1, 20, 'rgba(240,230,200,.7)');
     if (o.night || Math.sin(o.t * 2.2) > 0.6) { px(sx - 8, sy - 20 - ((o.t * 6) % 4 | 0), 2, 2, '#ffd98a'); px(sx - 12, sy - 14, 2, 2, '#ffd98a'); }   /* ♪ */
     labelAt(x, y, 36, T('lkSazB'), '#ffe9b0', '');
-  } else {                                                  /* tabela + giriş kapısı */
+  } else {                                                  /* giriş kapısı (batı duvarı): taş sütunlar + ahşap kemer, fener zinciri, asma; rezervasyon sayacı. Ad + yıldızlar artık evin çatı tabelasında */
+    var gy0 = LOK_GAPY[0] + 0.02, gy1 = LOK_GAPY[1] - 0.02, gx = x - 0.12, k2, n3 = o.night;
     shadow(x, y, 0.9);
-    sy = R(pY(x, y, 0));
-    px(sx - 18, sy - 40, 3, 40, PAL.woodDark); px(sx + 15, sy - 40, 3, 40, PAL.woodDark);
-    px(sx - 20, sy - 52, 40, 13, PAL.edge); px(sx - 19, sy - 51, 38, 11, '#7a1f2b'); px(sx - 19, sy - 51, 38, 1, '#b04a58');
-    uiText(x, y, 49, UP(NM({ tr: 'SAHİL LOKANTASI', en: 'SEASIDE RESTAURANT' })), '#ffe9b0', 7, 1, 0, 0);
-    var STAR5 = ['..x..', 'xxxxx', '.xxx.', '.x.x.'];                                                                  /* yıldızlar: tabela altında, 5 adet (dolu = son eleştiri) */
-    for (var s2 = 0; s2 < 5; s2++) {
-      var on2 = s2 < o.star;
-      for (var sr = 0; sr < 4; sr++) for (var sc = 0; sc < 5; sc++) if (STAR5[sr].charAt(sc) === 'x') px(sx - 14 + s2 * 6 + sc, sy - 37 + sr, 1, 1, on2 ? '#ffd23a' : '#5a4a3a');
-    }
-    ctx.save(); ctx.globalAlpha = o.night ? 0.55 : 0.2;                                                    /* fener zinciri */
-    for (var b = 0; b < 8; b++) px(sx - 17 + b * 5, sy - 40 + (b % 2) * 2, 2, 2, '#ffd98a');
-    ctx.restore();
-    if (o.res) uiBadge(x, y, 64, T(o.res.kind === 'nisan' ? 'lkResBN' : 'lkResBD') + ' ' + o.res.got + '/' + o.res.n, '#ffd0e8');
+    isoBox(gx, gy0 - 0.2, 0.3, 0.3, 0, 30, '#e4dac0', '#bdb194', '#cdc2a6');                                       /* sütunlar */
+    isoBox(gx, gy1 - 0.1, 0.3, 0.3, 0, 30, '#e4dac0', '#bdb194', '#cdc2a6');
+    isoBox(gx - 0.02, gy0 - 0.2, 0.34, 0.34, 30, 33, '#cdc2a6', '#9d9176', '#b3a88c'); isoBox(gx - 0.02, gy1 - 0.12, 0.34, 0.34, 30, 33, '#cdc2a6', '#9d9176', '#b3a88c');
+    isoBox(gx + 0.02, gy0 - 0.2, 0.2, gy1 - gy0 + 0.4, 32, 37, '#8a5a32', '#5d3c1c', '#6f4526');                    /* ahşap kemer kirişi */
+    sy = R(pY(gx + 0.2, y, 32));
+    for (k2 = 0; k2 < 9; k2++) px(R(pX(gx + 0.2, gy0 - 0.1 + k2 * (gy1 - gy0 + 0.2) / 8)) - 1, R(pY(gx + 0.2, gy0 - 0.1 + k2 * (gy1 - gy0 + 0.2) / 8, 31)) + (k2 % 2), 2 + (k2 % 3 === 0 ? 1 : 0), 3, k2 % 3 ? '#4f8a3c' : '#6fa24a');   /* asma yaprakları */
+    px(sx - 1, sy - 5, 1, 5, PAL.woodDark); px(sx - 3, sy - 1, 5, 6, '#3a2a1c'); px(sx - 2, sy, 3, 4, n3 ? '#ffd98f' : '#b8a878');   /* fener */
+    if (n3) { ctx.save(); ctx.globalAlpha = 0.3; px(sx - 8, sy - 3, 15, 14, '#ffd98f'); ctx.restore(); }
+    if (o.res) uiBadge(x, y, 46, T(o.res.kind === 'nisan' ? 'lkResBN' : 'lkResBD') + ' ' + o.res.got + '/' + o.res.n, '#ffd0e8');
   }
 }
 /* sabit eşya + masa + istasyon + misafirler: sıralı çizim listesine */
 function lokPush(push) {
   if (!lokOpen()) return;
   var q = lokQ(), N = lokTblN(), i;
-  var fx = function (k, d, extra) { var o = { k: k, x: d.x, y: d.y, n: 0, cap: 0, items: [], menu: [], lv: q.lv, star: q.star | 0, t: gameT, night: lokNight() }; for (var e in extra) o[e] = extra[e]; return o; };
+  var fx = function (k, d, extra) { var o = { k: k, x: d.x, y: d.y, n: 0, cap: 0, items: [], menu: [], lv: q.lv, star: q.star | 0, t: gameT, night: lokNight(), v2: true }; for (var e in extra) o[e] = extra[e]; return o; };
+  push(38.5, function () { drawLokTerrace(lokTerObj('west')); });             /* batı alçak duvarı */
+  push(39.0, function () { drawLokHouse(lokHouseObj('back')); });             /* ev: iç mekân (istasyonlardan önce) */
+  push(46.6, function () { drawLokHouse(lokHouseObj('front')); });            /* ev: cumbalı üst kat + çatı + tabela (zemin kat 46 px: aşçılar örtülmez) */
+  push(80, function () { drawLokTerrace(lokTerObj('south')); });              /* güney + doğu duvarı, ışık zinciri */
+  if (lokUpOn('ter')) push(81, function () { drawLokTerrace(lokTerObj('top')); });   /* asma çardak */
   push(LOK.dolap.x + LOK.dolap.y, function () { drawLokFix(fx('dolap', LOK.dolap, { n: lokDolapN(), cap: lokDolapCap(), big: lokUpOn('dol') })); });
   push(LOK.pass.x + LOK.pass.y, function () { drawLokFix(fx('pass', LOK.pass, { items: LKR.pass })); });
   push(LOK.kasa.x + LOK.kasa.y, function () { drawLokFix(fx('kasa', LOK.kasa, {})); });
   push(LOK.sink.x + LOK.sink.y, function () { var it = []; for (var j = 0; j < Math.min(8, LKR.sinkN % 9); j++) it.push({ k: 'dirty' }); drawLokFix(fx('sink', LOK.sink, { items: it, n: 0 })); });
-  push(4.4 + 23.7, function () { var it = []; LKR.board.forEach(function (od) { if (!od.dead) it.push({ d: od.rec, left: Math.max(0, od.n - od.cooked), tb: od.tb }); }); if (it.length) drawLokFix(fx('tickets', { x: 4.4, y: 23.7 }, { items: it })); });
+  push(LOK_TK.x + LOK_TK.y, function () { var it = []; LKR.board.forEach(function (od) { if (!od.dead) it.push({ d: od.rec, left: Math.max(0, od.n - od.cooked), tb: od.tb }); }); if (it.length) drawLokFix(fx('tickets', LOK_TK, { items: it })); });
   push(LOK.board.x + LOK.board.y, function () { drawLokFix(fx('board', LOK.board, { menu: q.menu.slice(0, 5).map(function (id) { return id && lokRecOK(id) ? id : null; }) })); });
   push(LOK.gate.x + LOK.gate.y + 0.3, function () { var rs = q.res && q.res.st === 'on' ? { kind: q.res.kind, got: q.res.got | 0, n: q.res.n } : null; drawLokFix(fx('sign', LOK.gate, { res: rs })); });
   if (lokUpOn('mez')) push(LOK.meze.x + LOK.meze.y, function () { drawLokFix(fx('meze', LOK.meze, {})); });
   if (lokUpOn('saz')) push(LOK.saz.x + LOK.saz.y, function () { drawLokFix(fx('saz', LOK.saz, {})); });
-  if (lokUpOn('ter')) {                                                      /* teras: güney kenarda korkuluk + son sıra masalarda şemsiye */
-    var rx = [0.4, 2.7, 5.0, 7.3, 9.6];
-    for (i = 0; i < 4; i++) (function (x0, x1) { push(x1 + 29.45 + 0.1, function () { drawLokFix(fx('teras', { x: (x0 + x1) / 2, y: 29.45 }, { part: 'rail', x0: x0, x1: x1, y: 29.45 })); }); })(rx[i], rx[i + 1]);
-    for (i = 8; i < N && i < 12; i++) (function (d) { push(d.x + d.y + 0.35, function () { drawLokFix(fx('teras', { x: d.x, y: d.y }, { part: 'umb' })); }); })(LOK_T[i]);
+  if (lokUpOn('ter')) {                                                      /* teras: doğu yarının 2. ve 3. sırasındaki masalarda şemsiye (batı yarı çardağın altında; yalnız güney sıra) */
+    for (i = 8; i < N && i < 12; i++) (function (d) { if (d.i % 4 > 1) return; push(d.x + d.y + 0.35, function () { drawLokFix(fx('teras', { x: d.x, y: d.y }, { part: 'umb' })); }); })(LOK_T[i]);
   }
   LOK_STK.forEach(function (k) {
     var d = LOK_ST[k], lv = lokStLv(k), s = LKS[k];
@@ -17826,8 +18111,21 @@ function lokDrawFx() {                                      /* Emekçi Mod: bekl
 }
 
 /* ---------- açılış ---------- */
+/* v2.20-deneme: eski kayıt / açılış sonrası dünyayı yeni alana güvenle taşı: yürünemeyen yerdeki kadro kapıya, alanın içine düşen süs kendi yerine */
+function lokFixWorld() {
+  if (!lokOpen()) return;
+  lokCrew().forEach(function (w) {
+    if (!isFinite(w.x) || !isFinite(w.y) || !canStand(w.x, w.y)) { w.x = LOK.gate.x + 1.0 + rnd(-0.2, 0.2); w.y = LOK.gate.y + rnd(-0.3, 0.3); w.vx = 0; w.vy = 0; }
+  });
+  var a = AREAS[LOK_Z], moved = false;
+  DECOR.forEach(function (d) {
+    if (d.fixed || !d.got || d.box) return;
+    if (d.x > a.x0 - 0.1 && d.x < a.x1 + 0.1 && d.y > a.y0 - 0.1 && d.y < a.y1 + 0.1) { d.x = d.hx; d.y = d.hy; moved = true; }
+  });
+  if (moved) decorSync();
+}
 function lokOnOpen() {                                      /* ALAN'dan açıldı: bölge anında kurulur */
-  lokQ();
+  lokQ(); lokFixWorld();
   setTimeout(function () { if (lokOpen()) toast(T('lkOpened')); }, 900);
 }
 var lokTap0 = null;
@@ -17837,7 +18135,7 @@ function lokTapEnd(e) {                                    /* lokanta tabelasın
   if (!t || t.id !== e.pointerId || paused || !S.started || !lokOpen() || ARR.on) return;
   if (Date.now() - t.t > 450 || Math.hypot(e.clientX - t.x, e.clientY - t.y) > 12) return;
   var v = arrVirt(e.clientX, e.clientY), k = Math.max(14, 30 / v.k), hit = false;
-  [[LOK.board.x, LOK.board.y, 40], [LOK.gate.x, LOK.gate.y, 54]].forEach(function (b) {
+  [[LOK.board.x, LOK.board.y, 40], [LOK.gate.x, LOK.gate.y, 44], [18.4, 24.6, 108], [19.7, 24.6, 108], [21.0, 24.6, 108]].forEach(function (b) {   /* menü tahtası, kapı, çatı tabelası */
     var sx = pX(b[0], b[1]) + camOX, sy = pY(b[0], b[1], 0) + camOY;
     if (Math.abs(v.x - sx) < k + 8 && v.y > sy - b[2] - 8 && v.y < sy + 6) hit = true;
   });
@@ -17845,30 +18143,52 @@ function lokTapEnd(e) {                                    /* lokanta tabelasın
 }
 function lokNearBoard() { return lokOpen() && dist2(player.x, player.y, LOK.board.sx, LOK.board.sy) < 2.2; }
 /* ---------- panel ---------- */
+/* v2.20-deneme: LOKANTA paneli tek yer: MENÜ / TARİFLER / DENE / KİLER / İSTASYONLAR / KADRO / GELİŞTİRMELER / OLAYLAR.
+   İlk dört sekme Tarif Defteri'nin render fonksiyonlarını (tarifTabHTML / tarifMenuHTML) kullanır; defter yalnız lokanta yokken ayrı açılır. */
+var LOK_TABS = ['menu', 'rec', 'try', 'kiler', 'st', 'crew', 'up', 'ev'];
+LKR.tab = 'menu';
 (function () {
   var css = document.createElement('style'); css.id = 'lokCss';
-  css.textContent = '#lokScr{z-index:12}#lokScr .card{max-height:90vh;overflow:auto}#lokScr .card p{font-size:12px;line-height:1.4}' +
+  css.textContent = '#lokScr{z-index:12}#lokScr .card{display:flex;flex-direction:column;max-height:92vh;max-height:92dvh;max-width:440px;width:100%;box-sizing:border-box;padding:10px 9px 9px}' +
+    '#lokScr h2{font-size:15px;margin:2px 0}#lokScr .card p{font-size:11.5px;line-height:1.35;margin:0 0 6px}' +
+    '#lokTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:6px;flex:none}' +
+    '#lokTabs .tab{font:inherit;min-height:44px;font-size:9.5px;letter-spacing:0;padding:3px 1px;background:#0f2231;color:var(--ink2);border:2px solid var(--edge);cursor:pointer;line-height:1.15;position:relative;overflow:hidden}' +
+    '#lokTabs .tab.on{background:#2a4a5e;color:var(--gold)}#lokTabs .tab small{opacity:.8}#lokTabs .tab.w:after{content:"!";position:absolute;top:0;right:3px;color:#ff8a6a;font-size:12px;font-weight:bold}' +
+    '#lokRows{overflow-y:auto;overflow-x:hidden;flex:1 1 auto;min-height:0;-webkit-overflow-scrolling:touch;margin-bottom:8px}' +
+    '#lokRows.tfPaper{padding:8px 8px 10px;min-height:260px}#lokScr .go{flex:none;min-height:44px}' +
     '#lokRows h3{font-size:11px;letter-spacing:1px;color:var(--gold);margin:8px 0 4px}' +
     '#lokRows .trow .stp{flex-direction:column;align-items:flex-end;gap:2px;min-width:78px}#lokRows .trow .stp small{font-size:9.5px;color:var(--ink2)}' +
-    '#lokRows .trow button.pub{min-width:78px;font-size:10.5px;letter-spacing:.5px;padding:0 6px}#lokRows .trow button.pub:disabled{opacity:.45;cursor:default}' +
-    '#lokRows .trow.live{border-color:var(--gold)}#lokRows .trow.lock{opacity:.6}';
+    '#lokRows .trow button.pub{min-width:78px;min-height:44px;font-size:10.5px;letter-spacing:.5px;padding:0 6px}#lokRows .trow button.pub:disabled{opacity:.45;cursor:default}' +
+    '#lokRows .trow.live{border-color:var(--gold)}#lokRows .trow.lock{opacity:.6}' +
+    '.tfMenuRow{align-items:center}.tfMenuRow .tfMBtn{flex:none;min-width:72px;min-height:44px}.tfMenuRow:not(.inm){opacity:.92}' +
+    '.tfMenuRow.inm{background:rgba(255,201,74,.14)}.tfMenuRow.warn{background:rgba(200,60,40,.14)}.tfMenuRow .tfPor{color:#6b3a14}.tfMenuRow .tfPor i{font-style:normal;font-weight:bold;color:#7a1f10}.tfMenuRow .tfPor.no{color:#a02a14;font-weight:bold}' +
+    '.tfWarn{margin:4px 0 6px;padding:6px 7px;border:2px solid #a83d2b;background:rgba(200,60,40,.16);color:#7a2a18;font-size:11.5px;line-height:1.35;display:flex;gap:6px;align-items:center;flex-wrap:wrap}.tfWarn .tfBtn{flex:none;min-width:64px}' +
+    '.tfEmptyIc{width:48px;height:36px;flex:none;display:flex;align-items:center;justify-content:center;font-size:20px;color:#b49a7a;border:1px dashed rgba(90,50,20,.35)}';
   document.head.appendChild(css);
   var ov = document.createElement('div');
   ov.className = 'overlay hidden'; ov.id = 'lokScr';
-  ov.innerHTML = '<div class="card"><h2 id="lokTitle"></h2><p id="lokSub"></p><div id="lokRows"></div><button class="go" id="lokClose"></button></div>';
+  ov.innerHTML = '<div class="card"><h2 id="lokTitle"></h2><p id="lokSub"></p><div id="lokTabs"></div><div id="lokRows"></div><button class="go" id="lokClose"></button></div>';
   document.body.appendChild(ov);
   document.getElementById('lokClose').onclick = function () { closeLokPanel(); };
+  document.getElementById('lokTabs').addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('button[data-lt]') : null; if (!b) return;
+    LKR.tab = b.dataset.lt; LKR.cf = null; sfx.tap(); renderLokPanel(); document.getElementById('lokRows').scrollTop = 0;
+  });
   document.getElementById('lokRows').addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('button[data-a]') : null; if (!b || b.disabled) return;
     lokPanelAct(b.dataset.a, b.dataset.id);
   });
 })();
 function lokPanelOpen() { var e = document.getElementById('lokScr'); return !!e && !e.classList.contains('hidden'); }
-function openLokPanel() {
+function openLokPanel(tab) {
   if (!lokOpen()) { toast(T('lkNeed')); return false; }
-  LKR.cf = null; renderLokPanel(); document.getElementById('lokScr').classList.remove('hidden'); syncPause(); sfx.tap(); return true;
+  if (typeof tab === 'string' && LOK_TABS.indexOf(tab) >= 0) LKR.tab = tab;
+  if (LOK_TABS.indexOf(LKR.tab) < 0) LKR.tab = 'menu';
+  LKR.cf = null; renderLokPanel(); document.getElementById('lokScr').classList.remove('hidden'); syncPause(); sfx.tap();
+  if (LKR.tab === 'rec' || LKR.tab === 'try' || LKR.tab === 'kiler' || LKR.tab === 'menu') helpOnce('tarif');
+  return true;
 }
-function closeLokPanel() { document.getElementById('lokScr').classList.add('hidden'); LKR.cf = null; syncPause(); }
+function closeLokPanel() { document.getElementById('lokScr').classList.add('hidden'); LKR.cf = null; tf.res = null; syncPause(); save(); }
 function lokPanelAct(a, id) {
   if (a === 'buy' || a === 'hire' || a === 'train' || a === 'fire') {                       /* ikinci dokunuş onaylar */
     var key = a + ':' + id;
@@ -17899,48 +18219,65 @@ function lkBuyRow(ic, nm, small, id, lvTxt) {
   else right = lkBtn('buy', id, lokInsLv(id) === 1 && lvTxt === 'new' ? T('lkBuy') : T('lkUp'), why === 'cash' || why === 'lv', money(lokCost(id))) + (why === 'lv' ? '<small>' + T('lkNeedLv', { l: lokNeedLv(id) }) + '</small>' : '');
   return lkRow(ic, nm, small, right, why === 'max' ? 'live' : '');
 }
+function lokPantryWarn() {                                  /* menüdeki, kileri boşalan tarifler (sekme uyarısı) */
+  var o = [], m = lokMenu();
+  m.forEach(function (id) { if (tarifPortions(TARIF_BY[id]) < 1) o.push(id); });
+  return o;
+}
+function lokTabLabel(t) {
+  var q = lokQ();
+  return { menu: T('lkTabMenu') + ' <small>' + lokMenu().length + '/' + q.lv + '</small>', rec: T('tfTabRec'), try: T('tfTabTry'), kiler: T('tfTabKiler'), st: T('lkTabSt'),
+    crew: T('lkTabCrew') + ' <small>' + lokCrew().length + '/' + lokCrewCap() + '</small>', up: T('lkTabUp'), ev: T('lkTabEv') }[t];
+}
 function renderLokPanel() {
-  var q = lokQ(), h = '', i, crew = lokCrew();
+  var q = lokQ(), h = '', i, crew = lokCrew(), tab = LOK_TABS.indexOf(LKR.tab) >= 0 ? LKR.tab : 'menu', arts = [], body = document.getElementById('lokRows'), warn = lokPantryWarn();
   document.getElementById('lokTitle').textContent = '🍽 ' + T('lkName') + ' • ' + T('level') + q.lv;
   document.getElementById('lokSub').textContent = T('lkSub', { t: lokTblN(), a: crew.length, b: lokCrewCap(), s: q.sv, m: lokMenu().length, l: q.lv, d: lokDolapN(), c: lokDolapCap() });
   document.getElementById('lokClose').textContent = T('close');
-  h += '<h3>' + T('lkSecLv') + '</h3>';
-  h += lkBuyRow('🏖', T('lkName') + ' ' + T('level') + q.lv + (q.lv < LOK_MAXLV ? ' → ' + (q.lv + 1) : ''), T('lkLvD', { m: Math.min(5, q.lv + 1), c: 3 + Math.min(5, q.lv + 1) }), 'lok_lv');
-  h += lkBuyRow('🪑', T('lkTables') + ' ' + lokTblN() + (q.tb < LOK_MAXTB ? ' → ' + LOK_TBN[q.tb] : ''), T('lkTbD'), 'lok_tb');
-  h += '<h3>' + T('lkSecSt') + '</h3>';
-  LOK_STK.forEach(function (k) {
-    var lv = lokStLv(k), d = LOK_ST[k], recs = d.rec.map(function (r) { return NM(TARIF_BY[r].n); }).join(', ');
-    h += lkBuyRow(k === 'tava' ? '🍳' : k === 'izgara' ? '🔥' : k === 'tencere' ? '🍲' : '🥘', NM(d.n) + (lv ? ' ' + T('level') + lv : ''),
-      T('lkStD', { t: d.t, s: Math.max(1, lv || 1), r: recs }), 'lok_' + k, lv ? 'up' : 'new');
-  });
-  h += '<h3>' + T('lkSecUp') + '</h3>';                                          /* Aşama 2 yükseltmeleri */
-  LOK_UPK.forEach(function (k) { h += lkBuyRow({ ter: '⛱', mez: '🥗', saz: '🪕', dol: '🧊' }[k], NM(LOK_UP[k].n), NM(LOK_UP[k].d), 'lok_' + k, 'new'); });
-  h += '<h3>' + T('lkSecEv') + '</h3>';                                          /* olaylar: rezervasyon, muhtar, eleştirmen */
-  if (q.res && q.res.st === 'on') h += lkRow('💍', T('lkResT'), T('lkResPanel', lokResVars(q.res)) + ' • ' + T(lokResToday() ? 'lkToday' : 'lkTomorrow'), '<span class="tv">' + (q.res.got | 0) + '/' + q.res.n + '</span>', 'live');
-  else h += lkRow('💍', T('lkResT'), T(q.lv >= 2 ? 'lkResNone' : 'lkResLv2'), '', 'lock');
-  h += lkRow('🎖', T('lkMuT'), T(q.lv >= 2 ? 'lkMuD' : 'lkResLv2'), '', q.lv >= 2 ? '' : 'lock');
-  h += lkRow('🍷', T('lkCritT'), q.lv >= 3 ? T('lkCritD', { s: q.star ? new Array((q.star | 0) + 1).join('★') + new Array(6 - (q.star | 0)).join('☆') : '—' }) : T('lkCritLv3'), '', q.lv >= 3 ? '' : 'lock');
-  h += '<h3>' + T('lkSecMenu', { a: lokMenu().length, b: q.lv }) + '</h3>';
-  var known = TARIFS.filter(function (r) { return LOK_REC[r.id] && tarifOn() && tarifKnown(r.id); });
-  known.forEach(function (r) {
-    var inM = q.menu.slice(0, q.lv).indexOf(r.id) >= 0, st = LOK_REC[r.id], built = lokStLv(st) > 0;
-    h += lkRow(inM && built ? '✅' : '🍴', NM(r.n), NM(LOK_ST[st].n) + ' • ' + money(lokPlateVal(r.id)) + (built ? '' : ' • ' + T('lkNoSt')),
-      '<button class="pub" data-a="menu" data-id="' + r.id + '"' + (!built && !inM ? ' disabled' : '') + '>' + (inM ? T('lkMenuDel') : T('lkMenuAdd')) + '</button>', inM && built ? 'live' : '');
-  });
-  if (!known.length) h += '<div class="empty">' + T('lkNoRecipe') + '</div>';
-  h += '<h3>' + T('lkSecCrew', { a: crew.length, b: lokCrewCap() }) + '</h3>';
-  LOK_ROLES.forEach(function (r) {
-    var why = lokHireWhy(r), n = lokCrew(r).length;
-    h += lkRow(ROLES[r].icon, NM(ROLES[r].n) + (n ? ' ×' + n : ''), NM(ROLES[r].d) + ' • ' + money(workerWage({ role: r, lv: 1 })) + perMin(),
-      lkBtn('hire', r, T('lkHire'), !!why, money(lokHireCost(r))) + (why && why !== 'cash' ? '<small>' + T('lkHire_' + why) + '</small>' : ''));
-  });
-  crew.forEach(function (w) {
-    var wi = workers.indexOf(w), usta = ustaOK(w) && wLv(w) < 3;
-    h += lkRow(ROLES[w.role].icon, escH(w.name) + ' - ' + NM(ROLES[w.role].n) + emekLvTag(w), money(workerWage(w)) + perMin() + (w.lst ? ' • ' + NM(LOK_ST[w.lst].n) : ''),
-      (usta ? lkBtn('train', '' + wi, '🎓 ' + T('em_lv')[wLv(w)], S.cash < ustaCost(w), money(ustaCost(w))) : (ustaOK(w) ? '<span class="tv">★ ' + T('em_lvMax') + '</span>' : '')) +
-      '<button class="pub" data-a="fire" data-id="' + wi + '">' + (LKR.cf === 'fire:' + wi ? T('confirm') : T('lkFire')) + '</button>');
-  });
-  document.getElementById('lokRows').innerHTML = PX(h);
+  document.getElementById('lokTabs').innerHTML = LOK_TABS.map(function (t) {
+    return '<button class="tab' + (t === tab ? ' on' : '') + (t === 'menu' && warn.length ? ' w' : '') + '" data-lt="' + t + '">' + lokTabLabel(t) + '</button>';
+  }).join('');
+  var paper = tab === 'menu' || tab === 'rec' || tab === 'try' || tab === 'kiler';
+  body.classList.toggle('tfPaper', paper);
+  if (paper) {
+    h = tab === 'menu' ? tarifMenuHTML(arts) : tarifTabHTML(tab, arts);
+    tarifPaint(body, h, arts);
+    return;
+  }
+  if (tab === 'st') {
+    h += '<h3>' + T('lkSecSt') + '</h3>';
+    LOK_STK.forEach(function (k) {
+      var lv = lokStLv(k), d = LOK_ST[k], recs = d.rec.map(function (r) { return NM(TARIF_BY[r].n); }).join(', ');
+      h += lkBuyRow(k === 'tava' ? '🍳' : k === 'izgara' ? '🔥' : k === 'tencere' ? '🍲' : '🥘', NM(d.n) + (lv ? ' ' + T('level') + lv : ''),
+        T('lkStD', { t: d.t, s: Math.max(1, lv || 1), r: recs }), 'lok_' + k, lv ? 'up' : 'new');
+    });
+  } else if (tab === 'crew') {
+    h += '<h3>' + T('lkSecCrew', { a: crew.length, b: lokCrewCap() }) + '</h3>';
+    LOK_ROLES.forEach(function (r) {
+      var why = lokHireWhy(r), n = lokCrew(r).length;
+      h += lkRow(ROLES[r].icon, NM(ROLES[r].n) + (n ? ' ×' + n : ''), NM(ROLES[r].d) + ' • ' + money(workerWage({ role: r, lv: 1 })) + perMin(),
+        lkBtn('hire', r, T('lkHire'), !!why, money(lokHireCost(r))) + (why && why !== 'cash' ? '<small>' + T('lkHire_' + why) + '</small>' : ''));
+    });
+    crew.forEach(function (w) {
+      var wi = workers.indexOf(w), usta = ustaOK(w) && wLv(w) < 3;
+      h += lkRow(ROLES[w.role].icon, escH(w.name) + ' - ' + NM(ROLES[w.role].n) + emekLvTag(w), money(workerWage(w)) + perMin() + (w.lst ? ' • ' + NM(LOK_ST[w.lst].n) : ''),
+        (usta ? lkBtn('train', '' + wi, '🎓 ' + T('em_lv')[wLv(w)], S.cash < ustaCost(w), money(ustaCost(w))) : (ustaOK(w) ? '<span class="tv">★ ' + T('em_lvMax') + '</span>' : '')) +
+        '<button class="pub" data-a="fire" data-id="' + wi + '">' + (LKR.cf === 'fire:' + wi ? T('confirm') : T('lkFire')) + '</button>');
+    });
+  } else if (tab === 'up') {
+    h += '<h3>' + T('lkSecLv') + '</h3>';
+    h += lkBuyRow('🏖', T('lkName') + ' ' + T('level') + q.lv + (q.lv < LOK_MAXLV ? ' → ' + (q.lv + 1) : ''), T('lkLvD', { m: Math.min(5, q.lv + 1), c: 3 + Math.min(5, q.lv + 1) }), 'lok_lv');
+    h += lkBuyRow('🪑', T('lkTables') + ' ' + lokTblN() + (q.tb < LOK_MAXTB ? ' → ' + LOK_TBN[q.tb] : ''), T('lkTbD'), 'lok_tb');
+    h += '<h3>' + T('lkSecUp') + '</h3>';                                          /* Aşama 2 yükseltmeleri */
+    LOK_UPK.forEach(function (k) { h += lkBuyRow({ ter: '⛱', mez: '🥗', saz: '🪕', dol: '🧊' }[k], NM(LOK_UP[k].n), NM(LOK_UP[k].d), 'lok_' + k, 'new'); });
+  } else {                                                                         /* ev: olaylar — rezervasyon, muhtar, eleştirmen */
+    h += '<h3>' + T('lkSecEv') + '</h3>';
+    if (q.res && q.res.st === 'on') h += lkRow('💍', T('lkResT'), T('lkResPanel', lokResVars(q.res)) + ' • ' + T(lokResToday() ? 'lkToday' : 'lkTomorrow'), '<span class="tv">' + (q.res.got | 0) + '/' + q.res.n + '</span>', 'live');
+    else h += lkRow('💍', T('lkResT'), T(q.lv >= 2 ? 'lkResNone' : 'lkResLv2'), '', 'lock');
+    h += lkRow('🎖', T('lkMuT'), T(q.lv >= 2 ? 'lkMuD' : 'lkResLv2'), '', q.lv >= 2 ? '' : 'lock');
+    h += lkRow('🍷', T('lkCritT'), q.lv >= 3 ? T('lkCritD', { s: q.star ? new Array((q.star | 0) + 1).join('★') + new Array(6 - (q.star | 0)).join('☆') : '—' }) : T('lkCritLv3'), '', q.lv >= 3 ? '' : 'lock');
+  }
+  body.innerHTML = PX(h);
 }
 /* başarım: Gurmenin Gözdesi (mevcut sisteme; S.lok.gs = en yüksek eleştirmen puanı) */
 ACH.push({ id: 'lk_gurme', c: 'mus', ic: 'star', r: { rep: 10 }, chk: function () { return !!S.lok && (S.lok.gs | 0) >= 5; },
@@ -17952,9 +18289,13 @@ Object.assign(STR.tr, {
   lkFirst: 'Lokanta: önce bir istasyon kur ve menüye bilinen bir tarif koy (LOKANTA paneli)',
   lkSub: '{t} masa • kadro {a}/{b} • menü {m}/{l} • dolap {d}/{c} • {s} grup ağırlandı',
   lkSecLv: 'LOKANTA', lkSecSt: 'MUTFAK İSTASYONLARI', lkSecMenu: 'MENÜ {a}/{b}', lkSecCrew: 'KADRO {a}/{b}',
+  lkTabMenu: 'MENÜ', lkTabSt: 'İSTASYONLAR', lkTabCrew: 'KADRO', lkTabUp: 'GELİŞTİRMELER', lkTabEv: 'OLAYLAR',
+  lkStation: 'İstasyon: {s}', lkPort: '{n} porsiyon', lkPortNone: 'Kiler boş: {i}', lkSecAvail: 'MENÜYE EKLENEBİLİR',
+  lkMenuSub: 'Lokantanın menüsü: {a}/{n} yer (lokanta seviyesi kadar). Müşteriler menüden sipariş verir; her tabak tarifin malzemelerinden 1 porsiyon harcar. İstasyonu kurulu olmalı.',
+  lkWarnPantry: 'Kilerde malzemesi biten tarif: {r}. Müşteriler bunu sipariş edemez!', lkNoMoreRecipe: 'Menüye eklenebilecek başka bilinen tarif yok.',
   lkLvD: 'Menü yeri {m}, kadro {c}, daha çok müşteri', lkTbD: 'Masa seviyesi lokanta Sv+1\'i geçmez (2 → 4 → 6 → 9 → 12)',
   lkStD: '{t} sn/tabak • {s} eşzamanlı • {r}', lkBuy: 'KUR', lkUp: 'YÜKSELT', lkMax: 'MAKS', lkEmpty: 'boş', lkNeedLv: 'Önce Lokanta Sv {l}',
-  lkNoSt: 'istasyon yok', lkNoRecipe: 'Bilinen tarif yok: Tarif Defteri › DENE ile yeni tarif bul.', lkMenuAdd: 'MENÜYE', lkMenuDel: 'ÇIKAR', lkMenuFull: 'Menü dolu: Lokanta seviyesi kadar yer var',
+  lkNoSt: 'istasyon yok', lkNoRecipe: 'Bilinen tarif yok: DENE sekmesinde yeni tarif bul.', lkMenuAdd: 'MENÜYE', lkMenuDel: 'ÇIKAR', lkMenuFull: 'Menü dolu: Lokanta seviyesi kadar yer var',
   lkHire: 'KİRALA', lkFire: 'ÇIKAR', lkHire_full: 'Kadro dolu (Lokanta Sv)', lkHire_role: 'Bu rol dolu', lkHire_stat: 'Önce istasyon kur (her istasyona bir aşçı)',
   lkLvDone: '🍽 {n} Sv {l}!', lkTbDone: '🪑 {t} masa hazır!', lkStDone: '🔥 {n} Sv {l} hazır!',
   lkDolap: 'DOLAP', lkPass: 'PASS', lkKasa: 'KASA', lkSink: 'BULAŞIK', lkMenuB: 'MENÜ',
@@ -17978,9 +18319,13 @@ Object.assign(STR.en, {
   lkFirst: 'Restaurant: first build a station and put a known recipe on the menu (RESTAURANT panel)',
   lkSub: '{t} tables • crew {a}/{b} • menu {m}/{l} • cooler {d}/{c} • {s} parties served',
   lkSecLv: 'RESTAURANT', lkSecSt: 'KITCHEN STATIONS', lkSecMenu: 'MENU {a}/{b}', lkSecCrew: 'CREW {a}/{b}',
+  lkTabMenu: 'MENU', lkTabSt: 'STATIONS', lkTabCrew: 'CREW', lkTabUp: 'UPGRADES', lkTabEv: 'EVENTS',
+  lkStation: 'Station: {s}', lkPort: '{n} portions', lkPortNone: 'Pantry empty: {i}', lkSecAvail: 'AVAILABLE FOR THE MENU',
+  lkMenuSub: 'The restaurant\'s menu: {a}/{n} slot(s) (the restaurant level). Guests order from the menu; every plate uses 1 portion of the recipe\'s ingredients. Its station must be built.',
+  lkWarnPantry: 'Recipe out of pantry stock: {r}. Guests cannot order it!', lkNoMoreRecipe: 'No other known recipe to add to the menu.',
   lkLvD: 'Menu slots {m}, crew {c}, more customers', lkTbD: 'Table level never passes restaurant Lv+1 (2 → 4 → 6 → 9 → 12)',
   lkStD: '{t} s/plate • {s} at once • {r}', lkBuy: 'BUILD', lkUp: 'UPGRADE', lkMax: 'MAX', lkEmpty: 'empty', lkNeedLv: 'Restaurant Lv {l} first',
-  lkNoSt: 'no station', lkNoRecipe: 'No known recipes: find new ones in Recipe Book › TRY.', lkMenuAdd: 'ADD', lkMenuDel: 'REMOVE', lkMenuFull: 'Menu is full: one slot per restaurant level',
+  lkNoSt: 'no station', lkNoRecipe: 'No known recipes: find new ones on the TRY tab.', lkMenuAdd: 'ADD', lkMenuDel: 'REMOVE', lkMenuFull: 'Menu is full: one slot per restaurant level',
   lkHire: 'HIRE', lkFire: 'FIRE', lkHire_full: 'Crew full (restaurant Lv)', lkHire_role: 'Role is full', lkHire_stat: 'Build a station first (one cook per station)',
   lkLvDone: '🍽 {n} Lv {l}!', lkTbDone: '🪑 {t} tables ready!', lkStDone: '🔥 {n} Lv {l} ready!',
   lkDolap: 'COOLER', lkPass: 'PASS', lkKasa: 'TILL', lkSink: 'SINK', lkMenuB: 'MENU',
@@ -18060,6 +18405,17 @@ function hook(name, f0) {
       catch (err) { if (!_artErr[name]) { _artErr[name] = 1; console.warn('HKA.' + name + ':', err && err.message); } }
     }
     return f0(a, b, c, d, e, f, g);
+  };
+}
+/* v2.20-deneme: lokanta kancaları yeni (karada, ev + teras) yerleşimde. Eski iskele sanatı (HKA.drawLokanta/Table/Station/Crew/Fix) yeni yerleşime göre çizilmediğinden
+   ince modda DEVRE DIŞI (klasik çizim görünür); her kancaya o.v2 = true verilir. Ana sanatçı yeni yerleşimi çizince HKA.lokV2 = true koyar → kancalar yeniden çağrılır
+   (o.v2 true gelir; kanca yine false dönebilir). Yeni kancalar HKA.drawLokHouse / HKA.drawLokTerrace bu kapıya bağlı değildir. */
+function hookLok(name, f0) {
+  var h = hook(name, f0);
+  return function (o) {
+    if (o && typeof o === 'object') o.v2 = true;
+    if (window.HKA && !HKA.lokV2) return f0(o);
+    return h(o);
   };
 }
 (function () {
@@ -18148,11 +18504,13 @@ function hook(name, f0) {
   drawFamePano = hook('drawFamePano', drawFamePano);   /* v2.16: Şeref Panosu (o, çerçeveler[5]) */
   drawNewsboy = hook('drawNewsboy', drawNewsboy);     /* v2.16: gazeteci çocuk (b: GZB) */
   drawGzPaper = hook('drawGzPaper', drawGzPaper);     /* v2.16: yerdeki özel sayı (o: GZD) */
-  drawLokanta = hook('drawLokanta', drawLokanta);     /* v2.19-deneme: Sahil Lokantası zemini + patika (o: {x0, y0, x1, y1, lv, tb, st:{tava,izgara,tencere,firin}, star, t, night, gate:{x,y}, path:[{x0,y0,x1,y1}×3], kitchen:{x0,y0,x1,y1}}) */
-  drawLokTable = hook('drawLokTable', drawLokTable);  /* o: {i, x, y, seats: 2|4, st: 'free'|'seat'|'wait'|'eat'|'dirty', n, plates, want, dirty, pay, payItems, mood, dish, t} */
-  drawLokStation = hook('drawLokStation', drawLokStation);   /* o: {id: 'tava'|'izgara'|'tencere'|'firin', x, y, lv, busy, prog, wait, n, slots, dish, cook, t} */
-  drawLokCrew = hook('drawLokCrew', drawLokCrew);     /* o: {a, role: 'asci'|'garson'|'bulasik'|'sef', lv, outfit, carry, plates, dirty, money}; a: işçi (x, y, vx, vy, bob, face, carry) */
-  drawLokFix = hook('drawLokFix', drawLokFix);        /* o: {k: 'dolap'|'pass'|'kasa'|'sink'|'board'|'sign'|'tickets', x, y, n, cap, items, menu, lv, star, t, night} */
+  drawLokanta = hookLok('drawLokanta', drawLokanta);     /* v2.19-deneme: Sahil Lokantası zemini + patika (o: {x0, y0, x1, y1, lv, tb, st:{tava,izgara,tencere,firin}, star, t, night, gate:{x,y}, path:[{x0,y0,x1,y1}×3], kitchen:{x0,y0,x1,y1}}) */
+  drawLokTable = hookLok('drawLokTable', drawLokTable);  /* o: {i, x, y, seats: 2|4, st: 'free'|'seat'|'wait'|'eat'|'dirty', n, plates, want, dirty, pay, payItems, mood, dish, t} */
+  drawLokStation = hookLok('drawLokStation', drawLokStation);   /* o: {id: 'tava'|'izgara'|'tencere'|'firin', x, y, lv, busy, prog, wait, n, slots, dish, cook, t} */
+  drawLokCrew = hookLok('drawLokCrew', drawLokCrew);     /* o: {a, role: 'asci'|'garson'|'bulasik'|'sef', lv, outfit, carry, plates, dirty, money}; a: işçi (x, y, vx, vy, bob, face, carry) */
+  drawLokFix = hookLok('drawLokFix', drawLokFix);        /* o: {k: 'dolap'|'pass'|'kasa'|'sink'|'board'|'sign'|'tickets', x, y, n, cap, items, menu, lv, star, t, night} */
+  drawLokHouse = hook('drawLokHouse', drawLokHouse);      /* v2.20-deneme: köy evi. o: {part: 'back'|'front', x0, y0, x1, y1 (ev ayak izi), area:{x0,y0,x1,y1}, lv, star (0–5), t, night, smoke (0–1), v2}; 'back' = iç mekân (istasyonlardan önce), 'front' = doğu duvarı + cumbalı üst kat + çatı + tabela + baca (sonra). Zemin kat 46 px, üst kat 22, çatı 16 */
+  drawLokTerrace = hook('drawLokTerrace', drawLokTerrace);   /* v2.20-deneme: teras. o: {part: 'floor'|'west'|'south'|'top', x0, y0, x1, y1 (ev önü → güney kenar), area, tb, up:{ter,mez,saz,dol}, t, night, gate:{x,y}, gap:[y0,y1], pergola:{x0,x1,y0,y1}, v2}; floor = taş döşeme (yer katmanı), west/south = alçak taş duvar (+ışık zinciri), top = asma çardak (yalnız up.ter) */
   for (var k in SERV_DRAW) SERV_DRAW[k] = { buzhane: drawBuzhane, restoran: drawRestoran, nakliye: drawNakliye, koop: drawKoop, mezat: drawMezat }[k] || SERV_DRAW[k];
 })();
 /* v2.19-deneme: tabak / kirli tabak ince modda da klasik çizilir (HKA.drawItem bilmediği türü para sanır) */
@@ -18464,7 +18822,7 @@ window.BT = {
   M: function () { return M; },
   sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
   nameBad: nameBad, evs: function () { return Object.keys(S.evs || {}); }, evQ: function () { return EV_Q.slice(); }, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, specMeDur: specMeDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
-  dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(),
+  dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(), landX: LANDX, landY: LANDY,
     pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
     y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },
   snapshot: function () { return JSON.stringify(M); },
@@ -18585,7 +18943,7 @@ function lokBT() {
     putDolap: function (f, n) { var q = lokQ(); q.dolap[f] = (q.dolap[f] | 0) + (n || 1); }, wantF: lokWantF, room: lokDolapRoom, share: lokShare,
     save: lokSave, load: function (d) { lokLoad(d); lokLoadWorld(); }, loadWorld: lokLoadWorld, reset: lokReset,
     openPanel: openLokPanel, closePanel: closeLokPanel, panelOpen: lokPanelOpen, panelAct: lokPanelAct, renderPanel: renderLokPanel,
-    deck: lokDeckObj, nearBoard: lokNearBoard, onOpen: lokOnOpen,
+    deck: lokDeckObj, nearBoard: lokNearBoard, onOpen: lokOnOpen, fixWorld: lokFixWorld, terObj: lokTerObj, houseObj: lokHouseObj, route: lokRoute, seatWay: lokSeatWay, outWay: lokOutWay, tabs: LOK_TABS, portions: tarifPortions,
     passIdx: lokPassIdx, depotTarget: lokDepotTarget, coldKey: lokColdKey, assign: lokAssignCooks, patMul: lokPatMul,
     dayEnd: lokDayEnd, dayStart: lokDayStart, fx: lokDrawFx, push: lokPush,
     UP: LOK_UP, UPK: LOK_UPK, upOn: lokUpOn, WED: LOK_WED, MUH: LOK_MUH, CRIT: LOK_CRIT, wedN: function () { return LOK_WED.length; },

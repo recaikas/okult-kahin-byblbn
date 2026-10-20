@@ -100,7 +100,7 @@ const defCook = () => {
   /* ================= 3) Kiler ================= */
   await p.evaluate(() => { BT.S.cash = 5000; BT.tarif.open('kiler'); }); await sleep(200);
   R.k0 = await p.evaluate(() => ({ open: BT.tarif.isOpen(), paused: BT.paused(), cash: BT.S.cash, tabs: [...document.querySelectorAll('#tfTabs .tab')].map(t => t.dataset.tt).join() }));
-  ok(R.k0.open && R.k0.paused && R.k0.tabs === 'rec,try,kiler,menu', 'defter açılmadı / sekmeler ' + JSON.stringify(R.k0));
+  ok(R.k0.open && R.k0.paused && R.k0.tabs === 'rec,try,kiler', 'defter açılmadı / sekmeler ' + JSON.stringify(R.k0));
   await p.click('#tfBody button[data-tb="misirunu"][data-tn="10"]'); await sleep(100);
   await p.click('#tfBody button[data-tb="pirinc"][data-tn="50"]'); await sleep(100);
   await p.click('#tfBody button[data-tb="sogan"][data-tn="10"]'); await sleep(100);
@@ -154,9 +154,9 @@ const defCook = () => {
 
   /* ================= 5) MENÜ: lokanta yokken bilgi; lokanta açıkken S.lok.menu (yer = lokanta seviyesi) ================= */
   await p.evaluate(() => { BT.tarif.open('menu'); }); await sleep(200);
-  R.m0 = await p.evaluate(() => ({ lok: BT.lok.open(), slots: document.querySelectorAll('#tfBody .tfOcak').length, t: document.querySelector('#tfBody').innerText.replace(/\s+/g, ' '), tab: document.querySelector('#tfTabs .tab[data-tt="menu"]').innerText.replace(/\s+/g, ' '),
+  R.m0 = await p.evaluate(() => ({ lok: BT.lok.open(), slots: document.querySelectorAll('#tfBody .tfMenuRow').length, t: document.querySelector('#tfBody').innerText.replace(/\s+/g, ' '), tab: [...document.querySelectorAll('#tfTabs .tab')].map(x => x.dataset.tt).join(),
     set: BT.tarif.setMenu(0, 'hamsitava'), add: BT.tarif.menuAdd('hamsitava'), l: BT.tarif.menu().length, line: BT.tarif.menuLine() }));
-  ok(!R.m0.lok && R.m0.slots === 0 && /Menü Sahil Lokantası'nda/.test(R.m0.t) && /^MENÜ$/.test(R.m0.tab) && !R.m0.set && R.m0.add === -1 && R.m0.l === 0, 'lokanta yokken MENÜ bilgisi ' + JSON.stringify(R.m0));
+  ok(!R.m0.lok && R.m0.slots === 0 && R.m0.tab === 'rec,try,kiler' && !R.m0.set && R.m0.add === -1 && R.m0.l === 0, 'lokanta yokken Defter yalnız TARİFLER/DENE/KİLER, menü yok ' + JSON.stringify(R.m0));
   await p.click('#tfClose'); await sleep(100);
   /* lokanta aç: bölge + istasyonlar (tava, fırın, kazan); menüyü boşalt */
   await p.evaluate(() => {
@@ -164,19 +164,19 @@ const defCook = () => {
     ['lok_tava', 'lok_firin', 'lok_tencere'].forEach(id => BT.lok.buy(id)); BT.lok.R.arr = 1e9;
     BT.lok.q().menu.fill(null); BT.tarif.open('menu');
   }); await sleep(250);
-  R.m1 = await p.evaluate(() => ({ slots: document.querySelectorAll('#tfBody .tfOcak').length, t: document.querySelector('#tfBody').innerText.replace(/\s+/g, ' '), tab: document.querySelector('#tfTabs .tab[data-tt="menu"]').innerText.replace(/\s+/g, ' '),
+  R.m1 = await p.evaluate(() => ({ book: BT.tarif.isOpen(), panel: BT.lok.panelOpen(), slots: document.querySelectorAll('#lokRows .tfMenuRow.inm, #lokRows .tfRec.unk').length, t: document.querySelector('#lokRows').innerText.replace(/\s+/g, ' '), tab: document.querySelector('#lokTabs .tab[data-lt="menu"]').innerText.replace(/\s+/g, ' '),
     s1: BT.tarif.setMenu(1, 'hamsitava'), unk: BT.tarif.setMenu(0, 'palamutpilaki'), x: BT.tarif.setMenu(0, 'yok'), lv: BT.lok.q().lv }));
-  ok(R.m1.slots === 1 && R.m1.lv === 1 && /Yer 1 · boş/.test(R.m1.t) && /Sahil Lokantası'nın menüsü: 1 yer/.test(R.m1.t) && /Hamsi Tava/.test(R.m1.t) && /Mısır Unu/.test(R.m1.t) && /×2,0/.test(R.m1.t) && /Reis Güveci/.test(R.m1.t) && /×1,3/.test(R.m1.t) && /MENÜ 0\/1/.test(R.m1.tab), 'MENÜ sayfası (lokanta Sv1) ' + JSON.stringify(R.m1).slice(0, 500));
+  ok(R.m1.panel && !R.m1.book && R.m1.slots === 1 && R.m1.lv === 1 && /Yer 1 · boş/.test(R.m1.t) && /Lokantanın menüsü: 0\/1 yer/.test(R.m1.t) && /porsiyon/.test(R.m1.t) && /İstasyon: Kızgın Tava/.test(R.m1.t) && /Hamsi Tava/.test(R.m1.t) && /Mısır Unu/.test(R.m1.t) && /×2,0/.test(R.m1.t) && /Reis Güveci/.test(R.m1.t) && /×1,3/.test(R.m1.t) && /MENÜ 0\/1/.test(R.m1.tab), 'MENÜ sayfası (lokanta Sv1) ' + JSON.stringify(R.m1).slice(0, 500));
   ok(!R.m1.s1 && !R.m1.unk && !R.m1.x, 'seviyeden fazla yer / bilinmeyen tarif atandı ' + JSON.stringify(R.m1));
-  await p.click('#tfBody button[data-tm="0"][data-tr="hamsitava"]'); await sleep(100);
-  R.m2 = await p.evaluate(() => ({ m: BT.lok.q().menu.join(), tm: BT.tarif.save().menu.join(), on: !!document.querySelector('#tfBody button[data-tm="0"][data-tr="hamsitava"].on'), lm: BT.lok.menu().join() }));
+  await p.click('#lokRows button[data-a="menu"][data-id="hamsitava"]'); await sleep(100);
+  R.m2 = await p.evaluate(() => ({ m: BT.lok.q().menu.join(), tm: BT.tarif.save().menu.join(), on: !!document.querySelector('#lokRows .tfMenuRow.inm button[data-id="hamsitava"].on'), lm: BT.lok.menu().join() }));
   ok(R.m2.m === 'hamsitava,,,,' && R.m2.lm === 'hamsitava' && R.m2.on && R.m2.tm === ',,,,', 'menüye atama S.lok.menu\'ye yazılmalı ' + JSON.stringify(R.m2));
-  await p.click('#tfBody button[data-tm="0"][data-tr="hamsitava"]'); await sleep(100);       /* aynı tarife dokun → kaldır */
+  await p.click('#lokRows button[data-a="menu"][data-id="hamsitava"]'); await sleep(100);       /* ÇIKAR */
   R.m3 = await p.evaluate(() => BT.lok.q().menu.join());
   ok(R.m3 === ',,,,', 'menüden kaldırma ' + R.m3);
-  await p.click('#tfBody button[data-tm="0"][data-tr="hamsitava"]'); await sleep(100);
+  await p.click('#lokRows button[data-a="menu"][data-id="hamsitava"]'); await sleep(100);
   await p.evaluate(() => { BT.lok.buy('lok_lv'); BT.lok.buy('lok_lv'); BT.servUp('restoran'); BT.servUp('restoran'); BT.tarif.open('menu'); }); await sleep(200);   /* lokanta Sv3 → 3 yer; Balık Büfesi Lv.3 (4 mal) */
-  R.m4 = await p.evaluate(() => ({ lv: BT.lok.q().lv, slots: document.querySelectorAll('#tfBody .tfOcak').length, tab: document.querySelector('#tfTabs .tab[data-tt="menu"]').innerText.replace(/\s+/g, ' ') }));
+  R.m4 = await p.evaluate(() => ({ lv: BT.lok.q().lv, slots: document.querySelectorAll('#lokRows .tfMenuRow.inm, #lokRows .tfRec.unk').length, tab: document.querySelector('#lokTabs .tab[data-lt="menu"]').innerText.replace(/\s+/g, ' ') }));
   ok(R.m4.lv === 3 && R.m4.slots === 3 && /MENÜ 1\/3/.test(R.m4.tab), 'lokanta Sv3 → 3 yer ' + JSON.stringify(R.m4));
   R.m5 = await p.evaluate(() => {
     const a = BT.tarif.setMenu(1, 'hamsipilav'), b = BT.tarif.setMenu(2, 'reisguveci'), c = BT.tarif.setMenu(2, 'hamsitava');   /* hamsitava 0 → 2 taşınır (Reis üzerine yazılır) */
@@ -190,13 +190,13 @@ const defCook = () => {
   ok(!R.m7.set && R.m7.m === ',,,,', 'istasyonu olmayan tarif menüye girdi ' + JSON.stringify(R.m7));
   /* DENE sonrası MENÜYE EKLE: lokanta açık, istasyonu kurulu, boş yer var → düğme; yoksa bilgi */
   await p.evaluate(() => { BT.tarif.q().known = BT.tarif.q().known.filter(x => x !== 'palamutpilaki'); BT.tarif.q().kiler = { sogan: 9, domates: 9 }; BT.lok.q().menu.fill(null); BT.tarif.open('try'); }); await sleep(150);
-  await p.click('#tfBody [data-tf="palamut"]'); await p.click('#tfBody [data-ti="sogan"]'); await p.click('#tfBody [data-ti="domates"]'); await p.click('#tfCook'); await sleep(600);
-  R.add = await p.evaluate(() => ({ btn: !!document.querySelector('#tfBody [data-tassign="palamutpilaki"]'), res: document.querySelector('#tfBody .tfRes').innerText.replace(/\s+/g, ' ') }));
+  await p.click('#lokRows [data-tf="palamut"]'); await p.click('#lokRows [data-ti="sogan"]'); await p.click('#lokRows [data-ti="domates"]'); await p.click('#tfCook'); await sleep(600);
+  R.add = await p.evaluate(() => ({ btn: !!document.querySelector('#lokRows [data-tassign="palamutpilaki"]'), res: document.querySelector('#lokRows .tfRes').innerText.replace(/\s+/g, ' ') }));
   ok(R.add.btn && /MENÜYE EKLE/.test(R.add.res), 'lokanta açıkken MENÜYE EKLE düğmesi ' + JSON.stringify(R.add));
-  await p.click('#tfBody [data-tassign="palamutpilaki"]'); await sleep(150);
-  R.add2 = await p.evaluate(() => ({ tab: document.querySelector('#tfTabs .tab.on').dataset.tt, m: BT.lok.q().menu.join(), toast: document.getElementById('toast').textContent }));
+  await p.click('#lokRows [data-tassign="palamutpilaki"]'); await sleep(150);
+  R.add2 = await p.evaluate(() => ({ tab: document.querySelector('#lokTabs .tab.on').dataset.lt, m: BT.lok.q().menu.join(), toast: document.getElementById('toast').textContent }));
   ok(R.add2.tab === 'menu' && R.add2.m === 'palamutpilaki,,,,' && /Palamut Pilaki menüye eklendi/.test(R.add2.toast), 'MENÜYE EKLE ' + JSON.stringify(R.add2));
-  await p.evaluate(() => { BT.lok.q().menu.fill(null); BT.tarif.setMenu(0, 'hamsitava'); BT.tarif.setMenu(1, 'levrekbugulama'); BT.tarif.setMenu(2, 'reisguveci'); BT.tarif.close(); });
+  await p.evaluate(() => { BT.lok.q().menu.fill(null); BT.tarif.setMenu(0, 'hamsitava'); BT.tarif.setMenu(1, 'levrekbugulama'); BT.tarif.setMenu(2, 'reisguveci'); BT.tarif.close(); BT.lok.closePanel(); });
 
   /* ================= 6) BİNA kartı: Balık Büfesi ================= */
   const binaCard = () => p.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].map(d => d.innerText.replace(/\s+/g, ' ')).filter(t => /Balık Büfesi/.test(t))[0] || '');
@@ -235,7 +235,7 @@ const defCook = () => {
     BT.tarif.q().kiler = { misirunu: 12, pirinc: 0, tereyagi: 4, sogan: 6 }; BT.tarif.open('menu');
   }); await noToast(p); await sleep(350);
   await p.screenshot({ path: SC + 'defter-menu-sekmesi.png' });
-  await p.click('#tfClose'); await sleep(100);
+  await p.click('#lokClose'); await sleep(100);
 
   /* ================= 9) Kayıt ve yükleme ================= */
   R.snap = await p.evaluate(() => {
@@ -309,20 +309,20 @@ const defCook = () => {
     const recs = BT.tarif.list.every(r => r.n.tr && r.n.en && r.h.tr && r.h.en) && BT.tarif.ing.every(g => g.n.tr && g.n.en);
     const ach = BT.ACH.filter(a => /^tf_/.test(a.id)).map(a => a.t.en + '|' + a.d.en);
     const q = BT.tarif.q(); q.known = ['hamsitava', 'hamsipilav']; q.menu.fill(null); BT.lok.q().menu.fill(null); BT.tarif.setMenu(0, 'hamsitava'); BT.setLang('en'); BT.tarif.open('rec');
-    const t1 = document.getElementById('tarifScr').innerText.replace(/\s+/g, ' ');
-    BT.tarif.open('kiler'); const t2 = document.getElementById('tfBody').innerText.replace(/\s+/g, ' ');
-    BT.tarif.open('try'); const t3 = document.getElementById('tfBody').innerText.replace(/\s+/g, ' ');
-    BT.tarif.open('menu'); const t4 = document.getElementById('tarifScr').innerText.replace(/\s+/g, ' ');
-    BT.tarif.close();
+    const t1 = document.getElementById('lokScr').innerText.replace(/\s+/g, ' ');
+    BT.tarif.open('kiler'); const t2 = document.getElementById('lokRows').innerText.replace(/\s+/g, ' ');
+    BT.tarif.open('try'); const t3 = document.getElementById('lokRows').innerText.replace(/\s+/g, ' ');
+    BT.tarif.open('menu'); const t4 = document.getElementById('lokScr').innerText.replace(/\s+/g, ' ');
+    BT.lok.closePanel();
     const line = BT.tarif.menuLine();
     BT.tarif.q().open = 0; BT.emek.step(0.05, 2); const unl = (BT.M().notif[0] || {}).m;
-    const q2 = BT.lok.q().lv; BT.tarif.close(); BT.tarif.open('menu'); const t5 = document.getElementById('tarifScr').innerText.replace(/\s+/g, ' '); BT.tarif.close();
+    const q2 = BT.lok.q().lv; BT.tarif.open('menu'); const t5 = document.getElementById('lokScr').innerText.replace(/\s+/g, ' '); BT.lok.closePanel();
     BT.setLang('tr');
     return { n: keys.length, miss, recs, ach, t1, t2, t3, t4, t5, q2, line, unl, help: !!(BT.help().keys.indexOf('tarif') >= 0) };
   });
   ok(R.lang.n > 40 && !R.lang.miss.length && R.lang.recs, 'İngilizce metin eksik ' + JSON.stringify(R.lang.miss));
-  ok(/RECIPE BOOK/.test(R.lang.t1) && /RECIPES/.test(R.lang.t1) && /PANTRY/.test(R.lang.t1) && /MENU/.test(R.lang.t1) && !/STOVES/.test(R.lang.t1) && /Fried Anchovy/.test(R.lang.t1) && /Skipper's Stew/.test(R.lang.t1) && /Any fish \+ Onion · price ×1.3/.test(R.lang.t1), 'EN defter ' + R.lang.t1.slice(0, 300));
-  ok(/Cornmeal/.test(R.lang.t2) && /Collard Greens/.test(R.lang.t2) && /COOK/.test(R.lang.t3) && /Slot 1/.test(R.lang.t4) && /Fried Anchovy/.test(R.lang.t4) && /The Seaside Restaurant's menu: \d slot/.test(R.lang.t4) && R.lang.ach.join().indexOf('The Kitchen\'s Secret') >= 0 && R.lang.help, 'EN sayfalar ' + JSON.stringify([R.lang.t2.slice(0, 80), R.lang.t4.slice(0, 300)]));
+  ok(/Seaside Restaurant/.test(R.lang.t1) && /RECIPES/.test(R.lang.t1) && /PANTRY/.test(R.lang.t1) && /MENU/.test(R.lang.t1) && !/STOVES/.test(R.lang.t1) && /Fried Anchovy/.test(R.lang.t1) && /Skipper's Stew/.test(R.lang.t1) && /Any fish \+ Onion · price ×1.3/.test(R.lang.t1), 'EN defter ' + R.lang.t1.slice(0, 300));
+  ok(/Cornmeal/.test(R.lang.t2) && /Collard Greens/.test(R.lang.t2) && /COOK/.test(R.lang.t3) && /Slot 1|Fried Anchovy/.test(R.lang.t4) && /Fried Anchovy/.test(R.lang.t4) && /The restaurant's menu: \d\/\d slot/.test(R.lang.t4) && R.lang.ach.join().indexOf('The Kitchen\'s Secret') >= 0 && R.lang.help, 'EN sayfalar ' + JSON.stringify([R.lang.t2.slice(0, 80), R.lang.t4.slice(0, 300)]));
   ok(!/[ğışçöüĞİŞÇÖÜ]/.test(R.lang.t2 + R.lang.t3 + R.lang.t4), 'EN sayfada Türkçe harf ' + R.lang.t4.slice(0, 300));
   ok(R.lang.line === 'Menu: Fried Anchovy' && /the menu lives in the Seaside Restaurant/.test(R.lang.unl), 'EN menü satırı / açılış ' + JSON.stringify([R.lang.line, R.lang.unl]));
 
