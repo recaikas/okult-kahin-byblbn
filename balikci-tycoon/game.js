@@ -3707,14 +3707,25 @@ function canStand(x, y) {
   if (!AREAS[4].locked && !window.HK_LOK_OFF) for (i = 0; i < LOKWALK.length; i++) if (inRect(x, y, LOKWALK[i], 0)) return true;
   return false;
 }
+/* v2.21-deneme: OYUNCU serbest gezer — tüm kara + açık iskele zemini; iskele kenar çiti ve kumsal↔iskele geçişi engel değil (köprü zorunlu değil).
+   Yalnız kilitli bölgelerin iskelesine (ve kilitli lokantaya) girilmez. Personel/müşteri eski canStand + routeVia kuralıyla yürür. */
+function canStandFree(x, y) {
+  if (x < -0.3 || y < -0.3 || x > LANDX - 0.4 || y > LANDY - 0.4) return false;
+  for (var i = 0; i < AREAS.length; i++) {
+    var a = AREAS[i]; if (!a.locked) continue;
+    if (x > (a.lok ? a.x0 : -1) && x < a.x1 && y > a.y0 && y < a.y1) return false;
+  }
+  return true;
+}
+function canStandFor(a, x, y) { return a.isPlayer ? canStandFree(x, y) : canStand(x, y); }
 function maxOpenY() { var m = 0; for (var i = 0; i < AREAS.length; i++) if (!AREAS[i].locked && !AREAS[i].lok) m = Math.max(m, AREAS[i].y1); return m; }
 function moveActor(a, dx, dy, spd, dt) {
   var L = Math.hypot(dx, dy);
   if (L < 0.001) { a.vx = 0; a.vy = 0; return false; }
   dx /= L; dy /= L;
   var nx = a.x + dx * spd * dt, ny = a.y + dy * spd * dt;
-  if (canStand(nx, a.y)) a.x = nx;
-  if (canStand(a.x, ny)) a.y = ny;
+  if (canStandFor(a, nx, a.y)) a.x = nx;
+  if (canStandFor(a, a.x, ny)) a.y = ny;
   a.vx = dx; a.vy = dy; a.face = pX(dx, dy) >= 0 ? 1 : -1; a.bob += dt * 12;
   return true;
 }
@@ -15018,6 +15029,20 @@ function denemeHileSync() {
     note.parentNode.insertBefore(b, note.nextSibling);
   }
   b.textContent = lang === 'tr' ? 'DENEME: +50.000 $ · +500 itibar' : 'TEST: +$50,000 · +500 rep';
+  var g = document.getElementById('denemeGun');
+  if (!g) {
+    g = document.createElement('button'); g.className = 'alt'; g.id = 'denemeGun'; g.type = 'button';
+    g.style.marginTop = '8px';
+    g.addEventListener('click', denemeGunSonu);
+    b.parentNode.insertBefore(g, b.nextSibling);
+  }
+  g.textContent = lang === 'tr' ? 'DENEME: Gün sonuna geç' : 'TEST: Skip to end of day';
+}
+/* günü hemen bitirir: ayarları kapatır (oyun duraklıydı), normal gün sonu akışını (endDay) çalıştırır → gün kartı gelir */
+function denemeGunSonu() {
+  if (!S.started || !day || (day.phase !== 'play' && day.phase !== 'closing' && day.phase !== 'intro')) return;
+  el.settingsScreen.classList.add('hidden'); el.menuScreen.classList.add('hidden');
+  endDay(); syncPause();
 }
 function denemeHile() {
   if (!S.started) return;
@@ -18942,7 +18967,7 @@ window.BT = {
   setLang: function (l) { setLangTo(l); }, lang: function () { return lang; },
   M: function () { return M; },
   sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
-  nameBad: nameBad, evs: function () { return Object.keys(S.evs || {}); }, evQ: function () { return EV_Q.slice(); }, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, specMeDur: specMeDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
+  nameBad: nameBad, evs: function () { return Object.keys(S.evs || {}); }, evQ: function () { return EV_Q.slice(); }, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, specMeDur: specMeDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, canStandFor: canStandFor, moveActor: moveActor, routeVia: routeVia, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
   dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(), landX: LANDX, landY: LANDY,
     pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
     y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },
