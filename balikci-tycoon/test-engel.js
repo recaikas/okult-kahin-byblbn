@@ -104,15 +104,18 @@ const URL = process.env.URL || 'http://localhost:8106/index.html';
     const c = BT.counters[0]; P.x = c.x - 2.2; P.y = c.y;                    /* tezgâhın içinden geçmeye çalış: kenarından kayarak dolaşır */
     walk(c.x + 2.2, c.y, 160);
     o.ctr = { p: [+P.x.toFixed(2), +P.y.toFixed(2)], inN: inN, past: P.x > c.x + 0.58 };
-    const H = HKG.v('LOK').house, A = BT.areas[4];                             /* lokanta duvarları */
+    const H = HKG.v('lokHouseR')(), A = BT.areas[4];                           /* lokanta duvarları (ev seviyeyle büyür) */
     P.x = (H.x0 + H.x1) / 2; P.y = H.y1 + 3; walk(P.x, A.y1 + 3, 120);
     o.terSouth = { p: [+P.x.toFixed(2), +P.y.toFixed(2)], y1: A.y1 };
     P.x = (H.x0 + H.x1) / 2; P.y = H.y0 - 1.5; walk(P.x, H.y1 - 0.5, 100);
-    o.houseBack = { p: [+P.x.toFixed(2), +P.y.toFixed(2)], y0: H.y0 };
+    o.houseBack = { p: [+P.x.toFixed(2), +P.y.toFixed(2)], y0: H.y0, lv: H.lv };
+    const sc = HKG.v('scenery').filter(d => d.x > H.x0 && d.x < H.x1 && d.y > H.y0 && d.y < H.y1 && !HKG.v('sceneryOnDeck')(d)).length;
+    o.sceneryIn = sc;                                                         /* evin altında çizilen manzara kalmamalı */
     return o;
   });
   ok(wall.terSouth.p[1] < wall.terSouth.y1, 'oyuncu teras güney duvarını aştı: ' + JSON.stringify(wall.terSouth));
-  ok(wall.houseBack.p[1] < wall.houseBack.y0, 'oyuncu lokantaya arka duvardan girdi: ' + JSON.stringify(wall.houseBack));
+  ok(wall.houseBack.p[1] < wall.houseBack.y0 && wall.houseBack.lv === 5, 'oyuncu lokantaya arka duvardan girdi: ' + JSON.stringify(wall.houseBack));
+  ok(wall.sceneryIn === 0, 'lokanta evinin altında manzara çiziliyor: ' + wall.sceneryIn);
   ok(!wall.depot.inside && wall.depot.p[1] >= wall.depot.y1 - 0.05, 'oyuncu depoya girdi: ' + JSON.stringify(wall.depot));
   ok(!wall.out.inside, 'engelin içindeki oyuncu dışarı çıkamadı: ' + JSON.stringify(wall.out));
   ok(wall.ctr.inN === 0 && wall.ctr.past, 'oyuncu tezgâhın içinden geçti ya da etrafından dolaşamadı: ' + JSON.stringify(wall.ctr));

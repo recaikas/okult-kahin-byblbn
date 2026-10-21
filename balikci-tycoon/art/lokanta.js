@@ -690,6 +690,7 @@ HKA.drawLokFix = function (o) {
    cumbanın üstünde saçağa oturan ahşap tabela (ekrana düz: okunur). Teras: meydan taşıyla aynı döşeme,
    alçak taş duvar, ışık zinciri, köşe direkli seyrek asma çardak (müşterinin başını örtmez).
    Görünürlük notu: üst kat (z ≥ 43, y ≤ 26,3) mutfağın arka duvarını örter; içerisi zeminden ve ön açıklıktan okunur.
+   v2.21: ev lokanta seviyesiyle arkaya (o.y0) ve yukarı büyür — ayrıntı aşağıda (hGeo). Sv1–2 tek kat (tabela mahyada), Sv3+ üst kat.
    ===================================================================== */
 var V = {
   WASH: '#f1ebda', WASHL: '#fbf6ea', WASHS: '#e2d9c3', WASHD: '#cdc2a8',
@@ -770,60 +771,263 @@ function basket(b, x, y, z0) {
   b.rect(X - 4, Y + 5, 9, 1, '#d8b86a');
   b.set(X - 2, Y + 4, '#7fb069'); b.set(X + 1, Y + 4, '#c4302a'); b.set(X + 2, Y + 3, '#7fb069');
 }
-/* ---------- iç mekân (o.part 'back'): sıcak loş zemin, batı iç duvar, batı ayak ---------- */
+/* ---------- v2.21: ev seviyeyle büyür (arkaya + yukarı) ----------
+   Sv1 tek katlı ocakbaşı + kiler (4 karo) · Sv2 arka oda (5 karo), ikinci baca, odun yığını · Sv3 hımış cumbalı üst kat + ahşap balkon
+   · Sv4 doğu kanadı (o.wing) + ikinci cumba · Sv5 5,5 karo, çatı köşkü (tepe fenerli), görkemli tabela, saçak oyması, köşe fenerleri.
+   Ölçüler tek yerde (hGeo): sprite, gece ışıkları ve duman aynı geometriyi kullanır. Ön kenar (y1) ve avlu kapısı (y1 − 1,3 … y1 − 0,5) sabit. */
+var SIGN_X = 19.8;
+var RN = ['#b54b34', '#ad4530', '#bb5338', '#a6402c'], RW = ['#d1634a', '#ca5c43', '#d66b4e', '#c2563d'];   /* kuzey / batı yamaç (derin evde ince şerit görünür) */
+function NONE() { return null; }
+/* a0..a1 aralığına w genişlikte, step aralıklı pencereler; skip aralığından (kanat) kaçın */
+function spanWins(a0, a1, w, step, skip) {
+  var out = [], y = a0;
+  while (y + w <= a1 + 1e-6) {
+    if (skip && y < skip[1] + 0.25 && y + w > skip[0] - 0.25) { y = skip[1] + 0.3; continue; }
+    out.push([y, y + w]); y += step;
+  }
+  return out;
+}
+/* açıklıklar arasında kalan pano aralıkları (hımış dolgusu için) */
+function gaps(a, b, open) {
+  var s = open.slice().sort(function (p, q) { return p[0] - q[0]; }), out = [], c = a;
+  s.forEach(function (p) { if (p[0] - c >= 0.35) out.push([c, p[0]]); c = Math.max(c, p[1]); });
+  if (b - c >= 0.35) out.push([c, b]);
+  return out;
+}
+var GEO = {};
+function hGeo(o) {
+  var lv = clamp(o.lv | 0, 1, 5), wg = lv >= 4 && o.wing ? o.wing : null;
+  var key = [o.x0, o.y0, o.x1, o.y1, lv, wg ? [wg.x0, wg.y0, wg.x1, wg.y1].join(':') : '-'].join(',');
+  if (GEO[key]) return GEO[key];
+  var X0 = o.x0, Y0 = o.y0, X1 = o.x1, Y1 = o.y1, up = lv >= 3, g = { key: key, lv: lv, up: up, wing: wg, X0: X0, Y0: Y0, X1: X1, Y1: Y1 };
+  g.Z1 = HG - 3; g.Z2 = HG + HU; g.XA = X0 - 0.1; g.XB = X1 + 0.1; g.YF = Y1 + 0.3;
+  g.BX0 = 18.55; g.BX1 = 21.05; g.BY = g.YF + 0.3;
+  g.RZ = up ? g.Z2 + 1 : HG + 1; g.RY1 = up ? g.BY + 0.25 : Y1 + 0.42;
+  g.RX0 = g.XA - 0.3; g.RX1 = g.XB + 0.3; g.RY0 = Y0 - 0.25;
+  g.RR = { x0: g.RX0, x1: g.RX1, y0: g.RY0, y1: g.RY1, z: g.RZ, h: RH };
+  g.ym = (g.RY0 + g.RY1) / 2; g.ri = Math.min((g.RY1 - g.RY0) / 2, (g.RX1 - g.RX0) / 2); g.r0 = g.RX0 + g.ri; g.r1 = g.RX1 - g.ri; g.top = g.RZ + RH;
+  g.door = [Y1 - 1.3, Y1 - 0.5]; g.leaf = [Y1 - 2.1, Y1 - 1.36];
+  g.ewin = spanWins(Y0 + 0.45, Y1 - 2.35, 0.72, 1.45, wg ? [wg.y0, wg.y1] : null);          /* zemin kat doğu pencereleri */
+  g.uwin = up ? spanWins(Y0 + 0.45, g.YF - 0.5, 0.72, 1.45, null) : [];                    /* üst kat doğu pencereleri */
+  g.wL = [16.55, 17.45]; g.bdoor = [21.98, 22.88];
+  g.cumba2 = lv >= 4 ? [15.85, 17.75] : null;
+  g.balc = up ? [21.6, g.XB] : null;
+  g.chim = [{ x: 22.25, y: g.ym - 0.55, w: 0.42, z1: g.top + 15, a: 1 }];
+  if (lv >= 2) g.chim.push({ x: 16.95, y: g.ym - 0.45, w: 0.36, z1: g.top + 10, a: 0.6 });
+  g.kiosk = lv >= 5 ? { x: Math.min(g.r1 - 0.6, (g.r0 + g.r1) / 2 + 0.45), y: g.ym, h: 0.74 } : null;
+  g.sign = up ? { x: SIGN_X, y: g.RY1 - 0.05, z: g.RZ, ridge: false, lift: 3 } : { x: SIGN_X, y: g.ym, z: g.top, ridge: true, lift: 9 };
+  /* gece ışıkları: [x, y, z (orta), yarı genişlik, yükseklik] — son ikisi ince piksel */
+  var gl = [];
+  g.ewin.forEach(function (w) { gl.push([X1 + 0.02, (w[0] + w[1]) / 2, 22.5, 10, 32]); });
+  gl.push([X1 + 0.02, (g.door[0] + g.door[1]) / 2, 13, 10, 52]);
+  if (up) {
+    if (g.cumba2) gl.push([(g.cumba2[0] + g.cumba2[1]) / 2, g.YF + 0.25, 56, 24, 24]); else gl.push([(g.wL[0] + g.wL[1]) / 2, g.YF, 55, 12, 22]);
+    gl.push([(g.BX0 + g.BX1) / 2, g.BY, 56, 30, 24]);
+    gl.push([(g.bdoor[0] + g.bdoor[1]) / 2, g.YF, 56, 11, 24]);
+    g.uwin.forEach(function (w) { gl.push([g.XB + 0.02, (w[0] + w[1]) / 2, 55, 10, 22]); });
+  }
+  if (wg) { gl.push([wg.x0 + 0.62, wg.y1, 19.5, 9, 28]); gl.push([wg.x1, wg.y0 + 0.9, 19.5, 9, 28]); }
+  if (g.kiosk) gl.push([g.kiosk.x, g.kiosk.y + g.kiosk.h, g.top + 7, 15, 20]);
+  if (lv >= 5) { gl.push([X0 + 0.1, g.YF + 0.05, HG - 9, 6, 16]); gl.push([X1 - 0.1, g.YF + 0.05, HG - 9, 6, 16]); }
+  g.glow = gl;
+  return (GEO[key] = g);
+}
+/* çatı yüzeyi yüksekliği (kırma çatı): bacayı / köşkü çatıya oturtmak için */
+function roofZ(Q, x, y) { var ri = Math.min((Q.y1 - Q.y0) / 2, (Q.x1 - Q.x0) / 2), d = Math.min(Q.y1 - y, y - Q.y0, Q.x1 - x, x - Q.x0); return Q.z + Q.h * clamp(d / ri, 0, 1); }
+/* kırma çatı: dört yamaç (kuzey/batı yamaç bu izdüşümde ince şerit olarak görünür), alaturka kiremit, mahya, saçak alnı.
+   ax, ay = sprite çapası; Q = {x0,x1,y0,y1,z,h}; op = {fh: saçak alnı, tails: kiriş ucu sayısı, caps: mahya kiremidi, lace: saçak oyması} */
+function hipRoof(b, ax, ay, Q, op) {
+  var kk = G().K, X0 = Q.x0, X1 = Q.x1, Y0 = Q.y0, Y1 = Q.y1, Z = Q.z, H = Q.h, k, fh = op.fh || 2.5;
+  var hx = (X1 - X0) / 2, hy = (Y1 - Y0) / 2, ri = Math.min(hx, hy), s = H / ri, xm = X0 + hx, ym = Y0 + hy, T = Z + H, alongX = hx >= hy;
+  var Pa = alongX ? [X0 + ri, ym] : [xm, Y0 + ri], Pb = alongX ? [X1 - ri, ym] : [xm, Y1 - ri];
+  var SW = P3(X0, Y1, Z), SE = P3(X1, Y1, Z), NE = P3(X1, Y0, Z), NW = P3(X0, Y0, Z), A = P3(Pa[0], Pa[1], T), B = P3(Pb[0], Pb[1], T);
+  function pl(Aa, Bu, Bv, dist, along, Pal) {                     /* tampon pikseli → yamaç düzlemindeki dünya noktası → kiremit */
+    var den = 12 - Bu - Bv; if (den < 0.4) return null;
+    return function (Xb, Yb) {
+      var a = (Xb + 0.5) / (12 * kk), sY = (Yb + 0.5) / kk, v = (sY - 6 * a + Aa + Bu * a) / den, x = v + a + ax, y = v + ay;
+      return tileAt(dist(x, y), along(x, y), Pal, Xb, Yb);
+    };
+  }
+  var fN = pl(Z + s * (ay - Y0), 0, s, function (x, y) { return y - Y0; }, function (x) { return x; }, RN);
+  var fW = pl(Z + s * (ax - X0), s, 0, function (x) { return x - X0; }, function (x, y) { return y; }, RW);
+  var fF = pl(Z + s * (Y1 - ay), 0, -s, function (x, y) { return Y1 - y; }, function (x) { return x; }, V.RF);
+  var fE = pl(Z + s * (X1 - ax), -s, 0, function (x) { return X1 - x; }, function (x, y) { return y; }, V.RE);
+  wall(b, X0, Y1, X1, Y1, Z - fh, Z, '#4a2e1a'); wall(b, X1, Y0, X1, Y1, Z - fh, Z, '#3a2414');                 /* saçak alnı */
+  if (op.lace) {                                                                                               /* saçak oyması (Sv5) */
+    for (k = X0 + 0.1; k < X1 - 0.05; k += 0.2) { var lX = R(fx(k, Y1)), lY = R(fy(k, Y1, Z - fh)); b.rect(lX - 1, lY, 3, 1, V.TIM); b.set(lX, lY + 1, V.TIM); b.set(lX, lY + 2, V.TIMD); }
+    for (k = Y0 + 0.1; k < Y1 - 0.05; k += 0.2) { var eX = R(fx(X1, k)), eY = R(fy(X1, k, Z - fh)); b.rect(eX - 1, eY, 3, 1, V.TIMD); b.set(eX, eY + 1, V.TIMD); }
+  } else for (k = 0; k < (op.tails || 0); k++) { var tx = X0 + 0.2 + k * (X1 - X0 - 0.4) / Math.max(1, op.tails - 1); vl(b, tx, Y1 - 0.02, Z - fh - 1, Z - fh, '#2e1d10', 1); }
+  if (alongX) {
+    if (fN) poly(b, [NW, NE, B, A], fN); if (fW) poly(b, [NW, SW, A], fW);
+    poly(b, [SW, SE, B, A], fF); poly(b, [NE, SE, B], fE);
+  } else {
+    if (fN) poly(b, [NW, NE, A], fN); if (fW) poly(b, [NW, SW, B, A], fW);
+    poly(b, [SW, SE, B], fF); poly(b, [NE, SE, B, A], fE);
+  }
+  hl(b, X0, Y1, X1, Y1, Z, '#e07a58');                                                                          /* saçak ışığı */
+  var sw = alongX ? A : B, ne = alongX ? B : A;
+  line(b, NW[0], NW[1], A[0], A[1], '#7d2c1d'); line(b, NE[0], NE[1], ne[0], ne[1], '#7d2c1d');                 /* arka kalkan hatları */
+  line(b, SW[0], SW[1], sw[0], sw[1], '#8e2f1f');
+  line(b, SE[0], SE[1], B[0], B[1], '#8e2f1f'); line(b, SE[0] - 1, SE[1], B[0] - 1, B[1], '#e07a58');            /* mahya + kalkan kiremitleri */
+  hl(b, Pa[0], Pa[1], Pb[0], Pb[1], T + 0.6, '#8e2f1f'); hl(b, Pa[0], Pa[1], Pb[0], Pb[1], T + 1.1, '#e98a64');
+  var n = op.caps || 0;
+  for (k = 0; k < n; k++) { var u = n > 1 ? k / (n - 1) : 0.5; pr(b, Pa[0] + (Pb[0] - Pa[0]) * u, Pa[1] + (Pb[1] - Pa[1]) * u, T + 1.5, -1, 0, 2, 1, '#d0654a'); }
+  return { A: Pa, B: Pb, T: T };
+}
+/* taş baca: çatının altında kalan kısmı çizilmez (çatı önde) */
+function chimney(b, c, Q) {
+  var h = c.w / 2, z0 = Math.min(roofZ(Q, c.x - h, c.y - h), roofZ(Q, c.x + h, c.y + h), roofZ(Q, c.x - h, c.y + h), roofZ(Q, c.x + h, c.y - h)) - 1, z1 = c.z1, e = c.w * 0.14;
+  box(b, c.x - h, c.y - h, c.w, c.w, z0, z1, '#8d8475',
+    function (u, z) { var x = c.x - h + u / 12, Z = z0 + z; if (Z < roofZ(Q, x, c.y + h) - 0.4) return null; return Z > z1 - 1 ? lite(V.ST[0], 0.1) : stoneAt(x, Z, 21); },
+    function (v, z) { var y = c.y - h + v / 12, Z = z0 + z; if (Z < roofZ(Q, c.x + h, y) - 0.4) return null; return dark(stoneAt(y, Z, 22), 0.14); }, { norim: true });
+  box(b, c.x - h - e, c.y - h - e, c.w + 2 * e, c.w + 2 * e, z1, z1 + 2, '#cfc8b6', '#a39b89', '#8d8575');          /* kapak taşı */
+  box(b, c.x - h * 0.4, c.y - h * 0.4, 0.06, 0.06, z1 + 2, z1 + 5, '#6a6458', '#6a6458', '#55504a', { norim: true });
+  box(b, c.x + h * 0.25, c.y + h * 0.25, 0.06, 0.06, z1 + 2, z1 + 5, '#6a6458', '#6a6458', '#55504a', { norim: true });
+  box(b, c.x - h - e * 0.6, c.y - h - e * 0.6, c.w + e * 1.2, c.w + e * 1.2, z1 + 5, z1 + 7, '#b8b09e', '#948c7c', '#7d7668');   /* külah taşı */
+}
+/* ---------- iç mekân (o.part 'back'): zemin, arka + batı iç duvar, kiler / arka oda eşyası, batı ayak ---------- */
+function shEll(b, cx, cy, rx, ry, c) {                              /* gölgeli oval (çuval, küp): ışık sol üstten */
+  for (var y = -ry; y <= ry; y++) for (var x = -rx; x <= rx; x++) {
+    if ((x * x) / (rx * rx + 0.3) + (y * y) / (ry * ry + 0.3) > 1) continue;
+    var s = x / rx * 0.7 + y / ry * 0.3;
+    b.set(cx + x, cy + y, s > 0.42 ? dark(c, 0.24) : s < -0.45 ? lite(c, 0.2) : c);
+  }
+}
+function sack(b, x, y, c) { var X = R(fx(x, y)), Y = R(fy(x, y, 0)); shEll(b, X, Y - 6, 6, 6, c); b.rect(X - 2, Y - 14, 4, 3, c); b.rect(X - 2, Y - 12, 4, 1, '#7a5a32'); b.rect(X - 1, Y - 15, 2, 1, lite(c, 0.25)); }
+function kup(b, x, y) { var X = R(fx(x, y)), Y = R(fy(x, y, 0)); shEll(b, X, Y - 8, 6, 8, '#b4643e'); b.rect(X - 3, Y - 17, 6, 2, '#9c5232'); b.rect(X - 4, Y - 18, 8, 1, '#c97a50'); b.rect(X - 4, Y - 9, 9, 1, '#8a4528'); }
+function barrel(b, x, y, h) {
+  var hoop = function (z) { return Math.abs(z - 2.5) < 0.7 || Math.abs(z - h + 2.5) < 0.7; };
+  box(b, x - 0.2, y - 0.2, 0.4, 0.4, 0, h, function (u, v) { return Math.hypot(u - 2.4, v - 2.4) > 2.0 ? '#6f4526' : '#8a5a32'; },
+    function (u, z) { return hoop(z) ? '#3a3a40' : (Math.floor(u * 1.3) % 3 === 0 ? '#6f4526' : (u < 1.5 ? '#ab7a46' : '#9a6a3a')); },
+    function (v, z) { return hoop(z) ? '#2e2e32' : (Math.floor(v * 1.3) % 3 === 0 ? '#5a3a20' : '#7d4f2a'); }, { norim: true });
+}
+function crate(b, x, y, z, s) {
+  box(b, x - s / 2, y - s / 2, s, s, z, z + s * 18, function (u, v) { return (Math.floor(u / 1.6) & 1) ? '#b8834a' : '#a9743f'; },
+    function (u, z2) { var e = Math.min(u, s * 12 - u, z2, s * 18 - z2); return e < 0.8 ? '#6f4526' : (Math.abs(u - z2 * s * 12 / (s * 18)) < 0.7 ? '#7d4f2a' : '#a9743f'); },
+    function (v, z2) { var e = Math.min(v, s * 12 - v, z2, s * 18 - z2); return e < 0.8 ? '#5a3a20' : '#85583a'; }, { norim: true });
+}
+function rack(b, x0, x1, y, n) {                                      /* arka duvara yaslı raf: dikmeler + n kat tahta, kavanoz/kap */
+  var k, i, cols = ['#b87333', '#d8d2c0', '#8d959b', '#c0503a', '#e8c547', '#7fb069'];
+  for (k = 0; k < n; k++) {
+    var z = 4 + k * 7;
+    box(b, x0, y, x1 - x0, 0.28, z, z + 1.2, V.TIML, V.TIM, V.TIMD, { norim: true });
+    for (i = 0; i < (x1 - x0) / 0.2 - 1; i++) {
+      var h = hash(i + k * 7, 31); if (h > 0.84) continue;
+      var jx = x0 + 0.14 + i * 0.2, hh = 2.5 + R(h * 3), c = cols[Math.floor(h * 6)];
+      pr(b, jx, y + 0.15, z + 1.2, -0.75, -hh, 1.5, hh, c); pr(b, jx, y + 0.15, z + 1.2, -0.75, -hh, 0.5, hh, lite(c, 0.25));
+    }
+  }
+  vl(b, x0 + 0.03, y + 0.28, 0, 5 + n * 7, V.TIMD, 2); vl(b, x1 - 0.05, y + 0.28, 0, 5 + n * 7, V.TIMD, 2);
+}
 function houseBackSpr(o) {
-  var X0 = o.x0, Y0 = o.y0, X1 = o.x1, Y1 = o.y1, nt = o.night ? 1 : 0;
-  return spr('lkHB|' + [X0, Y0, X1, Y1].join(',') + '|' + nt + '|' + G().K, X0, Y0, function (b) {
-    var k;
-    quadW(b, X0 + 0.22, Y0 + 0.1, X1 - X0 - 0.44, Y1 - Y0 - 0.1, 0.1, function (Xb, Yb) {      /* pişmiş toprak karo, arkaya doğru loşlaşır */
-      var w = inv(Xb, Yb, 0.1, X0, Y0), x = w[0], y = w[1], cu = Math.floor(x / 0.5), cv = Math.floor(y / 0.5), lu = frac(x / 0.5), lv = frac(y / 0.5);
-      var c = ['#b06a4c', '#a7614a', '#b97452', '#a25c42'][Math.floor(hash(cu + 40, cv + 9) * 4)];
-      if (lu < 0.06 || lv < 0.06) c = '#7a4634'; else if (lu < 0.16 || lv < 0.16) c = lite(c, 0.08);
-      var dd = clamp((y - Y0) / (Y1 - Y0), 0, 1), glow = Math.max(0, 1 - Math.abs(y - 25.0) / 1.4) * (nt ? 0.3 : 0.14);
-      c = dark(c, 0.5 * (1 - dd) + 0.08);
+  var X0 = o.x0, Y0 = o.y0, X1 = o.x1, Y1 = o.y1, nt = o.night ? 1 : 0, lv = clamp(o.lv | 0, 1, 5), yP = lv >= 2 ? Y0 + 1.9 : 0;
+  return spr('lkHB2|' + [X0, Y0, X1, Y1, lv].join(',') + '|' + nt + '|' + G().K, X0, Y0, function (b) {
+    var k, kk = G().K;
+    quadW(b, X0 + 0.22, Y0 + 0.1, X1 - X0 - 0.44, Y1 - Y0 - 0.1, 0.1, function (Xb, Yb) {      /* ön oda: pişmiş toprak karo · arka oda: tahta döşeme; arkaya doğru loşlaşır */
+      var w = inv(Xb, Yb, 0.1, X0, Y0), x = w[0], y = w[1], c;
+      if (yP && y < yP - 0.12) {
+        var q = (y - Y0) / 0.2, pl = Math.floor(q), lu = frac(q), seg = frac((x + hash(pl, 5) * 1.4) / 1.4);
+        c = ['#8a5a34', '#7f522f', '#93613a'][((pl % 3) + 3) % 3];
+        if (lu < 0.16 || seg < 0.025) c = '#55361e'; else if (lu > 0.84) c = lite(c, 0.08);
+      } else {
+        var cu = Math.floor(x / 0.5), cv = Math.floor(y / 0.5), lu2 = frac(x / 0.5), lv2 = frac(y / 0.5);
+        c = ['#b06a4c', '#a7614a', '#b97452', '#a25c42'][Math.floor(hash(cu + 40, cv + 9) * 4)];
+        if (lu2 < 0.06 || lv2 < 0.06) c = '#7a4634'; else if (lu2 < 0.16 || lv2 < 0.16) c = lite(c, 0.08);
+      }
+      var dd = clamp((y - Y0) / 3.6, 0, 1), glow = Math.max(0, 1 - Math.abs(y - 25.0) / 1.4) * (nt ? 0.3 : 0.14);
+      c = dark(c, 0.42 * (1 - dd) + 0.08);
       if (glow > 0) c = mix(c, '#ffb45a', glow * (0.6 + 0.4 * L.bayer[Yb & 3][Xb & 3]));
+      if (nt && yP && y < yP) c = mix(c, '#ffb45a', 0.12 * (0.5 + 0.5 * L.bayer[Yb & 3][Xb & 3]));           /* arka odada kandil */
       return c;
     });
-    /* arka duvar dibi (çoğu üst katın gölgesinde) */
-    wall(b, X0 + 0.22, Y0 + 0.1, X1 - 0.22, Y0 + 0.1, 0, HG, function (Xb, Yb) { var Z = R(fy(X0 + 1, Y0 + 0.1, 0)) - Yb; return Z < 8 ? '#6a5c4a' : '#5e4a38'; });
-    /* batı iç duvar yüzü: taş etek, badana, raf, bakır kaplar */
-    var xw = X0 + 0.25;
+    /* arka duvar (iç yüz): taş etek, hatıl, badana — çoğu çatının gölgesinde */
+    var Yw = Y0 + 0.1;
+    wall(b, X0 + 0.22, Yw, X1 - 0.22, Yw, 0, HG, function (Xb, Yb) {
+      var x = (Xb + 0.5) / (12 * kk) + X0 + (Yw - Y0), z = 6 * ((x - X0) + (Yw - Y0)) - (Yb + 0.5) / kk;
+      return dark(z < 8 ? stoneAt(x, z, 5) : (z < 9.4 ? V.TIMD : plaster('#e6d6b8', x, z)), 0.5);
+    });
+    box(b, 17.2, Y0 + 0.12, 4.4, 0.62, 31, 38, '#c98a50', '#b87333', '#8a5430', { norim: true });          /* bakır davlumbaz (arka duvara yaslı) */
+    /* batı iç duvar: taş etek, hatıl, ahşap dikmeler, raflar */
+    var xw = X0 + 0.25, posts = [];
+    for (k = Y1 - 1.6; k > Y0 + 0.5; k -= 1.6) posts.push(k);
     wall(b, xw, Y0 + 0.1, xw, Y1, 0, HG, function (Xb, Yb) {
-      var k2 = G().K, yy = Y0 + (xw - X0) - Xb / (12 * k2), zz = ((xw - X0) + (yy - Y0)) * 6 - Yb / k2, dd = clamp((yy - Y0) / (Y1 - Y0), 0, 1);
-      var c = zz < 8 ? stoneAt(yy, zz, 3) : plaster('#e6d6b8', yy, zz);
-      if (zz > 21.6 && zz < 23 && yy > 24.3) c = zz > 22.4 ? V.TIML : V.TIMD;                /* raf */
+      var yy = Y0 + (xw - X0) - (Xb + 0.5) / (12 * kk), zz = ((xw - X0) + (yy - Y0)) * 6 - (Yb + 0.5) / kk, dd = clamp((yy - Y0) / 3.6, 0, 1), c, i;
+      c = zz < 8 ? stoneAt(yy, zz, 3) : plaster('#e6d6b8', yy, zz);
+      for (i = 0; i < posts.length; i++) if (zz >= 8 && Math.abs(yy - posts[i]) < 0.07) c = Math.abs(yy - posts[i]) < 0.025 ? V.TIMD : V.TIM;
+      if (zz >= 8 && zz < 9.4) c = V.TIMD;                                                                     /* taban hatılı */
+      if (zz > 21.6 && zz < 23 && yy > Y1 - 1.75) c = zz > 22.4 ? V.TIML : V.TIMD;                             /* ön raf */
+      if (zz > 17.6 && zz < 19 && inSpan(yy, Y0 + 0.35, Y0 + 1.6)) c = zz > 18.4 ? V.TIML : V.TIMD;            /* kiler rafı */
       return dark(c, 0.55 * (1 - dd) + clamp((zz - 20) / 60, 0, 0.3));
     });
-    var pots = [[24.55, '#b87333', 4], [24.95, '#c98a50', 3], [25.35, '#8d959b', 5]];
+    var pots = [[Y1 - 1.45, '#b87333', 4], [Y1 - 1.05, '#c98a50', 3], [Y1 - 0.65, '#8d959b', 5]];
     for (k = 0; k < pots.length; k++) { var p0 = pots[k]; pr(b, xw + 0.02, p0[0], 23, -1.5, -p0[2], 3, p0[2], p0[1]); pr(b, xw + 0.02, p0[0], 23, -1.5, -p0[2], 3, 0.5, lite(p0[1], 0.3)); }
-    pepperString(b, xw + 0.04, 25.75, 36, 4);
+    for (k = 0; k < 5; k++) { var jy = Y0 + 0.5 + k * 0.22, jc = ['#d8d2c0', '#c0503a', '#e8c547', '#7fb069', '#b87333'][k]; pr(b, xw + 0.02, jy, 19, -0.75, -3 - (k & 1), 1.5, 3 + (k & 1), dark(jc, 0.3)); }
+    pepperString(b, xw + 0.04, Y1 - 0.25, 36, 4);
+    if (lv >= 2) pepperString(b, xw + 0.04, Y0 + 1.75, 33, 3);
+    /* kiler / arka oda eşyası (arkadan öne) */
+    if (!yP) {
+      rack(b, 17.3, 18.9, Y0 + 0.12, 2);
+      kup(b, 21.95, Y0 + 0.42);
+      barrel(b, 22.8, Y0 + 0.45, 12); barrel(b, 23.15, Y0 + 0.85, 10);
+      sack(b, 16.6, Y0 + 0.45, '#cdb98a'); sack(b, 16.28, Y0 + 0.55, '#d8c89a'); sack(b, 16.45, Y0 + 0.95, '#e0d2a8');
+      crate(b, 17.25, Y0 + 0.75, 0, 0.4);
+    } else {
+      rack(b, 17.0, 18.6, Y0 + 0.12, 2); rack(b, 20.7, 22.3, Y0 + 0.12, 2);
+      if (lv >= 5) kup(b, 19.6, Y0 + 0.35);
+      barrel(b, 22.85, Y0 + 0.45, 12); barrel(b, 23.15, Y0 + 0.95, 10);
+      sack(b, 16.6, Y0 + 0.45, '#cdb98a'); sack(b, 16.28, Y0 + 0.55, '#d8c89a'); sack(b, 16.45, Y0 + 1.0, '#e0d2a8');
+      box(b, 18.95, Y0 + 0.75, 1.4, 0.5, 8, 9.5, '#a8784a', '#8a5a32', '#6f4526', { norim: true });              /* iş masası */
+      vl(b, 19.0, Y0 + 1.22, 0, 8, V.TIMD, 2); vl(b, 20.3, Y0 + 1.22, 0, 8, V.TIMD, 2);
+      pr(b, 19.3, Y0 + 1.0, 9.5, -2, -4, 4, 4, '#b87333'); pr(b, 19.3, Y0 + 1.0, 9.5, -2, -4, 4, 1, '#d8a060');
+      pr(b, 19.95, Y0 + 1.0, 9.5, -1.5, -3, 3, 3, '#8d959b'); pr(b, 19.95, Y0 + 1.0, 9.5, -1.5, -3, 3, 0.5, '#c8d0d6');
+      /* bölme duvar ayakları: arka oda ile mutfak arasında geniş geçit */
+      var stubF = function (u, z) { return dark(z < 8 ? stoneAt(u / 12, z, 9) : (z < 9.4 ? V.TIMD : plaster('#e6d6b8', u / 12, z)), 0.28); };
+      box(b, xw, yP - 0.12, 0.85, 0.24, 0, HG, V.TIMD, stubF, function (v, z) { return z < 8 ? '#6a6052' : '#a89a80'; }, { norim: true });
+      box(b, X1 - 1.0, yP - 0.12, 0.78, 0.24, 0, HG, V.TIMD, stubF, function () { return '#5e4a38'; }, { norim: true });
+      crate(b, 16.45, yP + 0.42, 0, 0.42); crate(b, 16.45, yP + 0.42, 7.6, 0.36);
+      kup(b, 22.95, yP + 0.42);
+    }
     /* batı ayak (taş paye) */
-    box(b, X0, Y1 - 0.32, 0.27, 0.32, 0, HG - 3, function () { return null; },
+    box(b, X0, Y1 - 0.32, 0.27, 0.32, 0, HG - 3, NONE,
       function (u, z) { return z > HG - 5.5 ? V.TIMD : stoneAt(X0 + u / 12, z, 11); }, function (v, z) { return z > HG - 5.5 ? V.TIMD : dark(stoneAt(Y1 + v / 12, z, 12), 0.1); }, { norim: true });
     b.outline(0.55);
   });
 }
-/* ---------- ev (o.part 'front'): doğu duvarı, hımış cumbalı üst kat, kiremit çatı, baca, saçak süsleri, tabela ---------- */
-/* zemin kat doğu duvarı (dış yüz): taş etek, badana, ahşap hatıllar, arka kapı, panjurlu pencere; ya..yb dilimi */
-function eastWall(b, X0, Y0, X1, Y1, ya, yb, nt) {
-  var Z1 = HG - 3;
-  var dW = [Y1 - 1.25, Y1 - 0.5], dD = [Y0 + 0.42, Y0 + 1.22];
-  box(b, X1 - 0.22, ya, 0.22, yb - ya, 0, Z1, function () { return null; },
+/* ---------- ev (o.part 'front'): doğu duvarı, (Sv3+) hımış cumbalı üst kat + balkon, kiremit çatı, bacalar, köşk, kanat, tabela ---------- */
+/* zemin kat doğu duvarı (dış yüz): taş etek, badana, ahşap hatıllar, avlu kapısı (açık; kanat duvara yaslı), panjurlu pencereler; ya..yb dilimi.
+   Kapı ön kenara göreli (y1 − 1,3 … y1 − 0,5): pass'in dilim çizimi (gerçek koordinat) ile aynı yere düşer. */
+function eastWall(b, X1, Y1, ya, yb, nt, wins, leaf) {
+  var Z1 = HG - 3, dD = [Y1 - 1.3, Y1 - 0.5];
+  wins = wins || [];
+  box(b, X1 - 0.22, ya, 0.22, yb - ya, 0, Z1, NONE,
     function (u, z) {                                                         /* güney ucu = doğu payesi */
       if (z > Z1 - 2.5) return V.TIMD;
       return stoneAt(X1 + u / 12, z, 31);
     },
     function (v, z) {
-      var y = ya + v / 12, c;
+      var y = ya + v / 12, c, k;
       if (z > Z1 - 2.5) return V.TIMD;
-      if (inSpan(y, dD[0], dD[1]) && z < 29) {                                 /* arka kapı */
+      if (inSpan(y, dD[0], dD[1]) && z < 29) {                                 /* avlu kapısı: açık, içerisi sıcak loş */
         var e = Math.min(y - dD[0], dD[1] - y) * 12;
-        if (e < 1.1 || z > 27.6) return V.TIMD;
-        if (Math.abs(z - 8) < 0.6 || Math.abs(z - 20) < 0.6) return '#3a2a1c';
-        c = (Math.floor(v * 1.1) % 3 === 0) ? '#6a4226' : '#7f5130'; return z > 25 ? dark(c, 0.15) : c;
+        if (z > 27.2) return V.TIM;
+        if (e < 1.2) return e < 0.6 ? '#3e2716' : V.TIMD;
+        if (z < 1.3) return '#9a917e';                                         /* eşik taşı */
+        c = nt ? '#a8743e' : '#3a2418';
+        if (z < 12) c = mix(c, nt ? '#ffd08a' : '#9a5a32', (12 - z) / (nt ? 20 : 28));
+        return (y - dD[0]) * 12 < 3 ? dark(c, 0.25) : c;
       }
-      if (inSpan(y, dW[0], dW[1]) && z >= 15 && z < 30) return winPix(y, z, dW[0], dW[1], 15, 30, nt);
-      if ((inSpan(y, dW[0] - 0.22, dW[0] - 0.02) || inSpan(y, dW[1] + 0.02, dW[1] + 0.22)) && z >= 14.5 && z < 30.5) { var s0 = y < dW[0] ? dW[0] - 0.22 : dW[1] + 0.02; return dark(shutPix(y, z, s0, s0 + 0.2, 14.5, 30.5), 0.12); }
+      if (leaf && inSpan(y, leaf[0], leaf[1]) && z < 28.4) {                   /* açık kapı kanadı (duvara yaslı) */
+        var e2 = Math.min(y - leaf[0], leaf[1] - y) * 12;
+        if (e2 < 0.7 || z > 27.6 || z < 0.7) return '#3e2716';
+        if (Math.abs(z - 7) < 0.7 || Math.abs(z - 21) < 0.7) return '#2e2e32';
+        c = (Math.floor(v * 1.1) % 3 === 0) ? '#6a4226' : '#7f5130'; return dark(c, 0.08);
+      }
+      for (k = 0; k < wins.length; k++) {
+        var w = wins[k];
+        if (inSpan(y, w[0], w[1]) && z >= 15 && z < 30) return winPix(y, z, w[0], w[1], 15, 30, nt);
+        if ((inSpan(y, w[0] - 0.22, w[0] - 0.02) || inSpan(y, w[1] + 0.02, w[1] + 0.22)) && z >= 14.5 && z < 30.5) { var s0 = y < w[0] ? w[0] - 0.22 : w[1] + 0.02; return dark(shutPix(y, z, s0, s0 + 0.2, 14.5, 30.5), 0.12); }
+        if (inSpan(y, w[0] - 0.05, w[1] + 0.05) && z >= 13 && z < 15) return z < 14 ? V.TIMD : V.TIM;           /* denizlik */
+      }
       if (z < 8) return dark(stoneAt(y, z, 33), 0.1);
       if ((z >= 8 && z < 9.6) || (z >= 33.5 && z < 35)) return (z < 8.6 || (z >= 33.5 && z < 34.1)) ? '#5d3c1c' : V.TIM;   /* ahşap hatıl */
       c = plaster(V.WASHS, y, z);
@@ -832,119 +1036,246 @@ function eastWall(b, X0, Y0, X1, Y1, ya, yb, nt) {
     }, { norim: true });
 }
 function eastSliceSpr(h, nt) {
-  return spr('lkHE|' + [h.x0, h.y0, h.x1, h.y1].join(',') + '|' + (nt ? 1 : 0) + '|' + G().K, h.x0, h.y0, function (b) { eastWall(b, h.x0, h.y0, h.x1, h.y1, h.y1 - 1.05, h.y1, nt); b.outline(0.55); });
+  return spr('lkHE2|' + [h.x0, h.y0, h.x1, h.y1].join(',') + '|' + (nt ? 1 : 0) + '|' + G().K, h.x0, h.y0, function (b) { eastWall(b, h.x1, h.y1, h.y1 - 1.05, h.y1, nt); b.outline(0.55); });
 }
-var SIGN_X = 19.8;
-function houseFrontSpr(o, nm) {
-  var X0 = o.x0, Y0 = o.y0, X1 = o.x1, Y1 = o.y1, nt = o.night ? 1 : 0, star = clamp(o.star | 0, 0, 5), lv = clamp(o.lv | 0, 1, 5);
-  return spr('lkHF|' + [X0, Y0, X1, Y1].join(',') + '|' + nt + '|' + star + '|' + lv + '|' + nm + '|' + G().K, X0, Y0, function (b) {
-    var Z1 = HG - 3, Z2 = HG + HU, XA = X0 - 0.1, XB = X1 + 0.1, YF = Y1 + 0.3, k;
-    var NONE = function () { return null; };
-    /* --- baca (arka yamaçta; çatı önünü örter) --- */
-    var CX = 22.0, CY = 24.15;
-    box(b, CX - 0.2, CY - 0.2, 0.4, 0.4, 70, 87, '#8d8475', function (u, z) { return stoneAt(CX + u / 12, z, 21); }, function (v, z) { return dark(stoneAt(CY + v / 12, z, 22), 0.14); }, { norim: true });
-    box(b, CX - 0.27, CY - 0.27, 0.54, 0.54, 87, 89, '#cfc8b6', '#a39b89', '#8d8575');
-    box(b, CX - 0.08, CY - 0.08, 0.06, 0.06, 89, 92, '#6a6458', '#6a6458', '#55504a', { norim: true }); box(b, CX + 0.06, CY + 0.06, 0.06, 0.06, 89, 92, '#6a6458', '#6a6458', '#55504a', { norim: true });
-    box(b, CX - 0.24, CY - 0.24, 0.48, 0.48, 92, 94, '#b8b09e', '#948c7c', '#7d7668');                /* külah taşı */
-    eastWall(b, X0, Y0, X1, Y1, Y0, Y1, nt);
-    /* odun yığını (arka avluda, doğu duvarına yaslı) */
-    box(b, X1 + 0.02, Y0 + 0.08, 0.3, 0.3, 0, 13, function (u, v) { return hash(R(u), R(v)) > 0.5 ? '#8a6a44' : '#6f5233'; },
-      function (u, z) { var q = (u + (Math.floor(z / 3) & 1) * 1.5) % 3; return Math.floor(z) % 3 === 0 ? '#4a3220' : q < 0.6 ? '#5d3c1c' : '#7a5232'; },
-      function (v, z) { var lz = z % 3.2, lv = (v + (Math.floor(z / 3.2) & 1) * 1.6) % 3.2, d = Math.hypot(lv - 1.6, (lz - 1.6) * 0.9); return d > 1.55 ? '#4a3220' : d < 0.6 ? '#c9a46a' : d < 1.0 ? '#e0c08a' : '#a8804c'; }, { norim: true });
-    /* --- üst kat: hımış, iki panjurlu pencere + çiçeklik --- */
-    var wL = [16.55, 17.45], wR = [22.0, 22.85], BX0 = 18.55, BX1 = 21.05, BY = YF + 0.3;
-    var plainF = [[XA, 16.3], [17.7, BX0], [BX1, 21.75], [23.1, XB]];
-    box(b, XA, Y0, XB - XA, YF - Y0, Z1, Z2, NONE,
-      function (u, z) {
-        var x = XA + u / 12, Z = Z1 + z, c, k2;
-        if (Z < Z1 + 2.5) return Z < Z1 + 0.8 ? '#3e2716' : (Math.floor(u / 7) % 2 ? V.TIMD : '#5a3a22');       /* taban kirişi + kiriş başları */
-        if (Z >= Z2 - 2.5) return Z > Z2 - 1 ? V.TIML : V.TIM;                                                    /* üst başlık */
-        for (k2 = 0; k2 < 2; k2++) {
-          var w = k2 ? wR : wL;
-          if (inSpan(x, w[0], w[1]) && Z >= 50 && Z < 60) return winPix(x, Z, w[0], w[1], 50, 60, nt);
-          if (Z >= 49.5 && Z < 60.5 && (inSpan(x, w[0] - 0.22, w[0] - 0.02) || inSpan(x, w[1] + 0.02, w[1] + 0.22))) { var s0 = x < w[0] ? w[0] - 0.22 : w[1] + 0.02; return shutPix(x, Z, s0, s0 + 0.2, 49.5, 60.5); }
-        }
-        for (k2 = 0; k2 < plainF.length; k2++) if (inSpan(x, plainF[k2][0], plainF[k2][1])) { c = himis(x, Z, plainF[k2][0], plainF[k2][1], Z1 + 2.5, Z2 - 2.5, V.WASH); break; }
-        if (!c) c = (Z > 60.5 || Z < 49.5) ? plaster(V.WASH, x, Z) : V.TIM;
-        if (Z > Z2 - 6.5) c = dark(c, 0.16);                                                                    /* saçak gölgesi */
-        return c;
-      },
-      function (v, z) {
-        var y = Y0 + v / 12, Z = Z1 + z, c, ww = [24.25, 25.05];
-        if (Z < Z1 + 2.5) return Z < Z1 + 0.8 ? '#2e1d10' : '#3e2716';
-        if (Z >= Z2 - 2.5) return V.TIMD;
-        if (inSpan(y, ww[0], ww[1]) && Z >= 50 && Z < 60) return dark(winPix(y, Z, ww[0], ww[1], 50, 60, nt), nt ? 0.05 : 0.12);
-        if (Z >= 49.5 && Z < 60.5 && (inSpan(y, ww[0] - 0.22, ww[0] - 0.02) || inSpan(y, ww[1] + 0.02, ww[1] + 0.22))) { var s0 = y < ww[0] ? ww[0] - 0.22 : ww[1] + 0.02; return dark(shutPix(y, Z, s0, s0 + 0.2, 49.5, 60.5), 0.14); }
-        if (inSpan(y, Y0, 23.95)) c = himis(y, Z, Y0, 23.95, Z1 + 2.5, Z2 - 2.5, V.WASHS);
-        else if (inSpan(y, 25.3, YF)) c = himis(y, Z, 25.3, YF, Z1 + 2.5, Z2 - 2.5, V.WASHS);
-        else c = plaster(V.WASHS, y, Z);
-        if (Z > Z2 - 6.5) c = dark(c, 0.14);
-        return dark(c, 0.06);
-      }, { norim: true });
-    /* çiçeklikler (sardunya) */
-    [wL, wR].forEach(function (w) {
-      box(b, w[0] - 0.04, YF, w[1] - w[0] + 0.08, 0.14, 46.5, 49.5, '#6a4426', K.woodV('#7a4e2a', 3), '#5a3a22', { norim: true });
-      for (var i = 0; i < 9; i++) { var fxw = w[0] + 0.02 + i * (w[1] - w[0]) / 8.5; pr(b, fxw, YF + 0.07, 49.5, -0.5, -1 - (i % 3 === 1 ? 1 : 0), 1, 1.5, i % 2 ? '#4f8a3a' : '#3f7a32'); if (i % 2 === 0) pr(b, fxw, YF + 0.07, 51, -0.5, -0.5 - (i % 4 === 0 ? 1 : 0), 1, 1, i % 4 ? '#e5533d' : '#d94a6a'); }
+function woodPile(b, x, y0, y1) {
+  box(b, x, y0, 0.32, y1 - y0, 0, 13, function (u, v) { return hash(R(u), R(v)) > 0.5 ? '#8a6a44' : '#6f5233'; },
+    function (u, z) { var q = (u + (Math.floor(z / 3) & 1) * 1.5) % 3; return Math.floor(z) % 3 === 0 ? '#4a3220' : q < 0.6 ? '#5d3c1c' : '#7a5232'; },
+    function (v, z) { var lz = z % 3.2, lv = (v + (Math.floor(z / 3.2) & 1) * 1.6) % 3.2, d = Math.hypot(lv - 1.6, (lz - 1.6) * 0.9); return d > 1.55 ? '#4a3220' : d < 0.6 ? '#c9a46a' : d < 1.0 ? '#e0c08a' : '#a8804c'; }, { norim: true });
+  box(b, x - 0.04, y0 - 0.04, 0.4, y1 - y0 + 0.08, 13, 14.5, '#6a4426', V.TIMD, '#4a2e1a', { norim: true });     /* üstünde tahta kapak */
+}
+/* cumba: öne çıkan pencere kasası (nw pencere), alt pano, dirsekler */
+function cumbaBox(b, x0, x1, YF, d, nw, nt) {
+  var Z1 = HG - 3, Z2 = HG + HU, BY = YF + d;
+  box(b, x0, YF, x1 - x0, d, Z1 + 2, Z2, NONE,
+    function (u, z) {
+      var x = x0 + u / 12, Z = Z1 + 2 + z, dd = Math.min(x - x0, x1 - x) * 12, pw = (x1 - x0 - 0.16) / nw;
+      if (Z < Z1 + 4) return Z < Z1 + 2.8 ? '#3e2716' : V.TIMD;
+      if (Z >= Z2 - 3) return Z > Z2 - 1.2 ? V.TIML : V.TIM;
+      if (dd < 1.1) return V.TIM;
+      if (Z < 50.5) return (Math.floor(u * 1.2) % 4 === 0) ? '#5a3a22' : (Z > 49.5 ? V.TIML : '#7a4e2a');          /* ahşap alt pano */
+      var j = clamp(Math.floor((x - x0 - 0.08) / pw), 0, nw - 1), p0 = x0 + 0.08 + j * pw;
+      return winPix(x, Z, p0 + 0.03, p0 + pw - 0.03, 50.5, Z2 - 3, nt);
+    },
+    function (v, z) {
+      var y = YF + v / 12, Z = Z1 + 2 + z;
+      if (Z < Z1 + 4 || Z >= Z2 - 3) return V.TIMD;
+      if (Z < 50.5) return '#5d3c1c';
+      return dark(winPix(y, Z, YF + 0.04, BY - 0.04, 50.5, Z2 - 3, nt), 0.14);
+    }, { norim: true });
+  var br = nw > 2 ? [x0 + 0.06, (x0 + x1) / 2, x1 - 0.06] : [x0 + 0.06, x1 - 0.06];
+  br.forEach(function (xb) { line(b, fx(xb, YF + 0.02), fy(xb, YF + 0.02, Z1 - 2), fx(xb, BY - 0.02), fy(xb, BY - 0.02, Z1 + 2), V.TIMD); line(b, fx(xb, YF + 0.02) + 1, fy(xb, YF + 0.02, Z1 - 2), fx(xb, BY - 0.02) + 1, fy(xb, BY - 0.02, Z1 + 2), V.TIM); });
+}
+/* ahşap balkon (Sv3+): üst katın doğu ucunda, taban z 45,5 (aşçıların başı örtülmez) */
+function balcony(b, x0, x1, YF) {
+  var D = 0.42, zf = 45.5, zt = 47, zr = 53, yr = YF + D - 0.03, k;
+  [x0 + 0.15, (x0 + x1) / 2, x1 - 0.12].forEach(function (xb) { line(b, fx(xb, YF + 0.02), fy(xb, YF + 0.02, HG - 11), fx(xb, YF + D - 0.05), fy(xb, YF + D - 0.05, zf), V.TIMD); line(b, fx(xb, YF + 0.02) + 1, fy(xb, YF + 0.02, HG - 11), fx(xb, YF + D - 0.05) + 1, fy(xb, YF + D - 0.05, zf), V.TIM); });
+  box(b, x0, YF, x1 - x0, D, zf, zt, function (u) { return (Math.floor(u / 2.2) & 1) ? '#9a6a3a' : '#a8784a'; }, V.TIM, V.TIMD, { norim: true });
+  [[x0 + 0.45, '#e5533d'], [x1 - 0.5, '#d94a6a']].forEach(function (p) {                                        /* sardunya saksıları */
+    pr(b, p[0], YF + 0.2, zt, -1.5, -3, 3, 3, '#b4643e'); pr(b, p[0], YF + 0.2, zt, -1.5, -3, 1, 3, '#c97a50');
+    pr(b, p[0], YF + 0.2, zt + 3, -2, -2, 4, 2, '#4f8a3a'); pr(b, p[0], YF + 0.2, zt + 4, -1, -1.5, 1, 1, p[1]); pr(b, p[0], YF + 0.2, zt + 4, 0.5, -1, 1, 1, p[1]);
+  });
+  for (k = YF + 0.06; k < YF + D; k += 0.12) vl(b, x1 - 0.03, k, zt, zr, V.TIMD, 1);
+  for (k = x0 + 0.06; k < x1 - 0.02; k += 0.15) vl(b, k, yr, zt, zr, (R(k * 20) & 1) ? V.TIM : V.TIMD, 1);
+  hl(b, x0, yr, x1, yr, zt + 2, V.TIMD);
+  hl(b, x1 - 0.03, YF, x1 - 0.03, YF + D, zr, V.TIM);
+  hl(b, x0, yr, x1, yr, zr, V.TIML); hl(b, x0, yr, x1, yr, zr - 0.6, V.TIM);
+}
+function lantern(b, x, y, z, nt) {                                    /* asılı fener (Sv5) */
+  var X = R(fx(x, y)), Y = R(fy(x, y, z));
+  b.rect(X, Y, 1, 4, '#2e2e32'); b.rect(X - 3, Y + 4, 7, 1, '#3a2a1c'); b.rect(X - 2, Y + 5, 5, 7, '#2e2e32');
+  b.rect(X - 1, Y + 6, 3, 5, nt ? '#ffd98f' : '#c9b27a'); b.set(X - 1, Y + 6, nt ? '#fff2c4' : '#e8d9a0'); b.rect(X - 2, Y + 12, 5, 1, '#3a2a1c'); b.set(X, Y + 13, BRASS);
+}
+/* doğu kanadı (Sv4+): avlunun kuzeyinde tek katlı kapalı bölüm, kendi küçük kiremit çatısı */
+function wingDraw(b, g, nt) {
+  var W = g.wing, WH2 = HG - 12, sw = [W.x0 + 0.32, W.x0 + 0.92], ew = [W.y0 + 0.55, W.y0 + 1.25];
+  box(b, W.x0, W.y0, W.x1 - W.x0, W.y1 - W.y0, 0, WH2, NONE,
+    function (u, z) {                                                                       /* güney yüzü (avluya bakar) */
+      var x = W.x0 + u / 12;
+      if (z > WH2 - 2.5) return V.TIMD;
+      if (inSpan(x, sw[0], sw[1]) && z >= 13 && z < 26) return winPix(x, z, sw[0], sw[1], 13, 26, nt);
+      if ((inSpan(x, sw[0] - 0.2, sw[0] - 0.02) || inSpan(x, sw[1] + 0.02, sw[1] + 0.2)) && z >= 12.5 && z < 26.5) { var s0 = x < sw[0] ? sw[0] - 0.2 : sw[1] + 0.02; return shutPix(x, z, s0, s0 + 0.18, 12.5, 26.5); }
+      if (inSpan(x, sw[0] - 0.05, sw[1] + 0.05) && z >= 11 && z < 13) return z < 12 ? V.TIMD : V.TIM;
+      if (z < 8) return stoneAt(x, z, 41);
+      if (z >= 8 && z < 9.6) return z < 8.6 ? '#5d3c1c' : V.TIM;
+      if ((x - W.x0) * 12 < 1.2) return V.TIM;
+      return plaster(V.WASH, x, z);
+    },
+    function (v, z) {                                                                       /* doğu yüzü */
+      var y = W.y0 + v / 12, c;
+      if (z > WH2 - 2.5) return '#3e2716';
+      if (inSpan(y, ew[0], ew[1]) && z >= 13 && z < 26) return dark(winPix(y, z, ew[0], ew[1], 13, 26, nt), nt ? 0.04 : 0.12);
+      if (inSpan(y, ew[0] - 0.05, ew[1] + 0.05) && z >= 11 && z < 13) return V.TIMD;
+      if (z < 8) return dark(stoneAt(y, z, 43), 0.12);
+      if (z >= 8 && z < 9.6) return '#5d3c1c';
+      c = plaster(V.WASHS, y, z);
+      return (W.y1 - y) * 12 < 1.2 ? V.TIMD : dark(c, 0.04);
+    }, { norim: true });
+  /* çiçek saksısı (pencere önü) */
+  pr(b, (sw[0] + sw[1]) / 2, W.y1 + 0.06, 12.5, -3, -3, 6, 3, '#7a4e2a');
+  for (var i = 0; i < 5; i++) pr(b, (sw[0] + sw[1]) / 2, W.y1 + 0.07, 15, -2.5 + i * 1.2, -1 - (i & 1), 1, 1, i & 1 ? '#e5533d' : '#4f8a3a');
+  hipRoof(b, g.X0, g.Y0, { x0: W.x0, x1: W.x1 + 0.25, y0: W.y0 - 0.2, y1: W.y1 + 0.3, z: WH2 + 1, h: 9 }, { fh: 2, tails: 6, caps: 5 });
+}
+/* çatı köşkü (Sv5): mahyaya oturan küçük ahşap köşk, iki yüzde ikişer pencere, piramit çatı, tepe feneri */
+function kioskDraw(b, g, nt) {
+  var Kq = g.kiosk, h = Kq.h, kx = Kq.x, ky = Kq.y, Q = g.RR, z0 = g.top - (RH / g.ri) * h - 1.5, zb = g.top + 1, zt = g.top + 13;
+  box(b, kx - h, ky - h, 2 * h, 2 * h, z0, zt, NONE,
+    function (u, z) {
+      var x = kx - h + u / 12, Z = z0 + z;
+      if (Z < roofZ(Q, x, ky + h) - 0.4) return null;
+      if (Z > zt - 2.2) return Z > zt - 1 ? V.TIML : V.TIM;
+      if (Z < zb) return V.TIMD;
+      if ((x - (kx - h)) * 12 < 1.2 || ((kx + h) - x) * 12 < 1.2) return V.TIM;
+      var pw = (2 * h - 0.2) / 2, j = clamp(Math.floor((x - (kx - h) - 0.1) / pw), 0, 1), p0 = kx - h + 0.1 + j * pw;
+      if (Z >= zb + 0.5 && Z < zb + 2) return V.TIML;                                                         /* denizlik */
+      return winPix(x, Z, p0 + 0.04, p0 + pw - 0.04, zb + 2, zt - 2.2, nt);
+    },
+    function (v, z) {
+      var y = ky - h + v / 12, Z = z0 + z;
+      if (Z < roofZ(Q, kx + h, y) - 0.4) return null;
+      if (Z > zt - 2.2 || Z < zb) return V.TIMD;
+      if ((y - (ky - h)) * 12 < 1.2 || ((ky + h) - y) * 12 < 1.2) return V.TIMD;
+      var pw = (2 * h - 0.2) / 2, j = clamp(Math.floor((y - (ky - h) - 0.1) / pw), 0, 1), p0 = ky - h + 0.1 + j * pw;
+      return dark(winPix(y, Z, p0 + 0.04, p0 + pw - 0.04, zb + 2, zt - 2.2, nt), nt ? 0.05 : 0.14);
+    }, { norim: true });
+  var rr = hipRoof(b, g.X0, g.Y0, { x0: kx - h - 0.16, x1: kx + h + 0.16, y0: ky - h - 0.16, y1: ky + h + 0.16, z: zt, h: 8 }, { fh: 1.5, tails: 0, caps: 0 });
+  var ax = R(fx(rr.A[0], rr.A[1])), ay = R(fy(rr.A[0], rr.A[1], rr.T));                                   /* tepe feneri + alem */
+  b.rect(ax - 1, ay - 3, 2, 4, '#3a2a1c'); b.rect(ax - 4, ay - 4, 8, 1, '#4a3a2a');
+  b.rect(ax - 3, ay - 11, 6, 7, '#2e2e32'); b.rect(ax - 2, ay - 10, 4, 5, nt ? '#ffd98f' : '#c9b27a'); b.set(ax - 2, ay - 10, nt ? '#fff2c4' : '#e8d9a0');
+  b.rect(ax - 4, ay - 12, 8, 1, '#4a3a2a'); b.rect(ax - 2, ay - 14, 4, 2, '#4a3a2a'); b.rect(ax, ay - 18, 1, 4, BRASS); b.set(ax, ay - 19, BRASSL);
+}
+/* tabela: Sv1–2 mahyada direkli, Sv3+ cumbanın üstünde saçağa oturur (ekrana düz → okunur). Sv4 altın çerçeve; Sv5 çift çerçeve, tepelik (hamsi), yan fenerler, ampuller */
+function signGeom(nm, S) {
+  var lines = splitTwo(nm), s = 2, tw = 0;
+  lines.forEach(function (l) { tw = Math.max(tw, L.textW(l) * s); });
+  return { lines: lines, s: s, W: tw + 12, H: lines.length * 13 + 14 };
+}
+function signDraw(b, g, nm, star, nt) {
+  var S = g.sign, lv = g.lv, sg = signGeom(nm, S), W = sg.W, H = sg.H, s = sg.s, k, j;
+  var cx = R(fx(S.x, S.y)), by = R(fy(S.x, S.y, S.z)) - S.lift, x0 = cx - Math.floor(W / 2), y0 = by - H;
+  var leg = S.lift + 4;
+  b.rect(x0 + 6, y0 + H - 1, 2, leg, V.TIMD); b.rect(x0 + W - 8, y0 + H - 1, 2, leg, V.TIMD);                              /* ayaklar */
+  if (S.ridge) { b.rect(x0 + 4, by + 2, 6, 1, V.TIM); b.rect(x0 + W - 10, by + 2, 6, 1, V.TIM); }
+  if (lv >= 5) {                                                                                                       /* tepelik: altın kemer, içinde hamsi */
+    var tx0 = cx, ty0 = y0;
+    for (j = 0; j < 8; j++) { var hw = R(14 * Math.sqrt(Math.max(0, 1 - Math.pow((7 - j) / 8, 2)))); b.rect(tx0 - hw, ty0 - 8 + j, hw * 2 + 1, 1, '#c9952f'); if (j > 1 && hw > 2) b.rect(tx0 - hw + 2, ty0 - 8 + j, hw * 2 - 3, 1, j < 3 ? '#e6be59' : '#6e4526'); }
+    b.rect(tx0 - 4, ty0 - 4, 7, 2, '#bcd8e6'); b.rect(tx0 - 3, ty0 - 5, 5, 1, '#7aa6bf'); b.set(tx0 + 3, ty0 - 5, '#7aa6bf'); b.set(tx0 + 3, ty0 - 2, '#7aa6bf'); b.set(tx0 + 4, ty0 - 6, '#7aa6bf'); b.set(tx0 + 4, ty0 - 1, '#7aa6bf'); b.set(tx0 - 3, ty0 - 4, '#20303a');
+    b.set(tx0, ty0 - 10, BRASSL); b.rect(tx0 - 1, ty0 - 9, 3, 1, BRASS);
+  }
+  var fr = lv >= 5 ? '#e6be59' : lv >= 4 ? '#c9952f' : '#8a5a32';
+  b.rect(x0, y0, W, H, '#3e2716'); b.rect(x0 + 1, y0 + 1, W - 2, H - 2, fr);
+  var i0 = lv >= 5 ? 3 : 2;
+  if (lv >= 5) b.rect(x0 + 2, y0 + 2, W - 4, H - 4, '#8a5a32');
+  b.rect(x0 + i0, y0 + i0, W - 2 * i0, H - 2 * i0, '#6e4526');
+  for (k = y0 + 5; k < y0 + H - 2; k += 6) b.rect(x0 + i0, k, W - 2 * i0, 1, '#62401f');                                   /* tahta derzi */
+  b.rect(x0 + i0, y0 + i0, W - 2 * i0, 1, '#8f5f36');
+  for (k = 0; k < 3; k++) { b.set(x0 + i0 + 1 + k * 2, y0 + i0 + 1, '#c8553d'); b.set(x0 + W - i0 - 2 - k * 2, y0 + i0 + 1, '#c8553d'); }
+  sg.lines.forEach(function (l, i) { var lx = cx - Math.floor(L.textW(l) * s / 2), ly = y0 + 7 + i * 13; bigTxt(b, l, lx, ly + 1, '#2e1d10', s); bigTxt(b, l, lx, ly, '#f4e9d2', s); });
+  for (k = 0; k < 5; k++) {                                                                                             /* yıldızlar */
+    var on = k < star, sx0 = cx - 17 + k * 7, sy0 = y0 + H - 8;
+    for (var r = 0; r < 4; r++) for (var c2 = 0; c2 < 5; c2++) if (STAR5[r].charAt(c2) === 'x') b.set(sx0 + c2, sy0 + r, on ? (r === 0 ? '#fff0a0' : '#ffd23a') : '#4a3220');
+  }
+  if (lv >= 5) {                                                                                                       /* çerçeve ampulleri + yan fenerler */
+    for (k = x0 + 3; k < x0 + W - 2; k += 5) { b.set(k, y0, nt ? '#fff2c4' : '#fff0a0'); b.set(k, y0 + H - 1, nt ? '#fff2c4' : '#fff0a0'); }
+    [[x0 - 6, x0 - 1], [x0 + W, x0 + W + 5]].forEach(function (p, i) {
+      var lx = i ? p[1] : p[0];
+      b.rect(p[0], y0 + 5, 6, 1, '#2e2e32'); b.rect(lx, y0 + 6, 1, 2, '#2e2e32');
+      b.rect(lx - 2, y0 + 8, 5, 1, '#3a2a1c'); b.rect(lx - 2, y0 + 9, 5, 7, '#2e2e32'); b.rect(lx - 1, y0 + 10, 3, 5, nt ? '#ffd98f' : '#c9b27a'); b.set(lx - 1, y0 + 10, nt ? '#fff2c4' : '#e8d9a0'); b.rect(lx - 1, y0 + 16, 3, 1, '#3a2a1c');
     });
-    /* --- cumba: üç pencere, alt pano, köşe dirsekleri --- */
-    box(b, BX0, YF, BX1 - BX0, BY - YF, Z1 + 2, Z2, NONE,
-      function (u, z) {
-        var x = BX0 + u / 12, Z = Z1 + 2 + z, d = Math.min(x - BX0, BX1 - x) * 12, pw = (BX1 - BX0 - 0.16) / 3;
-        if (Z < Z1 + 4) return Z < Z1 + 2.8 ? '#3e2716' : V.TIMD;
-        if (Z >= Z2 - 3) return Z > Z2 - 1.2 ? V.TIML : V.TIM;
-        if (d < 1.1) return V.TIM;
-        if (Z < 50.5) return (Math.floor(u * 1.2) % 4 === 0) ? '#5a3a22' : (Z > 49.5 ? V.TIML : '#7a4e2a');          /* ahşap alt pano */
-        var j = clamp(Math.floor((x - BX0 - 0.08) / pw), 0, 2), p0 = BX0 + 0.08 + j * pw;
-        return winPix(x, Z, p0 + 0.03, p0 + pw - 0.03, 50.5, Z2 - 3, nt);
-      },
-      function (v, z) {
-        var y = YF + v / 12, Z = Z1 + 2 + z;
-        if (Z < Z1 + 4 || Z >= Z2 - 3) return V.TIMD;
-        if (Z < 50.5) return '#5d3c1c';
-        return dark(winPix(y, Z, YF + 0.04, BY - 0.04, 50.5, Z2 - 3, nt), 0.14);
-      }, { norim: true });
-    [BX0 + 0.06, (BX0 + BX1) / 2, BX1 - 0.06].forEach(function (xb) { line(b, fx(xb, YF + 0.02), fy(xb, YF + 0.02, Z1 - 2), fx(xb, BY - 0.02), fy(xb, BY - 0.02, Z1 + 2), V.TIMD); line(b, fx(xb, YF + 0.02) + 1, fy(xb, YF + 0.02, Z1 - 2), fx(xb, BY - 0.02) + 1, fy(xb, BY - 0.02, Z1 + 2), V.TIM); });
-    /* --- kırma çatı: alaturka kiremit (köy evleriyle aynı kırmızı) --- */
-    var RX0 = XA - 0.3, RX1 = XB + 0.3, RY0 = Y0 - 0.2, RY1 = BY + 0.25, RZ = Z2 + 1, ym = (RY0 + RY1) / 2, ri = Math.min((RY1 - RY0) / 2, (RX1 - RX0) / 2), r0 = RX0 + ri, r1 = RX1 - ri;
-    wall(b, RX0, RY1, RX1, RY1, RZ - 2.5, RZ, '#4a2e1a'); wall(b, RX1, RY0, RX1, RY1, RZ - 2.5, RZ, '#3a2414');            /* saçak alnı */
-    for (k = 0; k < 26; k++) { var tx = RX0 + 0.2 + k * (RX1 - RX0 - 0.4) / 25; vl(b, tx, RY1 - 0.02, RZ - 3.5, RZ - 2.5, '#2e1d10', 1); }
-    var kk = G().K, sF = RH / (RY1 - ym), sE = RH / ri, cF = RZ + sF * (RY1 - Y0), cE = RZ + sE * (RX1 - X0);
-    poly(b, [P3(RX1, RY0, RZ), P3(RX1, RY1, RZ), P3(r1, ym, RZ + RH)], function (Xb, Yb) {                          /* doğu yamacı */
-      var a = (Xb + 0.5) / (12 * kk), xx = ((Yb + 0.5) / kk + 6 * a + cE) / (12 + sE) + X0, yy = xx - X0 - a + Y0;
-      return tileAt(RX1 - xx, yy, V.RE, Xb, Yb);
-    });
-    poly(b, [P3(RX0, RY1, RZ), P3(RX1, RY1, RZ), P3(r1, ym, RZ + RH), P3(r0, ym, RZ + RH)], function (Xb, Yb) {      /* ön (güney) yamaç */
-      var a = (Xb + 0.5) / (12 * kk), yy = ((Yb + 0.5) / kk - 6 * a + cF) / (12 + sF) + Y0, xx = a + yy - Y0 + X0;
-      return tileAt(RY1 - yy, xx, V.RF, Xb, Yb);
-    });
-    hl(b, RX0, RY1, RX1, RY1, RZ, '#e07a58');                                                                          /* saçak ışığı */
-    line(b, fx(RX1, RY1), fy(RX1, RY1, RZ), fx(r1, ym), fy(r1, ym, RZ + RH), '#8e2f1f');                               /* mahya + kalkan kiremitleri */
-    line(b, fx(RX1, RY1) - 1, fy(RX1, RY1, RZ), fx(r1, ym) - 1, fy(r1, ym, RZ + RH), '#e07a58');
-    hl(b, r0, ym, r1, ym, RZ + RH + 0.6, '#8e2f1f'); hl(b, r0, ym, r1, ym, RZ + RH + 1.1, '#e98a64');
-    for (k = 0; k < 12; k++) { var mx = r0 + k * (r1 - r0) / 11; pr(b, mx, ym, RZ + RH + 1.5, -1, 0, 2, 1, '#d0654a'); }
-    /* --- saçak altı: kurutulmuş biber dizileri + sepet --- */
-    pepperString(b, XA + 0.35, BY + 0.12, RZ - 3, 5);
-    pepperString(b, 18.25, BY + 0.12, RZ - 3, 4);
-    pepperString(b, 21.35, BY + 0.12, RZ - 3, 4);
-    basket(b, 23.4, BY + 0.12, RZ - 3);
-    /* --- tabela: cumbanın üstünde saçağa oturan ahşap levha (ekrana düz → okunur) --- */
-    var lines = splitTwo(nm), s = 2, tw = 0;
-    lines.forEach(function (l) { tw = Math.max(tw, L.textW(l) * s); });
-    var W = tw + 12, H = lines.length * 13 + 14, cx = R(fx(SIGN_X, RY1 - 0.05)), by = R(fy(SIGN_X, RY1 - 0.05, RZ)) - 3, x0 = cx - Math.floor(W / 2), y0 = by - H;
-    b.rect(x0 + 6, y0 + H - 1, 2, 5, V.TIMD); b.rect(x0 + W - 8, y0 + H - 1, 2, 5, V.TIMD);                                /* ayaklar */
-    b.rect(x0, y0, W, H, '#3e2716'); b.rect(x0 + 1, y0 + 1, W - 2, H - 2, lv >= 4 ? '#c9952f' : '#8a5a32');
-    b.rect(x0 + 2, y0 + 2, W - 4, H - 4, '#6e4526');
-    for (k = y0 + 5; k < y0 + H - 2; k += 6) b.rect(x0 + 2, k, W - 4, 1, '#62401f');                                      /* tahta derzi */
-    b.rect(x0 + 2, y0 + 2, W - 4, 1, '#8f5f36');
-    for (k = 0; k < 3; k++) { b.set(x0 + 3 + k * 2, y0 + 3, '#c8553d'); b.set(x0 + W - 4 - k * 2, y0 + 3, '#c8553d'); }
-    lines.forEach(function (l, i) { var lx = cx - Math.floor(L.textW(l) * s / 2), ly = y0 + 7 + i * 13; bigTxt(b, l, lx, ly + 1, '#2e1d10', s); bigTxt(b, l, lx, ly, '#f4e9d2', s); });
-    for (k = 0; k < 5; k++) {                                                                                             /* yıldızlar */
-      var on = k < star, sx0 = cx - 17 + k * 7, sy0 = y0 + H - 8;
-      for (var r = 0; r < 4; r++) for (var c2 = 0; c2 < 5; c2++) if (STAR5[r].charAt(c2) === 'x') b.set(sx0 + c2, sy0 + r, on ? (r === 0 ? '#fff0a0' : '#ffd23a') : '#4a3220');
-    }
-    b.rect(x0 + 4, y0 - 3, 1, 3, '#2e2e32'); b.rect(x0 + 4, y0 - 3, 4, 1, '#2e2e32'); b.rect(x0 + 6, y0 - 2, 3, 2, '#3a3a40');   /* tabela lambaları */
+  } else {                                                                                                             /* tabela lambaları */
+    b.rect(x0 + 4, y0 - 3, 1, 3, '#2e2e32'); b.rect(x0 + 4, y0 - 3, 4, 1, '#2e2e32'); b.rect(x0 + 6, y0 - 2, 3, 2, '#3a3a40');
     b.rect(x0 + W - 5, y0 - 3, 1, 3, '#2e2e32'); b.rect(x0 + W - 8, y0 - 3, 4, 1, '#2e2e32'); b.rect(x0 + W - 9, y0 - 2, 3, 2, '#3a3a40');
     if (nt) { b.rect(x0 + 6, y0, 3, 1, '#fff2c4'); b.rect(x0 + W - 9, y0, 3, 1, '#fff2c4'); }
+  }
+}
+function houseFrontSpr(o, nm) {
+  var g = hGeo(o), nt = o.night ? 1 : 0, star = clamp(o.star | 0, 0, 5), lv = g.lv;
+  return spr('lkHF2|' + g.key + '|' + nt + '|' + star + '|' + nm + '|' + G().K, g.X0, g.Y0, function (b) {
+    var X0 = g.X0, Y0 = g.Y0, X1 = g.X1, Y1 = g.Y1, Z1 = g.Z1, Z2 = g.Z2, XA = g.XA, XB = g.XB, YF = g.YF, BX0 = g.BX0, BX1 = g.BX1, BY = g.BY, k;
+    /* --- odun yığını (Sv2+; doğu dışı, arkada; kanat varsa onun kuzeyinde) --- */
+    if (lv >= 2) woodPile(b, X1 + 0.03, Y0 + 0.08, g.wing ? g.wing.y0 - 0.05 : Y0 + 1.15);
+    /* --- zemin kat doğu duvarı --- */
+    eastWall(b, X1, Y1, Y0, Y1, nt, g.ewin, g.leaf);
+    /* --- köşe dirsekleri (ön açıklığın iki ucu) --- */
+    [[X0 + 0.12, 0.5], [X1 - 0.12, -0.5]].forEach(function (p) {
+      var yb = Y1 + 0.1;
+      line(b, fx(p[0], yb), fy(p[0], yb, Z1 - 15), fx(p[0] + p[1], yb), fy(p[0] + p[1], yb, Z1 - 2), V.TIMD);
+      line(b, fx(p[0], yb) + 1, fy(p[0], yb, Z1 - 15), fx(p[0] + p[1], yb) + 1, fy(p[0] + p[1], yb, Z1 - 2), V.TIM);
+    });
+    if (!g.up) {
+      /* --- Sv1–2: tek kat — duvar başlığı + ön saçak kirişi (alt kenarı z 40: aşçıların başı açık) --- */
+      box(b, X1 - 0.24, Y0, 0.24, Y1 - Y0, Z1, HG, NONE, NONE, function (v, z) { return z > 2.2 ? V.TIM : V.TIMD; }, { norim: true });
+      box(b, XA, Y1 - 0.14, XB - XA, 0.26, Z1 - 3, HG, NONE,
+        function (u, z) { if (z < 0.8) return '#3e2716'; if (z > 5.2) return V.TIML; return (Math.floor(z * 1.4 + hash(R(u / 7), 3) * 3) % 4 === 0) ? V.TIMD : (Math.floor(u / 9) % 2 ? V.TIM : '#74492a'); },
+        function (v, z) { return z < 0.8 ? '#2e1d10' : V.TIMD; }, { norim: true });
+      pepperString(b, X0 + 0.32, Y1 + 0.16, Z1 - 3, 4);
+      pepperString(b, X1 - 0.32, Y1 + 0.16, Z1 - 3, 3);
+    } else {
+      /* --- Sv3+: hımış üst kat: önde pencere(ler), cumba(lar), balkon kapısı; doğuda derinlik boyunca pencereler --- */
+      var wL = g.wL, c2 = g.cumba2, D = g.bdoor, open = [], eOpen = [];
+      open.push(c2 ? [c2[0], c2[1]] : [wL[0] - 0.24, wL[1] + 0.24]); open.push([BX0, BX1]); open.push([D[0] - 0.06, D[1] + 0.06]);
+      var panF = gaps(XA, XB, open);
+      g.uwin.forEach(function (w) { eOpen.push([w[0] - 0.24, w[1] + 0.24]); });
+      var panE = gaps(Y0, YF, eOpen);
+      box(b, XA, Y0, XB - XA, YF - Y0, Z1, Z2, NONE,
+        function (u, z) {
+          var x = XA + u / 12, Z = Z1 + z, c, k2;
+          if (Z < Z1 + 2.5) return Z < Z1 + 0.8 ? '#3e2716' : (Math.floor(u / 7) % 2 ? V.TIMD : '#5a3a22');       /* taban kirişi + kiriş başları */
+          if (Z >= Z2 - 2.5) return Z > Z2 - 1 ? V.TIML : V.TIM;                                                    /* üst başlık */
+          if (!c2) {
+            if (inSpan(x, wL[0], wL[1]) && Z >= 50 && Z < 60) return winPix(x, Z, wL[0], wL[1], 50, 60, nt);
+            if (Z >= 49.5 && Z < 60.5 && (inSpan(x, wL[0] - 0.22, wL[0] - 0.02) || inSpan(x, wL[1] + 0.02, wL[1] + 0.22))) { var s0 = x < wL[0] ? wL[0] - 0.22 : wL[1] + 0.02; return shutPix(x, Z, s0, s0 + 0.2, 49.5, 60.5); }
+          }
+          if (inSpan(x, D[0], D[1]) && Z < 61.5) {                                                                  /* balkon kapısı */
+            var e = Math.min(x - D[0], D[1] - x) * 12;
+            if (Z >= 51.5) return winPix(x, Z, D[0], D[1], 51.5, 61.5, nt);
+            if (e < 1.1) return V.TIMD;
+            if (Math.abs(x - (D[0] + D[1]) / 2) * 12 < 0.6) return V.TIMD;
+            return (Z > 50.5 || (e > 1.1 && e < 2)) ? V.TIM : '#7a4e2a';
+          }
+          for (k2 = 0; k2 < panF.length; k2++) if (inSpan(x, panF[k2][0], panF[k2][1])) { c = himis(x, Z, panF[k2][0], panF[k2][1], Z1 + 2.5, Z2 - 2.5, V.WASH); break; }
+          if (!c) c = plaster(V.WASH, x, Z);
+          if (Z > Z2 - 6.5) c = dark(c, 0.16);                                                                    /* saçak gölgesi */
+          return c;
+        },
+        function (v, z) {
+          var y = Y0 + v / 12, Z = Z1 + z, c, k2;
+          if (Z < Z1 + 2.5) return Z < Z1 + 0.8 ? '#2e1d10' : '#3e2716';
+          if (Z >= Z2 - 2.5) return V.TIMD;
+          for (k2 = 0; k2 < g.uwin.length; k2++) {
+            var ww = g.uwin[k2];
+            if (inSpan(y, ww[0], ww[1]) && Z >= 50 && Z < 60) return dark(winPix(y, Z, ww[0], ww[1], 50, 60, nt), nt ? 0.05 : 0.12);
+            if (Z >= 49.5 && Z < 60.5 && (inSpan(y, ww[0] - 0.22, ww[0] - 0.02) || inSpan(y, ww[1] + 0.02, ww[1] + 0.22))) { var s0 = y < ww[0] ? ww[0] - 0.22 : ww[1] + 0.02; return dark(shutPix(y, Z, s0, s0 + 0.2, 49.5, 60.5), 0.14); }
+          }
+          for (k2 = 0; k2 < panE.length; k2++) if (inSpan(y, panE[k2][0], panE[k2][1])) { c = himis(y, Z, panE[k2][0], panE[k2][1], Z1 + 2.5, Z2 - 2.5, V.WASHS); break; }
+          if (!c) c = plaster(V.WASHS, y, Z);
+          if (Z > Z2 - 6.5) c = dark(c, 0.14);
+          return dark(c, 0.06);
+        }, { norim: true });
+      if (!c2) {                                                                                                  /* çiçeklik (sardunya) */
+        box(b, wL[0] - 0.04, YF, wL[1] - wL[0] + 0.08, 0.14, 46.5, 49.5, '#6a4426', K.woodV('#7a4e2a', 3), '#5a3a22', { norim: true });
+        for (k = 0; k < 9; k++) { var fxw = wL[0] + 0.02 + k * (wL[1] - wL[0]) / 8.5; pr(b, fxw, YF + 0.07, 49.5, -0.5, -1 - (k % 3 === 1 ? 1 : 0), 1, 1.5, k % 2 ? '#4f8a3a' : '#3f7a32'); if (k % 2 === 0) pr(b, fxw, YF + 0.07, 51, -0.5, -0.5 - (k % 4 === 0 ? 1 : 0), 1, 1, k % 4 ? '#e5533d' : '#d94a6a'); }
+      } else cumbaBox(b, c2[0], c2[1], YF, 0.25, 2, nt);
+      cumbaBox(b, BX0, BX1, YF, 0.3, 3, nt);
+      balcony(b, g.balc[0], g.balc[1], YF);
+    }
+    /* --- kırma çatı (alaturka kiremit) + bacalar --- */
+    var RR = g.RR, rr = hipRoof(b, X0, Y0, RR, { fh: 2.5, tails: 26, caps: 12, lace: lv >= 5 });
+    for (k = 0; k < g.chim.length; k++) chimney(b, g.chim[k], RR);
+    if (lv >= 5) [rr.A, rr.B].forEach(function (p) { var ax = R(fx(p[0], p[1])), ay = R(fy(p[0], p[1], rr.T + 1.5)); b.rect(ax, ay - 7, 1, 7, BRASS); b.rect(ax - 1, ay - 9, 3, 2, BRASSL); b.set(ax, ay - 10, BRASSL); });   /* mahya alemleri */
+    if (g.kiosk) kioskDraw(b, g, nt);
+    /* --- saçak altı: kurutulmuş biber dizileri + sepet (Sv3+), köşe fenerleri (Sv5) --- */
+    if (g.up) {
+      pepperString(b, XA + 0.35, BY + 0.12, g.RZ - 3, 5);
+      pepperString(b, 18.25, BY + 0.12, g.RZ - 3, 4);
+      pepperString(b, 21.35, BY + 0.12, g.RZ - 3, 4);
+      basket(b, 23.4, BY + 0.12, g.RZ - 3);
+    }
+    if (lv >= 5) { lantern(b, X0 + 0.1, YF + 0.05, Z1, nt); lantern(b, X1 - 0.1, YF + 0.05, Z1, nt); }
+    /* --- doğu kanadı (Sv4+) --- */
+    if (g.wing) wingDraw(b, g, nt);
+    /* --- tabela --- */
+    signDraw(b, g, nm, star, nt);
     b.outline(0.55);
   });
 }
@@ -965,25 +1296,26 @@ function houseName() { var NM = gf('NM'), UP = gf('UP'); return (UP && NM) ? UP(
 HKA.drawLokHouse = function (o) {
   if (!o || !o.part) return false;
   if (o.part === 'back') { TK_STASH = null; at(houseBackSpr(o), o.x0, o.y0, 0); return true; }
-  var nm = houseName(), t = o.t || T(), k;
+  var nm = houseName(), t = o.t || T(), g = hGeo(o), k;
   at(houseFrontSpr(o, nm), o.x0, o.y0, 0);
-  var YF = o.y1 + 0.3, BY = YF + 0.3, RZ = HG + HU + 1, RY1 = BY + 0.25;
-  if (o.night) {                                                    /* gece: pencere ve tabela ışığı */
-    var gl = [[17.0, YF, 55, 16], [22.42, YF, 55, 16], [19.8, BY, 56, 34]];
-    for (k = 0; k < gl.length; k++) { var g = gl[k]; L.fr(R(pX(g[0], g[1])), R(pY(g[0], g[1], g[2])), -g[3] - 3, -12, g[3] * 2 + 6, 26, 'rgba(255,214,140,.13)'); }
-    L.fr(R(pX(o.x1 + 0.02, 25.38)), R(pY(o.x1 + 0.02, 25.38, 22)), -8, -18, 16, 34, 'rgba(255,214,140,.12)');
-    var sx = R(pX(SIGN_X, RY1 - 0.05)), sy = R(pY(SIGN_X, RY1 - 0.05, RZ));
-    L.fr(sx, sy, -48, -50, 96, 48, 'rgba(255,220,150,.12)');
+  if (o.night) {                                                    /* gece: pencere, kapı, köşk ve tabela ışığı (önbellekli sprite üstüne hafif hale) */
+    for (k = 0; k < g.glow.length; k++) { var q = g.glow[k]; L.fr(R(pX(q[0], q[1])), R(pY(q[0], q[1], q[2])), -q[3] - 4, -(q[4] >> 1) - 4, q[3] * 2 + 8, q[4] + 8, 'rgba(255,214,140,.13)'); }
+    var S = g.sign, sg = signGeom(nm, S), sx = R(pX(S.x, S.y)), sy = R(pY(S.x, S.y, S.z)), hw = (sg.W >> 1) + (g.lv >= 5 ? 14 : 8);
+    L.fr(sx, sy, -hw, -S.lift - sg.H - (g.lv >= 5 ? 14 : 6), hw * 2, sg.H + (g.lv >= 5 ? 18 : 8), 'rgba(255,220,150,' + (g.lv >= 5 ? '.16' : '.12') + ')');
     for (k = 0; k < 5; k++) { var lx = [16.6, 18.2, 19.8, 21.4, 23.0][k]; L.fr(R(pX(lx, o.y1 - 0.4)), R(pY(lx, o.y1 - 0.4, 0)), -14, -6, 28, 10, 'rgba(255,170,80,.10)'); }
   }
-  /* baca dumanı: çalışan istasyon arttıkça yoğunlaşır */
-  var lvl = 0.25 + (o.smoke || 0) * 0.75, bx = R(pX(22.0, 24.15)), by = R(pY(22.0, 24.15, 95));
-  for (k = 0; k < 6; k++) {
-    var ph = (t * (0.3 + lvl * 0.2) + k / 6) % 1, rr = R(2 + ph * 7), al = ((1 - ph) * (0.2 + 0.35 * lvl)).toFixed(2), ox = R(ph * 26 + Math.sin(t * 1.3 + k * 2) * 3), oy = -R(ph * 44);
-    L.fr(bx, by, ox - rr, oy - rr, rr * 2, rr * 2, 'rgba(236,232,224,' + al + ')'); L.fr(bx, by, ox - rr + 2, oy - rr - 1, rr * 2 - 4, 1, 'rgba(250,248,240,' + al + ')');
+  /* baca dumanı: çalışan istasyon arttıkça yoğunlaşır (ikinci baca daha hafif) */
+  var lvl = 0.25 + (o.smoke || 0) * 0.75;
+  for (var c = 0; c < g.chim.length; c++) {
+    var ch = g.chim[c], bx = R(pX(ch.x, ch.y)), by = R(pY(ch.x, ch.y, ch.z1 + 7)), n = c ? 4 : 6;
+    for (k = 0; k < n; k++) {
+      var ph = (t * (0.3 + lvl * 0.2) + k / n + c * 0.37) % 1, rr = R((2 + ph * 7) * (c ? 0.75 : 1)), al = ((1 - ph) * (0.2 + 0.35 * lvl) * ch.a).toFixed(2), ox = R(ph * 26 + Math.sin(t * 1.3 + k * 2 + c) * 3), oy = -R(ph * 44 * (c ? 0.8 : 1));
+      L.fr(bx, by, ox - rr, oy - rr, rr * 2, rr * 2, 'rgba(236,232,224,' + al + ')'); L.fr(bx, by, ox - rr + 2, oy - rr - 1, Math.max(1, rr * 2 - 4), 1, 'rgba(250,248,240,' + al + ')');
+    }
   }
   return true;
 };
+HKA.onReset(function () { GEO = {}; });
 /* ---------- teras ---------- */
 function paveAt(x, y, Xb, Yb, A) {
   var e = Math.min(x - A.x0, A.x1 - x, y - A.y0, A.y1 - y), g = hash(Xb, Yb), c;
