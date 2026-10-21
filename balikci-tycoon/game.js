@@ -3717,15 +3717,67 @@ function canStandFree(x, y) {
   }
   return true;
 }
-function canStandFor(a, x, y) { return a.isPlayer ? canStandFree(x, y) : canStand(x, y); }
+/* serbest gezen oyuncunun engelleri: kurulu binalar, tezgâhlar, istasyonlar, masalar, süsler (ayak izleri layoutRects ile aynı ölçüde).
+   Yerdeki düz şeyler (hasır, kilim yolu, patika) engel değil. Etkileşim noktaları ayak izinin dışında kalır (test-engel.js sınar).
+   Liste yarım saniyede bir yenilenir (alım/inşaat/süs taşıma anında değişebilir). */
+var PBLK = [], pblkT = -1;
+function playerBlocks() {
+  if (pblkT >= 0 && Math.abs(gameT - pblkT) < 0.5) return PBLK;
+  pblkT = gameT;
+  var L = PBLK; L.length = 0;
+  function add(x, y, hx, hy) { L.push({ x0: x - hx, y0: y - hy, x1: x + hx, y1: y + hy }); }
+  function box(o) { add(o.x, o.y, o.w / 2, o.h / 2); }
+  var i;
+  for (i = 0; i < counters.length; i++) { var c = counters[i]; if (!AREAS[c.z].locked) add(c.x, c.y, CTR_HW, CTR_HH); }
+  allNets().forEach(function (sp) { if (!AREAS[sp.z].locked) add(sp.x, sp.y + 0.45, 0.65, 0.95); });
+  tables.forEach(function (t) { if (!AREAS[t.z].locked) add(t.x, t.y, 0.72, 0.52); });
+  if (!AREAS[smoker.z].locked) add(smoker.x, smoker.y, 0.8, 0.65);
+  if (!AREAS[kitchen.z].locked) add(kitchen.x, kitchen.y, 0.8, 0.6);
+  SLOTS.forEach(function (sl) { if (sl.b) add(sl.x, sl.y, 0.65, 0.65); });
+  PLOTS.forEach(function (q) { if (q.b) add(q.x, q.y, 1.0, 1.0); });
+  if (project.done || project.stage > 0) box(project);
+  if (HUT.lvl) box(HUT);
+  if (DEPOT.lvl) { box(DEPOT); DEPOT_WINGS.forEach(function (w) { if (w.x !== undefined && DEPOT.lvl >= w.lv) box(w); }); }
+  if (WHALL.built) box(WHALL);
+  if (adBuilt()) box(AD);
+  if (officeBuilt()) box(office);
+  add(safe.x, safe.y, 0.5, 0.5);
+  BINS.forEach(function (b) { add(b.x, b.y, 0.3, 0.3); });
+  AREA_LAMPS.forEach(function (ls, z) { if (!AREAS[z].locked) ls.forEach(function (l) { add(l.x, l.y, 0.2, 0.2); }); });
+  DECOR.forEach(function (d) { if (d.got && !d.box && !d.fixed) add(d.x, d.y, 0.42, 0.42); });
+  if (lokOpen()) {
+    var tn = lokTblN();
+    LOK_T.forEach(function (t) { if (t.i < tn) add(t.x, t.y, t.hw, t.hh); });
+    LOK_STK.forEach(function (k) { if (lokStLv(k) > 0) add(LOK_ST[k].x, LOK_ST[k].y, 0.5, 0.42); });
+    ['dolap', 'pass', 'kasa', 'sink', 'board'].forEach(function (k) { add(LOK[k].x, LOK[k].y, LOK[k].hw, LOK[k].hh); });
+    if (lokUpOn('mez')) add(LOK.meze.x, LOK.meze.y, LOK.meze.hw, LOK.meze.hh);
+    if (lokUpOn('saz')) add(LOK.saz.x, LOK.saz.y, LOK.saz.hw, LOK.saz.hh);
+    /* duvarlar: evin arka ve batı duvarı (mutfağa doğudaki avludan ya da ön ocakbaşından girilir), terasın batı (kapı boşluklu),
+       güney ve doğu alçak duvarı */
+    var h = LOK.house, ar = AREAS[LOK_Z], wt = 0.2;
+    L.push({ x0: h.x0 - wt, y0: h.y0 - wt, x1: h.x1, y1: h.y0 + wt });
+    L.push({ x0: h.x0 - wt, y0: h.y0 - wt, x1: h.x0 + wt, y1: h.y1 });
+    L.push({ x0: ar.x0 - wt, y0: h.y1, x1: ar.x0 + wt, y1: LOK_GAPY[0] });
+    L.push({ x0: ar.x0 - wt, y0: LOK_GAPY[1], x1: ar.x0 + wt, y1: ar.y1 + wt });
+    L.push({ x0: ar.x0 - wt, y0: ar.y1 - wt, x1: ar.x1 + wt, y1: ar.y1 + wt });
+    L.push({ x0: ar.x1 - wt, y0: h.y1, x1: ar.x1 + wt, y1: ar.y1 + wt });
+  }
+  return L;
+}
+function inPlayerBlock(x, y) { var L = playerBlocks(); for (var i = 0; i < L.length; i++) { var r = L[i]; if (x > r.x0 && x < r.x1 && y > r.y0 && y < r.y1) return true; } return false; }
+/* engelin içine girilmez; bir şekilde içinde kalmışsa (kayıt, yeni kurulan bina) dışarı çıkabilir */
+function canStandFor(a, x, y) { return a.isPlayer ? canStandFree(x, y) && (!inPlayerBlock(x, y) || inPlayerBlock(a.x, a.y)) : canStand(x, y); }
 function maxOpenY() { var m = 0; for (var i = 0; i < AREAS.length; i++) if (!AREAS[i].locked && !AREAS[i].lok) m = Math.max(m, AREAS[i].y1); return m; }
 function moveActor(a, dx, dy, spd, dt) {
   var L = Math.hypot(dx, dy);
   if (L < 0.001) { a.vx = 0; a.vy = 0; return false; }
   dx /= L; dy /= L;
-  var nx = a.x + dx * spd * dt, ny = a.y + dy * spd * dt;
-  if (canStandFor(a, nx, a.y)) a.x = nx;
-  if (canStandFor(a, a.x, ny)) a.y = ny;
+  var st = spd * dt, n = a.isPlayer ? Math.max(1, Math.ceil(st / 0.12)) : 1;   /* oyuncu: hızlıyken ince duvarın üstünden atlamasın diye küçük adımlar */
+  for (var k = 0; k < n; k++) {
+    var nx = a.x + dx * st / n, ny = a.y + dy * st / n;
+    if (canStandFor(a, nx, a.y)) a.x = nx;
+    if (canStandFor(a, a.x, ny)) a.y = ny;
+  }
   a.vx = dx; a.vy = dy; a.face = pX(dx, dy) >= 0 ? 1 : -1; a.bob += dt * 12;
   return true;
 }
@@ -16889,7 +16941,7 @@ function lokTblN() { return LOK_TBN[clamp(lokQ().tb, 1, LOK_MAXTB) - 1]; }
 function lokStLv(k) { return lokQ().st[k] | 0; }
 function lokDolapCap() { return LOK_CAP0 * (1 + (lokQ().dl | 0)); }
 function lokDolapN() { var n = 0, d = lokQ().dolap; for (var k in d) n += d[k]; return n; }
-function lokCrewCap() { return 3 + lokQ().lv; }
+function lokCrewCap() { return 4 + lokQ().lv; }       /* Sv1'de 5: beş rolün her birinden bir kişi alınabilsin */
 function lokCrew(role) { var o = []; for (var i = 0; i < workers.length; i++) if (ROLES[workers[i].role] && ROLES[workers[i].role].lok && (!role || workers[i].role === role)) o.push(workers[i]); return o; }
 function lokBuiltN() { var n = 0; LOK_STK.forEach(function (k) { if (lokStLv(k) > 0) n++; }); return n; }
 function lokRoleMax(r) {                                 /* v2.21-deneme: her rolden önce 1 kişi; ikinci Sv2'de, üçüncü Sv4'te (aşçı ayrıca kurulu istasyon sayısıyla sınırlı) */
@@ -16915,7 +16967,10 @@ function lokWantF() {                                    /* dolabın kabul edece
   return o;
 }
 function lokShare() { var n = Math.max(1, Object.keys(lokWantF()).length); return Math.max(3, Math.ceil(lokDolapCap() / n)); }
-function lokDolapRoom(f) { var w = lokWantF(); if (!w[f]) return 0; return Math.max(0, Math.min(lokDolapCap() - lokDolapN(), lokShare() - (lokQ().dolap[f] | 0))); }
+/* oyuncu: menüdeki balığın filetosu dolap dolana dek girer (balık başına pay yok). Personel (Komi, Depo Hamalı) payı gözetir: tek balık
+   dolabı doldurup menünün öbür tariflerini aç bırakmasın. */
+function lokDolapRoom(f) { var w = lokWantF(); if (!w[f]) return 0; return Math.max(0, lokDolapCap() - lokDolapN()); }
+function lokDolapRoomFair(f) { return Math.min(lokDolapRoom(f), Math.max(0, lokShare() - (lokQ().dolap[f] | 0))); }
 function lokDolapAdd(f) { var d = lokQ().dolap; d[f] = (d[f] | 0) + 1; }
 /* ---------- kayıt ---------- */
 function lokSave() {
@@ -17559,7 +17614,8 @@ function iLokDeposit(a, dt) {                             /* lokanta kasası: ma
   return true;
 }
 function iPutDolap(a, dt) {                               /* fileto → soğuk dolap */
-  var ok = function (it) { return it.k === 'fileto' && !it.dish && lokDolapRoom(it.f) > 0; };
+  var room = a.isPlayer ? lokDolapRoom : lokDolapRoomFair;
+  var ok = function (it) { return it.k === 'fileto' && !it.dish && room(it.f) > 0; };
   if (!hasCarry(a, ok)) return false;
   return tryTake(a, dt, function () {
     var it = popCarry(a, ok); if (!it) return;
@@ -17701,7 +17757,7 @@ function aiLok(w, sp, dt) {
 function lokKomiSrc(w) {
   var wf = lokWantF(), best = null, bd = 1e9, have = {}, k, f, d, i;
   w.carry.forEach(function (it) { if (it.k === 'fileto' && !it.dish) have[it.f] = (have[it.f] | 0) + 1; });
-  var room = function (ff) { return lokDolapRoom(ff) - (have[ff] | 0); };
+  var room = function (ff) { return lokDolapRoomFair(ff) - (have[ff] | 0); };
   if (DEPOT.lvl) for (k in DEPOT.cold) {
     if (k.indexOf('fileto|') !== 0 || !DEPOT.cold[k]) continue;
     f = k.split('|')[1];
@@ -17718,7 +17774,7 @@ function lokKomiSrc(w) {
 }
 function aiLkKomi(w, sp, dt) {
   w.slow = 1;
-  var fits2 = function (it) { return it.k === 'fileto' && !it.dish && lokDolapRoom(it.f) > 0; };
+  var fits2 = function (it) { return it.k === 'fileto' && !it.dish && lokDolapRoomFair(it.f) > 0; };
   var hasF = hasCarry(w, isFileto), full = carryW(w) >= capOf(w) - 0.5;
   if (w.mode !== 'drop' && w.mode !== 'load') w.mode = 'load';
   if (w.mode === 'load' && hasF && (full || !lokKomiSrc(w))) w.mode = 'drop';
@@ -17736,7 +17792,7 @@ function aiLkKomi(w, sp, dt) {
   var src = lokKomiSrc(w);
   if (!src) { lokIdle(w, sp, dt, 1.2); return; }
   if (goTo(w, src.x, src.t === 'cold' ? src.y : src.y + 0.7, sp, dt, 0.8)) {
-    var ok = src.t === 'cold' ? iDepotOut(w, src.k, Math.min(capOf(w), Math.max(1, lokDolapRoom(src.f))), dt)
+    var ok = src.t === 'cold' ? iDepotOut(w, src.k, Math.min(capOf(w), Math.max(1, lokDolapRoomFair(src.f))), dt)
       : iPickMat(w, src.m, dt, function (it) { return it.k === 'fileto' && !it.dish && it.f === src.f; });
     if (!ok && hasF) w.mode = 'drop';
   }
@@ -17748,7 +17804,7 @@ function lokDepotTarget(w) {
     if (k.indexOf('fileto|') !== 0 || !DEPOT.cold[k]) continue;
     var f = k.split('|')[1], have = carryKeyCount(w, k);
     for (var i = 0; i < workers.length; i++) if (workers[i] !== w && workers[i].role === 'depocu' && workers[i].task === 'lok' && workers[i].k === k) have += 4;
-    if (lokDolapRoom(f) - have > 0) return k;
+    if (lokDolapRoomFair(f) - have > 0) return k;
   }
   return null;
 }
@@ -17757,13 +17813,13 @@ function aiDepocuLok(w, sp, dt) {
   if (!lokOpen()) { w.task = hasCarry(w, isGoods) ? 'store' : null; w.mode = 'drop'; return; }
   if (w.mode === 'load') {
     if (goTo(w, DEPOT.door.x, DEPOT.door.y, sp, dt, 0.7)) {
-      var want = Math.min(8, lokDolapRoom(f));
+      var want = Math.min(8, lokDolapRoomFair(f));
       if (full || want < 1 || !DEPOT.cold[w.k] || !iDepotOut(w, w.k, want, dt)) w.mode = 'drop';
     }
     return;
   }
   if (!hasCarry(w, isFileto)) { w.task = null; return; }
-  var fits2 = hasCarry(w, function (it) { return it.k === 'fileto' && !it.dish && lokDolapRoom(it.f) > 0; });
+  var fits2 = hasCarry(w, function (it) { return it.k === 'fileto' && !it.dish && lokDolapRoomFair(it.f) > 0; });
   if (!fits2) { w.task = 'store'; w.mode = 'drop'; return; }                  /* dolap doldu: kalanı Soğuk Oda'ya geri */
   if (goTo(w, LOK.dolap.sx, LOK.dolap.sy, sp, dt, 0.5)) iPutDolap(w, dt);
 }
@@ -18982,7 +19038,7 @@ window.BT = {
   setLang: function (l) { setLangTo(l); }, lang: function () { return lang; },
   M: function () { return M; },
   sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
-  nameBad: nameBad, evs: function () { return Object.keys(S.evs || {}); }, evQ: function () { return EV_Q.slice(); }, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, specMeDur: specMeDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, canStandFor: canStandFor, moveActor: moveActor, routeVia: routeVia, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
+  nameBad: nameBad, evs: function () { return Object.keys(S.evs || {}); }, evQ: function () { return EV_Q.slice(); }, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, specMeDur: specMeDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, canStandFor: canStandFor, playerBlocks: function () { pblkT = -1; return playerBlocks(); }, inPlayerBlock: function (x, y) { pblkT = -1; return inPlayerBlock(x, y); }, moveActor: moveActor, routeVia: routeVia, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
   dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(), landX: LANDX, landY: LANDY,
     pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
     y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },
@@ -19101,7 +19157,7 @@ function lokBT() {
     menu: lokMenu, menuAdd: lokMenuAdd, menuDel: lokMenuDel, recOK: lokRecOK, plateVal: lokPlateVal, flow: lokFlow, interval: lokInterval,
     cost: lokCost, why: lokWhy, buy: lokBuy, hire: lokHire, hireCost: lokHireCost, hireWhy: lokHireWhy, fire: lokFire, roleMax: lokRoleMax,
     spawn: lokSpawn, tick: lokTick, trt: lokTRT, presence: lokPresence, stWork: lokStWork, whyNot: lokWhyNot, freeTable: lokFreeTable,
-    putDolap: function (f, n) { var q = lokQ(); q.dolap[f] = (q.dolap[f] | 0) + (n || 1); }, wantF: lokWantF, room: lokDolapRoom, share: lokShare,
+    putDolap: function (f, n) { var q = lokQ(); q.dolap[f] = (q.dolap[f] | 0) + (n || 1); }, wantF: lokWantF, room: lokDolapRoom, roomFair: lokDolapRoomFair, share: lokShare,
     save: lokSave, load: function (d) { lokLoad(d); lokLoadWorld(); }, loadWorld: lokLoadWorld, reset: lokReset,
     openPanel: openLokPanel, closePanel: closeLokPanel, panelOpen: lokPanelOpen, panelAct: lokPanelAct, renderPanel: renderLokPanel,
     deck: lokDeckObj, nearBoard: lokNearBoard, onOpen: lokOnOpen, fixWorld: lokFixWorld, terObj: lokTerObj, houseObj: lokHouseObj, route: lokRoute, seatWay: lokSeatWay, outWay: lokOutWay, tabs: LOK_TABS, portions: tarifPortions,

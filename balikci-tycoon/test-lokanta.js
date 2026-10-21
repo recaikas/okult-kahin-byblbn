@@ -144,6 +144,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       o.roles = L.ROLES.join();
       o.max1 = L.ROLES.map(r => L.roleMax(r)).join();
       L.hire('lk_garson'); o.garson2why = L.hireWhy('lk_garson'); L.hire('lk_komi'); o.komi2why = L.hireWhy('lk_komi'); o.komiN = L.crew('lk_komi').length;
+      ['lk_asci', 'lk_bulasik', 'lk_sef'].forEach(r => L.hire(r)); o.all5 = L.crew().length; o.cap1 = L.crewCap();   /* Sv1: beş rolün hepsi alınabilir */
       L.q().lv = 2; o.max2 = L.ROLES.map(r => L.roleMax(r)).join(); o.garson2ok = L.hireWhy('lk_garson');
       L.q().lv = 4; o.max4 = L.ROLES.map(r => L.roleMax(r)).join();
       L.q().lv = 5; o.max5 = L.ROLES.map(r => L.roleMax(r)).join();
@@ -153,6 +154,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       return o;
     });
     ok(c.roles === 'lk_asci,lk_garson,lk_bulasik,lk_sef,lk_komi', 'Komi rolü kadroda: ' + c.roles);
+    ok(c.all5 === 5 && c.cap1 === 5, 'Sv1: kadro sınırı 5, beş rolün her birinden biri alınır: ' + JSON.stringify([c.all5, c.cap1]));
     ok(c.max1 === '1,1,1,1,1' && c.garson2why === 'role' && c.komi2why === 'role' && c.komiN === 1, 'Sv1: her rolden yalnız 1 kişi: ' + JSON.stringify([c.max1, c.garson2why, c.komi2why, c.komiN]));
     ok(c.max2 === '2,2,2,2,2' && c.garson2ok !== 'role' && c.max4 === '3,3,3,3,3', 'ikinci kişi Sv2\'de, üçüncü Sv4\'te (aşçı: istasyon sayısı kadar, 4 istasyon): ' + JSON.stringify([c.max2, c.garson2ok, c.max4]));
     ok(c.train === 0 && c.fireN >= 2 && !c.lvTag, 'Kalfa/Usta (USTALAŞTIR) lokanta panelinde gizli (LOK_USTA = 0): ' + JSON.stringify([c.train, c.fireN, c.lvTag]));
@@ -166,6 +168,18 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     await step(p, 0.05, 20 * 160);
     const k2 = await p.evaluate(() => { const L = BT.lok, T = BT.tables[0]; return { dolap: L.q().dolap.hamsi | 0, palamut: L.q().dolap.palamut | 0, mat: T.mat.items.filter(i => i.f === 'hamsi').length, matPal: T.mat.items.filter(i => i.f === 'palamut').length, komi: L.crew('lk_komi').map(w => [w.x.toFixed(1), w.y.toFixed(1), w.carry.length]) }; });
     ok(k2.dolap >= 4 && k2.palamut === 0 && k2.matPal === 1, 'Komi hasırdan menüdeki balığın (hamsi) filetosunu dolaba taşır, menüde olmayanı (palamut) taşımaz: ' + JSON.stringify(k2));
+    /* oyuncu dolaba balık başına pay olmadan koyar (dolap dolana dek); personelin payı (roomFair) ayrı */
+    const pdr = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(), P = BT.player, o = {};
+      const kn = BT.S.tarif.known, lv0 = q.lv, m0 = q.menu.slice();
+      if (kn.indexOf('uskumrudolma') < 0) kn.push('uskumrudolma');
+      q.lv = 2; q.menu = ['hamsitava', 'uskumrudolma', null, null, null];        /* iki balık → personel payı 6 */
+      q.dolap = {}; o.share = L.share(); o.want = Object.keys(L.wantF()).length;
+      q.dolap.hamsi = o.share; o.room = L.room('hamsi'); o.fair = L.roomFair('hamsi');
+      q.lv = lv0; q.menu = m0; q.dolap = {};
+      return o;
+    });
+    ok(pdr.want === 2 && pdr.share === 6 && pdr.room === 6 && pdr.fair === 0, 'oyuncu için pay yok, personel payı gözetir: ' + JSON.stringify(pdr));
     /* Hal'den fileto al: 6'lık paket, FISH.val × 1,3 × 6, anında dolaba; kimse yokken de çalışır */
     const h = await p.evaluate(() => {
       const L = BT.lok, o = {}; L.q().dolap = {}; BT.S.cash = 5000; L.crew().forEach(w => L.fire(w));
@@ -264,6 +278,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       L.hire('lk_asci'); L.hire('lk_asci'); L.hire('lk_garson'); L.hire('lk_bulasik'); L.hire('lk_sef');
       out.n = L.crew().length; out.st = L.crew('lk_asci').map(w => w.lst);
       L.hire('lk_asci'); out.third = L.crew('lk_asci').length;                    /* 2 istasyon = 2 aşçı */
+      L.hire('lk_komi'); out.n6 = L.crew().length;                                 /* altıncı kişi: kadro dolar */
       out.fullWhy = L.hireWhy('lk_garson');
       out.wages = L.crew().map(w => BT.lok.X.workerWage(w));
       L.q().dolap.hamsi = 12; L.q().dolap.hamsi = 12;
@@ -271,7 +286,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     });
     ok(cr.n === 5 && cr.st.length === 2 && cr.st[0] !== cr.st[1], 'kadro kuruldu, istasyon başına bir aşçı: ' + JSON.stringify(cr));
     ok(cr.third === 2, 'istasyon sayısından fazla aşçı alınamaz: ' + cr.third);
-    ok(cr.cap === 5, 'kadro sınırı = 3 + lokanta seviyesi (Sv2 → 5): ' + cr.cap);
+    ok(cr.cap === 6 && cr.n6 === 6, 'kadro sınırı = 4 + lokanta seviyesi (Sv2 → 6): ' + JSON.stringify([cr.cap, cr.n6]));
     ok(cr.fullWhy === 'full', 'kadro doluyken garson alınamaz: ' + cr.fullWhy);
     await p.evaluate(() => { BT.lok.R.arr = 0.1; BT.player.x = 5; BT.player.y = 5; });
     await step(p, 0.05, 20 * 100);
