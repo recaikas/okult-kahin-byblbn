@@ -1,7 +1,7 @@
 /* v2.18-deneme — Emekçi Mod (EMEKCI_TASARIM.md §7):
    1) ağın başında durunca balıklar tek tek (~0,2 sn) sırta geçer; uzaklaşınca durur; başı boş ağ dolmaz
    2) masa başında kimse yokken kesmez; oyuncu durunca keser; Filetocu varken keser
-   3) tezgâh satıcısızken ≈%35 hızla satar (sabır %60 hızla azalır); oyuncu ya da Tezgâhtar varken tam hız
+   3) tezgâh satıcısızken satmaz (v2.22-deneme; önceden ≈%35) (sabır %60 hızla azalır); oyuncu ya da Tezgâhtar varken tam hız
    4) Hamal önceliği: boşalan tezgâha önce taşır
    5) Balıkçı ağ sandığını doldurur, sandık sınırı aşılmaz
    6) usta seviyesi hız ve maaşı değiştirir, kaydedilip yüklenir
@@ -260,7 +260,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     return o;
   });
   R.ctr.ratio = +(R.ctr.alone / Math.max(1, R.ctr.player)).toFixed(2);
-  ok(R.ctr.ratio >= 0.28 && R.ctr.ratio <= 0.42, 'satıcısız hız ≈%35 değil ' + JSON.stringify(R.ctr));
+  ok(R.ctr.alone === 0 && R.ctr.player > 0, 'satıcısız tezgâh sattı ' + JSON.stringify(R.ctr));
   ok(Math.abs(R.ctr.vendor - R.ctr.player) <= 1, 'Tezgâhtar tam hız satmadı ' + JSON.stringify(R.ctr));
   ok(R.ctr.patAlone > 5.6 && R.ctr.patAlone < 6.4 && R.ctr.patPlayer > 9.5, 'satıcısız sabır %60 değil ' + JSON.stringify(R.ctr));
 

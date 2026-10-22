@@ -21,7 +21,7 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
   const errs = [];
   const page = async (on) => {
     const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
-    await ctx.addInitScript(on => { if (on) window.HK_TARIF_OFF = 0; window.HK_EMEK_OFF = 0; }, on);   /* Emekçi Mod açık */
+    await ctx.addInitScript(on => { if (on) window.HK_TARIF_OFF = 0; window.HK_EMEK_OFF = 0; window.HK_LOK_OPEN = 1; }, on);   /* Emekçi Mod açık */
     const p = await ctx.newPage();
     p.on('pageerror', e => errs.push('PE: ' + e.message));
     p.on('console', m => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errs.push('C: ' + m.text()); });
@@ -65,7 +65,7 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
   /* ================= 2) Lokanta inşaatı bitince açılır ================= */
   await p.evaluate(() => {
     BT.areas.forEach(a => { if (!a.lok) { a.locked = false; a.lvl = 3; } }); BT.rebuildCounters(); BT.customers.length = 0; BT.counters.forEach(c => { c.spawnT = 1e9; });
-    window.HK_LOK_OFF = 0; window.HK_LOK_EVOFF = 1; window.HK_INSAAT_OFF = 0; BT.S.cash = 9e6;
+    window.HK_LOK_OFF = 0; window.HK_LOK_OPEN = 1; window.HK_LOK_EVOFF = 1; window.HK_INSAAT_OFF = 0; BT.S.cash = 9e6;
     BT.areas[4].locked = false; BT.lok.onOpen();                                               /* ALAN'dan alındı: gerçek inşaat, 1 gün */
   });
   R.ins = await p.evaluate(() => ({ lok: BT.lok.open(), left: BT.S.insaat && BT.S.insaat.lok_open && BT.S.insaat.lok_open.left, un: BT.tarif.unlocked(), open: BT.tarif.q().open }));
@@ -201,7 +201,7 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
   ok(R.snap.t && R.snap.t.known.length === 6 && R.snap.t.kiler.pirinc === 33 && R.snap.lm === 'hamsipilav,,reisguveci,,' && R.snap.t.menu.join() === ',,,,' && R.snap.t.open === 1 && JSON.stringify(R.snap.t.ocak) === '{}', 'kayıtta menü S.lok.menu\'de olmalı (S.tarif.menu boş) ' + JSON.stringify(R.snap.t));
   await p.reload(); await sleep(900);
   await p.click('#playBtn'); await sleep(700);
-  await p.evaluate(() => { window.HK_LOK_OFF = 0; window.HK_LOK_EVOFF = 1; window.HK_INSAAT_OFF = 1; });      /* yeniden yüklemede test bayrakları sıfırlanır */
+  await p.evaluate(() => { window.HK_LOK_OFF = 0; window.HK_LOK_OPEN = 1; window.HK_LOK_EVOFF = 1; window.HK_INSAAT_OFF = 1; });      /* yeniden yüklemede test bayrakları sıfırlanır */
   R.load = await p.evaluate(() => ({ started: BT.S.started, q: JSON.stringify(BT.tarif.save()), un: BT.tarif.unlocked(), lok: BT.lok.open(), lv: BT.lok.q().lv, lm: BT.lok.q().menu.join() }));
   ok(R.load.started && R.load.q === R.snap.q && R.load.un && R.load.lok && R.load.lv === 3 && R.load.lm === R.snap.lm, 'yükleme sonrası defter/menü farklı ' + JSON.stringify({ a: R.snap.q, b: R.load.q }));
   R.old = await p.evaluate(() => {
@@ -283,7 +283,7 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
   await newGame(q);
   R.off = await q.evaluate(() => {
     BT.areas.forEach(a => { if (!a.lok) { a.locked = false; a.lvl = 3; } }); BT.rebuildCounters(); BT.counters.forEach(c => { c.spawnT = 1e9; });
-    window.HK_LOK_OFF = 0; window.HK_LOK_EVOFF = 1; window.HK_INSAAT_OFF = 1; BT.S.cash = 9e6;
+    window.HK_LOK_OFF = 0; window.HK_LOK_OPEN = 1; window.HK_LOK_EVOFF = 1; window.HK_INSAAT_OFF = 1; BT.S.cash = 9e6;
     BT.areas[4].locked = false; BT.lok.onOpen(); BT.lok.q(); BT.lok.buy('lok_tava');                 /* lokanta açık, tava kurulu */
     const tq = BT.tarif.q();
     tq.menu[0] = 'hamsitava'; tq.known.push('hamsitava'); tq.kiler.misirunu = 10;

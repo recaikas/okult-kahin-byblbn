@@ -13,7 +13,7 @@ const URL = process.env.URL || 'http://localhost:8106/index.html';
   const errs = [], fail = [];
   const ok = (c, m) => { if (!c) fail.push(m); };
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
-  await ctx.addInitScript(() => { window.HK_LOK_OFF = 0; window.HK_LOK_EVOFF = 1; window.HK_TARIF_OFF = 0; window.HK_EMEK_OFF = 0; window.HK_INSAAT_OFF = 1; });
+  await ctx.addInitScript(() => { window.HK_LOK_OFF = 0; window.HK_LOK_OPEN = 1; window.HK_LOK_EVOFF = 1; window.HK_TARIF_OFF = 0; window.HK_EMEK_OFF = 0; window.HK_INSAAT_OFF = 1; });
   const p = await ctx.newPage();
   p.on('pageerror', e => errs.push('PE: ' + e.message));
   p.on('console', m => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errs.push('C: ' + m.text()); });
