@@ -8145,10 +8145,11 @@ function syncHUD(dt) {
 var barTab = null, barSlot = null, cfId = null, cfT = 0, buildSub = 'dev';
 var servSel = null, servPick = null;   /* v0.4 — seçili bina / parsel önizlemesi */
 var barZone = null;                    /* v2.1 — personel alınan bölge */
+var barLok = false;                    /* v2.22-deneme — PERSONEL › Sahil Lokantası kadrosu */
 var barMgr = null;                     /* v1.3 — müdür seçilen bölge */
 var stallPrompt = false;               /* v0.1 — yeni tezgâh bildirimi bekliyor */
 function closeBar() {
-  barPet = false;
+  barPet = false; barLok = false;
   barTab = null; barSlot = null; cfId = null; servPick = null; barZone = null; barMgr = null;
   el.devpanel.classList.add('hidden');
   document.body.classList.remove('panel');
@@ -8156,7 +8157,7 @@ function closeBar() {
 }
 function openBar(t) {
   if (barTab === t) { closeBar(); return; }
-  barPet = false;
+  barPet = false; barLok = false;
   barTab = t; barSlot = null; cfId = null; servPick = null; barZone = null; barMgr = null;
   el.devpanel.classList.remove('hidden');
   document.body.classList.add('panel');
@@ -8212,6 +8213,16 @@ function barList() {
       return out;
     }
     if (barPet) return petBarList();                                   /* v2.18-deneme: HAYVANLAR */
+    if (barLok && lokOpen()) {                                         /* v2.22-deneme: Sahil Lokantası kadrosu (lokanta paneli KADRO ile aynı kurallar) */
+      out.push({ id: 'back', ic: '↩', t: T('back'), s: T('lkName') + ' ' + lokCrew().length + '/' + lokCrewCap(), back: true });
+      LOK_ROLES.forEach(function (r) {
+        var why = lokHireWhy(r), have = lokCrew(r).length;
+        out.push({ id: 'lr' + r, ic: ROLES[r].icon, t: NM(ROLES[r].n) + (have ? ' ×' + have : ''), s: NM(ROLES[r].d) + ' • ' + money(roleWage(r)) + perMin(),
+          cost: lokHireCost(r), blocked: !!why && why !== 'cash', why: why && why !== 'cash' ? T('lkHire_' + why) : '',
+          go: function () { lokHire(r); barLok = false; renderBar(); } });
+      });
+      return out;
+    }
     /* --- v2.1: bölge personeli alt listesi --- */
     if (barZone !== null) {
       var zn = barZone;
@@ -8231,6 +8242,9 @@ function barList() {
       })(zrl[i]);
       return out;
     }
+    if (lokOpen()) out.push({ id: 'lks', ic: '🍽', t: T('lkStaffCard'), s: T('zoneStaffD', { a: lokCrew().length, b: lokCrewCap() }) + ' • ' + LOK_ROLES.map(function (r) { return ROLES[r].icon + lokCrew(r).length; }).join(' '),
+      pick: lokCrew().length < lokCrewCap() ? T('choose') : null, blocked: lokCrew().length >= lokCrewCap(), why: T('lkHire_full'),
+      go: function () { barLok = true; cfId = null; renderBar(); } });   /* v2.22-deneme: lokanta kadrosu da PERSONEL'de */
     /* --- v2.1: her açık bölge için personel kartı --- */
     for (i = 0; i < zoneCount(); i++) (function (z2) {
       if (!zoneOpen(z2)) return;
@@ -8479,7 +8493,7 @@ function renderBar() {
     b.onclick = function () {
       var c = list[parseInt(b.dataset.i, 10)];
       if (!c) return;
-      if (c.back) { barSlot = null; servPick = null; barZone = null; barMgr = null; barPet = false; cfId = null; renderBar(); return; }
+      if (c.back) { barSlot = null; servPick = null; barZone = null; barMgr = null; barPet = false; barLok = false; cfId = null; renderBar(); return; }
       if (c.pick) { c.go(); return; }
       if (c.owned) return;
       if (c.blocked) { sfx.bad(); toast(c.why); return; }
@@ -18746,7 +18760,7 @@ ACH.push({ id: 'lk_gurme', c: 'mus', ic: 'star', r: { rep: 10 }, chk: function (
   t: { tr: 'Gurmenin Gözdesi', en: 'The Gourmet\'s Darling' }, d: { tr: 'Gurme Eleştirmenden 5 yıldız al.', en: 'Earn 5 stars from the Gourmet Critic.' } });
 /* ---------- metinler (TR/EN) ---------- */
 Object.assign(STR.tr, {
-  lkName: 'Sahil Lokantası', lkTables: 'Masalar', lkGives: 'Masalar, mutfak istasyonları, servis ve kasa', lkNeedDepo: 'Önce Depo kur: lokantanın kileri ve tedariki depodan gelir', lkOnBtnOn: '🟢 AÇIK • kapatmak için dokun', lkOnBtnOff: '🔴 KAPALI • açmak için dokun', lkOpenNow: '🟢 Sahil Lokantası açıldı: misafirler gelmeye başlar', lkClosedNow: '🔴 Lokanta kapandı: yeni misafir gelmez', lkClosedB: 'KAPALI', lkGateOpen: '🟢 LOKANTAYI AÇ', lkGateClose: '🔴 LOKANTAYI KAPAT', lkOpenHint: 'Lokanta kapalı: tabeladan ya da panelden aç', lkBtn: 'LOKANTA', lkNeed: 'Önce Sahil Lokantası\'nı aç (ALAN)',
+  lkName: 'Sahil Lokantası', lkTables: 'Masalar', lkGives: 'Masalar, mutfak istasyonları, servis ve kasa', lkNeedDepo: 'Önce Depo kur: lokantanın kileri ve tedariki depodan gelir', lkOnBtnOn: '🟢 AÇIK • kapatmak için dokun', lkOnBtnOff: '🔴 KAPALI • açmak için dokun', lkOpenNow: '🟢 Sahil Lokantası açıldı: misafirler gelmeye başlar', lkClosedNow: '🔴 Lokanta kapandı: yeni misafir gelmez', lkClosedB: 'KAPALI', lkStaffCard: 'Sahil Lokantası kadrosu', lkGateOpen: '🟢 LOKANTAYI AÇ', lkGateClose: '🔴 LOKANTAYI KAPAT', lkOpenHint: 'Lokanta kapalı: tabeladan ya da panelden aç', lkBtn: 'LOKANTA', lkNeed: 'Önce Sahil Lokantası\'nı aç (ALAN)',
   lkOpened: '🍽 Sahil Lokantası açıldı! Bir istasyon kur, menüye yemek koy, dolabı fileto ile doldur (LOKANTA).',
   lkFirst: 'Lokanta: 1) dolabı doldur (hasırdan fileto, Komi ya da Hal\'den al) 2) istasyon kur + menüye tarif koy 3) Aşçı + Garson 4) parayı kasadan topla',
   lkSub: '{t} masa • kadro {a}/{b} • menü {m}/{l} • dolap {d}/{c} • {s} grup ağırlandı',
@@ -18780,7 +18794,7 @@ Object.assign(STR.tr, {
   lkCritCome: '🍷 Gurme Eleştirmen {n} lokantada! Bekletme, masalar temiz olsun.', lkCritRate: '🍷 Eleştirmen {c}: {s}/5 yıldız {st}'
 });
 Object.assign(STR.en, {
-  lkName: 'Seaside Restaurant', lkTables: 'Tables', lkGives: 'Tables, kitchen stations, service pass and till', lkNeedDepo: 'Build the Depot first: the restaurant\'s pantry and supplies come from it', lkOnBtnOn: '🟢 OPEN • tap to close', lkOnBtnOff: '🔴 CLOSED • tap to open', lkOpenNow: '🟢 The Seaside Restaurant is open: guests are on their way', lkClosedNow: '🔴 Restaurant closed: no new guests', lkClosedB: 'CLOSED', lkGateOpen: '🟢 OPEN RESTAURANT', lkGateClose: '🔴 CLOSE RESTAURANT', lkOpenHint: 'The restaurant is closed: open it from the sign or the panel', lkBtn: 'RESTAURANT', lkNeed: 'Open the Seaside Restaurant first (AREA)',
+  lkName: 'Seaside Restaurant', lkTables: 'Tables', lkGives: 'Tables, kitchen stations, service pass and till', lkNeedDepo: 'Build the Depot first: the restaurant\'s pantry and supplies come from it', lkOnBtnOn: '🟢 OPEN • tap to close', lkOnBtnOff: '🔴 CLOSED • tap to open', lkOpenNow: '🟢 The Seaside Restaurant is open: guests are on their way', lkClosedNow: '🔴 Restaurant closed: no new guests', lkClosedB: 'CLOSED', lkStaffCard: 'Seaside Restaurant crew', lkGateOpen: '🟢 OPEN RESTAURANT', lkGateClose: '🔴 CLOSE RESTAURANT', lkOpenHint: 'The restaurant is closed: open it from the sign or the panel', lkBtn: 'RESTAURANT', lkNeed: 'Open the Seaside Restaurant first (AREA)',
   lkOpened: '🍽 Seaside Restaurant is open! Build a station, put a dish on the menu, stock the cooler with fillets (RESTAURANT).',
   lkFirst: 'Restaurant: 1) stock the cooler (mat fillets, a Runner, or the Hall) 2) build a station + menu recipe 3) Cook + Waiter 4) collect the till',
   lkSub: '{t} tables • crew {a}/{b} • menu {m}/{l} • cooler {d}/{c} • {s} parties served',

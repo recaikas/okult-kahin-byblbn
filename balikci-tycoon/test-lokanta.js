@@ -1222,6 +1222,15 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     ok(o1.closed && /KAPALI/.test(o1.btn0) && /AÇIK/.test(o1.btn1) && o1.op === 1 && o1.came, 'gün kapalı başlar, panelden açılınca misafir gelir: ' + JSON.stringify(o1));
     ok(/KAPAT/.test(o1.gateBtn) && o1.op2 === 0 && o1.left, 'kapı tabelası düğmesi kapatır, bekleyenler gider: ' + JSON.stringify(o1));
     ok(o1.cash === 65 && o1.carry === 0 && o1.payLeft === 0, 'patron masadaki parayı doğrudan cebine atar: ' + JSON.stringify(o1));
+    /* PERSONEL sekmesinde lokanta kadrosu */
+    const ps = await p.evaluate(() => {
+      BT.S.cash = 1e6; BT.lok.X.openBar('staff');
+      const card = BT.lok.X.barList().find(c => c.id === 'lks'); if (!card) return { card: false };
+      card.go(); const subs = BT.lok.X.barList().map(c => c.id).filter(id => /^lr/.test(id));
+      const n0 = BT.lok.crew().length; BT.lok.X.barList().find(c => c.id === 'lrlk_garson').go(); const n1 = BT.lok.crew().length;
+      BT.lok.X.closeBar && BT.lok.X.closeBar(); return { card: true, subs: subs.join(), hired: n1 - n0 };
+    });
+    ok(ps.card && /lrlk_asci/.test(ps.subs) && /lrlk_garson/.test(ps.subs) && ps.hired === 1, 'PERSONEL sekmesinde lokanta kadrosu kartı + kiralama: ' + JSON.stringify(ps));
     await p.close();
   }
 
