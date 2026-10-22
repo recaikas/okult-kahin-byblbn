@@ -141,6 +141,7 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
   /* lokanta zaten açık: istasyonlar (tava, fırın, kazan); menüyü boşalt */
   await p.evaluate(() => {
     window.HK_INSAAT_OFF = 1; BT.S.cash = 9e6; BT.lok.q();
+    BT.lok.q().sn = 3;                                                                   /* v2.23: Sv1'de 2 ocak yeri; üçüncüsü eski kayıt göçü gibi açık sayılır */
     ['lok_tava', 'lok_firin', 'lok_tencere'].forEach(id => BT.lok.buy(id)); BT.lok.R.arr = 1e9;
     BT.lok.q().menu.fill(null); BT.tarif.open('menu');
   }); await sleep(250);
@@ -214,7 +215,7 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
     const sv3 = BT.buildSave(); sv3.tarif = 'bozuk'; const ok3 = BT.loadFrom(sv3), s3 = BT.tarif.save();
     const sv4 = BT.buildSave(); sv4.tarif = { menu: 'x', known: [] }; const ok4 = BT.loadFrom(sv4), s4 = BT.tarif.save();
     /* eski büfe menüsü → lokanta menüsü: yalnız istasyonu kuruluysa girer; kalanı bekler, istasyon kurulunca girer */
-    const sv5 = BT.buildSave(); sv5.lok.st.firin = 0; sv5.lok.menu = [null, null, null, null, null]; sv5.lok.lv = 3;
+    const sv5 = BT.buildSave(); sv5.lok.sl = sv5.lok.sl.map(x => x && x.k === 'firin' ? null : x); sv5.lok.menu = [null, null, null, null, null]; sv5.lok.lv = 3;
     sv5.tarif = { known: ['hamsitava', 'hamsipilav'], menu: ['hamsipilav', 'hamsitava', null, null, null], kiler: {}, open: 1, rs: 1 };
     const ok5 = BT.loadFrom(JSON.parse(JSON.stringify(sv5))), lm5 = BT.lok.q().menu.join(), pend5 = BT.tarif.save().menu.join(), fir5 = BT.lok.stLv('firin');
     window.HK_INSAAT_OFF = 1; BT.S.cash = 9e6; BT.lok.buy('lok_firin');
