@@ -17955,8 +17955,8 @@ function lokHouseR() {                                   /* v2.22: ev sabit (yen
   var h = LOK.house;
   return { x0: h.x0, y0: h.y0, x1: h.x1, y1: h.y1, lv: lokHouseLv(), wing: null };
 }
-/* o: {part: 'back'|'front', x0, y0, x1, y1 (ev ayak izi; y0 seviyeyle değişir), wing: {x0,y0,x1,y1}|null (Sv4+ doğu kanadı), area:{x0,y0,x1,y1}, lv (1–5),
-   star (0–5), t, night, smoke (0–1: çalışan istasyon oranı), v2} — tasarım koordinatı */
+/* o: {part: 'back'|'front', x0, y0, x1, y1 (ev ayak izi, sabit), wing: null, area:{x0,y0,x1,y1}, lv (1–5), star (0–5), t, night,
+   smoke (0–1: çalışan istasyon oranı), dc (alınmış süsler), door: [x0, x1] (arka kapı), v2} — v2.22: dünya koordinatı (LOK_OX = LOK_OY = 0) */
 function lokHouseObj(part) {
   var h = lokHouseR(), q = lokQ(), w = h.wing;
   return { part: part, x0: h.x0 - LOK_OX, y0: h.y0 - LOK_OY, x1: h.x1 - LOK_OX, y1: h.y1 - LOK_OY, area: lokAreaRect(), lv: h.lv, star: q.star | 0, t: gameT, night: lokNight(), smoke: lokSmoke(), v2: true, dc: lokDcObj(), door: LOK_BDOOR,
@@ -18901,13 +18901,13 @@ function hookLok(name, f0) {
   drawNewsboy = hook('drawNewsboy', drawNewsboy);     /* v2.16: gazeteci çocuk (b: GZB) */
   drawGzPaper = hook('drawGzPaper', drawGzPaper);     /* v2.16: yerdeki özel sayı (o: GZD) */
   drawLokanta = hookLok('drawLokanta', drawLokanta);     /* v2.19-deneme: Sahil Lokantası zemini + patika (o: {x0, y0, x1, y1, lv, tb, st:{tava,izgara,tencere,firin}, star, t, night, gate:{x,y}, path:[{x0,y0,x1,y1}×3], kitchen:{x0,y0,x1,y1}}) */
-  drawLokTable = hookLok('drawLokTable', drawLokTable);  /* o: {i, x, y, seats: 2|4, st: 'free'|'seat'|'wait'|'eat'|'dirty', n, plates, want, dirty, pay, payItems, mood, dish, t} */
-  drawLokStation = hookLok('drawLokStation', drawLokStation);   /* o: {id: 'tava'|'izgara'|'tencere'|'firin', x, y, lv, busy, prog, wait, n, slots, dish, cook, t} */
+  drawLokTable = hookLok('drawLokTable', drawLokTable);  /* o: {i, x, y, seats: 2|4, tier (1 tahta masa/tabure · 2 kareli örtü/hasır · 3 şemsiyeli ahşap · 4 keten/mumluk/oymalı; şemsiye ayrıca drawLokFix k:'teras' part:'umb'), meze, st: 'free'|'seat'|'wait'|'eat'|'dirty', n, plates, want, dirty, pay, payItems, mood, dish, t} */
+  drawLokStation = hookLok('drawLokStation', drawLokStation);   /* o: {id: 'tava'|'izgara'|'tencere'|'firin', x, y, lv (= kademe 1–3; tip + boyut değişir, en büyüğü ≤ 1,4 kare geniş: istasyon aralığı 1,8), busy, prog, wait, n, slots, dish, cook, t} */
   drawLokCrew = hookLok('drawLokCrew', drawLokCrew);     /* o: {a, role: 'asci'|'garson'|'bulasik'|'sef', lv, outfit, carry, plates, dirty, money}; a: işçi (x, y, vx, vy, bob, face, carry) */
-  drawLokFix = hookLok('drawLokFix', drawLokFix);        /* o: {k: 'dolap'|'pass'|'kasa'|'sink'|'board'|'sign'|'tickets', x, y, n, cap, items, menu, lv, star, t, night} */
-  drawLokHouse = hookV3('drawLokHouse', drawLokHouse);
-  drawLokDecor = hook('drawLokDecor', drawLokDecor);      /* v2.22-deneme: yerdeki süsler. o: {id, x, y, hw, hh, t, night, lv} (LOK_DC) */      /* v2.20-deneme: köy evi. o: {part: 'back'|'front', x0, y0, x1, y1 (ev ayak izi), area:{x0,y0,x1,y1}, lv, star (0–5), t, night, smoke (0–1), v2}; 'back' = iç mekân (istasyonlardan önce), 'front' = doğu duvarı + cumbalı üst kat + çatı + tabela + baca (sonra). Zemin kat 46 px, üst kat 22, çatı 16 */
-  drawLokTerrace = hookV3('drawLokTerrace', drawLokTerrace);   /* v2.20-deneme: teras. o: {part: 'floor'|'west'|'south'|'top', x0, y0, x1, y1 (ev önü → güney kenar), area, tb, up:{ter,mez,saz,dol}, t, night, gate:{x,y}, gap:[y0,y1], pergola:{x0,x1,y0,y1}, v2}; floor = taş döşeme (yer katmanı), west/south = alçak taş duvar (+ışık zinciri), top = asma çardak (yalnız up.ter) */
+  drawLokFix = hookLok('drawLokFix', drawLokFix);        /* o: {k: 'dolap'|'pass'|'kasa'|'sink'|'board'|'sign'|'tickets'|'teras'|'meze'|'saz', x, y, n, cap, items, menu, lv, star, t, night, tier}; v2.22 tier: dolap 1 buzluk (12) · 2 çift kapılı (24) · 3 soğuk oda kapısı (36); board 1 kara tahta · 2 boyalı pano · 3 fenerli büyük pano; sign (giriş kapısı) 1 taş direk · 2 ahşap kemer + fener · 3 begonvilli büyük kemer; meze 1 cam kutu · 2 buzlu vitrin · 3 uzun teşhir tezgâhı; teras part 'umb' (masa şemsiyesi, masa tier 3+) */
+  drawLokHouse = hookV3('drawLokHouse', drawLokHouse);   /* v2.22: yalnız HKA.lokV3 iken ince. o: {part: 'back'|'front', x0, y0, x1, y1 (ev ayak izi, dünya koordinatı: 15,6–28,8 × 13,5–16,9), area, lv (1–5: Sv3+ cumbalı üst kat), star, t, night, smoke (0–1), door: [x0, x1] (arka duvar kapı boşluğu), dc: {süs id: 1} (ev süsleri: biber, tente, kafes, fenertab, saksi, balkon, kosk), wing: null, v2, v3}; 'back' = iç mekân + arka duvar (istasyonlardan önce), 'front' = doğu duvarı + üst kat + çatı + tabela + baca (sonra) */
+  drawLokDecor = hook('drawLokDecor', drawLokDecor);      /* v2.22-deneme: yerdeki süsler. o: {id: 'cicek'|'nazar'|'capa'|'guguk'|'kilim'|'zeytin'|'akvaryum'|'cesme', x, y, hw, hh (ayak izi yarı genişlik/derinlik), t, night, lv} (LOK_DC; saz köşesi drawLokFix k:'saz') */
+  drawLokTerrace = hookV3('drawLokTerrace', drawLokTerrace);   /* v2.22: yalnız HKA.lokV3 iken ince. o: {part: 'floor'|'west'|'south'|'top', x0, y0, x1, y1 (ev önü → güney kenar), area (15–36 × 13,2–23,6), house {x0,y0,x1,y1}, tb, lv, star, up:{ter,mez,saz,dol,masa,kapi,tabela}, dc: {süs id: 1}, t, night, gate:{x,y}, gap:[y0,y1] (batı duvarı kapı boşluğu), pergola:{x0,x1,y0,y1}, v2, v3}; floor = taş döşeme + bahçe (yer katmanı), west = batı duvarı (kapı boşluklu), south = güney + doğu alçak duvar + kuzey bahçe çiti (ışık zinciri yalnız dc.isik), top = asma çardak (yalnız dc.cardak = up.ter) */
   for (var k in SERV_DRAW) SERV_DRAW[k] = { buzhane: drawBuzhane, restoran: drawRestoran, nakliye: drawNakliye, koop: drawKoop, mezat: drawMezat }[k] || SERV_DRAW[k];
 })();
 /* v2.19-deneme: tabak / kirli tabak ince modda da klasik çizilir (HKA.drawItem bilmediği türü para sanır) */
