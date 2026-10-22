@@ -16934,9 +16934,9 @@ var LOK_UPK = ['masa', 'kapi', 'tabela', 'mez', 'dol'];
    memnuniyetinde (pat = sabır), bahşişte (tip) ve ödemede (pay) hissedilir. at: 'yer' (bahçe/teras; ayak izi hw/hh, solid = engel),
    'ev' (evin üstünde: çizimi ev kancası o.dc ile), 'teras' (teras kancası o.dc ile). Eski kayıt: Teras → çardak, Saz Köşesi → saz. */
 var LOK_DC = [
-  { id: 'cicek',   at: 'yer',  x: 20.6, y: 23.05, hw: 0.3, hh: 0.25, solid: 1, lv: 1, cost: 600,  eff: { pat: 0.02 },  ic: '🌺', n: { tr: 'Sardunya Saksıları', en: 'Geranium Pots' } },
+  { id: 'cicek',   at: 'yer',  x: 15.55, y: 18.95, hw: 0.3, hh: 0.25, solid: 1, lv: 1, cost: 600,  eff: { pat: 0.02 },  ic: '🌺', n: { tr: 'Sardunya Saksıları', en: 'Geranium Pots' } },
   { id: 'nazar',   at: 'yer',  x: 15.35, y: 19.55, hw: 0.15, hh: 0.15, lv: 1, cost: 450,  eff: { pat: 0.02 },  ic: '🧿', n: { tr: 'Kapı Nazarlığı', en: 'Evil-Eye Charm' } },
-  { id: 'capa',    at: 'yer',  x: 35.2, y: 22.9, hw: 0.3, hh: 0.3, solid: 1, lv: 1, cost: 800,  eff: { flow: 0.02 }, ic: '⚓', n: { tr: 'Çapa ve Halat', en: 'Anchor & Rope' } },
+  { id: 'capa',    at: 'yer',  x: 34.6, y: 22.5, hw: 0.3, hh: 0.3, solid: 1, lv: 1, cost: 800,  eff: { flow: 0.02 }, ic: '⚓', n: { tr: 'Çapa ve Halat', en: 'Anchor & Rope' } },
   { id: 'isik',    at: 'teras', x: 25.5, y: 23.3, lv: 1, cost: 900,  eff: { flow: 0.02 }, ic: '💡', n: { tr: 'Işık Zinciri', en: 'String Lights' } },
   { id: 'biber',   at: 'ev',   x: 20.0, y: 16.9, lv: 1, cost: 700,  eff: { pay: 0.02 },  ic: '🌶', n: { tr: 'Biber Dizisi ve Sepet', en: 'Pepper Strings & Basket' } },
   { id: 'guguk',   at: 'yer',  x: 34.9, y: 17.5, hw: 0.3, hh: 0.3, solid: 1, lv: 2, cost: 1400, eff: { tip: 0.03 },  ic: '🫖', n: { tr: 'Bakır Güğüm ve Semaver', en: 'Copper Ewer & Samovar' } },
@@ -16945,7 +16945,7 @@ var LOK_DC = [
   { id: 'zeytin',  at: 'yer',  x: 35.3, y: 14.0, hw: 0.35, hh: 0.35, solid: 1, lv: 2, cost: 1200, eff: { pat: 0.02 },  ic: '🫒', n: { tr: 'Zeytin Ağacı', en: 'Olive Tree' } },
   { id: 'akvaryum', at: 'yer', x: 31.9, y: 14.0, hw: 0.5, hh: 0.35, solid: 1, lv: 3, cost: 3200, eff: { flow: 0.03 }, ic: '🐠', n: { tr: 'Balık Akvaryumu', en: 'Fish Tank' } },
   { id: 'cardak',  at: 'teras', x: 30.8, y: 20.4, lv: 3, cost: 3600, eff: { pat: 0.05 },  ic: '🍇', n: { tr: 'Asma Çardak', en: 'Vine Pergola' } },
-  { id: 'cesme',   at: 'yer',  x: 35.1, y: 16.0, hw: 0.4, hh: 0.4, solid: 1, lv: 3, cost: 4000, eff: { flow: 0.03 }, ic: '⛲', n: { tr: 'Bakır Çeşme', en: 'Copper Fountain' } },
+  { id: 'cesme',   at: 'yer',  x: 35.1, y: 15.65, hw: 0.4, hh: 0.4, solid: 1, lv: 3, cost: 4000, eff: { flow: 0.03 }, ic: '⛲', n: { tr: 'Bakır Çeşme', en: 'Copper Fountain' } },
   { id: 'kafes',   at: 'ev',   x: 27.2, y: 16.9, lv: 3, cost: 1000, eff: { tip: 0.02 },  ic: '🐦', n: { tr: 'Kanarya Kafesi', en: 'Canary Cage' } },
   { id: 'fenertab', at: 'ev',  x: 22.2, y: 15.2, lv: 3, cost: 2800, eff: { flow: 0.03 }, ic: '🏮', n: { tr: 'Fenerli Çatı Tabelası', en: 'Lantern Roof Sign' } },
   { id: 'saksi',   at: 'ev',   x: 22.2, y: 16.9, lv: 3, cost: 900,  eff: { pat: 0.02 },  ic: '🪴', n: { tr: 'Pencere Çiçeklikleri', en: 'Window Boxes' } },
