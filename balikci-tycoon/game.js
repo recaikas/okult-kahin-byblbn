@@ -16307,7 +16307,7 @@ function tarifTick(dt) {
   if (tfRefund > 0) { toast(T('tfRefund', { c: money(tfRefund) })); sfx.buy(); tfRefund = 0; }   /* eski kayıt: ocak bedeli iade edildi */
   for (var ri = RFX.length - 1; ri >= 0; ri--) { RFX[ri].t += dt; if (RFX[ri].t > 1.4) RFX.splice(ri, 1); }
   if (!q.open) {                                      /* ilk Restoran tamamlanınca bir kez: Tarif Defteri açıldı */
-    if (tarifRestoLv() < 1) return;
+    if (tarifRestoLv() < 1 && !lokOpen()) return;                 /* v2.22: büfe kalktı; lokanta açılınca da açılır (bildirim bir kez) */
     q.open = 1; notify(T('tfUnlock')); sfx.star(); save();
   }
   for (k in q.ocak) {
