@@ -551,7 +551,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       o.html = document.getElementById('lokRows').innerText.slice(0, 200);
       return o;
     });
-    ok(pn.open && pn.rows >= 12 && pn.tabs === 'menu,rec,try,kiler,st,crew,up,ev' && /Sahil Lokantası/.test(pn.title), 'LOKANTA paneli açılır: ' + JSON.stringify(pn).slice(0, 200));
+    ok(pn.open && pn.rows >= 12 && pn.tabs === 'menu,rec,try,kiler,st,crew,up,sus,ev' && /Sahil Lokantası/.test(pn.title), 'LOKANTA paneli açılır: ' + JSON.stringify(pn).slice(0, 200));
     ok(pn.confirm1 === 0 && pn.bought === 1 && pn.paid, 'panel: ikinci dokunuşla (ONAYLA?) satın alma: ' + JSON.stringify(pn));
     ok(pn.hired === 1, 'panelden kadro kiralanır');
     await p.evaluate(() => BT.lok.closePanel());
@@ -601,7 +601,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     await newGame(p); await prep(p);
     await kit(p, { st: ['tava', 'izgara', 'tencere', 'firin'], menu: ['hamsitava'], lv: 5 });
     await p.evaluate(() => {
-      const L0 = BT.lok; for (let i = 0; i < 4; i++) L0.buy('lok_tb'); ['lok_ter', 'lok_mez', 'lok_saz', 'lok_dol'].forEach(id => L0.buy(id)); L0.q().star = 4; L0.q().res = { st: 'on', n: 12, rec: 'hamsitava', kind: 'dugun', w: 0, due: BT.day.n, got: 2 };
+      const L0 = BT.lok; for (let i = 0; i < 4; i++) L0.buy('lok_tb'); ['lok_d_cardak', 'lok_d_saz', 'lok_mez', 'lok_dol', 'lok_masa', 'lok_masa'].forEach(id => L0.buy(id)); L0.q().star = 4; L0.q().res = { st: 'on', n: 12, rec: 'hamsitava', kind: 'dugun', w: 0, due: BT.day.n, got: 2 };
       window.__H = {}; window.HKA = window.HKA || {};
       ['drawLokTable', 'drawLokStation', 'drawLokCrew', 'drawLokFix', 'drawLokHouse', 'drawLokTerrace'].forEach(n => { const old = window.HKA[n]; window.HKA[n] = function (o) { (window.__H[n] = window.__H[n] || []).push(o); return false; }; });
       const L = BT.lok; ['lk_asci', 'lk_garson', 'lk_bulasik', 'lk_sef'].forEach(r => L.hire(r)); L.q().dolap.hamsi = 12; L.R.arr = 0.1;
@@ -866,28 +866,30 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     await p.close();
   }
 
-  /* ===== 13) AŞAMA 2 — yükseltmeler: teras, meze vitrini, saz köşesi, soğuk dolap 24 ===== */
+  /* ===== 13) v2.22 — kademeli eşya (masa, kapı, tabela, meze, dolap) + süsler (LOKANTA › SÜSLER) ===== */
   {
     const p = await page(); await newGame(p); await prep(p);
     await kit(p, { st: ['tava'], menu: ['hamsitava'], lv: 2 });
     const u0 = await p.evaluate(() => {
-      const L = BT.lok, q = L.q(), S = BT.S, out = {};
-      out.keys = L.UPK.join(); out.cap0 = L.cap(); out.pm0 = L.patMul();
-      out.whyLv = [L.why('lok_ter'), L.why('lok_saz'), L.why('lok_mez'), L.why('lok_dol')];                      /* Sv2: teras Sv3, saz Sv5 */
-      const c0 = S.cash; L.buy('lok_ter'); out.refused = S.cash === c0 && !L.upOn('ter');
-      out.costs = ['lok_ter', 'lok_mez', 'lok_saz', 'lok_dol'].map(id => L.cost(id));
-      out.panel = ((() => { let txt = ''; ['menu', 'rec', 'try', 'kiler', 'st', 'crew', 'up', 'ev'].forEach(t => { BT.lok.openPanel(t); txt += ' ' + document.getElementById('lokRows').innerText.replace(/\s+/g, ' ') + ' ' + document.getElementById('lokTabs').innerText.replace(/\s+/g, ' '); }); return txt; })()); L.closePanel();
-      L.buy('lok_lv'); out.whyLv3 = [L.why('lok_ter'), L.why('lok_saz')]; L.buy('lok_lv'); L.buy('lok_lv'); out.whyLv5 = [L.why('lok_ter'), L.why('lok_saz')];
+      const L = BT.lok, S = BT.S, out = {};
+      out.keys = L.UPK.join(); out.cap0 = L.cap(); out.pm0 = L.patMul(); out.eff0 = ['flow', 'pat', 'tip', 'pay'].map(k => L.eff(k));
+      out.tier0 = L.UPK.map(k => L.upLv(k)).join(); out.nDc = L.DC.length;
+      out.whyLv = ['lok_masa', 'lok_kapi', 'lok_tabela', 'lok_mez', 'lok_dol', 'lok_d_cicek', 'lok_d_cardak', 'lok_d_saz'].map(id => L.why(id));   /* Sv2: çardak Sv3, saz Sv5 */
+      const c0 = S.cash; L.buy('lok_d_cardak'); out.refused = S.cash === c0 && !L.dcOn('cardak');
+      out.costs = ['lok_masa', 'lok_kapi', 'lok_tabela', 'lok_mez', 'lok_dol', 'lok_d_nazar', 'lok_d_kosk'].map(id => L.cost(id));
+      out.panel = ((() => { let txt = ''; ['menu', 'rec', 'try', 'kiler', 'st', 'crew', 'up', 'sus', 'ev'].forEach(t => { BT.lok.openPanel(t); txt += ' ' + document.getElementById('lokRows').innerText.replace(/\s+/g, ' ') + ' ' + document.getElementById('lokTabs').innerText.replace(/\s+/g, ' '); }); return txt; })()); L.closePanel();
+      L.buy('lok_lv'); out.whyLv3 = [L.why('lok_d_cardak'), L.why('lok_d_saz')]; L.buy('lok_lv'); L.buy('lok_lv'); out.whyLv5 = [L.why('lok_d_cardak'), L.why('lok_d_saz')];
       return out;
     });
-    ok(u0.keys === 'ter,mez,saz,dol' && u0.cap0 === 12 && u0.pm0 === 1, 'başlangıç: dolap 12, sabır ×1: ' + JSON.stringify(u0).slice(0, 200));
-    ok(u0.whyLv.join() === 'lv,lv,,' && u0.refused, 'Sv2: teras (Sv3) ve saz (Sv5) kilitli, meze/dolap serbest: ' + u0.whyLv.join());
-    ok(u0.whyLv3.join() === ',lv' && u0.whyLv5.join() === ',', 'teras Sv3\'te, saz Sv5\'te açılır: ' + JSON.stringify([u0.whyLv3, u0.whyLv5]));
-    ok(u0.costs.every(c => c > 0) && u0.costs[2] > u0.costs[0] && u0.costs[0] > u0.costs[1], 'bedeller Emekçi ölçeğinde: ' + u0.costs.join());
-    ok(/GELİŞTİRMELER/.test(u0.panel) && /Teras/.test(u0.panel) && /Meze Vitrini/.test(u0.panel) && /Saz Köşesi/.test(u0.panel) && /Büyük Soğuk Dolap/.test(u0.panel) && /OLAYLAR/.test(u0.panel) && /Muhtarın sofrası/.test(u0.panel) && /Gurme Eleştirmen/.test(u0.panel) && /Önce Lokanta Sv 3/.test(u0.panel), 'LOKANTA paneli yükseltme + olay bölümleri: ' + u0.panel.slice(0, 240));
+    ok(u0.keys === 'masa,kapi,tabela,mez,dol' && u0.tier0 === '1,1,1,0,0' && u0.cap0 === 12 && u0.pm0 === 1 && u0.eff0.join() === '0,0,0,0', 'başlangıç: sade kademeler, dolap 12, etki yok: ' + JSON.stringify(u0).slice(0, 220));
+    ok(u0.nDc >= 15 && u0.whyLv.join() === ',,,,,,lv,lv' && u0.refused, 'Sv2: kademeler + Sv1 süsleri serbest, çardak (Sv3) ve saz (Sv5) kilitli: ' + u0.whyLv.join());
+    ok(u0.whyLv3.join() === ',lv' && u0.whyLv5.join() === ',', 'çardak Sv3\'te, saz Sv5\'te açılır: ' + JSON.stringify([u0.whyLv3, u0.whyLv5]));
+    ok(u0.costs.every(c => c > 0) && u0.costs[6] > u0.costs[5] * 10, 'bedeller (süsler küçükten büyüğe): ' + u0.costs.join());
+    ok(/GELİŞTİRMELER/.test(u0.panel) && /Masa ve Sandalye/.test(u0.panel) && /Giriş Kapısı/.test(u0.panel) && /Menü Tabelası/.test(u0.panel) && /Meze Vitrini/.test(u0.panel) && /Soğuk Dolap/.test(u0.panel) && /Kareli örtü/.test(u0.panel)
+      && /SÜSLER/.test(u0.panel) && /Sardunya/.test(u0.panel) && /Asma Çardak/.test(u0.panel) && /Saz Köşesi/.test(u0.panel) && /OLAYLAR/.test(u0.panel) && /Muhtarın sofrası/.test(u0.panel), 'LOKANTA paneli: kademe + süs + olay bölümleri: ' + u0.panel.slice(0, 240));
     /* etkiler (Sv5, 12 masa) */
     const u1 = await p.evaluate(() => {
-      const L = BT.lok, q = L.q(), S = BT.S, out = {}, R0 = Math.random;
+      const L = BT.lok, q = L.q(), out = {}, R0 = Math.random;
       for (let i = 0; i < 4; i++) L.buy('lok_tb'); out.tbN = L.tbl();
       const measure = () => {
         L.R.grp.length = 0; L.R.board.length = 0; L.R.pass.length = 0; L.R.t.forEach(t => { t.st = 'free'; t.g = null; t.plates = 0; t.dirty = 0; t.pay = []; });
@@ -898,24 +900,33 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
         return { eat, pay: t.pay.reduce((a, m) => a + m.v, 0), patMax: g.patMax };
       };
       out.base = measure();
-      L.buy('lok_ter'); out.ter = { on: L.upOn('ter'), pm: L.patMul(), m: measure() };
-      L.buy('lok_mez'); out.mez = { on: L.upOn('mez'), m: measure() };
-      L.buy('lok_saz'); out.saz = { on: L.upOn('saz'), m: measure() };
-      L.buy('lok_dol'); out.dol = { on: L.upOn('dol'), cap: L.cap(), dl: q.dl, why: L.why('lok_dol') };
-      out.max = ['lok_ter', 'lok_mez', 'lok_saz'].map(id => L.why(id));
-      out.room0 = L.room('hamsi'); q.dolap = {}; out.room1 = L.room('hamsi'); L.putDolap('hamsi', 20); out.dolapN = L.dolapN();
+      L.buy('lok_d_cardak'); out.ter = { on: L.dcOn('cardak'), pm: L.patMul(), m: measure() };
+      L.buy('lok_mez'); out.mez1 = { t: L.upLv('mez'), m: measure() };
+      L.buy('lok_mez'); L.buy('lok_mez'); out.mez3 = { t: L.upLv('mez'), m: measure() };
+      L.buy('lok_d_saz'); out.saz = { on: L.dcOn('saz'), tip: L.eff('tip'), pm: L.patMul(), m: measure() };
+      for (let i = 0; i < 3; i++) L.buy('lok_masa'); out.masa = { t: L.upLv('masa'), pm: L.patMul() };
+      for (let i = 0; i < 2; i++) { L.buy('lok_kapi'); L.buy('lok_tabela'); } out.flow = L.eff('flow');
+      L.buy('lok_dol'); out.dol1 = { cap: L.cap(), dl: q.dl, tier: L.tier('dol') };
+      out.room0 = L.room('hamsi'); L.buy('lok_dol'); out.dol2 = { cap: L.cap(), dl: q.dl, tier: L.tier('dol') }; q.dolap = {}; out.room1 = L.room('hamsi'); L.putDolap('hamsi', 30); out.dolapN = L.dolapN();
+      out.max = ['lok_masa', 'lok_kapi', 'lok_tabela', 'lok_mez', 'lok_dol', 'lok_d_cardak'].map(id => L.why(id));
+      L.DC.forEach(d => L.buy('lok_d_' + d.id)); out.allDc = L.DC.every(d => L.dcOn(d.id)); out.nDc = L.DC.length;
+      out.tot = ['flow', 'pat', 'tip', 'pay'].map(k => Math.round(L.eff(k) * 100));
+      out.txt = L.effTxt({ flow: 0.03, pat: 0.02 });
       out.save = JSON.parse(JSON.stringify(BT.buildSave().lok));
       return out;
     });
     const near = (a, b, t) => Math.abs(a - b) <= (t || 2);
     ok(u1.tbN === 12, '12 masa kuruldu: ' + u1.tbN);
-    ok(u1.ter.on && u1.ter.pm === 1.15 && Math.abs(u1.ter.m.patMax / u1.base.patMax - 1.15) < 0.001, 'teras: yeni gelen grubun sabrı +%15: ' + JSON.stringify([u1.base.patMax, u1.ter.m.patMax]));
-    ok(u1.ter.m.pay === u1.base.pay && u1.ter.m.eat === u1.base.eat, 'teras ödeme/oturuşu değiştirmez');
-    ok(u1.mez.on && near(u1.mez.m.pay, u1.base.pay * 1.1, 3) && u1.mez.m.eat === u1.base.eat, 'meze vitrini: ödeme +%10: ' + JSON.stringify([u1.base.pay, u1.mez.m.pay]));
-    ok(u1.saz.on && near(u1.saz.m.pay, u1.mez.m.pay * 1.25, 4) && Math.abs(u1.saz.m.eat / u1.mez.m.eat - 1.15) < 0.001, 'saz köşesi: harcama +%25, oturuş ×1,15 (masa dönüşü −%15): ' + JSON.stringify([u1.mez.m, u1.saz.m]));
-    ok(u1.dol.on && u1.dol.cap === 24 && u1.dol.dl === 1 && u1.dol.why === 'max' && u1.max.join() === 'max,max,max', 'soğuk dolap 12 → 24, hepsi tek sefer: ' + JSON.stringify([u1.dol, u1.max]));
-    ok(u1.room1 > u1.room0 && u1.dolapN === 20, 'büyük dolap daha çok fileto alır: ' + JSON.stringify([u1.room0, u1.room1, u1.dolapN]));
-    ok(u1.save.up && u1.save.up.ter === 1 && u1.save.up.mez === 1 && u1.save.up.saz === 1 && u1.save.dl === 1, 'kayıt: S.lok.up + dl: ' + JSON.stringify([u1.save.up, u1.save.dl]));
+    ok(u1.ter.on && Math.abs(u1.ter.pm - 1.05) < 1e-9 && Math.abs(u1.ter.m.patMax / u1.base.patMax - 1.05) < 0.001 && u1.ter.m.pay === u1.base.pay && u1.ter.m.eat === u1.base.eat, 'asma çardak: sabır +%5, ödeme/oturuş aynı: ' + JSON.stringify([u1.base, u1.ter]));
+    ok(u1.mez1.t === 1 && near(u1.mez1.m.pay, u1.base.pay * 1.05, 3) && u1.mez3.t === 3 && near(u1.mez3.m.pay, u1.base.pay * 1.15, 3), 'meze vitrini kademeleri: ödeme +%5 → +%15: ' + JSON.stringify([u1.base.pay, u1.mez1, u1.mez3]));
+    ok(u1.saz.on && Math.abs(u1.saz.tip - 0.05) < 1e-9 && Math.abs(u1.saz.pm - 1.08) < 1e-9 && u1.saz.m.pay >= u1.mez3.m.pay && u1.saz.m.eat === u1.base.eat, 'saz köşesi: bahşiş +%5, sabır +%3: ' + JSON.stringify(u1.saz));
+    ok(u1.masa.t === 4 && Math.abs(u1.masa.pm - 1.20) < 1e-9 && Math.abs(u1.flow - 0.10) < 1e-9, 'masa (4 kademe, sabır +%4/kademe), kapı + tabela (akış +%10): ' + JSON.stringify([u1.masa, u1.flow]));
+    ok(u1.dol1.cap === 24 && u1.dol1.dl === 1 && u1.dol1.tier === 2 && u1.dol2.cap === 36 && u1.dol2.dl === 2 && u1.dol2.tier === 3, 'dolap 12 → 24 → 36: ' + JSON.stringify([u1.dol1, u1.dol2]));
+    ok(u1.room1 > u1.room0 && u1.dolapN === 30, 'büyük dolap daha çok fileto alır: ' + JSON.stringify([u1.room0, u1.room1, u1.dolapN]));
+    ok(u1.max.join() === 'max,max,max,max,max,max' && u1.allDc, 'son kademede / alınmış süste yeniden alım yok: ' + u1.max.join());
+    ok(u1.tot[0] >= 20 && u1.tot[0] <= 40 && u1.tot[1] >= 25 && u1.tot[1] <= 60 && u1.tot[2] >= 10 && u1.tot[3] >= 15, 'hepsi alınınca toplam etki hissedilir ama abartı değil (%): ' + u1.tot.join());
+    ok(/Müşteri \+%3/.test(u1.txt) && /Memnuniyet \+%2/.test(u1.txt), 'etki metni: ' + u1.txt);
+    ok(u1.save.tr && u1.save.tr.masa === 4 && u1.save.tr.kapi === 3 && u1.save.tr.tabela === 3 && u1.save.tr.mez === 3 && u1.save.dl === 2 && Array.isArray(u1.save.dc) && u1.allDc && u1.save.dc.length === u1.nDc && !('up' in u1.save), 'kayıt: S.lok.tr + dc + dl: ' + JSON.stringify([u1.save.tr, u1.save.dl, u1.save.dc && u1.save.dc.length]));
     /* saz sesi: oturan müşteri + oyuncu yakınken arada çalar; uzakken çalmaz */
     const sz = await p.evaluate(() => {
       const L = BT.lok, out = {}; L.R.grp.length = 0; L.R.board.length = 0; L.R.t.forEach(t => { t.st = 'free'; t.g = null; t.plates = 0; t.dirty = 0; t.pay = []; });
@@ -926,44 +937,50 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       return out;
     });
     ok(sz.near === 1 && sz.far === 0 && sz.next, 'saz sesi: yakınken bir kez, aralıklı: ' + JSON.stringify(sz));
-    /* yükleme: yükseltmeler korunur; eski kayıtta yok → hepsi kapalı */
+    /* yükleme: kademe + süs korunur; v2.21 kaydı (up/dl) göçer; bozuk değerler düzelir */
     const ld = await p.evaluate(() => {
-      const L = BT.lok, out = {}; const sv = JSON.parse(JSON.stringify(BT.buildSave()));
-      BT.lok.X.resetWorld(); BT.loadFrom(JSON.parse(JSON.stringify(sv)));
-      out.ok = [L.upOn('ter'), L.upOn('mez'), L.upOn('saz'), L.upOn('dol'), L.cap(), L.patMul()];
-      const old = JSON.parse(JSON.stringify(sv)); delete old.lok.up; delete old.lok.dl; delete old.lok.mu; delete old.lok.gs; delete old.lok.ed; delete old.lok.rd; delete old.lok.res;
-      BT.lok.X.resetWorld(); const r = BT.loadFrom(old);
-      out.old = [r, L.upOn('ter'), L.upOn('mez'), L.upOn('saz'), L.upOn('dol'), L.cap(), L.patMul(), JSON.stringify(L.q().res), L.q().mu];
-      const bad = JSON.parse(JSON.stringify(sv)); bad.lok.up = 'x'; bad.lok.dl = 7; BT.lok.X.resetWorld(); BT.loadFrom(bad);
-      out.bad = [L.upOn('ter'), L.upOn('mez'), L.upOn('saz'), L.cap()];
+      const L = BT.lok, out = {}, st = () => [L.dcOn('cardak'), L.dcOn('saz'), L.dcOn('cicek'), L.UPK.map(k => L.upLv(k)).join('/'), L.cap()];
+      const sv = JSON.parse(JSON.stringify(BT.buildSave()));
+      BT.lok.X.resetWorld(); BT.loadFrom(JSON.parse(JSON.stringify(sv))); out.ok = st().concat(L.DC.filter(d => L.dcOn(d.id)).length);
+      const old = JSON.parse(JSON.stringify(sv)); delete old.lok.tr; delete old.lok.dc; delete old.lok.mu; delete old.lok.gs; delete old.lok.ed; delete old.lok.rd; delete old.lok.res;
+      old.lok.up = { ter: 1, mez: 1, saz: 1 }; old.lok.dl = 1;
+      BT.lok.X.resetWorld(); const r = BT.loadFrom(old); out.old = [r].concat(st(), JSON.stringify(L.q().res), L.q().mu, Math.round(L.eff('pay') * 100));
+      const none = JSON.parse(JSON.stringify(old)); delete none.lok.up; delete none.lok.dl; BT.lok.X.resetWorld(); BT.loadFrom(none); out.none = st();
+      const bad = JSON.parse(JSON.stringify(sv)); bad.lok.tr = { masa: 9, kapi: -3, tabela: 'x', mez: 2.7 }; bad.lok.dc = ['saz', 'yok', 7, null]; bad.lok.dl = 7; bad.lok.up = 'x';
+      BT.lok.X.resetWorld(); BT.loadFrom(bad); out.bad = st();
+      const bad2 = JSON.parse(JSON.stringify(sv)); bad2.lok.tr = 'x'; bad2.lok.dc = 'y'; BT.lok.X.resetWorld(); BT.loadFrom(bad2); out.bad2 = st();
       return out;
     });
-    ok(ld.ok.join() === 'true,true,true,true,24,1.15', 'yükleme: yükseltmeler korunur: ' + ld.ok.join());
-    ok(ld.old.join() === 'true,false,false,false,false,12,1,{},0', 'eski kayıt (up/dl/res yok): yükseltme yok, dolap 12: ' + ld.old.join());
-    ok(ld.bad.join() === 'false,false,false,24', 'bozuk up/dl güvenle düzeltilir: ' + ld.bad.join());
+    ok(ld.ok.join() === 'true,true,true,4/3/3/3/2,36,' + ld.ok[5] && ld.ok[5] >= 15, 'yükleme: kademe + süs korunur: ' + ld.ok.join());
+    ok(ld.old.join() === 'true,true,true,false,1/1/1/2/1,24,{},0,10', 'v2.21 kaydı: Teras → çardak, Saz → saz süsü, Meze → buzlu vitrin (+%10), dolap 24: ' + ld.old.join());
+    ok(ld.none.join() === 'false,false,false,1/1/1/0/0,12', 'eski kayıt (yükseltmesiz): sade başlangıç: ' + ld.none.join());
+    ok(ld.bad.join() === 'false,true,false,4/1/1/2/2,36' && ld.bad2.join() === 'false,false,false,1/1/1/0/2,36', 'bozuk tr/dc/dl güvenle düzeltilir: ' + JSON.stringify([ld.bad, ld.bad2]));
     await p.close();
 
-    /* inşaat kuralı: yükseltmeler L gün (1. seviye = 1 gün); biten gün başında devreye girer; kayıtta korunur */
+    /* inşaat kuralı: kademe L → L gün (ilk kademe 1 gün); süsler inşaatsız, anında; biten gün başında devreye girer; kayıtta korunur */
     const p2 = await page(); await newGame(p2); await prep(p2);
     await kit(p2, { st: ['tava'], menu: ['hamsitava'], lv: 3 });
     const i0 = await p2.evaluate(() => {
       const L = BT.lok, S = BT.S, out = {}; window.HK_INSAAT_OFF = 0;
-      const c0 = S.cash; L.buy('lok_ter'); L.buy('lok_dol'); L.buy('lok_mez');
+      const c0 = S.cash; L.buy('lok_mez'); L.buy('lok_dol'); L.buy('lok_masa'); L.buy('lok_d_cicek');
       out.paid = c0 - S.cash > 0; out.ins = JSON.parse(JSON.stringify(S.insaat));
-      out.on = [L.upOn('ter'), L.upOn('dol'), L.upOn('mez')]; out.cap = L.cap(); out.pm = L.patMul();
-      out.why = L.why('lok_ter'); const c1 = S.cash; L.buy('lok_ter'); out.dup = S.cash === c1;
-      out.scaf = BT.lok.X.beginNextDay ? 1 : 0;
+      out.on = [L.upLv('mez'), L.upLv('dol'), L.upLv('masa'), L.dcOn('cicek')]; out.cap = L.cap(); out.pm = L.patMul();
+      out.why = L.why('lok_mez'); const c1 = S.cash; L.buy('lok_mez'); out.dup = S.cash === c1;
       const sv = JSON.parse(JSON.stringify(BT.buildSave())); out.saved = Object.keys(sv.insaat || {}).sort().join();
       BT.lok.X.resetWorld(); BT.loadFrom(JSON.parse(JSON.stringify(sv))); out.loadedIns = Object.keys(BT.S.insaat || {}).sort().join();
-      out.names = ['lok_ter', 'lok_mez', 'lok_saz', 'lok_dol'].map(id => BT.lok.UP[id.slice(4)].n.tr).join();
+      out.names = L.UPK.map(k => BT.lok.UP[k].n.tr).join();
       return out;
     });
-    ok(i0.paid && i0.ins.lok_ter && i0.ins.lok_ter.lv === 1 && i0.ins.lok_ter.left === 1 && i0.ins.lok_dol.left === 1 && i0.ins.lok_mez.left === 1, 'yükseltme inşaata girer (1. seviye = 1 gün): ' + JSON.stringify(i0.ins));
-    ok(i0.on.join() === 'false,false,false' && i0.cap === 12 && i0.pm === 1 && i0.why === 'busy' && i0.dup, 'inşaat sürerken etkisi yok, ikinci alım engelli: ' + JSON.stringify(i0));
-    ok(i0.saved === 'lok_dol,lok_mez,lok_ter' && i0.loadedIns === i0.saved, 'inşaat kaydı korunur: ' + JSON.stringify([i0.saved, i0.loadedIns]));
+    ok(i0.paid && i0.ins.lok_mez && i0.ins.lok_mez.lv === 1 && i0.ins.lok_mez.left === 1 && i0.ins.lok_dol.left === 1 && i0.ins.lok_masa.lv === 2 && i0.ins.lok_masa.left === 2 && !i0.ins.lok_d_cicek, 'kademe inşaata girer (L. kademe L gün), süs girmez: ' + JSON.stringify(i0.ins));
+    ok(i0.on.join() === '0,0,1,true' && i0.cap === 12 && Math.abs(i0.pm - 1.02) < 1e-9 && i0.why === 'busy' && i0.dup, 'inşaat sürerken kademe etkisi yok, süs hemen; ikinci alım engelli: ' + JSON.stringify(i0));
+    ok(i0.saved === 'lok_dol,lok_masa,lok_mez' && i0.loadedIns === i0.saved, 'inşaat kaydı korunur: ' + JSON.stringify([i0.saved, i0.loadedIns]));
+    ok(i0.names === 'Masa ve Sandalye,Giriş Kapısı,Menü Tabelası,Meze Vitrini,Soğuk Dolap', 'kademe adları: ' + i0.names);
     await nextDay(p2);
-    const i1 = await p2.evaluate(() => { const L = BT.lok; return { on: [L.upOn('ter'), L.upOn('dol'), L.upOn('mez')], cap: L.cap(), pm: L.patMul(), ins: Object.keys(BT.S.insaat || {}).join(), toast: document.getElementById('toast').textContent }; });
-    ok(i1.on.join() === 'true,true,true' && i1.cap === 24 && i1.pm === 1.15 && !i1.ins, 'ertesi gün başında yükseltmeler devreye girer: ' + JSON.stringify(i1));
+    const i1 = await p2.evaluate(() => { const L = BT.lok; return { on: [L.upLv('mez'), L.upLv('dol'), L.upLv('masa')], cap: L.cap(), ins: Object.keys(BT.S.insaat || {}).join() }; });
+    ok(i1.on.join() === '1,1,1' && i1.cap === 24 && i1.ins === 'lok_masa', 'ertesi gün: meze + dolap hazır, masa sürüyor: ' + JSON.stringify(i1));
+    await nextDay(p2);
+    const i2 = await p2.evaluate(() => { const L = BT.lok; return { masa: L.upLv('masa'), pm: L.patMul(), ins: Object.keys(BT.S.insaat || {}).join() }; });
+    ok(i2.masa === 2 && Math.abs(i2.pm - 1.06) < 1e-9 && !i2.ins, 'ikinci gün: masa 2. kademe (sabır +%4): ' + JSON.stringify(i2));
     await p2.close();
   }
 
@@ -1031,7 +1048,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       const ach = BT.ACH.find(a => a.id === 'lk_gurme'); out.ach = ach && [ach.t.tr, ach.t.en, ach.d.tr, ach.d.en];
       out.help = BT.STR.tr.tfMenuSub && BT.STR.en.tfMenuSub;
       BT.setLang('en'); const q = BT.lok.q(); q.res = { st: 'on', n: 14, rec: 'hamsipilav', kind: 'dugun', w: 1, due: BT.day.n + 1, got: 3 }; q.star = 4;
-      out.panelEn = ((() => { let txt = ''; ['menu', 'rec', 'try', 'kiler', 'st', 'crew', 'up', 'ev'].forEach(t => { BT.lok.openPanel(t); txt += ' ' + document.getElementById('lokRows').innerText.replace(/\s+/g, ' ') + ' ' + document.getElementById('lokTabs').innerText.replace(/\s+/g, ' '); }); return txt; })()); BT.lok.closePanel();
+      out.panelEn = ((() => { let txt = ''; ['menu', 'rec', 'try', 'kiler', 'st', 'crew', 'up', 'sus', 'ev'].forEach(t => { BT.lok.openPanel(t); txt += ' ' + document.getElementById('lokRows').innerText.replace(/\s+/g, ' ') + ' ' + document.getElementById('lokTabs').innerText.replace(/\s+/g, ' '); }); return txt; })()); BT.lok.closePanel();
       BT.setLang('tr'); out.panelTr = ((() => { let txt = ''; ['menu', 'rec', 'try', 'kiler', 'st', 'crew', 'up', 'ev'].forEach(t => { BT.lok.openPanel(t); txt += ' ' + document.getElementById('lokRows').innerText.replace(/\s+/g, ' ') + ' ' + document.getElementById('lokTabs').innerText.replace(/\s+/g, ' '); }); return txt; })()); BT.lok.closePanel(); q.res = {};
       return out;
     });
@@ -1040,7 +1057,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     ok(x.lists, 'isim listeleri (düğün, muhtar, eleştirmen) TR/EN dolu');
     ok(x.gnames[0].tr === 'Muhtar ve Heyeti' && /Headman/.test(x.gnames[0].en) && x.gnames[1].en === 'Gourmet Critic', 'grup adları: ' + JSON.stringify(x.gnames));
     ok(x.ach && x.ach[0] === 'Gurmenin Gözdesi' && /Gourmet/.test(x.ach[1]) && /5 yıldız/.test(x.ach[2]) && /5 stars/.test(x.ach[3]), 'başarım TR/EN: ' + JSON.stringify(x.ach));
-    ok(/UPGRADES/.test(x.panelEn) && /EVENTS/.test(x.panelEn) && /Terrace/.test(x.panelEn) && /Meze Display/.test(x.panelEn) && /Saz Corner/.test(x.panelEn) && /Big Cooler/.test(x.panelEn) && /Headman's table/.test(x.panelEn) && /Gourmet Critic/.test(x.panelEn) && /plates of Anchovy Pilaf/.test(x.panelEn) && /3\/14/.test(x.panelEn) && !/\blk[A-Z]\w+/.test(x.panelEn) && !/[ğışçöüİ]/.test(x.panelEn.replace(/Ayşe|Gül|İ/g, '')), 'EN panel (yükseltme + olay): ' + x.panelEn.slice(0, 400));
+    ok(/UPGRADES/.test(x.panelEn) && /EVENTS/.test(x.panelEn) && /Vine Pergola/.test(x.panelEn) && /Meze Display/.test(x.panelEn) && /Saz Corner/.test(x.panelEn) && /Cooler/.test(x.panelEn) && /Tables & Chairs/.test(x.panelEn) && /DECOR/.test(x.panelEn) && /Headman's table/.test(x.panelEn) && /Gourmet Critic/.test(x.panelEn) && /plates of Anchovy Pilaf/.test(x.panelEn) && /3\/14/.test(x.panelEn) && !/\blk[A-Z]\w+/.test(x.panelEn) && !/[ğışçöüİ]/.test(x.panelEn.replace(/Ayşe|Gül|İ/g, '')), 'EN panel (yükseltme + olay): ' + x.panelEn.slice(0, 400));
     ok(/GELİŞTİRMELER/.test(x.panelTr) && /OLAYLAR/.test(x.panelTr) && /3\/14/.test(x.panelTr) && /yarın/.test(x.panelTr) && /★★★★☆/.test(x.panelTr), 'TR panel olay satırları: ' + x.panelTr.slice(0, 300));
     await p.close();
   }
@@ -1072,7 +1089,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     const p = await page(); await newGame(p); await prep(p);
     await kit(p, { st: ['tava', 'izgara', 'tencere', 'firin'], menu: ['hamsitava', 'hamsipilav', 'levrekbugulama'], lv: 5 });
     await p.evaluate(() => {
-      const L = BT.lok; for (let i = 0; i < 4; i++) L.buy('lok_tb'); ['lok_ter', 'lok_mez', 'lok_saz', 'lok_dol'].forEach(id => L.buy(id));
+      const L = BT.lok; for (let i = 0; i < 4; i++) L.buy('lok_tb'); L.UPK.forEach(k => { for (let j = 0; j < 4; j++) L.buy('lok_' + k); }); L.DC.forEach(d => L.buy('lok_d_' + d.id));
       ['lk_asci', 'lk_garson', 'lk_bulasik', 'lk_sef'].forEach(r => L.hire(r));
       const q = L.q(); q.star = 5; q.gs = 5; q.dolap = { hamsi: 14, levrek: 6 }; q.res = { st: 'on', n: 16, rec: 'hamsipilav', kind: 'dugun', w: 0, due: BT.day.n, got: 7 };
       BT.player.x = 31; BT.player.y = 18.5; BT.day.t = 20; L.R.arr = 1e9;
@@ -1121,7 +1138,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     ok(w.q.every(q => q.x >= 13.0 && q.x <= 14.6 && q.y > 15.4 && q.y < 19.8) && w.start[0] > 10.2 && w.start[0] < 14.6, 'müşteriler yolda doğar, kapının önünde yol kenarında sıra bekler: ' + JSON.stringify(w));
     ok(/^14\.3,20\.4 14\.4,20\.4 15\.[56],20\.4 16\.9,20\.4/.test(w.way) && w.wayStand, 'koltuğa yürüyüş kapı → batı şeridi → sıra şeridi: ' + w.way);
     await step(p, 0.05, 20 * 60); await p.evaluate(() => { BT.lok.R.grp.length = 0; });
-    /* panel 390x844: 8 sekme, taşma yok, düğmeler >= 44 px */
+    /* panel 390x844: 9 sekme, taşma yok, düğmeler >= 44 px */
     const pm = await p.evaluate(() => {
       const o = { tabs: [], bad: [] }, T = BT.lok.tabs;
       T.forEach(t => {
@@ -1135,7 +1152,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       BT.lok.closePanel(); return o;
     });
     ok(pm.bad.length === 0, 'panel mobilde (390x844) taşmaz, düğmeler >=44px: ' + pm.bad.join('; '));
-    ok(pm.tabs.length === 8 && /MENÜ.*TARİFLER.*DENE.*KİLER.*İSTASYONLAR.*KADRO.*GELİŞTİRMELER.*OLAYLAR/.test(pm.tabBtns), 'sekmeler: ' + pm.tabBtns);
+    ok(pm.tabs.length === 9 && /MENÜ.*TARİFLER.*DENE.*KİLER.*İSTASYONLAR.*KADRO.*GELİŞTİRMELER.*SÜSLER.*OLAYLAR/.test(pm.tabBtns), 'sekmeler: ' + pm.tabBtns);
     /* MENÜ: simge, istasyon, malzeme, porsiyon, fiyat; kileri boşalan uyarı */
     const mn = await p.evaluate(() => {
       const q = BT.tarif.q(); q.kiler.misirunu = 12; q.kiler.pirinc = 0;
