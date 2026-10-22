@@ -101,7 +101,8 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
     const pick = (list, why) => { for (const q of list) { const x = BT.arr.snap(q[0]), y = BT.arr.snap(q[1]); const c = BT.arr.css(x, y); if (on(c) && BT.arr.why(x, y) === why) return { x, y, cx: c[0], cy: c[1], why }; } return null; };
     const pier = [], road = [], bld = [];
     for (let y = d.y - 6; y <= d.y + 4; y += 0.5) { for (let x = 6; x <= 9.5; x += 0.5) pier.push([x, y]); road.push([12.4, y], [11.4, y], [13.4, y]); }
-    [BT.WHALL, BT.DEPOT, BT.HUT].concat(BT.PLOTS).forEach(o => bld.push([o.x, o.y]));
+    [BT.WHALL, BT.DEPOT, BT.HUT].forEach(o => bld.push([o.x, o.y]));
+    BT.layoutRects().filter(r => !/bank/.test(r.id)).forEach(r => bld.push([(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2]));   /* v2.22: parseller kalktı; ekrandaki herhangi bir ayrılmış nesne */
     return [pick(pier, 'iskele'), pick(road, 'yol'), pick(bld, 'nesne')];
   });
   R.bad = [];

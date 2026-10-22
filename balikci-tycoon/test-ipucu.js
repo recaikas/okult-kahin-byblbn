@@ -57,8 +57,8 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   });
   ok(R.save.seen >= 7 && R.save.after === R.save.seen && R.save.oldN === R.save.all && R.save.newN === 0, 'kayıt/göç yanlış ' + JSON.stringify(R.save));
   /* İngilizce */
-  R.en = await p.evaluate(async () => { BT.setLang('en'); document.querySelector('.dtab[data-t="serv"]').click(); await new Promise(r => setTimeout(r, 200)); const t = BT.help().title + ' | ' + document.getElementById('helpGo').textContent; return t; });
-  ok(/BUILDINGS/.test(R.en) && /GOT IT/.test(R.en), 'İngilizce ipucu yok ' + R.en);   /* v2.15: PROJE sekmesi kalktı */
+  R.en = await p.evaluate(async () => { BT.setLang('en'); document.querySelector('.dtab[data-t="staff"]').click(); await new Promise(r => setTimeout(r, 200)); const t = BT.help().title + ' | ' + document.getElementById('helpGo').textContent; return t; });
+  ok(/STAFF/.test(R.en) && /GOT IT/.test(R.en), 'İngilizce ipucu yok ' + R.en);   /* v2.22: BİNA → PERSONEL */   /* v2.15: PROJE sekmesi kalktı */
   await p.screenshot({ path: process.env.SHOT || '/tmp/ip.png' });
   if (errs.length) fail.push('sayfa hatası: ' + [...new Set(errs)].join(' | '));
   await b.close();

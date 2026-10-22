@@ -66,7 +66,7 @@
 cd balikci-tycoon && npx http-server -p 8099 -c-1 .     # test sunucusu (testler 8099 bekler)
 node test-ince.js                                        # ince altyapı (mod geçişi, eşleme, yürüyüş)
 SHOTS=liman,meydan SECS=6 node test-gorsel.js <klasör> ince   # PXS 2/3/4 ekran görüntüsü + FPS
-node test-world-render.js | test-binalar.js | test-specials.js | test-defter.js | test-basarim.js | test-faz1.js
+node test-world-render.js | test-specials.js | test-defter.js | test-basarim.js | test-faz1.js
 node test-story.js && node test-story-game.js            # hikâye
 node test-v21.js && node test-v23.js                     # müzik / ses
 ```

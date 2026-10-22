@@ -13,8 +13,8 @@ YAPACAKLARIN
    iskele, meydan, akşam, sabah). rapor.json'daki konsol hataları ve FPS (normal / cpu4x).
 3. Görüntüleri Read ile aç; `gorsel-referans/hamsi-ince-karsilastirma.jpg` (sağdaki HEDEF) ve hamsi3-telefon.png ile
    karşılaştır. Klasik modun eski görüntülerle (`screenshots/once/`) aynı kaldığını doğrula.
-4. Testler: test-ince.js, test-world-render.js, test-playthrough.js, test-specials.js, test-defter.js, test-layout.js,
-   test-binalar.js (ve istenirse hepsi: `for f in test-*.js; do ...`). Başarısızları çıktı ile raporla.
+4. Testler: test-ince.js, test-world-render.js, test-playthrough.js, test-specials.js, test-defter.js, test-layout.js
+   (ve istenirse hepsi: `for f in test-*.js; do ...`). Başarısızları çıktı ile raporla.
 5. Bulguları sahibine göre ayır: arkaplan-sanatcisi (gökyüzü/deniz/kum/kasaba/yol), nesne-sanatcisi (zemin, yapılar,
    istasyonlar, eşyalar, tekne, efekt, etiket), karakter-sanatcisi (kişiler, kedi, duygu balonu), mimar (çözünürlük,
    kamera, dokunma, ayar, performans altyapısı). Her bulgu: dosya/sahne/zoom, ne yanlış, beklenen, öncelik (kırmızı/sarı).

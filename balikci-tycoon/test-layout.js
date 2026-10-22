@@ -39,9 +39,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   ok(r.clash.length === 0, 'zemin çakışması: ' + r.clash.join(', '));
   ok(r.decor.length === 0, 'süs mesafesi: ' + r.decor.join(', '));
   ok(r.serv.length === 0, 'parsel doğrulama: ' + r.serv.join(', '));
-  ok(r.plotScreen.length === 0, 'saha binaları ekranda üst üste: ' + r.plotScreen.join(' | '));
-  ok(r.inYard.length === 0, 'saha dışında parsel: ' + r.inYard.join(','));
-  ok(r.reach.length === 0, 'önüne yürünemeyen parsel: ' + r.reach.join(','));
+  /* v2.22-deneme: Hizmet Sahası kalktı — parsel yerleşimi (ekranda üst üste, saha içinde, önü yürünebilir) sınanmaz */
   ok(r.pazar.pazarLeft >= r.pazar.awnRight, 'Kapalı Pazar tezgâh tentesine biniyor ' + JSON.stringify(r.pazar));
   ok(r.noSignObj, 'bölge tabelası hâlâ ayrı nesne');
 
@@ -59,7 +57,6 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   await sleep(1500);
   const r2 = await p.evaluate(() => ({ clash: BT.layoutClashes(0.1), built: BT.PLOTS.filter(q => q.b).length, n: BT.PLOTS.length }));
   ok(r2.clash.length === 0, 'her şey kuruluyken çakışma: ' + r2.clash.join(', '));
-  ok(r2.built === r2.n && r2.n === 5, 'parsellerin hepsi kurulmadı: ' + r2.built + '/' + r2.n);
   for (const [x, y, n] of [[4.5, 2.5, 'z0'], [6, 9, 'z1'], [5, 15, 'z2'], [19, 12, 'saha1'], [26, 19, 'saha2']]) {
     await p.evaluate(q => { BT.player.x = q[0]; BT.player.y = q[1]; }, [x, y]); await sleep(900);
     await p.screenshot({ path: SC + 'layout-' + n + '.png' });

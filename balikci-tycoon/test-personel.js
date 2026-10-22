@@ -14,7 +14,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   await p.evaluate(() => { BT.S.tut = 99; BT.S.ctrl = 2; BT.S.cash = 1e6; BT.S.rep = 5000; BT.areas[0].lvl = 5; });
   const cards = () => p.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].map((c, i) => ({ i, t: c.querySelector('b') ? c.querySelector('b').textContent : '', s: c.innerText, no: !!c.querySelector('.buy.no') })));
   const openZone = async () => {
-    await p.evaluate(() => { const t = document.querySelector('.dtab[data-t="level"]'); if (!t.classList.contains('on')) t.click(); });
+    await p.evaluate(() => { const t = document.querySelector('.dtab[data-t="staff"]'); if (!t.classList.contains('on')) t.click(); });
     await sleep(250);
     const cs0 = await cards(); if (cs0.length && /GERİ|BACK/.test(cs0[0].t)) return;   /* zaten bölge listesinde */
     const zc = cs0.find(c => /personeli|staff/i.test(c.t));

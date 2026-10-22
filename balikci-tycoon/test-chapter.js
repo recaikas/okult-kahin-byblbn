@@ -32,7 +32,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   const pre = await p.evaluate(() => BT.chapter()); console.log('sayaç', pre.d + '/' + pre.n); ok(pre.n - pre.d === 1, 'kurulum: tek eksik kalmalı ' + pre.d + '/' + pre.n);
   await p.click('#chBtn'); await sleep(500); await p.screenshot({ path: SC + '1-sayac.png' }); await p.click('#chClose'); await sleep(300);
   /* son eksik: Fümehane müdürü — arayüzden */
-  await p.click('.dtab[data-t="level"]'); await sleep(400);
+  await p.click('.dtab[data-t="staff"]'); await sleep(400);   /* v2.22: müdür kartları PERSONEL'de */
   await p.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].find(d => /Müdür gerekli/.test(d.textContent)).querySelector('.buy').click()); await sleep(300);
   await p.screenshot({ path: SC + '2-mudur-adaylari.png' });
   await p.evaluate(() => document.querySelectorAll('#dpCards .dcard .buy')[1].click()); await sleep(200);

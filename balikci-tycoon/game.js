@@ -98,7 +98,7 @@ var STR = {
     built: '🔨 {n} kuruldu',
     projStage: '🏛️ {n}: %{p} — yeni aşama!',
     projDone: '🎉 {n} tamamlandı!',
-    decorBought: '✨ {n} yerleştirildi', yardName: 'HİZMET SAHASI', onlineLbl: 'ÇEVRİMİÇİ SKOR TABLOSU', onlOn: 'AÇIK', onlOff: 'KAPALI', onlineOnT: 'Skorun herkese açık tabloya gönderilecek', onlineOffT: 'Çevrimiçi paylaşım kapalı — tablo yalnız bu cihazda', forgetBtn: 'SKOR KAYDIMI SİL', privBtn: 'GİZLİLİK POLİTİKASI', privClose: '▶ KAPAT', forgetAsk: 'Bu cihazın skor tablosundaki tüm kayıtları (sunucu ve cihaz) silinsin mi? Oyun kayıtların etkilenmez.', forgetYes: 'SİL', forgetDone: 'Skor kayıtların silindi, yeni anonim kimlik oluşturuldu', forgetFail: 'Sunucuya ulaşılamadı — internet bağlantını kontrol edip tekrar dene', servRefund: 'Hizmet binaları yenilendi: kaldırılan binaların parası iade edildi (+{n})', restoIdle: 'fazla mal yok', chTitle: '🪜 BÖLÜM 1 — İskeleden İşletmeye',
+    decorBought: '✨ {n} yerleştirildi', yardName: 'HİZMET SAHASI', onlineLbl: 'ÇEVRİMİÇİ SKOR TABLOSU', onlOn: 'AÇIK', onlOff: 'KAPALI', onlineOnT: 'Skorun herkese açık tabloya gönderilecek', onlineOffT: 'Çevrimiçi paylaşım kapalı — tablo yalnız bu cihazda', forgetBtn: 'SKOR KAYDIMI SİL', privBtn: 'GİZLİLİK POLİTİKASI', privClose: '▶ KAPAT', forgetAsk: 'Bu cihazın skor tablosundaki tüm kayıtları (sunucu ve cihaz) silinsin mi? Oyun kayıtların etkilenmez.', forgetYes: 'SİL', forgetDone: 'Skor kayıtların silindi, yeni anonim kimlik oluşturuldu', forgetFail: 'Sunucuya ulaşılamadı — internet bağlantını kontrol edip tekrar dene', servRefund: 'Hizmet Sahası kaldırıldı: binaların parası iade edildi (+{n})', restoIdle: 'fazla mal yok', chTitle: '🪜 BÖLÜM 1 — İskeleden İşletmeye',
     chGoal: 'Amacın: üç tezgâhı da sonuna kadar büyütmek. Bölgeleri aç ve yükselt, alınabilecek her şeyi al, her bölgeye bir müdür koy. Sayaç dolunca Bölüm 1 biter.',
     chAreas: 'Bölgeleri aç (Balık Pazarı, Fümehane, Balıkçı Mutfağı)', chLevels: 'Bölge seviyeleri', chPads: 'Yükseltmeler (sepet, ayakkabı, fiyat)', chSlots: 'Yapı noktaları',
     chDecor: 'Süsler', chEnv: 'Çevre yatırımları', chFume: 'Füme makineleri', chProj: 'Kapalı Pazar', chMeydan: 'Meydan binaları (kulübe, depo, hal)', chMgr: 'Bölge müdürleri',
@@ -125,7 +125,7 @@ var STR = {
     mArea: 'Bölgeler', mProject: 'Büyük proje', mSlots: 'Yapı noktaları',
     mWage: 'Maaş gideri', mOrders: 'Tamamlanan sipariş', mLost: 'Kaçan müşteri',
     mCaught: 'Tutulan balık', mNext: 'Sonraki', mMax: 'En üst seviye',
-    mNoStaff: 'Henüz çalışanın yok. Alt bardaki YÜKSELT sekmesinden bölge personeli al.',
+    mNoStaff: 'Henüz çalışanın yok. Alt bardaki PERSONEL sekmesinden bölge personeli al.',
     mStaffCap: 'Personel limiti', mTotalWage: 'Toplam maaş',
     mWeight: 'ağırlık', mCut: 'kesim', mYield: 'fileto', mSmoked: 'füme',
     mLoop: 'Döngü', mLoopE: 'Ağ → kesim → tezgâh → kasa',
@@ -182,7 +182,7 @@ var STR = {
     noStorage: '⚠ Bu tarayıcı kalıcı kayda izin vermiyor: kayıtlar sayfa kapanınca silinir.', delSlot: '🗑 BU SLOTU SİL',
     remaining: 'kalan', total: 'toplam',
     noMoney: 'Para yetmiyor',
-    barArea: 'ALAN', barLevel: 'YÜKSELT', barBuild: 'YAPI', barProj: 'PROJE', barServ: 'BİNA',
+    barArea: 'ALAN', barLevel: 'YÜKSELT', barBuild: 'YAPI', barProj: 'PROJE', barServ: 'BİNA', barStaff: 'PERSONEL', tStaff: 'PERSONEL YÖNETİMİ', emptyStaff: 'Önce bir bölge aç',
     tArea: 'YENİ ALAN AÇ', tLevel: 'YÜKSELTMELER', tBuild: 'YAPI', tProj: 'BÜYÜK PROJE',
     bsub_decor: '🌺 Dekor', bsub_dev: '🔨 Geliştirme', bsub_up: '🏗️ Yükseltme', bsub_meydan: '🏛️ Meydan',
     emptyDecor: 'Bu bölgelerdeki tüm süsler alındı', emptyUp: 'Açık bölgelerin hepsi en üst seviyede',
@@ -312,7 +312,7 @@ var STR = {
     built: '🔨 {n} built',
     projStage: '🏛️ {n}: {p}% — new stage!',
     projDone: '🎉 {n} completed!',
-    decorBought: '✨ {n} placed', yardName: 'SERVICE YARD', onlineLbl: 'ONLINE LEADERBOARD', onlOn: 'ON', onlOff: 'OFF', onlineOnT: 'Your score will be sent to the public leaderboard', onlineOffT: 'Online sharing off — leaderboard on this device only', forgetBtn: 'DELETE MY LEADERBOARD DATA', privBtn: 'PRIVACY POLICY', privClose: '▶ CLOSE', forgetAsk: 'Delete all of this device\'s leaderboard entries (server and device)? Your game saves are not affected.', forgetYes: 'DELETE', forgetDone: 'Leaderboard data deleted, new anonymous ID created', forgetFail: 'Could not reach the server — check your connection and try again', servRefund: 'Service buildings revised: removed buildings refunded (+{n})', restoIdle: 'no surplus', chTitle: '🪜 CHAPTER 1 — From Pier to Business',
+    decorBought: '✨ {n} placed', yardName: 'SERVICE YARD', onlineLbl: 'ONLINE LEADERBOARD', onlOn: 'ON', onlOff: 'OFF', onlineOnT: 'Your score will be sent to the public leaderboard', onlineOffT: 'Online sharing off — leaderboard on this device only', forgetBtn: 'DELETE MY LEADERBOARD DATA', privBtn: 'PRIVACY POLICY', privClose: '▶ CLOSE', forgetAsk: 'Delete all of this device\'s leaderboard entries (server and device)? Your game saves are not affected.', forgetYes: 'DELETE', forgetDone: 'Leaderboard data deleted, new anonymous ID created', forgetFail: 'Could not reach the server — check your connection and try again', servRefund: 'The Service Yard is gone: your buildings were refunded (+{n})', restoIdle: 'no surplus', chTitle: '🪜 CHAPTER 1 — From Pier to Business',
     chGoal: 'Your goal: grow all three stalls to the max. Open and upgrade the zones, buy everything on offer and put a manager in every zone. When the counter is full, Chapter 1 ends.',
     chAreas: 'Open the zones (Fish Market, Smokehouse, Fishermen\'s Kitchen)', chLevels: 'Zone levels', chPads: 'Upgrades (basket, boots, price)', chSlots: 'Build spots',
     chDecor: 'Decorations', chEnv: 'Surroundings', chFume: 'Smoker boxes', chProj: 'Covered Market', chMeydan: 'Square buildings (hut, depot, hall)', chMgr: 'Zone managers',
@@ -337,7 +337,7 @@ var STR = {
     mArea: 'Areas', mProject: 'Big project', mSlots: 'Build spots',
     mWage: 'Wages', mOrders: 'Orders served', mLost: 'Customers lost',
     mCaught: 'Fish caught', mNext: 'Next', mMax: 'Max rank',
-    mNoStaff: 'No staff yet. Hire zone crew from the UPGRADE tab in the bottom bar.',
+    mNoStaff: 'No staff yet. Hire zone crew from the STAFF tab in the bottom bar.',
     mStaffCap: 'Staff limit', mTotalWage: 'Total wages',
     mWeight: 'weight', mCut: 'cut', mYield: 'fillets', mSmoked: 'smoked',
     mLoop: 'Loop', mLoopE: 'Net → cutting → stall → safe',
@@ -390,7 +390,7 @@ var STR = {
     noStorage: '⚠ This browser blocks permanent saves: saves are lost when the page closes.', delSlot: '🗑 DELETE THIS SLOT',
     remaining: 'left', total: 'total',
     noMoney: 'Not enough cash',
-    barArea: 'AREA', barLevel: 'UPGRADE', barBuild: 'BUILD', barProj: 'PROJECT', barServ: 'SERVICE',
+    barArea: 'AREA', barLevel: 'UPGRADE', barBuild: 'BUILD', barProj: 'PROJECT', barServ: 'SERVICE', barStaff: 'STAFF', tStaff: 'STAFF MANAGEMENT', emptyStaff: 'Open a zone first',
     tArea: 'UNLOCK NEW AREA', tLevel: 'UPGRADES', tBuild: 'BUILD', tProj: 'BIG PROJECT',
     bsub_decor: '🌺 Decor', bsub_dev: '🔨 Improve', bsub_up: '🏗️ Upgrade', bsub_meydan: '🏛️ Square',
     emptyDecor: 'All decor in open areas is owned', emptyUp: 'All open areas are max level',
@@ -1710,6 +1710,7 @@ var ROLES = {
 };
 var WNAMES = ['Hasan', 'Kerim', 'Zeynep', 'Mert', 'Deniz', 'Ayla', 'Tarık', 'Elif', 'Cem', 'Nur', 'Osman', 'Sevgi'];
 
+var SERV_LV4 = 4;                                  /* v2.22-deneme: Hizmet Sahası yokken toptancı ve turist itibar Sv4'te gelir (eskiden Mezat / Büfe Sv3 açardı) */
 var CUST = [
   { id: 'isci',   n: { tr: 'İşçi', en: 'Worker' },    coat: '#3f6fb0', coat2: '#335c93', qty: [2, 4],  pat: 54,  mult: 1.00, rep: 1, lvl: 1, tag: 'cheap' },
   { id: 'aile',   n: { tr: 'Aile', en: 'Family' },    coat: '#c8553d', coat2: '#a94430', qty: [4, 7],  pat: 80,  mult: 1.05, rep: 1, lvl: 1, tag: 'any' },
@@ -1718,8 +1719,8 @@ var CUST = [
   { id: 'kaptan', n: { tr: 'Kaptan', en: 'Captain' }, coat: '#1f4e6b', coat2: '#173d55', qty: [8, 14], pat: 120, mult: 1.25, rep: 3, lvl: 3, tag: 'any' },
   { id: 'vip',    n: { tr: 'VIP', en: 'VIP' },        coat: '#d4a029', coat2: '#b8881c', qty: [2, 3],  pat: 28,  mult: 3.00, rep: 3, lvl: 5, tag: 'fume', pen: 2 },
   /* v0.4 — hizmet binalarıyla açılan tipler (§35.3, §35.4) */
-  { id: 'toptanci', n: { tr: 'Toptancı', en: 'Wholesaler' }, coat: '#4a7a3a', coat2: '#3a6230', qty: [10, 18], pat: 115, mult: 1.45, rep: 3, lvl: 1, tag: 'any', serv: 'toptanci' },
-  { id: 'turist',   n: { tr: 'Turist', en: 'Tourist' },      coat: '#e0679e', coat2: '#c4507f', qty: [2, 4],   pat: 62,  mult: 1.60, rep: 2, lvl: 1, tag: 'any', serv: 'turist' },
+  { id: 'toptanci', n: { tr: 'Toptancı', en: 'Wholesaler' }, coat: '#4a7a3a', coat2: '#3a6230', qty: [10, 18], pat: 115, mult: 1.45, rep: 3, lvl: SERV_LV4, tag: 'any', serv: 'toptanci' },
+  { id: 'turist',   n: { tr: 'Turist', en: 'Tourist' },      coat: '#e0679e', coat2: '#c4507f', qty: [2, 4],   pat: 62,  mult: 1.60, rep: 2, lvl: SERV_LV4, tag: 'any', serv: 'turist' },
   /* v1.3 — daha fazla sokak müşterisi (her biri kendi kıyafetiyle, seviye ilerledikçe açılır) */
   { id: 'ogrenci',  n: { tr: 'Öğrenci', en: 'Student' },           coat: '#5a9a6a', coat2: '#6fb07f', qty: [1, 3],  pat: 45,  mult: 0.95, rep: 1, lvl: 1, tag: 'cheap' },
   { id: 'emekli',   n: { tr: 'Emekli Amca', en: 'Retiree' },       coat: '#8a7a5a', coat2: '#a4946f', qty: [2, 3],  pat: 140, mult: 1.00, rep: 1, lvl: 1, tag: 'cheap' },
@@ -1936,7 +1937,7 @@ function decorClearance() {
   tables.forEach(function (o) { pts.push(['kesim', o.x, o.y]); pts.push(['hasır', o.mat.x, o.mat.y]); });
   counters.forEach(function (o) { pts.push(['tezgâh ' + o.key, o.x, o.y]); pts.push(['kuyruk ' + o.key, 10.8, o.y]); });
   SLOTS.forEach(function (o) { pts.push(['parsel ' + o.id, o.x, o.y]); });
-  PLOTS.forEach(function (o) { pts.push(['bina ' + o.id, o.x, o.y]); });
+  if (!SERV_OFF) PLOTS.forEach(function (o) { pts.push(['bina ' + o.id, o.x, o.y]); });
   pts.push(['kasa', safe.x, safe.y], ['füme', smoker.x, smoker.y], ['ofis', office.x, office.y], ['hal', project.x + 1.3, project.y + 1.1]);
   for (i = 0; i < DECOR.length; i++) {
     var d = DECOR[i], best = 99, who = '';
@@ -2021,6 +2022,11 @@ var SERV = [
       { c: 300000, inc: 0, ivl: 0, mod: { auction: 1.20, auctionN: 36, queue: 3, wholesale: 0.15 }, unl: 'toptanci', d: { tr: '36 ürün • %120 • toptan +%15 • kuyruk +3', en: '36 goods • 120% • wholesale +15% • queue +3' }, v: { tr: 'Bölgesel mezat merkezi, kemerli giriş', en: 'Regional auction centre, arched entry' } }
     ] }
 ];
+/* v2.22-deneme — HİZMET SAHASI KALDIRILDI (LOKANTA_V3_PLAN.md): yerine Sahil Lokantası yayılır. Beş bina da "kaldırılan" sayılır:
+   eski kayıtta kurulu binanın bedeli SERV_GONE göçüyle iade edilir (servLoad → servRefund). Etkileri taşınmaz; açtıkları kilitler
+   (turist, toptancı, şirket kontratı) bina şartı olmadan kendi seviye koşullarıyla gelir (servUnlock). Kod şimdilik bayrakla uyur. */
+var SERV_OFF = true;
+if (SERV_OFF) { SERV.forEach(function (d) { SERV_GONE[d.id] = null; SERV_GONE_COST[d.id] = d.lv.map(function (q) { return q.c; }); }); SERV.length = 0; }
 function sdef(id) { for (var i = 0; i < SERV.length; i++) if (SERV[i].id === id) return SERV[i]; return null; }
 
 /* Bina durumu (§40 ServiceBuildingState) — kurulmamış binalar listede yok. */
@@ -2046,6 +2052,7 @@ function servMods() {
 function servEff(key) { return servMods()[key] || 0; }
 /* Bir kilit açık mı (toptanci / turist / ctr) */
 function servUnlock(tag) {
+  if (SERV_OFF) return true;                                   /* v2.22-deneme: saha yok, kilit de yok */
   if (tag === 'turist' && adLive('panayir')) return true;     /* v2.18-deneme: Panayır Standı günü turist geçici açık */
   for (var i = 0; i < SERV.length; i++) {
     var d = SERV[i], st = servState[d.id];
@@ -2424,6 +2431,9 @@ function insLoad(raw) {
   var out = {}; S.insaat = out;
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return;
   for (var id in raw) {
+    if (SERV_OFF && Object.prototype.hasOwnProperty.call(raw, id) && SERV_GONE_COST[id] && raw[id] && typeof raw[id] === 'object') {   /* v2.22: inşaatı süren hizmet binası → ödenen seviye iade */
+      var gl = clamp(parseInt(raw[id].lv, 10) || 1, 1, SERV_GONE_COST[id].length); servRefund += upCost(sCost(SERV_GONE_COST[id][gl - 1])); continue;
+    }
     if (!Object.prototype.hasOwnProperty.call(raw, id) || !insValid(id)) continue;
     var r = raw[id]; if (!r || typeof r !== 'object' || Array.isArray(r)) continue;
     var d = sdef(id), lv, p;
@@ -4513,7 +4523,7 @@ function updateCounter(c, dt) {
     /* tezgâh kullanılamıyorsa bu türe müşteri gelmez */
     if (!c.fish || !fishReady(c.fish)) return;
     var lvl = repLevel();
-    var pool = CUST.filter(function (t) { return t.lvl <= lvl && (!t.serv || servUnlock(t.serv)) && custFits(t, c); });
+    var pool = CUST.filter(function (t) { return (t.lvl <= lvl || (t.id === 'turist' && adLive('panayir'))) && (!t.serv || servUnlock(t.serv)) && custFits(t, c); });   /* Panayır günü turist seviyeden önce de gelir */
     if (!pool.length) return;
     var todP = pool.filter(function (t) { return !t.tod || todIn(t.tod) || Math.random() < 0.25; });   /* v2.9: saatine uymayan tip seyrek gelir */
     if (todP.length) pool = todP;
@@ -5182,6 +5192,7 @@ var ICONS = {
   alan:   ['............','...kkkkkk...','..ky....yk..','..ky....yk..','.kkkkkkkkkk.','.kyyyyyyyyk.','.kyykkkkyyk.','.kyykyykyyk.','.kyykkkkyyk.','.kkkkkkkkkk.','............','............'],
   yukselt:['.....kk.....','....kyyk....','...kyyyyk...','..kyyyyyyk..','.kyyyyyyyyk.','kkkkyyyykkkk','...kyyyyk...','...kyyyyk...','...kyyyyk...','...kkkkkk...','............','............'],
   yapi:   ['........kk..','.......kaak.','......kaak..','.....kaak...','..kkkaak....','.knnkak.....','knnnnk......','knnnk.......','.knk........','..k.........','............','............'],
+  personel:['............','..kk....kk..','.kppk..kppk.','.kppk..kppk.','..kk....kk..','.kbbk..kmmk.','kbbbbkkmmmmk','kbbbbkkmmmmk','kbbbbkkmmmmk','.kbbk..kmmk.','.kk.k..k.kk.','............'],
   bina:   ['...kk.......','..koook.....','.kooooook...','kkkkkkkkkkkk','ksssssssssk.','ks.kkkk..sk.','ks.kwwk..sk.','ks.kwwk..sk.','kkkkkkkkkkkk','.kk......kk.','............','............'],
   /* --- durumlar --- */
   ok:     ['............','..........k.','.........kg.','........kgg.','k.......kgg.','kk.....kgg..','kgk...kgg...','kggk.kgg....','.kggkgg.....','..kggg......','...kg.......','............'],
@@ -7823,7 +7834,7 @@ function render() {
   if (GZD) push(GZD.x + GZD.y - 0.05, function () { drawGzPaper(GZD); });   /* v2.16: yerdeki özel sayı */
   if (GZB.on) push(GZB.x + GZB.y + 0.2, function () { drawNewsboy(GZB); });   /* v2.16: gazeteci çocuk */
   if (dolph) push(dolph.x + dolph.y, drawStoryDolphin);   /* v2.15: denizden gelen yunus */
-  for (i = 0; i < PLOTS.length; i++) (function (p) {          /* v0.4 hizmet parselleri */
+  if (!SERV_OFF) for (i = 0; i < PLOTS.length; i++) (function (p) {          /* v0.4 hizmet parselleri */
     if (!plotActive(p)) return;
     if (p.b) push(p.x + p.y, function () { drawServ(p); });
     else push(p.x + p.y - 0.05, function () { drawPlot(p); });
@@ -8018,7 +8029,7 @@ function applyLang() {
   el.langLbl.textContent = T('langLbl');
   el.dtArea.textContent = T('barArea'); el.dtLevel.textContent = T('barLevel');
   el.dtBuild.textContent = T('barBuild');
-  el.dtServ.textContent = T('barServ');
+  el.dtServ.textContent = T(SERV_OFF ? 'barStaff' : 'barServ');
   var oft = document.querySelectorAll('#ofTabs .tab');
   var ofn = ['tabMarket', 'tabCo', 'tabCtr', 'tabPort', 'tabNews', 'tabHold', 'tabToptan'];
   for (var q = 0; q < oft.length; q++) oft[q].textContent = T(ofn[q]);
@@ -8174,6 +8185,21 @@ function barList() {
     }
     if (!out.length) out.push({ empty: T('emptyArea') });
   } else if (barTab === 'level') {
+    /* v2.22-deneme: bölge personeli, müdür, otomasyon ve hayvanlar PERSONEL sekmesinde (eski BİNA); burada oyuncunun kendi gelişimi */
+    /* v1.9.1 — sıra: önce oyuncunun kendi gelişimi (taşıma, hız, pazarlık), sonra personel, en sonda otomasyon.
+       Açık Tezgâhlar kısayolu ☰'ün yanındaki düğmeye taşındı. */
+    for (i = 0; i < PADS.length; i++) {
+      var p = PADS[i];
+      if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
+      if (AREAS[p.z].locked || p.lvl >= p.max || (p.emek && !emek())) continue;
+      var info = padInfo(p), bl = padBlocked(p);
+      out.push({ id: p.id, ic: p.icon, t: info.t + (p.max > 1 ? '  ' + T('level') + p.lvl + '→' + (p.lvl + 1) : ''),
+        s: info.e, cost: upCost(padPrice(p)), blocked: bl, why: T('staffFull', { n: staffCap() }),
+        go: function (pp) { return function () { applyPad(pp); }; }(p) });
+    }
+    if (!out.length) out.push({ empty: T('emptyLevel') });
+  } else if (barTab === 'staff') {
+    /* v2.22-deneme — PERSONEL: bölge kadroları, müdür adayları, personele devret, hayvanlar (eskiden YÜKSELT'te) */
     if (barMgr !== null) {                                             /* v1.3: müdür adayları */
       var mz = barMgr;
       out.push({ id: 'back', ic: '↩', t: T('back'), s: T('mgrListT', { n: NM(AREAS[mz].n) }), back: true });
@@ -8202,17 +8228,6 @@ function barList() {
             hire(r, false, zn); barZone = null; save(); renderBar(); } });
       })(zrl[i]);
       return out;
-    }
-    /* v1.9.1 — sıra: önce oyuncunun kendi gelişimi (taşıma, hız, pazarlık), sonra personel, en sonda otomasyon.
-       Açık Tezgâhlar kısayolu ☰'ün yanındaki düğmeye taşındı. */
-    for (i = 0; i < PADS.length; i++) {
-      var p = PADS[i];
-      if (p.kind === 'decor' || p.kind === 'area' || p.kind === 'arealv') continue;
-      if (AREAS[p.z].locked || p.lvl >= p.max || (p.emek && !emek())) continue;
-      var info = padInfo(p), bl = padBlocked(p);
-      out.push({ id: p.id, ic: p.icon, t: info.t + (p.max > 1 ? '  ' + T('level') + p.lvl + '→' + (p.lvl + 1) : ''),
-        s: info.e, cost: upCost(padPrice(p)), blocked: bl, why: T('staffFull', { n: staffCap() }),
-        go: function (pp) { return function () { applyPad(pp); }; }(p) });
     }
     /* --- v2.1: her açık bölge için personel kartı --- */
     for (i = 0; i < zoneCount(); i++) (function (z2) {
@@ -8245,7 +8260,7 @@ function barList() {
         blocked: !ch.ok, why: T('autoNeed', { n: ch.miss.length }),
         go: function () { setZoneAuto(z3, !on); } });
     })(i);
-    if (!out.length) out.push({ empty: T('emptyLevel') });
+    if (!out.length) out.push({ empty: T('emptyStaff') });
   } else if (barTab === 'build') {
     /* v0.3 — YAPI üç alt kategoride: Dekoratif • Geliştirmeler • Yapı Yükseltmeleri */
     var lvNow = repLevel();
@@ -8428,7 +8443,7 @@ function barLiveRefresh(dt) {
 function renderBar() {
   if (!barTab) return;
   var keepX = el.dpCards.scrollLeft;
-  el.dpTitle.textContent = T(barTab === 'area' ? 'tArea' : barTab === 'level' ? 'tLevel' : barTab === 'build' ? 'tBuild' : barTab === 'serv' ? 'tServ' : 'tProj');
+  el.dpTitle.textContent = T(barTab === 'area' ? 'tArea' : barTab === 'level' ? 'tLevel' : barTab === 'build' ? 'tBuild' : barTab === 'serv' ? 'tServ' : barTab === 'staff' ? 'tStaff' : 'tProj');
   el.dpSub.classList.toggle('hidden', barTab !== 'build' || !!barSlot);
   if (barTab === 'build') Array.prototype.forEach.call(el.dpSub.children, function (b) {
     b.classList.toggle('on', b.dataset.s === buildSub);
@@ -8543,7 +8558,7 @@ function bindProjExtra() {
   });
 }
 function barHot() {
-  var hot = { area: false, level: false, build: false, proj: false, serv: false }, i;
+  var hot = { area: false, level: false, build: false, proj: false, serv: false, staff: false }, i;
   for (i = 1; i < AREAS.length; i++) if (AREAS[i].locked && !AREAS[i - 1].locked && !(AREAS[i].lok && window.HK_LOK_OFF) && S.rep >= AREAS[i].rep && S.cash >= emekCost(AREAS[i].cost)) hot.area = true;
   if (buildHot('up') || buildHot('dev')) hot.build = true;
   for (i = 0; i < PADS.length; i++) {
@@ -8552,7 +8567,7 @@ function barHot() {
     if (!AREAS[p.z].locked && p.lvl < p.max && !padBlocked(p) && S.cash >= padPrice(p)) hot.level = true;
   }
   if (undecidedStalls().length) hot.level = true;
-  for (i = 0; i < zoneCount(); i++) if (zoneOpen(i) && zoneFree(i) > 0 && S.cash >= hireCost('hamal', i)) hot.level = true;
+  for (i = 0; i < zoneCount(); i++) if (zoneOpen(i) && zoneFree(i) > 0 && S.cash >= hireCost('hamal', i)) hot.staff = true;
   if (buildHot('meydan')) hot.build = true;
   for (i = 0; i < SERV.length; i++) {
     var sd = SERV[i], slv = sLvl(sd.id);
@@ -9176,7 +9191,7 @@ el.boardClose.onclick = closeBoard;
 el.halClose.onclick = closeHal;
 el.adClose.onclick = closeAdPanel;
 el.actBtn.onclick = function () {
-  if (el.actBtn.dataset.a === 'hut') { openBar('level'); toast(T('hutWelcome')); }
+  if (el.actBtn.dataset.a === 'hut') { openBar('staff'); toast(T('hutWelcome')); }
   else if (el.actBtn.dataset.a === 'hal') openHal();
   else if (el.actBtn.dataset.a === 'ad') openAdPanel();   /* v2.18-deneme */
   else if (el.actBtn.dataset.a === 'lok') openLokPanel();   /* v2.19-deneme */
@@ -11469,6 +11484,7 @@ function meydanCards(out) {
 /* ---------- çizim ---------- */
 /* hizmet sahası zemini: sıkıştırılmış toprak + taş bordür, parseller arasında yürüyüş yolu */
 function drawYardGround() {
+  if (SERV_OFF) return;
   var r = SERVYARD, q = YARDPATH;
   isoQuad(q.x0, q.y0, q.x1 - q.x0, q.y1 - q.y0, 0, '#b9ad92');
   isoQuad(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, 0, '#c2b08a');
@@ -11909,7 +11925,7 @@ function pushMeydan(push) {
   push(WHALL.x + WHALL.y, drawWhall);
   pushAds(push);                                              /* v2.18-deneme: İlan Bürosu + tellal / gazeteci / dolmuş / panayır bayrakları */
   push(MSIGN.x + MSIGN.y, drawMeydanSign);
-  push(YSIGN.x + YSIGN.y, drawYardSign);
+  if (!SERV_OFF) push(YSIGN.x + YSIGN.y, drawYardSign);
   if (gzFrameN() > 0) push(FAME.x + FAME.y, function () { drawFamePano(FAME, gzFrames()); });   /* v2.16: Şeref Panosu */
 }
 /* =========================================================
@@ -12267,6 +12283,7 @@ function yardDoors() {
 }
 function yardRoute(f, to) { f.path = [{ x: YARD_LANE, y: f.y }, { x: YARD_LANE, y: to.y }, { x: to.x, y: to.y }]; f.to = to; }
 function updateYardFolk(dt) {
+  if (SERV_OFF) { yardFolk.length = 0; return; }
   var doors = yardDoors(), want = doors.length ? Math.min(12, 2 + doors.length * 2) : 0, i;
   if (yardFolk.length < want && Math.random() < dt * 0.5) {
     var gy = pick(YARD_GATES), pool = CUST.filter(function (t) { return !t.serv; });
@@ -12343,6 +12360,7 @@ function drawScaled(a, sc, fn) {
   ctx.drawImage(_mini, 0, 0, bw * k, bh * k, sx - Math.round(bw * sc / 2), sy - Math.round((bh - foot) * sc), w, h);
 }
 function drawYardFolk(push) {
+  if (SERV_OFF) return;
   for (var i = 0; i < yardFolk.length; i++) (function (f) {
     if (f.in > 0) return;
     push(f.x + f.y + 0.2, function () {
@@ -13065,19 +13083,21 @@ function updateStory(dt) {
 var HELP = {
   bar_area: { ic: '🔓', tr: ['YENİ ALAN AÇ', 'Koyu büyüttüğün yer. Her yeni bölge yeni bir balık türü, yeni ağ, kesim masası ve tezgâh getirir.', 'Bölge açmak için para ve yeterli itibar (⭐) gerekir. Gri kart: itibarın henüz yetmiyor.', 'İtibar seviyen, açık bölge sayısıyla sınırlıdır: tavana takıldıysan yeni bölge aç.'],
               en: ['OPEN NEW AREA', 'Where you grow the cove. Each new zone brings a new fish, a new net, a cutting table and a stall.', 'Opening a zone costs money and enough reputation (⭐). A grey card means your reputation isn\'t there yet.', 'Your reputation level is capped by the number of open zones: if you hit the cap, open a new zone.'] },
-  bar_level: { ic: '⬆️', tr: ['YÜKSELTMELER', 'Seni ve işletmeni hızlandıran her şey burada.', 'Üstte kendi gelişimin (taşıma kapasitesi, hız, pazarlık). Altta bölge seviyesi (ağlar daha hızlı dolar) ve personel.', 'Personel: bir bölgeye hamal, filetocu, tezgâhtar ve tahsildar alınca o bölge kendi kendine çalışır. Kadro tamamlanınca müdür atayabilirsin; maaşlar her dakika kasadan düşer.'],
-               en: ['UPGRADES', 'Everything that speeds up you and your business.', 'At the top: your own growth (carry capacity, speed, bargaining). Below: zone levels (nets fill faster) and staff.', 'Staff: hire a porter, filleter, stall-keeper and cashier for a zone and it runs by itself. With a full crew you can appoint a manager; wages are paid every minute.'] },
+  bar_level: { ic: '⬆️', tr: ['YÜKSELTMELER', 'Seni ve işletmeni hızlandıran her şey burada.', 'Kendi gelişimin: taşıma kapasitesi, hız, pazarlık. Personel, müdürler ve hayvanlar artık PERSONEL sekmesinde.'],
+               en: ['UPGRADES', 'Everything that speeds up you and your business.', 'Your own growth: carry capacity, speed, bargaining. Staff, managers and animals now live in the STAFF tab.'] },
   bar_build: { ic: '🔨', tr: ['YAPI', 'Koyuna yapı ve süs kurduğun yer. Üstteki alt sekmelerle geçiş yaparsın:', '🔨 Geliştirme: boş yapı noktalarına Çay Ocağı, Buz Makinesi gibi destek yapıları. 🏗️ Yükseltme: kurduğun yapıları güçlendirir. 🌺 Dekor: süsler müşteri sabrını artırır. 🏛️ Meydan: Depo, Balık Hali ve Personel Kulübesi.', 'Her kartta ne işe yaradığı yazar; pahalı alımlarda bir kez daha onay istenir.'],
                en: ['BUILD', 'Where you place buildings and decorations. Switch with the sub-tabs on top:', '🔨 Improve: support buildings like the Tea House or Ice Machine on empty build spots. 🏗️ Upgrade: strengthen what you built. 🌺 Decor: decorations raise customer patience. 🏛️ Square: Depot, Fish Hall and Staff Lodge.', 'Each card says what it does; expensive purchases ask for confirmation.'] },
   bar_proj: { ic: '🏛️', tr: ['BÜYÜK PROJE', 'Uzun vadeli yatırımlar. Projeye parça parça para koyarsın; aşamalar tamamlandıkça koy değişir ve itibar kazanırsın.', 'Belli bir itibara ulaşınca Ticaret Ofisi de buradan kurulur: borsa, şirketler ve kontratlar oradadır.'],
               en: ['GRAND PROJECT', 'Long-term investments. You fund a project bit by bit; as stages complete the cove changes and you earn reputation.', 'At a certain reputation the Trade Office is built from here too: the market, companies and contracts live there.'] },
+  bar_staff: { ic: '👷', tr: ['PERSONEL', 'Bölge kadroların, müdürler ve hayvanlar burada.', 'Bir bölgeye balıkçı, filetocu, hamal ve tezgâhtar alınca o bölge kendi kendine çalışır. Kadro tamamlanınca müdür atayıp bölgeyi personele devredebilirsin; maaşlar her dakika kasadan düşer.'],
+               en: ['STAFF', 'Your zone crews, managers and animals live here.', 'Hire a fisher, filleter, porter and vendor for a zone and it runs by itself. With a full crew you can appoint a manager and hand the zone over; wages are paid every minute.'] },
   bar_serv: { ic: '🏢', tr: ['BİNA', 'Hizmet sahasındaki büyük binalar (restoran, kooperatif, nakliye ofisi…). Her biri kalıcı bir avantaj verir: maaş indirimi, toptancı müşteri, fazla balığı satma gibi.', 'Bir bina seç, sonra haritada boş bir parsel seç. Kurduğun binayı başka parsele ücretsiz taşıyabilirsin.'],
               en: ['BUILDINGS', 'The big buildings in the service yard (restaurant, cooperative, shipping office…). Each gives a lasting perk: lower wages, wholesale customers, selling surplus fish and more.', 'Pick a building, then pick an empty plot on the map. You can move a building to another plot for free.'] },
   bsub_decor: { ic: '🌺', tr: ['DEKOR', 'Süsler koyu güzelleştirir ve müşteri sabrını artırır: müşteriler daha uzun bekler, daha az kaçar.'], en: ['DECOR', 'Decorations make the cove prettier and raise customer patience: they wait longer and leave less.'] },
   bsub_up: { ic: '🏗️', tr: ['YAPI YÜKSELTME', 'Kurduğun destek yapılarını bir üst seviyeye çıkarır; etkileri büyür.'], en: ['BUILDING UPGRADES', 'Takes your support buildings up a level; their effects grow.'] },
   bsub_meydan: { ic: '🏛️', tr: ['MEYDAN', 'Ortak binalar: Depo (fazla ürünü saklar, tezgâhlara destek taşır), Balık Hali (paletle toptan mal gelir; Hal Hamalı taşır) ve Personel Kulübesi (personel sınırını artırır). Yeterli itibara ulaşınca Ticaret Ofisi de buradan kurulur.'], en: ['SQUARE', 'Shared buildings: Depot (stores surplus, supplies the stalls), Fish Hall (wholesale pallets; the Hall Porter carries them) and Staff Lodge (raises the staff cap). With enough reputation the Trade Office is built here too.'] },
   m_liman: { ic: '⚓', tr: ['LİMAN', 'İşletmenin özeti: itibar seviyen ve tavan, para ve maaş gideri, açık bölgeler ve seviyeleri, satış ve kaçan müşteri sayıları.', 'Neyin eksik olduğunu görmek için ilk bakılacak yer.'], en: ['HARBOR', 'Your business at a glance: reputation level and cap, money and wages, open zones and their levels, sales and lost customers.', 'The first place to look when something is missing.'] },
-  m_personel: { ic: '👷', tr: ['PERSONEL', 'Çalışanlarının listesi: kim hangi bölgede, hangi işte, dakikada ne kadar maaş alıyor ve ne kadar taşıyabiliyor. Personeli alt çubuktaki YÜKSELTME sekmesinden alırsın.'], en: ['STAFF', 'Your workers: who is in which zone, doing what, their wage per minute and how much they carry. Hire staff from the UPGRADE tab at the bottom.'] },
+  m_personel: { ic: '👷', tr: ['PERSONEL', 'Çalışanlarının listesi: kim hangi bölgede, hangi işte, dakikada ne kadar maaş alıyor ve ne kadar taşıyabiliyor. Personeli alt çubuktaki PERSONEL sekmesinden alırsın.'], en: ['STAFF', 'Your workers: who is in which zone, doing what, their wage per minute and how much they carry. Hire staff from the STAFF tab at the bottom.'] },
   m_urunler: { ic: '🐟', tr: ['ÜRÜNLER', 'Satabildiğin balıklar ve fiyatları: fileto ve füme değeri, kesim süresi, verim. Kilitli olanın neden kilitli olduğu yazar.'], en: ['PRODUCTS', 'The fish you can sell and their prices: fillet and smoked value, cutting time, yield. Locked ones say why.'] },
   m_album: { ic: '⭐', tr: ['ALBÜM', 'Tanıştığın özel müşteriler ve Dipteki Söz hikâyesinin durumu (gün, Bereket Ölçeri, kalıcı etkiler).', 'Herkesi görmek için üstteki 📖 Müşteri Defteri\'ne bak.'], en: ['ALBUM', 'Special customers you\'ve met and the state of The Promise Below story (day, Bounty Gauge, permanent effects).', 'For everyone, see the 📖 Customer Book at the top.'] },
   m_yardim: { ic: '❓', tr: ['YARDIM', 'Oyunun temel döngüsü ve kontroller. İpuçlarını yeniden görmek istersen buradaki düğmeyi kullan.'], en: ['HELP', 'The core loop and the controls. Use the button here to see the tips again.'] },
@@ -13798,7 +13818,7 @@ function layoutRects() {
   SLOTS.forEach(function (sl) { add('yapı ' + sl.id, 'sl' + sl.id, sl.z, sl.x, sl.y, 0.65, 0.65); });
   add('Kapalı Pazar', 'proj', project.z, project.x, project.y, project.w / 2, project.h / 2);
   var htp = trayPos({ key: 'hal' }); add('tepsi Kapalı Pazar', 'proj', project.z, htp.x, htp.y, 0.4, 0.34);
-  PLOTS.forEach(function (q) { add('parsel ' + q.id, 'pl' + q.id, q.z, q.x, q.y, 1.0, 1.0); });
+  if (!SERV_OFF) PLOTS.forEach(function (q) { add('parsel ' + q.id, 'pl' + q.id, q.z, q.x, q.y, 1.0, 1.0); });
   MGR_DESKS.forEach(function (d, z) { R.push({ id: 'müdür masası ' + z, own: 'md' + z, z: z, x0: d.x - 0.5, y0: d.y - 1.0, x1: d.x + 0.5, y1: d.y + 0.3 }); });
   AREA_LAMPS.forEach(function (ls, z) { ls.forEach(function (l, k) { add('lamba ' + z + '-' + k, 'lp' + z + k, z, l.x, l.y, 0.2, 0.2); }); });
   BINS.forEach(function (b, i) { add('çöp ' + i, 'bin' + i, b.z, b.x, b.y, 0.3, 0.3); });
@@ -13939,7 +13959,7 @@ function arrStatic() {
   for (i = 3.5; i < 31; i += 4.5) rc(ROAD_VX, i, 0.2, 0.2);                       /* yol fenerleri */
   ROAD_FL.forEach(function (y) { rc(ROAD_VX, y, 0.2, 0.3); });                     /* çiçeklikler */
   ROAD_BB.forEach(function (y) { rc(ROAD_VX, y, 0.2, 0.62); });                    /* reklam panoları */
-  rc(YSIGN.x, YSIGN.y, 0.3, 0.2);                                                  /* saha tabelası */
+  if (!SERV_OFF) rc(YSIGN.x, YSIGN.y, 0.3, 0.2);                                                  /* saha tabelası */
   scenery.forEach(function (o) { if (!sceneryOnDeck(o)) rc(o.x, o.y, 0.3, 0.3); });                       /* servi, kaya, sandal… */
   /* meydan personeli: köprü ucundan kapılara düz yürür */
   var B = [15.8, (BRIDGE.y0 + BRIDGE.y1) / 2];
@@ -13949,7 +13969,7 @@ function arrStatic() {
   /* hizmet sahası yayaları: yoldan girişler → YARD_LANE → kapı hizası */
   YARD_GATES.forEach(function (gy) { lanes.push([14.6, gy, YARD_LANE, gy, 0.35]); });
   lanes.push([YARD_LANE, SERVYARD.y0, YARD_LANE, SERVYARD.y1, 0.35]);
-  PLOTS.forEach(function (q) { var dr = yardDoor(q); lanes.push([YARD_LANE, dr.y, dr.x, dr.y, 0.35]); });
+  if (!SERV_OFF) PLOTS.forEach(function (q) { var dr = yardDoor(q); lanes.push([YARD_LANE, dr.y, dr.x, dr.y, 0.35]); });
   /* istasyon etki alanları (test-trash.js ile aynı yarıçaplar) */
   spots.forEach(function (s) { rings.push([s.x, s.y + 0.9, Math.sqrt(1.6)]); });
   XNETS.forEach(function (s) { rings.push([s.x, s.y + 0.9, Math.sqrt(1.6)]); });
@@ -14317,6 +14337,7 @@ var ACH = [
     t: { tr: 'Fıkra Gibi', en: 'Just Like a Joke' }, d: { tr: 'Karadenizli Temel ile tanış.', en: 'Meet Temel from the Black Sea coast.' } }
 ];
 var ACH_CATS = ['ilk', 'buy', 'mus', 'eko', 'giz'];
+if (SERV_OFF) for (var _ai = ACH.length - 1; _ai >= 0; _ai--) if (ACH[_ai].id === 'hizmet_ilk') ACH.splice(_ai, 1);   /* v2.22-deneme: Hizmet Sahası yok */
 function achById(id) { for (var i = 0; i < ACH.length; i++) if (ACH[i].id === id) return ACH[i]; return null; }
 function achHas(id) { return !!(S.ach && S.ach[id]); }
 function achCount() { var n = 0; for (var i = 0; i < ACH.length; i++) if (achHas(ACH[i].id)) n++; return n; }
@@ -15196,7 +15217,7 @@ Object.assign(STR.tr, {
          'Filetoları tezgâha taşı',
          'Tezgâhın önünde dur: tam hızda satılır. Yokken yavaş (⏸ Bekliyor)',
          'Kasadan ya da tepsiden paranı topla',
-         'İlk personel: Tezgâhtar al (YÜKSELT). Sen yokken o satar',
+         'İlk personel: Tezgâhtar al (PERSONEL). Sen yokken o satar',
          'Balıkçı ağı çeker, Filetocu keser, Hamal taşır: personel kartından al'],
   tutStepOKE: ['✓ Balık birikti! Ağın başında dur', '✓ Balıklar sırtında! Kesim masasına götür', '✓ Balıklar masada! Şimdi başında dur', '✓ Filetolar hazır! Tezgâha taşı', '🎉 İlk balığın tezgâhta! Önünde durursan hızlı satılır', '✓ İlk satış! Parayı kasadan topla', '✓ Para kasada! Şimdi bir personel al', '✓ İlk personelin işbaşında! Diğer roller de var'],
   coachAutoE: 'Eylem beklemek: istasyonun başında dur, iş kendiliğinden ilerler',
@@ -15225,7 +15246,7 @@ Object.assign(STR.en, {
          'Carry the fillets to the stall',
          'Stand at the stall: full-speed sales. Away = slow (⏸ Waiting)',
          'Collect your money from the till or tray',
-         'Hire your first staff: a Vendor (UPGRADE). They sell when you are away',
+         'Hire your first staff: a Vendor (STAFF). They sell when you are away',
          'Fisher hauls the net, Filleter cuts, Porter carries: hire from the staff card'],
   tutStepOKE: ['✓ Fish are in! Stand at the net', '✓ Fish on your back! Take them to the cutting table', '✓ Fish on the table! Now stand there', '✓ Fillets ready! Carry them to the stall', '🎉 Your first fish is on the stall! Stand in front to sell fast', '✓ First sale! Collect the money', '✓ Money banked! Now hire staff', '✓ First hire on the job! More roles to try'],
   coachAutoE: 'Work is waiting: stand at a station and the job runs by itself',
@@ -19202,7 +19223,7 @@ Object.assign(window.BT, {
     feedNear: petFeedNear, target: petFeedTarget, adopt: petAdopt, love: petLove, assign: petAssign, next: petAssignNext, dayEnd: petDayEnd,
     flow: function (key) { return petFlow(counterByKey(key)); }, pat: function (key) { return petPat(counterByKey(key)); }, eff: petEff, spot: petSpot, roamPt: petRoamPt, near: petNear,
     gullGo: function (key) { petGullGo(counterByKey(key)); }, save: petSave, load: petLoad, card: petCardOpen, cardClose: petCardClose, tick: petTick,
-    barOpen: function () { openBar('level'); barPet = true; renderBar(); }, lines: PET_TAX_LINES,
+    barOpen: function () { openBar('staff'); barPet = true; renderBar(); }, lines: PET_TAX_LINES,
     K: { DAY: PET_DAY, FEED: PET_FEED, FEED_DAYS: PET_FEED_DAYS, FEE: PET_FEE, PAT: PET_PAT, FLOW: PET_FLOW, CAP: PET_FLOW_CAP, GULL_PM: PET_GULL_PM, NAMES: PET_NAMES } }
 });
 /* v2.18-deneme — İlan Bürosu test kancaları */
