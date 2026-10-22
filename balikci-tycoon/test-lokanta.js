@@ -88,7 +88,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       out.paid = before - S.cash; out.openNow = BT.lok.open() && !A[4].locked;
       out.q = !!S.lok; out.cardAfter = BT.lok.X.barList().find(c => c.id === 'a4') ? 1 : 0;
       /* konum: iskele devamı, kameraya ulaşır, yürünür */
-      out.walk = BT.canStand(27.5, 19) && BT.canStand(33, 20.5) && BT.canStand(31, 16.4) && BT.canStand(12.5, 22.4) && BT.canStand(9.6, 22.5) && BT.canStand(24.9, 21) && BT.canStand(20, 22.6) && !BT.canStand(5, 29.9) && !BT.canStand(5, 24) && !BT.canStand(12.5, 25) && !BT.canStand(30, 12) && !BT.canStand(20, 26);   /* v2.21: yeni yer (x 26–36, y 14,4–23,6) + patika */
+      out.walk = BT.canStand(27.5, 19) && BT.canStand(33, 20.5) && BT.canStand(20, 15) && BT.canStand(12.5, 20.4) && BT.canStand(9.6, 20.4) && BT.canStand(14.3, 18) && BT.canStand(18.1, 11.5) && BT.canStand(20, 22.6) && !BT.canStand(5, 29.9) && !BT.canStand(5, 24) && !BT.canStand(12.5, 25) && !BT.canStand(30, 12) && !BT.canStand(20, 26);   /* v2.22: birleşik alan (x 15–36, y 13,2–23,6) + sıra şeridi, koridor, arka kapı patikası */
       { const t = document.querySelector('.dtab.on'); if (t) t.click(); }
       BT.player.x = 5; BT.player.y = 5;
       out.clash = BT.layoutClashes(0.1);
@@ -293,7 +293,12 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     const a1 = await p.evaluate(() => { const L = BT.lok, q = L.q(); return { sv: q.sv, ls: q.ls, cash: BT.S.cash, board: L.R.board.length, grp: L.R.grp.length, dirty: L.R.t.reduce((a, t) => a + t.dirty, 0), sunk: L.R.sinkN, pay: L.R.t.reduce((a, t) => a + t.pay.length, 0), dolap: q.dolap.hamsi, rep: BT.S.rep }; });
     ok(a1.sv >= 3, 'kadro tek başına grupları ağırlar (oyuncu uzakta): ' + JSON.stringify(a1));
     ok(a1.sunk >= 3, 'bulaşıkçı kirli tabakları götürür: ' + JSON.stringify(a1));
-    ok(a1.pay === 0, 'şef garson masadaki parayı toplar ve Kasa\'ya bırakır: ' + JSON.stringify(a1));
+    /* v2.22: kasa batıda (kapı yanı), uzak masadan dönüş uzun — yeni gelişi durdurup biraz bekle; ödeme kalmamalı */
+    await p.evaluate(() => { BT.lok.R.arr = 1e9; });
+    await step(p, 0.05, 20 * 30);
+    const a2 = await p.evaluate(() => { const L = BT.lok; return { pay: L.R.t.reduce((a, t) => a + t.pay.length, 0), grp: L.R.grp.length }; });
+    ok(a2.pay === 0, 'şef garson masadaki parayı toplar ve Kasa\'ya bırakır: ' + JSON.stringify([a1, a2]));
+    await p.evaluate(() => { BT.lok.R.arr = 0.1; });
     R.auto = a1;
     /* şef garson eksik rolü doldurur: garson ve bulaşıkçı yok */
     const sf = await p.evaluate(() => {
@@ -557,7 +562,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     });
     ok(/Seaside Restaurant/.test(en.title) && /UPGRADE/.test(en.rows) && /BUILD/.test(en.rows) && /MENU/.test(en.rows) && /CREW/.test(en.rows) && !/\blk[A-Z]\w+/.test(en.rows + en.sub) && /Tourists/.test(en.groups), 'EN panel metinleri: ' + en.title + ' | ' + en.rows.slice(0, 90));
     /* dünyada menü tahtasına/tabelaya dokununca panel açılır */
-    await p.evaluate(() => { BT.player.x = 31; BT.player.y = 18.5; });
+    await p.evaluate(() => { BT.player.x = BT.lok.LOK.board.x + 1.6; BT.player.y = BT.lok.LOK.board.y - 1.2; });
     await sleep(1300);
     await p.evaluate(() => { const e = document.getElementById('lvlUp'); if (e) e.classList.add('hidden'); });
     const tp = await p.evaluate(() => { const v = BT.canvasPt(BT.lok.LOK.board.x, BT.lok.LOK.board.y, 0), r = document.getElementById('game').getBoundingClientRect(), k = r.width / HKG.W; return [r.left + v[0] * k, r.top + v[1] * k]; });
@@ -606,25 +611,25 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     await sleep(1200);
     /* v2.20: eski iskele kancaları (HKA.lokV2 yok) çağrılmaz; yeni kancalar (ev + teras) çağrılır */
     const g0 = await p.evaluate(() => { const H = window.__H; return { old: ['drawLokTable', 'drawLokStation', 'drawLokCrew', 'drawLokFix'].map(n => (H[n] || []).length).join(), house: (H.drawLokHouse || []).length, ter: (H.drawLokTerrace || []).length }; });
-    ok(g0.old === '0,0,0,0' && g0.house > 0 && g0.ter > 0, 'lokV2 yokken eski kancalar devre dışı, yeni kancalar (ev/teras) çağrılır: ' + JSON.stringify(g0));
-    await p.evaluate(() => { window.HKA.lokV2 = true; window.__H = {}; });
+    ok(g0.old === '0,0,0,0' && g0.house === 0 && g0.ter === 0, 'lokV2/lokV3 yokken eski kancalar devre dışı, ev/teras klasik (v2.22): ' + JSON.stringify(g0));
+    await p.evaluate(() => { window.HKA.lokV2 = true; window.HKA.lokV3 = true; window.__H = {}; });   /* v2.22: ev/teras ince kancası yeni yerleşimle (lokV3) */
     await sleep(1200);
     const h = await p.evaluate(() => {
       const H = window.__H, out = { fine: window.HKG ? HKG.K : 0 };
       for (const n of Object.keys(H)) out[n] = H[n].length;
       const f = (n, fn) => H[n] && H[n].length ? fn(H[n][H[n].length - 1]) : false;
-      out.deck = f('drawLokTerrace', o => o.v2 === true && Math.abs(o.area.x0 - 15) < 1e-6 && Math.abs(o.area.y1 - 32) < 1e-6 && typeof o.tb === 'number' && o.up && o.gate && Array.isArray(o.gap) && o.pergola && typeof o.t === 'number' && 'night' in o);
+      out.deck = f('drawLokTerrace', o => o.v3 === true && Math.abs(o.area.x0 - 15) < 1e-6 && Math.abs(o.area.y1 - 23.6) < 1e-6 && typeof o.tb === 'number' && o.up && o.gate && Array.isArray(o.gap) && o.pergola && typeof o.t === 'number' && 'night' in o);
       out.parts = [...new Set((H.drawLokTerrace || []).map(o => o.part))].sort().join();
-      out.house = f('drawLokHouse', o => o.v2 === true && Math.abs(o.x0 - 15.7) < 1e-6 && Math.abs(o.y1 - 26) < 1e-6 && o.star === 4 && typeof o.lv === 'number' && typeof o.smoke === 'number' && 'night' in o && Math.abs(o.area.y0 - 22.8) < 1e-6);
+      out.house = f('drawLokHouse', o => o.v3 === true && Math.abs(o.x0 - 15.6) < 1e-6 && Math.abs(o.y1 - 16.9) < 1e-6 && o.star === 4 && typeof o.lv === 'number' && typeof o.smoke === 'number' && 'night' in o && Math.abs(o.area.y0 - 13.2) < 1e-6);
       out.hparts = [...new Set((H.drawLokHouse || []).map(o => o.part))].sort().join();
       out.table = f('drawLokTable', o => typeof o.i === 'number' && (o.seats === 2 || o.seats === 4) && typeof o.st === 'string' && 'plates' in o && 'dirty' in o && 'pay' in o && 'mood' in o);
       out.station = f('drawLokStation', o => ['tava', 'izgara', 'tencere', 'firin'].includes(o.id) && 'busy' in o && 'prog' in o && 'wait' in o && 'lv' in o && 'cook' in o);
       out.crew = f('drawLokCrew', o => ['asci', 'garson', 'bulasik', 'sef'].includes(o.role) && o.a && o.outfit && 'lv' in o && 'plates' in o);
       out.fix = H.drawLokFix ? [...new Set(H.drawLokFix.map(o => o.k))].sort().join() : '';
       const fx = k => (H.drawLokFix || []).filter(o => o.k === k);
-      out.ter = [...new Set(fx('teras').map(o => o.part))].sort().join(); out.rail = true; out.v2 = Object.values(H).every(a => a.every(o => o.v2 === true));
-      out.umb = fx('teras').filter(o => o.part === 'umb').length; out.meze = fx('meze').every(o => Math.abs(o.x - 26.95) < 1e-6 && typeof o.t === 'number') && fx('meze').length > 0;
-      out.saz = fx('saz').every(o => Math.abs(o.x - 35.2) < 1e-6 && 'night' in o && typeof o.t === 'number') && fx('saz').length > 0;
+      out.ter = [...new Set(fx('teras').map(o => o.part))].sort().join(); out.rail = true; out.v2 = Object.keys(H).every(n => H[n].every(o => /House|Terrace/.test(n) ? o.v3 === true : o.v2 === true));
+      out.umb = fx('teras').filter(o => o.part === 'umb').length; out.meze = fx('meze').every(o => Math.abs(o.x - 30.6) < 1e-6 && typeof o.t === 'number') && fx('meze').length > 0;
+      out.saz = fx('saz').every(o => Math.abs(o.x - 33.6) < 1e-6 && 'night' in o && typeof o.t === 'number') && fx('saz').length > 0;
       out.big = fx('dolap').every(o => o.big === true); out.sign = fx('sign').every(o => o.star === 4 && o.res && o.res.kind === 'dugun' && o.res.got >= 2 && o.res.n === 12);
       out.tmeze = (H.drawLokTable || []).every(o => o.meze === true); out.deckUp = H.drawLokTerrace.every(o => o.up && o.up.ter && o.up.mez && o.up.saz && o.up.dol);
       return out;
@@ -962,34 +967,26 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     await p2.close();
   }
 
-  /* ===== 14) AŞAMA 2 — Balık Büfesi adı, menünün lokantaya taşınması, eski kayıt ===== */
+  /* ===== 14) AŞAMA 2 — menünün lokantaya taşınması, eski kayıt (v2.22: Balık Büfesi Hizmet Sahası'yla kalktı) ===== */
   {
     const p = await page(); await newGame(p); await prep(p);
     await kit(p, { st: ['tava', 'izgara', 'tencere', 'firin'], menu: ['hamsitava'], lv: 3 });
-    const n = await p.evaluate(() => {
-      const d = BT.SERV.find(x => x.id === 'restoran'), out = { id: d.id, tr: d.n.tr, en: d.n.en };
-      BT.lok.X.openBar('serv'); const cardTr = BT.lok.X.barList().filter(c => /svrestoran|restoran/.test(c.id || '')).map(c => c.t + '|' + (c.s || '')).join(' ## ');
-      BT.setLang('en'); const cardEn = BT.lok.X.barList().filter(c => /svrestoran|restoran/.test(c.id || '')).map(c => c.t + '|' + (c.s || '')).join(' ## '); BT.setLang('tr');
-      out.cardTr = cardTr; out.cardEn = cardEn; return out;
-    });
-    ok(n.id === 'restoran' && n.tr === 'Balık Büfesi' && n.en === 'Fish Buffet', 'BİNA girdisi: id aynı, adı Balık Büfesi / Fish Buffet: ' + JSON.stringify(n));
-    ok(/Balık Büfesi/.test(n.cardTr) && !/Menü:/.test(n.cardTr) && /Fish Buffet/.test(n.cardEn) && !/Menu:/.test(n.cardEn), 'BİNA kartı TR/EN ve menü satırı yok: ' + n.cardTr + ' || ' + n.cardEn);
+    const n = await p.evaluate(() => ({ bufe: BT.SERV.some(x => x.id === 'restoran'), lv: BT.tarif.restoLv() }));
+    ok(!n.bufe && n.lv === 0, 'Balık Büfesi yok (Hizmet Sahası kalktı): ' + JSON.stringify(n));
     const t = await p.evaluate(() => {
       const out = {}, q = BT.tarif.q();
       q.known.push('hamsitava'); q.kiler.misirunu = 9; BT.lok.q().menu.fill(null); BT.lok.menuAdd('hamsitava');
       out.menu = BT.tarif.menu().map(r => r.id).join(); out.pick = BT.tarif.pick('hamsi');
       out.unlockedLok = BT.tarif.unlocked(); window.HK_LOK_OFF = 1; out.lokOff = BT.lok.open(); out.unlockedOff = BT.tarif.unlocked(); out.menuOff = BT.tarif.menu().length;
-      window.HK_INSAAT_OFF = 1; BT.S.cash = 9e6; BT.servBuild('restoran', 'p1'); BT.tarif.open('menu'); out.infoOff = [...document.querySelectorAll('#tfTabs .tab')].map(x => x.dataset.tt).join() + '|' + BT.tarif.isOpen() + '|' + BT.lok.panelOpen(); BT.tarif.close();
-      /* büfe (restoran) kurulunca da açılır */
-      out.unlockedBufe = BT.tarif.unlocked();
+      window.HK_INSAAT_OFF = 1; BT.S.cash = 9e6; BT.tarif.open('menu'); out.infoOff = BT.tarif.isOpen() + '|' + BT.lok.panelOpen(); BT.tarif.close();
       window.HK_LOK_OFF = 0; BT.tarif.open('menu'); out.infoOn = document.querySelector('#lokRows').innerText.replace(/\s+/g, ' ').slice(0, 400); out.tab = document.querySelector('#lokTabs .tab[data-lt="menu"]').innerText.replace(/\s+/g, ' '); out.book = BT.tarif.isOpen(); BT.lok.closePanel();
       BT.setLang('en'); BT.tarif.open('menu'); out.infoEn = document.querySelector('#lokRows').innerText.replace(/\s+/g, ' ').slice(0, 520); BT.lok.closePanel();
       out.infoOffEn = ''; BT.setLang('tr');
       return out;
     });
     ok(t.menu === 'hamsitava' && t.pick === null, 'defter menüsü = lokanta menüsü; büfe tarif uygulamaz: ' + JSON.stringify([t.menu, t.pick]));
-    ok(t.unlockedLok && t.lokOff === false && t.unlockedOff === false && t.menuOff === 0 && t.unlockedBufe, 'Tarif Defteri koşulu: büfe ya da lokanta: ' + JSON.stringify([t.unlockedLok, t.unlockedOff, t.unlockedBufe]));
-    ok(t.infoOff === 'rec,try,kiler|true|false', 'lokanta yokken Defter yalnız TARİFLER/DENE/KİLER açar (MENÜ sekmesi yok): ' + t.infoOff);
+    ok(t.unlockedLok && t.lokOff === false && t.unlockedOff === false && t.menuOff === 0, 'Tarif Defteri koşulu: lokanta (v2.22: büfe yok): ' + JSON.stringify([t.unlockedLok, t.unlockedOff]));
+    ok(t.infoOff === 'false|false', 'lokanta (ve büfe) yokken Defter açılmaz: ' + t.infoOff);
     ok(/Lokantanın menüsü/.test(t.infoOn) && /MENÜ 1\/3/.test(t.tab) && t.book === false, 'lokanta açıkken tarif/menü LOKANTA panelinde (defter açılmaz): ' + t.infoOn.slice(0, 100) + ' | ' + t.tab + ' | ' + t.book);
     ok(/Cooks take fillets/.test(t.infoEn) && /COOLER/.test(t.infoEn) && /The restaurant's menu/.test(t.infoEn), 'MENÜ sekmesi EN: ' + t.infoEn);
     /* eski kayıt: S.tarif.menu doluysa istasyonu kurulu olanlar lokanta menüsüne aktarılır */
@@ -1098,14 +1095,14 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       const sp = [...L.TB.map(t => [t.sx, t.sy]), ...L.STK.map(k => [L.ST[k].sx, L.ST[k].sy]), ...['dolap', 'pass', 'kasa', 'sink', 'board'].map(k => [L.LOK[k].sx, L.LOK[k].sy])];
       o.badSp = sp.filter(q => !BT.canStand(q[0], q[1])).map(q => q.join(','));
       const seg = (a, b) => { for (let i = 0; i <= 40; i++) { const x = a[0] + (b[0] - a[0]) * i / 40, y = a[1] + (b[1] - a[1]) * i / 40; if (!BT.canStand(x, y)) return false; } return true; };
-      o.walk = seg([9.4, 22.4], [24.9, 22.6]) && seg([24.9, 22.6], [25.4, 20.2]) && seg([25.4, 20.2], [27.45, 20.2]) && seg([27.45, 20.2], [27.45, 22.0]) && seg([27.45, 19.8], [34, 19.8]);
-      o.walkYard = seg([18.1, 12.7], [23.4, 19.7]) && seg([23.4, 19.7], [25.6, 20.4]) && seg([23.9, 21.5], [23.9, 22.9]);
+      o.walk = seg([9.6, 20.4], [14.3, 20.4]) && seg([14.3, 20.4], [16.9, 20.4]) && seg([16.9, 20.4], [16.9, 18.1]) && seg([16.9, 18.1], [32.2, 18.1]) && seg([16.9, 21.1], [33, 21.1]) && seg([14.3, 15.6], [14.3, 20.4]);
+      o.walkYard = seg([18.1, 10.6], [18.1, 13.8]) && seg([18.1, 13.8], [18.1, 15.2]) && seg([18.1, 15.2], [26, 15.2]);
       o.water = [BT.arr.why(37.2, 15), BT.arr.why(20, 25), BT.arr.why(12.4, 22), BT.arr.why(31, 19)];
       o.maxY = BT.dbg().maxY; o.clash = BT.layoutClashes(0.1);
       o.landy = BT.dbg().landY; o.landx = BT.dbg().landX;
       return o;
     });
-    ok(g.area.join() === '26,14.4,36,23.6' && g.allIn, 'lokanta alanı yolun doğusunda, bütün öğeler içinde: ' + JSON.stringify([g.area, g.allIn]));
+    ok(g.area.join() === '15,13.2,36,23.6' && g.allIn, 'lokanta alanı yolun doğusunda, bütün öğeler içinde: ' + JSON.stringify([g.area, g.allIn]));
     ok(g.badSp.length === 0, 'hizmet noktaları yürünebilir: ' + g.badSp.join(' | '));
     ok(g.walk && g.walkYard, 'yürüme yolları açık (Mutfak ucu → yol → kapı → şeritler; saha → batı geçidi / arka avlu): ' + JSON.stringify([g.walk, g.walkYard]));
     ok(g.water[0] === 'su' && g.water[1] === 'su' && g.water[2] === 'yol' && g.water[3] === 'iskele', 'kara doğuya genişledi (LANDX 37), güney eski haline (24,5), yol 24,3\'te: ' + g.water.join());
@@ -1121,8 +1118,8 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       o.wayStand = way.concat(L.outWay(t, s)).every(q => BT.canStand(q.x, q.y));
       return o;
     });
-    ok(w.q.every(q => q.x >= 20 && q.x <= 25.4 && q.y > 22 && q.y < 23.6) && w.start[0] > 10.2 && w.start[0] < 14.6, 'müşteriler yolda doğar, patikada (kapı önünde) sıra bekler: ' + JSON.stringify(w));
-    ok(/^25\.3,22\.9 25\.5,20\.2 26\.[67],20\.2 27\.4,20\.2/.test(w.way) && w.wayStand, 'koltuğa yürüyüş kapı → batı şeridi → sıra şeridi: ' + w.way);
+    ok(w.q.every(q => q.x >= 13.0 && q.x <= 14.6 && q.y > 15.4 && q.y < 19.8) && w.start[0] > 10.2 && w.start[0] < 14.6, 'müşteriler yolda doğar, kapının önünde yol kenarında sıra bekler: ' + JSON.stringify(w));
+    ok(/^14\.3,20\.4 14\.4,20\.4 15\.[56],20\.4 16\.9,20\.4/.test(w.way) && w.wayStand, 'koltuğa yürüyüş kapı → batı şeridi → sıra şeridi: ' + w.way);
     await step(p, 0.05, 20 * 60); await p.evaluate(() => { BT.lok.R.grp.length = 0; });
     /* panel 390x844: 8 sekme, taşma yok, düğmeler >= 44 px */
     const pm = await p.evaluate(() => {
@@ -1150,15 +1147,15 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     const rt = mn.rows.find(r => /Hamsi Tava/.test(r.t)), rp = mn.rows.find(r => /Hamsili Pilav/.test(r.t));
     ok(rt && rt.cv && rt.inm && /İstasyon: Kızgın Tava/.test(rt.t) && /Hamsi \+ Mısır Unu/.test(rt.t) && /12 porsiyon/.test(rt.t) && /\$|₺/.test(rt.t), 'MENÜ satırı: simge, istasyon, malzeme, porsiyon, fiyat: ' + JSON.stringify(rt));
     ok(rp && rp.warn && /Kiler boş: Pirinç/.test(rp.t) && mn.banner && mn.tabWarn && mn.por === 12, 'kileri boşalan tarif için uyarı: ' + JSON.stringify([rp, mn.banner, mn.tabWarn]));
-    /* 🍲 düğmesi: lokanta açıkken LOKANTA paneli; yalnız büfe varken defter */
+    /* 🍲 düğmesi: lokanta açıkken LOKANTA paneli; lokanta yokken (v2.22: büfe de yok) defter açılmaz */
     const bt = await p.evaluate(() => {
       const b = document.getElementById('tarifBtn'), o = { vis: !b.classList.contains('hidden') };
       b.click(); o.panel = BT.lok.panelOpen(); o.book = BT.tarif.isOpen(); o.tab = document.querySelector('#lokTabs .tab.on').dataset.lt; BT.lok.closePanel();
-      window.HK_LOK_OFF = 1; BT.S.cash = 9e6; window.HK_INSAAT_OFF = 1; BT.servBuild('restoran', 'p1');
+      window.HK_LOK_OFF = 1;
       b.click(); o.panel2 = BT.lok.panelOpen(); o.book2 = BT.tarif.isOpen(); o.tabs2 = [...document.querySelectorAll('#tfTabs .tab')].map(x => x.dataset.tt).join(); BT.tarif.close(); window.HK_LOK_OFF = 0;
       return o;
     });
-    ok(bt.vis && bt.panel && !bt.book && bt.tab === 'menu' && !bt.panel2 && bt.book2 && bt.tabs2 === 'rec,try,kiler', '🍲: lokanta açıkken LOKANTA paneli, yalnız büfede defter: ' + JSON.stringify(bt));
+    ok(bt.vis && bt.panel && !bt.book && bt.tab === 'menu' && !bt.panel2 && !bt.book2, '🍲: lokanta açıkken LOKANTA paneli, lokanta yokken defter açılmaz: ' + JSON.stringify(bt));
     /* eski kayıt: konumlar sabitlerden gelir; dünyada kalmış nesneler yeni alana taşınır */
     const mg = await p.evaluate(() => {
       const L = BT.lok, o = {}, q = L.q();
@@ -1171,7 +1168,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       w.x = 4; w.y = 26.5;                                           /* eski iskele konumu */
       const dc = BT.decor.find(x => !x.fixed); const hx = dc.hx, hy = dc.hy; dc.got = true; dc.box = false; dc.x = 31; dc.y = 19;
       L.fixWorld();
-      o.crew2 = BT.canStand(w.x, w.y) && w.x > 25; o.decor = dc.x === hx && dc.y === hy;
+      o.crew2 = BT.canStand(w.x, w.y) && w.x > 15 && w.y > 13.2; o.decor = dc.x === hx && dc.y === hy;
       o.areaOpen = !BT.areas[4].locked; o.lv = L.q().lv; o.cost = BT.S.cash > 0;
       return o;
     });

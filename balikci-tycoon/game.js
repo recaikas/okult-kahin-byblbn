@@ -1785,7 +1785,7 @@ var AREAS = [
   { id: 'mutfak', n: { tr: 'Balıkçı Mutfağı', en: "Fishermen's Kitchen" }, x0: 0, y0: 17.5, x1: 10, y1: 23.5, locked: true, cost: 9500, rep: 350, lvl: 1, up: [0, 7500, 17000] },
   /* v2.19-deneme — Sahil Lokantası: oyunun en son bölgesi (tezgâh bölgesi değil: lok:1; seviyesi S.lok.lv).
      v2.21-deneme: KARADA — meydanın güneydoğusundaki kumsalda (Hizmet Sahası'nın doğusu, Depo'nun güneyi; yoldan taş patika): kuzey yarıda badanalı köy evi + ocakbaşı, güney yarıda taş teras */
-  { id: 'sahil', n: { tr: 'Sahil Lokantası', en: 'Seaside Restaurant' }, x0: 26.0, y0: 14.4, x1: 36.0, y1: 23.6, locked: true, cost: 15500, rep: 350, lvl: 1, up: [0, 0, 0], lok: 1 }
+  { id: 'sahil', n: { tr: 'Sahil Lokantası', en: 'Seaside Restaurant' }, x0: 15.0, y0: 13.2, x1: 36.0, y1: 23.6, locked: true, cost: 15500, rep: 350, lvl: 1, up: [0, 0, 0], lok: 1 }   /* v2.22-deneme: eski Hizmet Sahası + kumsal (LOKANTA_V3_PLAN.md) */
 ];
 var MAXLV = 3;
 function areaNetMul(z) { return (1 + (AREAS[z].lvl - 1) * 0.18 + (slotEff(z, 'netrate') || 0) + perkSum('netrate') + perkSum('rate')) * storyNetMul() * mxNetMul(); }
@@ -3707,7 +3707,7 @@ function fly(x0, y0, z0, x1, y1, z1, it, dur) {
 
 /* v2.20-deneme: lokanta açıkken yürünebilen ek şeritler — (1) Mutfak iskelesinin güneydoğu köşesinden yolu geçip lokantanın kapısına inen kaldırım,
    (2) Hizmet Sahası'nın güneyinden lokantanın arka avlusuna inen kapı (Depo Hamalı ve yürüyenler iskeleyi dolaşmadan ulaşır) */
-var LOKWALK = [{ x0: 9.3, y0: 21.2, x1: 24.6, y1: 23.6 }, { x0: 23.0, y0: 19.5, x1: 26.5, y1: 23.6 }, { x0: 17.5, y0: 12.2, x1: 18.7, y1: 12.7 }];   /* üçüncüsü: saha patikası ↔ saha arasındaki dar boşluğu kapatır (işçi adımı boşluğa denk gelince takılmasın) */   /* v2.21-deneme: Mutfak iskelesi → yol → patika (Hizmet Sahası'nın güneyi) → lokanta kapısı; ikincisi sahanın doğu kenarını da kapıya bağlar */
+var LOKWALK = [{ x0: 13.0, y0: 15.4, x1: 15.4, y1: 21.2 }, { x0: 17.5, y0: 10.4, x1: 18.7, y1: 13.8 }, { x0: 9.3, y0: 19.8, x1: 15.4, y1: 21.0 }];   /* v2.22-deneme: yol kenarında sıra şeridi + kapı önü; meydandan arka kapıya patika; Mutfak iskelesinden yolu geçip kapıya koridor */
 function canStand(x, y) {
   if (inRect(x, y, BRIDGE, 0.05) || inRect(x, y, MEYDAN, 0.3) || inRect(x, y, SERVYARD, 0.3) || inRect(x, y, YARDPATH, 0.02)) return true;
   for (var i = 0; i < AREAS.length; i++) {
@@ -3762,14 +3762,19 @@ function playerBlocks() {
     ['dolap', 'pass', 'kasa', 'sink', 'board'].forEach(function (k) { add(LOK[k].x, LOK[k].y, LOK[k].hw, LOK[k].hh); });
     if (lokUpOn('mez')) add(LOK.meze.x, LOK.meze.y, LOK.meze.hw, LOK.meze.hh);
     if (lokUpOn('saz')) add(LOK.saz.x, LOK.saz.y, LOK.saz.hw, LOK.saz.hh);
-    /* duvarlar: evin arka ve batı duvarı (mutfağa doğudaki avludan ya da ön ocakbaşından girilir), terasın batı (kapı boşluklu),
-       güney ve doğu alçak duvarı */
+    /* duvarlar (v2.22 yerleşimi): evin arka duvarı (arka kapı açık), batı ve doğu duvarı; alanın batı (kapı boşluklu), güney, doğu
+       alçak duvarı ve bahçenin kuzey çiti. Ocakbaşının önü açık. */
     var h = lokHouseR(), ar = AREAS[LOK_Z], wt = 0.2;
-    L.push({ x0: h.x0 - wt, y0: h.y0 - wt, x1: h.x1, y1: h.y0 + wt });
+    L.push({ x0: h.x0 - wt, y0: h.y0 - wt, x1: LOK_BDOOR[0], y1: h.y0 + wt });
+    L.push({ x0: LOK_BDOOR[1], y0: h.y0 - wt, x1: h.x1 + wt, y1: h.y0 + wt });
     L.push({ x0: h.x0 - wt, y0: h.y0 - wt, x1: h.x0 + wt, y1: h.y1 });
-    L.push({ x0: h.x1 - wt, y0: h.y0 - wt, x1: h.x1 + wt, y1: LOK_EDOOR[0] + LOK_OY });   /* doğu duvarı: avlu kapısı (LOK_EDOOR) açık */
-    L.push({ x0: h.x1 - wt, y0: LOK_EDOOR[1] + LOK_OY, x1: h.x1 + wt, y1: h.y1 });
-    if (h.wing) add((h.wing.x0 + h.wing.x1) / 2, (h.wing.y0 + h.wing.y1) / 2, (h.wing.x1 - h.wing.x0) / 2, (h.wing.y1 - h.wing.y0) / 2);
+    L.push({ x0: h.x1 - wt, y0: h.y0 - wt, x1: h.x1 + wt, y1: h.y1 });
+    L.push({ x0: ar.x0 - wt, y0: ar.y0 - wt, x1: ar.x0 + wt, y1: LOK_GATEGAP[0] });
+    L.push({ x0: ar.x0 - wt, y0: LOK_GATEGAP[1], x1: ar.x0 + wt, y1: ar.y1 + wt });
+    L.push({ x0: ar.x0 - wt, y0: ar.y1 - wt, x1: ar.x1 + wt, y1: ar.y1 + wt });
+    L.push({ x0: ar.x1 - wt, y0: ar.y0 - wt, x1: ar.x1 + wt, y1: ar.y1 + wt });
+    L.push({ x0: h.x1, y0: ar.y0 - wt, x1: ar.x1 + wt, y1: ar.y0 + wt });
+    L.push({ x0: ar.x0 - wt, y0: ar.y0 - wt, x1: h.x0, y1: ar.y0 + wt });
     L.push({ x0: ar.x0 - wt, y0: h.y1, x1: ar.x0 + wt, y1: LOK_GAPY[0] });
     L.push({ x0: ar.x0 - wt, y0: LOK_GAPY[1], x1: ar.x0 + wt, y1: ar.y1 + wt });
     L.push({ x0: ar.x0 - wt, y0: ar.y1 - wt, x1: ar.x1 + wt, y1: ar.y1 + wt });
@@ -5823,11 +5828,6 @@ function sceneryOnDeck(o) {
   for (var i = 0; i < AREAS.length; i++) {
     var a = AREAS[i];
     if (!a.locked && o.x > a.x0 - 0.4 && o.x < a.x1 + 0.4 && o.y > a.y0 - 0.4 && o.y < a.y1 + 0.4) return true;
-  }
-  if (!AREAS[LOK_Z].locked && !window.HK_LOK_OFF) {        /* lokanta evi alanın kuzeyine taşar (seviyeyle büyür): altındaki manzara çizilmez */
-    var h = lokHouseR(), m = 0.7;
-    if (o.x > h.x0 - m && o.x < h.x1 + m && o.y > h.y0 - m - 0.6 && o.y < h.y1) return true;
-    if (h.wing && o.x > h.wing.x0 - m && o.x < h.wing.x1 + m && o.y > h.wing.y0 - m && o.y < h.wing.y1) return true;
   }
   return false;
 }
@@ -11121,14 +11121,15 @@ function onEast(x) { return x > 10.0; }
 /* köprü rotası: bölgeler ↔ meydan arasında giden çalışan önce köprüye yönelir */
 /* v2.21-deneme: lokanta (x > 24,4, y > 13,5: kapı patikası + alan) ↔ kuzey (Meydan/saha) ya da ↔ güney koridoru (Mutfak iskelesi, yol, patika) arasında giden işçi ara noktalardan yürür.
    Kuzey zinciri: Meydan → saha patikası → sahanın doğu kenarı → kapı. Koridor: yolun doğusundan patikaya, köşeden kapıya. */
-var LOK_CHAIN = [{ x: 18.1, y: 9.8 }, { x: 18.1, y: 12.7 }, { x: 23.4, y: 19.7 }, { x: 25.6, y: 20.4 }];
-var LOK_CORR = [{ x: 12.0, y: 22.5 }, { x: 24.9, y: 22.6 }];
-function lokSide(x, y) { return x > 24.4 && y > 13.5; }
+/* v2.22-deneme: meydan → saha patikası → arka kapı → mutfak; batı/güney (Mutfak iskelesi) → yolu geçen koridor → batı kapısı → şerit */
+var LOK_CHAIN = [{ x: 18.1, y: 9.8 }, { x: 18.1, y: 12.9 }, { x: 18.1, y: 14.4 }];
+var LOK_CORR = [{ x: 9.8, y: 20.4 }, { x: 14.3, y: 20.4 }, { x: 16.4, y: 20.4 }];
+function lokSide(x, y) { return x > 14.9 && x < 36.2 && y > 13.0 && y < 23.8; }
 function lokRoute(a, tx, ty) {
   if (AREAS[4].locked || window.HK_LOK_OFF) return null;
   var aL = lokSide(a.x, a.y), tL = lokSide(tx, ty), C = LOK_CHAIN, K = LOK_CORR, i;
   if (aL === tL) return null;
-  var aS = a.y > 21.2 && a.x > 8.5 && a.x < 24.4, tS = ty > 21.2 && tx > 8.5 && tx < 24.4 || (ty > 17 && tx < 9.7);   /* güney koridoru (Mutfak iskelesi dahil) */
+  var aS = a.y > 19.6 && a.y < 21.2 && a.x > 9.0 && a.x < 15.0, tS = (ty > 17 && tx < 9.7) || (ty > 19.6 && ty < 21.2 && tx > 9.0 && tx < 15.0);   /* güney koridoru (Mutfak iskelesi dahil) */
   if (tL) {                                                  /* lokantaya */
     if (a.x < 9.4 && a.y < 17) return null;                  /* batı iskeleleri: önce köprü (routeVia) */
     if (aS || (a.x < 9.7 && a.y > 17)) { for (i = 0; i < K.length; i++) if (K[i].x > a.x + 0.35) return K[i]; return null; }
@@ -11136,7 +11137,7 @@ function lokRoute(a, tx, ty) {
     return null;
   }
   if (tS) { for (i = K.length - 1; i >= 0; i--) if (K[i].x < a.x - 0.35) return K[i]; return null; }   /* koridora / Mutfak iskelesine */
-  if (a.x > 25.7) return C[3];                               /* alandan kapıya */
+  if (a.y > 14.0 && Math.abs(a.x - C[2].x) > 0.35) return C[2];   /* alandan önce arka kapının içine */
   for (i = C.length - 1; i >= 0; i--) if (C[i].y < a.y - 0.35) return C[i];
   return null;
 }
@@ -13836,9 +13837,6 @@ function layoutRects() {
   LOK_STK.forEach(function (k) { add('lokanta ' + k, 'lks' + k, LOK_Z, LOK_ST[k].x, LOK_ST[k].y, 0.5, 0.42); });
   ['dolap', 'pass', 'kasa', 'sink', 'board', 'meze', 'saz'].forEach(function (k) { add('lokanta ' + k, 'lkf' + k, LOK_Z, LOK[k].x, LOK[k].y, LOK[k].hw, LOK[k].hh); });   /* meze/saz: Aşama 2 (yer hep ayrılı) */
   add('lokanta tabela', 'lkg', LOK_Z, LOK.gate.x, LOK.gate.y, 0.3, 0.3);   /* ekranda yatay pano: x−y ekseninde ~3.3 karo */
-  /* v2.21-deneme: ev seviyeyle alanın kuzeyine büyür; en büyük hâlinin taşan kısmı + doğu kanadı hep ayrılı */
-  R.push({ id: 'lokanta evi (arka)', own: 'lkh', z: LOK_Z, x0: LOK.house.x0, y0: LOK_HY0[LOK_MAXLV - 1] + LOK_OY, x1: LOK.house.x1, y1: AREAS[LOK_Z].y0 });
-  R.push({ id: 'lokanta kanadı', own: 'lkh', z: LOK_Z, x0: LOK_WING.x0 + LOK_OX, y0: LOK_WING.y0 + LOK_OY, x1: LOK_WING.x1 + LOK_OX, y1: LOK_WING.y1 + LOK_OY });
   return R;
 }
 function layoutClashes(margin) {
@@ -16875,32 +16873,33 @@ var LOK_ST = {
 };
 var LOK_STK = ['tava', 'izgara', 'tencere', 'firin'];
 var LOK_REC = {};
-var LOK_OX = 11.0, LOK_OY = -8.4;                       /* v2.21-deneme: lokanta tasarım düzeni (x 15–25, y 22,8–32) → gerçek yeri (x 26–36, y 14,4–23,6); ev/teras çizimi tasarım koordinatlarında kalır, ctx.translate ile kaydırılır */
-var LOK_ROW = [27.9 + LOK_OY, 29.4 + LOK_OY, 30.9 + LOK_OY];                       /* masa sıraları (y); her sıranın yürüme şeridi y − 0,8 */
-var LOK_COL = [23.8 + LOK_OX, 21.8 + LOK_OX, 19.8 + LOK_OX, 17.8 + LOK_OX];                 /* masa sütunları: ilk masalar pass'e (doğuya) yakın */
-LOK_STK.forEach(function (k, i) { LOK_ST[k].x = 17.6 + i * 1.22 + LOK_OX; LOK_ST[k].y = 25.5 + LOK_OY; LOK_ST[k].sx = LOK_ST[k].x; LOK_ST[k].sy = 24.85 + LOK_OY; LOK_ST[k].rec.forEach(function (r) { LOK_REC[r] = k; }); });
-/* v2.20-deneme yerleşimi (belge: LOKANTA_TASARIM.md §yerleşim). Ev: x 15,7–23,65, y 23–26 (ön kenar y 26: açık ocakbaşı); teras: y 26–32;
-   arka avlu: x 23,65–25, y 22,8–26. gate = batı duvarındaki giriş; lane.x = batı şeridinde dikey yürüme şeridi; sıra yolda (q + slot·qd). */
+/* v2.22-deneme — YENİ YERLEŞİM (LOKANTA_V3_PLAN.md §Aşama 2): lokanta eski Hizmet Sahası ile kumsalı birleştiren alanda (x 15–36,
+   y 13,2–23,6). Her şey gerçek dünya koordinatında; tasarım kaydırması yok (LOK_OX = LOK_OY = 0, lokTr birim dönüşüm).
+   Mutfak evi kuzeyde (x 15,6–28,8, y 13,5–16,9; önü açık ocakbaşı, arka kapısı saha patikasının ucunda), ön sırada aralıklı dolap,
+   4 istasyon, pass; doğu ucunda bulaşık tezgâhı. Teras güneyde: 2 sıra × 6 masa geniş aralıkla; kapı batı duvarında, müşteri yoldan gelir,
+   kapının önünde yol kenarında kuzeye doğru sıra bekler. KD köşesi bahçe (süs köşeleri). */
+var LOK_OX = 0, LOK_OY = 0;
+var LOK_ROW = [18.9, 21.9];                                                        /* masa sıraları (y); yürüme şeridi y − 0,8 */
+var LOK_COL = [26.6, 23.8, 29.4, 21.0, 32.2, 18.2];                                /* masa sütunları: ilk açılanlar pass'e (x 26) yakın */
+var LOK_STX = [18.6, 20.4, 22.2, 24.0];                                            /* istasyonlar aralıklı (1,8): en büyük kademe ≤ 1,4 geniş */
+LOK_STK.forEach(function (k, i) { LOK_ST[k].x = LOK_STX[i]; LOK_ST[k].y = 16.35; LOK_ST[k].sx = LOK_ST[k].x; LOK_ST[k].sy = 15.6; LOK_ST[k].rec.forEach(function (r) { LOK_REC[r] = k; }); });
+var LOK_GATEGAP = [19.8, 21.0];                                                    /* batı duvarındaki giriş boşluğu (y) */
+var LOK_BDOOR = [17.6, 18.6];                                                      /* evin arka duvarındaki kapı (x): saha patikasının ucu */
 var LOK = {
-  gate: { x: 15.1, y: 28.6 }, in0: { x: 13.7, y: 22.9 }, lane: { x: 16.45 },
-  q: { x: 24.2, y: 22.75 }, qd: { x: -1.8, y: 0 }, qm: { x: -0.4, y: 0.25 }, corner: { x: 25.3, y: 22.9 },   /* sıra patikada (yatay kol), köşeden kapıya dikey kol */
-  house: { x: 19.7, y: 24.5, x0: 15.7, y0: 23.0, x1: 23.65, y1: 26.0 },
-  dolap: { x: 16.5, y: 25.5, hw: 0.5, hh: 0.45, sx: 16.5, sy: 26.45 },
-  pass: { x: 22.6, y: 25.5, hw: 0.65, hh: 0.4, sx: 22.6, sy: 26.45 },
-  kasa: { x: 16.0, y: 27.65, hw: 0.35, hh: 0.4, sx: 16.8, sy: 27.65 },
-  board: { x: 15.85, y: 29.9, hw: 0.2, hh: 0.5, sx: 16.45, sy: 29.9 },
-  sink: { x: 24.15, y: 24.5, hw: 0.5, hh: 0.6, sx: 24.15, sy: 25.55 },
-  idle: { x: 19.6, y: 24.1 },
-  meze: { x: 15.95, y: 31.3, hw: 0.4, hh: 0.4 },          /* Aşama 2: meze vitrini (yalnız yükseltilince çizilir; yer hep ayrılı) — teras güneybatı köşesi */
-  saz: { x: 24.2, y: 26.6, hw: 0.45, hh: 0.45 }           /* Aşama 2: saz köşesi — teras kuzeydoğu köşesi (arka avlunun önü) */
+  gate: { x: 15.0, y: 20.4 }, in0: { x: 13.4, y: 15.8 }, lane: { x: 16.9 },
+  q: { x: 14.3, y: 19.3 }, qd: { x: 0, y: -1.3 }, qm: { x: -0.35, y: 0.18 }, corner: { x: 14.3, y: 20.4 },   /* sıra yol kenarında kuzeye uzar; köşe kapının önü */
+  house: { x: 22.2, y: 15.2, x0: 15.6, y0: 13.5, x1: 28.8, y1: 16.9 },
+  dolap: { x: 16.5, y: 16.35, hw: 0.55, hh: 0.45, sx: 16.5, sy: 17.3 },
+  pass: { x: 26.0, y: 16.35, hw: 0.7, hh: 0.4, sx: 26.0, sy: 17.3 },
+  kasa: { x: 15.7, y: 17.9, hw: 0.35, hh: 0.4, sx: 16.4, sy: 17.9 },
+  board: { x: 15.7, y: 22.4, hw: 0.2, hh: 0.5, sx: 16.3, sy: 22.4 },
+  sink: { x: 27.8, y: 16.25, hw: 0.5, hh: 0.5, sx: 27.8, sy: 17.3 },        /* ön sıranın doğu ucu: açık ocakbaşından görünür */
+  idle: { x: 22.2, y: 14.4 },
+  meze: { x: 30.6, y: 17.4, hw: 0.4, hh: 0.4 },          /* teras KD, pass'in doğusu */
+  saz: { x: 33.6, y: 14.9, hw: 0.45, hh: 0.45 }          /* bahçe (KD köşe) */
 };
-(function () {                                           /* tasarım düzeni → gerçek yer (in0 / q / qd / qm / corner zaten gerçek koordinat) */
-  ['gate', 'lane', 'house', 'dolap', 'pass', 'kasa', 'board', 'sink', 'idle', 'meze', 'saz'].forEach(function (k) {
-    var o = LOK[k]; ['x', 'sx', 'x0', 'x1'].forEach(function (f) { if (o[f] !== undefined) o[f] += LOK_OX; }); ['y', 'sy', 'y0', 'y1'].forEach(function (f) { if (o[f] !== undefined) o[f] += LOK_OY; });
-  });
-})();
 function lokTr(fn) { ctx.save(); ctx.translate(pX(LOK_OX, LOK_OY), pY(LOK_OX, LOK_OY, 0)); fn(); ctx.restore(); }   /* ev/teras çizimi: tasarım koordinatları → gerçek yer */
-var LOK_PAT = [{ x0: 14.5, y0: 22.3, x1: 25.9, y1: 23.5 }, { x0: 24.7, y0: 19.5, x1: 25.9, y1: 23.5 }];   /* yoldan kapıya taş patika (yatay kol + köşeden kapıya dikey kol) */
+var LOK_PAT = [{ x0: 13.9, y0: 19.8, x1: 15.0, y1: 21.0 }, { x0: 17.6, y0: 10.5, x1: 18.6, y1: 13.5 }];   /* v2.22: kapının önü (yoldan) + meydandan arka kapıya taş patika */   /* yoldan kapıya taş patika (yatay kol + köşeden kapıya dikey kol) */
 function drawLokPatika() {
   if (window.HK_LOK_OFF || AREAS[LOK_Z].locked) return;
   var tone = ['#cfc5a8', '#c0b595', '#d8cfb4', '#b9ad8d'];
@@ -16915,19 +16914,19 @@ function drawLokPatika() {
 }
 /* Aşama 2 yükseltmeleri (belge §7). lv = gereken lokanta seviyesi, cost = Emekçi öncesi bedel (inşaat: 1. seviye = 1 gün) */
 var LOK_UP = {
-  ter: { lv: 3, cost: 3600, x: 20.4 + LOK_OX, y: 30.1 + LOK_OY, n: { tr: 'Teras', en: 'Terrace' }, d: { tr: 'Asma çardak ve şemsiyeler: müşteri sabrı +%15', en: 'Vine pergola and parasols: guest patience +15%' } },
+  ter: { lv: 3, cost: 3600, x: 30.8, y: 20.4, n: { tr: 'Teras', en: 'Terrace' }, d: { tr: 'Asma çardak ve şemsiyeler: müşteri sabrı +%15', en: 'Vine pergola and parasols: guest patience +15%' } },
   mez: { lv: 1, cost: 2400, x: LOK.meze.x, y: LOK.meze.y, n: { tr: 'Meze Vitrini', en: 'Meze Display' }, d: { tr: 'Her masaya meze: ödeme +%10', en: 'Meze for every table: payment +10%' } },
   saz: { lv: 5, cost: 5600, x: LOK.saz.x, y: LOK.saz.y, n: { tr: 'Saz Köşesi', en: 'Saz Corner' }, d: { tr: 'Müşteri daha uzun oturur (masa dönüşü −%15) ama harcama +%25', en: 'Guests linger (table turnover −15%) but spend +25%' } },
   dol: { lv: 1, cost: 2800, x: LOK.dolap.x, y: LOK.dolap.y, n: { tr: 'Büyük Soğuk Dolap', en: 'Big Cooler' }, d: { tr: 'Soğuk dolap 12 → 24 fileto', en: 'Cooler 12 → 24 fillets' } }
 };
 var LOK_UPK = ['ter', 'mez', 'saz', 'dol'];
 var LOK_PAT_TER = 1.15, LOK_PAY_MEZ = 1.10, LOK_PAY_SAZ = 1.25, LOK_EAT_SAZ = 1.15, LOK_RES_FLOW = 1.3;
-var LOK_TK = { x: 19.65 + LOK_OX, y: 23.45 + LOK_OY };                      /* mutfak sipariş panosu (arka duvarda, davlumbazın üstünde) */
+var LOK_TK = { x: 22.2, y: 13.95 };                      /* mutfak sipariş panosu (arka duvarda, davlumbazın üstünde) */
 var LOK_T = [];
 (function () {
   var cols = LOK_COL, rows = LOK_ROW;
-  for (var r = 0; r < 3; r++) for (var c = 0; c < 4; c++) {
-    var i = r * 4 + c;
+  for (var r = 0; r < 2; r++) for (var c = 0; c < 6; c++) {
+    var i = r * 6 + c;
     LOK_T.push({ i: i, x: cols[c], y: rows[r], seats: i % 3 === 2 ? 2 : 4, sx: cols[c], sy: rows[r] - 0.8, hw: 0.6, hh: 0.5 });
   }
 })();
@@ -17091,7 +17090,7 @@ function lokBuy(id) {
   return true;
 }
 function lokApply(id, lv, instant) {
-  var q = lokQ(), k, x = 20 + LOK_OX, y = 28 + LOK_OY;
+  var q = lokQ(), k, x = 25.5, y = 20.4;
   if (id === 'lok_open') { sfx.build(); addPuff(LOK.house.x, LOK.house.y, '#ffc94a'); lokFinish(); return; }
   if (id === 'lok_lv') { q.lv = lv; x = LOK.house.x; y = LOK.house.y + 1.5; }
   else if (id === 'lok_tb') { q.tb = lv; var nt = LOK_T[LOK_TBN[lv - 1] - 1]; if (nt) { x = nt.x; y = nt.y; } }
@@ -17887,22 +17886,15 @@ function lokPlateStack(x, y, items, z, perRow) {          /* pass / bulaşık y�
    Teras (alan − ev): o.part 'floor' (zemin: taş döşeme, kapıya patika; yer katmanı) | 'west' (batı alçak duvar, kapı boşluğu) | 'south' (güney + doğu alçak duvar, ışık zinciri direkleri)
    | 'top' (asma çardak — Teras yükseltmesi — ve üstündeki ışıklar; en son çizilir). */
 var LOK_HG = 46, LOK_HU = 19, LOK_RH = 13;                  /* zemin kat, üst kat, çatı yüksekliği (px) */
-var LOK_PERG = { x0: 16.9, x1: 20.9, y0: 29.65, y1: 31.7 };  /* asma çardak (Teras yükseltmesi): batı yarının 3. (güney) sırası */
-var LOK_GAPY = [28.05 + LOK_OY, 29.15 + LOK_OY];                              /* batı duvarındaki giriş boşluğu */
+var LOK_PERG = { x0: 28.2, x1: 33.4, y0: 17.8, y1: 22.9 };  /* asma çardak (Teras yükseltmesi): batı yarının 3. (güney) sırası */
+var LOK_GAPY = LOK_GATEGAP;                                                   /* batı duvarındaki giriş boşluğu */
 function lokAreaRect() { var a = AREAS[LOK_Z]; return { x0: a.x0 - LOK_OX, y0: a.y0 - LOK_OY, x1: a.x1 - LOK_OX, y1: a.y1 - LOK_OY }; }   /* tasarım koordinatları (lokTr ile kaydırılarak çizilir) */
 function lokSmoke() { var n = 0; LOK_STK.forEach(function (k) { if (LKS[k] && LKS[k].busy && LKS[k].jobs.length) n++; }); return n / 4; }
 function lokUpObj() { return { ter: lokUpOn('ter'), mez: lokUpOn('mez'), saz: lokUpOn('saz'), dol: lokUpOn('dol') }; }
-/* v2.21-deneme: ev seviyeyle arkaya (kuzeye) ve yukarı büyür; ön kenar (y 26, ocakbaşı) ve genişlik (x 15,7–23,65) sabit.
-   Tasarım koordinatıyla arka duvar: Sv1 22 (4 karo derin) · Sv2–4 21 (5) · Sv5 20,5 (5,5). Sv1–2 tek katlı, Sv3'te cumbalı üst kat,
-   Sv4'te doğu kanadı (avlunun kuzeyi, bulaşık tezgâhının arkası), Sv5'te çatı köşkü. En derin hâli doğu kıyısına (x − y ≤ LAND_UMAX) sığar. */
-var LOK_HY0 = [22.0, 21.0, 21.0, 21.0, 20.5];
-var LOK_WING = { x0: 23.65, y0: 21.6, x1: 24.9, y1: 23.7 };
-var LOK_EDOOR = [24.7, 25.5];                          /* doğu duvarındaki avlu kapısı (tasarım y): ev büyüse de yeri sabit */
 function lokHouseLv() { return clamp(lokQ().lv | 0, 1, LOK_MAXLV); }
-function lokHouseR() {                                   /* gerçek koordinat: ayak izi + (Sv4+) doğu kanadı */
-  var h = LOK.house, lv = lokHouseLv();
-  return { x0: h.x0, y0: LOK_HY0[lv - 1] + LOK_OY, x1: h.x1, y1: h.y1, lv: lv,
-    wing: lv >= 4 ? { x0: LOK_WING.x0 + LOK_OX, y0: LOK_WING.y0 + LOK_OY, x1: LOK_WING.x1 + LOK_OX, y1: LOK_WING.y1 + LOK_OY } : null };
+function lokHouseR() {                                   /* v2.22: ev sabit (yeni yerleşim); seviye yalnız üst katı (Sv3+) belirler */
+  var h = LOK.house;
+  return { x0: h.x0, y0: h.y0, x1: h.x1, y1: h.y1, lv: lokHouseLv(), wing: null };
 }
 /* o: {part: 'back'|'front', x0, y0, x1, y1 (ev ayak izi; y0 seviyeyle değişir), wing: {x0,y0,x1,y1}|null (Sv4+ doğu kanadı), area:{x0,y0,x1,y1}, lv (1–5),
    star (0–5), t, night, smoke (0–1: çalışan istasyon oranı), v2} — tasarım koordinatı */
@@ -17927,154 +17919,106 @@ function wallLine(x0, y0, z0, x1, y1, z1, c, w) {
 function lokWinBlob(x, y, z, w, h, a) {                      /* gece pencere ışığı: yumuşak halka */
   ctx.save(); ctx.globalAlpha = a; px(R(pX(x, y)) - w / 2 - 2, R(pY(x, y, z)) - h - 2, w + 4, h + 4, '#ffd98f'); ctx.restore();
 }
-function drawLokHouse(o) {
-  var X0 = o.x0, Y0 = o.y0, X1 = o.x1, Y1 = o.y1, HG = LOK_HG, HU = LOK_HU, RH = LOK_RH, t = o.t, night = o.night, k, i, j;
-  var WH = PAL.lime, STN = '#b3a78b', TIM = '#7a4e2a', TIMD = '#5d3c1c', SHU = '#3d7a68';
+function drawLokHouse(o) {                                 /* v2.22: yeni yerleşim, ölçüye göre (sabit koordinat yok) */
+  var X0 = o.x0, Y0 = o.y0, X1 = o.x1, Y1 = o.y1, HG = LOK_HG, HU = LOK_HU, RH = LOK_RH, t = o.t, night = o.night, k, i, j, W = X1 - X0;
+  var STN = '#b3a78b', TIM = '#7a4e2a', TIMD = '#5d3c1c', SHU = '#3d7a68', up = o.lv >= 3, D0 = LOK_BDOOR[0], D1 = LOK_BDOOR[1], cx = (X0 + X1) / 2;
+  var HX0 = LOK_ST[LOK_STK[0]].x - 0.85, HX1 = LOK_ST[LOK_STK[LOK_STK.length - 1]].x + 0.85;   /* ocak sırası: davlumbaz */
   if (o.part !== 'front') {
-    /* ---- iç mekân: taş fayans zemin, arka duvar (taş kaide + badana), batı duvarının içi ---- */
-    isoQuad(X0 + 0.25, Y0 + 0.25, X1 - X0 - 0.5, Y1 - Y0 - 0.25, 0, '#d7ccb0');
+    /* ---- iç mekân: taş fayans zemin, arka duvar (kapılı), batı iç duvarı, davlumbaz, raflar ---- */
+    isoQuad(X0 + 0.25, Y0 + 0.25, W - 0.5, Y1 - Y0 - 0.25, 0, '#d7ccb0');
     ctx.save(); ctx.globalAlpha = 0.3;
     for (k = Y0 + 0.75; k < Y1; k += 0.5) isoLine(X0 + 0.25, k, X1 - 0.25, k, 0, '#9d9176', 1);
     for (k = X0 + 0.75; k < X1; k += 0.5) isoLine(k, Y0 + 0.25, k, Y1, 0, '#9d9176', 1);
     ctx.restore();
-    isoQuad(X0 + 0.25, Y1 - 0.12, X1 - X0 - 0.5, 0.12, 0.2, '#8d8068');                       /* ön eşik */
-    wallQ(X0, Y0, X1, Y0, 0, HG, '#eee6d0'); wallQ(X0, Y0, X1, Y0, 0, 10, STN); wallQ(X0, Y0, X1, Y0, 10, 11, '#8d8068');
+    isoQuad(X0 + 0.25, Y1 - 0.12, W - 0.5, 0.12, 0.2, '#8d8068');                          /* ön eşik */
+    wallQ(X0, Y0, D0, Y0, 0, HG, '#eee6d0'); wallQ(D1, Y0, X1, Y0, 0, HG, '#eee6d0'); wallQ(D0, Y0, D1, Y0, 33, HG, '#eee6d0');
+    wallQ(X0, Y0, D0, Y0, 0, 10, STN); wallQ(D1, Y0, X1, Y0, 0, 10, STN);
+    wallQ(X0, Y0, D0, Y0, 10, 11, '#8d8068'); wallQ(D1, Y0, X1, Y0, 10, 11, '#8d8068');
+    wallQ(D0 + 0.05, Y0 + 0.005, D1 - 0.05, Y0 + 0.005, 0, 32, '#5a4632'); wallQ(D0, Y0 + 0.01, D1, Y0 + 0.01, 32, 33.5, TIMD);   /* arka kapı (saha patikasına) */
     wallQ(X0 + 0.25, Y0, X0 + 0.25, Y1, 0, HG, '#dcd2b8'); wallQ(X0 + 0.25, Y0, X0 + 0.25, Y1, 0, 10, '#a09478');
-    for (k = 1; k < 8; k++) wallLine(X0 + k * (X1 - X0) / 8, Y0, 11, X0 + k * (X1 - X0) / 8, Y0, HG, 'rgba(120,100,70,.10)');   /* sıva çatlakları */
-    /* arka pencere + davlumbaz + raflar */
-    winF(21.9, 22.9, Y0 + 0.01, 18, 36, night ? '#ffd98f' : '#8fb9cf', TIM); wallQ(22.4, Y0 + 0.01, 22.42, Y0 + 0.01, 18, 36, TIM);
-    isoBox(17.0, Y0 + 0.02, 4.8, 0.85, 29, 38, '#d39a54', '#a8693a', '#8a5430');
-    isoBox(17.1, Y0 + 0.02, 4.6, 0.85, 26, 29, '#7d4a28', '#5d3c1c', '#6f4526');
-    for (k = 0; k < 6; k++) px(R(pX(17.3 + k * 0.8, Y0 + 0.9)) - 1, R(pY(17.3 + k * 0.8, Y0 + 0.9, 26)), 2, 5 + (k % 3) * 2, k % 2 ? '#8d959b' : '#b87333');      /* asılı kepçe/tava */
-    isoBox(15.95, Y0 + 0.02, 1.0, 0.3, 24, 26, TIM, TIMD, '#6a4426');
-    for (k = 0; k < 4; k++) { var pxx = R(pX(16.1 + k * 0.22, Y0 + 0.3)), pyy = R(pY(16.1 + k * 0.22, Y0 + 0.3, 26)); px(pxx, pyy - 3, 3, 3, ['#d8d2c0', '#c0503a', '#e8c547', '#7fb069'][k]); }
-    isoBox(22.9, Y0 + 0.02, 0.5, 0.3, 24, 26, TIM, TIMD, '#6a4426');
-    crate(16.4, Y0 + 1.15, 0, '#a9743f'); crate(16.4, Y0 + 1.15, 4, '#b8834a'); crate(16.8, Y0 + 1.15, 0, '#9a6a3a');
-    isoBox(22.75, Y0 + 0.9, 0.5, 0.5, 0, 11, '#9a6a3a', '#6f4526', '#85583a'); px(R(pX(23.0, Y0 + 1.4)) - 3, R(pY(23.0, Y0 + 1.4, 6)), 7, 1, '#4a2f1c');   /* fıçı */
+    for (k = 1; k < 12; k++) wallLine(X0 + k * W / 12, Y0, 11, X0 + k * W / 12, Y0, HG, 'rgba(120,100,70,.10)');
+    isoBox(HX0, Y0 + 0.02, HX1 - HX0, 0.85, 29, 38, '#d39a54', '#a8693a', '#8a5430');      /* bakır davlumbaz */
+    isoBox(HX0 + 0.1, Y0 + 0.02, HX1 - HX0 - 0.2, 0.85, 26, 29, '#7d4a28', '#5d3c1c', '#6f4526');
+    for (k = 0; HX0 + 0.3 + k * 0.8 < HX1 - 0.2; k++) px(R(pX(HX0 + 0.3 + k * 0.8, Y0 + 0.9)) - 1, R(pY(HX0 + 0.3 + k * 0.8, Y0 + 0.9, 26)), 2, 5 + (k % 3) * 2, k % 2 ? '#8d959b' : '#b87333');
+    isoBox(X0 + 0.4, Y0 + 0.02, 1.0, 0.3, 24, 26, TIM, TIMD, '#6a4426');                    /* raf + kavanozlar (dolabın üstü) */
+    for (k = 0; k < 4; k++) { var pxx = R(pX(X0 + 0.55 + k * 0.22, Y0 + 0.3)), pyy = R(pY(X0 + 0.55 + k * 0.22, Y0 + 0.3, 26)); px(pxx, pyy - 3, 3, 3, ['#d8d2c0', '#c0503a', '#e8c547', '#7fb069'][k]); }
+    winF(X1 - 2.0, X1 - 1.0, Y0 + 0.01, 18, 36, night ? '#ffd98f' : '#8fb9cf', TIM); wallQ(X1 - 1.52, Y0 + 0.01, X1 - 1.48, Y0 + 0.01, 18, 36, TIM);
+    crate(D1 + 0.4, Y0 + 0.9, 0, '#a9743f'); crate(D1 + 0.4, Y0 + 0.9, 4, '#b8834a'); crate(D1 + 0.8, Y0 + 0.9, 0, '#9a6a3a');
   }
   if (o.part === 'back') return;
-  /* ---- doğu duvarı (dış yüz): badana + taş kaide, arka kapı, pencere ---- */
+  /* ---- doğu dış duvarı: badana + taş kaide, pencereler ---- */
   wallQ(X1, Y0, X1, Y1, 0, HG, '#ddd3bb'); wallQ(X1, Y0, X1, Y1, 0, 10, '#a99d84'); wallQ(X1, Y0, X1, Y1, 10, 11, '#85795f');
-  var ED0 = LOK_EDOOR[0], ED1 = LOK_EDOOR[1], up = o.lv >= 3;                                 /* avlu kapısı (sabit yer) */
-  winR(X1 + 0.004, ED0, ED1, 0, 31, '#6b4425', TIMD); wallLine(X1 + 0.004, (ED0 + ED1) / 2, 2, X1 + 0.004, (ED0 + ED1) / 2, 30, '#4a2f1c');
-  for (k = Y0 + 0.5; k + 0.8 < ED0 - 0.2; k += 1.4) winR(X1 + 0.004, k, k + 0.7, 17, 34, night ? '#ffd98f' : '#6f9ab4', TIM);   /* ev derinleştikçe pencere */
-  if (o.lv >= 2) for (k = 0; k < 3; k++) for (j = 0; j < 4 - k; j++) {                       /* odun yığını (doğu dışı, arkada) */
-    var lgx = X1 + 0.18, lgy = Y0 + 0.35 + j * 0.28 + k * 0.14, lgz = k * 4;
-    isoBox(lgx, lgy, 0.5, 0.24, lgz, lgz + 4, '#9a6a3a', '#6f4526', '#85583a'); px(R(pX(lgx + 0.5, lgy + 0.12)) - 1, R(pY(lgx + 0.5, lgy + 0.12, lgz + 2)) - 1, 2, 2, '#d8b07a');
-  }
-  /* ---- zemin kat önü: açık ocakbaşı — yalnız köşe direkleri + kirişi (iki ucu), ortası açık ---- */
-  var YF = Y1 + 0.3, XA = X0 - 0.1, XB = X1 + 0.1;
-  isoBox(X0 - 0.02, Y1 - 0.14, 0.22, 0.24, 0, HG - 3, '#a06a3a', TIMD, '#7d4f2a');
-  isoBox(X1 - 0.22, Y1 - 0.14, 0.22, 0.24, 0, HG - 3, '#a06a3a', TIMD, '#7d4f2a');
-  wallQ(X0 - 0.02, Y1, X0 + 0.2, Y1, HG - 18, HG - 3, '#8a5a32'); wallQ(X1 - 0.22, Y1, X1, Y1, HG - 18, HG - 3, '#8a5a32');     /* köşe dirsekleri */
+  for (k = Y0 + 0.5; k + 0.8 < Y1 - 0.2; k += 1.4) winR(X1 + 0.004, k, k + 0.7, 17, 34, night ? '#ffd98f' : '#6f9ab4', TIM);
+  /* ---- açık ocakbaşı önü: köşe ve ara direkler + kiriş ---- */
+  var YF = Y1 + 0.3, XA = X0 - 0.1, XB = X1 + 0.1, posts = [X0 - 0.02, (LOK_STX[1] + LOK_STX[2]) / 2 - 0.11, (LOK_STX[3] + LOK.pass.x) / 2 - 0.11, X1 - 0.22];
+  posts.forEach(function (x) { isoBox(x, Y1 - 0.14, 0.22, 0.24, 0, HG - 3, '#a06a3a', TIMD, '#7d4f2a'); wallQ(x, Y1, x + 0.22, Y1, HG - 18, HG - 3, '#8a5a32'); });
   wallQ(X0, Y1, X1, Y1, HG - 6, HG - 3, '#8a5a32'); wallQ(X0, Y1, X1, Y1, HG - 3, HG - 2.5, '#5d3c1c');
-  if (up) {
-  /* ---- cumbalı üst kat (Sv3+) ---- */
-  isoBox(XA, Y0, XB - XA, YF - Y0, HG - 3, HG + HU, '#f1ebda', '#efe8d4', '#d9cfb6');
-  wallQ(XA, YF, XB, YF, HG - 3, HG, TIMD);                                                     /* taban kirişi */
-  for (j = 0; j < 7; j++) { var bxx = XA + 0.45 + j * ((XB - XA - 0.9) / 6); isoBox(bxx - 0.07, Y1 - 0.1, 0.14, 0.46, HG - 11, HG - 3, TIM, TIMD, '#6a4426'); }   /* cumba dirsekleri */
-  wallQ(XA, YF, XB, YF, HG + HU - 2, HG + HU, TIMD);                                          /* üst kuşak */
-  wallQ(XB, Y0, XB, YF, HG - 3, HG, TIMD); wallQ(XB, Y0, XB, YF, HG + HU - 2, HG + HU, TIMD);
-  wallQ(XB, Y0, XB, YF, HG, HG + HU, '#d9cfb6');
-  winR(XB + 0.004, Y0 + 0.9, Y0 + 1.7, HG + 5, HG + 15, night ? '#ffd98f' : '#6f9ab4', TIM);
-  var tx = [XA, 17.25, 18.5, 21.1, 22.45, XB - 0.12];                                          /* düşey ahşap gergi (göz dolması) */
-  for (k = 0; k < tx.length; k++) wallQ(tx[k], YF, tx[k] + 0.12, YF, HG, HG + HU, TIM);
-  wallQ(XA, YF, XB, YF, HG + 10, HG + 11, 'rgba(122,78,42,.55)');
-  /* sol/sağ pencereler + panjurlar + çiçeklik */
-  var wins = [[15.75, 16.7], [17.4, 18.35], [21.3, 22.25], [22.7, 23.65]];
-  for (k = 0; k < wins.length; k++) {
-    var w0 = wins[k][0], w1 = wins[k][1];
-    winF(w0, w1, YF + 0.004, HG + 6, HG + 15, night ? '#ffd98f' : '#7ca8c0', TIM);
-    wallQ((w0 + w1) / 2, YF + 0.005, (w0 + w1) / 2 + 0.03, YF + 0.005, HG + 6, HG + 15, TIM); wallQ(w0, YF + 0.005, w1, YF + 0.005, HG + 10.5, HG + 11.3, TIM);
-    wallQ(w0 - 0.2, YF + 0.006, w0 - 0.04, YF + 0.006, HG + 5, HG + 16, SHU); wallQ(w1 + 0.04, YF + 0.006, w1 + 0.2, YF + 0.006, HG + 5, HG + 16, SHU);
-    wallQ(w0 - 0.04, YF + 0.01, w1 + 0.04, YF + 0.01, HG + 3, HG + 6, '#7a4e2a');
-    for (j = 0; j < 4; j++) px(R(pX(w0 + 0.1 + j * 0.25, YF + 0.02)), R(pY(w0 + 0.1 + j * 0.25, YF + 0.02, HG + 6)) - 2, 2, 2, j % 2 ? '#d94a6a' : '#e5533d');
-    if (night) lokWinBlob((w0 + w1) / 2, YF, HG + 6, 12, 12, 0.22);
-  }
-  /* cumba (öne çıkan pencere kasası) */
-  var BX0 = 18.55, BX1 = 21.05, BY = YF + 0.3;
-  isoBox(BX0, YF, BX1 - BX0, 0.3, HG - 1, HG + HU, '#f6f0e0', '#f3ecda', '#d9cfb6');
-  isoQuad(BX0, YF, BX1 - BX0, 0.3, HG - 1, '#8a5a32');
-  wallQ(BX0, BY, BX1, BY, HG - 1, HG + 2, TIMD); wallQ(BX0, BY, BX1, BY, HG + HU - 2, HG + HU, TIMD);
-  for (j = 0; j < 3; j++) {
-    var cx0 = BX0 + 0.12 + j * 0.8, cx1 = cx0 + 0.68;
-    winF(cx0, cx1, BY + 0.004, HG + 5, HG + 15, night ? '#ffd98f' : '#7ca8c0', TIM);
-    wallQ((cx0 + cx1) / 2, BY + 0.005, (cx0 + cx1) / 2 + 0.03, BY + 0.005, HG + 5, HG + 15, TIM);
-    if (night) lokWinBlob((cx0 + cx1) / 2, BY, HG + 5, 9, 12, 0.25);
-  }
-  for (j = 0; j < 4; j++) wallQ(BX0 + j * 0.8 + 0.02, BY, BX0 + j * 0.8 + 0.14, BY, HG, HG + HU, TIM);
-  /* ahşap balkon (cumbanın altında, ön kirişe yaslı) */
-  isoQuad(BX0 - 0.6, YF, BX1 - BX0 + 1.2, 0.45, HG - 4, '#8a5a32');
-  for (j = 0; j <= 8; j++) vline(BX0 - 0.6 + j * (BX1 - BX0 + 1.2) / 8, YF + 0.45, HG - 4, HG + 2, TIMD);
-  wallQ(BX0 - 0.6, YF + 0.45, BX1 + 0.6, YF + 0.45, HG + 1, HG + 2.5, TIM);
-  }
-  /* fenerler (zemin kat kirişinden sarkar) */
-  for (k = 0; k < 3; k++) {
-    var lx = [17.1, 20.0, 22.7][k], lsx = R(pX(lx, Y1 + 0.02)), lsy = R(pY(lx, Y1 + 0.02, HG - 6));
+  for (k = 0; k < 4; k++) {                                                                  /* kirişten sarkan fenerler */
+    var lx = X0 + W * (k + 0.5) / 4, lsx = R(pX(lx, Y1 + 0.02)), lsy = R(pY(lx, Y1 + 0.02, HG - 6));
     px(lsx, lsy, 1, 4, TIMD); px(lsx - 2, lsy + 4, 5, 6, '#3a2a1c'); px(lsx - 1, lsy + 5, 3, 4, night ? '#ffd98f' : '#b8a878');
     if (night) { ctx.save(); ctx.globalAlpha = 0.28; px(lsx - 6, lsy + 1, 13, 13, '#ffd98f'); ctx.restore(); }
   }
-  /* ---- kırma çatı: kırmızı kiremit ---- */
-  if (!up) {                                                                                  /* Sv1–2: tek kat — ön saçak kirişi */
+  if (up) {
+    /* ---- Sv3+: hımış cumbalı üst kat ---- */
+    isoBox(XA, Y0, XB - XA, YF - Y0, HG - 3, HG + HU, '#f1ebda', '#efe8d4', '#d9cfb6');
+    wallQ(XA, YF, XB, YF, HG - 3, HG, TIMD); wallQ(XA, YF, XB, YF, HG + HU - 2, HG + HU, TIMD);
+    wallQ(XB, Y0, XB, YF, HG - 3, HG, TIMD); wallQ(XB, Y0, XB, YF, HG + HU - 2, HG + HU, TIMD); wallQ(XB, Y0, XB, YF, HG, HG + HU, '#d9cfb6');
+    for (j = 0; j < Math.round(W / 1.4); j++) { var bxx = XA + 0.45 + j * ((XB - XA - 0.9) / (Math.round(W / 1.4) - 1)); isoBox(bxx - 0.07, Y1 - 0.1, 0.14, 0.46, HG - 11, HG - 3, TIM, TIMD, '#6a4426'); }
+    var BX0 = cx - 1.25, BX1 = cx + 1.25, BY = YF + 0.3, nw = Math.max(2, Math.round((W - 3.4) / 2.3));
+    for (k = 0; k < nw; k++) {                                                               /* pencereler: cumbanın iki yanında */
+      var half = nw / 2, side = k < half ? 0 : 1, kk = side ? k - half : k, span = side ? [BX1 + 0.3, XB - 0.3] : [XA + 0.3, BX0 - 0.3], step = (span[1] - span[0]) / half;
+      var w0 = span[0] + kk * step + 0.15, w1 = w0 + Math.min(0.95, step - 0.45);
+      winF(w0, w1, YF + 0.004, HG + 6, HG + 15, night ? '#ffd98f' : '#7ca8c0', TIM);
+      wallQ(w0 - 0.2, YF + 0.006, w0 - 0.04, YF + 0.006, HG + 5, HG + 16, SHU); wallQ(w1 + 0.04, YF + 0.006, w1 + 0.2, YF + 0.006, HG + 5, HG + 16, SHU);
+      wallQ(w0 - 0.04, YF + 0.01, w1 + 0.04, YF + 0.01, HG + 3, HG + 6, '#7a4e2a');
+      for (j = 0; j < 4; j++) px(R(pX(w0 + 0.1 + j * 0.22, YF + 0.02)), R(pY(w0 + 0.1 + j * 0.22, YF + 0.02, HG + 6)) - 2, 2, 2, j % 2 ? '#d94a6a' : '#e5533d');
+      if (night) lokWinBlob((w0 + w1) / 2, YF, HG + 6, 12, 12, 0.22);
+    }
+    isoBox(BX0, YF, BX1 - BX0, 0.3, HG - 1, HG + HU, '#f6f0e0', '#f3ecda', '#d9cfb6'); isoQuad(BX0, YF, BX1 - BX0, 0.3, HG - 1, '#8a5a32');
+    wallQ(BX0, BY, BX1, BY, HG - 1, HG + 2, TIMD); wallQ(BX0, BY, BX1, BY, HG + HU - 2, HG + HU, TIMD);
+    for (j = 0; j < 3; j++) { var cx0 = BX0 + 0.12 + j * 0.8, cx1 = cx0 + 0.68; winF(cx0, cx1, BY + 0.004, HG + 5, HG + 15, night ? '#ffd98f' : '#7ca8c0', TIM); if (night) lokWinBlob((cx0 + cx1) / 2, BY, HG + 5, 9, 12, 0.25); }
+    for (j = 0; j < 4; j++) wallQ(BX0 + j * 0.8 + 0.02, BY, BX0 + j * 0.8 + 0.14, BY, HG, HG + HU, TIM);
+  } else {
+    /* ---- Sv1–2: tek kat — ön saçak kirişi ---- */
     wallQ(XA, Y1, XB, Y1, HG - 3, HG, TIMD);
-    for (j = 0; j < 9; j++) { var sbx = XA + 0.3 + j * ((XB - XA - 0.6) / 8); isoBox(sbx - 0.06, Y1 - 0.05, 0.12, 0.35, HG - 7, HG - 1, TIM, TIMD, '#6a4426'); }
+    for (j = 0; j < 13; j++) { var sbx = XA + 0.3 + j * ((XB - XA - 0.6) / 12); isoBox(sbx - 0.06, Y1 - 0.05, 0.12, 0.35, HG - 7, HG - 1, TIM, TIMD, '#6a4426'); }
   }
+  /* ---- kırma çatı: kırmızı kiremit ---- */
   var RX0 = XA - 0.3, RX1 = XB + 0.3, RY0 = Y0 - 0.2, RY1 = (up ? YF : Y1) + 0.5, RZ = up ? HG + HU : HG, ym = (RY0 + RY1) / 2, ri = Math.min((RY1 - RY0) / 2, (RX1 - RX0) / 2);
-  wallQ(RX0, RY1, RX1, RY1, RZ - 2, RZ + 1, '#5d3c1c'); wallQ(RX1, RY0, RX1, RY1, RZ - 2, RZ + 1, '#4a2f1c');          /* saçak alnı */
+  wallQ(RX0, RY1, RX1, RY1, RZ - 2, RZ + 1, '#5d3c1c'); wallQ(RX1, RY0, RX1, RY1, RZ - 2, RZ + 1, '#4a2f1c');
   roofHip(RX0, RX1, RY0, RY1, RZ + 1, RH, '#c9553b', '#a63c28', '#7d2a1c', 15);
   isoLine(RX0 + ri, ym, RX1 - ri, ym, RZ + 1 + RH, '#6d2418', 2); isoLine(RX0 + ri, ym, RX1 - ri, ym, RZ + 2 + RH, '#d9684a', 1);
   wallLine(RX0, RY1, RZ + 1, RX0 + ri, ym, RZ + 1 + RH, '#7d2c1d'); wallLine(RX1, RY1, RZ + 1, RX1 - ri, ym, RZ + 1 + RH, '#7d2c1d');
-  /* ---- çatı tabelası: mahyada duran pano (SAHİL LOKANTASI) + 5 yıldız ---- */
-  var SX0 = 17.4, SX1 = 22.0, SZ = RZ + 1 + RH, SH = 19;
-  vline(SX0 + 0.3, ym, SZ - 2, SZ + 3, TIMD); vline(SX1 - 0.3, ym, SZ - 2, SZ + 3, TIMD); vline((SX0 + SX1) / 2, ym, SZ - 2, SZ + 2, TIMD);
+  /* ---- çatı tabelası: mahyada pano (SAHİL LOKANTASI) + 5 yıldız ---- */
+  var SX0 = cx - 2.3, SX1 = cx + 2.3, SZ = RZ + 1 + RH, SH = 19;
+  vline(SX0 + 0.3, ym, SZ - 2, SZ + 3, TIMD); vline(SX1 - 0.3, ym, SZ - 2, SZ + 3, TIMD); vline(cx, ym, SZ - 2, SZ + 2, TIMD);
   wallQ(SX0 - 0.05, ym + 0.01, SX1 + 0.05, ym + 0.01, SZ + 1, SZ + SH + 1, PAL.edge);
   wallQ(SX0, ym + 0.02, SX1, ym + 0.02, SZ + 2, SZ + SH, '#7a1f2b'); wallQ(SX0, ym + 0.02, SX1, ym + 0.02, SZ + SH - 1, SZ + SH, '#d9a441');
   wallQ(SX0, ym + 0.03, SX1, ym + 0.03, SZ + 2, SZ + 3, '#d9a441');
   var TXT = UP(NM({ tr: 'SAHİL LOKANTASI', en: 'SEASIDE RESTAURANT' })), STAR5 = ['..x..', 'xxxxx', '.xxx.', '.x.x.'];
-  for (j = 0; j < TXT.length; j++) if (TXT.charAt(j) !== ' ') uiText(SX0 + 0.2 + (j + 0.5) * (SX1 - SX0 - 0.4) / TXT.length, ym, SZ + 14.5, TXT.charAt(j), '#ffe9b0', 8, 1, 0, 0);   /* harfler mahya eğiminde */
+  for (j = 0; j < TXT.length; j++) if (TXT.charAt(j) !== ' ') uiText(SX0 + 0.2 + (j + 0.5) * (SX1 - SX0 - 0.4) / TXT.length, ym, SZ + 14.5, TXT.charAt(j), '#ffe9b0', 8, 1, 0, 0);
   for (j = 0; j < 5; j++) {
     var on2 = j < o.star, sxw = SX0 + (SX1 - SX0) * (0.5 + (j - 2) * 0.13), ssx = R(pX(sxw, ym)) - 2, ssy = R(pY(sxw, ym, SZ + 8));
     for (var sr = 0; sr < 4; sr++) for (var sc = 0; sc < 5; sc++) if (STAR5[sr].charAt(sc) === 'x') px(ssx + sc, ssy + sr - 1, 1, 1, on2 ? '#ffd23a' : '#5a2a2e');
   }
   if (night) { ctx.save(); ctx.globalAlpha = 0.16; px(R(pX(SX0, ym)) - 2, R(pY(SX0, ym, SZ + SH + 2)), R(pX(SX1, ym) - pX(SX0, ym)) + 4, SH + 5, '#ffd98f'); ctx.restore(); }
-  /* ---- Sv4: doğu kanadı (avlunun kuzeyi) — tek katlı, kendi kiremit çatısı ---- */
-  if (o.wing) {
-    var W = o.wing, WH2 = HG - 12;
-    isoBox(W.x0, W.y0, W.x1 - W.x0, W.y1 - W.y0, 0, WH2, '#f1ebda', '#e6dec8', '#d2c7ac');
-    wallQ(W.x0, W.y1, W.x1, W.y1, 0, 9, STN); wallQ(W.x1, W.y0, W.x1, W.y1, 0, 9, '#a99d84');
-    winF(W.x0 + 0.3, W.x1 - 0.3, W.y1 + 0.004, 14, 26, night ? '#ffd98f' : '#7ca8c0', TIM);
-    winR(W.x1 + 0.004, W.y0 + 0.5, W.y0 + 1.3, 14, 26, night ? '#ffd98f' : '#6f9ab4', TIM);
-    roofHip(W.x0 - 0.2, W.x1 + 0.25, W.y0 - 0.2, W.y1 + 0.3, WH2 + 1, 9, '#c9553b', '#a63c28', '#7d2a1c', 6);
-  }
-  /* ---- baca + duman (Sv2+: ikinci baca) ---- */
-  if (o.lv >= 2) {
-    var C2X = 16.6, C2Y = Y0 + 0.7, C2Z = RZ + 1 + 4;
-    isoBox(C2X - 0.25, C2Y - 0.25, 0.5, 0.5, C2Z - 6, C2Z + 15, '#b3a78b', '#7d7259', '#968a70');
-    isoQuad(C2X - 0.32, C2Y - 0.32, 0.64, 0.64, C2Z + 15, '#7d7259'); isoQuad(C2X - 0.18, C2Y - 0.18, 0.36, 0.36, C2Z + 15.5, '#2a1c12');
-  }
-  /* ---- Sv5: çatıda fenerli köşk + bayrak ---- */
-  if (o.lv >= 5) {
-    var KX = 21.6, KY = ym, KZ = RZ + 1 + RH - 3;
-    isoBox(KX - 0.55, KY - 0.55, 1.1, 1.1, KZ, KZ + 12, '#f1ebda', '#e6dec8', '#d2c7ac');
-    for (j = 0; j < 3; j++) winF(KX - 0.45 + j * 0.32, KX - 0.25 + j * 0.32, KY + 0.554, KZ + 3, KZ + 9, night ? '#ffd98f' : '#7ca8c0', TIM);
-    roofHip(KX - 0.75, KX + 0.75, KY - 0.75, KY + 0.75, KZ + 12, 8, '#c9553b', '#a63c28', '#7d2a1c', 4);
-    vline(KX, KY, KZ + 20, KZ + 32, TIMD);
-    var fw = Math.sin(t * 3) * 1.5, fsx = R(pX(KX, KY)), fsy = R(pY(KX, KY, KZ + 32));
-    px(fsx + 1, fsy, 8 + R(fw), 5, '#c8102e'); px(fsx + 3, fsy + 1, 3, 3, '#ffffff');
-    if (night) { ctx.save(); ctx.globalAlpha = 0.3; px(R(pX(KX, KY)) - 10, R(pY(KX, KY, KZ + 12)), 20, 14, '#ffd98f'); ctx.restore(); }
-  }
-  var CHX = 22.55, CHY = Y0 + 1.25, CZ = RZ + 1 + 3;
-  isoBox(CHX - 0.28, CHY - 0.28, 0.56, 0.56, CZ - 6, CZ + 19, '#b3a78b', '#7d7259', '#968a70');
-  isoQuad(CHX - 0.36, CHY - 0.36, 0.72, 0.72, CZ + 19, '#7d7259'); isoQuad(CHX - 0.2, CHY - 0.2, 0.4, 0.4, CZ + 19.5, '#2a1c12');
-  for (k = 0; k < 3; k++) wallQ(CHX - 0.28, CHY + 0.28, CHX + 0.28, CHY + 0.28, CZ - 2 + k * 6, CZ - 1.4 + k * 6, '#8d8068');
-  var lvl = 0.25 + (o.smoke || 0) * 0.75, bx = pX(CHX, CHY), by = pY(CHX, CHY, CZ + 20);
-  ctx.save();
-  for (i = 0; i < 7; i++) {
-    var ph = ((t * (0.32 + lvl * 0.2) + i / 7) % 1), rr = 1.5 + ph * 4.5;
-    ctx.globalAlpha = (1 - ph) * (0.18 + 0.32 * lvl);
-    px(R(bx + ph * 18 + Math.sin(t * 1.3 + i * 2) * 2) - rr, R(by - ph * 30) - rr, rr * 2, rr * 2, i % 2 ? '#ebe6dc' : '#cfcac0');
-  }
-  ctx.restore();
+  /* ---- bacalar (davlumbazın üstü; Sv2+ ikinci baca) + duman ---- */
+  var chs = [[HX1 - 0.6, Y0 + 1.1]]; if (o.lv >= 2) chs.push([HX0 + 0.6, Y0 + 1.1]);
+  var lvl = 0.25 + (o.smoke || 0) * 0.75;
+  chs.forEach(function (c, ci) {
+    var CHX = c[0], CHY = c[1], CZ = RZ + 1 + 3;
+    isoBox(CHX - 0.28, CHY - 0.28, 0.56, 0.56, CZ - 6, CZ + 19, '#b3a78b', '#7d7259', '#968a70');
+    isoQuad(CHX - 0.36, CHY - 0.36, 0.72, 0.72, CZ + 19, '#7d7259'); isoQuad(CHX - 0.2, CHY - 0.2, 0.4, 0.4, CZ + 19.5, '#2a1c12');
+    for (k = 0; k < 3; k++) wallQ(CHX - 0.28, CHY + 0.28, CHX + 0.28, CHY + 0.28, CZ - 2 + k * 6, CZ - 1.4 + k * 6, '#8d8068');
+    var bx = pX(CHX, CHY), by = pY(CHX, CHY, CZ + 20), lv2 = ci ? lvl * 0.6 : lvl;
+    ctx.save();
+    for (i = 0; i < 7; i++) {
+      var ph = ((t * (0.32 + lv2 * 0.2) + i / 7 + ci * 0.37) % 1), rr = 1.5 + ph * 4.5;
+      ctx.globalAlpha = (1 - ph) * (0.18 + 0.32 * lv2);
+      px(R(bx + ph * 18 + Math.sin(t * 1.3 + i * 2) * 2) - rr, R(by - ph * 30) - rr, rr * 2, rr * 2, i % 2 ? '#ebe6dc' : '#cfcac0');
+    }
+    ctx.restore();
+  });
 }
 function lokStoneWall(x0, y0, x1, y1, h) {
   isoBox(x0, y0, x1 - x0, y1 - y0, 0, h || 9, '#dcd2b6', '#b9ad90', '#c9bea2');
@@ -18114,18 +18058,20 @@ function drawLokTerrace(o) {
   if (o.part === 'west') {                                                        /* batı alçak duvarı: yolun kenarı, kapı boşluklu */
     lokStoneWall(A.x0, A.y0, A.x0 + 0.18, o.gap[0], 9);
     lokStoneWall(A.x0, o.gap[1], A.x0 + 0.18, A.y1, 9);
-    for (k = 0; k < 3; k++) { var wy = [A.y0 + 0.2, 27.0, 30.6][k]; isoBox(A.x0 - 0.04, wy, 0.26, 0.26, 0, 13, '#e4dac0', '#bdb194', '#cdc2a6'); }
+    for (k = 0; k < 4; k++) { var wy = [A.y0 + 0.2, (A.y0 + o.gap[0]) / 2, o.gap[1] + 0.1, A.y1 - 0.4][k]; isoBox(A.x0 - 0.04, wy, 0.26, 0.26, 0, 13, '#e4dac0', '#bdb194', '#cdc2a6'); }
+    var HX1 = LOK.house.x1 - LOK_OX, HX0 = LOK.house.x0 - LOK_OX;                  /* v2.22: bahçenin kuzey çiti (evin doğusu) + KB köşe */
+    lokStoneWall(HX1, A.y0, A.x1, A.y0 + 0.18, 7); lokStoneWall(A.x0, A.y0, HX0, A.y0 + 0.18, 7);
+    for (k = 0; k < 4; k++) isoBox(HX1 + 0.2 + k * (A.x1 - HX1 - 0.5) / 3, A.y0 - 0.04, 0.26, 0.26, 0, 11, '#e4dac0', '#bdb194', '#cdc2a6');
     return;
   }
   if (o.part === 'south') {                                                       /* güney (deniz) ve doğu alçak taş duvar + ışık zinciri direkleri */
     lokStoneWall(A.x0, A.y1 - 0.3, A.x1, A.y1, 9);
     lokStoneWall(A.x1 - 0.18, A.y0, A.x1, A.y1 - 0.3, 9);
-    for (k = 0; k < 5; k++) { var px0 = A.x0 + 0.1 + k * (A.x1 - A.x0 - 0.5) / 4; isoBox(px0, A.y1 - 0.36, 0.26, 0.3, 0, 13, '#e4dac0', '#bdb194', '#cdc2a6'); }
-    for (k = 0; k < 3; k++) { var ey = [26.2, 28.9, 31.0][k]; isoBox(A.x1 - 0.24, ey, 0.26, 0.26, 0, 13, '#e4dac0', '#bdb194', '#cdc2a6'); }
+    for (k = 0; k < 8; k++) { var px0 = A.x0 + 0.1 + k * (A.x1 - A.x0 - 0.5) / 7; isoBox(px0, A.y1 - 0.36, 0.26, 0.3, 0, 13, '#e4dac0', '#bdb194', '#cdc2a6'); }
+    for (k = 0; k < 4; k++) { var ey = A.y0 + 0.3 + k * (A.y1 - A.y0 - 0.9) / 3; isoBox(A.x1 - 0.24, ey, 0.26, 0.26, 0, 13, '#e4dac0', '#bdb194', '#cdc2a6'); }
     var pol = [];
-    for (k = 0; k < 5; k++) pol.push([A.x0 + 0.23 + k * (A.x1 - A.x0 - 0.5) / 4, A.y1 - 0.2]);
+    for (k = 0; k < 8; k++) pol.push([A.x0 + 0.23 + k * (A.x1 - A.x0 - 0.5) / 7, A.y1 - 0.2]);
     for (k = 0; k < pol.length - 1; k++) lokBulbs(pol[k][0], pol[k][1], 15, pol[k + 1][0], pol[k + 1][1], 15, 8, 4, o);
-    for (k = 0; k < 3; k++) { var e0 = [26.35, 29.05, 31.1][k]; }
     /* köşe saksıları */
     var pots = [[A.x1 - 0.55, A.y1 - 0.6], [A.x0 + 0.55, A.y1 - 0.6]];
     pots.forEach(function (p) { isoBox(p[0] - 0.2, p[1] - 0.2, 0.4, 0.4, 0, 8, '#b4643e', '#8a4528', '#9c5232'); for (var l = 0; l < 6; l++) px(R(pX(p[0], p[1])) - 5 + l * 2, R(pY(p[0], p[1], 8)) - 4 - (l % 3), 2, 2 + l % 2, l % 2 ? '#e5533d' : '#4a7a3a'); });
@@ -18322,11 +18268,11 @@ function lokPush(push) {
   if (!lokOpen()) return;
   var q = lokQ(), N = lokTblN(), i;
   var fx = function (k, d, extra) { var o = { k: k, x: d.x, y: d.y, n: 0, cap: 0, items: [], menu: [], lv: q.lv, star: q.star | 0, t: gameT, night: lokNight(), v2: true }; for (var e in extra) o[e] = extra[e]; return o; };
-  push(38.5 + LOK_OX + LOK_OY, function () { lokTr(function () { drawLokTerrace(lokTerObj('west')); }); });             /* batı alçak duvarı */
-  push(39.0 + LOK_OX + LOK_OY, function () { lokTr(function () { drawLokHouse(lokHouseObj('back')); }); });             /* ev: iç mekân (istasyonlardan önce) */
-  push(46.6 + LOK_OX + LOK_OY, function () { lokTr(function () { drawLokHouse(lokHouseObj('front')); }); });            /* ev: cumbalı üst kat + çatı + tabela (zemin kat 46 px: aşçılar örtülmez) */
-  push(80 + LOK_OX + LOK_OY, function () { lokTr(function () { drawLokTerrace(lokTerObj('south')); }); });              /* güney + doğu duvarı, ışık zinciri */
-  if (lokUpOn('ter')) push(81 + LOK_OX + LOK_OY, function () { lokTr(function () { drawLokTerrace(lokTerObj('top')); }); });   /* asma çardak */
+  push(AREAS[LOK_Z].x0 + AREAS[LOK_Z].y0 + 0.2, function () { lokTr(function () { drawLokTerrace(lokTerObj('west')); }); });             /* batı alçak duvarı */
+  push(LOK.house.x0 + LOK.house.y0, function () { lokTr(function () { drawLokHouse(lokHouseObj('back')); }); });             /* ev: iç mekân (istasyonlardan önce) */
+  push(LOK.sink.x + LOK.sink.y + 0.4, function () { lokTr(function () { drawLokHouse(lokHouseObj('front')); }); });            /* ev: cumbalı üst kat + çatı + tabela (zemin kat 46 px: aşçılar örtülmez) */
+  push(AREAS[LOK_Z].x1 + AREAS[LOK_Z].y1, function () { lokTr(function () { drawLokTerrace(lokTerObj('south')); }); });              /* güney + doğu duvarı, ışık zinciri */
+  if (lokUpOn('ter')) push(AREAS[LOK_Z].x1 + AREAS[LOK_Z].y1 + 1, function () { lokTr(function () { drawLokTerrace(lokTerObj('top')); }); });   /* asma çardak */
   push(LOK.dolap.x + LOK.dolap.y, function () { drawLokFix(fx('dolap', LOK.dolap, { n: lokDolapN(), cap: lokDolapCap(), big: lokUpOn('dol') })); });
   push(LOK.pass.x + LOK.pass.y, function () { drawLokFix(fx('pass', LOK.pass, { items: LKR.pass })); });
   push(LOK.kasa.x + LOK.kasa.y, function () { drawLokFix(fx('kasa', LOK.kasa, {})); });
@@ -18412,7 +18358,7 @@ function lokTapEnd(e) {                                    /* lokanta tabelasın
   if (!t || t.id !== e.pointerId || paused || !S.started || !lokOpen() || ARR.on) return;
   if (Date.now() - t.t > 450 || Math.hypot(e.clientX - t.x, e.clientY - t.y) > 12) return;
   var v = arrVirt(e.clientX, e.clientY), k = Math.max(14, 30 / v.k), hit = false;
-  [[LOK.board.x, LOK.board.y, 40], [LOK.gate.x, LOK.gate.y, 44], [18.4 + LOK_OX, 24.6 + LOK_OY, 108], [19.7 + LOK_OX, 24.6 + LOK_OY, 108], [21.0 + LOK_OX, 24.6 + LOK_OY, 108]].forEach(function (b) {   /* menü tahtası, kapı, çatı tabelası */
+  [[LOK.board.x, LOK.board.y, 40], [LOK.gate.x, LOK.gate.y, 44], [LOK.house.x - 1.3, LOK.house.y, 108], [LOK.house.x, LOK.house.y, 108], [LOK.house.x + 1.3, LOK.house.y, 108]].forEach(function (b) {   /* menü tahtası, kapı, çatı tabelası */
     var sx = pX(b[0], b[1]) + camOX, sy = pY(b[0], b[1], 0) + camOY;
     if (Math.abs(v.x - sx) < k + 8 && v.y > sy - b[2] - 8 && v.y < sy + 6) hit = true;
   });
@@ -18714,6 +18660,15 @@ function hook(name, f0) {
 /* v2.20-deneme: lokanta kancaları yeni (karada, ev + teras) yerleşimde. Eski iskele sanatı (HKA.drawLokanta/Table/Station/Crew/Fix) yeni yerleşime göre çizilmediğinden
    ince modda DEVRE DIŞI (klasik çizim görünür); her kancaya o.v2 = true verilir. Ana sanatçı yeni yerleşimi çizince HKA.lokV2 = true koyar → kancalar yeniden çağrılır
    (o.v2 true gelir; kanca yine false dönebilir). Yeni kancalar HKA.drawLokHouse / HKA.drawLokTerrace bu kapıya bağlı değildir. */
+/* v2.22-deneme: ev ve teras yeni yerleşimde (gerçek koordinat). İnce çizim ancak yeni yerleşime geçince (HKA.lokV3) kullanılır; o zamana dek klasik */
+function hookV3(name, f0) {
+  var h = hook(name, f0);
+  return function (o) {
+    if (o && typeof o === 'object') o.v3 = true;
+    if (!(window.HKA && HKA.lokV3)) return f0(o);
+    return h(o);
+  };
+}
 function hookLok(name, f0) {
   var h = hook(name, f0);
   return function (o) {
@@ -18813,8 +18768,8 @@ function hookLok(name, f0) {
   drawLokStation = hookLok('drawLokStation', drawLokStation);   /* o: {id: 'tava'|'izgara'|'tencere'|'firin', x, y, lv, busy, prog, wait, n, slots, dish, cook, t} */
   drawLokCrew = hookLok('drawLokCrew', drawLokCrew);     /* o: {a, role: 'asci'|'garson'|'bulasik'|'sef', lv, outfit, carry, plates, dirty, money}; a: işçi (x, y, vx, vy, bob, face, carry) */
   drawLokFix = hookLok('drawLokFix', drawLokFix);        /* o: {k: 'dolap'|'pass'|'kasa'|'sink'|'board'|'sign'|'tickets', x, y, n, cap, items, menu, lv, star, t, night} */
-  drawLokHouse = hook('drawLokHouse', drawLokHouse);      /* v2.20-deneme: köy evi. o: {part: 'back'|'front', x0, y0, x1, y1 (ev ayak izi), area:{x0,y0,x1,y1}, lv, star (0–5), t, night, smoke (0–1), v2}; 'back' = iç mekân (istasyonlardan önce), 'front' = doğu duvarı + cumbalı üst kat + çatı + tabela + baca (sonra). Zemin kat 46 px, üst kat 22, çatı 16 */
-  drawLokTerrace = hook('drawLokTerrace', drawLokTerrace);   /* v2.20-deneme: teras. o: {part: 'floor'|'west'|'south'|'top', x0, y0, x1, y1 (ev önü → güney kenar), area, tb, up:{ter,mez,saz,dol}, t, night, gate:{x,y}, gap:[y0,y1], pergola:{x0,x1,y0,y1}, v2}; floor = taş döşeme (yer katmanı), west/south = alçak taş duvar (+ışık zinciri), top = asma çardak (yalnız up.ter) */
+  drawLokHouse = hookV3('drawLokHouse', drawLokHouse);      /* v2.20-deneme: köy evi. o: {part: 'back'|'front', x0, y0, x1, y1 (ev ayak izi), area:{x0,y0,x1,y1}, lv, star (0–5), t, night, smoke (0–1), v2}; 'back' = iç mekân (istasyonlardan önce), 'front' = doğu duvarı + cumbalı üst kat + çatı + tabela + baca (sonra). Zemin kat 46 px, üst kat 22, çatı 16 */
+  drawLokTerrace = hookV3('drawLokTerrace', drawLokTerrace);   /* v2.20-deneme: teras. o: {part: 'floor'|'west'|'south'|'top', x0, y0, x1, y1 (ev önü → güney kenar), area, tb, up:{ter,mez,saz,dol}, t, night, gate:{x,y}, gap:[y0,y1], pergola:{x0,x1,y0,y1}, v2}; floor = taş döşeme (yer katmanı), west/south = alçak taş duvar (+ışık zinciri), top = asma çardak (yalnız up.ter) */
   for (var k in SERV_DRAW) SERV_DRAW[k] = { buzhane: drawBuzhane, restoran: drawRestoran, nakliye: drawNakliye, koop: drawKoop, mezat: drawMezat }[k] || SERV_DRAW[k];
 })();
 /* v2.19-deneme: tabak / kirli tabak ince modda da klasik çizilir (HKA.drawItem bilmediği türü para sanır) */
