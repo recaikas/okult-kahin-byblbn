@@ -1878,6 +1878,134 @@ HKA.drawHut = function () {
   if (gf('nearDoor')(o.door)) gf('uiLabel')(o.x, o.y, H + 12 + Lv, Tt('hutName') + ' ' + Tt('level') + Lv, '#ffd9a8', 1);
 };
 
+/* ---------- DEPO BÖLME TABELASI: direkten sarkan boyalı ahşap levha + resim (yazı yok; ad yalnız çok yakında) ----------
+   Köşe direği + kol + iki zincir; levha dışa (sola) sarkar. Boya yıpranmış (çıplak tahta lekeleri, tahta derzi).
+   Resim: ambar → sandık + balık, soğuk → kar tanesi + buz kalıbı, kiler → kavanoz + çuval, uzantı → halat-kanca + sandıklar,
+   rampa → araba tekerleği + rampa takozu. Bina sprite'ının içine çizilir (bina önbelleğiyle birlikte önbellekli). */
+var WSIGN = {
+  ambar: { p: '#3f7a86', s: 7 }, soguk: { p: '#47739a', s: 11 }, kiler: { p: '#8a3c2c', s: 13 },
+  uzanti: { p: '#557548', s: 17 }, rampa: { p: '#4b5662', s: 19 }
+};
+function wsIcon(k) {                                             /* 28×15 resim tamponu (0,0 sol üst) */
+  var ib = L.buf(), i, a, r;
+  function ln(x0, y0, x1, y1, c) { line(ib, x0, y0, x1, y1, c); }
+  if (k === 'ambar') {
+    ib.rect(1, 5, 12, 10, '#d4a458'); ib.rect(1, 5, 12, 1, '#ecc47c');                           /* sandık */
+    ib.rect(1, 8, 12, 1, '#a8783a'); ib.rect(1, 11, 12, 1, '#a8783a');
+    ib.rect(1, 5, 1, 10, '#b98a44'); ib.rect(12, 5, 1, 10, '#9a6a30');
+    ln(2, 14, 11, 6, '#9a6a30');
+    ib.ellipse(20, 7, 6, 3, '#e6e0c8');                                                          /* balık (sola bakar) */
+    ib.rect(16, 4, 9, 2, '#8fb0bc'); ib.rect(15, 5, 1, 1, '#8fb0bc'); ib.rect(14, 7, 1, 1, '#e6e0c8');
+    ib.rect(17, 9, 7, 1, '#c9c1a4');
+    for (i = 0; i < 3; i++) ib.rect(26 + i, 6 - i, 1, 3 + i * 2, i === 2 ? '#8fb0bc' : '#d8d2bc');
+    ib.set(16, 6, '#22262a'); ib.set(19, 6, '#a9c2ca'); ib.rect(21, 8, 2, 1, '#a9c2ca');
+  } else if (k === 'soguk') {
+    var fc = '#f2f7f9';                                                                          /* kar tanesi */
+    ln(8, 1, 8, 14, fc); ln(3, 4, 13, 11, fc); ln(3, 11, 13, 4, fc);
+    [[8, 1, 0, 1], [8, 14, 0, -1], [3, 4, 1, 1], [13, 11, -1, -1], [3, 11, 1, -1], [13, 4, -1, 1]].forEach(function (q) {
+      var bx = q[0] + q[2] * 2, by = q[1] + q[3] * 2;
+      if (q[2] === 0) { ib.set(bx - 1, by - q[3], fc); ib.set(bx + 1, by - q[3], fc); }
+      else { ib.set(bx - q[2], by, fc); ib.set(bx, by - q[3], fc); }
+    });
+    ib.set(8, 7, '#bfe0ee'); ib.rect(7, 8, 3, 1, fc);
+    ib.rect(17, 8, 8, 7, '#a9d3e6');                                                             /* buz kalıbı */
+    for (r = 1; r <= 3; r++) ib.rect(17 + r, 8 - r, 8, 1, r === 3 ? '#f4fbff' : '#dcf0f8');
+    for (r = 1; r <= 3; r++) ib.rect(24 + r, 8 - r, 1, 7, '#79acc8');
+    ib.rect(19, 9, 1, 4, '#e8f6fc'); ib.rect(20, 9, 1, 1, '#e8f6fc'); ib.rect(22, 12, 2, 1, '#8cc0da');
+  } else if (k === 'kiler') {
+    ib.rect(4, 1, 7, 2, '#c9553a'); ib.set(3, 2, '#c9553a'); ib.set(11, 2, '#c9553a');            /* kavanoz: bez kapak */
+    ib.rect(4, 3, 7, 1, '#e8d9a8'); ib.rect(5, 4, 5, 1, '#dfe6da');
+    ib.rect(3, 5, 9, 9, '#dfe6da'); ib.rect(4, 14, 7, 1, '#dfe6da');
+    ib.rect(4, 7, 7, 6, '#d99a34'); ib.rect(4, 7, 7, 1, '#ecbd5c'); ib.rect(5, 13, 5, 1, '#c2862a');
+    ib.rect(5, 6, 1, 6, '#ffffff');
+    ib.ellipse(21, 10, 6, 4, '#d6bd86');                                                         /* çuval */
+    ib.rect(18, 4, 6, 3, '#d6bd86'); ib.rect(17, 3, 2, 2, '#e4cf9c'); ib.rect(23, 3, 2, 2, '#c4a870');
+    ib.rect(18, 6, 6, 1, '#7a5a32');
+    for (r = 7; r <= 13; r++) ib.set(25 + (r > 9 && r < 12 ? 1 : 0), r, '#b09466');
+    ib.rect(17, 8, 1, 3, '#e4cf9c'); ib.rect(20, 10, 3, 1, '#b09466');
+  } else if (k === 'uzanti') {
+    for (r = 0; r < 6; r++) ib.rect(7, r, 2, 1, r % 2 ? '#a8884a' : '#dcbc72');                  /* halat */
+    ib.rect(6, 6, 4, 2, '#8d969c'); ib.rect(6, 6, 4, 1, '#c9d0d6');                              /* kilit */
+    ib.rect(7, 8, 2, 3, '#e2dccb');
+    for (a = 0; a <= 210; a += 15) {                                                             /* kanca */
+      var rr = a * Math.PI / 180, hx = R(5.5 + Math.cos(rr) * 3), hy = R(11 + Math.sin(rr) * 3);
+      ib.rect(hx, hy, 2, 1, '#e2dccb');
+    }
+    ib.set(2, 9, '#e2dccb'); ib.set(3, 8, '#e2dccb');
+    ib.rect(15, 9, 7, 6, '#d4a458'); ib.rect(15, 9, 7, 1, '#ecc47c'); ib.rect(15, 12, 7, 1, '#a8783a');   /* sandıklar */
+    ib.rect(21, 4, 6, 5, '#c79650'); ib.rect(21, 4, 6, 1, '#e2b870'); ib.rect(21, 6, 6, 1, '#9a6a30');
+    ib.rect(22, 9, 6, 6, '#d4a458'); ib.rect(22, 9, 6, 1, '#ecc47c'); ib.rect(22, 12, 6, 1, '#a8783a');
+    ib.rect(21, 9, 1, 6, '#9a6a30');
+  } else {                                                                                       /* rampa */
+    var wc = '#efe4c8';
+    for (a = 0; a < 360; a += 10) { var t2 = a * Math.PI / 180; ib.set(R(7 + Math.cos(t2) * 6), R(8 + Math.sin(t2) * 6), wc); ib.set(R(7 + Math.cos(t2) * 5), R(8 + Math.sin(t2) * 5), '#cdbf9e'); }
+    ln(7, 3, 7, 13, wc); ln(2, 8, 12, 8, wc); ln(4, 5, 10, 11, '#cdbf9e'); ln(4, 11, 10, 5, '#cdbf9e');
+    ib.rect(6, 7, 3, 3, '#4a3020'); ib.set(7, 8, wc);
+    for (r = 0; r <= 11; r++) ib.rect(16 + r, 14 - R(r * 0.7), 1, R(r * 0.7) + 1, r === 11 ? '#c9bc98' : '#efe4c8');   /* takoz */
+    for (r = 1; r <= 11; r += 3) ib.set(16 + r, 14 - R(r * 0.7), '#ffffff');
+    ib.rect(16, 14, 12, 1, '#c9bc98');
+  }
+  return ib;
+}
+function wsFlip(k) { return k === 'kiler' || k === 'rampa'; }   /* bu ikisinde levha sağa sarkar (önlerindeki yapı örtmesin) */
+function wsBoard(k) {                                            /* levha + direk, ince piksel (K=2 ölçeğinde), çapa = direk dibi */
+  var m = WSIGN[k] || WSIGN.ambar, P0 = m.p, sd = m.s, sb = L.buf(), x, y, fl = wsFlip(k);
+  function M(v) { return fl ? 2 - v : v; }
+  function hr(x0, y0, w, c) { for (var i = 0; i < w; i++) sb.set(M(x0 + i), y0, c); }
+  var wood = '#9a6a40', woodL = '#b88a5c', pDk = dark(P0, 0.22), pLt = lite(P0, 0.1);
+  /* direk + kol + payanda */
+  sb.rect(0, -46, 1, 46, '#8a5a33'); sb.rect(1, -46, 2, 46, '#6f4526'); sb.rect(2, -46, 1, 46, '#4a2f1c');
+  for (y = -44; y < 0; y += 7) sb.set(1, y + (hash(sd, y) * 4 | 0), '#5a3a22');
+  sb.rect(-1, -48, 5, 2, '#a8734a');
+  hr(-38, -45, 41, '#b88a5c'); hr(-38, -44, 41, '#8a5a33'); hr(-38, -43, 41, '#5a3a22');
+  sb.rect(M(-39), -45, 1, 3, '#6f4526');
+  for (x = 0; x < 9; x++) { sb.set(M(-1 - x), -34 - x, '#6f4526'); sb.set(M(-1 - x), -35 - x, '#8a5a33'); }
+  /* zincirler */
+  [-34, -7].forEach(function (cx) { for (y = -42; y <= -39; y++) sb.set(M(cx), y, (y & 1) ? '#5d5a52' : '#9a968a'); });
+  /* levha: x -37..-4 (34), y -38..-19 (20) */
+  var X0 = fl ? 6 : -37, Y0 = -38, BW = 34, BH = 20;
+  for (y = 0; y < BH; y++) for (x = 0; x < BW; x++) {
+    var edge = x === 0 || y === 0 || x === BW - 1 || y === BH - 1, c;
+    if (edge) c = y === 0 ? woodL : (y === BH - 1 || x === BW - 1) ? '#5a3a22' : '#7a4e2a';
+    else {
+      var h = hash(x * 3 + sd, y * 7 + sd * 5), streak = hash((x / 6 | 0) + sd, y), near = x < 3 || x > BW - 4 || y < 2 || y > BH - 4;
+      if (y === 10) c = hash(x, sd) > 0.25 ? '#4a2f1c' : pDk;                                   /* iki tahta arası derz */
+      else if (h > (near ? 0.86 : 0.955)) c = h > 0.97 ? woodL : wood;                          /* boya dökülmüş */
+      else c = streak > 0.8 ? pLt : streak < 0.12 ? dark(P0, 0.07) : P0;
+      if (y === 1 && c === P0) c = pLt;
+      if (y >= BH - 3 && c === P0) c = dark(P0, 0.1);                                           /* alt kirlenme */
+    }
+    sb.set(X0 + x, Y0 + y, c);
+  }
+  /* zincir halkaları (levhaya çakılı) */
+  sb.set(M(-34), -38, '#c9d0d6'); sb.set(M(-7), -38, '#c9d0d6');
+  /* resim: koyu boya konturlu, yer yer dökük */
+  var ib = wsIcon(k); ib.outline(0, dark(P0, 0.48));
+  ib.p.forEach(function (c, key) {
+    var ix = (key % 8192) - 4096, iy = Math.floor(key / 8192) - 4096, tx = X0 + 3 + ix, ty = Y0 + 2 + iy;
+    if (ty === Y0 + 10) return;                                                                  /* derz boyayı keser */
+    if (typeof c === 'object') c = c.c;
+    var hh = hash(ix * 5 + sd * 3, iy * 11 + sd);
+    if (hh > 0.95) return;
+    sb.set(tx, ty, hh < 0.08 ? mix(c, P0, 0.3) : mix(c, P0, 0.08));
+  });
+  return sb;
+}
+var _wsB = {};
+function wsSignK(b, sxw, syw, k) {                               /* bina tamponuna bas (KK ölçekli) */
+  var sb = _wsB[k] || (_wsB[k] = wsBoard(k)), s = KK / 2, ax = R(fx(sxw, syw)), ay = R(fy(sxw, syw, 0));
+  sb.p.forEach(function (c, key) {
+    var x = (key % 8192) - 4096, y = Math.floor(key / 8192) - 4096;
+    if (s === 1) b.set(ax + x, ay + y, c); else b.rect(ax + R(x * s), ay + R(y * s), Math.max(1, Math.ceil(s)), Math.max(1, Math.ceil(s)), c);
+  });
+}
+/* ad: yalnız tabelaya ~2,5 kare yakınken, levhanın altında küçük ve yumuşak; uzaklaştıkça söner */
+function wsName(sxw, syw, s, fl) {
+  var pl = G().player, d = d2(pl.x, pl.y, sxw, syw);
+  if (d >= 6.25) return;
+  gf('uiText')(sxw, syw, 5, s, '#f3e3c0', 8, Math.min(1, (6.25 - d) / 2.5) * 0.9, fl ? 12 : -10, 0, 'rgba(46,30,16,.72)');
+}
+
 /* ---------- DEPO / AMBAR (oluklu sac, sürgülü kapı, Sv3 ışıklık; kapı önünde doluluk sandıkları; v2.18 bölmeler ayrı kanat) ---------- */
 function depotStatic(b, o, Lv, fillN) {
   var sw = Lv === 1 ? 0.75 : 1, W = o.w * sw, D = o.h * sw, H = [0, 15, 18, 19, 20, 20][Math.min(5, Lv)], k;
@@ -1890,10 +2018,8 @@ function depotStatic(b, o, Lv, fillN) {
   roofGableX(b, x0 - 0.1, x1 + 0.1, y0 - 0.1, y1 + 0.1, H, 6 + Lv, '#8d959b', '#5a6167', '#a8a18f', '#6c767d', 6);
   if (Lv >= 3) roofPlane(b, [[-0.4, y1 - D / 4, H + 3], [0.4, y1 - D / 4, H + 3], [0.4, y1 - 0.1, H + 1], [-0.4, y1 - 0.1, H + 1]], '#9fbfcc', '#6c8a96', 3);
   /* v2.18-deneme: yan rampa / forklift kalktı — Sv2+ bölmeler ayrı kanat (HKA.drawDepotWing) */
-  var sxw = x0 + 0.12, syw = y1 + 0.15;                                           /* Ambar tabelası (kanatlarla aynı) */
-  pr(b, sxw, syw, 13, 0, 0, 1, 13, '#4a2f1c');
-  pr(b, sxw, syw, 18, -9.5, 0, 19, 6, '#6f4526'); pr(b, sxw, syw, 17.5, -9, 0, 18, 5, '#a8734a'); pr(b, sxw, syw, 17.5, -9, 0, 18, 1, '#c99060');
   for (k = 0; k < fillN; k++) crateK(b, dx + 0.55 + (k % 2) * 0.24, y1 + 0.25 + Math.floor(k / 4) * 0.02, Math.floor((k % 4) / 2) * 4, k % 2 ? '#c9a15e' : '#a8793e');
+  wsSignK(b, x0 + 0.12, y1 + 0.15, 'ambar');                                      /* Ambar tabelası: sandık + balık resmi (kanatlarla aynı) */
   b.outline(0.55);
 }
 HKA.drawDepot = function () {
@@ -1904,7 +2030,7 @@ HKA.drawDepot = function () {
   gf('shadow')(x0 + W / 2, y0 + D / 2, 1.5 * sw);
   var cnt = gf('depotCount')(), cap = gf('depotCap')(), fillN = Math.min(8, Math.ceil(cnt / Math.max(1, cap) * 8));
   at(spr('depot|' + Lv + '|' + fillN + '|' + G().K, 0, 0, function (b) { depotStatic(b, o, Lv, fillN); }), o.x, o.y, 0);
-  if (d2(pl.x, pl.y, o.x, o.y) < 160) gf('uiText')(x0 + 0.12, y1 + 0.15, 16, Tt('wsAmbar'), '#ffe9b8', 9, 1, 0, 0, true);
+  wsName(x0 + 0.12, y1 + 0.15, Tt('wsAmbar'));
   var near = gf('nearDoor')(o.door);
   if (near) gf('uiLabel')(o.x, o.y, H + 14, Tt('depotName') + ' ' + cnt + '/' + cap, '#ffd9a8', 1);
   var fc = gf('depotFishLine')();
@@ -2800,11 +2926,8 @@ function wingStatic(b, o, m, fillN) {
   } else if (o.k !== 'kiler') {
     for (k = 0; k < fillN; k++) crateK(b, x0 + 0.3 + (k % 3) * 0.24, y1 + 0.28 + (k >> 2) * 0.02, (k % 3 === 2 ? 4 : 0), k % 2 ? '#c9a15e' : '#a8793e');
   }
-  /* tabela direği + levha (köşede) */
-  var sxw = x0 + 0.12, syw = y1 + 0.15;
-  pr(b, sxw, syw, 13, 0, 0, 1, 13, '#4a2f1c');
-  pr(b, sxw, syw, 18, -9.5, 0, 19, 6, '#6f4526'); pr(b, sxw, syw, 17.5, -9, 0, 18, 5, '#a8734a'); pr(b, sxw, syw, 17.5, -9, 0, 18, 1, '#c99060');
-  for (k = 0; k < 4; k++) pr(b, sxw, syw, 15.5 - (k & 1), -7 + k * 4, 0, 2.5, 0.5, '#5a3a22');
+  /* tabela direği + boyalı levha (köşede, resimli; yazı yok) */
+  wsSignK(b, wsFlip(o.k) ? x1 - 0.12 : x0 + 0.12, y1 + 0.15, o.k);
   b.outline(0.55);
 }
 function fanSpr(fr) {
@@ -2824,8 +2947,8 @@ HKA.drawDepotWing = function (o) {
     L.blit(fanSpr(Math.floor(t * 10) % 9), R(pX(x1 + 0.34, o.y)), R(pY(x1 + 0.34, o.y, 4)));
     if (Math.sin(t * 1.7) > 0.7) L.fr(R(pX(o.x - 0.2, y1)), R(pY(o.x - 0.2, y1, 12)), 0, 0, 1, 1, '#ffffff');      /* buz pırıltısı */
   }
-  var pl = G().player, sxw = x0 + 0.12, syw = y1 + 0.15;
-  if (d2(pl.x, pl.y, o.x, o.y) < 160) gf('uiText')(sxw, syw, 16, gf('T')(m.s), '#ffe9b8', 9, 1, 0, 0, true);
+  var fl = wsFlip(o.k), sxw = fl ? x1 - 0.12 : x0 + 0.12, syw = y1 + 0.15;
+  wsName(sxw, syw, gf('T')(m.s), fl);
 };
 
 /* ---------- İLAN BÜROSU: taş temel, ahşap (Sv1) / badanalı (Sv2+) gövde, mantar ilan panosu, çatıda tunç çan ---------- */

@@ -100,6 +100,7 @@ var STR = {
     projDone: '🎉 {n} tamamlandı!',
     decorBought: '✨ {n} yerleştirildi', yardName: 'HİZMET SAHASI', onlineLbl: 'ÇEVRİMİÇİ SKOR TABLOSU', onlOn: 'AÇIK', onlOff: 'KAPALI', onlineOnT: 'Skorun herkese açık tabloya gönderilecek', onlineOffT: 'Çevrimiçi paylaşım kapalı — tablo yalnız bu cihazda', forgetBtn: 'SKOR KAYDIMI SİL', privBtn: 'GİZLİLİK POLİTİKASI', privClose: '▶ KAPAT', forgetAsk: 'Bu cihazın skor tablosundaki tüm kayıtları (sunucu ve cihaz) silinsin mi? Oyun kayıtların etkilenmez.', forgetYes: 'SİL', forgetDone: 'Skor kayıtların silindi, yeni anonim kimlik oluşturuldu', forgetFail: 'Sunucuya ulaşılamadı — internet bağlantını kontrol edip tekrar dene', servRefund: 'Hizmet Sahası kaldırıldı: binaların parası iade edildi (+{n})', restoIdle: 'fazla mal yok', chTitle: '🪜 BÖLÜM 1 — İskeleden İşletmeye',
     chGoal: 'Amacın: üç tezgâhı da sonuna kadar büyütmek. Bölgeleri aç ve yükselt, alınabilecek her şeyi al, her bölgeye bir müdür koy. Sayaç dolunca Bölüm 1 biter.',
+    chAuto: 'Tam otomasyon (her bölge + Sahil Lokantası personelde)', chSceneBand: 'Liman artık kendi kendine işliyor… Ağlar doluyor, tezgâhlar satıyor, lokanta misafir ağırlıyor.', chSceneSkip: 'dokun: devam ▸',
     chAreas: 'Bölgeleri aç (Balık Pazarı, Fümehane, Balıkçı Mutfağı)', chLevels: 'Bölge seviyeleri', chPads: 'Yükseltmeler (sepet, ayakkabı, fiyat)', chSlots: 'Yapı noktaları',
     chDecor: 'Süsler', chEnv: 'Çevre yatırımları', chFume: 'Füme makineleri', chProj: 'Kapalı Pazar', chMeydan: 'Meydan binaları (kulübe, depo, hal)', chMgr: 'Bölge müdürleri',
     chEndK: 'BÖLÜM 1 TAMAMLANDI', chEndT: 'BALIKÇI İŞ İNSANI',
@@ -203,7 +204,8 @@ var STR = {
     areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs', roadShow: 'Yol vitrini', mZoneRow: 'Kadro {a}/{b} • açık tezgâh', mgrRush: '⏰ Yoğun saat! Müdürler tezgâhlara yardıma indi', mgrHelp: 'yardımda',
     rdFl: 'Yol Çiçekliği', rdFlD: 'Yol kenarına çiçeklik • müşteri akışı +%{p}', rdFlDone: 'Yola çiçeklik kondu 🌷',
     rdBb: 'Yol Reklam Panosu', rdBbD: 'İşletmenin adı ve amblemi yolda • müşteri akışı +%{p}', rdBbDone: 'Reklam panosu yolda yerini aldı 📣',
-    lvEffect: 'Ağ +%18, tezgâh +4 stok, yeni yapı yeri',
+    lvEffect: 'Ağ +%18, tezgâh +4 stok, personel +%10 hız, müşteri +%12, yeni yapı yeri',
+    rentUp: 'Kira: günlük {a} → {b}', rentCard: 'Kira: günlük {v}', dayRent: 'Kira ({n} dükkân)', rentShort: '(kasa yetmedi)', rentFirst: '🏠 Dükkân kirası kesildi: {v}. Açık her dükkân (kapalı olsa da) gün sonunda kira öder; seviye arttıkça kira da artar.',
     staffFull: 'Personel limiti dolu ({n})',
     tut6: 'Alt bardan bir yükseltme satın al',
     nextStage: 'Sonraki aşama',
@@ -314,6 +316,7 @@ var STR = {
     projDone: '🎉 {n} completed!',
     decorBought: '✨ {n} placed', yardName: 'SERVICE YARD', onlineLbl: 'ONLINE LEADERBOARD', onlOn: 'ON', onlOff: 'OFF', onlineOnT: 'Your score will be sent to the public leaderboard', onlineOffT: 'Online sharing off — leaderboard on this device only', forgetBtn: 'DELETE MY LEADERBOARD DATA', privBtn: 'PRIVACY POLICY', privClose: '▶ CLOSE', forgetAsk: 'Delete all of this device\'s leaderboard entries (server and device)? Your game saves are not affected.', forgetYes: 'DELETE', forgetDone: 'Leaderboard data deleted, new anonymous ID created', forgetFail: 'Could not reach the server — check your connection and try again', servRefund: 'The Service Yard is gone: your buildings were refunded (+{n})', restoIdle: 'no surplus', chTitle: '🪜 CHAPTER 1 — From Pier to Business',
     chGoal: 'Your goal: grow all three stalls to the max. Open and upgrade the zones, buy everything on offer and put a manager in every zone. When the counter is full, Chapter 1 ends.',
+    chAuto: 'Full automation (every zone + Seaside Restaurant run by staff)', chSceneBand: 'The harbour now runs itself… Nets fill, stalls sell, the restaurant welcomes its guests.', chSceneSkip: 'tap: continue ▸',
     chAreas: 'Open the zones (Fish Market, Smokehouse, Fishermen\'s Kitchen)', chLevels: 'Zone levels', chPads: 'Upgrades (basket, boots, price)', chSlots: 'Build spots',
     chDecor: 'Decorations', chEnv: 'Surroundings', chFume: 'Smoker boxes', chProj: 'Covered Market', chMeydan: 'Square buildings (hut, depot, hall)', chMgr: 'Zone managers',
     chEndK: 'CHAPTER 1 COMPLETE', chEndT: 'HARBOR MOGUL',
@@ -409,7 +412,8 @@ var STR = {
     areaGives: 'New net, cutting table and stall', decorGroup: 'Decor', roadShow: 'Road showcase', mZoneRow: 'Crew {a}/{b} • open stalls', mgrRush: '⏰ Rush hour! Managers are helping at the stalls', mgrHelp: 'helping',
     rdFl: 'Roadside Flowerbed', rdFlD: 'Flowerbed by the road • customer flow +{p}%', rdFlDone: 'A flowerbed on the road 🌷',
     rdBb: 'Road Billboard', rdBbD: 'Your company name and emblem by the road • customer flow +{p}%', rdBbDone: 'Billboard up by the road 📣',
-    lvEffect: 'Nets +18%, stall +4 stock, new build spot',
+    lvEffect: 'Nets +18%, stall +4 stock, staff +10% speed, customers +12%, new build spot',
+    rentUp: 'Rent: {a} → {b} a day', rentCard: 'Rent: {v} a day', dayRent: 'Rent ({n} shops)', rentShort: '(not enough cash)', rentFirst: '🏠 Shop rent paid: {v}. Every unlocked shop (even when closed) pays rent at day end; higher levels pay more.',
     staffFull: 'Staff limit reached ({n})',
     tut6: 'Buy an upgrade from the bottom bar',
     nextStage: 'Next stage',
@@ -457,6 +461,7 @@ function UP(s) {
 }
 
 /* ---------------- canvas / pixel ---------------- */
+var CHS = { on: false, t: 0, dur: 80, pts: null };   /* v2.24-deneme: bölüm sonu izleme sahnesi (chSceneStart) */
 var cvs = document.getElementById('game');
 var ctx = cvs.getContext('2d');
 var ucv = document.getElementById('ui');
@@ -1780,12 +1785,12 @@ function repBonus() { return (repLevel() - 1) * 0.02; }        /* seviye başın
 var AREAS = [
   { id: 'iskele', n: { tr: 'Balıkçı İskelesi', en: 'Fishing Pier' }, x0: 0, y0: 0,  x1: 10, y1: 6,    locked: false, cost: 0,    rep: 0,  lvl: 1, up: [0, 1100, 3400] },
   { id: 'pazar',  n: { tr: 'Balık Pazarı', en: 'Fish Market' },      x0: 0, y0: 6,  x1: 10, y1: 12,   locked: true,  cost: 1300, rep: 15, lvl: 1, up: [0, 2400, 6800] },
-  { id: 'fume',   n: { tr: 'Fümehane', en: 'Smokehouse' },           x0: 0, y0: 12, x1: 10, y1: 17.5, locked: true,  cost: 4600, rep: 45, lvl: 1, up: [0, 4200, 11000] },
+  { id: 'fume',   n: { tr: 'Fümehane', en: 'Smokehouse' },           x0: 0, y0: 12, x1: 10, y1: 17.5, locked: true,  cost: 13800, rep: 45, lvl: 1, up: [0, 4200, 11000] },
   /* v2.0 — son bölge: palamut + somon → Reis Güveci (kendi ağları, masası, mutfağı, tezgâhı, kadrosu, müdürü) */
-  { id: 'mutfak', n: { tr: 'Balıkçı Mutfağı', en: "Fishermen's Kitchen" }, x0: 0, y0: 17.5, x1: 10, y1: 23.5, locked: true, cost: 9500, rep: 350, lvl: 1, up: [0, 7500, 17000] },
+  { id: 'mutfak', n: { tr: 'Balıkçı Mutfağı', en: "Fishermen's Kitchen" }, x0: 0, y0: 17.5, x1: 10, y1: 23.5, locked: true, cost: 28500, rep: 350, lvl: 1, up: [0, 7500, 17000] },
   /* v2.19-deneme — Sahil Lokantası: oyunun en son bölgesi (tezgâh bölgesi değil: lok:1; seviyesi S.lok.lv).
      v2.21-deneme: KARADA — meydanın güneydoğusundaki kumsalda (Hizmet Sahası'nın doğusu, Depo'nun güneyi; yoldan taş patika): kuzey yarıda badanalı köy evi + ocakbaşı, güney yarıda taş teras */
-  { id: 'sahil', n: { tr: 'Sahil Lokantası', en: 'Seaside Restaurant' }, x0: 15.0, y0: 13.2, x1: 36.0, y1: 23.6, locked: true, cost: 15500, rep: 350, lvl: 1, up: [0, 0, 0], lok: 1 }   /* v2.22-deneme: eski Hizmet Sahası + kumsal (LOKANTA_V3_PLAN.md) */
+  { id: 'sahil', n: { tr: 'Sahil Lokantası', en: 'Seaside Restaurant' }, x0: 15.0, y0: 13.2, x1: 36.0, y1: 23.6, locked: true, cost: 46500, rep: 350, lvl: 1, up: [0, 0, 0], lok: 1 }   /* v2.22-deneme: eski Hizmet Sahası + kumsal (LOKANTA_V3_PLAN.md) */
 ];
 var MAXLV = 3;
 function areaNetMul(z) { return (1 + (AREAS[z].lvl - 1) * 0.18 + (slotEff(z, 'netrate') || 0) + perkSum('netrate') + perkSum('rate')) * storyNetMul() * mxNetMul(); }
@@ -2570,6 +2575,7 @@ function worstOut() {
 }
 /* Pazar geçici ayarlarını temizle (§6: kalıcı hedefi ezmez) */
 function updateDay(dt) {
+  if (CHS.on && day.phase !== 'summary') return;   /* v2.24: izleme sahnesinde gün saati durur */
   if (day.phase === 'play') {
     day.t += dt;
     noteStockOut(dt);
@@ -2648,6 +2654,7 @@ function endDay() {
     next: isMarketDay(day.n + 1), auc: auc
   };
   day.last.pet = petDayEnd();                      /* v2.18-deneme: hayvanların mama ücreti */
+  day.last.rent = rentDayEnd();                    /* v2.24-deneme: dükkân kirası (kapalı olsa da) */
   if (M && M.office) closeDay();                 /* borsa günü oyun günüyle aynı */
   if (day.n === 1) gzMark('ilkgun', { n: S.served | 0 });   /* v2.16: ilk günün sonu → ertesi sabah gazetesi */
   insDayEnd();                                     /* v2.18-deneme: inşaatlarda kalan gün azalır */
@@ -3239,7 +3246,7 @@ var PADS = [
 var S = {
   cash: 0, rep: 0, capLvl: 0, spdLvl: 0, priceLvl: 0,
   served: 0, lost: 0, caught: 0, tut: 0, started: false, play: 0, savedAt: 0,
-  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], smkLv: 0, specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, adLv: 0, ads: [], capHint: 0, lvFloor: 0, names: [], story: null, custSeen: {}, specN: {}, custNewF: false, stallSt: {}, help: {}, jobs: [], mx: null, specForce: null, emek: 1, emekGift: 1     /* v2.18-deneme: emek = Emekçi Mod (bu dalda varsayılan açık), emekGift = eski kayıt hediyesi verildi; skor: kasaya giren toplam gelir + işletme adı */
+  earned: 0, company: '', runId: '', ctrl: 0, auto: [], hero: null, autoMin: 0, met: [], env: 0, fumeM: [0, 0, 0], smkLv: 0, specLast: {}, mgr: [], mgrCand: [], chSeen: false, chSeenPct: 0, ch1: false, roadFl: 0, roadBb: 0, adLv: 0, ads: [], capHint: 0, lvFloor: 0, names: [], story: null, custSeen: {}, specN: {}, custNewF: false, stallSt: {}, help: {}, jobs: [], mx: null, specForce: null, emek: 1, emekGift: 1, rentD: 0, rentN: 0     /* v2.18-deneme: emek = Emekçi Mod (bu dalda varsayılan açık), emekGift = eski kayıt hediyesi verildi; skor: kasaya giren toplam gelir + işletme adı */
 };
 /* skor: kasaya giren her gerçek gelir (satış, mezat, bina, kontrat, temettü, işletme).
    İade ve hisse satışı sayılmaz — skor "kazanılan para"dır, çevrilen para değil. */
@@ -3395,6 +3402,7 @@ function buildSave() {
     ret: retSave(),                                   /* uzakta kazanç + başarımlar */
     ev: Object.keys(S.evs || {}),                     /* v1.9: gönderilmiş ilerleme olayları (tekrar gitmesin) */
     road: [S.roadFl | 0, S.roadBb | 0],               /* v1.9.3: yol çiçeklikleri + reklam panoları */
+    rent: [S.rentD | 0, S.rentN ? 1 : 0],             /* v2.24-deneme: kira başlangıç günü + ilk bilgi verildi */
     q: queueSave(),                                   /* v1.9.1: tezgâh stoğu, kasadaki para ve kuyruktaki müşteriler */
     mk: M
   };
@@ -3514,6 +3522,8 @@ function loadFrom(d) {
     if (servRefund > 0) { S.cash += servRefund; var rf = servRefund; servRefund = 0; setTimeout(function () { toast(T('servRefund', { n: money(rf) })); save(); }, 1200); }
     rebuildCounters();  /* hedef stoklar yüklenmeden önce tezgâhlar var olmalı */
     loadDay(d);         /* v1.2 §9 — gün, depo ve hedef stoklar korunur */
+    var rnt = Array.isArray(d.rent) ? d.rent : null;   /* v2.24-deneme: kira; eski kayıtta yeni gün başından itibaren */
+    S.rentD = rnt ? numIn(rnt[0], 0, 1e6, true) : day.n + 1; S.rentN = rnt && rnt[1] ? 1 : 0;
     emekLoading = d.emek !== undefined;               /* v2.18-deneme: bu daldaki kayıt mod kapalıyken açılsa da emek kadrosu düşmesin */
     if (d.workers) d.workers.forEach(function (r) {
       /* v2.1: [rol, bölge]; eski kayıtlarda düz rol dizisi vardı. Kaldırılmış roller atlanır,
@@ -4266,7 +4276,7 @@ function updateWorkers(dt) {
   for (var i = 0; i < workers.length; i++) {
     var w = workers[i], R2 = ROLES[w.role];
     if (!R2) { workers.splice(i--, 1); continue; }
-    var sp = R2.speed * mul * (w.zone >= 0 && zoneAuto(w.zone) ? 1.2 : 1) * (1 + mgrEff(w.zone, 'wspeed')) * wLvMul(w);
+    var sp = R2.speed * mul * (w.zone >= 0 && zoneAuto(w.zone) ? 1.2 : 1) * (1 + mgrEff(w.zone, 'wspeed')) * wLvMul(w) * areaWorkMul(w.zone);   /* v2.24: bölge Sv başına +%10 */
     if (w.role === 'hamal') { if (emek()) aiHamalE(w, sp, dt); else aiHamal(w, sp, dt); }   /* v2.18-deneme: Emekçi Mod'da "bittikçe yenile" */
     else if (w.role === 'tezgahtar') { if (emek()) aiVendorE(w, sp, dt); else aiTezgahtar(w, sp, dt); }
     else if (w.role === 'balikci') { if (emek()) aiBalikci(w, sp, dt); else aiHamal(w, sp, dt); }   /* mod kapalıysa hamal gibi taşır */
@@ -4513,7 +4523,7 @@ function patienceMul(z) { return (1 + decorCount() * 0.02) * (1 + mgrEff(z, 'pat
 function updateCounter(c, dt) {
   if (!c.open) return;                       /* v2.1: kapalı tezgâha müşteri gelmez */
   var custMul = (event ? stormMul(event) : 1) * (1 + 0.06 * storyBuff('sert')) * areaFlow(c.z) * dayCustMul() * (1 + envFlow() + roadFlow()) * rushMul() * adCust();   /* v1.2: çevre yatırımı; v1.9.3: yol çiçeklikleri + panolar */
-  c.spawnT -= dt * custMul * petFlow(c);         /* v2.18-deneme: hayvanlı tezgâh (+%5 kedi, +%3 köpek; toplam en çok +%10) */
+  c.spawnT -= dt * custMul * petFlow(c) * areaCustMul(c.z);   /* v2.24: bölge Sv başına +%12 müşteri */         /* v2.18-deneme: hayvanlı tezgâh (+%5 kedi, +%3 köpek; toplam en çok +%10) */
   var qmax = queueMax(c.z), freeIdx = -1, i;
   for (i = 0; i < qmax; i++) if (!c.slots[i]) { freeIdx = i; break; }
   if (c.spawnT <= 0 && freeIdx >= 0) {
@@ -4891,6 +4901,11 @@ function clampCam() {
 function projOK() { return isFinite(pX(1, 1)) && isFinite(pY(1, 1, 0)); }
 function updateCamera(dt) {
   if (!projOK()) { console.error('BT: projeksiyon bozuk (TW/TH gölgelenmiş olabilir)'); return; }
+  if (CHS.on) {                                                   /* v2.24: bölüm sonu sahnesi — kamera limanı dolaşır */
+    var cp = chScenePos(); camTX = pX(cp.x, cp.y); camTY = pY(cp.x, cp.y, 0); clampCam();
+    var k2 = 1 - Math.pow(0.3, dt); camX = lerp(camX, camTX, k2); camY = lerp(camY, camTY, k2);
+    return;
+  }
   var tx = pX(player.x, player.y), ty = pY(player.x, player.y, 0);
   var dzx = W * 0.12, dzy = H * 0.10;
   var dx = tx - camTX, dy = ty - camTY;
@@ -7686,7 +7701,7 @@ function padInfo(p) {
   if (p.kind === 'spd') return { t: T('upSpd'), e: T('upSpdE') };
   if (p.kind === 'price') return { t: T('upPrice'), e: T('upPriceE') };
   if (p.kind === 'area') return { t: UP(NM(AREAS[p.target].n)), e: T('openArea') };
-  if (p.kind === 'arealv') return { t: UP(NM(AREAS[p.area].n)), e: T('upArea') + ' ' + T('level') + AREAS[p.area].lvl + '→' + (AREAS[p.area].lvl + 1) };
+  if (p.kind === 'arealv') return { t: UP(NM(AREAS[p.area].n)), e: T('upArea') + ' ' + T('level') + AREAS[p.area].lvl + '→' + (AREAS[p.area].lvl + 1) + (p.area > 0 ? ' • ' + T('rentUp', { a: money(rentOf(p.area, AREAS[p.area].lvl)), b: money(rentOf(p.area, AREAS[p.area].lvl + 1)) }) : '') };
   if (p.kind === 'decor') return { t: UP(NM(DECOR[p.decor].n)), e: T('stDecor') };
   if (p.emek) return emekPadInfo(p);                 /* v2.18-deneme */
   return { t: UP(NM(ROLES[p.role].n)), e: NM(ROLES[p.role].d) + ' ' + money(ROLES[p.role].wage) + perMin() };
@@ -7973,7 +7988,7 @@ var el = {};
   el[id] = document.getElementById(id);
 });
 var toastT = 0;
-function toast(msg) { el.toast.textContent = msg; el.toast.classList.add('on'); toastT = 2.6; }
+function toast(msg) { if (CHS.on) return; el.toast.textContent = msg; el.toast.classList.add('on'); toastT = 2.6; }
 
 function applyLang() {
   document.documentElement.lang = lang;
@@ -8177,7 +8192,32 @@ function purchase(cost, blocked, fn) {
   if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return false; }
   S.cash -= cost; fn(); save(); renderBar(); return true;
 }
-function areaLevelEffect(a) { return T('lvEffect'); }
+function areaLevelEffect(a) { var z = AREAS.indexOf(a); return T('lvEffect') + (z > 0 && a.cost ? ' • ' + T('rentUp', { a: money(rentOf(z, a.lvl)), b: money(rentOf(z, a.lvl + 1)) }) : ''); }
+/* v2.24-deneme — DÜKKÂN KİRASI: açık (kilidi kalkmış) her bölge günlük kira öder — Balık Pazarı, Fümehane, Balıkçı Mutfağı ve Sahil Lokantası
+   (Balıkçı İskelesi kirasız). Tezgâh / lokanta kapalı olsa da alınır. Taban: açılış bedelinin %3'ü, Emekçi ölçeğinde (emekCost(a.cost); kartın
+   upCost indirimi kiraya yansımaz). Bölge Sv1 ×1, Sv2 ×1,5, Sv3 ×2; lokanta Sv1–5 ×1 / 1,25 / 1,5 / 1,75 / 2. Gün sonunda kasadan düşer
+   (kasa yetmezse 0'a iner, maaş gibi); gün kartında "Kira" satırı. S.rentD: kiranın başladığı gün (eski kayıt: yüklemeden sonraki gün),
+   S.rentN: ilk kesintide bir kez bilgi verildi. Seviye karşılığı: bölge personeli +%10 hız, tezgâha gelen müşteri +%12 (Sv başına). */
+var RENT_P = 0.03, RENT_LV = [1, 1.5, 2], RENT_LOK = [1, 1.25, 1.5, 1.75, 2], AREA_WSPD = 0.10, AREA_CUST = 0.12;
+function rentOf(z, lv) {
+  var a = AREAS[z]; if (!a || !a.cost) return 0;
+  if (lv === undefined) lv = a.lok ? (S.lok ? S.lok.lv | 0 : 1) : a.lvl;
+  var m = a.lok ? RENT_LOK[clamp(lv, 1, RENT_LOK.length) - 1] : RENT_LV[clamp(lv, 1, RENT_LV.length) - 1];
+  return Math.round(emekCost(a.cost) * RENT_P * m);
+}
+function rentZones() { var o = []; for (var i = 1; i < AREAS.length; i++) if (AREAS[i].cost > 0 && !AREAS[i].locked && !(AREAS[i].lok && window.HK_LOK_OFF)) o.push(i); return o; }
+function rentTotal() { var v = 0; rentZones().forEach(function (z) { v += rentOf(z); }); return v; }
+function rentDayEnd() {
+  if ((day.n | 0) < (S.rentD | 0)) return null;
+  var l = [], tot = 0;
+  rentZones().forEach(function (z) { var v = rentOf(z); if (v > 0) { l.push({ z: z, v: v }); tot += v; } });
+  if (!tot) return null;
+  var paid = Math.min(S.cash, tot); S.cash = Math.max(0, S.cash - tot);
+  if (!S.rentN) { S.rentN = 1; setTimeout(function () { toast(T('rentFirst', { v: money(tot) })); }, 3200); }
+  return { tot: tot, paid: Math.round(paid), l: l };
+}
+function areaWorkMul(z) { var a = z >= 0 && AREAS[z]; return a && !a.lok ? 1 + AREA_WSPD * (a.lvl - 1) : 1; }
+function areaCustMul(z) { var a = AREAS[z]; return a && !a.lok ? 1 + AREA_CUST * (a.lvl - 1) : 1; }
 
 function barList() {
   var out = [], i;
@@ -8186,7 +8226,7 @@ function barList() {
       var a = AREAS[i];
       if (!a.locked || AREAS[i - 1].locked || (a.lok && window.HK_LOK_OFF)) continue;   /* HK_LOK_OFF: eski testlerde lokanta kartı yok */
       var noDepo = !!a.lok && !DEPOT.lvl, blk = S.rep < a.rep || noDepo;   /* v2.22-deneme: lokanta Depo ister (kiler ve tedarik depodan) */
-      out.push({ id: 'a' + i, ic: '🔓', t: NM(a.n), s: T(a.lok ? 'lkGives' : 'areaGives') + (a.rep ? ' • Sv ' + levelForRep(a.rep) : ''),
+      out.push({ id: 'a' + i, ic: '🔓', t: NM(a.n), s: T(a.lok ? 'lkGives' : 'areaGives') + (a.rep ? ' • Sv ' + levelForRep(a.rep) : '') + ' • ' + T('rentCard', { v: money(rentOf(i, 1)) }),
         cost: upCost(emekCost(a.cost)), blocked: blk, why: S.rep < a.rep ? T('needRep', { n: a.rep, c: S.rep, l: levelForRep(a.rep) }) : T('lkNeedDepo'),
         go: function (k) { return function () { if (!AREAS[k].lok) clearJunk(k); AREAS[k].locked = false; progEv('bolge' + (k + 1)); if (k === 1) gzMark('pazar', { n: S.served | 0 }); rebuildCounters(); reassignWorkers(); clampCam(); sfx.build(); toast(T('areaOpen', { n: NM(AREAS[k].n) })); if (AREAS[k].lok) lokOnOpen(); }; }(i) });
       break;
@@ -8281,6 +8321,13 @@ function barList() {
         blocked: !ch.ok, why: T('autoNeed', { n: ch.miss.length }),
         go: function () { setZoneAuto(z3, !on); } });
     })(i);
+    if (lokOpen() && lokCrew().length) {                               /* v2.24-deneme: Sahil Lokantası — Personele Devret */
+      var lch = lokChain(), lon = lokAuto();
+      var lst = LOK_ROLES.map(function (r) { return (lch.have[r] ? '✓' : '✗') + NM(ROLES[r].n) + (r === 'lk_asci' ? ' ' + lch.have[r] + '/' + lokBuiltN() : ''); }).join(' ');
+      out.push({ id: 'lau', ic: lon ? '⚙️' : '🤝', t: T(lon ? 'lkAutoOn' : 'lkAutoCard'), s: (lon ? T('lkAutoOnD') : T('lkAutoD') + ' • ' + lst) + (lch.ok ? '' : ' • ' + T('missShort', { m: lch.miss.join(', ') })),
+        pick: lch.ok ? T(lon ? 'autoBack' : 'autoGive') : null, blocked: !lch.ok, why: T('autoMissing', { m: lch.miss.join(', ') }),
+        go: function () { lokSetAuto(!lon); } });
+    }
     if (!out.length) out.push({ empty: T('emptyStaff') });
   } else if (barTab === 'build') {
     /* v0.3 — YAPI üç alt kategoride: Dekoratif • Geliştirmeler • Yapı Yükseltmeleri */
@@ -8622,6 +8669,7 @@ function showDayCard() {
   if (L.auc) h += dayRow('🔔', T('dayAuction'), L.auc.n + ' × ' + money(L.auc.v));
   if (L.spec && L.spec.length) h += dayRow('⭐', T('daySpec'), escH(L.spec.join(', ')));
   if (L.pet) h += dayRow('🐾', T('petDayRow'), petDayTxt(L.pet));   /* v2.18-deneme */
+  if (L.rent) h += dayRow('🏠', T('dayRent', { n: L.rent.l.length }), '−' + money(L.rent.tot) + (L.rent.paid < L.rent.tot ? ' ' + T('rentShort') : ''));   /* v2.24 */
   if (L.saz) h += dayRow('🪕', T('lkSazDay'), L.saz.paid ? '−' + money(L.saz.fee) : T('lkSazUnpaid'));   /* v2.23: sazcı yevmiyesi */
   if (L.insp) h += dayRow('🕵️', T('dayInsp'), T(L.insp.good ? 'inspGood' : 'inspBad', { v: money(L.insp.v), r: L.insp.r }));
   if (S.company) {
@@ -9095,7 +9143,7 @@ function frame(ts) {
   /* v0.8 — otomatik kayıt: oyuncunun seçtiği aralıkta (oynanan süre). Sekme kapanınca/arka plana
      geçince ve gün sonunda ayrıca güvenlik kaydı yapılır (beforeunload / visibilitychange / endDay). */
   if (S.autoMin) { saveT += dt; if (saveT >= S.autoMin * 60) { saveT = 0; autoSaveNow(); } }
-  if (stallPrompt && !anyOverlay()) {        /* yeni tezgâh kuruldu: kararı hemen sor */
+  if (stallPrompt && !anyOverlay() && !CHS.on) {        /* yeni tezgâh kuruldu: kararı hemen sor */
     stallPrompt = false;
     if (undecidedStalls().length) { openStallScreen(); sfx.cust(); }
   }
@@ -9123,11 +9171,12 @@ function gameStep(dt, sim) {
   mxTick(dt);                       /* v2.9 — horon, canlı yayın */
   updateFumeMachines(dt);           /* v1.3 — tezgâh füme makinesi */
   updateChapter(dt);                /* v1.3 — Bölüm 1 hedefi */
-  updateEvents(dt);
+  chSceneTick(dt);                  /* v2.24 — bölüm sonu izleme sahnesi */
+  if (!CHS.on) updateEvents(dt);   /* v2.24: izleme sahnesinde olay yok */
   updateMarket(dt);
   updateTutorial();
   updateFx(dt);
-  updateLevelUp(dt);
+  if (!CHS.on) updateLevelUp(dt);
   updateEnv(dt);
   updateCoach(dt);
   if (workers.length) S.cash = Math.max(0, S.cash - wageTotal() / 60 * dt);
@@ -11624,7 +11673,7 @@ function drawDepot() {
   /* doluluk: kapı önünde sandık yığını (rafların ne kadar dolu olduğu görünür) */
   var fillN = Math.min(8, Math.ceil(depotCount() / Math.max(1, depotCap()) * 8));
   for (k = 0; k < fillN; k++) crate(dx + 0.55 + (k % 2) * 0.24, y1 + 0.25 + Math.floor(k / 4) * 0.02, Math.floor((k % 4) / 2) * 4, k % 2 ? '#c9a15e' : '#a8793e');
-  wingSign(x0 + 0.12, y1 + 0.15, T('wsAmbar'), o.x, o.y);                                                      /* v2.18-deneme: Ambar tabelası */
+  wingSign(x0 + 0.12, y1 + 0.15, T('wsAmbar'), o.x, o.y, 'ambar');                                                      /* v2.18-deneme: Ambar tabelası */
   if (nearDoor(o.door)) uiLabel(o.x, o.y, H + 14, T('depotName') + ' ' + depotCount() + '/' + depotCap(), '#ffd9a8', 1);
   var fc = depotFishLine();                                                                                    /* v1.9.8: balık başına sayı */
   if (fc && dist2(player.x, player.y, o.x, o.y) < 30) uiLabel(o.x, o.y, H + (nearDoor(o.door) ? 4 : 14), fc, '#e8f4ff', 0.95);
@@ -11929,13 +11978,28 @@ function drawDepotWing(o) {
   if (o.k === 'uzanti') roofPlane([[dx - 0.4, y1 - 0.45, H + 3], [dx + 0.4, y1 - 0.45, H + 3], [dx + 0.4, y1 - 0.1, H + 1], [dx - 0.4, y1 - 0.1, H + 1]], '#9fbfcc', '#6c8a96', 3);   /* ışıklık */
   var fn = Math.min(6, Math.ceil(fl * 6));                                                                    /* doluluk: kapı önünde sandıklar */
   if (o.k !== 'rampa' && o.k !== 'kiler') for (k = 0; k < fn; k++) crate(x0 + 0.3 + (k % 3) * 0.24, y1 + 0.28 + (k >> 2) * 0.02, (k % 3 === 2 ? 4 : 0), k % 2 ? '#c9a15e' : '#a8793e');
-  wingSign(x0 + 0.12, y1 + 0.15, T(m.s), o.x, o.y);
+  wingSign(x0 + 0.12, y1 + 0.15, T(m.s), o.x, o.y, o.k);
 }
 /* tabela: köşe direğinde küçük levha + ad (yakınken) */
-function wingSign(sxw, syw, label, cx, cy) {
-  var sx = R(pX(sxw, syw)), sy = R(pY(sxw, syw, 0));
-  px(sx, sy - 13, 1, 13, '#4a2f1c'); px(sx - 9, sy - 18, 19, 6, '#8a5a33'); px(sx - 8, sy - 17, 17, 4, '#a8734a');
-  if (dist2(player.x, player.y, cx, cy) < 160) uiText(sxw, syw, 16, label, '#ffe9b8', 9, 1, 0, 0, true);
+/* v2.24-deneme (klasik): tabela resimli — Ambar sandık + balık, Soğuk Oda kar tanesi, Kiler çuval + kavanoz, Uzantı raf, Rampa kamyon.
+   Yazı yalnız oyuncu çok yakınken (≈2,5 kare), küçük. İnce modu sanat (art/nesne.js) çizer. */
+function wingSign(sxw, syw, label, cx, cy, k) {
+  var sx = R(pX(sxw, syw)), sy = R(pY(sxw, syw, 0)), x = sx - 6, y = sy - 22;
+  px(sx, sy - 13, 1, 13, '#4a2f1c');
+  px(x, y, 13, 10, '#5d3c1c'); px(x + 1, y + 1, 11, 8, '#a8734a'); px(x + 1, y + 8, 11, 1, '#8a5a33');
+  if (k === 'soguk') {                                           /* kar tanesi */
+    px(x + 6, y + 2, 1, 6, '#e8f6ff'); px(x + 3, y + 5, 7, 1, '#e8f6ff'); px(x + 4, y + 3, 1, 1, '#bfe4f7'); px(x + 8, y + 3, 1, 1, '#bfe4f7'); px(x + 4, y + 7, 1, 1, '#bfe4f7'); px(x + 8, y + 7, 1, 1, '#bfe4f7');
+  } else if (k === 'kiler') {                                    /* çuval + kavanoz */
+    px(x + 2, y + 3, 4, 5, '#e2d3a8'); px(x + 3, y + 2, 2, 1, '#c9b685'); px(x + 2, y + 7, 4, 1, '#bfae80');
+    px(x + 7, y + 4, 3, 4, '#7fb3c8'); px(x + 7, y + 3, 3, 1, '#c4553d'); px(x + 8, y + 5, 1, 2, '#d9443a');
+  } else if (k === 'uzanti') {                                   /* raf: iki kat sandık */
+    px(x + 2, y + 2, 9, 1, '#5d3c1c'); px(x + 2, y + 5, 9, 1, '#5d3c1c'); px(x + 3, y + 3, 3, 2, '#c9a15e'); px(x + 7, y + 3, 3, 2, '#8fa9bd'); px(x + 4, y + 6, 4, 2, '#c9a15e');
+  } else if (k === 'rampa') {                                    /* kamyon */
+    px(x + 2, y + 3, 6, 3, '#e8e4da'); px(x + 8, y + 4, 3, 2, '#c4553d'); px(x + 3, y + 6, 2, 1, '#1c1c1c'); px(x + 8, y + 6, 2, 1, '#1c1c1c');
+  } else {                                                        /* ambar: sandık + balık */
+    px(x + 2, y + 4, 6, 4, '#8a5a33'); px(x + 2, y + 5, 6, 1, '#5d3c1c'); px(x + 4, y + 2, 6, 2, '#a8b6c2'); px(x + 10, y + 2, 1, 2, '#8fa9bd'); px(x + 5, y + 2, 1, 1, '#1c1c1c');
+  }
+  if (dist2(player.x, player.y, sxw, syw) < 6.25) uiText(sxw, syw, 26, label, '#ffe9b8', 7, 0.9, 0, 0, true);
 }
 function pushDepotWings(push) {
   var i, w, nx = DEPOT.lvl >= 1 && DEPOT.lvl < DEPOT_LV.length ? depotWing(DEPOT.lvl + 1) : null;
@@ -13156,7 +13220,7 @@ function helpOnce(key) {
   if (el.helpScr.classList.contains('hidden')) helpShow();
 }
 function helpShow() {
-  var key = helpQ[0]; if (!key) return;
+  var key = helpQ[0]; if (!key || CHS.on) return;
   var h = HELP[key], L = h[lang] || h.tr;
   el.helpT.textContent = h.ic + ' ' + L[0];
   el.helpB.innerHTML = L.slice(1).map(function (x) { return '<p>' + escH(x) + '</p>'; }).join('');
@@ -13272,6 +13336,9 @@ function chapterGroups() {
   add('🔥', 'chFume', (fumeMachine(0) ? 1 : 0) + (fumeMachine(1) ? 1 : 0), 2);
   add('🏘️', 'chMeydan', (HUT.lvl ? 1 : 0) + (DEPOT.lvl ? 1 : 0) + (WHALL.built ? 1 : 0), 3);
   n = 0; for (i = 0; i <= KITCHEN_Z; i++) if (mgr(i)) n++; add('👔', 'chMgr', n, KITCHEN_Z + 1);
+  n = 0; t = KITCHEN_Z + 1; for (i = 0; i <= KITCHEN_Z; i++) if (zoneAuto(i)) n++;   /* v2.24-deneme: tam otomasyon — her tezgâh bölgesi + Sahil Lokantası personelde */
+  if (!window.HK_LOK_OFF) { t++; if (lokAuto()) n++; }
+  add('⚙️', 'chAuto', n, t);
   return g;
 }
 function chapterProgress() {
@@ -13287,7 +13354,53 @@ function updateChapter(dt) {
   el.chBtn.classList.remove('hidden');
   el.chPct.textContent = pct(pc);
   el.chBtn.classList.toggle('blink', !S.chSeen || pc - (S.chSeenPct || 0) >= 10);
-  if (pr.d >= pr.n && pr.n > 0) openChapterEnd();
+  if (pr.d >= pr.n && pr.n > 0 && !CHS.on && day.phase === 'play' && !anyOverlay()) chSceneStart();   /* v2.24: önce izleme sahnesi, sonra kart */
+}
+/* v2.24-deneme — BÖLÜM SONU İZLEME SAHNESİ: bölüm hedefi tamamlanınca arayüz gizlenir, oyun DURMAZ; kamera limanı yavaşça dolaşır
+   (iskele → pazar → fümehane → mutfak → meydan/depo → lokanta → oyuncu), altta küçük bant. Ekrana dokununca (1,5 sn sonra) ya da süre
+   bitince "BÖLÜM 1 TAMAMLANDI" (openChapterEnd). Sahnede gün saati durur (gün kapanmaz), toast / olay / seviye kartı / ipucu bastırılır. */
+function chScenePts() {
+  var P = [{ x: 5, y: 3.2 }, { x: 5, y: 9.2 }, { x: 5, y: 14.8 }, { x: 5, y: 20.4 }, { x: DEPOT.x, y: DEPOT.y + 1.5 }];
+  if (!AREAS[LOK_Z].locked && !window.HK_LOK_OFF) P.push({ x: 24.5, y: 18.6 });
+  P.push({ x: player.x, y: player.y });
+  return P;
+}
+function chScenePos() {
+  var P = CHS.pts || chScenePts(), u = clamp(CHS.t / CHS.dur, 0, 1) * (P.length - 1), i = Math.min(P.length - 2, Math.floor(u)), f = u - i;
+  f = f * f * (3 - 2 * f);                                       /* durak başına yumuşak kalkış / duruş */
+  return { x: lerp(P[i].x, P[i + 1].x, f), y: lerp(P[i].y, P[i + 1].y, f) };
+}
+function chSceneEl() {
+  var e = document.getElementById('chSceneEl'); if (e) return e;
+  var css = document.createElement('style');
+  css.textContent = 'body.chScene>*:not(#game):not(#chSceneEl):not(.overlay):not(script):not(style){visibility:hidden!important}' +
+    '#chSceneEl{position:fixed;left:0;top:0;right:0;bottom:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:linear-gradient(rgba(0,0,0,.28),transparent 14%,transparent 80%,rgba(0,0,0,.42));cursor:pointer}' +
+    '#chSceneEl.hidden{display:none}#chSceneEl .band{margin:0 0 max(22px,env(safe-area-inset-bottom));padding:8px 14px;max-width:86%;box-sizing:border-box;text-align:center;font:12px/1.4 "Pixelify Sans",monospace;color:#ffe9b8;background:rgba(10,26,39,.8);border:2px solid #c9a15e}' +
+    '#chSceneEl .skip{position:absolute;top:max(12px,env(safe-area-inset-top));right:12px;font:10px "Pixelify Sans",monospace;color:rgba(255,233,184,.75)}';
+  document.head.appendChild(css);
+  e = document.createElement('div'); e.id = 'chSceneEl'; e.className = 'hidden';
+  e.innerHTML = '<div class="band" id="chSceneBand"></div><div class="skip" id="chSceneSkip"></div>';
+  e.addEventListener('pointerdown', function (ev) { ev.preventDefault(); ev.stopPropagation(); if (CHS.on && CHS.t > 1.5) chSceneEnd(); });
+  document.body.appendChild(e);
+  return e;
+}
+function chSceneStart() {
+  if (CHS.on || S.ch1) return;
+  CHS.on = true; CHS.t = 0; CHS.pts = chScenePts();
+  closeBar(); if (typeof lokPanelOpen === 'function' && lokPanelOpen()) closeLokPanel();
+  el.toast.classList.remove('on');
+  var e = chSceneEl();
+  document.getElementById('chSceneBand').textContent = T('chSceneBand');
+  document.getElementById('chSceneSkip').textContent = T('chSceneSkip');
+  e.classList.remove('hidden'); document.body.classList.add('chScene');
+  sfx.star();
+}
+function chSceneTick(dt) { if (!CHS.on) return; CHS.t += dt; if (CHS.t >= CHS.dur) chSceneEnd(); }
+function chSceneEnd() {
+  if (!CHS.on) return;
+  CHS.on = false; document.body.classList.remove('chScene');
+  var e = document.getElementById('chSceneEl'); if (e) e.classList.add('hidden');
+  openChapterEnd();
 }
 function openChapter() {
   var pr = chapterProgress();
@@ -17029,6 +17142,26 @@ function lokSetOn(on) {
   toast(T(on ? 'lkOpenNow' : 'lkClosedNow')); save(); if (lokPanelOpen()) renderLokPanel();
   return true;
 }   /* v2.21-deneme: ALAN'dan alınca 1 gün inşaat ('lok_open'), bitince açılır */
+/* v2.24-deneme: LOKANTA — PERSONELE DEVRET (S.lok.auto). Şart: her kurulu ocağa bir aşçı, en az bir garson, bulaşıkçı, şef garson ve tedarikçi.
+   Devredilince lokanta her gün kendini AÇAR (oyuncu yine elle kapatabilir); şef garson kasayı yönetir. Bölüm 1 "Tam otomasyon" satırına sayılır. */
+function lokChain() {
+  var o = { ok: true, miss: [], have: {} }, built = lokBuiltN();
+  LOK_ROLES.forEach(function (r) { o.have[r] = lokCrew(r).length; });
+  if (!built) { o.ok = false; o.miss.push(T('lkAutoNoSt')); }
+  else if (o.have.lk_asci < built) { o.ok = false; o.miss.push(T('lkAutoCook', { n: built - o.have.lk_asci })); }
+  ['lk_garson', 'lk_bulasik', 'lk_sef', 'lk_komi'].forEach(function (r) { if (!o.have[r]) { o.ok = false; o.miss.push(NM(ROLES[r].n)); } });
+  return o;
+}
+function lokAuto() { return !!(S.lok && S.lok.auto) && lokOpen() && lokChain().ok; }
+function lokSetAuto(on) {
+  var q = lokQ(), ch = lokChain();
+  if (on && !ch.ok) { toast(T('autoMissing', { m: ch.miss.join(', ') })); sfx.bad(); return false; }
+  q.auto = on ? 1 : 0;
+  toast(T(on ? 'autoOn' : 'autoOff', { n: T('lkName') }));
+  if (on) { sfx.star(); addPuff(LOK.gate.x, LOK.gate.y, '#ffc94a'); if (!q.op) lokSetOn(true); } else sfx.tap();
+  save(); if (barTab) renderBar();
+  return true;
+}
 function lokTblN() { return LOK_TBN[clamp(lokQ().tb, 1, LOK_MAXTB) - 1]; }
 /* ---------- ocak yerleri ---------- */
 function lokSlIdx(sk) { return typeof sk === 'string' && /^s[0-3]$/.test(sk) ? +sk.charAt(1) : -1; }
@@ -17086,7 +17219,7 @@ function lokDolapRoomFair(f) { return Math.min(lokDolapRoom(f), Math.max(0, lokS
 function lokDolapAdd(f) { var d = lokQ().dolap; d[f] = (d[f] | 0) + 1; }
 /* ---------- kayıt ---------- */
 function lokSave() {
-  var q = lokQ(), o = { lv: q.lv, tb: q.tb, sl: q.sl.map(function (s) { return s ? { k: s.k, lv: s.lv } : null; }), sp: q.sp.map(function (v) { return Math.round(v) || 0; }), sn: q.sn | 0, dolap: {}, dl: q.dl | 0, crew: [], star: q.star | 0, menu: q.menu.slice(0, 5), res: lokResSave(q), tr: { masa: lokUpLv('masa'), kapi: lokUpLv('kapi'), tabela: lokUpLv('tabela'), mez: lokUpLv('mez') }, dc: LOK_DC.filter(function (d) { return lokDcOn(d.id); }).map(function (d) { return d.id; }), mu: q.mu | 0, gs: q.gs | 0, ed: q.ed | 0, rd: q.rd | 0, pay: {}, dirty: {}, sv: q.sv | 0, ls: q.ls | 0, hint: q.hint ? 1 : 0, sazW: q.sazW ? 1 : 0, sazU: q.sazU ? 1 : 0, v: 2 };
+  var q = lokQ(), o = { lv: q.lv, tb: q.tb, sl: q.sl.map(function (s) { return s ? { k: s.k, lv: s.lv } : null; }), sp: q.sp.map(function (v) { return Math.round(v) || 0; }), sn: q.sn | 0, dolap: {}, dl: q.dl | 0, crew: [], star: q.star | 0, menu: q.menu.slice(0, 5), res: lokResSave(q), tr: { masa: lokUpLv('masa'), kapi: lokUpLv('kapi'), tabela: lokUpLv('tabela'), mez: lokUpLv('mez') }, dc: LOK_DC.filter(function (d) { return lokDcOn(d.id); }).map(function (d) { return d.id; }), mu: q.mu | 0, gs: q.gs | 0, ed: q.ed | 0, rd: q.rd | 0, pay: {}, dirty: {}, sv: q.sv | 0, ls: q.ls | 0, hint: q.hint ? 1 : 0, auto: q.auto ? 1 : 0, sazW: q.sazW ? 1 : 0, sazU: q.sazU ? 1 : 0, v: 2 };
   for (var f in q.dolap) if (q.dolap[f] > 0) o.dolap[f] = q.dolap[f];
   lokCrew().forEach(function (w) { o.crew.push({ r: w.role, lv: wLv(w) }); });
   for (var i = 0; i < 12; i++) {
@@ -17119,7 +17252,7 @@ function lokLoad(d) {
   if (!d || typeof d !== 'object' || Array.isArray(d)) return;
   var q = lokNew();
   q.lv = numIn(d.lv, 1, LOK_MAXLV, true) || 1; q.tb = numIn(d.tb, 1, LOK_MAXTB, true) || 1;
-  q.dl = numIn(d.dl, 0, LOK_UP.dol.max, true); q.star = numIn(d.star, 0, 5, true); q.sv = numIn(d.sv, 0, 1e9, true); q.ls = numIn(d.ls, 0, 1e9, true); q.hint = d.hint ? 1 : 0; q.sazW = d.sazW ? 1 : 0; q.sazU = d.sazU ? 1 : 0;
+  q.dl = numIn(d.dl, 0, LOK_UP.dol.max, true); q.star = numIn(d.star, 0, 5, true); q.sv = numIn(d.sv, 0, 1e9, true); q.ls = numIn(d.ls, 0, 1e9, true); q.hint = d.hint ? 1 : 0; q.sazW = d.sazW ? 1 : 0; q.sazU = d.sazU ? 1 : 0; q.auto = d.auto ? 1 : 0;
   q.mu = numIn(d.mu, 0, 1e6, true); q.gs = numIn(d.gs, 0, 5, true); q.ed = numIn(d.ed, 0, 1e6, true); q.rd = numIn(d.rd, 0, 1e6, true);
   /* v2.22: kademeli eşya + süsler; eski kayıt (up.ter / up.mez / up.saz): Teras → Asma Çardak, Saz Köşesi → saz süsü, Meze Vitrini → 2. kademe (buzlu vitrin, +%10 aynı) */
   ['masa', 'kapi', 'tabela', 'mez'].forEach(function (k) { var u = LOK_UP[k]; q.tr[k] = d.tr && typeof d.tr === 'object' && d.tr[k] !== undefined ? numIn(d.tr[k], u.base, u.max, true) : u.base; });
@@ -17468,7 +17601,7 @@ function lokSlDown(k) {
 }
 /* ---------- gruplar ---------- */
 function lokFlow() {
-  var q = lokQ(), n = Math.max(1, lokMenu().length), f = (1 + 0.14 * (q.lv - 1)) * (1 + 0.08 * (n - 1));
+  var q = lokQ(), n = Math.max(1, lokMenu().length), f = (1 + 0.14 * (q.lv - 1)) * (1 + 0.05 * (q.lv - 1)) * (1 + 0.08 * (n - 1));   /* v2.24: kiraya karşılık Sv başına ek +%5 */
   f *= clamp(1 + 0.03 * (repLevel() - 5), 0.9, 1.4);                         /* popülerlik */
   f *= adCust() * (1 + roadFlow());                                          /* İlan Bürosu + yol */
   if (q.star > 0) f *= 1 + (q.star - 3) * 0.05;                              /* eleştirmen yıldızı ±%10 (Aşama 2) */
@@ -17768,7 +17901,7 @@ function lokResFail() {
 /* gün başı: ilk 'play' anında bir kez (q.ed kayda yazılır; yarım günde yükleme yeniden zar atmaz) */
 function lokDayStart() {
   var q = lokQ(), D = day.n; if (!q.res) q.res = {};
-  q.ed = D; LKR.muT = 0; LKR.crT = 0; q.op = 0;                               /* v2.22: her gün kapalı başlar */
+  q.ed = D; LKR.muT = 0; LKR.crT = 0; q.op = lokAuto() ? 1 : 0;               /* v2.22: her gün kapalı başlar; v2.24: personele devredildiyse kendini açar */
   if (S.help && S.help.lokanta && !S.help.lokanta2) helpOnce('lokanta2');       /* v2.23: genişleyen rehber eski oyuncuya bir kez */
   if (lokDcOn('saz') && !q.sazW) { q.sazW = 1; setTimeout(function () { toast(T('lkSazWageNote', { v: money(lokSazFee()) })); }, 2200); }   /* eski kayıtta saz: yevmiye başlar, bir kez bilgi */
   if (q.res.st === 'on' && q.res.due < D) lokResFail();                          /* kaçırılmış gün */
@@ -19009,7 +19142,7 @@ function renderLokPanel() {
     });
   } else if (tab === 'up') {
     h += '<h3>' + T('lkSecLv') + '</h3>';
-    h += lkBuyRow('🏖', T('lkName') + ' ' + T('level') + q.lv + (q.lv < LOK_MAXLV ? ' → ' + (q.lv + 1) : ''), T('lkLvD', { m: Math.min(5, q.lv + 1), c: 3 + Math.min(5, q.lv + 1) }), 'lok_lv');
+    h += lkBuyRow('🏖', T('lkName') + ' ' + T('level') + q.lv + (q.lv < LOK_MAXLV ? ' → ' + (q.lv + 1) : ''), T('lkLvD', { m: Math.min(5, q.lv + 1), c: 3 + Math.min(5, q.lv + 1) }) + ' • ' + (q.lv < LOK_MAXLV ? T('rentUp', { a: money(rentOf(LOK_Z, q.lv)), b: money(rentOf(LOK_Z, q.lv + 1)) }) : T('rentCard', { v: money(rentOf(LOK_Z, q.lv)) })), 'lok_lv');
     h += lkBuyRow('🪑', T('lkTables') + ' ' + lokTblN() + (q.tb < LOK_MAXTB ? ' → ' + LOK_TBN[q.tb] : ''), T('lkTbD'), 'lok_tb');
     h += '<h3>' + T('lkSecUp') + '</h3>';                                          /* v2.22: kademeli eşya (tip + boyut) */
     LOK_UPK.forEach(function (k) {
@@ -19043,6 +19176,7 @@ Object.assign(STR.tr, {
   lkSlot: 'Ocak yeri {n}', lkSlotE: 'Ocak yeri {n} (boş)', lkSlotL: 'Sv {l}', lkSlLock: 'Lokanta Sv {l} olunca açılır', lkSecSl: 'OCAK YERLERİ {a}/{n}',
   lkSlIntro: 'Her yere istediğin ocağı kur; aynı türden birden çok olabilir (2 tava, 2 fırın…). Sipariş o türün en boş ocağına gider. Yer sayısı: Sv1 → 2, Sv2 → 3, Sv3 → 4. Her ocağa bir aşçı.',
   lkSlPick: 'Bir ocak türü seç ve KUR', lkSlChoose: 'SEÇ', lkSlOpsD: 'DÜŞÜR: bir alt kademe (iade yok) • SÖK: yer boşalır, {m} iade', lkSlDown: 'DÜŞÜR', lkSlRm: 'SÖK',
+  lkAutoCard: 'Sahil Lokantası — Personele Devret', lkAutoOn: 'Sahil Lokantası personelde ⚙', lkAutoD: 'Her gün kendini açar, şef garson kasayı yönetir', lkAutoOnD: 'Lokanta her gün kendini açar; kadro işi yürütür', lkAutoNoSt: 'kurulu ocak', lkAutoCook: '{n} ocak için aşçı',
   lkSazDay: 'Sazcı yevmiyesi', lkSazUnpaid: 'ödenemedi: sazcı yarın çalmaz', lkSazRow: 'sazcı yevmiyesi günlük {v}', lkSazHired: '🪕 Sazcı köşesine yerleşti! Yevmiyesi günde {v} (gün sonu kasadan).', lkSazWageNote: '🪕 Sazcı artık yevmiye alıyor: günde {v} (gün sonu kasadan). Karşılığında turist ve iş yemeği daha sık gelir.',
   lkCookIdle: 'boşta (ocak yok)', lkCookIdleT: '🍳 {n} boşta: kurulu ocak yok. Yeni ocak kur ya da KADRO\'dan çıkar.',
   lkSlRemoved: '🔧 {n} söküldü: {m} iade', lkSlDowned: '🔧 {n} artık kademe {l}', lkNoSlot: 'Boş ocak yeri yok: bir ocağı sök ya da lokanta seviyesini yükselt',
@@ -19083,6 +19217,7 @@ Object.assign(STR.en, {
   lkSlot: 'Stove slot {n}', lkSlotE: 'Stove slot {n} (empty)', lkSlotL: 'Lv {l}', lkSlLock: 'Opens at restaurant Lv {l}', lkSecSl: 'STOVE SLOTS {a}/{n}',
   lkSlIntro: 'Build any stove in any slot; several of the same type are fine (2 pans, 2 ovens…). Orders go to the least busy stove of their type. Slots: Lv1 → 2, Lv2 → 3, Lv3 → 4. One cook per stove.',
   lkSlPick: 'Pick a stove type and BUILD', lkSlChoose: 'PICK', lkSlOpsD: 'DOWNGRADE: one tier down (no refund) • REMOVE: frees the slot, {m} back', lkSlDown: 'DOWNGRADE', lkSlRm: 'REMOVE',
+  lkAutoCard: 'Seaside Restaurant — Hand Over to Staff', lkAutoOn: 'Seaside Restaurant run by staff ⚙', lkAutoD: 'Opens itself every day, the head waiter runs the till', lkAutoOnD: 'The restaurant opens itself every day; the crew runs it', lkAutoNoSt: 'a built stove', lkAutoCook: 'a cook for {n} stove(s)',
   lkSazDay: 'Saz player\'s fee', lkSazUnpaid: 'unpaid: no music tomorrow', lkSazRow: 'saz player\'s fee {v} a day', lkSazHired: '🪕 A saz player has settled in the corner! Fee {v} a day (paid from the till at day end).', lkSazWageNote: '🪕 The saz player now takes a daily fee: {v} (from the till at day end). In return tourists and business diners come more often.',
   lkCookIdle: 'idle (no stove)', lkCookIdleT: '🍳 {n} is idle: no free stove. Build one or let them go on the CREW tab.',
   lkSlRemoved: '🔧 {n} removed: {m} refunded', lkSlDowned: '🔧 {n} down to tier {l}', lkNoSlot: 'No free stove slot: remove a stove or raise the restaurant level',
@@ -19387,7 +19522,7 @@ Object.assign(STR.en, {
   forgetDone: 'Online data deleted; a new anonymous ID was created'
 });
 var FB_OUTBOX = 'balikci_feedback_outbox', FB_MAX = 20, FB_LEN = 500, FB_GAP = 61000, FB_CATS = ['bug', 'idea', 'love'];
-var FB_VER = '1.8';                                    /* görüşle birlikte giden oyun sürümü */
+var FB_VER = '2.20';                                    /* görüşle birlikte giden oyun sürümü */
 var fbScr = document.getElementById('fbScr'), fbCard = document.getElementById('fbCard'), fbText = document.getElementById('fbText'),
   fbCount = document.getElementById('fbCount'), fbErrEl = document.getElementById('fbErr'), fbSendBtn = document.getElementById('fbSend');
 var fb = { stars: 0, cat: '', busy: false, lastSent: 0, flushBusy: false, stop: false, timer: 0, toastTm: 0 };
@@ -19604,7 +19739,7 @@ window.BT = {
   setLang: function (l) { setLangTo(l); }, lang: function () { return lang; },
   M: function () { return M; },
   sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
-  nameBad: nameBad, evs: function () { return Object.keys(S.evs || {}); }, evQ: function () { return EV_Q.slice(); }, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, specMeDur: specMeDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, canStandFor: canStandFor, playerBlocks: function () { pblkT = -1; return playerBlocks(); }, inPlayerBlock: function (x, y) { pblkT = -1; return inPlayerBlock(x, y); }, moveActor: moveActor, routeVia: routeVia, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
+  nameBad: nameBad, evs: function () { return Object.keys(S.evs || {}); }, evQ: function () { return EV_Q.slice(); }, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, specMeDur: specMeDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, canStandFor: canStandFor, playerBlocks: function () { pblkT = -1; return playerBlocks(); }, inPlayerBlock: function (x, y) { pblkT = -1; return inPlayerBlock(x, y); }, moveActor: moveActor, routeVia: routeVia, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, chScene: { st: function () { return CHS; }, start: function () { chSceneStart(); }, end: function () { chSceneEnd(); }, pos: function () { return chScenePos(); } }, rent: { of: rentOf, total: rentTotal, zones: rentZones, dayEnd: rentDayEnd, workMul: areaWorkMul, custMul: areaCustMul }, wageTotal: function () { return wageTotal(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
   dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(), landX: LANDX, landY: LANDY,
     pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
     y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },
@@ -19629,7 +19764,7 @@ window.BT = {
   sfx: sfx, audio: function () { return { state: AC && AC.state, vol: masterGain && +masterGain.gain.value.toFixed(3), lvl: volLvl, on: soundOn, ready: audioReady }; },
   setVol: function (v) { volLvl = clamp(v | 0, 0, 2); applyVolume(); ensureAudio(); return volLvl; },
   /* duraklatma + kayıt */
-  paused: function () { return paused; },
+  paused: function () { return paused; }, renderBar: function () { if (barTab) renderBar(); },
   saveNow: function () { manualSave(); return saveMeta(); }, slot: function () { return curSlot; }, saveSlots: function () { var o = []; for (var i = 1; i <= SLOT_N; i++) o.push(metaOf(readSlot(i))); return o; }, persistent: function () { return Store.persistent; },
   saveQuit: saveAndQuit, saveMeta: saveMeta,
   openSettings: function () { openSettings(false); },
@@ -19732,7 +19867,7 @@ function lokBT() {
     save: lokSave, load: function (d) { lokLoad(d); lokLoadWorld(); }, loadWorld: lokLoadWorld, reset: lokReset,
     openPanel: openLokPanel, closePanel: closeLokPanel, panelOpen: lokPanelOpen, panelAct: lokPanelAct, renderPanel: renderLokPanel,
     deck: lokDeckObj, nearBoard: lokNearBoard, onOpen: lokOnOpen, fixWorld: lokFixWorld, terObj: lokTerObj, houseObj: lokHouseObj, route: lokRoute, seatWay: lokSeatWay, outWay: lokOutWay, tabs: LOK_TABS, portions: tarifPortions,
-    passIdx: lokPassIdx, gw: lokGW, sazDayEnd: lokSazDayEnd, sazFee: lokSazFee, sazIdle: lokSazIdle, sazOn: lokSazOn, fineFix: lokFineFix, supSrc: lokSupSrc, halList: lokHalList, kilNeed: lokKilNeed, guvecSrc: lokGuvecSrc, supRoom: lokSupRoom, SUP_KEEP: LOK_SUP_KEEP, KIL_PACK: LOK_KIL_PACK, coldKey: lokColdKey, assign: lokAssignCooks, patMul: lokPatMul,
+    passIdx: lokPassIdx, chain: lokChain, auto: lokAuto, setAuto: lokSetAuto, gw: lokGW, sazDayEnd: lokSazDayEnd, sazFee: lokSazFee, sazIdle: lokSazIdle, sazOn: lokSazOn, fineFix: lokFineFix, supSrc: lokSupSrc, halList: lokHalList, kilNeed: lokKilNeed, guvecSrc: lokGuvecSrc, supRoom: lokSupRoom, SUP_KEEP: LOK_SUP_KEEP, KIL_PACK: LOK_KIL_PACK, coldKey: lokColdKey, assign: lokAssignCooks, patMul: lokPatMul,
     dayEnd: lokDayEnd, dayStart: lokDayStart, fx: lokDrawFx, push: lokPush,
     UP: LOK_UP, UPK: LOK_UPK, upOn: lokUpOn, upLv: lokUpLv, tier: lokTier, DC: LOK_DC, dcOn: lokDcOn, eff: lokEff, effTxt: lokEffTxt,   /* v2.22: kademe + süs */ WED: LOK_WED, MUH: LOK_MUH, CRIT: LOK_CRIT, wedN: function () { return LOK_WED.length; },
     resOffer: lokResOffer, resAnswer: lokResAnswer, resToday: lokResToday, resWin: lokResWin, resFail: lokResFail, resDeliver: lokResDeliver, resReward: lokResReward, resCard: lokResCard, evOpen: lokEvOpen,
