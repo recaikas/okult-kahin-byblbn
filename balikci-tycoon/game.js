@@ -32,7 +32,7 @@ var STR = {
     welcomeCo: 'Hayırlı olsun! {n} kapılarını açtı.', tapStart: '▶ BAŞLAMAK İÇİN DOKUN', skip: 'ATLA ▶▶',
     dayScore: 'Skor (toplam balık)', dayRank: '{s} • {r}. sıra', fishN: '{n} balık',
     tag: 'KÜÇÜK İSKELEDEN BÜYÜK LİMANA',
-    langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM', taxWarn: '🎩 Yarın vergi memuru Haşmet Bey limana uğrayacak…', taxPaid: '🧾 Vergi makbuzu: {n} ürün · −{v}', taxName: 'Vergi Memuru Haşmet Bey', guardLbl: 'Alp Er Tunga · nöbette', dolphLbl: '🐬 Yunus seni çağırıyor', dolphHint: '🐬 İskelenin batı kıyısında bir yunus sıçrıyor… yanına git!', dolphHintN: '🐬 İskelenin kuzey ucunda bir yunus sıçrıyor… yanına git!', taxWarnDebt: '🎩 Yarın Haşmet Bey geliyor! Faiziyle borcun: {v}. Kasada para olsun!', taxWarnLast: '⚠ SON HAFTA! Yarın {v} borcunu ödeyemezsen liman mühürlenir!', taxDebt: '📕 Ödenemeyen vergi borca yazıldı: {v}. Haftaya iki katı!', taxDebtOff: '✅ Haşmet Bey\'e borcun kapandı', overK: 'OYUN BİTTİ', overT: 'LİMAN BATTI', overBy: 'HAŞMET BEY HER ZAMAN GELİR', overGo: 'ANA MENÜ', overP: '{c} vergi borcu yüzünden mühürlendi. {d} gün boyunca {s} müşteriye balık sattın. Hamsiler hâlâ koyda… belki bir gün, yeniden.', visLbl: 'GÖRÜNÜM', visClassic: 'KLASİK', visFine: 'İNCE',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM', taxWarn: '🎩 Yarın vergi memuru Haşmet Bey limana uğrayacak…', taxPaid: '🧾 Vergi makbuzu: {n} ürün · −{v}', taxName: 'Vergi Memuru Haşmet Bey', guardLbl: 'Alp Er Tunga · nöbette', dolphLbl: '🐬 Yunus seni çağırıyor', dolphHint: '🐬 İskelenin batı kıyısında bir yunus sıçrıyor… yanına git!', dolphHintN: '🐬 İskelenin kuzey ucunda bir yunus sıçrıyor… yanına git!', taxWarnDebt: '🎩 Yarın Haşmet Bey geliyor! Faiziyle borcun: {v}. Kasada para olsun!', taxWarnLast: '⚠ SON HAFTA! Yarın {v} borcunu ödeyemezsen liman mühürlenir!', taxDebt: '📕 Ödenemeyen vergi borca yazıldı: {v}. Haftaya iki katı!', taxDebtOff: '✅ Haşmet Bey\'e borcun kapandı', overK: 'OYUN BİTTİ', overT: 'LİMAN BATTI', overBy: 'HAŞMET BEY HER ZAMAN GELİR', overGo: 'ANA MENÜ', overP: '{c} vergi borcu yüzünden mühürlendi. {d} gün boyunca {s} müşteriye balık sattın. Hamsiler hâlâ koyda… belki bir gün, yeniden.', visLbl: 'GRAFİK', visClassic: 'DÜŞÜK', visFine: 'YÜKSEK', gfxAsk: 'Oyun bu cihazda biraz takılıyor. Grafiği DÜŞÜK\'e alalım mı? Daha akıcı olur; istediğin zaman Ayarlar › GRAFİK\'ten geri alabilirsin.', gfxAskYes: 'DÜŞÜK\'E AL', gfxLowOn: 'Grafik: DÜŞÜK',
     /* v2.16 — Liman Gazetesi özel sayı */
     gzBoy: 'Gazeteci Çocuk', gzYell: 'Son dakika! Liman Gazetesi özel sayı!', gzYellMorn: 'Gazeteee! Liman Gazetesi!', gzOnGround: 'Özel sayı!', gzFame: 'Şeref Panosu · {n}/{m}', gzArch: 'LİMAN GAZETESİ ARŞİVİ', gzArchN: '{a}/{n} sayı', gzDay: '{d}. GÜN', gzRead: 'OKU', gzShareBtn: 'PAYLAŞ', gzLockedD: 'Bu sayı henüz çıkmadı', gzMissed: 'Bu sayı kaçırıldı', gzMissedD: 'Bu kayıtta o gün çoktan geçmişti', gzOpenRow: 'Açılış sayısı', gzCh1Row: 'Bölüm 1 sonu', gzShareTxt: 'Liman Gazetesi\'nde manşet oldum! Hamsi Koyu\'nu sen de oyna:', gzShareTag: 'KARADENİZ\'DE BİR BALIKÇI LİMANI', gzSaved: '📰 Gazete görseli indirildi', gzShareErr: 'Görsel hazırlanamadı',
     resetAsk: 'Tüm ilerleme silinsin mi?',
@@ -252,7 +252,7 @@ var STR = {
     welcomeCo: '{n} is open for business!', tapStart: '▶ TAP TO BEGIN', skip: 'SKIP ▶▶',
     dayScore: 'Score (total fish)', dayRank: '{s} • #{r}', fishN: '{n} fish',
     tag: 'FROM A TINY PIER TO A GRAND HARBOR',
-    langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM', taxWarn: '🎩 Tomorrow the tax collector Mr. Haşmet will visit the harbour…', taxPaid: '🧾 Tax receipt: {n} items · −{v}', taxName: 'Tax Collector Mr. Haşmet', guardLbl: 'Alp Er Tunga · on watch', dolphLbl: '🐬 The dolphin is calling you', dolphHint: '🐬 A dolphin is leaping by the west edge of the pier… go to it!', dolphHintN: '🐬 A dolphin is leaping at the north end of the pier… go to it!', taxWarnDebt: '🎩 Mr. Haşmet comes tomorrow! Your debt with interest: {v}. Keep cash in the safe!', taxWarnLast: '⚠ LAST WEEK! If you can\'t pay your {v} debt tomorrow, the harbour will be sealed!', taxDebt: '📕 Unpaid tax added to your debt: {v}. It doubles next week!', taxDebtOff: '✅ Your debt to Mr. Haşmet is cleared', overK: 'GAME OVER', overT: 'THE HARBOUR SANK', overBy: 'MR. HAŞMET ALWAYS COMES BACK', overGo: 'MAIN MENU', overP: '{c} was sealed over unpaid taxes. For {d} days you sold fish to {s} customers. The anchovies are still in the bay… maybe one day, again.', visLbl: 'GRAPHICS', visClassic: 'CLASSIC', visFine: 'FINE',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM', taxWarn: '🎩 Tomorrow the tax collector Mr. Haşmet will visit the harbour…', taxPaid: '🧾 Tax receipt: {n} items · −{v}', taxName: 'Tax Collector Mr. Haşmet', guardLbl: 'Alp Er Tunga · on watch', dolphLbl: '🐬 The dolphin is calling you', dolphHint: '🐬 A dolphin is leaping by the west edge of the pier… go to it!', dolphHintN: '🐬 A dolphin is leaping at the north end of the pier… go to it!', taxWarnDebt: '🎩 Mr. Haşmet comes tomorrow! Your debt with interest: {v}. Keep cash in the safe!', taxWarnLast: '⚠ LAST WEEK! If you can\'t pay your {v} debt tomorrow, the harbour will be sealed!', taxDebt: '📕 Unpaid tax added to your debt: {v}. It doubles next week!', taxDebtOff: '✅ Your debt to Mr. Haşmet is cleared', overK: 'GAME OVER', overT: 'THE HARBOUR SANK', overBy: 'MR. HAŞMET ALWAYS COMES BACK', overGo: 'MAIN MENU', overP: '{c} was sealed over unpaid taxes. For {d} days you sold fish to {s} customers. The anchovies are still in the bay… maybe one day, again.', visLbl: 'GRAPHICS', visClassic: 'LOW', visFine: 'HIGH', gfxAsk: 'The game is stuttering a little on this device. Switch graphics to LOW? It will run smoother; you can change it back any time in Settings › GRAPHICS.', gfxAskYes: 'SWITCH TO LOW', gfxLowOn: 'Graphics: LOW',
     /* v2.16 — Harbour Gazette special issue */
     gzBoy: 'Paperboy', gzYell: 'Breaking news! Harbour Gazette special issue!', gzYellMorn: 'Paaaper! Harbour Gazette!', gzOnGround: 'Special issue!', gzFame: 'Wall of Fame · {n}/{m}', gzArch: 'HARBOUR GAZETTE ARCHIVE', gzArchN: '{a}/{n} issues', gzDay: 'DAY {d}', gzRead: 'READ', gzShareBtn: 'SHARE', gzLockedD: 'This issue is not out yet', gzMissedD: 'That day had long passed in this save', gzMissed: 'You missed this issue', gzOpenRow: 'First issue', gzCh1Row: 'End of Chapter 1', gzShareTxt: 'I made the Harbour Gazette headlines! Play Hamsi Koyu too:', gzShareTag: 'A FISHING HARBOUR ON THE BLACK SEA', gzSaved: '📰 Newspaper image downloaded', gzShareErr: 'Could not prepare the image',
     resetAsk: 'Erase all progress?',
@@ -473,6 +473,7 @@ var W = 0, H = 0;                 /* sanal (pixel) tuval boyutu */
    İnce sanat (art/*.js) aynı dünya biriminde 1/FK'lık alt piksellerle çizer. curK: o an çizilen tuvalin ölçeği
    (ana tuval FK; kahraman/müşteri portresi gibi yan tuvaller kendi ölçeğini kurar). */
 var FINE = true, FK = 2, curK = 2;
+var FPSW = { t: 0, n: 0, slow: 0, asked: false };   /* v2.20: düşük grafik önerisi (fpsWatch); loadPref/savePref erken çağrıldığı için burada */
 if (document.body) document.body.classList.add('ince');
 function camT(x, y) { ctx.setTransform(FK, 0, 0, FK, (x || 0) * FK, (y || 0) * FK); }
 function setFine(on) {
@@ -3357,14 +3358,15 @@ var termsOK = false, hiddenRuns = [];  /* v2.11: topluluk kuralları kabul edild
 /* v2.12 — giriş onayı: 0 henüz sorulmadı, 1 kabul (çevrimiçi), -1 çevrimdışı oyna. Onay yokken sunucuya hiçbir şey gitmez. */
 var consent = 0, CONSENT_VER = 1;
 var onlineAsked = false;              /* KVKK aydınlatma: bilgilendirme bir kez gösterildi mi — gösterilmeden hiçbir şey gönderilmez */
-function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, mp: musicPick, onn: onlineAsked ? 1 : 0, vol: [VOL.mus, VOL.sfx, VOL.amb], trm: termsOK ? 1 : 0, hid: hiddenRuns.slice(-200), cns: consent, cnsV: CONSENT_VER, vis: FINE ? 1 : 0 })); }
+function savePref() { Store.set(PREF_KEY, JSON.stringify({ lang: lang, snd: volLvl, zoom: zoomLvl, mus: musicEnabled ? 1 : 0, mp: musicPick, onn: onlineAsked ? 1 : 0, vol: [VOL.mus, VOL.sfx, VOL.amb], trm: termsOK ? 1 : 0, hid: hiddenRuns.slice(-200), cns: consent, cnsV: CONSENT_VER, vis: FINE ? 1 : 0, gfa: FPSW.asked ? 1 : 0 })); }
 function loadPref() {
   try {
     var d = JSON.parse(Store.get(PREF_KEY) || 'null'); if (!d) return;
     if (d.lang) lang = d.lang;
     if (d.snd !== undefined) { volLvl = clamp(d.snd | 0, 0, 2); applyVolume(); }
     if (d.zoom) zoomLvl = d.zoom;
-    if (d.vis === 0 || d.vis === 1) setFine(d.vis === 1);              /* v2.13: Görünüm — Klasik / İnce */
+    if (d.vis === 0 || d.vis === 1) setFine(d.vis === 1);              /* v2.13: Görünüm — Klasik / İnce (v2.20: GRAFİK DÜŞÜK / YÜKSEK) */
+    if (d.gfa) FPSW.asked = true;                                       /* v2.20: düşük grafik önerisi bu cihazda bir kez soruldu */
     if (d.mus !== undefined) musicEnabled = !!d.mus;
     if (typeof d.mp === 'number') musicPick = d.mp >= 0 && d.mp < SONGS.length ? d.mp | 0 : -1;
     if (Array.isArray(d.vol)) { VOL.mus = clamp(+d.vol[0] || 0, 0, 1); VOL.sfx = clamp(+d.vol[1] || 0, 0, 1); VOL.amb = clamp(+d.vol[2] || 0, 0, 1); applyBusVol(); }
@@ -9131,15 +9133,31 @@ function syncSettingsUI() {
    DÖNGÜ
    ========================================================= */
 var last = 0, saveT = 0;
+/* v2.20 — GRAFİK: YÜKSEK (ince) bu cihazda akıcı değilse (6 sn'lik iki ardışık ölçümde < 30 kare/sn) cihaz başına bir kez DÜŞÜK (klasik) önerilir.
+   Klasik çizim tuvali 2 kat düşük çözünürlükte açar (≈4 kat az piksel). Sekme arkadayken ve testlerde (window.HK_FPS_OFF) ölçmez. */
+function fpsWatch(raw) {
+  if (!FINE || FPSW.asked || window.HK_FPS_OFF || document.hidden || raw <= 0 || raw > 0.5) { FPSW.t = 0; FPSW.n = 0; return; }
+  FPSW.t += raw; FPSW.n++;
+  if (FPSW.t < 6) return;
+  var fps = FPSW.n / FPSW.t; FPSW.t = 0; FPSW.n = 0;
+  FPSW.slow = fps < 30 ? FPSW.slow + 1 : 0;
+  if (FPSW.slow < 2 || anyOverlay() || CHS.on) return;
+  FPSW.asked = true; savePref();
+  ask(T('gfxAsk'), T('gfxAskYes'), function () {
+    setFine(false); savePref(); toast(T('gfxLowOn'));
+    Array.prototype.forEach.call(document.querySelectorAll('#visSeg button'), function (o) { o.classList.toggle('on', o.dataset.v === '0'); });
+  });
+}
 function frame(ts) {
   requestAnimationFrame(frame);
-  var dt = Math.min(0.05, (ts - last) / 1000 || 0);
+  var rawDt = (ts - last) / 1000 || 0, dt = Math.min(0.05, rawDt);
   last = ts;
   seaBedSet(!!(S.started && !intro.on && !paused && !document.hidden && volLvl >= 2 && soundOn && audioReady));   /* v2.1: deniz yatağı */
   if (intro.on) { updateIntro(dt); return; }
   if (!S.started) { gameT += dt; updateFx(dt); render(); drawHeroPreview(gameT); return; }
   if (paused) { if (!document.hidden) render(); return; }   /* duraklatıldı: dünya tamamen donar */
   gameStep(dt);
+  fpsWatch(rawDt);                  /* v2.20 — YÜKSEK grafikte takılıyorsa bir kez DÜŞÜK öner */
   /* v0.8 — otomatik kayıt: oyuncunun seçtiği aralıkta (oynanan süre). Sekme kapanınca/arka plana
      geçince ve gün sonunda ayrıca güvenlik kaydı yapılır (beforeunload / visibilitychange / endDay). */
   if (S.autoMin) { saveT += dt; if (saveT >= S.autoMin * 60) { saveT = 0; autoSaveNow(); } }
