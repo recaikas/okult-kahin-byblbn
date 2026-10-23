@@ -42,12 +42,12 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   R.roles = await p.evaluate(async () => {
     BT.areas.forEach(a => { a.lvl = 3; }); BT.rebuildCounters();
     const r = { z0: BT.zoneRoles(0), z3: BT.zoneRoles(3), cap3: BT.zoneStaffCap(3) };
-    document.querySelector('.dtab[data-t="level"]').click(); await new Promise(q => setTimeout(q, 200));
+    document.querySelector('.dtab[data-t="staff"]').click(); await new Promise(q => setTimeout(q, 200));
     const cards = [...document.querySelectorAll('#dpCards .dcard')];
     const i3 = cards.findIndex(c => /Balıkçı Mutfağı/.test(c.innerText) && /Personel|personel/.test(c.innerText));
     if (i3 >= 0) { const bt = cards[i3].querySelector('.buy'); if (bt) bt.click(); await new Promise(q => setTimeout(q, 200)); }
     r.list3 = document.getElementById('dpCards').innerText;
-    document.querySelector('.dtab[data-t="level"]').click();
+    document.querySelector('.dtab[data-t="staff"]').click();
     return r;
   });
   ok(R.roles.z3.includes('asci') && !R.roles.z0.includes('asci'), 'aşçı rolü yanlış bölgede ' + JSON.stringify(R.roles));

@@ -155,11 +155,11 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
     BT.S.ads = [{ id: 'dolmus', left: 1 }]; const f = BT.roadFlow(), rd = BT.ilan.road();
     BT.S.ads = []; const f0 = BT.roadFlow(), t0 = BT.servUnlock('turist');
     BT.S.ads = [{ id: 'panayir', left: 1 }]; const t1 = BT.servUnlock('turist');
-    BT.S.ads = []; return { a, f, rd, f0, t0, t1 };
+    BT.S.ads = []; return { a, f, rd, f0, t0, t1, noServ: BT.SERV.length === 0 };
   });
   ok(Math.abs(R.eff.a - 0.10) < 1e-9, 'sabır etkisi +%10 değil ' + JSON.stringify(R.eff));
   ok(Math.abs(R.eff.f - R.eff.f0 - 0.30) < 1e-9 && Math.abs(R.eff.rd - 0.30) < 1e-9, 'yol müşterisi +%30 roadFlow\'a bağlı değil ' + JSON.stringify(R.eff));
-  ok(R.eff.t0 === false && R.eff.t1 === true, 'Panayır günü turist açılmadı ' + JSON.stringify(R.eff));
+  ok(R.eff.noServ ? R.eff.t1 === true : R.eff.t0 === false && R.eff.t1 === true, 'Panayır günü turist açılmadı ' + JSON.stringify(R.eff));   /* v2.22-deneme: Hizmet Sahası yok → turist bina şartsız (Sv4; Panayır günü seviyeden önce, müşteri havuzunda) */
   /* ---- 7) gün sonu: süre azalır, biten reklam toast + kalkar ---- */
   await q(() => { BT.S.adLv = 3; BT.S.ads = [{ id: 'kahve', left: 2 }, { id: 'tellal', left: 1 }]; window.__toasts.length = 0; });
   await nextDay();

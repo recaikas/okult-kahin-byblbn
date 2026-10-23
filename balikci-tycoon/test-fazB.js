@@ -39,32 +39,9 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   ok(R.geo.walk.length === 0, 'yürüyüş yolu kopuk: ' + JSON.stringify(R.geo.walk));
   ok(R.geo.eastCorner <= 21.5, 'meydan kameranın ulaşamadığı doğu ucuna taştı');
 
-  /* saha yayaları: bina yokken gelmez; binalar kurulunca gelir, parsellerin içinden geçmez */
+  /* v2.22-deneme: Hizmet Sahası kalktı (yerine Sahil Lokantası) — sahada yaya yok */
   R.folk0 = await p.evaluate(async () => { await new Promise(r => setTimeout(r, 3000)); return BT.yardFolk().length; });
-  ok(R.folk0 === 0, 'bina yokken sahada yaya var');
-  R.folk = await p.evaluate(async () => {
-    const S = BT.S; S.ctrl = 2; S.cash = 5e6; S.rep = 400; S.tut = 99;
-    BT.areas.forEach(a => { a.locked = false; a.lvl = 3; }); BT.rebuildCounters();
-    window.__ns = setInterval(() => { const s = document.getElementById('stallScr'); if (!s.classList.contains('hidden')) document.getElementById('stallGo').click(); }, 200);
-    BT.PLOTS.forEach(pl => { const id = pl.allow.find(a => !BT.PLOTS.some(q => q.b === a)); if (id) BT.servBuild(id, pl.id); });
-    Object.values(BT.serv()).forEach(st => { st.cons = 0; });
-    BT.HUT.lvl = 5; BT.DEPOT.lvl = 4; BT.WHALL.built = true;
-    const Y = BT.SERVYARD, hits = [], out = []; let seen = 0, inside = 0, bags = 0;
-    const t0 = Date.now();
-    while (Date.now() - t0 < 30000) {
-      await new Promise(r => setTimeout(r, 100));
-      for (const f of BT.yardFolk()) {
-        if (f.in > 0) { inside++; continue; }
-        seen++; if (f.bag) bags++;
-        for (const q of BT.PLOTS) if (Math.abs(f.x - q.x) < 0.95 && Math.abs(f.y - q.y) < 0.95) hits.push(q.id + '@' + f.x.toFixed(1) + ',' + f.y.toFixed(1));
-        if (f.x > Y.x1 || f.y < Y.y0 - 0.2 || f.y > Y.y1 || f.x < 14.5) out.push(f.x.toFixed(1) + ',' + f.y.toFixed(1));
-      }
-    }
-    return { seen, inside, bags, hits: hits.slice(0, 5), out: out.slice(0, 5), n: BT.yardFolk().length };
-  });
-  ok(R.folk.seen > 50 && R.folk.inside > 0 && R.folk.bags > 0, 'saha yayaları dolaşmıyor / binalara girmiyor ' + JSON.stringify(R.folk));
-  ok(R.folk.hits.length === 0, 'yaya binanın içinden geçti ' + R.folk.hits.join(' '));
-  ok(R.folk.out.length === 0, 'yaya sahadan taştı ' + R.folk.out.join(' '));
+  ok(R.folk0 === 0, 'Hizmet Sahası kalktığı hâlde sahada yaya var ' + R.folk0);
 
   /* her yerde çizim hatasız */
   for (const [x, y] of [[16.4, 3.5], [18.5, 7.5], [19.7, 16]]) { await p.evaluate(q => { BT.player.x = q[0]; BT.player.y = q[1]; }, [x, y]); await sleep(700); }

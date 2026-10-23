@@ -59,7 +59,7 @@ const SHOT = __dirname + '/screenshots/depo/';
     const out = {};
     const card = () => [...document.querySelectorAll('#dpCards .dcard')].find(d => /Hamal|Porter/.test(d.querySelector('b').textContent));
     out.t2 = card() && card().querySelector('b').textContent;
-    BT.hire('depocu', true, -1);
+    for (let i = 0; i < 4; i++) BT.hire('depocu', true, -1);   /* v2.22: sınır 2 × depo seviyesi = 6 */
     return out;
   });
   await reopen();
@@ -71,11 +71,11 @@ const SHOT = __dirname + '/screenshots/depo/';
   R.staff.svFull = await q(() => { const d = [...document.querySelectorAll('#dpCards .dcard')].find(d => /Sevkiyat|Dispatcher/.test(d.querySelector('b').textContent)); return d.innerText.replace(/\s+/g, ' '); });
   R.staff.cap = await q(() => ({ dp: BT.depotRoleCap('depocu'), sv: BT.depotRoleCap('sevkiyat'), dpN: BT.depotRoleStaff('depocu'), svN: BT.depotRoleStaff('sevkiyat') }));
   await q(() => { for (let i = BT.workers.length - 1; i >= 0; i--) if (BT.workers[i].role === 'depocu' || BT.workers[i].role === 'sevkiyat') BT.workers.splice(i, 1); BT.DEPOT.lvl = 5; });
-  ok(/\(2\/3\)/.test(R.staff.t2 || '') && /3\/3/.test(R.staff.full || ''), 'Depo Hamalı kadro sınırı bölme sayısı değil ' + JSON.stringify(R.staff));
+  ok(/\(2\/6\)/.test(R.staff.t2 || '') && /6\/6/.test(R.staff.full || ''), 'Depo Hamalı kadro sınırı 2 × depo seviyesi değil ' + JSON.stringify(R.staff));
   ok(/Hamal kadrosu dolu|Porter crew full/.test(R.staff.full || ''), 'Hamal dolu metni rol başına değil ' + JSON.stringify(R.staff.full));
   ok(/\(0\/3\)/.test(R.staff.sv0.t) && !R.staff.sv0.blocked, 'Sevkiyatçı kartı hamalın dolu sınırını paylaşıyor ' + JSON.stringify(R.staff.sv0));
   ok(/\(3\/3\)/.test(R.staff.svFull) && /Sevkiyat kadrosu dolu|Dispatch crew full/.test(R.staff.svFull) && !/Hamal kadrosu dolu|Porter crew full/.test(R.staff.svFull), 'Sevkiyatçı dolu metni/sınırı ' + JSON.stringify(R.staff.svFull));
-  ok(R.staff.cap.dp === 3 && R.staff.cap.sv === 3 && R.staff.cap.dpN === 3 && R.staff.cap.svN === 3, 'rol sayaçları ' + JSON.stringify(R.staff.cap));
+  ok(R.staff.cap.dp === 6 && R.staff.cap.sv === 3 && R.staff.cap.dpN === 6 && R.staff.cap.svN === 3, 'rol sayaçları ' + JSON.stringify(R.staff.cap));
 
   /* yerleşim: çakışma yok, ekranda diğer binalarla binme yok, pano ve hayvan evi varsayılanlarıyla da */
   R.lay = await q(() => {
