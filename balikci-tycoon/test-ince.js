@@ -22,7 +22,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   /* ayarlardan Klasik */
   await p.evaluate(() => BT.openSettings()); await sleep(200);
   R.lbl = await p.evaluate(() => [document.getElementById('setVis').textContent, document.querySelector('#visSeg .on').dataset.v]);
-  ok(R.lbl[0] === 'GÖRÜNÜM' && R.lbl[1] === '1', 'ayar düğmesi yanlış ' + JSON.stringify(R.lbl));
+  ok(R.lbl[0] === 'GRAFİK' && R.lbl[1] === '1', 'ayar düğmesi yanlış ' + JSON.stringify(R.lbl));
   await p.click('#visClassic'); await sleep(250);
   R.classic = await snap();
   ok(!R.classic.fine && R.classic.K === 1 && R.classic.cw === R.classic.W, 'klasiğe dönmedi ' + JSON.stringify(R.classic));
@@ -31,7 +31,23 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   ok(R.pref === 0, 'tercih kaydedilmedi ' + R.pref);
   await p.click('#visFine'); await sleep(200);
   ok((await snap()).K === 2, 'inceye geri dönmedi');
+  R.gl = await p.evaluate(() => [document.getElementById('visClassic').textContent, document.getElementById('visFine').textContent]);
+  ok(R.gl.join() === 'DÜŞÜK,YÜKSEK', 'grafik düğme adları: ' + R.gl.join());
   await p.click('#setClose'); await sleep(200);
+  /* v2.20: YÜKSEK'te 6 sn'lik iki ölçümde < 30 kare/sn → bir kez DÜŞÜK önerisi; kabul edince klasik, tercih kaydedilir, bir daha sorulmaz */
+  R.fps = await p.evaluate(() => {
+    const o = {}, w = HKG.v('fpsWatch'); window.HK_FPS_OFF = 0;
+    for (let i = 0; i < 20 * 5; i++) w(1 / 50); o.fast = !document.getElementById('askScr').classList.contains('hidden');   /* 50 kare/sn: sorma */
+    for (let i = 0; i < 20 * 13; i++) w(1 / 20); o.ask = !document.getElementById('askScr').classList.contains('hidden'); o.msg = document.getElementById('askMsg').textContent;
+    document.getElementById('askYes').click(); o.K = HKG.K; o.pref = JSON.parse(localStorage.getItem('balikci_pref'));
+    BT.openSettings(); o.on = document.querySelector('#visSeg .on').dataset.v; document.getElementById('setClose').click();
+    document.getElementById('visFine') && null;
+    return o;
+  });
+  ok(!R.fps.fast && R.fps.ask && /DÜŞÜK/.test(R.fps.msg) && R.fps.K === 1 && R.fps.pref.vis === 0 && R.fps.pref.gfa === 1 && R.fps.on === '0', 'düşük grafik önerisi: ' + JSON.stringify(R.fps));
+  R.fps2 = await p.evaluate(() => { const w = HKG.v('fpsWatch'); BT.openSettings(); document.getElementById('visFine').click(); document.getElementById('setClose').click();
+    for (let i = 0; i < 20 * 13; i++) w(1 / 20); const a = !document.getElementById('askScr').classList.contains('hidden'); window.HK_FPS_OFF = 1; return { again: a, K: HKG.K }; });
+  ok(!R.fps2.again && R.fps2.K === 2, 'öneri bir kez sorulmalı, YÜKSEK\'e elle dönülebilmeli: ' + JSON.stringify(R.fps2));
   /* joystick yürüyüşü iki modda aynı yol */
   const walk = async () => {
     await p.evaluate(() => { BT.player.x = 4.5; BT.player.y = 3.2; });
