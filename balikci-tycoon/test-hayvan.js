@@ -192,11 +192,11 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
   });
   ok(R.sulkFeed.own && R.sulkFeed.r && R.sulkFeed.s === 0 && R.sulkFeed.m === 50 && R.sulkFeed.cash === 85, 'küs hayvana mama ' + JSON.stringify(R.sulkFeed));
 
-  /* ================= panel: YÜKSELT › HAYVANLAR ================= */
+  /* ================= panel: PERSONEL › HAYVANLAR (v2.22: YÜKSELT'ten taşındı) ================= */
   await p.evaluate(() => { BT.S.cash = 3000; BT.pet.list().forEach(q => { q.m = 85; }); BT.pet.list()[0].m = 55; });
-  await p.click('.dtab[data-t="level"]'); await sleep(200);
+  await p.click('.dtab[data-t="staff"]'); await sleep(200);
   R.card = await p.evaluate(() => { const c = [...document.querySelectorAll('#dpCards .dcard')].find(d => /HAYVANLAR/.test(d.innerText)); return c ? c.innerText.replace(/\s+/g, ' ') : ''; });
-  ok(/HAYVANLAR/.test(R.card) && /Pamuk/.test(R.card), 'YÜKSELT\'te HAYVANLAR kartı yok ' + R.card);
+  ok(/HAYVANLAR/.test(R.card) && /Pamuk/.test(R.card), 'PERSONEL\'de HAYVANLAR kartı yok ' + R.card);
   await p.evaluate(() => { const c = [...document.querySelectorAll('#dpCards .dcard')].find(d => /HAYVANLAR/.test(d.innerText)); c.querySelector('.buy').click(); }); await sleep(200);
   R.panel = await p.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].map(d => d.innerText.replace(/\s+/g, ' ')));
   ok(R.panel.some(t => /Pamuk/.test(t) && /TEZGÂHA ATA/.test(t) && /SEV/.test(t)) && R.panel.some(t => /Karabaş/.test(t)) && R.panel.some(t => /KURALLAR/.test(t)), 'hayvan kartları ' + JSON.stringify(R.panel));
@@ -218,7 +218,7 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
   R.ren = await p.evaluate(() => ({ n: BT.pet.list()[1].n, h: BT.decorById('kulube0').n.tr }));
   ok(R.ren.n === 'Kömür' && /Kömür/.test(R.ren.h), 'ad değiştirilemedi ' + JSON.stringify(R.ren));
   await p.evaluate(() => { const b = document.querySelector('#dpCards .buy'); b.click(); }); await sleep(100);   /* geri */
-  await p.click('.dtab[data-t="level"]'); await sleep(100);
+  await p.click('.dtab[data-t="staff"]'); await sleep(100);
   /* duraklatma menüsü › PERSONEL: HAYVANLAR satırları */
   await p.evaluate(() => { BT.ui.openPauseMenu(); }); await sleep(150);
   await p.evaluate(() => { const t = document.querySelector('#menuTabs .tab[data-t="personel"]'); if (t) t.click(); }); await sleep(150);
@@ -333,7 +333,7 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
     for (let i = 0; i < 2400; i++) { BT.emek.step(0.05); BT.day.t = 20; c.spawnT = 1e9; }   /* 2 dakika */
     return { on: BT.pet.on(), stray: !!(BT.pet.stray('cat') || BT.pet.stray('dog')), gulls: BT.pet.gulls.length, buf: c.buffer.length, flow: BT.pet.flow('b0'), pat: BT.pet.pat('b0'), adopt: BT.pet.list().length };
   });
-  await q.click('.dtab[data-t="level"]'); await sleep(150);
+  await q.click('.dtab[data-t="staff"]'); await sleep(150);
   R.off.card = await q.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].some(d => /HAYVANLAR/.test(d.innerText)));
   ok(!R.off.on && !R.off.stray && R.off.gulls === 0 && R.off.buf === 6 && R.off.flow === 1 && R.off.pat === 1 && !R.off.card, 'kapalıyken hayvan sistemi çalışıyor ' + JSON.stringify(R.off));
 

@@ -13,27 +13,14 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
   await p.click('#heroGo'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(500);
 
-  /* 1) saha yayaları */
+  /* 1) v2.22-deneme: Hizmet Sahası kalktı — saha yayası yok (eski: küçültülmüş çizim, dükkân önünde bakma) */
   R.folk = await p.evaluate(async () => {
-    const S = BT.S; S.ctrl = 2; S.cash = 5e6; S.rep = 400; S.tut = 99;
+    const S = BT.S; S.ctrl = 2; S.cash = 5e6; S.rep = 400; S.tut = 99;                      /* sonraki bölümlerin ortamı */
     BT.areas.forEach(a => { a.locked = false; a.lvl = 3; }); BT.rebuildCounters();
     window.__ns = setInterval(() => { const s = document.getElementById('stallScr'); if (!s.classList.contains('hidden')) document.getElementById('stallGo').click(); }, 200);
-    BT.PLOTS.forEach(pl => { const id = pl.allow.find(a => !BT.PLOTS.some(q => q.b === a)); if (id) BT.servBuild(id, pl.id); });
-    BT.player.x = 19.7; BT.player.y = 16.5;
-    /* çizim ölçümü: saha yayası ara tuvalden küçültülerek basılır */
-    const g = document.getElementById('game').getContext('2d'), di = g.drawImage.bind(g), sizes = [];
-    g.drawImage = function (img, sx, sy, sw, sh, dx, dy, dw, dh) { if (arguments.length === 9 && img.width === 40 && img.height === 72) sizes.push(dw + 'x' + dh); return di.apply(g, arguments); };
-    let look = 0, seen = 0;
-    const t0 = Date.now();
-    while (Date.now() - t0 < 40000) {
-      await new Promise(r => setTimeout(r, 250));
-      for (const f of BT.yardFolk()) { if (f.in > 0) continue; seen++; if (f.look > 0) look++; }
-    }
-    g.drawImage = di;
-    return { seen, look, sizes: [...new Set(sizes)], n: sizes.length };
+    await new Promise(r => setTimeout(r, 2000)); return BT.yardFolk().length;
   });
-  ok(R.folk.seen > 50 && R.folk.look > 5, 'yayalar dükkân önünde durmuyor ' + JSON.stringify(R.folk));
-  ok(R.folk.n > 0 && R.folk.sizes.includes('32x58') && R.folk.sizes.every(q => +q.split('x')[0] < 40), 'yayalar küçültülmüş çizilmiyor ' + JSON.stringify(R.folk));
+  ok(R.folk === 0, 'Hizmet Sahası kalktığı hâlde saha yayası var ' + R.folk);
 
   /* 2) depo yedeği */
   R.dep = await p.evaluate(async () => {

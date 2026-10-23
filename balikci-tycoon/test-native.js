@@ -42,7 +42,7 @@ const MOCK = seed => {
   const A1 = await p.evaluate(() => { const v = window.__pref.balikci_slot_1; return { has: !!v, cash: v ? JSON.parse(v).cash : null, keys: Object.keys(window.__pref) }; });
   ok(A1.has && A1.cash === 4321, 'kayıt kalıcı depoya yansımadı ' + JSON.stringify(A1));
   /* geri tuşu: alt panel → kapanır; sonra menü açılır; sonra menü kapanır */
-  await p.click('.dtab[data-t="serv"]'); await sleep(300);
+  await p.click('.dtab[data-t="staff"]'); await sleep(300);
   const barOpen = await p.evaluate(() => !document.getElementById('devpanel').classList.contains('hidden'));
   await p.evaluate(() => window.__h.backButton()); await sleep(200);
   const barAfter = await p.evaluate(() => !document.getElementById('devpanel').classList.contains('hidden'));

@@ -140,7 +140,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
     for (const role of ['hamal', 'filetocu', 'tezgahtar', 'kasiyer'].concat(z === 3 ? ['asci'] : [])) {
       const have = await p.evaluate(([z, r]) => BT.workers.some(w => w.zone === z && w.role === r), [z, role]);
       if (have) continue;
-      await openTab('level');
+      await openTab('staff');
       const cs = await cards(); const zc = cs.find(c => new RegExp(['İskelesi', 'Pazarı', 'Fümehane', 'Mutfağı'][z]).test(c.t) && /personeli/.test(c.t));
       if (!zc) { log('  ! bölge personel kartı yok z' + z); break; }
       await p.evaluate(i => document.querySelectorAll('#dpCards .dcard')[i].querySelector('.buy').click(), zc.i); await sleep(200);
@@ -154,7 +154,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
     /* son tamamlama turunda: müdür ücreti rastgele (≈8–19 bin), bütçe şansa kalmasın, eksikse tamamlanır (kayda yazılır) */
     const top = !topUp ? 0 : await p.evaluate(() => { const need = 20000 - BT.S.cash; if (need > 0) BT.S.cash += need; return Math.max(0, Math.round(need)); });
     if (top) log('  (müdür bütçesi +' + top + ')');
-    await openTab('level');
+    await openTab('staff');
     let cs = await cards(); const mc = cs.find(c => /Müdür gerekli/.test(c.t) && c.t.includes(['İskelesi', 'Pazarı', 'Fümehane', 'Mutfağı'][z]));
     if (!mc) { log('  ! müdür kartı yok z' + z, cs.map(c => c.t).filter(t => /Müdür|Devret|OTOMAT/.test(t))); await closeBar(); return; }
     await p.evaluate(i => document.querySelectorAll('#dpCards .dcard')[i].querySelector('.buy').click(), mc.i); await sleep(250);

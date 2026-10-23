@@ -1,10 +1,8 @@
-/* v1.4 — hizmet binaları 9 → 5.
-   1) katalogda yalnız Buzhane, Restoran, Nakliye, Kooperatif, Mezat var; 5 parsel, her biri beşini de alır;
-   2) Kooperatif yükseltmeleri ucuzlatır (eski Tamirhane), Mezat kuyruğu uzatır + Toptancı açar (eski Toptancı Hanı),
-      Buzhane tezgâh kapasitesini artırır;
-   3) Restoran pasif para basmaz: fazla yoksa boş bekler, depo %60'tan doluysa ya da tezgâh %75'ten doluysa fazlayı
-      pişirip satar;
-   4) eski kayıt: kaldırılan binalar birleştiği binaya seviye olarak geçer, kalan harcama iade edilir; sayfa hatası yok. */
+/* v2.22-deneme — HİZMET SAHASI KALDIRILDI (LOKANTA_V3_PLAN.md; eski v1.4 hizmet binası testinin yerine).
+   1) katalog boş, etkiler 0, kilitler (turist / toptancı) bina şartı olmadan seviye koşuluyla; parseller yerleşimde ayrılı değil
+   2) eski kayıt: kurulu binaların bedeli kasaya iade edilir (bildirimle), kayda geri yazılmaz
+   3) alt çubukta BİNA yok, PERSONEL var: bölge kadroları, müdür ve devret kartları orada; YÜKSELT'te yalnız oyuncu gelişimi
+   4) TR/EN; sayfa hatası yok. */
 const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const URL = process.env.URL || 'http://localhost:8099/index.html';
@@ -13,73 +11,42 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 430, height: 860 } });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
   await p.goto(URL); await sleep(900);
-  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]');
-  await p.click('#heroGo'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(500);
-
-  const A = await p.evaluate(() => {
-    BT.achMute(true);   /* başarım ödülleri para kontrolünü bozmasın */
-    const S = BT.S; S.ctrl = 2; S.tut = 99; S.rep = 260;
-    BT.areas.forEach(a => { a.locked = false; a.lvl = 3; }); BT.rebuildCounters();
-    window.__ns = setInterval(() => { const s = document.getElementById('stallScr'); if (s && !s.classList.contains('hidden')) document.getElementById('stallGo').click(); }, 150);
-    const ids = BT.SERV.map(d => d.id).sort().join(',');
-    const allowAll = BT.PLOTS.every(q => q.allow.length === 5);
-    const c0 = BT.counters[0], cap0 = BT.counterMax(c0), q0 = BT.queueMax(0), up0 = BT.upCost(1000);
-    BT.servBuild('buzhane', BT.PLOTS[0].id); for (let i = 0; i < 4; i++) BT.servUp('buzhane');
-    BT.servBuild('koop', BT.PLOTS[1].id); for (let i = 0; i < 4; i++) BT.servUp('koop');
-    BT.servBuild('mezat', BT.PLOTS[2].id); for (let i = 0; i < 2; i++) BT.servUp('mezat');
-    return { ids, allowAll, n: BT.PLOTS.length, cap0, cap1: BT.counterMax(c0), q0, q1: BT.queueMax(0), up0, up1: BT.upCost(1000),
-      toptanci: BT.CUST.some(t => t.id === 'toptanci') };
+  await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(600);
+  await p.evaluate(() => { window.__ns = setInterval(() => { ['stallScr', 'prepScr', 'dayScr'].forEach(id => { const e = document.getElementById(id); if (e && !e.classList.contains('hidden')) document.getElementById(id.replace('Scr', 'Go')).click(); }); }, 150); });
+  const R = {};
+  /* 1) katalog + etkiler + kilitler + yerleşim */
+  R.cat = await p.evaluate(() => {
+    BT.S.tut = 99; BT.S.ctrl = 2;
+    return { n: BT.SERV.length, cnt: BT.servCount(), eff: ['stock', 'ctrcap', 'wage', 'upcost', 'value', 'rep', 'ctrslot', 'custval', 'queue'].map(k => BT.servEff(k)),
+      unl: ['turist', 'toptanci', 'ctr'].map(t => BT.servUnlock(t)), plots: BT.layoutRects().filter(r => /^parsel /.test(r.id)).length,
+      cust: BT.CUST.filter(t => t.id === 'turist' || t.id === 'toptanci').map(t => t.id + ':' + t.lvl) };
   });
-  ok(A.ids === 'buzhane,koop,mezat,nakliye,restoran', 'katalog yanlış ' + A.ids);
-  ok(A.n === 5 && A.allowAll, 'parseller yanlış ' + JSON.stringify(A));
-  ok(A.cap1 === A.cap0 + 8, 'Buzhane tezgâh kapasitesi +8 değil ' + JSON.stringify(A));
-  ok(A.up1 === 900, 'Kooperatif Sv.5 yükseltmeyi %10 ucuzlatmadı ' + JSON.stringify(A));
-  ok(A.q1 === Math.min(7, A.q0 + 2), 'Mezat Sv.3 kuyruğu +2 uzatmadı ' + JSON.stringify(A));
-
-  /* Restoran: fazla yokken boş, fazla varken pişirir */
-  const R = await p.evaluate(async () => {
-    const S = BT.S, D = BT.DEPOT; D.lvl = 1; D.shelf = {};
-    BT.counters.forEach(c => { c.buffer.length = 0; });
-    BT.servBuild('restoran', BT.PLOTS[3].id);
-    const st = BT.serv().restoran; st.cons = 0;
-    const cash0 = S.cash; st.nextT = 0; await new Promise(r => setTimeout(r, 700));
-    const idle = { d: S.cash - cash0, cooked: st.cooked };
-    const cap = BT.DEPOT_LV[0].cap; D.shelf['fileto|hamsi'] = Math.ceil(cap * 0.8);
-    const c0 = BT.counters[0]; while (c0.buffer.length < BT.counterMax(c0)) c0.buffer.push({ k: 'fileto', f: c0.fish });
-    const dep0 = D.shelf['fileto|hamsi'], buf0 = c0.buffer.length, cash1 = S.cash;
-    st.nextT = 0; await new Promise(r => setTimeout(r, 700));
-    return { idle, cooked: st.cooked, gain: S.cash - cash1, depUsed: dep0 - (D.shelf['fileto|hamsi'] || 0), bufUsed: buf0 - c0.buffer.length };
+  ok(R.cat.n === 0 && R.cat.cnt === 0 && R.cat.eff.every(v => v === 0), 'hizmet kataloğu / etkisi kalmış ' + JSON.stringify(R.cat));
+  ok(R.cat.unl.every(Boolean) && R.cat.cust.join() === 'toptanci:4,turist:4', 'kilitler / seviye koşulu yanlış ' + JSON.stringify(R.cat));
+  ok(R.cat.plots === 0, 'parseller yerleşimde ayrılı ' + R.cat.plots);
+  /* 2) eski kayıt: Buzhane Sv2 (900 + 2.600) + Mezat Sv1 → iade */
+  R.old = await p.evaluate(async () => {
+    const d = JSON.parse(JSON.stringify(BT.buildSave())); d.cash = 100; d.serv = [['buzhane', 2, 'p1'], ['mezat', 1, 'p3']];
+    BT.loadFrom(d); await new Promise(r => setTimeout(r, 1700));
+    return { cash: BT.S.cash, toast: document.getElementById('toast').textContent, cnt: BT.servCount(), saved: (BT.buildSave().serv || []).length };
   });
-  ok(R.idle.d === 0 && R.idle.cooked === 0, 'Restoran fazla yokken para bastı ' + JSON.stringify(R));
-  ok(R.cooked === 2 && R.gain > 0 && R.depUsed + R.bufUsed === 2, 'Restoran fazlayı pişirmedi ' + JSON.stringify(R));
-
-  /* Eski kayıt göçü */
-  const G = await p.evaluate(async () => {
-    const d = BT.buildSave();
-    d.serv = [['tamirhane', 3, 'p1'], ['hal', 2, 'p3'], ['yakit', 1, 'p5'], ['tersane', 2, 'p6'], ['koop', 1, 'p8'], ['buzhane', 2, 'p9']];
-    d.cash = 5000;
-    BT.loadFrom(d); const c0 = 5000;
-    await new Promise(r => setTimeout(r, 1700));
-    const sv = BT.serv(), out = {};
-    for (const k in sv) out[k] = [sv[k].lvl, sv[k].plot];
-    return { out, refund: BT.S.cash - c0, plotsOK: Object.keys(out).every(k => BT.PLOTS.some(q => q.id === out[k][1] && q.b === k)), toast: document.body.innerText.includes('iade') };
-  });
-  ok(!G.out.tamirhane && !G.out.hal && !G.out.yakit && !G.out.tersane, 'kaldırılan bina hâlâ var ' + JSON.stringify(G));
-  ok(G.out.koop && G.out.koop[0] === 3 && G.out.mezat && G.out.mezat[0] === 2 && G.out.buzhane && G.out.buzhane[0] === 2, 'birleşme seviyeleri yanlış ' + JSON.stringify(G));
-  ok(G.refund === 80000, 'iade 80.000 değil ' + JSON.stringify(G));
-  ok(G.plotsOK, 'göçte parsel ataması bozuk ' + JSON.stringify(G));
-  /* inceleme bulgusu: birleşilen binaya parsel kalmazsa iade yalnız fiilen ödenen tutar olmalı (Fümehane kilitli → 4 parsel) */
-  const G2 = await p.evaluate(async () => {
-    const d = BT.buildSave();
-    d.areas = d.areas.map((a, i) => i === 2 ? [1, 1] : a);
-    d.serv = [['buzhane', 1, 'p1'], ['tamirhane', 5, 'p2'], ['restoran', 1, 'p3'], ['nakliye', 1, 'p4'], ['mezat', 1, 'p8']];
-    d.cash = 1000; BT.loadFrom(d);
-    await new Promise(r => setTimeout(r, 1700));
-    return { refund: BT.S.cash - 1000, koop: !!BT.serv().koop, n: Object.keys(BT.serv()).length };
-  });
-  ok(!G2.koop && G2.n === 4 && G2.refund === 1500 + 4200 + 11000 + 28000 + 70000, 'parselsiz birleşmede iade yanlış ' + JSON.stringify(G2));
+  ok(R.old.cash > 100 + 3500 && /Hizmet Sahası kaldırıldı/.test(R.old.toast) && R.old.cnt === 0 && R.old.saved === 0, 'eski kayıt iadesi yanlış ' + JSON.stringify(R.old));
+  /* 3) alt çubuk: PERSONEL */
+  R.bar = await p.evaluate(() => ({ tabs: [...document.querySelectorAll('.dtab')].map(b => b.dataset.t + ':' + b.innerText.trim()) }));
+  ok(!R.bar.tabs.some(t => /^serv:/.test(t)) && R.bar.tabs.some(t => /^staff:PERSONEL$/.test(t)), 'alt çubukta PERSONEL yok ' + JSON.stringify(R.bar));
+  await p.evaluate(() => { BT.S.cash = 50000; BT.hire('hamal', true, 0); BT.hire('filetocu', true, 0); BT.hire('tezgahtar', true, 0); BT.hire('balikci', true, 0); });
+  await p.evaluate(() => document.querySelector('.dtab[data-t="staff"]').click()); await sleep(300);
+  await p.evaluate(() => { const g = document.getElementById('helpGo'); if (g && g.offsetParent) g.click(); }); await sleep(200);
+  R.staff = await p.evaluate(() => ({ title: document.getElementById('dpTitle').textContent, cards: [...document.querySelectorAll('#dpCards .dcard')].map(d => d.innerText.replace(/\s+/g, ' ')) }));
+  ok(/PERSONEL/.test(R.staff.title) && R.staff.cards.some(t => /personeli/.test(t)) && R.staff.cards.some(t => /Müdür|Devret|OTOMAT/i.test(t)), 'PERSONEL kartları ' + JSON.stringify(R.staff));
+  await p.evaluate(() => document.querySelector('.dtab[data-t="level"]').click()); await sleep(300);
+  R.level = await p.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].map(d => d.innerText.replace(/\s+/g, ' ')));
+  ok(!R.level.some(t => /personeli|Müdür gerekli|Devret/i.test(t)), 'YÜKSELT\'te personel kartı kalmış ' + JSON.stringify(R.level));
+  /* 4) EN */
+  R.en = await p.evaluate(() => { BT.setLang('en'); return { tab: document.getElementById('dtServ').textContent, t: BT.T('servRefund', { n: '$1' }) }; });
+  ok(R.en.tab === 'STAFF' && /Service Yard is gone/.test(R.en.t), 'EN metin ' + JSON.stringify(R.en));
   ok(errs.length === 0, 'sayfa hatası: ' + errs.join(' | '));
-  console.log(JSON.stringify({ A, R, G }));
-  console.log(fail.length ? 'HATALAR:\n - ' + fail.join('\n - ') : 'TAMAM: hizmet binaları testi geçti');
+  console.log(JSON.stringify(R, null, 1));
+  console.log(fail.length ? 'HIZMET_FAIL\n - ' + fail.join('\n - ') : 'TAMAM: hizmet sahası kaldırma testi geçti');
   await b.close(); process.exit(fail.length ? 1 : 0);
 })();

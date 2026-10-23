@@ -23,10 +23,10 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   R.proj = await p.evaluate(() => ({ tab: !!document.querySelector('.dtab[data-t="proj"]'), ch: BT.chapterGroups().map(g => g.t), ach: BT.ACH_IDS().includes('kapali_pazar') }));
   ok(!R.proj.tab, 'PROJE sekmesi hâlâ var');
   ok(!R.proj.ch.some(t => /Kapalı Pazar/.test(t)) && !R.proj.ach, 'Kapalı Pazar hedefte / başarımda ' + JSON.stringify(R.proj));
-  await p.click('.dtab[data-t="serv"]'); await sleep(300);
+  await p.click('.dtab[data-t="staff"]'); await sleep(300);   /* v2.22: BİNA sekmesi → PERSONEL */
   R.serv = await p.evaluate(() => document.getElementById('dpCards').textContent);
   ok(!/T[İI]CARET OF/.test(R.serv), 'Ticaret Ofisi hâlâ BİNA sekmesinde');
-  await p.click('.dtab[data-t="serv"]'); await sleep(200);
+  await p.click('.dtab[data-t="staff"]'); await sleep(200);
   await p.click('.dtab[data-t="build"]'); await sleep(300);
   await p.click('#dpSub button[data-s="meydan"]'); await sleep(300);
   R.office = await p.evaluate(() => { const c = [...document.querySelectorAll('#dpCards .dcard')].find(d => /T[İI]CARET OF/.test(d.textContent)); return c ? c.textContent : ''; });

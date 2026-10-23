@@ -112,7 +112,7 @@ Her istasyon ayrı satın alınır ve seviyelenir; seviye eşzamanlı tabak say�
 
 ## Aşama 1 — uygulama notları (deneme-emekci)
 - **Konum:** `AREAS[4]` (`sahil`), x 0–10, y 23.5–29.5: Mutfak iskelesinin güneyine uzanan ahşap teras. Güneydeki/doğudaki kum şeridi 2–2,3 karo olduğundan (LANDY 24,5, SERVYARD sınırı 21,9) boş kuma sığmadı; iskele devamı olarak suyun üstünde. Kamera `maxOpenY` ile kendiliğinden uzar. Müşteri patikası yolun güney ucundan (x 10–13, y 21.5–24.5) kapıya (9.3, 24.1) iner.
-- **Seviyeler:** `S.lok.lv` (1–5) menü yeri, kadro sınırı (3 + lv) ve gelme hızını belirler; `S.lok.tb` masa seviyesi (2/4/6/9/12), lv + 1'i geçemez. İkisi de, istasyonlar da inşaat kuralına uyar (L. seviye L gün).
+- **Seviyeler:** `S.lok.lv` (1–5) menü yeri, kadro sınırı (4 + lv; Sv1’de beş rolün her birinden biri) ve gelme hızını belirler; `S.lok.tb` masa seviyesi (2/4/6/9/12), lv + 1'i geçemez. İkisi de, istasyonlar da inşaat kuralına uyar (L. seviye L gün).
 - **Aşama 2'ye bırakılanlar:** olaylar (rezervasyon, Muhtar, eleştirmen: `S.lok.res`, `S.lok.star` hazır; gelme hızı yıldızı zaten ±%10 okur), masa dışı yükseltmeler (teras `lokPatMul`, meze, saz, dolap 24: `S.lok.dl` hazır), Balık Büfesi adı + menünün büfeden lokantaya taşınması (Tarif Defteri şimdilik lokanta açılınca da açılır; defterdeki MENÜ sekmesi aynen duruyor), kedi etkisi.
 
 ## Aşama 2 — uygulama notları (deneme-emekci)
@@ -122,3 +122,9 @@ Her istasyon ayrı satın alınır ve seviyelenir; seviye eşzamanlı tabak say�
   - Gurme Eleştirmen (Sv≥3, günde %35): 1 kişilik `elestirmen` grubu; yıldız = 1 + bekleme (≤%40 sabır: +2, ≤%70: +1) + tarif çarpanı ≥ 2,2 (+1) + masa temizliği (yemek sırasında başka kirli masa ≤ 0; 6+ masada ≤ 1) (+1). `S.lok.star` son puan (tabela, lokFlow ±%10), itibar (yıldız−3)×3; sabır taşarsa 1 yıldız. 5 yıldız → başarım `lk_gurme` "Gurmenin Gözdesi".
 - **Yükseltmeler** (`LOK_UP`, inşaat kimlikleri `lok_ter|lok_mez|lok_saz|lok_dol`, hepsi 1 gün): Teras Sv3 (sabır ×1,15), Meze Vitrini (ödeme ×1,10), Saz Köşesi Sv5 (yemek süresi ×1,15 = masa dönüşü −%15, ödeme ×1,25, 28–50 sn'de `melody` ile kısa saz sesi, oturan müşteri + oyuncu 16 birim içindeyken), Büyük Soğuk Dolap (`S.lok.dl`, 12 → 24). Yerler hep ayrı: meze (0,8; 26,25), saz (9,5; 28,75).
 - **Balık Büfesi:** BİNA `restoran` adı Balık Büfesi / Fish Buffet; `TARIF_BUFE = 0` ile büfe tarif uygulamaz. Defter MENÜ sekmesi lokanta açıkken `S.lok.menu`'yu düzenler (yer = lokanta Sv, istasyonu kurulu tarif); lokanta yokken "Menü Sahil Lokantası'nda". Eski `S.tarif.menu` bekleme listesidir: `tarifImportMenu` (tarifLoad sonunda ve istasyon kurulunca) istasyonu kurulu olanları lokanta menüsüne taşır ve listeden düşer. Defter koşulu: büfe ya da lokanta.
+
+## Ev seviyeyle büyür (deneme-2)
+- Ön kenar (y 26, açık ocakbaşı) ve genişlik (x 15,7–23,65) sabit; arka duvar seviyeyle kuzeye gider (`LOK_HY0`, tasarım y): Sv1 22 (4 karo derin), Sv2–4 21 (5), Sv5 20,5 (5,5). Doğu kıyısına (x − y ≤ LAND_UMAX) sığar; kıyı değişmedi.
+- Sv1 tek katlı ocakbaşı + kiler · Sv2 arka oda, ikinci baca, odun yığını · Sv3 hımış cumbalı üst kat + balkon · Sv4 doğu kanadı (`LOK_WING`, avlunun kuzeyi) + ikinci cumba · Sv5 çatı köşkü, görkemli tabela.
+- `lokHouseR()` gerçek koordinatlı ayak izi + kanat; `lokHouseObj` çizime `lv`, `y0`, `wing` geçirir. Mutfak sipariş panosu arka duvarla gider. Doğu duvarındaki avlu kapısı sabit (`LOK_EDOOR`, tasarım y 24,7–25,5).
+- Evin alanın kuzeyine taşan kısmı `layoutRects`'te hep ayrılı (en büyük hâli); altındaki manzara çizilmez (`sceneryOnDeck`). Oyuncu engelleri (arka/batı/doğu duvar, kanat) ev büyüdükçe kayar.
