@@ -136,11 +136,11 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     ok(r2.open && !r2.ins, 'inşaat bitince lokanta açılır: ' + JSON.stringify(r2));
     for (let i = 0; i < 6 && !/REHBERİ/.test(await p.evaluate(() => document.getElementById('helpT').innerText)); i++) { await p.evaluate(() => document.getElementById('helpGo').click()); await sleep(200); }
     r2.help = await p.evaluate(() => !document.getElementById('helpScr').classList.contains('hidden')); r2.t = await p.evaluate(() => document.getElementById('helpB').innerText.replace(/\s+/g, ' '));
-    ok(r2.help && /1\) .*Komi/.test(r2.t) && /2\) /.test(r2.t) && /3\) /.test(r2.t) && /4\) /.test(r2.t), 'açılışta 4 adımlı rehber kartı (TR): ' + r2.t);
+    ok(r2.help && /1\) .*KAPALI/.test(r2.t) && /2\) .*ocak/.test(r2.t) && /3\) /.test(r2.t) && /4\) .*Tedarikçi/.test(r2.t) && /5\) .*pass/.test(r2.t) && /6\) .*PERSONEL/.test(r2.t) && /7\) .*SÜSLER/.test(r2.t), 'açılışta 7 adımlı rehber kartı (TR): ' + r2.t);
     await p.close();
   }
 
-  /* ===== 1c) v2.21: kadro sadeleştirme (rol başına 1 → Sv2'de 2 → Sv4'te 3), Kalfa/Usta gizli, Komi + Hal'den fileto ===== */
+  /* ===== 1c) v2.21: kadro sadeleştirme (rol başına 1 → Sv2'de 2 → Sv4'te 3), Kalfa/Usta gizli, Tedarikçi (eski Komi) + Hal'den fileto ===== */
   {
     const p = await page(); await newGame(p); await prep(p);
     await kit(p, { st: ['tava', 'izgara', 'tencere', 'firin'], menu: ['hamsitava'] });
@@ -300,8 +300,9 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     ok(a1.sunk >= 3, 'bulaşıkçı kirli tabakları götürür: ' + JSON.stringify(a1));
     /* v2.22: kasa batıda (kapı yanı), uzak masadan dönüş uzun — yeni gelişi durdurup biraz bekle; ödeme kalmamalı */
     await p.evaluate(() => { BT.lok.R.arr = 1e9; });
+    for (let i = 0; i < 12 && await p.evaluate(() => BT.lok.R.grp.length > 0); i++) await step(p, 0.05, 20 * 10);   /* v2.23: Tedarikçi dolabı doldurduğu için masalar dolu kalır: son grup kalkana dek */
     await step(p, 0.05, 20 * 30);
-    const a2 = await p.evaluate(() => { const L = BT.lok; return { pay: L.R.t.reduce((a, t) => a + t.pay.length, 0), grp: L.R.grp.length }; });
+    const a2 = await p.evaluate(() => { const L = BT.lok, sf = L.crew('lk_sef')[0]; return { pay: L.R.t.reduce((a, t) => a + t.pay.length, 0), grp: L.R.grp.length, sef: sf && [sf.x.toFixed(1), sf.y.toFixed(1), sf.carry.map(i => i.k).join(), sf._cov, sf.mode], at: L.R.t.map((t, i) => t.pay.length ? i + ':' + t.st + ':' + t.dirty : '').filter(Boolean).join() }; });
     ok(a2.pay === 0, 'şef garson masadaki parayı toplar ve Kasa\'ya bırakır: ' + JSON.stringify([a1, a2]));
     await p.evaluate(() => { BT.lok.R.arr = 0.1; });
     R.auto = a1;
@@ -417,24 +418,25 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     await p.close();
   }
 
-  /* ===== 6) Depo Hamalı dolabı besler (tezgâh > dolap), oyuncu Soğuk Oda'dan çeker ===== */
+  /* ===== 6) v2.23 TEDARİKÇİ (eski Komi): dolabı + kileri doldurur — (a) Soğuk Oda, (b) hasır, (c) mutfağın hazır güveci (tezgâhta en az
+     SUP_KEEP bırakır), (d) stok yokken Hal'den alır (kasadan), kileri doldurur, (e) kasada para yoksa almaz; (f) Depo Hamalı dolaba taşımaz.
+     Oyuncu Soğuk Oda'dan çeker. ===== */
   {
     const p = await page(); await newGame(p); await prep(p);
-    await kit(p, { st: ['tava'], menu: ['hamsitava'], fill: false });
+    await kit(p, { st: ['tava', 'firin'], menu: ['hamsitava', 'reisguveci'], lv: 2, fill: false });
     const d = await p.evaluate(() => {
       const L = BT.lok, out = {};
-      BT.counters.forEach(c => { c.open = false; });                                   /* tezgâh önceliği ayrı sınanır */
-      BT.DEPOT.lvl = 2; BT.DEPOT.cold['fileto|hamsi'] = 10;
-      out.target = L.depotTarget({ carry: [], role: 'depocu' });                   /* dolap boş, depoda hamsi var */
-      out.room = L.room('hamsi'); out.share = L.share();
+      BT.counters.forEach(c => { c.open = false; });
+      BT.tables.forEach(t => { t.mat.items.length = 0; }); BT.kitchen.mat.items.length = 0;
+      BT.DEPOT.lvl = 2; BT.DEPOT.cold = {}; BT.DEPOT.cold['fileto|hamsi'] = 10; L.q().dolap = {};
       const w = BT.hire('depocu', true, -1); w.x = BT.DEPOT.door.x; w.y = BT.DEPOT.door.y + 1;
-      BT.player.x = 31; BT.player.y = 18.5; out.dolap0 = L.q().dolap.hamsi | 0;
+      BT.player.x = 31; BT.player.y = 18.5; out.name = [BT.lok.X.ROLES.lk_komi.n.tr, BT.lok.X.ROLES.lk_komi.n.en];
       return out;
     });
-    ok(d.target === 'fileto|hamsi' && d.room > 0, 'depoda dolabın istediği fileto var: ' + JSON.stringify(d));
-    await step(p, 0.05, 20 * 70);
-    const d2 = await p.evaluate(() => ({ dolap: BT.lok.q().dolap.hamsi | 0, cold: BT.DEPOT.cold['fileto|hamsi'] | 0, task: BT.workers.filter(w => w.role === 'depocu').map(w => w.task) }));
-    ok(d2.dolap >= 6 && d2.cold < 10, 'Depo Hamalı Soğuk Oda\'dan lokanta dolabına fileto taşıdı: ' + JSON.stringify(d2));
+    await step(p, 0.05, 20 * 40);
+    const d2 = await p.evaluate(() => ({ dolap: BT.lok.q().dolap.hamsi | 0, cold: BT.DEPOT.cold['fileto|hamsi'] | 0, task: BT.workers.filter(w => w.role === 'depocu').map(w => w.task || '-').join() }));
+    ok(d.name.join() === 'Tedarikçi,Supplier', 'Komi → Tedarikçi (TR/EN): ' + d.name);
+    ok(d2.dolap === 0 && d2.cold >= 10 && !/lok/.test(d2.task), '(f) Depo Hamalı lokanta dolabına taşımaz: ' + JSON.stringify(d2));
     /* tezgâh önceliği: tezgâhı boş bir tezgâh varken önce tezgâha (refill) gider */
     const pri = await p.evaluate(() => {
       const L = BT.lok; L.q().dolap.hamsi = 0; BT.counters.forEach(c => { c.open = true; }); const c = BT.counters.find(c => c.open && c.fish === 'hamsi');
@@ -444,10 +446,53 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       return { task: w.task, tc: !!w.tc };
     });
     ok(pri.task === 'refill', 'öncelik: tezgâh dolabın önünde (refill): ' + JSON.stringify(pri));
+    /* (a) + (b): Soğuk Oda ve hasır önce; stok bitince eksik kadarı Hal'den (kasadan) */
+    const s0 = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(), o = {};
+      BT.workers.filter(w => w.role === 'depocu').forEach(w => BT.workers.splice(BT.workers.indexOf(w), 1));
+      BT.counters.forEach(c => { c.open = false; });
+      q.menu = ['hamsitava', null, null, null, null]; q.dolap = {};
+      BT.DEPOT.cold = {}; BT.DEPOT.cold['fileto|hamsi'] = 4;
+      const T = BT.tables[0]; T.mat.items.length = 0; for (let i = 0; i < 5; i++) T.mat.items.push({ k: 'fileto', f: 'hamsi' });
+      const w = L.hire('lk_komi'); w.x = L.LOK.dolap.sx; w.y = L.LOK.dolap.sy;
+      o.share = L.share(); o.cash0 = L.R.supSpent || 0; o.price3 = Math.round(BT.FISH.hamsi.val * 1.3 * 3);
+      return o;
+    });
+    await step(p, 0.05, 20 * 90);
+    const s1 = await p.evaluate(c0 => ({ dolap: BT.lok.q().dolap.hamsi | 0, cold: BT.DEPOT.cold['fileto|hamsi'] | 0, mat: BT.tables[0].mat.items.filter(i => i.f === 'hamsi').length, spent: Math.round((BT.lok.R.supSpent || 0) - c0), carry: BT.lok.crew('lk_komi')[0].carry.length }), s0.cash0);
+    ok(s1.cold === 0 && s1.mat === 0, '(a)(b) Tedarikçi Soğuk Oda ve hasırdaki hamsiyi dolaba taşır: ' + JSON.stringify(s1));
+    ok(s1.dolap === s0.share && s1.spent === s0.price3, '(d) stok bitince yalnız eksik kadarı (3) Hal\'den alır, kasadan öder: ' + JSON.stringify([s0, s1]));
+    /* (c) mutfağın hazır güveci: önce raf, tezgâh açıkken en az SUP_KEEP porsiyon bırakır; kalanı Hal'den */
+    const g0 = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(), c = BT.counters.find(c => c.key === 'b3');
+      q.menu = ['reisguveci', null, null, null, null]; q.dolap = {};
+      c.open = true; c.buffer.length = 0; for (let i = 0; i < 5; i++) c.buffer.push({ k: 'fileto', f: 'guvec' });
+      BT.kitchen.mat.items.length = 0; for (let i = 0; i < 3; i++) BT.kitchen.mat.items.push({ k: 'fileto', f: 'guvec' });
+      BT.kitchen.inn.length = 0; BT.kitchen.cur = false;
+      return { cash0: L.R.supSpent || 0, share: L.share(), keep: L.SUP_KEEP };
+    });
+    await step(p, 0.05, 20 * 120);
+    const g1 = await p.evaluate(c0 => { const c = BT.counters.find(c => c.key === 'b3'); return { dolap: BT.lok.q().dolap.guvec | 0, mat: BT.kitchen.mat.items.filter(i => i.f === 'guvec').length, ctr: c.buffer.filter(i => i.f === 'guvec').length, spent: Math.round((BT.lok.R.supSpent || 0) - c0) }; }, g0.cash0);
+    ok(g1.mat === 0 && g1.mat + g1.ctr === g0.keep && g1.dolap === g0.share, '(c) mutfağın hazır güvecini alır, tezgâhta ' + g0.keep + ' bırakır: ' + JSON.stringify([g0, g1]));
+    ok(Math.abs(g1.spent - 74 * 1.3 * (g0.share - 4)) <= 2, 'güveç stoğu yetmeyince eksik kadarı Hal\'den: ' + JSON.stringify(g1));
+    /* (d) kiler: menüdeki tarifin malzemesi azalınca Hal'den paketle (5'li) alır, dolabın yanında kilere boşaltır */
+    const k0 = await p.evaluate(() => {
+      const L = BT.lok, q = L.q(); q.menu = ['hamsitava', null, null, null, null]; q.dolap = { hamsi: 12 };
+      BT.counters.forEach(c => { c.open = false; });
+      BT.tarif.q().kiler.misirunu = 2; return { cash0: L.R.supSpent || 0, need: JSON.stringify(L.kilNeed()) };
+    });
+    await step(p, 0.05, 20 * 90);
+    const k1 = await p.evaluate(c0 => ({ kil: BT.tarif.q().kiler.misirunu | 0, spent: Math.round((BT.lok.R.supSpent || 0) - c0), sack: JSON.stringify(BT.lok.crew('lk_komi')[0].sack || {}) }), k0.cash0);
+    ok(k1.kil >= 2 + 5 && k1.spent === (k1.kil - 2) * 3 && /misirunu/.test(k0.need), '(d) kileri Hal\'den doldurur (kasadan malzeme fiyatı): ' + JSON.stringify([k0, k1]));
+    /* (e) kasada para yoksa almaz */
+    const e0 = await p.evaluate(() => { const L = BT.lok, q = L.q(); q.dolap = {}; BT.S.cash = 1; return { list: L.halList(L.crew('lk_komi')[0]).length, sp0: L.R.supSpent || 0 }; });
+    await step(p, 0.05, 20 * 30);
+    const e1 = await p.evaluate(() => ({ dolap: BT.lok.q().dolap.hamsi | 0, sp: BT.lok.R.supSpent || 0, carry: BT.lok.crew('lk_komi')[0].carry.length }));
+    ok(e0.list === 0 && e1.dolap === 0 && e1.sp === e0.sp0 && e1.carry === 0, '(e) kasada para yoksa Hal\'den almaz: ' + JSON.stringify([e0, e1]));
+    await p.evaluate(() => { BT.S.cash = 1e6; BT.lok.crew('lk_komi').forEach(w => BT.lok.fire(w)); BT.counters.forEach(c => { c.open = true; }); });
     /* oyuncu: Soğuk Oda kapısında çeker, dolapta bırakır */
     const pl = await p.evaluate(() => {
-      const L = BT.lok; BT.workers.filter(w => w.role === 'depocu').forEach(w => BT.workers.splice(BT.workers.indexOf(w), 1));
-      L.q().dolap.hamsi = 0; BT.DEPOT.cold['fileto|hamsi'] = 6; BT.player.carry.length = 0;
+      const L = BT.lok; L.q().dolap.hamsi = 0; BT.DEPOT.cold['fileto|hamsi'] = 6; BT.player.carry.length = 0;
       BT.player.x = BT.DEPOT.door.x; BT.player.y = BT.DEPOT.door.y;
       return { key: L.coldKey(BT.player) };
     });
@@ -924,8 +969,8 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     ok(u1.tbN === 12, '12 masa kuruldu: ' + u1.tbN);
     ok(u1.ter.on && Math.abs(u1.ter.pm - 1.05) < 1e-9 && Math.abs(u1.ter.m.patMax / u1.base.patMax - 1.05) < 0.001 && u1.ter.m.pay === u1.base.pay && u1.ter.m.eat === u1.base.eat, 'asma çardak: sabır +%5, ödeme/oturuş aynı: ' + JSON.stringify([u1.base, u1.ter]));
     ok(u1.mez1.t === 1 && near(u1.mez1.m.pay, u1.base.pay * 1.05, 3) && u1.mez3.t === 3 && near(u1.mez3.m.pay, u1.base.pay * 1.15, 3), 'meze vitrini kademeleri: ödeme +%5 → +%15: ' + JSON.stringify([u1.base.pay, u1.mez1, u1.mez3]));
-    ok(u1.saz.on && Math.abs(u1.saz.tip - 0.05) < 1e-9 && Math.abs(u1.saz.pm - 1.08) < 1e-9 && u1.saz.m.pay >= u1.mez3.m.pay && u1.saz.m.eat === u1.base.eat, 'saz köşesi: bahşiş +%5, sabır +%3: ' + JSON.stringify(u1.saz));
-    ok(u1.masa.t === 4 && Math.abs(u1.masa.pm - 1.20) < 1e-9 && Math.abs(u1.flow - 0.10) < 1e-9, 'masa (4 kademe, sabır +%4/kademe), kapı + tabela (akış +%10): ' + JSON.stringify([u1.masa, u1.flow]));
+    ok(u1.saz.on && Math.abs(u1.saz.tip - 0.08) < 1e-9 && Math.abs(u1.saz.pm - 1.10) < 1e-9 && u1.saz.m.pay >= u1.mez3.m.pay && u1.saz.m.eat === u1.base.eat, 'saz köşesi: bahşiş +%8, sabır +%5: ' + JSON.stringify(u1.saz));
+    ok(u1.masa.t === 4 && Math.abs(u1.masa.pm - 1.22) < 1e-9 && Math.abs(u1.flow - 0.14) < 1e-9, 'masa (4 kademe, sabır +%4/kademe), kapı + tabela (akış +%10) + saz (+%4): ' + JSON.stringify([u1.masa, u1.flow]));
     ok(u1.dol1.cap === 24 && u1.dol1.dl === 1 && u1.dol1.tier === 2 && u1.dol2.cap === 36 && u1.dol2.dl === 2 && u1.dol2.tier === 3, 'dolap 12 → 24 → 36: ' + JSON.stringify([u1.dol1, u1.dol2]));
     ok(u1.room1 > u1.room0 && u1.dolapN === 30, 'büyük dolap daha çok fileto alır: ' + JSON.stringify([u1.room0, u1.room1, u1.dolapN]));
     ok(u1.max.join() === 'max,max,max,max,max,max' && u1.allDc, 'son kademede / alınmış süste yeniden alım yok: ' + u1.max.join());
@@ -1344,6 +1389,64 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     ok(/STOVE SLOTS/.test(pn.en) && /REMOVE/.test(pn.en) && /DOWNGRADE/.test(pn.en) && /Opens at restaurant Lv 2/.test(pn.en) && !/\blk[A-Z]\w+/.test(pn.en), 'EN yer kartları: ' + pn.en.slice(0, 200));
     ok(pn.bad.length === 0, 'İSTASYONLAR 390x844 taşmaz, düğmeler >= 44 px: ' + pn.bad.join('; '));
     await shot(p, 'ocak-yerleri');
+    await p.close();
+  }
+
+  /* ===== 20) v2.23 SAZ KÖŞESİ: pahalı (Sv5), günlük yevmiye (gün kartında), ödenmezse ertesi gün çalmaz ve etkisi durur; turist / iş yemeği
+     daha sık; sabit sazcı (drawLokFix musician/play); bir iki kısa ezgi; eski kayıtta bir kez bilgi. KAPALI rozeti yalnız klasikte; fazla aşçı "boşta" ===== */
+  {
+    const p = await page(); await newGame(p); await prep(p);
+    await kit(p, { st: ['tava'], menu: ['hamsitava'], lv: 5 });
+    const z = await p.evaluate(() => {
+      const L = BT.lok, o = {}, d = L.DC.find(x => x.id === 'saz'), K = ['turist', 'is', 'aile', 'kahve'];
+      o.cost = L.cost('lok_d_saz'); o.lv = d.lv; o.eff = d.eff;
+      const w0 = K.map(k => L.gw(k)); L.buy('lok_d_saz'); o.on = L.dcOn('saz'); const w1 = K.map(k => L.gw(k)); o.w = [w0.join(), w1.join()];
+      L.openPanel('sus'); o.row = [...document.querySelectorAll('#lokRows .trow')].map(r => r.innerText.replace(/\s+/g, ' ')).find(t => /Saz Köşesi/.test(t)) || ''; L.closePanel();
+      const c0 = BT.S.cash; o.end = L.sazDayEnd(); o.paid = Math.round(c0 - BT.S.cash); o.fee = L.sazFee();
+      BT.S.cash = 10; o.end2 = L.sazDayEnd(); o.idle = L.sazIdle(); o.tipIdle = L.eff('tip'); o.wIdle = L.gw('turist');
+      BT.S.cash = 1e6; L.sazDayEnd(); o.idle2 = L.sazIdle(); o.tip = L.eff('tip');
+      o.dur = [L.saz(0), L.saz(0)];
+      return o;
+    });
+    ok(z.lv === 5 && z.cost >= 12000 && z.eff.tip === 0.08 && z.eff.pat === 0.05 && z.eff.flow === 0.04 && z.on, 'saz: pahalı (Sv5), güçlü etki: ' + JSON.stringify(z).slice(0, 200));
+    ok(z.w[0] === '2,2,3,3' && z.w[1] === '3.2,3.2,3,3' && z.wIdle === 2, 'saz çalarken turist / iş yemeği ×1,6 daha sık: ' + JSON.stringify(z.w));
+    ok(/günlük/.test(z.row) && z.end.paid && z.paid === z.fee && z.fee >= 100, 'SÜSLER satırında günlük yevmiye, gün sonu kasadan düşer: ' + JSON.stringify([z.row, z.end, z.paid]));
+    ok(!z.end2.paid && z.idle && z.tipIdle < z.tip - 0.07 && !z.idle2, 'yevmiye ödenemezse sazcı çalmaz, etkisi durur; ödenince döner: ' + JSON.stringify(z));
+    ok(z.dur.every(d => d >= 1.8 && d < 9), 'bir iki kısa ezgi (süre sn): ' + z.dur.join());
+    /* gün kartı satırı */
+    await p.evaluate(() => { BT.customers.length = 0; BT.endDay(); });
+    let card = '';
+    for (let i = 0; i < 80 && !card; i++) { card = await p.evaluate(() => { BT.customers.length = 0; BT.emek.step(0.1, 20); const e = document.getElementById('dayScr'); return e && !e.classList.contains('hidden') ? e.innerText.replace(/\s+/g, ' ') : ''; }); if (!card) await sleep(40); }
+    ok(/Sazcı yevmiyesi/.test(card), 'gün kartında sazcı yevmiyesi: ' + card.slice(0, 300));
+    await p.evaluate(() => document.getElementById('dayGo').click()); await sleep(300);
+    await p.evaluate(() => { BT.day.phase = 'play'; BT.day.t = 10; });
+    /* sabit sazcı: drawLokFix k:'saz' → musician: true, play (çalarken) */
+    const dr = await p.evaluate(async () => {
+      const L = BT.lok, H = window.HKA || (window.HKA = {}), old = H.drawLokFix, got = [];
+      H.drawLokFix = function (o) { if (o.k === 'saz') got.push({ m: o.musician, p: o.play }); return old ? old(o) : false; };
+      BT.player.x = 32; BT.player.y = 17.5; L.R.sazPlay = 0; await new Promise(r => setTimeout(r, 500));
+      const a = got.slice(-1)[0]; L.R.sazPlay = 5; await new Promise(r => setTimeout(r, 400)); const b = got.slice(-1)[0];
+      H.drawLokFix = old; const fine = L.fineFix(); HKG.setFine(false); const cls = L.fineFix(); HKG.setFine(true);
+      return { a, b, n: got.length, fine, cls };
+    });
+    ok(dr.n > 0 && dr.a && dr.a.m === true && dr.a.p === false && dr.b.p === true, 'sazcı çizim sözleşmesi (musician / play): ' + JSON.stringify(dr));
+    ok(dr.fine === true && dr.cls === false, 'KAPALI rozeti yalnız klasik çizimde (ince modda levhayı sanat çizer): ' + JSON.stringify(dr));
+    /* eski kayıtta saz: yevmiye başlar, bir kez bilgi */
+    const old = await p.evaluate(async () => {
+      const d = JSON.parse(JSON.stringify(BT.buildSave())); delete d.lok.sazW; BT.lok.X.resetWorld(); BT.loadFrom(d);
+      document.getElementById('toast').textContent = ''; BT.lok.dayStart(); await new Promise(r => setTimeout(r, 2600));
+      const t1 = document.getElementById('toast').textContent; document.getElementById('toast').textContent = ''; BT.lok.dayStart(); await new Promise(r => setTimeout(r, 2600));
+      return { t1, t2: document.getElementById('toast').textContent, w: BT.lok.q().sazW, on: BT.lok.dcOn('saz') };
+    });
+    ok(old.on && /yevmiye/.test(old.t1) && !/yevmiye/.test(old.t2) && old.w === 1, 'eski kayıt: saz korunur, yevmiye bir kez bildirilir: ' + JSON.stringify(old));
+    /* fazla aşçı: sökünce "boşta" */
+    const ck = await p.evaluate(async () => {
+      const L = BT.lok; L.crew().forEach(w => L.fire(w)); L.build('s1', 'tava'); L.hire('lk_asci'); L.hire('lk_asci');
+      document.getElementById('toast').textContent = ''; L.remove('s1'); await new Promise(r => setTimeout(r, 1900));
+      const t = document.getElementById('toast').textContent; L.openPanel('crew'); const c = document.getElementById('lokRows').innerText.replace(/\s+/g, ' '); L.closePanel();
+      return { t, idle: /boşta \(ocak yok\)/.test(c) };
+    });
+    ok(/boşta/.test(ck.t) && ck.idle, 'sökünce fazla aşçı için bilgi + KADRO\'da "boşta": ' + JSON.stringify(ck));
     await p.close();
   }
 
