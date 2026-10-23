@@ -152,7 +152,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
   };
   const hireMgr = async (z, topUp) => {
     /* son tamamlama turunda: müdür ücreti rastgele (≈8–19 bin), bütçe şansa kalmasın, eksikse tamamlanır (kayda yazılır) */
-    const top = !topUp ? 0 : await p.evaluate(() => { const need = 20000 - BT.S.cash; if (need > 0) BT.S.cash += need; return Math.max(0, Math.round(need)); });
+    const top = !topUp ? 0 : await p.evaluate(() => { const need = 60000 - BT.S.cash; if (need > 0) BT.S.cash += need; return Math.max(0, Math.round(need)); });
     if (top) log('  (müdür bütçesi +' + top + ')');
     await openTab('staff');
     let cs = await cards(); const mc = cs.find(c => /Müdür gerekli/.test(c.t) && c.t.includes(['İskelesi', 'Pazarı', 'Fümehane', 'Mutfağı'][z]));

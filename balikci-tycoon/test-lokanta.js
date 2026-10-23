@@ -105,7 +105,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     ok(R.open.noDepo && R.open.noDepo[0] && /Depo/.test(R.open.noDepo[1]), 'Depo yokken lokanta kartı kilitli: ' + JSON.stringify(R.open.noDepo));
     ok(!R.open.cardsBeforeKitchen.includes('a4') && R.open.cardsBeforeKitchen.includes('a3'), 'Mutfak kilitliyken lokanta kartı yok, Mutfak kartı var: ' + R.open.cardsBeforeKitchen);
     ok(R.open.lowRep === true, 'itibar Sv5 altında kart engelli');
-    ok(R.open.ready === true && R.open.cost > 15500 * 0.7 && R.open.cost < 15500 * 0.8, 'bedel 15.500 × Emekçi 0,75: ' + R.open.cost);
+    ok(R.open.ready === true && R.open.cost > 46500 * 0.7 && R.open.cost < 46500 * 0.8, 'bedel 46.500 (v2.24: ×3) × Emekçi 0,75: ' + R.open.cost);
     ok(R.open.cf === 'ONAYLA?', 'ALAN kartı ONAYLA? ister: ' + R.open.cf);
     ok(R.open.paid === R.open.cost && R.open.openNow && R.open.q, 'açılınca bedel düşer, bölge açılır, S.lok kurulur');
     ok(R.open.cardAfter === 0, 'açıldıktan sonra kart kalkar');
@@ -1447,6 +1447,66 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       return { t, idle: /boşta \(ocak yok\)/.test(c) };
     });
     ok(/boşta/.test(ck.t) && ck.idle, 'sökünce fazla aşçı için bilgi + KADRO\'da "boşta": ' + JSON.stringify(ck));
+    await p.close();
+  }
+
+  /* ===== 21) v2.24 DÜKKÂN KİRASI (günlük, açılış bedelinin %3'ü × Emekçi ölçeği; Sv2 ×1,5, Sv3 ×2; lokanta Sv1–5 ×1…2), kapalı olsa da;
+     gün kartında satır; ilk kesintide bilgi; eski kayıtta yeni günden; kartlarda "Kira: günlük $X → $Y"; seviye: personel +%10 hız, müşteri +%12;
+     kapalı dükkânda maaş sürer ===== */
+  {
+    const p = await page(); await newGame(p); await prep(p);
+    await kit(p, { st: ['tava'], menu: ['hamsitava'] });
+    const r = await p.evaluate(() => {
+      const L = BT.lok, R = BT.rent, o = {}, A = BT.areas;
+      o.costs = A.map(a => a.cost).join();
+      o.emek = BT.emek.on();
+      o.lv1 = [1, 2, 3, 4].map(z => R.of(z)).join(); o.zones = R.zones().join(); o.iskele = R.of(0);
+      A[2].lvl = 2; o.f2 = R.of(2); A[2].lvl = 3; o.f3 = R.of(2); A[2].lvl = 1;
+      L.q().lv = 3; o.l3 = R.of(4); L.q().lv = 5; o.l5 = R.of(4); L.q().lv = 1;
+      o.work = [R.workMul(1), (A[1].lvl = 3, R.workMul(1)), R.custMul(1), R.workMul(-1), R.workMul(4)].map(v => +v.toFixed(2)).join(); A[1].lvl = 1;
+      /* kapalı dükkân da öder */
+      BT.counters.forEach(c => BT.setStall(c.key, false)); window.HK_LOK_OPEN = 0; L.q().op = 0;
+      BT.S.rentD = 0; BT.S.rentN = 0; const c0 = BT.S.cash; const e = R.dayEnd(); o.paid = Math.round(c0 - BT.S.cash); o.tot = e && e.tot; o.n = e && e.l.length; o.rentN = BT.S.rentN;
+      BT.S.cash = 100; const e2 = R.dayEnd(); o.low = [BT.S.cash, e2.paid, e2.tot > 100].join();
+      BT.S.cash = 1e6; window.HK_LOK_OPEN = 1;
+      /* eski kayıt: kira yeni günden itibaren */
+      const d = JSON.parse(JSON.stringify(BT.buildSave())); delete d.rent; BT.lok.X.resetWorld(); BT.loadFrom(d);
+      o.oldD = [BT.S.rentD === BT.day.n + 1, R.dayEnd() === null].join();
+      return o;
+    });
+    const vEmek = [1300, 13800, 28500, 46500].map(c => Math.round(c * 0.75 * 0.03)).join();
+    ok(r.costs === '0,1300,13800,28500,46500', 'açılış bedelleri ×3 (Fümehane, Mutfak, Lokanta): ' + r.costs);
+    ok(r.emek && r.lv1 === vEmek && r.iskele === 0 && r.zones === '1,2,3,4', 'kira = açılış bedelinin %3\'ü (Emekçi ölçeği), iskele kirasız: ' + JSON.stringify(r));
+    ok(r.f2 === Math.round(13800 * 0.75 * 0.03 * 1.5) && r.f3 === Math.round(13800 * 0.75 * 0.03 * 2) && r.l3 === Math.round(46500 * 0.75 * 0.03 * 1.5) && r.l5 === Math.round(46500 * 0.75 * 0.03 * 2), 'Sv2 ×1,5, Sv3 ×2; lokanta Sv3 ×1,5, Sv5 ×2: ' + JSON.stringify(r));
+    ok(r.work === '1,1.2,1.24,1,1', 'seviye etkisi: Sv3 personel +%20, müşteri +%24 (lokanta ve bölgesiz işçi hariç): ' + r.work);
+    ok(r.n === 4 && r.paid === r.tot && r.rentN === 1 && r.low === '0,100,true', 'kapalı dükkân da kira öder, kasa yetmezse 0: ' + JSON.stringify(r));
+    ok(r.oldD === 'true,true', 'eski kayıt: kira yeni gün başından: ' + r.oldD);
+    /* kartlar: ALAN açılış, YAPI › Yükseltme, lokanta Sv satırı; gün kartı satırı */
+    const k = await p.evaluate(async () => {
+      const L = BT.lok, A = BT.areas, o = {};
+      A[3].locked = true; BT.rebuildCounters(); L.X.openBar('area'); o.alan = (L.X.barList().find(c => c.id === 'a3') || {}).s || ''; A[3].locked = false; BT.rebuildCounters();
+      L.X.openBar('build'); const sb = document.querySelector('#dpSub [data-s="up"]'); if (sb) sb.click(); await new Promise(r => setTimeout(r, 200));
+      o.up = [...document.querySelectorAll('#dpCards .dcard')].map(d => d.textContent.replace(/\s+/g, ' ')).find(t => /Fümehane/.test(t)) || '';
+      document.querySelector('.dtab.on') && document.querySelector('.dtab.on').click();
+      L.openPanel('up'); o.lok = document.getElementById('lokRows').innerText.replace(/\s+/g, ' '); L.closePanel();
+      return o;
+    });
+    ok(/Kira: günlük \$/.test(k.alan) && /Kira: günlük \$[\d.]+ → \$[\d.]+/.test(k.up) && /personel \+%10 hız/.test(k.up) && /müşteri \+%12/.test(k.up) && /Kira: günlük \$[\d.]+ → \$[\d.]+/.test(k.lok), 'kartlarda kira (ALAN, YAPI › Yükseltme, lokanta Sv): ' + JSON.stringify(k).slice(0, 400));
+    await p.evaluate(() => { BT.S.rentD = 0; BT.customers.length = 0; BT.endDay(); });
+    let card = '';
+    for (let i = 0; i < 80 && !card; i++) { card = await p.evaluate(() => { BT.customers.length = 0; BT.emek.step(0.1, 20); const e = document.getElementById('dayScr'); return e && !e.classList.contains('hidden') ? e.innerText.replace(/\s+/g, ' ') : ''; }); if (!card) await sleep(40); }
+    ok(/Kira \(4 dükkân\) −\$/.test(card), 'gün kartında kira satırı: ' + card.slice(0, 300));
+    await p.evaluate(() => document.getElementById('dayGo').click()); await sleep(300);
+    /* kapalı dükkânda maaş sürer: kapalı tezgâhın bölge personeli + KAPALI lokantanın kadrosu */
+    const w = await p.evaluate(() => {
+      const L = BT.lok, o = {};
+      BT.day.phase = 'play'; BT.day.t = 10; window.HK_LOK_OPEN = 0; L.q().op = 0; BT.counters.forEach(c => BT.setStall(c.key, false));
+      L.crew().forEach(x => L.fire(x)); BT.workers.length = 0; BT.hire('hamal', true, 1); L.hire('lk_garson'); L.hire('lk_bulasik');
+      o.wt = BT.wageTotal(); o.lk = L.crew().map(x => BT.lok.X.workerWage(x)).reduce((a, b) => a + b, 0);
+      const c0 = BT.S.cash; BT.emek.step(0.05, 1200); o.drop = c0 - BT.S.cash; o.exp = o.wt;               /* 60 sn = 1 dk maaş */
+      window.HK_LOK_OPEN = 1; return o;
+    });
+    ok(w.lk > 0 && w.wt >= w.lk && Math.abs(w.drop - w.exp) <= w.exp * 0.05 + 1, 'kapalı tezgâh / kapalı lokantada maaş sürer (muafiyet yok): ' + JSON.stringify(w));
     await p.close();
   }
 
