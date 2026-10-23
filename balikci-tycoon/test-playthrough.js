@@ -152,7 +152,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
   };
   const hireMgr = async (z, topUp) => {
     /* son tamamlama turunda: müdür ücreti rastgele (≈8–19 bin), bütçe şansa kalmasın, eksikse tamamlanır (kayda yazılır) */
-    const top = !topUp ? 0 : await p.evaluate(() => { const need = 20000 - BT.S.cash; if (need > 0) BT.S.cash += need; return Math.max(0, Math.round(need)); });
+    const top = !topUp ? 0 : await p.evaluate(() => { const need = 60000 - BT.S.cash; if (need > 0) BT.S.cash += need; return Math.max(0, Math.round(need)); });
     if (top) log('  (müdür bütçesi +' + top + ')');
     await openTab('staff');
     let cs = await cards(); const mc = cs.find(c => /Müdür gerekli/.test(c.t) && c.t.includes(['İskelesi', 'Pazarı', 'Fümehane', 'Mutfağı'][z]));
@@ -246,7 +246,7 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
   await shot('after-reload');
   await playDay('gün D (otomatik)');
   await playDay('gün E (otomatik)');
-  await stage('Seviye 8 — her şey', 250000, 2000, async () => { try {
+  await stage('Seviye 8 — her şey', 450000, 2000, async () => { try {   /* v2.24: Fümehane/Mutfak/Lokanta ×3 + günlük kira → son aşama bütçesi büyüdü */
     await buyAll('build', 'up');
     await buildSlots();
     await buyAll('build', 'decor', null, 20);
@@ -271,6 +271,9 @@ const log = (...a) => { const s = a.map(x => typeof x === 'string' ? x : JSON.st
   }
   if (!(await introOn())) await playDay('gün F');
   /* ================= C) BÖLÜM SONU ================= */
+  /* v2.24: sayaç dolunca önce izleme sahnesi (≈80 sn) — sahnenin başladığını gör, sonra sonuna atla */
+  for (let k = 0; k < 40 && !(await p.evaluate(() => BT.chScene.st().on)) && !(await introOn()); k++) await sleep(300);
+  if (await p.evaluate(() => BT.chScene.st().on)) { log('  izleme sahnesi başladı'); await shot('end-scene'); await p.evaluate(() => { BT.chScene.st().t = BT.chScene.st().dur; }); }
   const endT = Date.now();
   while (Date.now() - endT < 8000 && !(await p.isVisible('#introScr'))) await sleep(300);
   if (await p.isVisible('#introScr')) {
