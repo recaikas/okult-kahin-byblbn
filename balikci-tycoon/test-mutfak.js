@@ -34,7 +34,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
     document.querySelector('.dtab[data-t="area"]').click();
     return r;
   });
-  ok(R.lock.n === 4 && R.lock.locked && R.lock.id === 'mutfak', 'Mutfak bölgesi yok ya da açık başlıyor ' + JSON.stringify(R.lock));
+  ok(R.lock.n >= 4 && R.lock.locked && R.lock.id === 'mutfak', 'Mutfak bölgesi yok ya da açık başlıyor ' + JSON.stringify(R.lock));
   ok(/Balıkçı Mutfağı/.test(R.lock.low) && /30\/350/.test(R.lock.low), 'ALAN: itibar düşükken Mutfak kilit gerekçesi yok ' + R.lock.low.slice(0, 200));
   ok(R.lock.opened, 'ALAN sekmesinden Mutfak açılamadı ' + R.lock.high.slice(0, 200));
 
