@@ -44,7 +44,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
   const p = await page(true);
   await newGame(p, 1);
   R.boot = await p.evaluate(() => ({ on: BT.emek.on(), roles: BT.zoneRoles(0), cap: BT.zoneStaffCap(0), cost: BT.hireCost('tezgahtar', 0), cash: BT.S.cash, set: document.querySelector('#emekSeg .on') && document.querySelector('#emekSeg .on').dataset.e }));
-  ok(R.boot.on && R.boot.roles[0] === 'tezgahtar' && R.boot.roles.indexOf('balikci') >= 0 && R.boot.cap === 4, 'emek açılış ' + JSON.stringify(R.boot));
+  ok(R.boot.on && R.boot.roles[0] === 'tezgahtar' && R.boot.roles.indexOf('balikci') >= 0 && R.boot.cap === 5, 'emek açılış ' + JSON.stringify(R.boot));
   /* ---- 0) oyun başı eğitimi: Emekçi Mod'da 9 adım, tamamlanma koşuluyla sırayla ilerler; kapalıyken eski 6 adım ---- */
   const tutReset = () => p.evaluate(() => { const S = BT.S; S.ctrl = 2; S.cash = 0; S.served = 0; BT.day.t = 10; BT.counters.forEach(c => { c.spawnT = 1e9; c.buffer.length = 0; }); BT.player.x = 2; BT.player.y = 20; BT.player.carry.length = 0;
     BT.spots[0].stock.length = 0; BT.tables[0].inn.length = 0; BT.tables[0].mat.items.length = 0; BT.workers.length = 0; BT.tables[0].worker = null; });

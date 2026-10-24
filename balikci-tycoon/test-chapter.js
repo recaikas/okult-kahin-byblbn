@@ -26,7 +26,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
     S.auto = [true, true, false, true];
     for (let i = 0; i < 11; i++) S.met.push(BT.SPECIALS[i].id);
     /* v2.24: Sahil Lokantası açık, bir ocak + tam kadro (devredilmemiş) */
-    const L = BT.lok, lq = L.q(); lq.sl[0] = { k: 'tava', lv: 1 }; ['lk_asci', 'lk_garson', 'lk_bulasik', 'lk_sef', 'lk_komi'].forEach(r => L.hire(r)); S.cash = 60000;
+    const L = BT.lok, lq = L.q(); lq.sl[0] = { k: 'tava', lv: 1 }; { const tq = BT.tarif.q(); if (tq.known.indexOf('hamsitava') < 0) tq.known.push('hamsitava'); lq.menu[0] = 'hamsitava'; }   /* v2.21: menü boşken devredilmez */ ['lk_asci', 'lk_garson', 'lk_bulasik', 'lk_sef', 'lk_komi'].forEach(r => L.hire(r)); S.cash = 60000;
     BT.player.x = 7.2; BT.player.y = 13.5;
   });
   await sleep(2500);

@@ -26,7 +26,7 @@ const send = async (p, stars, text) => {
   const s1 = await send(p, 1, 'kötü  ');
   ok(s1.hint.vis && /\$300/.test(s1.hint.t) && /yıldız/.test(s1.hint.t) && s1.gain === 0 && s1.key === null, 'kısa yorum hediye aldı / ipucu yok ' + JSON.stringify(s1));
   const s2 = await send(p, 1, 'Tezgâh çok yavaş doluyor');
-  ok(s2.gain === 300 && s2.earnedGain === 0 && s2.key === '2.20' && /hediye/.test(s2.toast), '1 yıldızlı yorum hediye almadı ' + JSON.stringify(s2));
+  ok(s2.gain === 300 && s2.earnedGain === 0 && s2.key === '2.21' && /hediye/.test(s2.toast), '1 yıldızlı yorum hediye almadı ' + JSON.stringify(s2));
   const s3 = await send(p, 5, 'Bir yorum daha yazıyorum');
   ok(!s3.hint.vis && s3.gain === 0, 'aynı sürümde ikinci hediye verildi ' + JSON.stringify(s3));
   await ctx.close();
