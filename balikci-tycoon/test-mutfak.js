@@ -132,7 +132,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
     const m1 = BT.counterMax(c); sl.b = old;
     const d = BT.buildSave(); const i = BT.slots.indexOf(sl); d.slots[i] = 'tezgah'; d.stalls = d.stalls.concat([['ss3', 1]]);
     const cash0 = d.cash; const okL = BT.loadFrom(d);
-    return { ids, m0, m1, okL, refund: BT.S.cash - cash0, slot: BT.slots[i].b, keys: BT.counters.map(q => q.key) };
+    return { ids, m0, m1, okL, refund: BT.S.cash - cash0 - ((d.loose && d.loose.m) || 0), slot: BT.slots[i].b, keys: BT.counters.map(q => q.key) };   /* v2.21: eldeki para yüklemede kasaya döner */
   });
   ok(!R.build.ids.includes('tezgah') && R.build.ids.includes('buz'), 'YAPI listesi yanlış ' + JSON.stringify(R.build.ids));
   ok(R.build.m1 === R.build.m0 + 3, 'Buz Makinesi vitrini büyütmüyor ' + JSON.stringify(R.build));
