@@ -2032,7 +2032,10 @@ var SERV = [
    eski kayıtta kurulu binanın bedeli SERV_GONE göçüyle iade edilir (servLoad → servRefund). Etkileri taşınmaz; açtıkları kilitler
    (turist, toptancı, şirket kontratı) bina şartı olmadan kendi seviye koşullarıyla gelir (servUnlock). Kod şimdilik bayrakla uyur. */
 var SERV_OFF = true;
-if (SERV_OFF) { SERV.forEach(function (d) { SERV_GONE[d.id] = null; SERV_GONE_COST[d.id] = d.lv.map(function (q) { return q.c; }); }); SERV.length = 0; }
+if (SERV_OFF) {
+  SERV.forEach(function (d) { SERV_GONE[d.id] = null; SERV_GONE_COST[d.id] = d.lv.map(function (q) { return q.c; }); }); SERV.length = 0;
+  for (var sgk in SERV_GONE) SERV_GONE[sgk] = null;   /* v2.21: çok eski kayıttaki 'hal'/'tamirhane' de yalnız iade edilir (birleşeceği bina kalmadı → kayıt açılmıyordu) */
+}
 function sdef(id) { for (var i = 0; i < SERV.length; i++) if (SERV[i].id === id) return SERV[i]; return null; }
 
 /* Bina durumu (§40 ServiceBuildingState) — kurulmamış binalar listede yok. */
@@ -2179,6 +2182,7 @@ function servLoad(arr) {
   _seT = -1;
 }
 /* v1.2 §9 — gün / depo / hedef stok yüklemesi */
+var dayResumeNext = false;
 function loadDay(d) {
   if (d && d.day) {
     day.n = Math.max(1, parseInt(d.day[0], 10) || 1);
@@ -2193,7 +2197,16 @@ function loadDay(d) {
       day.popT = 0;
     } else day.spec = null;
   }
-  day.phase = 'play'; day.ph = 0; day.st = newDayStats(); day.last = null;
+  day.phase = 'play'; day.ph = 0; day.st = newDayStats(); day.last = null; dayResumeNext = false;
+  /* v2.21: gün içi kayıt/yüklemede gün kartı eksik kalmasın: günün sayaçları kayıttan gelir */
+  if (d && d.dst && typeof d.dst === 'object') {
+    var ds = d.dst;
+    day.st.inc = numIn(ds.inc, 0, 1e13); day.st.served = numIn(ds.served, 0, 1e7, true); day.st.lost = numIn(ds.lost, 0, 1e7, true); day.st.fish = numIn(ds.fish, 0, 1e8, true);
+    day.st.by = numMap(ds.by); day.st.out = numMap(ds.out);
+    if (Array.isArray(ds.spec)) day.st.spec = ds.spec.filter(function (q) { return typeof q === 'string' && q.length < 40; }).slice(0, 40);
+  }
+  /* v2.21: gün kartı açıkken kaydedilip yüklenen oyun günü ikinci kez kapatmaz (çift kira/maaş, inşaat günü atlama): yeni güne geçilir */
+  if (d && d.day && d.day[7] === 1) { day.phase = 'summary'; dayResumeNext = true; }
   if (d && d.stalls) {
     for (var j = 0; j < d.stalls.length; j++) {
       var c = counterByKey(d.stalls[j][0]);
@@ -2807,13 +2820,16 @@ var TAX_WORK_LINES = [
   { tr: 'Defter yok, kalem yok, burada sadece balık var!', en: 'No ledger, no pen, only fish here!' },
   { tr: 'Allahım, bu haftayı da sağ atlatalım!', en: 'Lord, let us survive this week too!' }
 ];
-function taxQ() { return S.tax || (S.tax = { items: 0, due: 0, n: 0, last: 0, by: {}, debt: [] }); }
+function taxQ() { return S.tax || (S.tax = { items: 0, due: 0, n: 0, last: 0, by: {}, debt: [], vis: 0, vsh: 0, vv: 0, vset: 0 }); }
 function taxLoad(d) {
-  if (!d || typeof d !== 'object') return { items: 0, due: 0, n: 0, last: 0, by: {}, debt: [] };
+  if (!d || typeof d !== 'object') return { items: 0, due: 0, n: 0, last: 0, by: {}, debt: [], vis: 0, vsh: 0, vv: 0, vset: 0 };
   var by = {};
   if (d.by && typeof d.by === 'object') for (var k in d.by) if (/^[a-z0-9_]{1,12}$/i.test(k) && Array.isArray(d.by[k])) by[k] = [numIn(d.by[k][0], 0, 1e9, true), numIn(d.by[k][1], 0, 1e12, true)];
   var debt = Array.isArray(d.debt) ? d.debt.slice(0, 4).filter(Array.isArray).map(function (e) { return [numIn(e[0], 0, 1e12, true), numIn(e[1], 0, TAX_OVER_K, true)]; }).filter(function (e) { return e[0] > 0; }) : [];   /* v2.15: eski kayıtta yok → borçsuz */
-  return { items: numIn(d.items, 0, 1e9, true), due: numIn(d.due, 0, 1e12, true), n: numIn(d.n, 0, 1e6, true), last: numIn(d.last, 0, 1e7, true), by: by, debt: debt };
+  /* v2.21: süren ziyaret (vis = ziyaret günü, vsh = şimdiye dek eksik kalan, vv = alınan, vset = eski borç tahsil edildi).
+     Ziyaret ortasında kayıt/yükleme olunca ziyaret kaldığı yerden sürer: borç ikinci kez yaşlanmaz, kesilen tezgâh tekrar kesilmez. */
+  return { items: numIn(d.items, 0, 1e9, true), due: numIn(d.due, 0, 1e12, true), n: numIn(d.n, 0, 1e6, true), last: numIn(d.last, 0, 1e7, true), by: by, debt: debt,
+    vis: numIn(d.vis, 0, 1e7, true), vsh: numIn(d.vsh, 0, 1e12, true), vv: numIn(d.vv, 0, 1e12, true), vset: d.vset ? 1 : 0 };
 }
 function taxNote(n, unit, key) {
   var q = taxQ(); n = n | 0; if (n <= 0) return;
@@ -2834,7 +2850,7 @@ function taxLastWeek() { var d = taxQ().debt || []; return d.length && d[0][1] +
 /* ilk durakta: en eskiden başlayarak borcu tahsil et; en eski borç TAX_OVER_K. ziyarette hâlâ ödenemiyorsa liman mühürlenir */
 function taxDebtSettle() {
   var q = taxQ(), d = q.debt || [], paid = 0, owed = 0;
-  if (TAX.settled) return; TAX.settled = true;
+  if (TAX.settled) return; TAX.settled = true; q.vset = 1;
   for (var i = 0; i < d.length; i++) {
     var e = d[i], m = Math.pow(2, e[1]), o = taxOwe(e), v = Math.max(0, Math.min(o, Math.floor(S.cash)));
     owed += o; S.cash -= v; paid += v;
@@ -2862,7 +2878,14 @@ function taxStart() {
   TAX.on = true; TAX.x = 13.6; TAX.y = 22.5; TAX.bob = 0; TAX.vx = 0; TAX.vy = 0; TAX.face = -1; TAX.wait = 0; TAX.i = 0;
   TAX.wk = q.n; TAX.items = q.items; TAX.v = 0; TAX.say = -1; TAX.sayT = 0; TAX.call = {}; TAX.mgrSay = null; TAX.st = 0;
   TAX.left = q.due; TAX.done = 0; TAX.short = 0; TAX.settled = false; TAX.over = false; TAX.hadDebt = false; TAX.debtPaid = 0; TAX.yell = [];
-  q.debt = q.debt || []; for (var dj = 0; dj < q.debt.length; dj++) q.debt[dj][1]++;   /* v2.15: bekleyen borçlar bir hafta daha yaşlandı */
+  q.debt = q.debt || [];
+  if (q.vis === day.n) {                                  /* v2.21: yarım kalmış ziyaret (kayıt/yükleme) → kaldığı yerden */
+    TAX.short = q.vsh || 0; TAX.v = q.vv || 0; TAX.settled = !!q.vset;
+    if (TAX.settled && q.debt.some(function (e) { return e[1] >= TAX_OVER_K; })) TAX.over = true;
+  } else {
+    q.vis = day.n; q.vsh = 0; q.vv = 0; q.vset = 0;
+    for (var dj = 0; dj < q.debt.length; dj++) q.debt[dj][1]++;   /* v2.15: bekleyen borçlar bir hafta daha yaşlandı */
+  }
   TAX.path = withSales.map(function (c, i) {
     var p = queueSlotPos(c, 0);
     return { c: c, x: p.x + 0.4, y: p.y + 0.5, last: i === withSales.length - 1 };
@@ -2887,15 +2910,16 @@ function taxCollectAt(w, mz) {
   if (w.last) due = Math.max(due, TAX.left);
   if (mz >= 0) due = Math.round(due * (1 - TAX_MGR_OFF));
   var v = Math.max(0, Math.min(due, Math.floor(S.cash)));                  /* v2.15: tavan yok; yetmeyen borca yazılır */
-  S.cash -= v; TAX.v += v; TAX.short += due - v; TAX.left = Math.max(0, TAX.left - e[1]); TAX.done++;
+  S.cash -= v; TAX.v += v; TAX.short += due - v; TAX.left = w.last ? 0 : Math.max(0, TAX.left - e[1]); TAX.done++;
   if (q.by) delete q.by[w.c.key];
+  q.due = TAX.left; q.vsh = TAX.short; q.vv = TAX.v;                     /* v2.21: kayıtta kalan vergi = henüz kesilmeyen */
   if (v > 0) addFloat(w.c.x, w.c.y - 1.2, '−' + money(v) + (mz >= 0 ? ' (−%' + Math.round(TAX_MGR_OFF * 100) + ')' : ''), '#ff8a7a');
   if (due > v) addFloat(w.c.x, w.c.y - 1.7, '📕 ' + money(due - v), '#ff5a4a');
   sfx.drop && sfx.drop();
 }
 function taxClose() {                                     /* hafta kapandı: makbuz, sayaçlar sıfır */
   var q = taxQ();
-  q.items = 0; q.due = 0; q.by = {}; q.n++; q.last = day.n;
+  q.items = 0; q.due = 0; q.by = {}; q.n++; q.last = day.n; q.vis = 0; q.vsh = 0; q.vv = 0; q.vset = 0;
   q.debt = q.debt || [];
   if (TAX.short > 0) q.debt.push([Math.round(TAX.short), 0]);           /* v2.15: ödenemeyen kısım borca */
   toast(T('taxPaid', { n: TAX.items, v: money(TAX.v) }));
@@ -2913,7 +2937,10 @@ function taxEndLine() {
 }
 function taxCollect() {                                   /* test/kapanış: hepsini tek seferde (borç dahil) */
   var q = taxQ();
-  if (!TAX.on) { TAX.v = 0; TAX.short = 0; TAX.settled = false; TAX.over = false; TAX.hadDebt = false; TAX.left = q.due; q.debt = q.debt || []; q.debt.forEach(function (e) { e[1]++; }); }
+  if (!TAX.on) {
+    TAX.v = 0; TAX.short = 0; TAX.settled = false; TAX.over = false; TAX.hadDebt = false; TAX.left = q.due; q.debt = q.debt || [];
+    if (q.vis === day.n) { TAX.short = q.vsh || 0; TAX.v = q.vv || 0; TAX.settled = !!q.vset; } else q.debt.forEach(function (e) { e[1]++; });
+  }
   taxDebtSettle();
   var due = TAX.left !== undefined ? TAX.left : q.due, v = Math.max(0, Math.min(due, Math.floor(S.cash)));
   S.cash -= v; TAX.v += v; TAX.short += due - v; TAX.left = 0; TAX.items = q.items;
@@ -3297,7 +3324,8 @@ var Store = (function () {
       if (ok) { try { return localStorage.getItem(k); } catch (e) { } }
       return null;
     },
-    set: function (k, v) { mem[k] = String(v); if (ok) { try { localStorage.setItem(k, String(v)); } catch (e) { } } if (window.BT_NATIVE) window.BT_NATIVE.set(k, v); },
+    /* v2.21: yazma hatası (kota dolu vb.) artık yutulmaz: false döner, kaydeden oyuncuyu uyarır */
+    set: function (k, v) { var w = true; mem[k] = String(v); if (ok) { try { localStorage.setItem(k, String(v)); } catch (e) { w = false; } } if (window.BT_NATIVE) window.BT_NATIVE.set(k, v); return w; },
     del: function (k) { mem[k] = null; if (ok) { try { localStorage.removeItem(k); } catch (e) { } } if (window.BT_NATIVE) window.BT_NATIVE.del(k); }
   };
 })();
@@ -3334,6 +3362,18 @@ Object.assign(STR.en, {
   termsBtn: "📜 Data consent & Rules",
   onlineInfoOk: 'OK', dataInfoBtn: 'ℹ️ DATA & PRIVACY', onlineFixed: 'ALWAYS ON — privacy: Settings › Privacy Policy', aboutBtn: 'ABOUT & LICENSES', nameBadT: 'This name can\'t be used — try another.'
 });
+Object.assign(STR.tr, {
+  saveFail: '⚠ Kayıt yazılamadı (cihaz hafızası dolu olabilir) — ilerlemen bu oturumda duruyor',
+  loadBroken: '⚠ Slot {n} açılamadı (kayıt bozuk). Ham kayıt yedeklendi, oyun ezilmedi.',
+  slotBadT: 'Bozuk kayıt', slotBadS: 'Açılamıyor — yeni oyun başlatırsan ham hali yedeklenir',
+  slotBadAsk: 'Slot {n}\'teki kayıt bozuk ve açılamıyor. Yeni oyun başlatılsın mı? (Ham kayıt yedeğe alınır.)'
+});
+Object.assign(STR.en, {
+  saveFail: '⚠ Couldn\'t write the save (device storage may be full) — your progress lives in this session only',
+  loadBroken: '⚠ Slot {n} couldn\'t be opened (damaged save). The raw save was backed up, nothing was overwritten.',
+  slotBadT: 'Damaged save', slotBadS: 'Can\'t be opened — starting a new game backs up the raw data',
+  slotBadAsk: 'The save in slot {n} is damaged and can\'t be opened. Start a new game? (The raw save is backed up.)'
+});
 var SLOT_N = 3, SLOT_PREFIX = 'balikci_slot_', LAST_KEY = 'balikci_last', OLD_KEY = 'balikci_tycoon_v3', PREF_KEY = 'balikci_pref';
 var curSlot = 0, BOOT = null, S0 = null;
 function slotKey(n) { return SLOT_PREFIX + n; }
@@ -3341,6 +3381,9 @@ function readSlot(n) {
   if (!(n >= 1 && n <= SLOT_N)) return null;
   try { var raw = Store.get(slotKey(n)); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
 }
+function slotRaw(n) { return n >= 1 && n <= SLOT_N ? Store.get(slotKey(n)) : null; }
+function slotBroken(n) { return !!slotRaw(n) && !readSlot(n); }        /* v2.21: kesik/bozuk JSON — "boş" sanılıp ezilmesin */
+function backupSlot(n) { var raw = slotRaw(n); if (raw) Store.set(slotKey(n) + '_bak', raw); }
 function slotCount() { var c = 0; for (var i = 1; i <= SLOT_N; i++) if (readSlot(i)) c++; return c; }
 function lastSlot() { var n = parseInt(Store.get(LAST_KEY), 10); return readSlot(n) ? n : 0; }
 function migrateOldSave() {
@@ -3394,7 +3437,8 @@ function buildSave() {
     serv: servSave(),
     adLv: adLvl(), ads: adSave(),                     /* v2.18-deneme: İlan Bürosu seviyesi + yayındaki reklamlar [{id, left}] */
     insaat: insSave(),                                /* v2.18-deneme: sürmekte olan inşaatlar {bina: {lv, left}} */
-    day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || '', (day.spec || []).join(','), day.sp || 0, day.normals || 0],
+    day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || '', (day.spec || []).join(','), day.sp || 0, day.normals || 0, day.phase === 'summary' ? 1 : 0],
+    dst: { inc: Math.round(day.st.inc || 0), served: day.st.served | 0, lost: day.st.lost | 0, fish: day.st.fish | 0, by: day.st.by || {}, out: day.st.out || {}, spec: (day.st.spec || []).slice(0, 40) },   /* v2.21: gün istatistiği */
     stalls: counters.map(function (c) { return [c.key, c.open ? 1 : 0]; }),
     workers: workers.filter(function (w) { return !ROLES[w.role].lok; }).map(function (w) { return (w.lv | 0) > 1 ? [w.role, w.zone === undefined ? 0 : w.zone, w.lv | 0] : [w.role, w.zone === undefined ? 0 : w.zone]; }),   /* v2.18-deneme: usta seviyesi (yoksa 1) */
     emek: S.emek === 0 ? 0 : 1, eg: S.emekGift ? 1 : 0, nb: emekBoxSave(), pet: petSave(),   /* v2.18-deneme: hayvanlar */
@@ -3406,8 +3450,66 @@ function buildSave() {
     road: [S.roadFl | 0, S.roadBb | 0],               /* v1.9.3: yol çiçeklikleri + reklam panoları */
     rent: [S.rentD | 0, S.rentN ? 1 : 0],             /* v2.24-deneme: kira başlangıç günü + ilk bilgi verildi */
     q: queueSave(),                                   /* v1.9.1: tezgâh stoğu, kasadaki para ve kuyruktaki müşteriler */
+    loose: looseSave(),                               /* v2.21: masa/hasır/ağ stoğu ve eldeki mallar */
     mk: M
   };
+}
+/* v2.21 — ARADAKİ MALLAR: eskiden yüklemede masadaki/hasırdaki/ağdaki ve oyuncu ile işçilerin elindeki mallar kayboluyordu.
+   Masa girişi, hasır, füme/mutfak girişi ve hasırı, ağ stoğu ve eldekiler kaydedilir. İşçinin elindeki ham balık bölgesinin
+   ağına, mal bölgesinin hasırına döner (işçiler yüklemede yeniden yerleşir); tahsildarın elindeki para kasaya sayılır. */
+function looseKeys(arr) {
+  var o = [];
+  for (var i = 0; i < arr.length && o.length < 120; i++) { var it = arr[i]; if (it && (it.k === 'fish' || it.k === 'fileto' || it.k === 'fume')) o.push(tarifItemKey(it)); }
+  return o;
+}
+function looseCarryMoney() {
+  var v = 0, add = function (a) { for (var i = 0; i < a.carry.length; i++) if (a.carry[i].k === 'money') v += +a.carry[i].v || 0; };
+  add(player); workers.forEach(function (w) { if (!ROLES[w.role] || !ROLES[w.role].lok) add(w); });
+  return Math.round(v);
+}
+function looseSave() {
+  var tb = function (t) { var inn = t.inn.slice(); if (t.cur && typeof t.cur === 'object') inn.push(t.cur); return [looseKeys(inn), looseKeys(t.mat.items)]; };
+  var wk = [];
+  workers.forEach(function (w) { if (ROLES[w.role] && !ROLES[w.role].lok && w.carry.length) { var ks = looseKeys(w.carry); if (ks.length) wk.push([w.zone === undefined ? -1 : w.zone, ks]); } });
+  return { t: tables.map(tb), s: [looseKeys(smoker.inn), looseKeys(smoker.mat.items)], k: [looseKeys(kitchen.inn), looseKeys(kitchen.mat.items)],
+    n: allNets().map(function (q) { return looseKeys(q.stock); }), p: looseKeys(player.carry), w: wk.slice(0, 60), m: looseCarryMoney() };
+}
+function looseItems(a, test) {
+  var o = [];
+  if (Array.isArray(a)) for (var i = 0; i < a.length && i < 120; i++) { if (typeof a[i] !== 'string') continue; var it = tarifKeyItem(a[i]); if (validItem(it) && (!test || test(it))) o.push(it); }
+  return o;
+}
+function looseZoneMat(z, it) {
+  if (it.k !== 'fish' && kitchen.z === z && !AREAS[kitchen.z].locked) return kitchen.mat;
+  if (it.k === 'fume' && smoker.z === z && !AREAS[smoker.z].locked) return smoker.mat;
+  for (var i = 0; i < tables.length; i++) if (tables[i].z === z && !AREAS[z].locked) return tables[i].mat;
+  var ts = openTables(); return ts[0] ? ts[0].mat : null;
+}
+function looseLoad(d) {
+  if (!d || typeof d !== 'object') return;
+  var put = function (arr, items, max) { items.forEach(function (it) { if (arr.length < max) arr.push(it); }); };
+  if (Array.isArray(d.t)) d.t.forEach(function (e, i) {
+    var t = tables[i]; if (!t || !Array.isArray(e) || AREAS[t.z].locked) return;
+    put(t.inn, looseItems(e[0], function (it) { return it.k === 'fish' && tableTakes(t, it); }), t.max);
+    put(t.mat.items, looseItems(e[1], isGoods), 80);
+  });
+  [[smoker, d.s], [kitchen, d.k]].forEach(function (pr) {
+    var o = pr[0], e = pr[1]; if (!o || !Array.isArray(e) || AREAS[o.z].locked) return;
+    put(o.inn, looseItems(e[0]), o.max || 12);
+    put(o.mat.items, looseItems(e[1], isGoods), 80);
+  });
+  var nets = allNets();
+  if (Array.isArray(d.n)) d.n.forEach(function (e, i) { if (nets[i]) put(nets[i].stock, looseItems(e, isFish), 40); });
+  put(player.carry, looseItems(d.p), 40);
+  if (Array.isArray(d.w)) d.w.forEach(function (e) {
+    if (!Array.isArray(e)) return;
+    var z = e[0] | 0;
+    looseItems(e[1]).forEach(function (it) {
+      if (it.k === 'fish') { var ns = zoneNets(z); if (ns[0]) ns[0].stock.push(it); }
+      else { var m = looseZoneMat(z, it); if (m) m.items.push(it); }
+    });
+  });
+  var mv = numIn(d.m, 0, 1e9, true); if (mv > 0) S.cash += mv;
 }
 /* v1.9.1 — çıkıp girince tezgâh önü boşalmasın: her tezgâhın stoğu, kasası ve bekleyen (özel olmayan) müşterileri.
    [anahtar, ['fileto|hamsi', …], kasa $, [[sıra, tip, ürün, tür, adet, alınan, sabır, tam sabır, saç, ten], …]] */
@@ -3452,9 +3554,12 @@ function save() {
   savePref();
   if (!S.started || !curSlot) return;
   submitScore();
-  Store.set(slotKey(curSlot), JSON.stringify(buildSave()));
+  var ok = Store.set(slotKey(curSlot), JSON.stringify(buildSave()));
   Store.set(LAST_KEY, String(curSlot));
+  if (!ok && !saveFailT) { saveFailT = 1; toast(T('saveFail')); setTimeout(function () { saveFailT = 0; }, 60000); }   /* v2.21 */
+  return ok;
 }
+var saveFailT = 0;
 /* sayı mı? değilse (metin, NaN, sonsuz) alt sınır; sonra aralığa sıkıştır */
 function numIn(v, lo, hi, int) { var n = typeof v === 'number' ? v : (typeof v === 'string' && v.trim() !== '' ? +v : NaN); if (!isFinite(n)) n = lo; n = clamp(n, lo, hi); return int ? Math.floor(n) : n; }
 function loadFrom(d) {
@@ -3546,6 +3651,7 @@ function loadFrom(d) {
     lokLoadWorld();                                 /* v2.19-deneme: lokanta kadrosu + masa üstü ödeme/kirli tabaklar */
     if (d.mk) M = migrateMarket(d.mk);
     try { queueLoad(d); } catch (e) { }                /* bozuk kuyruk verisi kaydın geri kalanını bozmasın */
+    try { looseLoad(d.loose); } catch (e) { }          /* v2.21 */
     retLoad(d);                                     /* uzakta kazanç + başarımlar (yoksa boş) */
     S.evs = {}; if (Array.isArray(d.ev)) d.ev.forEach(function (k) { if (typeof k === 'string' && /^[a-z0-9_]{2,24}$/.test(k)) S.evs[k] = 1; });
     S.gz = gzLoad(d.gz) || gzOld(); gzReset();   /* v2.16: eski kayıtta yok → geçilmiş dönüm noktaları "kaçırıldı" */
@@ -3563,6 +3669,7 @@ function resetWorld() {
   if (ARR.on) arrClose(true);                       /* v2.17 */
   workers.length = 0; customers.length = 0; flyers.length = 0; floats.length = 0; puffs.length = 0; yardFolk.length = 0; mgrAct.length = 0; lokReset();
   event = null; eventT = 0; nextEvent = 80;
+  TAX.on = false; TAX.call = {}; TAX.yell = []; TAX.over = false; TAX.overT = undefined; TAX.paid = false;   /* v2.21: başka slota geçince memur yürümeye devam etmesin */
   for (k in S0) S[k] = S0[k];
   player.x = 4.5; player.y = 3.2; player.vx = 0; player.vy = 0; player.carry.length = 0; player.act = 0;
   for (k = 0; k < spots.length; k++) { spots[k].stock.length = 0; spots[k].t = 0; }
@@ -3583,7 +3690,13 @@ function resetWorld() {
 function useSlot(n) {
   resetWorld();
   var d = readSlot(n);
-  if (d) loadFrom(d);
+  /* v2.21: yükleme hata verirse yarım dünyayla oynanmaz ve otomatik kayıt sağlam(ca bozuk) kaydı ezmez:
+     ham kayıt yedeğe (balikci_slot_N_bak) alınır, temiz dünyaya dönülür, slot seçilmez. */
+  if (d && !loadFrom(d)) {
+    backupSlot(n); resetWorld(); curSlot = 0;
+    toast(T('loadBroken', { n: n }));
+    return false;
+  }
   if (!M) M = newMarket();
   curSlot = n;
   lastRepLvl = repLevel(); lastEnv = -1;
@@ -3596,10 +3709,12 @@ function deleteSlot(n) {
 }
 /* --- kayıt özeti --- */
 function metaOf(d) {
-  if (!d) return null;
-  return { at: d.at || 0, cash: d.cash || 0, rep: d.rep || 0, served: d.served || 0, play: d.play || 0,
-    co: d.company || '', earned: d.earned || 0, fish: d.caught || 0, day: (d.day && d.day[0]) || 1,
-    areas: (d.areas || []).filter(function (a) { return !a[0]; }).length };
+  if (!d || typeof d !== 'object') return null;
+  try {                                                  /* v2.21: bozuk alanlı kayıt slot ekranını çökertmesin */
+    return { at: +d.at || 0, cash: +d.cash || 0, rep: +d.rep || 0, served: +d.served || 0, play: +d.play || 0,
+      co: typeof d.company === 'string' ? d.company : '', earned: +d.earned || 0, fish: +d.caught || 0, day: (Array.isArray(d.day) && +d.day[0]) || 1,
+      areas: (Array.isArray(d.areas) ? d.areas : []).filter(function (a) { return Array.isArray(a) && !a[0]; }).length };
+  } catch (e) { return null; }
 }
 function saveMeta(n) { return metaOf(readSlot(n === undefined ? (curSlot || lastSlot()) : n)); }
 function clockMS(sec) { sec = Math.max(0, Math.round(sec)); var m = Math.floor(sec / 60), s2 = sec % 60; return m + ':' + (s2 < 10 ? '0' : '') + s2; }
@@ -3620,7 +3735,7 @@ function saveSummary(m) {
   return (m.co ? '« ' + m.co + ' »\n' : '') + T('saveLine', { t: agoStr(m.at), c: money(m.cash), r: m.rep, s: m.served, p: clockStr(m.play) });
 }
 function manualSave(msg) {
-  save();
+  if (save() === false) { refreshSaveInfo(); return; }               /* v2.21: yazılamadıysa "kaydedildi" deme */
   S.savedAt = Date.now();
   refreshSaveInfo();
   toast(msg || T('saved', { t: agoStr(S.savedAt) }));
@@ -9247,13 +9362,14 @@ function start() {
   progEv('oyun'); evFlush();
   retOnStart();                                          /* uzun ayrılıktan dönüş: "Sen yokken…" */
   emekGiftCheck();                                       /* v2.18-deneme: eski kayıt + Emekçi Mod → Usta ekip hediyesi */
+  if (dayResumeNext && day.phase === 'summary') { dayResumeNext = false; beginNextDay(); }   /* v2.21: kapanmış günün kartında kalınmıştı */
 }
 /* OYNA: kayıt varsa devam; yoksa işletme adı → oyun. Adı olmayan eski kayıt önce ad sorar. */
 el.playBtn.onclick = function () { needConsent(playGo); };
 function playGo() {
   var ls = lastSlot();
   if (!ls) { openSlots('new'); return; }
-  if (curSlot !== ls) useSlot(ls);
+  if (curSlot !== ls && useSlot(ls) === false) { openSlots('load'); return; }
   if (!S.company) { openNameScreen('legacy'); sfx.tap(); return; }
   el.startScreen.classList.add('hidden');
   askAutosave(start);
@@ -10560,8 +10676,8 @@ function renderSlots() {
   el.slotSub.textContent = T(slotMode === 'new' ? 'slotSubNew' : 'slotSubLoad') + (Store.persistent ? '' : ' ' + T('noStorage'));
   var h = '';
   for (var i = 1; i <= SLOT_N; i++) {
-    var d = readSlot(i), m = metaOf(d), btns = '';
-    if (!m) btns = '<button class="sb go2" data-a="new" data-n="' + i + '">' + T('slotNew') + '</button>';
+    var d = readSlot(i), m = metaOf(d), btns = '', bad = !m && slotBroken(i);
+    if (!m) btns = '<button class="sb ' + (bad ? 'warn' : 'go2') + '" data-a="' + (bad ? 'bad' : 'new') + '" data-n="' + i + '">' + T('slotNew') + '</button>';
     else if (slotMode === 'new') btns = '<button class="sb warn" data-a="over" data-n="' + i + '">' + T('slotOver') + '</button>';
     else btns = '<button class="sb go2" data-a="load" data-n="' + i + '">' + T('slotLoad') + '</button>' +
       '<button class="sb del" data-a="del" data-n="' + i + '" title="' + T('slotDel') + '">🗑</button>';
@@ -10569,7 +10685,7 @@ function renderSlots() {
       '<div class="sn">' + i + '</div><div class="si">' +
       (m ? '<b>' + escH(m.co || T('slotNoName')) + '</b><small>' + T('slotLine', { d: m.day, f: fmtN(m.fish), c: money(m.cash) }) +
            '</small><small>' + T('slotWhen', { t: agoStr(m.at), p: clockStr(m.play) }) + '</small>'
-         : '<b>' + T('slotEmptyT') + '</b><small>' + T('slotEmptyS') + '</small>') +
+         : '<b>' + T(bad ? 'slotBadT' : 'slotEmptyT') + '</b><small>' + T(bad ? 'slotBadS' : 'slotEmptyS') + '</small>') +
       '</div><div class="sa">' + btns + '</div></div>';
   }
   el.slotRows.innerHTML = PX(h);
@@ -10577,10 +10693,11 @@ function renderSlots() {
     b.onclick = function () {
       var n = parseInt(b.dataset.n, 10), a = b.dataset.a, m = saveMeta(n);
       if (a === 'new') beginNewInSlot(n);
+      else if (a === 'bad') ask(T('slotBadAsk', { n: n }), T('overYes'), function () { backupSlot(n); beginNewInSlot(n); });
       else if (a === 'over') ask(T('overAsk', { n: n, c: (m && m.co) || T('slotNoName') }), T('overYes'), function () { beginNewInSlot(n); });
       else if (a === 'load') {
+        if (useSlot(n) === false) { renderSlots(); return; }
         el.slotScr.classList.add('hidden');
-        useSlot(n);
         if (!S.company) { openNameScreen('legacy'); return; }
         askAutosave(function () { start(); toast(T('slotLoaded', { n: n, c: S.company })); });
       } else if (a === 'del') ask(T('delAsk', { n: n, c: (m && m.co) || T('slotNoName') }), T('delYes'), function () {
@@ -11369,6 +11486,32 @@ function surplusMat(w) {
   return best;
 }
 function idleAtDepot(w, sp, dt) { goTo(w, DEPOT.door.x - 0.4 + (w.name.length % 3) * 0.4, DEPOT.door.y + 0.9, sp, dt, 0.6); }
+/* v2.21: Soğuk Oda doluyken elde malla sonsuza dek beklenmez. 6 sn kapıda bekler (raf boşalabilir), sonra malı
+   geldiği hasıra (yoksa en yakın açık hasıra) geri bırakır. Eskiden Depo Hamalı / Sevkiyatçı kapıda kilitleniyordu. */
+function goodsMats() {
+  var o = [], i;
+  for (i = 0; i < tables.length; i++) if (!AREAS[tables[i].z].locked) o.push(tables[i].mat);
+  if (!AREAS[smoker.z].locked) o.push(smoker.mat);
+  if (!AREAS[kitchen.z].locked) o.push(kitchen.mat);
+  return o;
+}
+function goodsBackMat(w) {
+  var ms = goodsMats(), best = null, bd = 1e9, i, d;
+  if (w.mat && ms.indexOf(w.mat) >= 0) return w.mat;
+  for (i = 0; i < ms.length; i++) { d = dist2(w.x, w.y, ms[i].x, ms[i].y); if (d < bd) { bd = d; best = ms[i]; } }
+  return best;
+}
+function depotFullWait(w, sp, dt) {
+  w.depW = (w.depW || 0) + dt;
+  if (w.depW < 6) { idleAtDepot(w, sp, dt); return; }
+  var m = goodsBackMat(w);
+  if (!m) { idleAtDepot(w, sp, dt); return; }
+  if (goTo(w, m.x, m.y, sp, dt, 0.8)) {
+    var it = popCarry(w, isGoods);
+    while (it) { m.items.push(it); fly(w.x, w.y, carryTopZ(w, w.carry.length + 1), m.x, m.y, 6, it, 0.26); it = popCarry(w, isGoods); }
+    w.depW = 0; w.task = null; w.mat = null;
+  }
+}
 /* Depo Hamalı: fazlayı hasırlardan depoya taşır; stoğu azalan tezgâhı depodan besler.
    Her iş iki adımlı: 'load' (taşıyabildiği kadar yükle) → 'drop' (götür bırak). Tek ürünle yola çıkmaz. */
 function carryKeyCount(a, k) { var n = 0; for (var i = 0; i < a.carry.length; i++) if (itemKey(a.carry[i]) === k) n++; return n; }
@@ -11401,8 +11544,9 @@ function aiDepocu(w, sp, dt) {
       }
       w.mode = 'drop';
     }
-    if (!hasCarry(w, isGoods)) { w.task = null; w.mat = null; return; }
-    if (depotFree() <= 0) { idleAtDepot(w, sp, dt); return; }
+    if (!hasCarry(w, isGoods)) { w.task = null; w.mat = null; w.depW = 0; return; }
+    if (depotFree() <= 0) { depotFullWait(w, sp, dt); return; }
+    w.depW = 0;
     if (goTo(w, DEPOT.door.x, DEPOT.door.y, sp, dt, 0.7)) iDepotIn(w, dt);
     return;
   }
@@ -11427,9 +11571,9 @@ function aiSevkiyat(w, sp, dt) {
   if (hasCarry(w, isGoods)) {
     var any = false;
     if (live) for (var i = 0; i < w.carry.length; i++) if (isGoods(w.carry[i]) && contractWants(w.carry[i])) { any = true; break; }
-    if (any) { if (goTo(w, office.x, office.y + 1.1, sp, dt, 1.0)) iDeliverContract(w, dt); return; }
-    if (DEPOT.lvl && depotFree() > 0) { if (goTo(w, DEPOT.door.x, DEPOT.door.y, sp, dt, 0.7)) iDepotIn(w, dt); return; }
-    idleAtDepot(w, sp, dt); return;
+    if (any) { w.depW = 0; if (goTo(w, office.x, office.y + 1.1, sp, dt, 1.0)) iDeliverContract(w, dt); return; }
+    if (DEPOT.lvl && depotFree() > 0) { w.depW = 0; if (goTo(w, DEPOT.door.x, DEPOT.door.y, sp, dt, 0.7)) iDepotIn(w, dt); return; }
+    depotFullWait(w, sp, dt); return;                                /* v2.21: kontrat bitti + depo dolu → hasıra geri */
   }
   var k = live ? contractKeyInDepot() : null;
   if (k) {
@@ -11461,8 +11605,18 @@ function aiHalHamal(w, sp, dt) {
   var full = carryW(w) >= ROLES.halhamal.cap - 0.5;
   if (w.mode === 'load' && (full || !palCount()) && hasCarry(w, isGoods)) w.mode = 'drop';
   if (w.mode === 'drop') {
-    if (!hasCarry(w, isGoods)) { w.mode = 'load'; return; }
-    if (depotFree() <= 0) { idleAtDepot(w, sp, dt); return; }
+    if (!hasCarry(w, isGoods)) { w.mode = 'load'; w.depW = 0; return; }
+    if (depotFree() <= 0) {                                            /* v2.21: depo dolu kaldıysa yükü palete geri koy */
+      w.depW = (w.depW || 0) + dt;
+      if (w.depW < 6) { idleAtDepot(w, sp, dt); return; }
+      if (goTo(w, WHALL.door.x, WHALL.door.y, sp, dt, 0.7)) {
+        var bk = popCarry(w, isGoods);
+        while (bk) { var bkk = itemKey(bk); WHALL.pal[bkk] = (WHALL.pal[bkk] || 0) + 1; bk = popCarry(w, isGoods); }
+        w.depW = 0; w.mode = 'load';
+      }
+      return;
+    }
+    w.depW = 0;
     if (goTo(w, DEPOT.door.x + 0.3, DEPOT.door.y, sp, dt, 0.7)) iDepotIn(w, dt);
     return;
   }
@@ -15127,6 +15281,13 @@ function hamalJob(w) {
   for (i = 0; i < nets.length; i++) if (nets[i].box.length >= boxCap(nets[i]) * 0.75) return { k: 'tbl', s: nets[i] };
   return null;
 }
+function hamalFishBack(w) {                                          /* eldeki ham balık bölgenin en yakın ağına döner */
+  var nets = zoneNets(w.zone), s = null, i, d, bd = 1e9;
+  for (i = 0; i < nets.length; i++) { d = Math.hypot(nets[i].x - w.x, nets[i].y - w.y); if (d < bd) { bd = d; s = nets[i]; } }
+  var back = popCarry(w, isFish);
+  while (back) { if (s) s.stock.push(back); back = popCarry(w, isFish); }
+  w.tblW = 0; w.ej = null; w.mode = 'drop';
+}
 function aiHamalE(w, sp, dt) {
   var t = zoneTable(w.zone), done = false;
   if (w.mode === 'load' && w.ej) {
@@ -15156,7 +15317,13 @@ function aiHamalE(w, sp, dt) {
     return;
   }
   if (hasCarry(w, isFish)) {                                         /* masaya bırak */
-    if (t && !AREAS[t.z].locked) { if (goTo(w, t.x - 0.1, t.y - 0.35, sp, dt, 0.9)) iDropTable(w, t, dt); }
+    /* v2.21: masa dolu kaldıysa (oyuncu da doldurmuş, hasır dolu, filetocu kesemiyor) elde balıkla sonsuza dek beklemez:
+       6 sn sonra balığı bölgenin ağına geri koyar, hasır→tezgâh işine döner. Eskiden bölge zinciri kalıcı kilitleniyordu. */
+    var tOk = t && !AREAS[t.z].locked;
+    if (tOk && !(t.inn.length < t.max && hasCarry(w, function (it) { return isFish(it) && tableTakes(t, it); }))) w.tblW = (w.tblW || 0) + dt;
+    else w.tblW = 0;
+    if (!tOk || w.tblW > 6) { hamalFishBack(w); return; }
+    if (goTo(w, t.x - 0.1, t.y - 0.35, sp, dt, 0.9)) iDropTable(w, t, dt);
     return;
   }
   w.ej = hamalJob(w);
@@ -17274,7 +17441,7 @@ function lokDolapRoomFair(f) { return Math.min(lokDolapRoom(f), Math.max(0, lokS
 function lokDolapAdd(f) { var d = lokQ().dolap; d[f] = (d[f] | 0) + 1; }
 /* ---------- kayıt ---------- */
 function lokSave() {
-  var q = lokQ(), o = { lv: q.lv, tb: q.tb, sl: q.sl.map(function (s) { return s ? { k: s.k, lv: s.lv } : null; }), sp: q.sp.map(function (v) { return Math.round(v) || 0; }), sn: q.sn | 0, dolap: {}, dl: q.dl | 0, crew: [], star: q.star | 0, menu: q.menu.slice(0, 5), res: lokResSave(q), tr: { masa: lokUpLv('masa'), kapi: lokUpLv('kapi'), tabela: lokUpLv('tabela'), mez: lokUpLv('mez') }, dc: LOK_DC.filter(function (d) { return lokDcOn(d.id); }).map(function (d) { return d.id; }), mu: q.mu | 0, gs: q.gs | 0, ed: q.ed | 0, rd: q.rd | 0, pay: {}, dirty: {}, sv: q.sv | 0, ls: q.ls | 0, hint: q.hint ? 1 : 0, auto: q.auto ? 1 : 0, sazW: q.sazW ? 1 : 0, sazU: q.sazU ? 1 : 0, v: 2 };
+  var q = lokQ(), o = { lv: q.lv, tb: q.tb, sl: q.sl.map(function (s) { return s ? { k: s.k, lv: s.lv } : null; }), sp: q.sp.map(function (v) { return Math.round(v) || 0; }), sn: q.sn | 0, dolap: {}, dl: q.dl | 0, crew: [], star: q.star | 0, menu: q.menu.slice(0, 5), res: lokResSave(q), tr: { masa: lokUpLv('masa'), kapi: lokUpLv('kapi'), tabela: lokUpLv('tabela'), mez: lokUpLv('mez') }, dc: LOK_DC.filter(function (d) { return lokDcOn(d.id); }).map(function (d) { return d.id; }), mu: q.mu | 0, gs: q.gs | 0, ed: q.ed | 0, rd: q.rd | 0, pay: {}, dirty: {}, sv: q.sv | 0, ls: q.ls | 0, hint: q.hint ? 1 : 0, auto: q.auto ? 1 : 0, sazW: q.sazW ? 1 : 0, sazU: q.sazU ? 1 : 0, op: q.op ? 1 : 0, v: 2 };   /* v2.21: AÇIK/KAPALI tabelası da */
   for (var f in q.dolap) if (q.dolap[f] > 0) o.dolap[f] = q.dolap[f];
   lokCrew().forEach(function (w) { o.crew.push({ r: w.role, lv: wLv(w) }); });
   for (var i = 0; i < 12; i++) {
@@ -17292,7 +17459,7 @@ function lokLoadSlots(q, d) {
     for (i = 0; i < LOK_SL.length; i++) {
       var e = d.sl[i];
       if (e && typeof e === 'object' && typeof e.k === 'string' && LOK_STK.indexOf(e.k) >= 0) { var lv = numIn(e.lv, 0, LOK_STMAX, true); if (lv > 0) q.sl[i] = { k: e.k, lv: lv }; }
-      q.sp[i] = q.sl[i] && Array.isArray(d.sp) ? numIn(d.sp[i], 0, 1e9, true) : 0;
+      q.sp[i] = Array.isArray(d.sp) ? numIn(d.sp[i], 0, 1e9, true) : 0;   /* v2.21: inşaatı süren yerin harcaması da (sök iadesi) */
     }
     q.sn = numIn(d.sn, 0, LOK_SL.length, true);
   } else if (d.st && typeof d.st === 'object' && !Array.isArray(d.st)) {
@@ -17307,7 +17474,7 @@ function lokLoad(d) {
   if (!d || typeof d !== 'object' || Array.isArray(d)) return;
   var q = lokNew();
   q.lv = numIn(d.lv, 1, LOK_MAXLV, true) || 1; q.tb = numIn(d.tb, 1, LOK_MAXTB, true) || 1;
-  q.dl = numIn(d.dl, 0, LOK_UP.dol.max, true); q.star = numIn(d.star, 0, 5, true); q.sv = numIn(d.sv, 0, 1e9, true); q.ls = numIn(d.ls, 0, 1e9, true); q.hint = d.hint ? 1 : 0; q.sazW = d.sazW ? 1 : 0; q.sazU = d.sazU ? 1 : 0; q.auto = d.auto ? 1 : 0;
+  q.dl = numIn(d.dl, 0, LOK_UP.dol.max, true); q.star = numIn(d.star, 0, 5, true); q.sv = numIn(d.sv, 0, 1e9, true); q.ls = numIn(d.ls, 0, 1e9, true); q.hint = d.hint ? 1 : 0; q.sazW = d.sazW ? 1 : 0; q.sazU = d.sazU ? 1 : 0; q.auto = d.auto ? 1 : 0; q.op = d.op ? 1 : 0;
   q.mu = numIn(d.mu, 0, 1e6, true); q.gs = numIn(d.gs, 0, 5, true); q.ed = numIn(d.ed, 0, 1e6, true); q.rd = numIn(d.rd, 0, 1e6, true);
   /* v2.22: kademeli eşya + süsler; eski kayıt (up.ter / up.mez / up.saz): Teras → Asma Çardak, Saz Köşesi → saz süsü, Meze Vitrini → 2. kademe (buzlu vitrin, +%10 aynı) */
   ['masa', 'kapi', 'tabela', 'mez'].forEach(function (k) { var u = LOK_UP[k]; q.tr[k] = d.tr && typeof d.tr === 'object' && d.tr[k] !== undefined ? numIn(d.tr[k], u.base, u.max, true) : u.base; });
@@ -18342,6 +18509,12 @@ function iPickCtr(a, c, f, dt) {                          /* tezgâh rafından b
     fly(c.x, c.y, 13, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.26); sfx.pick();
   });
 }
+function lokBackMat(it) {
+  var z = zoneOfFish(it.f), ts = openTables(), i;
+  if (kitchen && kitchen.z === z && !AREAS[kitchen.z].locked) return kitchen.mat;
+  for (i = 0; i < ts.length; i++) if (ts[i].z === z) return ts[i].mat;
+  return ts[0] ? ts[0].mat : null;
+}
 function aiLkKomi(w, sp, dt) {
   w.slow = 1;
   var fits2 = function (it) { return it.k === 'fileto' && !it.dish && lokDolapRoomFair(it.f) > 0; };
@@ -18354,8 +18527,9 @@ function aiLkKomi(w, sp, dt) {
     if (hasS || hasCarry(w, fits2)) { w.idleT = 0; if (goTo(w, LOK.dolap.sx, LOK.dolap.sy, sp, dt, 0.5)) { if (hasS) lokSackPut(w); else iPutDolap(w, dt); } return; }
     w.idleT = (w.idleT || 0) + dt;                                                  /* dolap dolu / menü değişti: bir süre bekle, sonra hasıra geri bırak */
     if (w.idleT > 6) {
-      var back = openTables()[0] && openTables()[0].mat;
-      if (back && goTo(w, back.x, back.y, sp, dt, 0.8)) { var it2 = popCarry(w, isFileto); if (it2) back.items.push(it2); }
+      var it1 = null; for (var ci = w.carry.length - 1; ci >= 0; ci--) if (isFileto(w.carry[ci])) { it1 = w.carry[ci]; break; }
+      var back = it1 ? lokBackMat(it1) : null;                                      /* v2.21: malı kendi bölgesinin hasırına (güveç → Mutfak) */
+      if (back && goTo(w, back.x, back.y, sp, dt, 0.8)) { var it2 = popCarry(w, function (q) { return q === it1; }); if (it2) back.items.push(it2); }
       return;
     }
     goTo(w, LOK.dolap.sx, LOK.dolap.sy + 0.2, sp, dt, 0.5); return;
