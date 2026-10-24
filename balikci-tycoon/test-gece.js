@@ -102,6 +102,35 @@ const URL = process.env.URL || 'http://localhost:8106/index.html';
     await p.click('.dtab[data-t="staff"]').catch(() => {}); await sleep(250);
     R.strip2 = await p.evaluate(() => document.getElementById('dpCards').scrollLeft);
     ok(R.strip > 50 && R.strip2 === 0, 'sekme değişince kart şeridi başa dönmedi ' + [R.strip, R.strip2]);
+    R.touch = await p.evaluate(() => {
+      const c = document.getElementById('dpClose'), r = c.getBoundingClientRect(), a = getComputedStyle(c, '::after');
+      const hit = document.elementFromPoint(r.left - 6, r.top + r.height / 2);
+      return { w: Math.round(r.width), hitOk: hit === c, dtab: Math.round(document.querySelector('.dtab').getBoundingClientRect().height) };
+    });
+    ok(R.touch.hitOk && R.touch.dtab >= 44, 'dokunma hedefi küçük ' + JSON.stringify(R.touch));
+    await p.click('#dpClose').catch(() => {});
+    /* gün kartı: maaş + vergi + net + bekleyen */
+    R.card = await p.evaluate(() => {
+      BT.hire('tezgahtar', true, 0); BT.S.cash = 50000;
+      BT.day.st.inc = 2000; BT.day.st.wage = 300; BT.day.st.tax = 120; BT.day.spec = null; BT.day.sp = 0;
+      BT.customers.length = 0; BT.endDay(); return 1;
+    });
+    let txt = '';
+    for (let i = 0; i < 200 && !txt; i++) { txt = await p.evaluate(() => { const e = document.getElementById('dayScr'); return e.classList.contains('hidden') ? '' : e.innerText.replace(/\s+/g, ' '); }); if (!txt) await sleep(300); }
+    R.card = txt.slice(0, 500);
+    ok(/Maaşlar/.test(txt) && /Vergi/.test(txt) && /Net/.test(txt), 'gün kartında maaş/vergi/net yok: ' + R.card);
+    await p.evaluate(() => document.getElementById('dayGo').click()); await sleep(300);
+    /* çevrimdışı: tüm bölgeler + oyun süresiyle sınır */
+    R.off = await p.evaluate(() => {
+      const o = {}; o.acc = BT.ret().acc.length; o.areas = BT.areas.length;
+      BT.S.play = 100000; BT.S.retPlay = 100000 - 120;      /* son karttan beri 2 dk oynandı */
+      BT.retSet(BT.areas.map(() => 500), 50000);
+      const c = BT.retCompute(9 * 3600); o.sec = c.sec; o.capped = c.capped;
+      BT.S.retPlay = 0; const c2 = BT.retCompute(9 * 3600); o.sec2 = c2.sec;
+      return o;
+    });
+    ok(R.off.acc === R.off.areas, 'çevrimdışı sayaç bölge sayısı kadar değil ' + JSON.stringify(R.off));
+    ok(R.off.sec <= 120 * 16 + 1 && R.off.capped && R.off.sec2 === 8 * 3600, 'saat ileri alma sınırı yok ' + JSON.stringify(R.off));
     await p.context().close();
   }
 

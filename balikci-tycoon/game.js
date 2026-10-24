@@ -147,7 +147,7 @@ var STR = {
     /* v1.2 — gün / depo / balık pazarı */
     dayLbl: 'GÜN', dayN: 'GÜN {d}', mktDayLbl: 'BALIK PAZARI',
     dayClose: 'GÜN {d} KAPANDI', mktClose: 'BALIK PAZARI {d} BİTTİ',
-    dayInc: 'Günlük gelir', dayServed: 'Müşteri', dayFish: 'Satılan balık',
+    dayInc: 'Günlük gelir', dayServed: 'Müşteri', dayFish: 'Satılan balık', dayWage: 'Maaşlar', dayTax: 'Vergi', dayNet: 'Net (gelir − gider)', dayWait: 'Tezgâh kasalarında bekleyen',
     dayLost: 'Kaçan müşteri', dayTop: 'En çok satan', dayOut: 'Stok dışı süre', dayAuction: 'Mezat satışı',
     goNextDay: 'YENİ GÜN ▶', goPrep: 'PAZARA HAZIRLAN ▶',
     mktTomorrow: 'YARIN BALIK PAZARI', mktExpect: 'Beklenen yoğunluk: Yüksek — tezgâhları doldur',
@@ -205,7 +205,7 @@ var STR = {
     rdFl: 'Yol Çiçekliği', rdFlD: 'Yol kenarına çiçeklik • müşteri akışı +%{p}', rdFlDone: 'Yola çiçeklik kondu 🌷',
     rdBb: 'Yol Reklam Panosu', rdBbD: 'İşletmenin adı ve amblemi yolda • müşteri akışı +%{p}', rdBbDone: 'Reklam panosu yolda yerini aldı 📣',
     lvEffect: 'Ağ +%18, tezgâh +4 stok, personel +%10 hız, müşteri +%12, yeni yapı yeri',
-    rentUp: 'Kira: günlük {a} → {b}', rentCard: 'Kira: günlük {v}', dayRent: 'Kira ({n} dükkân)', rentShort: '(kasa yetmedi)', rentFirst: '🏠 Dükkân kirası kesildi: {v}. Açık her dükkân (kapalı olsa da) gün sonunda kira öder; seviye arttıkça kira da artar.',
+    rentUp: 'Kira: günlük {a} → {b}', rentCard: 'Kira: günlük {v}', dayRent: 'Kira ({n} dükkân)', rentShort: '(kasa yetmedi, eksik kısım silindi)', rentFirst: '🏠 Dükkân kirası kesildi: {v}. Açık her dükkân (kapalı olsa da) gün sonunda kira öder; seviye arttıkça kira da artar.',
     staffFull: 'Personel limiti dolu ({n})',
     tut6: 'Alt bardan bir yükseltme satın al',
     nextStage: 'Sonraki aşama',
@@ -358,7 +358,7 @@ var STR = {
     saveNow: '💾 SAVE', saveQuit: '💾 SAVE & QUIT', setSave: 'SAVE',
     dayLbl: 'DAY', dayN: 'DAY {d}', mktDayLbl: 'FISH MARKET',
     dayClose: 'DAY {d} CLOSED', mktClose: 'FISH MARKET {d} ENDED',
-    dayInc: 'Daily income', dayServed: 'Customers', dayFish: 'Fish sold',
+    dayInc: 'Daily income', dayServed: 'Customers', dayFish: 'Fish sold', dayWage: 'Wages', dayTax: 'Tax', dayNet: 'Net (income − costs)', dayWait: 'Waiting in stall tills',
     dayLost: 'Lost customers', dayTop: 'Top seller', dayOut: 'Stock-out time', dayAuction: 'Auction sale',
     goNextDay: 'NEW DAY ▶', goPrep: 'PREPARE FOR MARKET ▶',
     mktTomorrow: 'FISH MARKET TOMORROW', mktExpect: 'Expected demand: High — stock your stalls',
@@ -413,7 +413,7 @@ var STR = {
     rdFl: 'Roadside Flowerbed', rdFlD: 'Flowerbed by the road • customer flow +{p}%', rdFlDone: 'A flowerbed on the road 🌷',
     rdBb: 'Road Billboard', rdBbD: 'Your company name and emblem by the road • customer flow +{p}%', rdBbDone: 'Billboard up by the road 📣',
     lvEffect: 'Nets +18%, stall +4 stock, staff +10% speed, customers +12%, new build spot',
-    rentUp: 'Rent: {a} → {b} a day', rentCard: 'Rent: {v} a day', dayRent: 'Rent ({n} shops)', rentShort: '(not enough cash)', rentFirst: '🏠 Shop rent paid: {v}. Every unlocked shop (even when closed) pays rent at day end; higher levels pay more.',
+    rentUp: 'Rent: {a} → {b} a day', rentCard: 'Rent: {v} a day', dayRent: 'Rent ({n} shops)', rentShort: '(not enough cash; the rest was waived)', rentFirst: '🏠 Shop rent paid: {v}. Every unlocked shop (even when closed) pays rent at day end; higher levels pay more.',
     staffFull: 'Staff limit reached ({n})',
     tut6: 'Buy an upgrade from the bottom bar',
     nextStage: 'Next stage',
@@ -2202,7 +2202,7 @@ function loadDay(d) {
   if (d && d.dst && typeof d.dst === 'object') {
     var ds = d.dst;
     day.st.inc = numIn(ds.inc, 0, 1e13); day.st.served = numIn(ds.served, 0, 1e7, true); day.st.lost = numIn(ds.lost, 0, 1e7, true); day.st.fish = numIn(ds.fish, 0, 1e8, true);
-    day.st.by = numMap(ds.by); day.st.out = numMap(ds.out);
+    day.st.by = numMap(ds.by); day.st.out = numMap(ds.out); day.st.wage = numIn(ds.wage, 0, 1e12); day.st.tax = numIn(ds.tax, 0, 1e12);
     if (Array.isArray(ds.spec)) day.st.spec = ds.spec.filter(function (q) { return typeof q === 'string' && q.length < 40; }).slice(0, 40);
   }
   /* v2.21: gün kartı açıkken kaydedilip yüklenen oyun günü ikinci kez kapatmaz (çift kira/maaş, inşaat günü atlama): yeni güne geçilir */
@@ -2546,7 +2546,7 @@ var day = {
   n: 1, t: 0, phase: 'play', ph: 0, market: false,
   st: null, last: null
 };
-function newDayStats() { return { inc: 0, served: 0, lost: 0, fish: 0, by: {}, out: {}, outAt: {}, spec: [] }; }
+function newDayStats() { return { inc: 0, served: 0, lost: 0, fish: 0, by: {}, out: {}, outAt: {}, spec: [], wage: 0, tax: 0 }; }   /* v2.21: maaş + vergi gün kartında */
 day.st = newDayStats();
 function isMarketDay(n) { return n > 1 && n % MARKET_EVERY === 0; }
 function dayNext() { return isMarketDay(day.n + 1); }
@@ -2665,6 +2665,7 @@ function endDay() {
     insp: insp,
     n: day.n, market: day.market, inc: day.st.inc, served: day.st.served,
     lost: day.st.lost, fish: day.st.fish, top: topSeller(), out: worstOut(), spec: (day.st.spec || []).slice(),
+    wage: Math.round(day.st.wage || 0), tax: Math.round(day.st.tax || 0), wait: counters.reduce(function (a, c) { return a + trayValue(c); }, 0),
     next: isMarketDay(day.n + 1), auc: auc
   };
   day.last.pet = petDayEnd();                      /* v2.18-deneme: hayvanların mama ücreti */
@@ -2853,7 +2854,7 @@ function taxDebtSettle() {
   if (TAX.settled) return; TAX.settled = true; q.vset = 1;
   for (var i = 0; i < d.length; i++) {
     var e = d[i], m = Math.pow(2, e[1]), o = taxOwe(e), v = Math.max(0, Math.min(o, Math.floor(S.cash)));
-    owed += o; S.cash -= v; paid += v;
+    owed += o; S.cash -= v; paid += v; day.st.tax = (day.st.tax || 0) + v;
     e[0] = v >= o ? 0 : Math.max(1, Math.round((o - v) / m));
   }
   q.debt = d.filter(function (e) { return e[0] > 0; });
@@ -2910,7 +2911,7 @@ function taxCollectAt(w, mz) {
   if (w.last) due = Math.max(due, TAX.left);
   if (mz >= 0) due = Math.round(due * (1 - TAX_MGR_OFF));
   var v = Math.max(0, Math.min(due, Math.floor(S.cash)));                  /* v2.15: tavan yok; yetmeyen borca yazılır */
-  S.cash -= v; TAX.v += v; TAX.short += due - v; TAX.left = w.last ? 0 : Math.max(0, TAX.left - e[1]); TAX.done++;
+  S.cash -= v; TAX.v += v; TAX.short += due - v; TAX.left = w.last ? 0 : Math.max(0, TAX.left - e[1]); TAX.done++; day.st.tax = (day.st.tax || 0) + v;
   if (q.by) delete q.by[w.c.key];
   q.due = TAX.left; q.vsh = TAX.short; q.vv = TAX.v;                     /* v2.21: kayıtta kalan vergi = henüz kesilmeyen */
   if (v > 0) addFloat(w.c.x, w.c.y - 1.2, '−' + money(v) + (mz >= 0 ? ' (−%' + Math.round(TAX_MGR_OFF * 100) + ')' : ''), '#ff8a7a');
@@ -2943,14 +2944,14 @@ function taxCollect() {                                   /* test/kapanış: hep
   }
   taxDebtSettle();
   var due = TAX.left !== undefined ? TAX.left : q.due, v = Math.max(0, Math.min(due, Math.floor(S.cash)));
-  S.cash -= v; TAX.v += v; TAX.short += due - v; TAX.left = 0; TAX.items = q.items;
+  S.cash -= v; TAX.v += v; day.st.tax = (day.st.tax || 0) + v; TAX.short += due - v; TAX.left = 0; TAX.items = q.items;
   taxClose();
 }
 function taxFinish() {
   if (CUE.on === 'hasmet') cueStop(1.5);
   if (!TAX.paid && TAX.on) {
     taxDebtSettle();
-    if (TAX.left > 0) { var v = Math.max(0, Math.min(TAX.left, Math.floor(S.cash))); S.cash -= v; TAX.v += v; TAX.short += TAX.left - v; TAX.left = 0; }
+    if (TAX.left > 0) { var v = Math.max(0, Math.min(TAX.left, Math.floor(S.cash))); S.cash -= v; TAX.v += v; day.st.tax = (day.st.tax || 0) + v; TAX.short += TAX.left - v; TAX.left = 0; }
     taxClose();
   }
   TAX.on = false; TAX.call = {};
@@ -3307,6 +3308,14 @@ function upCost(v) { return Math.max(1, Math.round(v * (1 - Math.min(0.45, perkS
 function pct(n) { return lang === 'tr' ? '%' + n : n + '%'; }
 function perMin() { return lang === 'tr' ? '/dk' : '/min'; }
 function money(n) { return '$' + Math.round(n).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US'); }
+/* v2.21: üst bar parası — milyondan sonra kısaltılır (1,33 Mn / 1.33M), 390 px ekranda kutuya sığar */
+function hudMoney(v) {
+  v = Math.round(v || 0); var a = Math.abs(v), tr = lang === 'tr';
+  if (a < 1e6) return v.toLocaleString(tr ? 'tr-TR' : 'en-US');
+  var u = a >= 1e12 ? [1e12, tr ? ' Tr' : 'T'] : a >= 1e9 ? [1e9, tr ? ' Mr' : 'B'] : [1e6, tr ? ' Mn' : 'M'];
+  var x = v / u[0], d = Math.abs(x) >= 100 ? 0 : Math.abs(x) >= 10 ? 1 : 2, t = x.toFixed(d);
+  return (tr ? t.replace('.', ',') : t) + u[1];
+}
 
 /* ---------------- kayıt (v0.4 — 3 slot) ----------------
    • Store: localStorage; tarayıcı izin vermezse (gizli pencere, kısıtlı iframe) oturum içi
@@ -3438,14 +3447,14 @@ function buildSave() {
     adLv: adLvl(), ads: adSave(),                     /* v2.18-deneme: İlan Bürosu seviyesi + yayındaki reklamlar [{id, left}] */
     insaat: insSave(),                                /* v2.18-deneme: sürmekte olan inşaatlar {bina: {lv, left}} */
     day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || '', (day.spec || []).join(','), day.sp || 0, day.normals || 0, day.phase === 'summary' ? 1 : 0],
-    dst: { inc: Math.round(day.st.inc || 0), served: day.st.served | 0, lost: day.st.lost | 0, fish: day.st.fish | 0, by: day.st.by || {}, out: day.st.out || {}, spec: (day.st.spec || []).slice(0, 40) },   /* v2.21: gün istatistiği */
+    dst: { inc: Math.round(day.st.inc || 0), served: day.st.served | 0, lost: day.st.lost | 0, fish: day.st.fish | 0, by: day.st.by || {}, out: day.st.out || {}, spec: (day.st.spec || []).slice(0, 40), wage: Math.round(day.st.wage || 0), tax: Math.round(day.st.tax || 0) },   /* v2.21: gün istatistiği */
     stalls: counters.map(function (c) { return [c.key, c.open ? 1 : 0]; }),
     workers: workers.filter(function (w) { return !ROLES[w.role].lok; }).map(function (w) { return (w.lv | 0) > 1 ? [w.role, w.zone === undefined ? 0 : w.zone, w.lv | 0] : [w.role, w.zone === undefined ? 0 : w.zone]; }),   /* v2.18-deneme: usta seviyesi (yoksa 1) */
     emek: S.emek === 0 ? 0 : 1, eg: S.emekGift ? 1 : 0, nb: emekBoxSave(), pet: petSave(),   /* v2.18-deneme: hayvanlar */
     tarif: tarifSave(),                               /* v2.18-deneme: Tarif Defteri + Güveç Ocağı */
     lok: lokSave(),                                   /* v2.19-deneme: Sahil Lokantası */
       /* v2.18-deneme: Emekçi Mod + ağ sandıkları */
-    ret: retSave(),                                   /* uzakta kazanç + başarımlar */
+    ret: retSave(), retP: Math.round(S.retPlay || 0), /* uzakta kazanç + başarımlar; v2.21: son kart alındığında oynama süresi */
     ev: Object.keys(S.evs || {}),                     /* v1.9: gönderilmiş ilerleme olayları (tekrar gitmesin) */
     road: [S.roadFl | 0, S.roadBb | 0],               /* v1.9.3: yol çiçeklikleri + reklam panoları */
     rent: [S.rentD | 0, S.rentN ? 1 : 0],             /* v2.24-deneme: kira başlangıç günü + ilk bilgi verildi */
@@ -3571,7 +3580,7 @@ function loadFrom(d) {
     S.cash = numIn(d.cash, 0, 1e13); S.rep = numIn(d.rep, 0, 1e9); if (!(d.v >= 7)) { S.rep = repFromOld(S.rep); S.lvFloor = levelForRep(S.rep); } else S.lvFloor = clamp(parseInt(d.lvF, 10) || 0, 0, 10);   /* v2.2: yeni itibar ölçeği; eski seviye taban */ S.capLvl = numIn(d.capLvl, 0, 20, true); S.spdLvl = numIn(d.spdLvl, 0, 20, true);
     S.priceLvl = numIn(d.priceLvl, 0, 20, true); S.served = numIn(d.served, 0, 1e9, true); S.lost = numIn(d.lost, 0, 1e9, true);
     S.caught = numIn(d.caught, 0, 1e10, true); S.tut = numIn(d.tut, 0, 99, true);
-    S.play = numIn(d.play, 0, 1e9); S.savedAt = numIn(d.at, 0, 1e14);
+    S.play = numIn(d.play, 0, 1e9); S.savedAt = numIn(d.at, 0, 1e14); S.retPlay = Math.min(S.play, numIn(d.retP, 0, 1e9));
     S.ctrl = d.ctrl !== undefined ? numIn(d.ctrl, 0, 2, true) : (S.tut > 0 || S.play > 20 ? 2 : 0);
     S.earned = numIn(d.earned, 0, 1e13); S.company = cleanName(d.company || '') || ''; S.runId = typeof d.runId === 'string' && /^[a-z0-9]{6,40}$/i.test(d.runId) ? d.runId : '';
     S.auto = Array.isArray(d.auto) ? d.auto.map(function (v) { return !!v; }) : [];
@@ -4748,7 +4757,8 @@ function finishOrder(c, cu) {
       S.names.push(cu.spec); custNew();
       toast(T('custNewName', { n: NM(specById(cu.spec).n) }));
     }
-    (day.st.spec = day.st.spec || []).push(NM(specById(cu.spec).n));
+    var spn = NM(specById(cu.spec).n), spl = day.st.spec = day.st.spec || [];
+    if (!cu.story && spl.indexOf(spn) < 0) spl.push(spn);              /* v2.21: gün kartında aynı ad bir kez; hikâye ziyaretçisi özel müşteri sayılmaz */
   }
   cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; c.slots[cu.slot] = null; shiftQueue(c);
   if (!cu.spec && cu.type && cu.type.id) { S.custSeen = S.custSeen || {}; S.custSeen[cu.type.id] = (S.custSeen[cu.type.id] || 0) + 1; }
@@ -8209,14 +8219,14 @@ function carryIcon() {
   return top === 'fish' ? 'hamsi' : top === 'fileto' || top === 'plate' ? 'tezgah' : top === 'fume' ? 'kesim' : 'para';
 }
 function syncHUD(dt) {
-  el.money.textContent = Math.round(S.cash).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US');
+  var hm = hudMoney(S.cash); if (el.money.textContent !== hm) el.money.textContent = hm;
   el.carry.textContent = carryW(player) + '/' + capacity();
   setChipIcon(el.carryIcon, carryIcon());
   el.rep.textContent = S.rep;
   checkRepLevel();
   var lvl = repLevel();
   var capd = repCapped();
-  if (el.hRep.dataset.l !== lvl + lang + capd) { el.hRep.dataset.l = lvl + lang + capd; el.hRep.textContent = T('rep') + ' · ' + T('lvShort', { l: lvl }) + (capd ? ' · ' + T('lvCap') : ''); }
+  if (el.hRep.dataset.l !== lvl + lang + capd) { el.hRep.dataset.l = lvl + lang + capd; el.hRep.textContent = (window.innerWidth <= 420 ? '' : T('rep') + ' · ') + T('lvShort', { l: lvl }) + (capd ? ' · ' + T('lvCap') : ''); }   /* v2.21: dar ekranda yalnız seviye (yıldız simgesi itibarı anlatır) */
   var cur = REP_LEVELS[lvl - 1].need, nxt = lvl < REP_LEVELS.length ? REP_LEVELS[lvl].need : cur + 1;
   el.repfill.style.width = (capd ? 100 : clamp((S.rep - cur) / (nxt - cur) * 100, 0, 100)) + '%';
   if (capd && S.capHint !== lvl) {                                   /* v2.2: tavan ipucu (seviye başına bir kez) */
@@ -8625,9 +8635,18 @@ function barLiveRefresh(dt) {
   var sg = barSig();
   if (sg !== barSigLast) renderBar();
 }
+var renderBarKey = '';
+/* v2.21: kart şeridi sağda devam ediyorsa kenar solar (kaydırma ipucu); masaüstünde dikey tekerlek de yana kaydırır */
+function dpMoreHint() { var c = el.dpCards; if (c) c.classList.toggle('more', c.scrollWidth - c.clientWidth - c.scrollLeft > 8); }
+setTimeout(function () {
+  var c = el && el.dpCards; if (!c) return;
+  c.addEventListener('scroll', dpMoreHint, { passive: true });
+  c.addEventListener('wheel', function (e) { if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && c.scrollWidth > c.clientWidth) { c.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
+}, 0);
 function renderBar() {
   if (!barTab) return;
-  var keepX = el.dpCards.scrollLeft;
+  var bk = [barTab, buildSub, barSlot && (barSlot.id || barSlot.key || barSlot), barZone, barMgr].join('|'), keepX = bk === renderBarKey ? el.dpCards.scrollLeft : 0;   /* v2.21: sekme/alt sekme değişince şerit başa döner */
+  renderBarKey = bk;
   el.dpTitle.textContent = T(barTab === 'area' ? 'tArea' : barTab === 'level' ? 'tLevel' : barTab === 'build' ? 'tBuild' : barTab === 'serv' ? 'tServ' : barTab === 'staff' ? 'tStaff' : 'tProj');
   el.dpSub.classList.toggle('hidden', barTab !== 'build' || !!barSlot);
   if (barTab === 'build') Array.prototype.forEach.call(el.dpSub.children, function (b) {
@@ -8656,7 +8675,7 @@ function renderBar() {
       c.t + '</b><small>' + (c.s || '') + (c.refund ? ' (+' + money(c.refund) + ')' : '') + '</small>' + btn + '</div>';
   }
   el.dpCards.innerHTML = PX(h);
-  el.dpCards.scrollLeft = keepX;
+  el.dpCards.scrollLeft = keepX; dpMoreHint();
   barSigLast = barSig();
   Array.prototype.forEach.call(el.dpCards.querySelectorAll('.buy'), function (b) {
     b.onclick = function () {
@@ -8788,6 +8807,12 @@ function showDayCard() {
   if (L.pet) h += dayRow('🐾', T('petDayRow'), petDayTxt(L.pet));   /* v2.18-deneme */
   if (L.rent) h += dayRow('🏠', T('dayRent', { n: L.rent.l.length }), '−' + money(L.rent.tot) + (L.rent.paid < L.rent.tot ? ' ' + T('rentShort') : ''));   /* v2.24 */
   if (L.saz) h += dayRow('🪕', T('lkSazDay'), L.saz.paid ? '−' + money(L.saz.fee) : T('lkSazUnpaid'));   /* v2.23: sazcı yevmiyesi */
+  /* v2.21: maaş + vergi + net (gelir − giderler); tezgâh kasalarında bekleyen para ayrıca (günlük gelire dahil, henüz kasada değil) */
+  if (L.wage > 0) h += dayRow('👷', T('dayWage'), '−' + money(L.wage));
+  if (L.tax > 0) h += dayRow('🏛️', T('dayTax'), '−' + money(L.tax));
+  var outT = (L.wage || 0) + (L.tax || 0) + (L.rent ? L.rent.paid : 0) + (L.pet ? L.pet.fee : 0) + (L.saz && L.saz.paid ? L.saz.fee : 0);
+  if (outT > 0) { var net = Math.round(L.inc - outT); h += dayRow(net >= 0 ? '📈' : '📉', T('dayNet'), '<b style="color:' + (net >= 0 ? 'var(--green)' : '#ff8a7a') + '">' + (net < 0 ? '−' : '+') + money(Math.abs(net)) + '</b>'); }
+  if (L.wait >= 1) h += dayRow('🪙', T('dayWait'), money(L.wait));
   if (L.insp) h += dayRow('🕵️', T('dayInsp'), T(L.insp.good ? 'inspGood' : 'inspBad', { v: money(L.insp.v), r: L.insp.r }));
   if (S.company) {
     submitScore(true);
@@ -9312,7 +9337,7 @@ function gameStep(dt, sim) {
   if (!CHS.on) updateLevelUp(dt);
   updateEnv(dt);
   updateCoach(dt);
-  if (workers.length) S.cash = Math.max(0, S.cash - wageTotal() / 60 * dt);
+  if (workers.length) { var wpd = Math.min(S.cash, wageTotal() / 60 * dt); S.cash -= wpd; day.st.wage = (day.st.wage || 0) + wpd; }
   if (sim) return;
   updateCamera(dt);
   syncHUD(dt);
@@ -13573,6 +13598,7 @@ function chSceneEnd() {
   CHS.on = false; document.body.classList.remove('chScene');
   var e = document.getElementById('chSceneEl'); if (e) e.classList.add('hidden');
   openChapterEnd();
+  if (CHS.offV > 0) { var ov = CHS.offV; CHS.offV = 0; setTimeout(function () { toast(T('offGot', { n: money(ov) })); }, 1200); }
 }
 function openChapter() {
   var pr = chapterProgress();
@@ -14536,12 +14562,13 @@ function arrFrame() {
 var RET_MIN = 300;                     /* 5 dk'dan kısa ayrılıklar sayılmaz */
 var RET_FULL = 2 * 3600;               /* ilk 2 saat tam hızda */
 var RET_CAP = 8 * 3600;                /* en fazla 8 saat sayılır */
+var RET_PLAY_K = 16;                   /* v2.21: 30 dk oynayan 8 saatin tamamını alır */
 var RET_TAIL = 0.4;                    /* 2 saatten sonrası %40 hızda (azalan getiri) */
 var RET_FRAC = 0.3;                    /* bölgenin son gerçek gelirinin %30'u */
 var RET_ALPHA = 0.25;                  /* dakikalık kayan ortalama katsayısı */
 var RET_ABSURD = 365 * 86400;          /* saat oynanmış (1 yıldan uzun ayrılık) → sıfır */
 var ACH_ALL_KEY = 'balikci_ach', OFF_HINT_KEY = 'balikci_offhint';
-var RET = { acc: [0, 0, 0], rate: [0, 0, 0], win: 0, lastPlay: -1, dayInc: 0, bestMkt: 0, loadedT: 0, hidAt: 0, cardV: 0, cardSec: 0 };
+var RET = { acc: AREAS.map(function () { return 0; }), rate: AREAS.map(function () { return 0; }), win: 0, lastPlay: -1, dayInc: 0, bestMkt: 0, loadedT: 0, hidAt: 0, cardV: 0, cardSec: 0 };
 S.ach = {};                            /* S0 anlık görüntüsünden önce: yeni oyun boş listeyle başlar */
 
 Object.assign(ICONS, {
@@ -14554,6 +14581,7 @@ Object.assign(ICONS, {
 
 Object.assign(STR.tr, {
   tabs: STR.tr.tabs.concat(['GAZETELER', 'BAŞARIM']),   /* v2.16: GAZETELER sekmesi index.html'de, BAŞARIM sonda */
+  offCapped: '(en çok {t} sayıldı: uzak kazanç, son ziyaretten beri oynadığın süreyle de sınırlı)',
   offTitle: 'SEN YOKKEN…', offSub: '{t} uzaktaydın. Müdürlerin tezgâhları bir an bile boş bırakmadı.',
   offZone: '{m} başındaydı', offTotal: 'KASAYA GİRECEK', offGo: 'TOPLA ▶',
   offNote: 'Uzaktayken iş ağır aksak döner: ilk 2 saat tam, sonrası yavaşlayarak, en fazla 8 saat sayılır.',
@@ -14567,6 +14595,7 @@ Object.assign(STR.tr, {
 });
 Object.assign(STR.en, {
   tabs: STR.en.tabs.concat(['NEWSPAPERS', 'AWARDS']),
+  offCapped: '(at most {t} counted: away earnings are also limited by how long you played since your last visit)',
   offTitle: 'WHILE YOU WERE AWAY…', offSub: 'You were gone for {t}. Your managers never left the stalls unattended.',
   offZone: '{m} kept watch', offTotal: 'GOING INTO THE SAFE', offGo: 'COLLECT ▶',
   offNote: 'Things run slower while you are away: full pace for 2 hours, tapering after that, 8 hours at most.',
@@ -14774,14 +14803,18 @@ function zoneWagePM(z) {
 function retCompute(sec) {
   var o = { sec: 0, v: 0, zones: [], auto: 0, effMin: 0, perMin: 0 };
   if (typeof sec !== 'number' || !isFinite(sec) || sec < RET_MIN || sec > RET_ABSURD) return o;
-  var s = Math.min(sec, RET_CAP), effMin = (Math.min(s, RET_FULL) + Math.max(0, s - RET_FULL) * RET_TAIL) / 60;
+  /* v2.21: saati ileri alıp kapat-aç istismarı: son karttan bu yana oynanan her dakika en çok RET_PLAY_K dakika uzak kazancı açar */
+  var room = Math.max(RET_MIN, ((S.play || 0) - (S.retPlay || 0)) * RET_PLAY_K);
+  o.real = sec; o.capped = sec > Math.min(RET_CAP, room);
+  var s = Math.min(sec, RET_CAP, room), effMin = (Math.min(s, RET_FULL) + Math.max(0, s - RET_FULL) * RET_TAIL) / 60;
   var rateSum = 0, gross = 0;
   var ek = emek();
   for (var z = 0; z < RET.rate.length; z++) {
-    if (!zoneOpen(z)) continue;
-    if (ek ? !emekAwayOK(z) : (!zoneAuto(z) || !mgr(z))) continue;   /* v2.18-deneme: Emekçi Mod'da başında personel olan bölgeler */
+    var lz = z === LOK_Z;                                            /* v2.21: devredilmiş lokanta da uzakta kazanır */
+    if (lz ? !(lokAuto() && lokMenu().length) : !zoneOpen(z)) continue;
+    if (!lz && (ek ? !emekAwayOK(z) : (!zoneAuto(z) || !mgr(z)))) continue;   /* v2.18-deneme: Emekçi Mod'da başında personel olan bölgeler */
     o.auto++;
-    var g = (RET.rate[z] || 0) * (ek ? emekAwayMul(z) : 1), r = Math.min(g * RET_FRAC, Math.max(0, g - zoneWagePM(z)));
+    var g = (RET.rate[z] || 0) * (ek && !lz ? emekAwayMul(z) : 1), r = Math.min(g * RET_FRAC, Math.max(0, g - (lz ? 0 : zoneWagePM(z))));
     gross += g;
     if (r > 0) { o.zones.push({ z: z, r: r, v: 0 }); rateSum += r; }
   }
@@ -14794,9 +14827,10 @@ function retCompute(sec) {
 }
 function retCardOpen() { var e = document.getElementById('offScr'); return !!e && !e.classList.contains('hidden'); }
 function retShowCard(o) {
+  if (CHS.on) { S.cash += o.v; CHS.offV = (CHS.offV || 0) + o.v; S.retPlay = S.play || 0; achUnlock('sen_yokken'); save(); return; }   /* v2.21: izleme sahnesi açıkken kart arkada kalıp oyunu kilitliyordu: para doğrudan kasaya */
   RET.cardV = o.v; RET.cardSec = o.sec;
   document.getElementById('offTitle').textContent = T('offTitle');
-  document.getElementById('offSub').textContent = TE('offSub', { t: clockStr(o.sec) });   /* v2.18-deneme: Emekçi Mod metni */
+  document.getElementById('offSub').textContent = TE('offSub', { t: clockStr(o.real || o.sec) }) + (o.capped ? ' ' + T('offCapped', { t: clockStr(o.sec) }) : '');   /* v2.21: gerçek süre + sayılan süre */
   var h = '';
   o.zones.forEach(function (q) { h += row(ICO('koop'), escH(NM(AREAS[q.z].n)), escH(mgr(q.z) ? T('offZone', { m: mgr(q.z).n }) : T('em_offCrew', { p: Math.round(emekAwayMul(q.z) * 100) })), money(q.v)); });
   document.getElementById('offRows').innerHTML = h;
@@ -14811,7 +14845,7 @@ function retCollect() {
   if (!retCardOpen()) return 0;
   var v = RET.cardV; RET.cardV = 0;
   document.getElementById('offScr').classList.add('hidden');
-  if (v > 0) { S.cash += v; toast(T('offGot', { n: money(v) })); sfx.coin(); achUnlock('sen_yokken'); }
+  if (v > 0) { S.cash += v; toast(T('offGot', { n: money(v) })); sfx.coin(); achUnlock('sen_yokken'); S.retPlay = S.play || 0; }
   syncPause(); save();
   return v;
 }
@@ -14834,7 +14868,7 @@ function retSave() {
 function retLoad(d) {
   var r = d && d.ret && typeof d.ret === 'object' ? d.ret : null;
   function num(v) { v = +v; return isFinite(v) && v > 0 ? Math.min(v, 1e7) : 0; }
-  RET.acc = [0, 0, 0]; RET.win = 0; RET.lastPlay = -1; RET.cardV = 0;
+  RET.acc = AREAS.map(function () { return 0; }); RET.win = 0; RET.lastPlay = -1; RET.cardV = 0;   /* v2.21: Mutfak + Lokanta da (eskiden yalnız ilk 3 bölge) */
   RET.rate = AREAS.map(function (a, z) { return r && Array.isArray(r.r) ? num(r.r[z]) : 0; });
   RET.dayInc = r ? num(r.d) : 0; RET.bestMkt = r ? num(r.m) : 0;
   S.ach = {};
@@ -18294,7 +18328,7 @@ function iLokDeposit(a, dt) {                             /* lokanta kasası: ma
   a.act -= dt; if (a.act > 0) return true;
   a.act = 0.05 * (a.slow || 1);
   var it = popCarry(a, isMoney);
-  S.cash += it.v; earn(it.v);
+  S.cash += it.v; earn(it.v); if (RET.acc.length > LOK_Z) RET.acc[LOK_Z] += it.v;   /* v2.21: lokanta geliri uzak kazanca */
   fly(a.x, a.y, carryTopZ(a, a.carry.length + 1), LOK.kasa.x, LOK.kasa.y, 10, it, 0.24);
   addFloat(LOK.kasa.x, LOK.kasa.y - 0.4, '+' + money(it.v), '#8ef2a2'); sfxFrom(a, function () { sfx.coin(); });
   return true;
