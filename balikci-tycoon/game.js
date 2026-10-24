@@ -1454,7 +1454,7 @@ var MGR_BUFFS = {
   rep:    { t: { tr: 'Satış başına +1 itibar', en: '+1 reputation per sale' }, v: 1 }
 };
 var MGR_NAMES = ['Sadık Bey', 'Nevin Hanım', 'Ertuğrul Bey', 'Filiz Hanım', 'Cengiz Bey', 'Gülten Hanım', 'Levent Bey', 'Sibel Hanım', 'Orhan Bey', 'Meral Hanım', 'Kadir Bey', 'Aysel Hanım'];
-var MGR_DESK = [{ cost: 6000, wage: 35 }, { cost: 9000, wage: 45 }, { cost: 12000, wage: 55 }, { cost: 16000, wage: 65 }];
+var MGR_DESK = [{ cost: 4500, wage: 25 },   /* v2.21: İskele müdürü getirisi maaşına yakındı */ { cost: 9000, wage: 45 }, { cost: 12000, wage: 55 }, { cost: 16000, wage: 65 }];
 function mgr(z) { return (z >= 0 && S.mgr && S.mgr[z]) || null; }
 function mgrEff(z, k) {
   var m = mgr(z); if (!m || !MGR_BUFFS[k]) return 0;
@@ -1860,7 +1860,7 @@ function zoneOpenStalls(z) {
    Taban 2, bölge seviyesi ve ek tezgâhlar +1'er; tam otomasyon (4 kişi) Sv3 bölge ya da kulübeyle açılır. */
 function zoneStaffCap(z) {
   if (!zoneOpen(z)) return 0;
-  return (emek() || emekLoading ? 4 : 2) + (z === KITCHEN_Z ? 1 : 0) + Math.max(0, zoneOpenStalls(z) - 1) + (AREAS[z].lvl - 1) + slotEff(z, 'staff') + hutBonus();
+  return (emek() || emekLoading ? 5 : 2) + (z === KITCHEN_Z ? 1 : 0) + Math.max(0, zoneOpenStalls(z) - 1) + (AREAS[z].lvl - 1) + slotEff(z, 'staff') + hutBonus();
 }
 function zoneStaff(z) {
   var n = 0;
@@ -1888,6 +1888,7 @@ function hireCost(role, z) {
   var base = rolePrice(role);                                    /* v2.18-deneme: Emekçi Mod fiyatı */
   var have = role === 'halhamal' ? halStaff() : DEPOT_ROLES.indexOf(role) >= 0 ? depotStaff() : zoneStaff(z);
   if (ROLES[role] && ROLES[role].zone && z >= 0) have = Math.max(0, have - (z === KITCHEN_Z ? 1 : 0));   /* v2.0: Mutfak'ın 5. rolü fiyatı katlamasın */
+  if (role === 'kasiyer' && z >= 0 && roleCount(z, 'kasiyer') === 0) have = Math.min(have, 1);   /* v2.21: bölgenin ilk Tahsildar'ı sıra basamağına binmez (kasası dolan tezgâh müşteri almıyor; şart) */
   return upCost(Math.round(base * Math.pow(emek() && ROLES[role].zone ? EMEK_HIRE_GROW : 1.85, have) * (1 + (z || 0) * 0.35)));   /* v2.18-deneme: Emekçi Mod artışı */
 }
 function workerSpeedMul() { return 1 + slotEff(null, 'wspeed') + perkSum('wspeed') + servEff('wspeed'); }
@@ -3454,7 +3455,7 @@ function buildSave() {
     tarif: tarifSave(),                               /* v2.18-deneme: Tarif Defteri + Güveç Ocağı */
     lok: lokSave(),                                   /* v2.19-deneme: Sahil Lokantası */
       /* v2.18-deneme: Emekçi Mod + ağ sandıkları */
-    ret: retSave(), retP: Math.round(S.retPlay || 0), /* uzakta kazanç + başarımlar; v2.21: son kart alındığında oynama süresi */
+    ret: retSave(), retP: Math.round(S.retPlay || 0), fbG: S.fbG || '', /* uzakta kazanç + başarımlar; v2.21: son kart alındığında oynama süresi */
     ev: Object.keys(S.evs || {}),                     /* v1.9: gönderilmiş ilerleme olayları (tekrar gitmesin) */
     road: [S.roadFl | 0, S.roadBb | 0],               /* v1.9.3: yol çiçeklikleri + reklam panoları */
     rent: [S.rentD | 0, S.rentN ? 1 : 0],             /* v2.24-deneme: kira başlangıç günü + ilk bilgi verildi */
@@ -3580,7 +3581,7 @@ function loadFrom(d) {
     S.cash = numIn(d.cash, 0, 1e13); S.rep = numIn(d.rep, 0, 1e9); if (!(d.v >= 7)) { S.rep = repFromOld(S.rep); S.lvFloor = levelForRep(S.rep); } else S.lvFloor = clamp(parseInt(d.lvF, 10) || 0, 0, 10);   /* v2.2: yeni itibar ölçeği; eski seviye taban */ S.capLvl = numIn(d.capLvl, 0, 20, true); S.spdLvl = numIn(d.spdLvl, 0, 20, true);
     S.priceLvl = numIn(d.priceLvl, 0, 20, true); S.served = numIn(d.served, 0, 1e9, true); S.lost = numIn(d.lost, 0, 1e9, true);
     S.caught = numIn(d.caught, 0, 1e10, true); S.tut = numIn(d.tut, 0, 99, true);
-    S.play = numIn(d.play, 0, 1e9); S.savedAt = numIn(d.at, 0, 1e14); S.retPlay = Math.min(S.play, numIn(d.retP, 0, 1e9));
+    S.play = numIn(d.play, 0, 1e9); S.savedAt = numIn(d.at, 0, 1e14); S.retPlay = Math.min(S.play, numIn(d.retP, 0, 1e9)); S.fbG = typeof d.fbG === 'string' && d.fbG.length < 12 ? d.fbG : '';
     S.ctrl = d.ctrl !== undefined ? numIn(d.ctrl, 0, 2, true) : (S.tut > 0 || S.play > 20 ? 2 : 0);
     S.earned = numIn(d.earned, 0, 1e13); S.company = cleanName(d.company || '') || ''; S.runId = typeof d.runId === 'string' && /^[a-z0-9]{6,40}$/i.test(d.runId) ? d.runId : '';
     S.auto = Array.isArray(d.auto) ? d.auto.map(function (v) { return !!v; }) : [];
@@ -6159,7 +6160,7 @@ var ENV_UPS = [
   { lv: 3, cost: 1800, icon: '🪨', flow: 0.08,
     n: { tr: 'Çakıl Yol', en: 'Gravel Road' },
     d: { tr: 'Çukurlar dolar, yola çakıl serilir, ağaçlar budanır', en: 'Potholes filled, gravel laid, trees trimmed' } },
-  { lv: 5, cost: 6000, icon: '🧱', flow: 0.08,
+  { lv: 5, cost: 4500, icon: '🧱', flow: 0.08,
     n: { tr: 'Arnavut Kaldırımı', en: 'Cobblestone Road' },
     d: { tr: 'Yol taş döşenir, sahil toparlanır', en: 'The road is cobbled, the shore tidied up' } },
   { lv: 8, cost: 16000, icon: '🏮', flow: 0.09,
@@ -8325,7 +8326,7 @@ function areaLevelEffect(a) { var z = AREAS.indexOf(a); return T('lvEffect') + (
    upCost indirimi kiraya yansımaz). Bölge Sv1 ×1, Sv2 ×1,5, Sv3 ×2; lokanta Sv1–5 ×1 / 1,25 / 1,5 / 1,75 / 2. Gün sonunda kasadan düşer
    (kasa yetmezse 0'a iner, maaş gibi); gün kartında "Kira" satırı. S.rentD: kiranın başladığı gün (eski kayıt: yüklemeden sonraki gün),
    S.rentN: ilk kesintide bir kez bilgi verildi. Seviye karşılığı: bölge personeli +%10 hız, tezgâha gelen müşteri +%12 (Sv başına). */
-var RENT_P = 0.03, RENT_LV = [1, 1.5, 2], RENT_LOK = [1, 1.25, 1.5, 1.75, 2], AREA_WSPD = 0.10, AREA_CUST = 0.12;
+var RENT_P = 0.03, RENT_LV = [1, 1.5, 2], RENT_LOK = [0.5, 0.65, 0.8, 0.95, 1.1]   /* v2.21: lokanta kirası yarıya yakın (erken lokanta zarar makinesiydi) */, AREA_WSPD = 0.10, AREA_CUST = 0.12;
 function rentOf(z, lv) {
   var a = AREAS[z]; if (!a || !a.cost) return 0;
   if (lv === undefined) lv = a.lok ? (S.lok ? S.lok.lv | 0 : 1) : a.lvl;
@@ -8635,7 +8636,7 @@ function barLiveRefresh(dt) {
   var sg = barSig();
   if (sg !== barSigLast) renderBar();
 }
-var renderBarKey = '';
+var renderBarKey = '', barBuyLast = { id: null, t: 0 };
 /* v2.21: kart şeridi sağda devam ediyorsa kenar solar (kaydırma ipucu); masaüstünde dikey tekerlek de yana kaydırır */
 function dpMoreHint() { var c = el.dpCards; if (c) c.classList.toggle('more', c.scrollWidth - c.clientWidth - c.scrollLeft > 8); }
 setTimeout(function () {
@@ -8688,6 +8689,8 @@ function renderBar() {
       var needCf = c.cost >= 1500 || barTab === 'area' || barTab === 'serv' || (barTab === 'build' && c.id.charAt(0) === 'l');
       if (needCf && cfId !== c.id) { cfId = c.id; cfT = 3.5; renderBar(); return; }
       cfId = null;
+      if (c.id && barBuyLast.id === c.id && Date.now() - barBuyLast.t < 450) return;   /* v2.21: hızlı çoklu dokunuş aynı kartı iki kez almasın */
+      barBuyLast = { id: c.id, t: Date.now() };
       if (c.refund !== undefined) { c.go(); return; }
       purchase(c.cost, false, c.go);
     };
@@ -11510,7 +11513,10 @@ function surplusMat(w) {
   }
   return best;
 }
-function idleAtDepot(w, sp, dt) { goTo(w, DEPOT.door.x - 0.4 + (w.name.length % 3) * 0.4, DEPOT.door.y + 0.9, sp, dt, 0.6); }
+function idleAtDepot(w, sp, dt) {                    /* v2.21: boşta bekleyenler kapı önünde 6 ayrı yere dağılır (eskiden 3 noktada üst üste yığılıyordu) */
+  var k = (workers.indexOf(w) + w.name.length) % 6;
+  goTo(w, DEPOT.door.x - 0.7 + (k % 3) * 0.7, DEPOT.door.y + 0.8 + Math.floor(k / 3) * 0.6, sp, dt, 0.6);
+}
 /* v2.21: Soğuk Oda doluyken elde malla sonsuza dek beklenmez. 6 sn kapıda bekler (raf boşalabilir), sonra malı
    geldiği hasıra (yoksa en yakın açık hasıra) geri bırakır. Eskiden Depo Hamalı / Sevkiyatçı kapıda kilitleniyordu. */
 function goodsMats() {
@@ -11667,7 +11673,7 @@ function halMul(k) {                                   /* güne ve ürüne bağl
   return 0.78 + (h % 1000) / 1000 * 0.47;
 }
 function halSell(k) { var it = keyItem(k); return Math.max(1, Math.round(prodValue(it.k, it.f) * 0.85 * halMul(k))); }
-function halBuy(k) { var it = keyItem(k); return Math.max(1, Math.round(prodValue(it.k, it.f) * 1.3 * halMul(k))); }
+function halBuy(k) { var it = keyItem(k); return Math.max(1, Math.round(prodValue(it.k, it.f) * 1.5 * halMul(k))); }   /* v2.21: 1,3 → 1,5 (Hal'den alıp tezgâhta satmak emeksiz kâr makinesiydi) */
 function openHal() {
   if (!WHALL.built) return;
   renderHal();
@@ -14994,7 +15000,7 @@ var EMEK_ZONE_ROLES = ['tezgahtar', 'balikci', 'filetocu', 'hamal', 'kasiyer']; 
 /* fiyatlar bot ölçümüyle ayarlandı (taslak 300/420/360/360 ile ilk kiralama ~1,7 dk çıkıyordu; hedef 3–5 dk). Beş rol olduğu için
    aynı bölgedeki her yeni kişinin fiyat artışı 1,85 yerine 1,6. Tezgâhtar en ucuzu: ilk kiralanacak olan. */
 var EMEK_ROLE = { tezgahtar: { price: 800, wage: 12 }, balikci: { price: 850, wage: 10 }, hamal: { price: 900, wage: 12 }, filetocu: { price: 1000, wage: 15 }, kasiyer: { price: 1050, wage: 17 } };
-var EMEK_HIRE_GROW = 1.6;
+var EMEK_HIRE_GROW = 1.45;   /* v2.21 (gece testi denge): 1,6 → 1,45 — 4. ve 5. kişi erken oyunun en büyük duvarıydı */
 var EMEK_DESC = {
   balikci:   { tr: 'Ağın başında çeker, sandığa koyar', en: 'Hauls the net into its crate' },
   filetocu:  { tr: 'Masanın başında keser (asıl kesen)', en: 'Cuts at the table (does the cutting)' },
@@ -16393,11 +16399,11 @@ var TARIF_ING = [
   { id: 'karalahana', n: { tr: 'Karalahana', en: 'Collard Greens' }, p: 4 }
 ];
 var TARIFS = [
-  { id: 'hamsitava', f: 'hamsi', ing: ['misirunu'], m: 2.0, n: { tr: 'Hamsi Tava', en: 'Fried Anchovy' },
+  { id: 'hamsitava', f: 'hamsi', ing: ['misirunu'], m: 2.6, n: { tr: 'Hamsi Tava', en: 'Fried Anchovy' },
     h: { tr: 'Karadeniz\'in ekmeği de unu da mısırdan.', en: 'On the Black Sea, even the flour is corn.' } },
-  { id: 'hamsipilav', f: 'hamsi', ing: ['pirinc', 'tereyagi'], m: 2.6, n: { tr: 'Hamsili Pilav', en: 'Anchovy Pilaf' },
+  { id: 'hamsipilav', f: 'hamsi', ing: ['pirinc', 'tereyagi'], m: 3.4, n: { tr: 'Hamsili Pilav', en: 'Anchovy Pilaf' },
     h: { tr: 'Bayram sofrasının tacı: hamsi yorgan, pirinç döşek.', en: 'The feast\'s crown: anchovy blanket, rice bed.' } },
-  { id: 'karalahana', f: 'hamsi', ing: ['karalahana', 'misirunu'], m: 2.4, n: { tr: 'Hamsili Karalahana Çorbası', en: 'Collard Soup' },
+  { id: 'karalahana', f: 'hamsi', ing: ['karalahana', 'misirunu'], m: 3.1, n: { tr: 'Hamsili Karalahana Çorbası', en: 'Collard Soup' },
     h: { tr: 'Yaprağı koyu, çorbası sıcak.', en: 'Dark leaves, warm soup.' } },
   { id: 'uskumrudolma', f: 'uskumru', ing: ['pirinc', 'sogan'], m: 2.3, n: { tr: 'Uskumru Dolma', en: 'Stuffed Mackerel' },
     h: { tr: 'İstanbul\'dan gelen tarif: içi pilavla dolu.', en: 'A recipe from Istanbul: stuffed with pilaf.' } },
@@ -17333,7 +17339,7 @@ var LOK_DC = [
   { id: 'fenertab', at: 'ev',  x: 22.2, y: 15.2, lv: 3, cost: 2800, eff: { flow: 0.03 }, ic: '🏮', n: { tr: 'Fenerli Çatı Tabelası', en: 'Lantern Roof Sign' } },
   { id: 'saksi',   at: 'ev',   x: 22.2, y: 16.9, lv: 3, cost: 900,  eff: { pat: 0.02 },  ic: '🪴', n: { tr: 'Pencere Çiçeklikleri', en: 'Window Boxes' } },
   { id: 'balkon',  at: 'ev',   x: 26.4, y: 16.9, lv: 3, cost: 2400, eff: { pat: 0.02, tip: 0.02 }, ic: '🪵', n: { tr: 'Ahşap Balkon', en: 'Wooden Balcony' } },
-  { id: 'saz',     at: 'yer',  x: 33.6, y: 14.9, hw: 0.45, hh: 0.45, solid: 1, lv: 5, cost: 18000, eff: { tip: 0.08, pat: 0.05, flow: 0.04 }, ic: '🪕', n: { tr: 'Saz Köşesi', en: 'Saz Corner' } },   /* v2.23: pahalı + günlük yevmiye (LOK_SAZ_FEE), sabit sazcı, turist/iş yemeği daha sık */
+  { id: 'saz',     at: 'yer',  x: 33.6, y: 14.9, hw: 0.45, hh: 0.45, solid: 1, lv: 5, cost: 12000, eff: { tip: 0.08, pat: 0.05, flow: 0.04 }, ic: '🪕', n: { tr: 'Saz Köşesi', en: 'Saz Corner' } },   /* v2.23: pahalı + günlük yevmiye (LOK_SAZ_FEE), sabit sazcı, turist/iş yemeği daha sık */
   { id: 'kosk',    at: 'ev',   x: 24.0, y: 15.2, lv: 5, cost: 9000, eff: { flow: 0.04 }, ic: '🏯', n: { tr: 'Çatı Köşkü', en: 'Rooftop Kiosk' } }
 ];
 var LOK_DCK = {}; LOK_DC.forEach(function (d) { LOK_DCK[d.id] = d; });
@@ -17408,7 +17414,7 @@ function lokChain() {
   if (!built) { o.ok = false; o.miss.push(T('lkAutoNoSt')); }
   else if (o.have.lk_asci < cooks) { o.ok = false; o.miss.push(T('lkAutoCook', { n: cooks - o.have.lk_asci })); }
   ['lk_garson', 'lk_bulasik', 'lk_sef', 'lk_komi'].forEach(function (r) { if (!o.have[r]) { o.ok = false; o.miss.push(NM(ROLES[r].n)); } });
-  if (built && !lokMenu().length) { o.ok = false; o.miss.push(T('lkAutoMenu')); }
+  if (built && tarifOn() && !lokMenu().length) { o.ok = false; o.miss.push(T('lkAutoMenu')); }
   return o;
 }
 function lokAuto() { return !!(S.lok && S.lok.auto) && lokOpen() && lokChain().ok; }
@@ -18206,7 +18212,7 @@ function lokDayEnd() {                                    /* endDay: teslim sür
 }
 /* v2.23: SAZ KÖŞESİ — pahalı süs (Sv5), günlük yevmiye LOK_SAZ_FEE (gün sonu kasadan; parası yoksa ödenmez, ertesi gün sazcı çalmaz ve
    etkisi durur: q.sazU), sabit sazcı (kadroya girmez). Saz varken turist / iş yemeği LOK_SAZ_GOOD kat sık gelir. q.sazW: yevmiye bilgisi verildi. */
-var LOK_SAZ_FEE = 150, LOK_SAZ_GOOD = 1.6;
+var LOK_SAZ_FEE = 100, LOK_SAZ_GOOD = 1.6;
 function lokSazIdle() { return !!(S.lok && S.lok.sazU); }
 function lokSazOn() { return lokDcOn('saz') && !lokSazIdle(); }
 function lokSazFee() { return upCost(emekCost(LOK_SAZ_FEE)); }
@@ -19822,7 +19828,7 @@ Object.assign(STR.en, {
   forgetDone: 'Online data deleted; a new anonymous ID was created'
 });
 var FB_OUTBOX = 'balikci_feedback_outbox', FB_MAX = 20, FB_LEN = 500, FB_GAP = 61000, FB_CATS = ['bug', 'idea', 'love'];
-var FB_VER = '2.20';                                    /* görüşle birlikte giden oyun sürümü */
+var FB_VER = '2.21';                                    /* görüşle birlikte giden oyun sürümü */
 var fbScr = document.getElementById('fbScr'), fbCard = document.getElementById('fbCard'), fbText = document.getElementById('fbText'),
   fbCount = document.getElementById('fbCount'), fbErrEl = document.getElementById('fbErr'), fbSendBtn = document.getElementById('fbSend');
 var fb = { stars: 0, cat: '', busy: false, lastSent: 0, flushBusy: false, stop: false, timer: 0, toastTm: 0 };
@@ -19862,10 +19868,10 @@ function fbErr(msg) {
    Sürüm başına cihazda bir kez, en az FB_GIFT_TXT harf yorum; puandan bağımsız; skor tablosundaki "kazanılan"a sayılmaz. */
 var FB_GIFT_KEY = 'balikci_fb_gift', FB_GIFT_TXT = 10;
 function fbGiftAmt() { return Math.max(300, Math.min(20000, Math.round((RET.dayInc || 0) * 0.5 / 50) * 50)); }
-function fbGiftReady() { return !!S.started && Store.get(FB_GIFT_KEY) !== FB_VER; }
+function fbGiftReady() { return !!S.started && Store.get(FB_GIFT_KEY) !== FB_VER && S.fbG !== FB_VER; }   /* v2.21: kayıtta da işaret (yalnız anahtarı silmek yetmez) */
 function fbGive(textLen) {
   if (!fbGiftReady() || textLen < FB_GIFT_TXT) return;
-  var v = fbGiftAmt(); S.cash += v; Store.set(FB_GIFT_KEY, FB_VER); save();
+  var v = fbGiftAmt(); S.cash += v; Store.set(FB_GIFT_KEY, FB_VER); S.fbG = FB_VER; save();
   setTimeout(function () { fbToast(T('fbGiftGot', { v: money(v) })); sfx.buy(); }, 1600);
 }
 /* test dönemi: web'de (mağaza sürümünde değil) 15 dk oyundan sonra sürüm başına bir kez görüş iste; oyuncu meşgulken sormaz */

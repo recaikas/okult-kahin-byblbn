@@ -44,7 +44,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
   const p = await page(true);
   await newGame(p, 1);
   R.boot = await p.evaluate(() => ({ on: BT.emek.on(), roles: BT.zoneRoles(0), cap: BT.zoneStaffCap(0), cost: BT.hireCost('tezgahtar', 0), cash: BT.S.cash, set: document.querySelector('#emekSeg .on') && document.querySelector('#emekSeg .on').dataset.e }));
-  ok(R.boot.on && R.boot.roles[0] === 'tezgahtar' && R.boot.roles.indexOf('balikci') >= 0 && R.boot.cap === 4, 'emek açılış ' + JSON.stringify(R.boot));
+  ok(R.boot.on && R.boot.roles[0] === 'tezgahtar' && R.boot.roles.indexOf('balikci') >= 0 && R.boot.cap === 5, 'emek açılış ' + JSON.stringify(R.boot));
   /* ---- DENEME-HILE: Ayarlar'daki test parası düğmesi (yalnız deneme dalı) ---- */
   R.hile = await p.evaluate(() => {
     const b = document.getElementById('denemeHile'); if (!b) return { yok: true };

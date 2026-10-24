@@ -116,6 +116,7 @@ const R = {};
     const k = 'balikci_slot_' + BT.slot(), d = JSON.parse(localStorage.getItem(k));
     if (mut === 'noauto') d.auto = [0, 0, 0];
     d.ret.t = ms === 'absurd' ? 1000 : d.ret.t + ms; d.at = d.ret.t;
+    d.play = Math.max(d.play || 0, 3600); d.retP = 0;     /* v2.21: uzak kazanç son karttan beri oynanan süreyle sınırlı (1 sa oyun → 16 sa hak) */
     localStorage.setItem(k, JSON.stringify(d));
     BT.S.started = false;                                 /* yenilemede beforeunload kaydı damgayı ezmesin */
     /* v1.9.1: kuyruktaki müşteriler kayıtla döner; uzakta kazanç bunun üstüne müşteri eklememeli */
