@@ -219,7 +219,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   ok(R.radio.obj.radio === true && R.radio.obj.fair === true && R.radio.obj.lv === 3, 'büro nesnesi radyo/panayır işaretlemiyor ' + JSON.stringify(R.radio));
 
   /* ---- 10) panel, kapıda düğme, binaya dokunma ---- */
-  await q(() => { BT.S.ads = []; BT.S.cash = 9e6; BT.player.x = 19.6; BT.player.y = 10.3; BT.player.vx = 0; BT.player.vy = 0; });
+  await q(() => { BT.S.ads = []; BT.S.cash = 9e6; BT.player.x = BT.ilan.AD.door.x - 0.6; BT.player.y = BT.ilan.AD.door.y - 0.25; BT.player.vx = 0; BT.player.vy = 0; });
   await sleep(700);
   R.btn = await q(() => { const b = document.getElementById('actBtn'); return { hid: b.classList.contains('hidden'), txt: b.innerText, a: b.dataset.a }; });
   ok(!R.btn.hid && R.btn.a === 'ad' && /İLAN VER/.test(R.btn.txt), 'kapıda İLAN VER düğmesi yok ' + JSON.stringify(R.btn));
@@ -234,7 +234,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   ok(cashB - R.pclick.cash === price && R.pclick.ads.length === 1 && R.pclick.ads[0].id === 'radyo' && /Yayında.*3 gün kaldı/.test(R.pclick.row), 'panelden yayınlama yanlış ' + JSON.stringify(R.pclick) + ' ' + price);
   await p.click('#adClose'); await sleep(200);
   ok(await q(() => document.getElementById('adScr').classList.contains('hidden') && !BT.paused()), 'panel kapanmadı');
-  await q(() => { BT.S.ads = []; BT.player.x = 17.6; BT.player.y = 9.0; });
+  await q(() => { BT.S.ads = []; BT.player.x = BT.ilan.AD.x - 2.6; BT.player.y = BT.ilan.AD.y - 0.85; });
   await sleep(1200);
   /* binaya dokununca panel */
   const css = await q(() => BT.arr.css(BT.ilan.AD.x, BT.ilan.AD.y));
@@ -294,7 +294,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
     const S = BT.S; S.adLv = 3; S.ads = [{ id: 'tellal', left: 1 }]; S.roadBb = 3; S.roadFl = 3; S.env = 3; S.cash = 9e6; S.rep = 1e6;
     BT.HUT.lvl = 3; BT.DEPOT.lvl = 3; BT.WHALL.built = true; BT.day.phase = 'play';
     BT.ilan.world.tellal = { x: 13.3, y: 11.6, z: 0, vx: 0, vy: -1, bob: 0, face: 1, dir: -1, tx: 13.3, sayT: 0.5, sayIn: 19, say: BT.ilan.LINES[0].tr, t: 2, leave: 0 };
-    BT.player.x = 18.5; BT.player.y = 9.3; BT.player.vx = 0; BT.player.vy = 0;
+    BT.player.x = BT.ilan.AD.x - 1.7; BT.player.y = BT.ilan.AD.y - 0.55; BT.player.vx = 0; BT.player.vy = 0;
     for (const id of ['lvlUp']) { const e = document.getElementById(id); if (e) e.classList.add('hidden'); }
   });
   await sleep(1800);
