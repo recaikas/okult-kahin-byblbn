@@ -498,7 +498,7 @@
     box-shadow:0 3px 0 #0a0604;cursor:pointer}
   #introShare:active{transform:translateY(2px);box-shadow:0 1px 0 #0a0604}
   #introShare.hidden{display:none}
-  .isub:has(#introShare:not(.hidden)){padding-bottom:46px}   /* v2.16: PAYLAŞ düğmesi metnin üstüne binmesin */
+  .isub.gz{padding-bottom:46px}   /* v2.16: PAYLAŞ düğmesi metnin üstüne binmesin */
 
   /* ---------- işletme adı ---------- */
   .sign{position:relative;margin:14px auto 8px;max-width:330px;padding:14px 12px 13px;text-align:center;
@@ -762,15 +762,15 @@
   #arrChestP .dphead .btn{min-width:44px;height:44px}
   #arrChestL .buy{min-height:44px}
   body.arr #toast{bottom:calc(70px + env(safe-area-inset-bottom,0px))}
-  body.arr:has(#arrChestP:not(.hidden)) #toast{bottom:calc(64px + 40vh)}
+  body.arr.arrChest #toast{bottom:calc(64px + 40vh)}   /* v2.21.1: :has() yerine sınıf (Safari'de her DOM değişiminde tüm sayfa stili yeniden hesaplanıyordu) */
   /* v2.21 — gece testi: dokunma hedefleri ≥ 44 px (görünüm aynı kalır, dokunma alanı büyür), taşmalar, kaydırma ipucu */
   #dpClose{position:relative} #dpClose::after{content:'';position:absolute;left:-8px;right:-8px;top:-8px;bottom:-8px}
   #menuTabs .tab{min-height:44px}
   .dtab{min-height:44px}
   .seg button{min-height:44px}
   #dayRows .row .vl{white-space:normal;overflow-wrap:anywhere;min-width:0;max-width:64%}
-  body:has(#actBtn:not(.hidden)):not(.panel) #toast{bottom:calc(172px + env(safe-area-inset-bottom,0px))}
-  #dpCards.more{-webkit-mask-image:linear-gradient(90deg,#000 84%,rgba(0,0,0,.25));mask-image:linear-gradient(90deg,#000 84%,rgba(0,0,0,.25))}
+  body.actOn:not(.panel) #toast{bottom:calc(172px + env(safe-area-inset-bottom,0px))}
+  #devpanel.more::after{content:'';position:absolute;right:0;bottom:8px;width:28px;height:calc(100% - 46px);pointer-events:none;background:linear-gradient(90deg,rgba(18,37,54,0),rgba(18,37,54,.85))}   /* v2.21.1: maske yerine (Safari'de kaydırırken pahalıydı) */
 </style>
 </head>
 <body>
@@ -825,7 +825,7 @@
   <div class="card">
     <h1>HAMSİ<br>KOYU</h1>
     <p id="startTag">KÜÇÜK İSKELEDEN BÜYÜK LİMANA</p>
-    <div class="ver">v2.21</div>
+    <div class="ver">v2.21.1</div>
     <span class="lbl" id="langLbl">DİL / LANGUAGE</span>
     <div class="seg" id="langSeg">
       <button data-l="tr" class="on flag">🇹🇷 TÜRKÇE</button>

@@ -8638,7 +8638,7 @@ function barLiveRefresh(dt) {
 }
 var renderBarKey = '', barBuyLast = { id: null, t: 0 };
 /* v2.21: kart şeridi sağda devam ediyorsa kenar solar (kaydırma ipucu); masaüstünde dikey tekerlek de yana kaydırır */
-function dpMoreHint() { var c = el.dpCards; if (c) c.classList.toggle('more', c.scrollWidth - c.clientWidth - c.scrollLeft > 8); }
+function dpMoreHint() { var c = el.dpCards, p = el.devpanel || document.getElementById('devpanel'); if (c && p) { var m = c.scrollWidth - c.clientWidth - c.scrollLeft > 8; if (p.classList.contains('more') !== m) p.classList.toggle('more', m); } }
 setTimeout(function () {
   var c = el && el.dpCards; if (!c) return;
   c.addEventListener('scroll', dpMoreHint, { passive: true });
@@ -12677,7 +12677,7 @@ function syncMeydanBtn() {
     else if (lokNearBoard()) k = 'lok';                /* v2.19-deneme: Sahil Lokantası paneli */
     else if (petFeedTarget()) k = 'pet';               /* v2.18-deneme: sokak hayvanına mama */
   }
-  b.classList.toggle('hidden', !k);
+  if (b.dataset.a !== (k || '')) { b.classList.toggle('hidden', !k); document.body.classList.toggle('actOn', !!k); }   /* v2.21.1: yalnız değişince (her kare DOM'a dokunma) */
   var kk = k + lang + (k === 'pet' ? petBtnTxt() : '') + (k === 'lokon' ? (lokOn() ? 1 : 0) : '');
   if (k && b.dataset.k !== kk) { b.dataset.k = kk; b.innerHTML = PX(k === 'hut' ? '👷 ' + T('hutBtn') : k === 'hal' ? '🏪 ' + T('halBtn') : k === 'ad' ? '📣 ' + T('adBtn') : k === 'lokon' ? T(lokOn() ? 'lkGateClose' : 'lkGateOpen') : k === 'lok' ? '🍽 ' + T('lkBtn') : petBtnTxt()); }
   b.dataset.a = k || '';
@@ -14456,7 +14456,7 @@ function arrToBox() {
 }
 function arrChest(on) {
   ARR.chest = !!on; arrTexts();
-  var P = arrEl('arrChestP'); P.classList.toggle('hidden', !on);
+  var P = arrEl('arrChestP'); P.classList.toggle('hidden', !on); document.body.classList.toggle('arrChest', !!on);
   if (!on) return;
   var L = arrEl('arrChestL'), h = '', box = [];
   DECOR.forEach(function (d, i) { if (d.got && d.box && !d.fixed) box.push(i); });
