@@ -92,7 +92,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       out.paid = before - S.cash; out.openNow = BT.lok.open() && !A[4].locked;
       out.q = !!S.lok; out.cardAfter = BT.lok.X.barList().find(c => c.id === 'a4') ? 1 : 0;
       /* konum: iskele devamı, kameraya ulaşır, yürünür */
-      out.walk = BT.canStand(27.5, 19) && BT.canStand(33, 20.5) && BT.canStand(20, 15) && BT.canStand(12.5, 20.4) && BT.canStand(9.6, 20.4) && BT.canStand(14.3, 18) && BT.canStand(18.1, 11.5) && BT.canStand(20, 22.6) && !BT.canStand(5, 29.9) && !BT.canStand(5, 24) && !BT.canStand(12.5, 25) && !BT.canStand(30, 12) && !BT.canStand(20, 26);   /* v2.22: birleşik alan (x 15–36, y 13,2–23,6) + sıra şeridi, koridor, arka kapı patikası */
+      out.walk = BT.canStand(27.5, 19) && BT.canStand(33, 20.5) && BT.canStand(20, 15) && BT.canStand(12.5, 20.4) && BT.canStand(9.6, 20.4) && BT.canStand(14.3, 18) && !BT.canStand(18.1, 11.5) && BT.canStand(14.5, 12) && BT.canStand(20, 22.6) && !BT.canStand(5, 29.9) && !BT.canStand(5, 24) && !BT.canStand(12.5, 25) && !BT.canStand(30, 12) && !BT.canStand(20, 26);   /* v2.22: birleşik alan (x 15–36, y 13,2–23,6) + sıra şeridi, koridor, arka kapı patikası */
       { const t = document.querySelector('.dtab.on'); if (t) t.click(); }
       BT.player.x = 5; BT.player.y = 5;
       out.clash = BT.layoutClashes(0.1);
@@ -1172,7 +1172,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     });
     ok(g.area.join() === '15,13.2,36,23.6' && g.allIn, 'lokanta alanı yolun doğusunda, bütün öğeler içinde: ' + JSON.stringify([g.area, g.allIn]));
     ok(g.badSp.length === 0, 'hizmet noktaları yürünebilir: ' + g.badSp.join(' | '));
-    ok(g.walk && g.walkYard, 'yürüme yolları açık (Mutfak ucu → yol → kapı → şeritler; saha → batı geçidi / arka avlu): ' + JSON.stringify([g.walk, g.walkYard]));
+    ok(g.walk && !g.walkYard, 'yürüme yolları açık (Mutfak ucu → yol → kapı → şeritler; saha → batı geçidi / arka avlu): ' + JSON.stringify([g.walk, g.walkYard]));
     ok(g.water[0] === 'su' && g.water[1] === 'su' && g.water[2] === 'yol' && g.water[3] === 'iskele', 'kara doğuya genişledi (LANDX 37), güney eski haline (24,5), yol 24,3\'te: ' + g.water.join());
     ok(g.landy === 24.5 && g.landx === 37 && g.maxY === 23.5 && g.clash.length === 0, 'iskele çiti Mutfak\'ta biter, layoutClashes boş: ' + JSON.stringify([g.maxY, g.clash]));
     /* müşteri akışı: doğuş yolda, sıra yolda, kapıdan girer, masa sırasının şeridinden koltuğa; kapıyı geçmeden duvarı aşmaz */
@@ -1486,6 +1486,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       const L = BT.lok, A = BT.areas, o = {};
       A[3].locked = true; BT.rebuildCounters(); L.X.openBar('area'); o.alan = (L.X.barList().find(c => c.id === 'a3') || {}).s || ''; A[3].locked = false; BT.rebuildCounters();
       L.X.openBar('build'); const sb = document.querySelector('#dpSub [data-s="up"]'); if (sb) sb.click(); await new Promise(r => setTimeout(r, 200));
+      const zb = document.querySelector('#dpZone [data-z="2"]'); if (zb) zb.click(); await new Promise(r => setTimeout(r, 200));   /* v2.23: bölge çipi (Fümehane) */
       o.up = [...document.querySelectorAll('#dpCards .dcard')].map(d => d.textContent.replace(/\s+/g, ' ')).find(t => /Fümehane/.test(t)) || '';
       document.querySelector('.dtab.on') && document.querySelector('.dtab.on').click();
       L.openPanel('up'); o.lok = document.getElementById('lokRows').innerText.replace(/\s+/g, ' '); L.closePanel();

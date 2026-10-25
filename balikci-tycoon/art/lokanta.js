@@ -1196,7 +1196,6 @@ HKA.drawLokFix = function (o) {
     gf('shadow')(x, y, 0.9);
     at(signSpr(clamp(o.star | 0, 0, 5)), x, y, 0);
     bulbs(x, y, !!o.night, t);
-    gf('uiText')(x, y, 49, gf('UP')(gf('NM')({ tr: 'SAHİL LOKANTASI', en: 'SEASIDE RESTAURANT' })), '#ffe9b0', 7, 1, 0, 0);
     if (o.res) gf('uiBadge')(x, y, 64, gf('T')(o.res.kind === 'nisan' ? 'lkResBN' : 'lkResBD') + ' ' + o.res.got + '/' + o.res.n, '#ffd0e8');
   } else return false;
 };
@@ -1697,9 +1696,7 @@ function kioskDraw(b, g, nt) {
 }
 /* tabela: Sv1–2 mahyada direkli, Sv3+ cumbanın üstünde saçağa oturur (ekrana düz → okunur). Sv4 altın çerçeve; Sv5 çift çerçeve, tepelik (hamsi), yan fenerler, ampuller */
 function signGeom(nm, S) {
-  var lines = [nm], s = 2, tw = 0;                                    /* V3: geniş çatıda tek satır (telefonda okunur) */
-  lines.forEach(function (l) { tw = Math.max(tw, L.textW(l) * s); });
-  return { lines: lines, s: s, W: tw + 12, H: lines.length * 13 + 14 };
+  return { lines: [], s: 2, W: 46, H: 28 };                         /* v2.23: standart tabela: yazı yok, tabak + çatal + bıçak resmi */
 }
 function signDraw(b, g, nm, star, nt) {
   var S = g.sign, lv = g.lv, sg = signGeom(nm, S), W = sg.W, H = sg.H, s = sg.s, k, j;
@@ -1721,7 +1718,14 @@ function signDraw(b, g, nm, star, nt) {
   for (k = y0 + 5; k < y0 + H - 2; k += 6) b.rect(x0 + i0, k, W - 2 * i0, 1, '#62401f');                                   /* tahta derzi */
   b.rect(x0 + i0, y0 + i0, W - 2 * i0, 1, '#8f5f36');
   for (k = 0; k < 3; k++) { b.set(x0 + i0 + 1 + k * 2, y0 + i0 + 1, '#c8553d'); b.set(x0 + W - i0 - 2 - k * 2, y0 + i0 + 1, '#c8553d'); }
-  sg.lines.forEach(function (l, i) { var lx = cx - Math.floor(L.textW(l) * s / 2), ly = y0 + 7 + i * 13; bigTxt(b, l, lx, ly + 1, '#2e1d10', s); bigTxt(b, l, lx, ly, '#f4e9d2', s); });
+  (function () {                                                                                                    /* tabak + çatal + bıçak */
+    var icx = cx, icy = y0 + 11, r, w2;
+    for (r = -4; r <= 4; r++) { w2 = Math.round(8 * Math.sqrt(1 - (r * r) / 20)); b.rect(icx - w2, icy + r, w2 * 2 + 1, 1, r < 0 ? '#f4ead6' : '#e0d3b4'); }
+    for (r = -2; r <= 2; r++) { w2 = Math.round(5 * Math.sqrt(1 - (r * r) / 9)); b.rect(icx - w2, icy + r, w2 * 2 + 1, 1, '#d6c79f'); }
+    b.rect(icx - 3, icy - 1, 5, 2, '#8fb0bc'); b.set(icx + 2, icy - 2, '#8fb0bc'); b.set(icx - 2, icy - 1, '#1c2a33');                 /* tabakta balık */
+    b.rect(icx - 14, icy - 5, 1, 11, '#d8dee2'); b.rect(icx - 16, icy - 5, 1, 4, '#d8dee2'); b.rect(icx - 12, icy - 5, 1, 4, '#d8dee2'); b.rect(icx - 16, icy - 2, 5, 1, '#d8dee2');   /* çatal */
+    b.rect(icx + 13, icy - 5, 1, 11, '#d8dee2'); b.rect(icx + 14, icy - 5, 1, 6, '#eef2f4'); b.rect(icx + 15, icy - 4, 1, 4, '#c4ccd2');                                           /* bıçak */
+  })();
   for (k = 0; k < 5; k++) {                                                                                             /* yıldızlar */
     var on = k < star, sx0 = cx - 17 + k * 7, sy0 = y0 + H - 8;
     for (var r = 0; r < 4; r++) for (var c2 = 0; c2 < 5; c2++) if (STAR5[r].charAt(c2) === 'x') b.set(sx0 + c2, sy0 + r, on ? (r === 0 ? '#fff0a0' : '#ffd23a') : '#4a3220');
@@ -1808,7 +1812,6 @@ function gardenAt(x, y, Xb, Yb, A, H) {
 }
 function paveAt(x, y, Xb, Yb, A, H, gate, gap, perg) {
   var e = Math.min(x - A.x0, A.x1 - x, y - A.y0, A.y1 - y), g = hash(Xb, Yb), c;
-  if (e < 0.05) return '#7d725c';
   if (x > H.x1 && y < 16.6) return gardenAt(x, y, Xb, Yb, A, H);
   if (x > H.x1 && y < 16.78) { var cu0 = frac(x / 0.5); return cu0 < 0.06 ? '#8a7f68' : (y < 16.66 ? '#e2d9c2' : '#bdb299'); }   /* bahçe bordürü */
   if (y < H.y0 || (x < H.x0 && y < H.y1)) {                          /* evin arkası / batı yanı: sıkışmış toprak + yassı taş */

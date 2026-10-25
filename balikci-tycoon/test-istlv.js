@@ -44,7 +44,7 @@ const near = (a, b, e = 1e-6) => Math.abs(a - b) <= e;
       ok(E[z].mx - B[z].mx === n, 'raf ' + w + ' ' + (E[z].mx - B[z].mx));
       ok(near(E[z].pf, 0.03 * n), 'kâr ' + w + ' ' + E[z].pf);
       ok(Math.abs(E[z].tc / B[z].tc - (1 + 0.1 * n)) < 0.01, 'kasa kapasite ' + w + ' ' + E[z].tc / B[z].tc);
-      ok(near(E[z].sy, 1 + 0.1 * n), 'toplama hızı ' + w + ' ' + E[z].sy);
+      ok(near(E[z].sy, 1 + 0.04 * n), 'toplama hızı ' + w + ' ' + E[z].sy);
       if (z < 2) { ok(E[z].cc - E[z].mx === n, 'füme kasası ' + w + ' ' + (E[z].cc - E[z].mx)); ok(near(E[z].sf, 1 + 0.1 * n), 'füme makinesi hız ' + w); }
       else ok(E[z].cc - E[z].mx === 0 && near(E[z].sf, 1), 'makinesiz bölgede füme makinesi etkisi olmamalı z' + z);
     }
@@ -86,13 +86,20 @@ const near = (a, b, e = 1e-6) => Math.abs(a - b) <= e;
   for (const [k, r] of rows) for (let i = 1; i < 4; i++) ok(Math.abs(r[i] / r[i - 1] - 2.2) < 0.06, 'fiyat oranı ×2,2 değil ' + k + ' ' + r);
   console.log('FİYAT (Sv1→2, 2→3, 3→4, 4→5; emekçi/indirimsiz taban):\n' + Object.entries(prices).map(([k, r]) => '  z' + k + ': ' + r.join(' / ')).join('\n'));
 
-  /* 5) YÜKSELT paneli kartları (TR/EN), satın alma, Sv5 "Son seviye" */
-  const open = async () => { await p.evaluate(() => { document.getElementById('dpClose') && document.getElementById('dpClose').click(); }); await sleep(150); await p.click('.dtab[data-t="level"]'); await sleep(300); };
+  /* 5) YAPI › Yükseltme kartları (bölge bölge; TR/EN), satın alma, Sv5 "Son seviye" — v2.23: YÜKSELT'te artık yok */
+  const open = async (z = 1) => { await p.evaluate(() => { document.getElementById('dpClose') && document.getElementById('dpClose').click(); }); await sleep(150); await p.click('.dtab[data-t="build"]'); await sleep(200); await p.click('#dpSub button[data-s="up"]'); await sleep(150); await p.click('#dpZone button[data-z="' + z + '"]'); await sleep(300); };
   const cards = () => p.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].map((d, i) => ({ i, t: (d.querySelector('b') || {}).textContent || '', s: (d.querySelector('small') || {}).textContent || '', btn: (d.querySelector('.buy') || {}).textContent || '', cls: (d.querySelector('.buy') || {}).className || '' })));
-  await p.evaluate(() => { BT.S.stLv = {}; BT.S.cash = 1e9; }); await open();
-  let c = await cards(); const sc = c.filter(x => /\d\/5$/.test(x.t.trim()));
+  await p.evaluate(() => { BT.S.stLv = {}; BT.S.cash = 1e9; });
+  let sc = [], c, perZ = [];
+  for (let z = 0; z < 4; z++) { await open(z); c = await cards(); const q = c.filter(x => /\d\/5$/.test(x.t.trim())); perZ.push(q.length); q.forEach(x => (x.z = z)); sc = sc.concat(q); }
   ok(sc.length === 4 * 4 + 1 + 2 + 1, 'istasyon kartı sayısı ' + sc.length + ' ' + JSON.stringify(sc.map(x => x.t)));
-  const ctr1 = sc.find(x => /Balık Pazarı/.test(x.t) && /Tezgâh/.test(x.t));
+  ok(JSON.stringify(perZ) === '[5,5,5,5]', 'bölge başına kart ' + perZ);   /* z0: 4+Füme Mk, z1: 4+Füme Mk, z2: 4+Fümehane, z3: 4+Ocak */
+  ok(sc.every(x => !/Balıkçı İskelesi|Balık Pazarı|Fümehane •|Balıkçı Mutfağı/.test(x.t.replace(/^Fümehane\s+\d.*/, ''))), 'bölge öneki var');
+  await p.evaluate(() => BT.setLang('tr'));
+  const lvl = await p.evaluate(() => { document.getElementById('dpClose').click(); document.querySelector('.dtab[data-t="level"]').click(); return [...document.querySelectorAll('#dpCards .dcard b')].map(b => b.textContent).filter(t => /\d\/5$/.test(t.trim())).length; });
+  ok(lvl === 0, 'YÜKSELT sekmesinde istasyon kartı kaldı ' + lvl);
+  await open(1); c = await cards();
+  const ctr1 = c.find(x => /^Tezgâh/.test(x.t.trim()));
   ok(ctr1 && /1\/5/.test(ctr1.t) && /Raf \+1 · kâr \+%3/.test(ctr1.s) && /Sv\.2/.test(ctr1.s), 'tezgâh kartı ' + JSON.stringify(ctr1));
   ok(sc.some(x => /^Fümehane\s+1\/5/.test(x.t.trim())) && sc.some(x => /Füme Makinesi/.test(x.t)) && sc.some(x => /Aşçı Ocağı/.test(x.t)), 'Fümehane/Makine/Ocak kartları');
   const exp1 = await p.evaluate(() => BT.st.cost(1, 'ctr'));
@@ -103,22 +110,22 @@ const near = (a, b, e = 1e-6) => Math.abs(a - b) <= e;
   const af = await p.evaluate(() => ({ lv: BT.st.lv(1, 'ctr'), cash: BT.S.cash }));
   ok(af.lv === 2 && cash0 - af.cash === exp1, 'kart satın alma ' + JSON.stringify({ af, cash0, exp1 }));
   /* parasız */
-  await p.evaluate(() => { BT.S.cash = 5; }); await open(); c = await cards();
-  const pz = c.find(x => /Balık Pazarı/.test(x.t) && /Ağ/.test(x.t));
+  await p.evaluate(() => { BT.S.cash = 5; }); await open(1); c = await cards();
+  const pz = c.find(x => /^Ağ/.test(x.t.trim()));
   await p.evaluate(i => { document.querySelectorAll('#dpCards .dcard')[i].querySelector('.buy').click(); document.querySelectorAll('#dpCards .buy.cf').forEach(bb => bb.click()); }, pz.i); await sleep(200);
   ok(await p.evaluate(() => BT.st.lv(1, 'net')) === 1 && /no/.test(pz.cls), 'parasız satın alındı');
   /* Sv5: Son seviye */
-  await p.evaluate(() => { for (let i = 0; i < 4; i++) BT.st.buy(1, 'ctr'); BT.S.cash = 1e9; }); await open(); c = await cards();
-  const mx = c.find(x => /Balık Pazarı/.test(x.t) && /Tezgâh/.test(x.t));
+  await p.evaluate(() => { for (let i = 0; i < 4; i++) BT.st.buy(1, 'ctr'); BT.S.cash = 1e9; }); await open(1); c = await cards();
+  const mx = c.find(x => /^Tezgâh/.test(x.t.trim()));
   ok(mx && /5\/5/.test(mx.t) && /Son seviye/.test(mx.btn) && /Raf \+6 · kâr \+%18/.test(mx.s), 'Sv5 kartı ' + JSON.stringify(mx));
   /* mobil taşma */
   const ov = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: innerWidth, cw: [...document.querySelectorAll('#dpCards .dcard')].every(d => d.getBoundingClientRect().width <= innerWidth - 20) }));
   ok(ov.sw <= ov.iw + 1 && ov.cw, 'mobil taşma ' + JSON.stringify(ov));
   /* EN */
-  await p.evaluate(() => BT.setLang('en')); await open(); c = await cards();
-  const en = c.find(x => /Fish Market/.test(x.t) && /Net/.test(x.t));
+  await p.evaluate(() => BT.setLang('en')); await open(1); c = await cards();
+  const en = c.find(x => /^Net/.test(x.t.trim()));
   ok(en && /Net speed \+10% · stock \+1/.test(en.s) && /Lv\.2/.test(en.s), 'EN kart ' + JSON.stringify(en));
-  const enm = c.find(x => /Fish Market/.test(x.t) && /Stall/.test(x.t));
+  const enm = c.find(x => /^Stall/.test(x.t.trim()));
   ok(enm && /Max level/.test(enm.btn) && /Shelf \+6 · profit \+18%/.test(enm.s), 'EN Sv5 ' + JSON.stringify(enm));
   await p.evaluate(() => BT.setLang('tr'));
 

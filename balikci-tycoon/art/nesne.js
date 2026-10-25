@@ -1000,8 +1000,7 @@ HKA.drawStallSign = function (c) {
   if (!a || a.locked) return;
   var k = WSIGN['z_' + a.id] ? 'z_' + a.id : 'z_iskele', px0 = c.x + 0.8, py0 = c.y - 1.15;
   at(spr('zsign|' + k + '|' + G().K, 0, 0, function (b) { wsSignK(b, 0, 0, k); }), px0, py0, 31);
-  var d = d2(pl.x, pl.y, c.x, c.y);
-  if (d < 36) gf('uiText')(px0, py0, 41, gf('NM')(a.n), '#f3e3c0', 8, Math.min(1, (36 - d) / 10) * 0.95, 11, 0, 'rgba(46,30,16,.72)');
+  /* v2.23: tabela altındaki ad yazısı kaldırıldı (yalnız levha) */
 };
 /* çöp kovası (galvaniz): kapak zıplar */
 function binSpr(pop) {
@@ -1865,7 +1864,7 @@ HKA.drawHut = function () {
    rampa → araba tekerleği + rampa takozu. Bina sprite'ının içine çizilir (bina önbelleğiyle birlikte önbellekli). */
 var WSIGN = {
   ambar: { p: '#3f7a86', s: 7 }, soguk: { p: '#47739a', s: 11 }, kiler: { p: '#8a3c2c', s: 13 },
-  uzanti: { p: '#557548', s: 17 }, rampa: { p: '#4b5662', s: 19 },
+  uzanti: { p: '#557548', s: 17 }, rampa: { p: '#4b5662', s: 19 }, ilan: { p: '#b5532f', s: 41 },   /* v2.23: İlan Bürosu standart asma tabelası */
   /* v2.22-sanat: bölge asma tabelaları (direk tente direğinin üstünden 8 ince px uzun) */
   z_iskele: { p: '#3d7a8a', s: 23, e: 8 }, z_pazar: { p: '#8a3c2c', s: 29, e: 8 }, z_fume: { p: '#5a5040', s: 31, e: 8 }, z_mutfak: { p: '#3a5f8a', s: 37, e: 8 }
 };
@@ -1961,6 +1960,13 @@ function wsIcon(k) {                                             /* 28×15 resim
     ib.rect(21, 4, 6, 5, '#c79650'); ib.rect(21, 4, 6, 1, '#e2b870'); ib.rect(21, 6, 6, 1, '#9a6a30');
     ib.rect(22, 9, 6, 6, '#d4a458'); ib.rect(22, 9, 6, 1, '#ecc47c'); ib.rect(22, 12, 6, 1, '#a8783a');
     ib.rect(21, 9, 1, 6, '#9a6a30');
+  } else if (k === 'ilan') {                                                                     /* megafon + afiş (yazısız) */
+    ib.rect(2, 6, 3, 4, '#8b949c'); ib.rect(2, 6, 3, 1, '#c9d0d6'); ib.rect(5, 5, 2, 6, '#d8dee2'); ib.rect(7, 4, 2, 8, '#e8eef2'); ib.rect(9, 3, 2, 10, '#c4553d'); ib.rect(11, 2, 1, 12, '#8b949c');
+    ib.rect(3, 10, 2, 3, '#5d666e'); ib.rect(2, 12, 3, 1, '#3a4249');
+    ib.set(13, 5, '#ffe9a8'); ib.set(14, 4, '#ffe9a8'); ib.set(13, 8, '#ffe9a8'); ib.set(15, 8, '#ffe9a8'); ib.set(13, 11, '#ffe9a8'); ib.set(14, 12, '#ffe9a8');   /* ses çizgileri */
+    ib.rect(17, 1, 9, 13, '#f4ead6'); ib.rect(17, 1, 9, 1, '#fffbe8'); ib.rect(17, 13, 9, 1, '#c9bca0'); ib.rect(25, 1, 1, 13, '#d4c7aa');
+    ib.rect(19, 3, 5, 3, '#c4553d'); ib.rect(19, 7, 5, 1, '#8f8a7a'); ib.rect(19, 9, 5, 1, '#8f8a7a'); ib.rect(19, 11, 3, 1, '#8f8a7a');
+    ib.set(21, 1, '#8d8a80'); ib.set(21, 0, '#8d8a80');
   } else {                                                                                       /* rampa */
     var wc = '#efe4c8';
     for (a = 0; a < 360; a += 10) { var t2 = a * Math.PI / 180; ib.set(R(7 + Math.cos(t2) * 6), R(8 + Math.sin(t2) * 6), wc); ib.set(R(7 + Math.cos(t2) * 5), R(8 + Math.sin(t2) * 5), '#cdbf9e'); }
@@ -3061,22 +3067,8 @@ function adbStatic(b, o, Lv, papers, radio) {
   wall(b, bx - 0.12, by, bx - 0.01, by, 5.2, 8.8, papers[0]); wall(b, bx + 0.02, by, bx + 0.12, by, 5.6, 8.4, papers[1]);
   hl(b, bx - 0.1, by, bx - 0.03, by, 7.6, dark(papers[0], 0.4)); hl(b, bx + 0.04, by, bx + 0.1, by, 7.2, dark(papers[1], 0.4));
   pr(b, bx - 0.065, by, 9, -0.5, 0, 1, 1, '#c4553d'); pr(b, bx + 0.07, by, 8.6, -0.5, 0, 1, 1, '#2f5a7a');
-  /* dikey İLAN tabelası: ekrana paralel, sol köşeden demir kolla sarkar (binanın solunda, cepheyi kapatmaz); 11×36 ince px */
-  var bg = Lv >= 3 ? '#2a3f66' : Lv >= 2 ? '#2f6a4a' : '#8a5a33', frc = Lv >= 2 ? '#e8c35a' : '#4a2f1c', ink = Lv >= 3 ? '#ffd76a' : '#f4e9d2', gx, gy;
-  var SX = R(fx(x0, y1)), SY = R(fy(x0, y1, H + 4)), BX = SX - 13, inkS = dark(bg, 0.35);
-  b.rect(SX - 6, SY - 2, 7, 2, '#3a2614'); b.rect(SX - 1, SY - 2, 2, 7, '#3a2614'); b.set(SX - 6, SY - 3, '#5a3a20');
-  b.rect(BX + 2, SY, 1, 1, '#8d8a80'); b.rect(BX + 8, SY, 1, 1, '#8d8a80');
-  b.rect(BX, SY + 1, 11, 36, frc); b.rect(BX + 1, SY + 2, 9, 34, Lv >= 2 ? bg : '#7a4e2a');
-  if (Lv < 2) for (gy = 0; gy < 34; gy += 5) b.rect(BX + 1, SY + 2 + gy, 9, 1, '#6a4224');
-  b.rect(BX + 9, SY + 2, 1, 34, dark(bg, 0.2)); b.rect(BX + 1, SY + 2, 9, 1, lite(bg, 0.15));
-  b.rect(BX + 5, SY + 4, 1, 1, ink); b.set(BX + 6, SY + 5, inkS);
-  for (k = 0; k < 4; k++) for (gy = 0; gy < 6; gy++) for (gx = 0; gx < 5; gx++) {
-    if (ILAN_GT[k][gy].charAt(gx) !== '#') continue;
-    var X = BX + 3 + gx, Y = SY + 6 + k * 8 + gy;
-    b.set(X + 1, Y + 1, inkS); b.set(X, Y, ink);
-  }
-  for (k = 0; k < 4; k++) for (gy = 0; gy < 6; gy++) for (gx = 0; gx < 5; gx++) if (ILAN_GT[k][gy].charAt(gx) === '#') b.set(BX + 3 + gx, SY + 6 + k * 8 + gy, ink);
-  if (Lv >= 3) for (k = 0; k < 9; k++) { b.set(BX - 1, SY + 2 + k * 4, k & 1 ? '#fff3b0' : '#ffd76a'); b.set(BX + 11, SY + 2 + k * 4, k & 1 ? '#ffd76a' : '#fff3b0'); }
+  /* v2.23: dikey yazılı İLAN tabelası kalktı; yerine standart asma tabela (megafon + afiş, yazısız): sol ön köşede direk, levha sola sarkar */
+  wsSignK(b, x0 + 0.12, y1 + 0.15, 'ilan');
   /* Sv3 / radyo: çatıda anten direği + hoparlör hunisi */
   if (Lv >= 3 || radio) {
     var ax = x1 - 0.25, ay = y0 + 0.25, hx = R(fx(ax, ay)), hy = R(fy(ax, ay, H + 2.5));
@@ -3132,10 +3124,11 @@ function posterArt(b, id, bg, ink) {
     P2(6, 12, 6, 6, '#8f8a7a'); P2(7, 13, 4, 3, '#b8b2a0');
     for (k = 0; k < 4; k++) P2(13, 12 + k * 2, 6 - (k & 1) * 2, 1, '#8f8a7a');
     for (k = 0; k < 3; k++) P2(6, 20 + k * 2, 14 - k * 3, 1, '#a8a294');
-  } else if (id === 'dolmus') {                                  /* sarı dolmuş yandan */
-    P2(3, 12, 20, 10, '#f2c230'); P2(3, 12, 20, 1, '#ffe27a'); P2(4, 14, 4, 4, '#9fd4e6'); P2(9, 14, 4, 4, '#9fd4e6'); P2(14, 14, 4, 4, '#9fd4e6'); P2(19, 14, 3, 4, '#9fd4e6');
-    P2(3, 19, 20, 1, '#c4553d'); D(7, 22, 2, '#1c1c1c'); D(18, 22, 2, '#1c1c1c'); facePx(b, 7, 22, '#8d96a0'); facePx(b, 18, 22, '#8d96a0');
-    P2(22, 16, 1, 2, '#fff3b0');
+  } else if (id === 'vapur') {                                   /* beyaz yolcu vapuru yandan */
+    P2(2, 17, 22, 5, '#f4f0e6'); P2(2, 20, 22, 2, '#2a6f97'); P2(1, 18, 1, 2, '#f4f0e6');
+    P2(6, 12, 14, 5, '#fbfaf6'); P2(7, 13, 2, 2, '#6fa8c8'); P2(11, 13, 2, 2, '#6fa8c8'); P2(15, 13, 2, 2, '#6fa8c8');
+    P2(9, 8, 8, 4, '#f4f0e6'); P2(8, 7, 10, 1, '#8a949c'); P2(13, 3, 3, 5, '#c4553d'); P2(13, 3, 3, 1, '#2c2c2c');
+    P2(1, 22, 24, 1, '#dff3f8');
   } else if (id === 'radyo') {                                   /* lambalı radyo */
     P2(5, 9, 16, 15, '#8a5a33'); P2(5, 9, 16, 2, '#a8734a'); P2(6, 12, 7, 10, '#d9c48a');
     for (k = 0; k < 4; k++) P2(6, 13 + k * 2, 7, 1, '#b8a26a');

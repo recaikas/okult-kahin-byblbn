@@ -35,9 +35,9 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   /* eski kayıt göçü: smkLv 1/2/3 → Sv 2/3/4 (hız ve kart) */
   const mig = await p.evaluate(() => [1, 2, 3].map(l => { const d = BT.buildSave(); delete d.stlv; d.smkLv = l; BT.S.stLv = {}; BT.loadFrom(d); return [BT.st.lv(2, 'smk'), BT.st.smokeBoost()]; }));
   ok(JSON.stringify(mig.map(m => m[0])) === '[2,3,4]' && Math.abs(mig[2][1] - 1.3) < 1e-9, 'göç ' + JSON.stringify(mig));
-  /* YÜKSELT'te Fümehane n/5 kartı */
+  /* YAPI › Yükseltme › Fümehane'de Fümehane n/5 kartı */
   await p.evaluate(() => { BT.S.stLv = { 2: { smk: 2 } }; BT.S.cash = 1e6; });
-  await p.click('.dtab[data-t="level"]'); await sleep(300);
+  await p.click('.dtab[data-t="build"]'); await sleep(250); await p.click('#dpSub button[data-s="up"]'); await sleep(150); await p.click('#dpZone button[data-z="2"]'); await sleep(300);   /* v2.23: YAPI › Yükseltme › Fümehane bölgesi */
   const cd = await p.evaluate(() => [...document.querySelectorAll('#dpCards .dcard')].map(d => d.querySelector('b').textContent + ' ' + d.querySelector('small').textContent).find(t => /^Fümehane\s+2\/5/.test(t)));
   ok(cd && /Sv\.3: Tütme \+%10 · giriş bandı \+1/.test(cd), 'Fümehane kartı ' + cd);
   ok(errs.length === 0, 'sayfa hatası: ' + errs.join(' | '));

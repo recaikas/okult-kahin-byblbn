@@ -190,6 +190,12 @@
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;justify-content:center;gap:3px}
   .subtabs button .pxi{width:14px;height:14px;vertical-align:-2px}
   .subtabs button.on{background:var(--gold);color:#3a2401;border-color:#7a5406}
+  .zonetabs{display:flex;gap:4px;margin:0 0 6px;overflow-x:auto;overflow-y:hidden}
+  .zonetabs button{flex:1 1 0;min-width:64px;background:var(--n1a3549);border:2px solid var(--edge);border-top-color:var(--edge2);color:var(--ink2);font-family:inherit;
+    font-size:9.5px;line-height:1.1;padding:4px 2px 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+  .zonetabs button i{font-style:normal;font-size:15px;line-height:1}
+  .zonetabs button span{text-align:center;overflow-wrap:anywhere}
+  .zonetabs button.on{background:var(--gold);color:#3a2401;border-color:#7a5406}
   .dpcards{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding-bottom:4px;
     scroll-snap-type:x proximity}
   .dcard{flex:0 0 152px;background:linear-gradient(180deg,var(--n23445f),var(--n1a3549));border:2px solid var(--edge);padding:8px 8px 9px;
@@ -1038,7 +1044,8 @@
 </div>
 <div id="devpanel" class="hidden">
   <div class="dphead"><b id="dpTitle">—</b><button class="btn" id="dpClose">✕</button></div>
-  <div class="subtabs hidden" id="dpSub"><button data-s="decor">Dekoratif</button><button data-s="dev" class="on">Geliştirmeler</button><button data-s="up">Yükseltme</button><button data-s="meydan">Meydan</button></div>
+  <div class="subtabs hidden" id="dpSub"><button data-s="decor">Dekoratif</button><button data-s="dev" class="on">Eklentiler</button><button data-s="up">Yükseltme</button><button data-s="meydan">Meydan</button></div>
+  <div class="zonetabs hidden" id="dpZone"></div>
   <div class="dpcards" id="dpCards"></div>
 </div>
 <!-- v2.17 — Dekor Düzenleme Modu -->
