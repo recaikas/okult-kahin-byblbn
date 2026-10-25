@@ -4108,6 +4108,7 @@ function canStandFor(a, x, y) { return a.isPlayer ? canStandFree(x, y) && (!inPl
 function maxOpenY() { var m = 0; for (var i = 0; i < AREAS.length; i++) if (!AREAS[i].locked && !AREAS[i].lok) m = Math.max(m, AREAS[i].y1); return m; }
 function moveActor(a, dx, dy, spd, dt) {
   var L = Math.hypot(dx, dy);
+  if (!a.isPlayer) a.mvReq = 1;                  /* v2.23.1: işçi bekçisi — bu karede yürümek istedi */
   if (L < 0.001) { a.vx = 0; a.vy = 0; return false; }
   dx /= L; dy /= L;
   var st = spd * dt, n = a.isPlayer ? Math.max(1, Math.ceil(st / 0.12)) : 1;   /* oyuncu: hızlıyken ince duvarın üstünden atlamasın diye küçük adımlar */
@@ -4592,7 +4593,24 @@ function updateWorkers(dt) {
     else if (w.role === 'asci') aiAsci(w, sp, dt);
     else if (R2.lok) aiLok(w, sp, dt);                  /* v2.19-deneme: Lokanta kadrosu */
     else aiFiletocu(w, sp, dt);
+    workerWatch(w, dt);
   }
+}
+/* v2.23.1 — işçi bekçisi: yürümek isteyip 3 sn'de 0,5 birimden az ilerleyen (duvara yaslanmış, ileri-geri giden) işçi bölgesinin
+   yürünebilir iç noktasına (meydandakiler en yakın yürünebilir noktaya) kayar, işini baştan seçer. Sayaç: BT.watchN. */
+var WATCH_N = 0;
+function workerWatch(w, dt) {
+  if (!w.mvReq) { w.wkT = 0; w.wkX = w.x; w.wkY = w.y; return; }
+  w.mvReq = 0;
+  if (w.wkX === undefined) { w.wkX = w.x; w.wkY = w.y; w.wkT = 0; }
+  w.wkT += dt;
+  if (Math.hypot(w.x - w.wkX, w.y - w.wkY) >= 0.5) { w.wkT = 0; w.wkX = w.x; w.wkY = w.y; return; }
+  if (w.wkT < 3) return;
+  var nx = w.x, ny = w.y, a = w.zone >= 0 ? AREAS[w.zone] : null, r, k, tx, ty;
+  if (a && !a.lok && !a.locked) { nx = clamp(w.x, a.x0 + 1.2, 7.5); ny = clamp(w.y, a.y0 + 0.8, a.y1 - 0.8); }
+  else for (r = 1; r <= 4 && nx === w.x; r += 0.5) for (k = 0; k < 8; k++) { tx = w.x + Math.cos(k * 0.785) * r; ty = w.y + Math.sin(k * 0.785) * r; if (canStand(tx, ty)) { nx = tx; ny = ty; break; } }
+  w.x = nx; w.y = ny; w.vx = 0; w.vy = 0; w.tc = null; w.idleT = 0; w.wkT = 0; w.wkX = nx; w.wkY = ny; WATCH_N++;
+  if (w.mode === 'drop' && !w.carry.length) w.mode = 'load';
 }
 function aiHamal(w, sp, dt) {
   var full = carryW(w) >= ROLES.hamal.cap - 0.5;
@@ -11664,10 +11682,12 @@ function lokRoadOut(a) {
   for (i = 2; i >= 0; i--) if (R[i].y < a.y - 0.35) return R[i];
   return null;
 }
+/* v2.23.1: sıra şeridi (inSE) iskele şeridini (x 9–9.65) ve Fümehane kasasını (9.88; 16.55) kapsıyordu → lokanta açıkken 2. bölge tahsildarı
+   kasasına giderken yol kenarına yönlendiriliyor, iskele duvarında ileri-geri takılıyordu. Şerit artık yalnız iskele dışı (x > 9.7). */
 function lokRoute(a, tx, ty) {
   if (AREAS[4].locked || window.HK_LOK_OFF) return null;
   var aL = lokSide(a.x, a.y), tL = lokSide(tx, ty), K = LOK_CORR, i;
-  var inSE = function (x, y) { return x > 9.0 && x < 15.4 && y > 15.4 && y < 21.4 && !lokSide(x, y); }, inW = function (x, y) { return x < 10.2 && y > 17; };
+  var inSE = function (x, y) { return x > 9.7 && x < 15.4 && y > 15.4 && y < 21.4 && !lokSide(x, y) && !(x < 10.2 && y < 17.5); }, inW = function (x, y) { return x < 10.2 && y > 17; };
   if (inSE(a.x, a.y) && inW(tx, ty) && !inSE(tx, ty)) { if (a.x > 12.9 && Math.abs(a.y - K[0].y) > 0.35) return { x: clamp(a.x, 13.4, 14.9), y: K[0].y }; if (a.x > K[0].x + 0.35) return K[0]; return null; }
   if (inW(a.x, a.y) && inSE(tx, ty) && !inSE(a.x, a.y)) { if (a.x < K[0].x - 0.35) return K[0]; return { x: 13.6, y: K[0].y }; }
   var inCor = a.x > 13.0 && a.x < 15.65 && a.y > 9.6 && a.y < 15.4 && !lokSide(a.x, a.y);              /* meydan köşesi ↔ sıra şeridi koridoru */
@@ -20428,7 +20448,7 @@ window.BT = {
   cue: { play: function (id) { cuePlay(id); }, stop: function () { cueStop(0.3); }, on: function () { return CUE.on; }, held: function () { return !!music.held; }, pos: function () { return { si: music.si, li: music.li, bar: music.bar }; } },
   HFX: HFX,
   tax: { q: function () { return taxQ(); }, st: function () { return TAX; }, start: function () { taxStart(); }, lines: TAX_LINES, mgrLines: TAX_MGR_LINES, collect: function () { taxCollect(); }, mgrAct: function () { return mgrAct; }, debtLines: TAX_DEBT_LINES, fleeLines: TAX_FLEE_LINES, workLines: TAX_WORK_LINES, over: function () { return overOn; } },
-  CTYPES: CTYPES, S: S, safe: safe, BINS: BINS, HUT: HUT, DEPOT: DEPOT, WHALL: WHALL, office: office, MEYDAN: MEYDAN, BRIDGE: BRIDGE, depotCount: function () { return depotCount(); }, openHal: function () { openHal(); }, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
+  CTYPES: CTYPES, S: S, safe: safe, watchN: function () { return WATCH_N; }, workerWatch: workerWatch, BINS: BINS, HUT: HUT, DEPOT: DEPOT, WHALL: WHALL, office: office, MEYDAN: MEYDAN, BRIDGE: BRIDGE, depotCount: function () { return depotCount(); }, openHal: function () { openHal(); }, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
   zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
   pads: PADS, areas: AREAS, slots: SLOTS, project: project, decor: DECOR, workers: workers,
