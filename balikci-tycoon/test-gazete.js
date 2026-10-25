@@ -6,7 +6,7 @@
    5) kayıt/yükleme (got/st korunur); eski kayıtta geçilmişler "kaçırıldı", gazete gelmez
    6) arşiv sekmesi: satırlar, OKU yeniden açar, kaçırılan okunamaz
    7) PAYLAŞ: 1080×1920 görsel; paylaşım yoksa indirme yolu hata vermez
-   8) Şeref Panosu: çerçeve sayısı alınan sayı kadar, layoutClashes yeni çakışma yok
+   8) Şeref Panosu kaldırıldı: layoutClashes boş
    Kullanım: URL=http://localhost:8104/index.html node test-gazete.js [görüntü klasörü] */
 const { chromium } = require('./test-offline');
 const fs = require('fs');
@@ -182,12 +182,9 @@ const SHOT = process.argv[2];
   ok(R.share === 'download', '7: paylaşım yolu ' + R.share);
   await p.click('#closeMenu'); await sleep(200);
 
-  /* ---- 8) Şeref Panosu ---- */
-  R.pano = await p.evaluate(() => ({ frames: BT.gz.frames(), have: ['ilkgun', 'pazar', 'hasmet', 'mudur', 'bolum1'].filter(BT.gz.have).length, clash: BT.layoutClashes(0.1),
-    inMeydan: BT.gz.FAME.x > 24 && BT.gz.FAME.x < 25.5 && BT.gz.FAME.y > 11 && BT.gz.FAME.y < 13 && !BT.canStand(BT.gz.FAME.x, BT.gz.FAME.y) }));   /* Hizmet Sahası'nın doğusu, kumsal (ekranda hiçbir yapıyla örtüşmeyen açık köşe) */
-  ok(R.pano.frames === 3 && R.pano.have === 3 && !R.pano.clash.length && R.pano.inMeydan, '8: pano çerçeveleri / yerleşim yanlış ' + JSON.stringify(R.pano));
-  await p.evaluate(() => { BT.player.x = BT.gz.FAME.x - 1.4; BT.player.y = BT.gz.FAME.y + 0.4; BT.day.t = BT.DAY_LEN * 0.45; });
-  await sleep(2200); await shot('seref-panosu.png');
+  /* ---- 8) Şeref Panosu kaldırıldı (v2.22): yerleşim çakışması yok ---- */
+  R.pano = await p.evaluate(() => ({ clash: BT.layoutClashes(0.1), noFame: !BT.layoutRects().some(r => r.own === 'fame') }));
+  ok(!R.pano.clash.length && R.pano.noFame, '8: yerleşim / pano kalıntısı ' + JSON.stringify(R.pano));
 
   await b.close();
   console.log(JSON.stringify({ R, errs }, null, 1));

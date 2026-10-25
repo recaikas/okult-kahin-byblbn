@@ -184,6 +184,7 @@ function build(o, pose, arm, fx, mood) {
   }
   /* ---------- kollar ---------- */
   function drawArms() {
+  if (o.noArms) return;                              /* v2.22-sanat: kolları çağıran çizer (tellal: tokmak + megafon) */
   if (carrying) {                                     /* iki kol önde, eller göğüs hizasında */
     sleeve(-12 - bo + lean, TT + 1, 8, false, true); sleeve(8 + bo + lean, TT + 1, 8, true, true);
     r(-10 - bo + lean, TT + 8, 4, 3, sv); r(6 + bo + lean, TT + 8, 4, 3, svD);
@@ -1149,28 +1150,69 @@ HKA.drawNewsboy = function (bb) {
   return true;
 };
 
-/* v2.19-deneme — TELLAL (İlan Bürosu): fesli, yelekli, göbekli; yöndeki elde sallanan tunç zil (karakter çiziminin o.bell'i).
+/* v2.22-sanat — TELLAL (İlan Bürosu): fesli, yelekli, göbekli; ağzında teneke megafon, boyundan askılı kırmızı davul,
+   arkadaki elde tokmak. Kollar karakter sprite'ında çizilmez (o.noArms), burada kareye göre çizilir.
+   Vuruş döngüsü game.js tellalBeat: 0 kalkık → 1 iniyor → 2 VURUŞ (deri parlar + titrer) → 3 sekme.
+   Efekt: vuruştan sonra davuldan yayılan "DUM" halkası + kıvılcım çizgileri; bağırırken (o.say) megafon ağzından ses halkaları.
    o: {x, y, z, face, walk, bob, vx, vy, say, t, bell}. Replik + ad etiketi klasikteki gibi uiQ'ya. */
 var TLF = null;
 HKA.onReset(function () { TLF = null; });
 HKA.drawTellal = function (o) {
   var H = G(); if (H.K !== 2) return false;
   init();
-  if (!TLF) TLF = { look: H.v('TELLAL_LOOK'), at: H.v('drawPersonAt') };
-  if (!TLF.look || !TLF.at) return false;
-  var l = {}, k; for (k in TLF.look) l[k] = TLF.look[k];
-  var t = o.t || H.t, ring = !!(o.say || o.bell), up = Math.sin(t * 9) > 0;
-  l.face = o.face; l.walk = o.walk; l.bell = ring && up ? 2 : 1;
+  if (!TLF) TLF = { look: H.v('TELLAL_LOOK'), at: H.v('drawPersonAt'), beat: H.v('tellalBeat'), ut: H.v('uiText') };
+  if (!TLF.look || !TLF.at || !TLF.beat) return false;
+  var l = {}, k, j; for (k in TLF.look) l[k] = TLF.look[k];
+  l.face = o.face; l.walk = o.walk; l.noArms = 1;
   TLF.at(o, l);
-  if (ring) {                                         /* çın çın: zilin yanında kısa ses çizgileri */
-    var R = Math.round, f = o.face > 0 ? 1 : -1, sx = R(H.pX(o.x, o.y)), sy = R(H.pY(o.x, o.y, o.z || 0));
-    var bx = f > 0 ? 12 : -14, al = up ? 0.9 : 0.5, c = 'rgba(255,226,140,' + al + ')';
-    L.fr(sx, sy, bx + f * 6, -24, 1, 3, c); L.fr(sx, sy, bx + f * 8, -26, 1, 5, c); L.fr(sx, sy, bx - f * 3, -27, 1, 2, c);
+  var R = Math.round, f = o.face > 0 ? 1 : -1, bt = TLF.beat(o.t || H.t), hit = bt.fr === 2;
+  var wf = o.walk ? (Math.floor((o.bob || 0) * 0.16 * ANIM.walkFps) & 3) : 0, W = o.walk ? WALK[wf] : null;
+  var sx = R(H.pX(o.x, o.y)), sy = R(H.pY(o.x, o.y, o.z || 0)) + (W ? W.body : 0);
+  var skin = l.skin, skD = dark(skin, 0.18), sv = l.coat2, svD = dark(sv, 0.22);
+  function q(dx, dy, w, h, c) { L.fr(sx, sy, f > 0 ? dx : -dx - w, dy, w, h, c); }
+  function ln(x0, y0, x1, y1, c) { var n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); for (var i = 0; i <= n; i++) q(R(x0 + (x1 - x0) * i / n), R(y0 + (y1 - y0) * i / n), 1, 1, c); }
+  /* arkadaki kol + tokmak: omuzdan gövdenin önüne uzanır; el göğüs hizasında kalkar, davul derisine iner */
+  var MK = [[-5, -35, -11, -45], [-3, -33, 3, -36], [-2, -31, 5, -32], [-4, -34, -9, -41]][bt.fr], hx = MK[0], hy = MK[1];   /* kalk (geriye-yukarı) → in → vur → sek */
+  for (j = 0; j < 3; j++) ln(-11 + j, -28 + (j === 2 ? 1 : 0), hx + j - 1, hy + 2, j === 2 ? svD : sv);
+  ln(-11, -27, hx - 1, hy + 3, svD);
+  ln(hx + 2, hy + 1, MK[2] + 1, MK[3] + 2, '#8a5a32'); ln(hx + 2, hy + 2, MK[2] + 2, MK[3] + 3, '#5a3a22');
+  q(hx, hy, 3, 3, skin); q(hx, hy + 2, 3, 1, skD);
+  q(MK[2], MK[3], 4, 4, '#f4ead6'); q(MK[2], MK[3] + 3, 4, 1, '#c9b48a'); q(MK[2], MK[3], 1, 1, '#ffffff');
+  /* askı kayışı: boyundan çapraz davula */
+  ln(-5, -31, 1, -25, '#5a3a22'); ln(-4, -31, 2, -25, '#7a5232'); ln(5, -31, 8, -27, '#5a3a22');
+  /* davul: göbeğin önünde, yan görünüş */
+  var d0 = hit ? 1 : 0;
+  q(1, -25, 16, 11, '#b8322a'); q(1, -25, 2, 11, '#d9533f'); q(15, -25, 2, 11, '#8a2420');
+  for (j = 0; j < 4; j++) { ln(2 + j * 4, -23, 4 + j * 4, -17, '#f4e9d2'); ln(4 + j * 4, -17, 6 + j * 4, -23, '#e2d2b0'); }
+  q(1, -26, 16, 2, '#c9952f'); q(1, -26, 16, 1, '#f0cf6a'); q(1, -15, 16, 2, '#a8862e'); q(2, -13, 14, 1, '#4a2f1c');
+  for (j = 0; j < 4; j++) q(3 + j * 4, -25, 1, 1, '#6a4a18');
+  q(3, -29 + d0, 12, 1, hit ? '#fffaf0' : '#f4e9d2'); q(2, -28 + d0, 14, 2, hit ? '#fff2d4' : '#e6d5b0'); q(4, -27 + d0, 10, 1, '#d4c095');
+  if (hit) { for (j = 0; j < 3; j++) q(4 + j * 5, -33 - (j & 1), 1, 2 + (j & 1), 'rgba(255,240,190,.9)'); }
+  /* öndeki kol yukarıda: el megafonun sapında */
+  q(10, -29, 4, 6, sv); q(13, -29, 1, 6, svD); q(10, -31, 4, 3, skin); q(10, -29, 4, 1, skD);
+  /* megafon: ağızlık + açılan teneke huni, kırmızı bant, koyu ağız kenarı */
+  q(6, -35, 2, 3, '#5d666e');
+  for (j = 0; j < 14; j++) {
+    var hh = R(2 + j * 0.45), xx = 8 + j;
+    q(xx, -34 - hh, 1, hh * 2, j === 4 || j === 5 ? '#c4553d' : '#c9d0d6');
+    q(xx, -34 - hh, 1, 1, j === 4 || j === 5 ? '#e5735a' : '#f2f6f8'); q(xx, -34 + hh - 1, 1, 1, '#8b949c');
+  }
+  q(22, -42, 1, 16, '#5d666e'); q(21, -41, 1, 14, '#3c444b');
+  /* DUM halkası: son vuruştan beri büyüyen yarım elips */
+  if (bt.s < 0.8) {
+    var r0 = 7 + bt.s * 18, al = ((1 - bt.s / 0.8) * 0.75).toFixed(2), cc = 'rgba(255,224,138,' + al + ')';
+    for (var an = -2.9; an <= 0.5; an += 0.16) q(R(9 + Math.cos(an) * r0 * 1.2), R(-20 + Math.sin(an) * r0 * 0.7), 2, 1, cc);
+  }
+  /* bağırırken megafon ağzından ses halkaları */
+  if (o.say) for (var ri = 0; ri < 2; ri++) {
+    var ph = ((o.t || H.t) * 2.2 + ri * 0.5) % 1, rr = 4 + ph * 14, ca = 'rgba(255,241,184,' + ((1 - ph) * 0.9).toFixed(2) + ')';
+    for (var a2 = -0.9; a2 <= 0.91; a2 += 0.15) q(R(23 + Math.cos(a2) * rr), R(-34 + Math.sin(a2) * rr * 1.1), 1, 2, ca);
   }
   var uiQ = H.v('uiQ'), tr = H.v('lang') !== 'en';
+  if (TLF.ut && bt.s < 0.7 && (bt.n & 1) === 0) TLF.ut(o.x, o.y, 14 + bt.s * 14, (bt.n & 2) ? '♪' : 'DUM', '#ffd76a', 7, 1 - bt.s / 0.7, f * 12, 0, true);
   if (uiQ) {
     if (o.say) uiQ.push({ t: 4, x: o.x, y: o.y, z: 42, s: '“' + o.say + '”', c: '#ffe2c8', a: 1 });
-    uiQ.push({ t: 4, x: o.x, y: o.y, z: 29, s: '🔔 ' + (tr ? 'Tellal' : 'Crier'), c: '#ffc94a', a: 0.9 });
+    uiQ.push({ t: 4, x: o.x, y: o.y, z: 29, s: '📣 ' + (tr ? 'Tellal' : 'Crier'), c: '#ffc94a', a: 0.9 });
   }
   return true;
 };
