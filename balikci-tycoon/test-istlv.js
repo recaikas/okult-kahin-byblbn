@@ -66,7 +66,7 @@ const near = (a, b, e = 1e-6) => Math.abs(a - b) <= e;
     const run = lv => { BT.S.stLv[z].ctr = lv; c.tray.items.length = 0; cu.ord.got = cu.ord.need; cu.state = 'wait'; const t0 = tv(); BT.finishOrder(c, cu); return tv() - t0; };
     res.p1 = run(1); res.p5 = run(5); BT.S.stLv[z].ctr = keep; return res;
   });
-  ok(pay.none || (pay.p1 > 0 && Math.abs(pay.p5 / pay.p1 - 1.18) < 0.03), 'Sv5 satış geliri +%18 değil ' + JSON.stringify(pay));
+  ok(pay.none || (pay.p1 > 0 && Math.abs(pay.p5 - pay.p1 * 1.18) <= 1), 'Sv5 satış geliri +%18 değil ' + JSON.stringify(pay));
 
   /* 3) Fümehane tütme süresi (gerçek zaman): Sv1 ~3,2 sn → Sv5 ~2,0 sn */
   const smkT = await p.evaluate(async () => {
