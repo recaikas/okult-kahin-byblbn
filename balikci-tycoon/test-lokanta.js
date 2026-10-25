@@ -105,7 +105,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     ok(R.open.noDepo && R.open.noDepo[0] && /Depo/.test(R.open.noDepo[1]), 'Depo yokken lokanta kartı kilitli: ' + JSON.stringify(R.open.noDepo));
     ok(!R.open.cardsBeforeKitchen.includes('a4') && R.open.cardsBeforeKitchen.includes('a3'), 'Mutfak kilitliyken lokanta kartı yok, Mutfak kartı var: ' + R.open.cardsBeforeKitchen);
     ok(R.open.lowRep === true, 'itibar Sv5 altında kart engelli');
-    ok(R.open.ready === true && R.open.cost > 46500 * 0.7 && R.open.cost < 46500 * 0.8, 'bedel 46.500 (v2.24: ×3) × Emekçi 0,75: ' + R.open.cost);
+    ok(R.open.ready === true && R.open.cost > 98700 * 0.7 && R.open.cost < 98700 * 0.8, 'bedel 98.700 (v2.24: kullanıcı isteği ≈ $74.000) × Emekçi 0,75: ' + R.open.cost);
     ok(R.open.cf === 'ONAYLA?', 'ALAN kartı ONAYLA? ister: ' + R.open.cf);
     ok(R.open.paid === R.open.cost && R.open.openNow && R.open.q, 'açılınca bedel düşer, bölge açılır, S.lok kurulur');
     ok(R.open.cardAfter === 0, 'açıldıktan sonra kart kalkar');
@@ -1273,7 +1273,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     ok(o1.cash === 65 && o1.carry === 0 && o1.payLeft === 0, 'patron masadaki parayı doğrudan cebine atar: ' + JSON.stringify(o1));
     /* PERSONEL sekmesinde lokanta kadrosu */
     const ps = await p.evaluate(() => {
-      BT.S.cash = 1e6; BT.lok.X.openBar('staff');
+      BT.S.cash = 1e6; BT.lok.X.openBar('staff'); BT.lok.X.setBuildZone(9);   /* v2.24: PERSONEL bölge bölge — lokanta kadrosu Genel çipinde */
       const card = BT.lok.X.barList().find(c => c.id === 'lks'); if (!card) return { card: false };
       card.go(); const subs = BT.lok.X.barList().map(c => c.id).filter(id => /^lr/.test(id));
       const n0 = BT.lok.crew().length; BT.lok.X.barList().find(c => c.id === 'lrlk_garson').go(); const n1 = BT.lok.crew().length;
@@ -1475,7 +1475,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
       return o;
     });
     const vEmek = [[1300, 1], [13800, 1], [28500, 1], [46500, 0.5]].map(c => Math.round(c[0] * 0.75 * 0.03 * c[1])).join();   /* v2.21: lokanta Sv1 ×0,5 */
-    ok(r.costs === '0,1300,13800,28500,46500', 'açılış bedelleri ×3 (Fümehane, Mutfak, Lokanta): ' + r.costs);
+    ok(r.costs === '0,1300,13800,28500,98700', 'açılış bedelleri ×3 (Fümehane, Mutfak, Lokanta): ' + r.costs);
     ok(r.emek && r.lv1 === vEmek && r.iskele === 0 && r.zones === '1,2,3,4', 'kira = açılış bedelinin %3\'ü (Emekçi ölçeği), iskele kirasız: ' + JSON.stringify(r));
     ok(r.f2 === Math.round(13800 * 0.75 * 0.03 * 1.5) && r.f3 === Math.round(13800 * 0.75 * 0.03 * 2) && r.l3 === Math.round(46500 * 0.75 * 0.03 * 0.8) && r.l5 === Math.round(46500 * 0.75 * 0.03 * 1.1), 'Sv2 ×1,5, Sv3 ×2; lokanta (v2.21) Sv3 ×0,8, Sv5 ×1,1: ' + JSON.stringify(r));
     ok(r.work === '1,1.2,1.24,1,1', 'seviye etkisi: Sv3 personel +%20, müşteri +%24 (lokanta ve bölgesiz işçi hariç): ' + r.work);

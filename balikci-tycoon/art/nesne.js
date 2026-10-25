@@ -2880,6 +2880,13 @@ function scafStatic(b, w, h, H, up, prog) {
   post(x1, y1); lash(x1, y1, Z[0]); lash(x1, y1, Z[1]); lash(x1, y1, Z[2]);
   b.outline(0.55);
 }
+/* v2.24: anakara köprüsü — klasik çizim bir kez 1x tuvale çizilir, Scale2x ile inceltilir (L.epx), sonra yalnız blit. Ufuk/kıyı kırpması ve sis oyunda. */
+HKA.drawMainBridge = function (o) {
+  var f = gf('drawMainBridge'); if (!f) return false;
+  var s = L.epx('mainbr|' + G().K + '|' + o.x + '|' + o.y0 + '|' + o.y1 + '|' + o.w, 400, 270, -110, 140, function () { f({ x: o.x, y0: o.y0, y1: o.y1, w: o.w, t: 0 }); }, false);
+  L.blit(s, 0, 0);
+  return true;
+};
 HKA.drawScaffold = function (o) {
   var H = o.hh || (18 + Math.min(5, o.lv) * 4), up = !!o.up, prog = up ? 0 : clamp(1 - o.left / Math.max(1, o.lv), 0, 1);
   var ps = up ? 0 : Math.round(prog * 8) / 8, w = Math.round(o.w * 100) / 100, h = Math.round(o.h * 100) / 100;
