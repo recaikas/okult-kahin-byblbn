@@ -1,6 +1,6 @@
 /* v2.18-deneme — İLAN BÜROSU / Ad Bureau (DEPO_REKLAM_RESTORAN_TASARIM.md Bölüm C)
    1) YAPI › Meydan kartından kurulum + inşaat (Sv1 1 gün, yükseltme 2 gün; eski seviye çalışır)   2) yerleşim (çakışma yok, kapıya yürünür)
-   3) seviye kilitleri   4) yayınlama: para, fiyat = taban × (1 + 0,4 × itibar seviyesi), panel düğmesi   5) aynı anda 1 (Sv3'te 2)
+   3) seviye kilitleri   4) yayınlama: para, fiyat = taban × (1 + 0,4 × itibar seviyesi), panel düğmesi   5) aynı anda en çok Sv1 2 / Sv2 4 / Sv3 6 (her tür bir kez)
    6) etki: müşteri gelme hızı ölçümü (tellal +15, kahve +10 & sabır +10, gazete +25, dolmuş +30 yol, radyo +40, panayır ×2 + turist)
    7) gün sonunda süre azalır, biten reklam toast + kalkar   8) billboard metni (afiş / İLAN VERİN)   9) tellal / gazeteci / dolmuş görünür, 12 replik
    10) HUD rozeti, kapıda düğme, binaya dokunma   11) kayıt/yükleme (eski ve bozuk kayıt güvenli)   12) TR/EN.   Ekran görüntüsü: screenshots/ilan/ (390x844). */
@@ -91,10 +91,10 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   /* ---- 3) seviye kilitleri (Sv1 çalışır durumda: büro seviyesi 1'e getir, inşaat kaydı sil) ---- */
   await q(() => { delete BT.S.insaat.ads; BT.S.adLv = 1; BT.S.cash = 9e6; });
   R.lock1 = await q(() => BT.ilan.LIST.map(d => d.id + ':' + BT.ilan.why(d.id)));
-  ok(R.lock1.join() === 'tellal:,kahve:,gazete:lv,dolmus:lv,radyo:lv,panayir:lv', 'Sv1 kilitleri yanlış ' + R.lock1.join());
+  ok(R.lock1.join() === 'tellal:,kahve:,gazete:lv,vapur:lv,radyo:lv,panayir:lv', 'Sv1 kilitleri yanlış ' + R.lock1.join());
   await q(() => { BT.S.adLv = 2; });
   R.lock2 = await q(() => BT.ilan.LIST.map(d => d.id + ':' + BT.ilan.why(d.id)));
-  ok(R.lock2.join() === 'tellal:,kahve:,gazete:,dolmus:,radyo:lv,panayir:lv', 'Sv2 kilitleri yanlış ' + R.lock2.join());
+  ok(R.lock2.join() === 'tellal:,kahve:,gazete:,vapur:,radyo:lv,panayir:lv', 'Sv2 kilitleri yanlış ' + R.lock2.join());
   await q(() => { BT.S.adLv = 1; });
   const lockBuy = await q(() => { const c = BT.S.cash; const r = BT.ilan.buy('radyo'); return { r, same: c === BT.S.cash, n: BT.S.ads.length }; });
   ok(!lockBuy.r && lockBuy.same && lockBuy.n === 0, 'kilitli reklam satın alındı ' + JSON.stringify(lockBuy));
@@ -122,18 +122,18 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   R.poor = await q(() => { BT.S.cash = 100; const r = BT.ilan.buy('kahve'); return { r, cash: BT.S.cash, why: BT.ilan.why('kahve'), n: BT.S.ads.length }; });
   ok(!R.poor.r && R.poor.cash === 100 && R.poor.n === 1, 'parasız yayınlandı ' + JSON.stringify(R.poor));
 
-  /* ---- 5) aynı anda 1 (Sv3'te 2) ---- */
-  R.one = await q(() => { BT.S.cash = 9e6; const w = BT.ilan.why('kahve'), r = BT.ilan.buy('kahve'), w2 = BT.ilan.why('tellal'); return { w, r, w2, n: BT.S.ads.length, slots: BT.ilan.slots() }; });
-  ok(R.one.w === 'full' && !R.one.r && R.one.n === 1 && R.one.slots === 1 && R.one.w2 === 'live', 'Sv1/2 tek reklam kuralı yanlış ' + JSON.stringify(R.one));
+  /* ---- 5) aynı anda en çok Sv1 2 / Sv2 4 / Sv3 6 (her tür bir kez) ---- */
+  R.one = await q(() => { BT.S.cash = 9e6; const w = BT.ilan.why('kahve'), r = BT.ilan.buy('kahve'), w2 = BT.ilan.why('tellal'), r2 = BT.ilan.buy('tellal'); return { w, r, w2, r2, n: BT.S.ads.length, slots: BT.ilan.slots(), chip: BT.ilan.chip() }; });
+  ok(R.one.w === '' && R.one.r && !R.one.r2 && R.one.n === 2 && R.one.slots === 2 && R.one.w2 === 'live' && R.one.chip === '📣 2 ilan', 'Sv1 iki farklı reklam / aynı tür bir kez kuralı yanlış ' + JSON.stringify(R.one));
   /* Sv3'e yükselt (inşaat bayrağı kapalı: anında) ve iki reklam */
   await q(() => { window.HK_INSAAT_OFF = 1; });
   await meydan(); await buyCard(/İlan Bürosu/);       /* Sv1→2 */
   await meydan(); await buyCard(/İlan Bürosu/);       /* Sv2→3 */
-  await closeBar();
+  await closeBar(); await sleep(500);
   await q(() => { window.HK_INSAAT_OFF = 0; });
-  R.three = await q(() => { const lv = BT.ilan.lv(); BT.S.cash = 9e6; const r1 = BT.ilan.buy('kahve'), r2 = BT.ilan.buy('radyo'), w = BT.ilan.why('panayir'); return { lv, slots: BT.ilan.slots(), r1, r2, w, ads: BT.ilan.ads().map(a => a.id).join(), chip: BT.ilan.chip(), cust: BT.ilan.cust(), pat: BT.ilan.pat() }; });
-  ok(R.three.lv === 3 && R.three.slots === 2 && R.three.r1 && !R.three.r2 && R.three.w === 'full' && R.three.ads === 'tellal,kahve', 'Sv3 iki reklam kuralı yanlış ' + JSON.stringify(R.three));
-  ok(Math.abs(R.three.cust - (1 + 0.15 + 0.10)) < 1e-9 && Math.abs(R.three.pat - 0.10) < 1e-9 && R.three.chip === '📣 1 gün · 2 gün', 'iki reklam etkisi/rozet ' + JSON.stringify(R.three));
+  R.three = await q(() => { const lv = BT.ilan.lv(); BT.S.cash = 9e6; const r0 = BT.ilan.buy('kahve'), r1 = BT.ilan.buy('gazete'), r2 = BT.ilan.buy('vapur'), r3 = BT.ilan.buy('radyo'), r4 = BT.ilan.buy('panayir'); return { lv, slots: BT.ilan.slots(), r0, r1, r2, r3, r4, ads: BT.ilan.ads().map(a => a.id).join(), chip: BT.ilan.chip(), cust: BT.ilan.cust(), pat: BT.ilan.pat() }; });
+  ok(R.three.lv === 3 && R.three.slots === 6 && !R.three.r0 && R.three.r1 && R.three.r2 && R.three.r3 && R.three.r4 && R.three.ads === 'tellal,kahve,gazete,vapur,radyo,panayir', 'Sv3 altı reklam kuralı yanlış ' + JSON.stringify(R.three));
+  ok(Math.abs(R.three.cust - (1 + 0.15 + 0.10 + 0.25 + 0.40) * 2) < 1e-9 && Math.abs(R.three.pat - 0.10) < 1e-9 && R.three.chip === '📣 6 ilan', 'altı reklam etkisi/rozet ' + JSON.stringify(R.three));
 
   /* ---- 6) etki: müşteri gelme hızı ölçümü (spawnT azalma hızı) ---- */
   const rate = async () => q(() => {
@@ -145,14 +145,14 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   const setAds = ids => q(ids => { BT.S.ads = ids.map(id => ({ id, left: 2 })); BT.S.adLv = 3; }, ids);
   await q(() => { BT.S.ads = []; BT.S.roadFl = 0; BT.S.roadBb = 0; BT.S.env = 0; });
   const r0 = await rate(); R.rate = { none: r0 };
-  for (const [id, want] of [['tellal', 1.15], ['kahve', 1.10], ['gazete', 1.25], ['dolmus', 1.30], ['radyo', 1.40], ['panayir', 2.0]]) {
+  for (const [id, want] of [['tellal', 1.15], ['kahve', 1.10], ['gazete', 1.25], ['vapur', 1.30], ['radyo', 1.40], ['panayir', 2.0]]) {
     await setAds([id]); const r = await rate(); const r1 = await (async () => { await setAds([]); return rate(); })();
     R.rate[id] = +(r / r1).toFixed(3);
     ok(Math.abs(r / r1 - want) / want < 0.02, 'müşteri hızı çarpanı ' + id + ': ' + (r / r1).toFixed(3) + ' beklenen ' + want);
   }
   R.eff = await q(() => {
     BT.S.adLv = 3; BT.S.ads = [{ id: 'kahve', left: 1 }]; const a = BT.ilan.pat();
-    BT.S.ads = [{ id: 'dolmus', left: 1 }]; const f = BT.roadFlow(), rd = BT.ilan.road();
+    BT.S.ads = [{ id: 'vapur', left: 1 }]; const f = BT.roadFlow(), rd = BT.ilan.road();
     BT.S.ads = []; const f0 = BT.roadFlow(), t0 = BT.servUnlock('turist');
     BT.S.ads = [{ id: 'panayir', left: 1 }]; const t1 = BT.servUnlock('turist');
     BT.S.ads = []; return { a, f, rd, f0, t0, t1, noServ: BT.SERV.length === 0 };
@@ -177,11 +177,11 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
     BT.S.ads = [{ id: 'gazete', left: 2 }]; out.g0 = BT.ilan.billboard(0); out.g2 = BT.ilan.billboard(2);
     BT.S.ads = [{ id: 'tellal', left: 1 }, { id: 'radyo', left: 3 }]; out.m = [0, 1, 2].map(i => BT.ilan.billboard(i));
     BT.S.ads = []; BT.setLang('en'); out.idleEn = BT.ilan.billboard(0);
-    BT.S.ads = [{ id: 'dolmus', left: 3 }]; out.dEn = BT.ilan.billboard(1); BT.setLang('tr'); BT.S.ads = [];
+    BT.S.ads = [{ id: 'vapur', left: 3 }]; out.dEn = BT.ilan.billboard(1); BT.setLang('tr'); BT.S.ads = [];
     return out;
   });
   ok(R.bb.idle === 'İLAN VERİN' && R.bb.idleEn === 'ADVERTISE HERE', 'boş pano yazısı yanlış ' + JSON.stringify(R.bb));
-  ok(R.bb.g0 === 'LİMAN GAZETESİ İLANI' && R.bb.g2 === R.bb.g0 && R.bb.m.join() === 'TELLAL,BÖLGE RADYOSU,TELLAL' && R.bb.dEn === 'MINIBUS BACK SIGN', 'pano afiş metni yanlış ' + JSON.stringify(R.bb));
+  ok(R.bb.g0 === 'LİMAN GAZETESİ İLANI' && R.bb.g2 === R.bb.g0 && R.bb.m.join() === 'TELLAL,BÖLGE RADYOSU,TELLAL' && R.bb.dEn === 'FERRY AD', 'pano afiş metni yanlış ' + JSON.stringify(R.bb));
 
   /* ---- 9) dünya: tellal, gazeteci çocuk, dolmuş ---- */
   R.lines = await q(() => BT.ilan.LINES.map(l => [l.tr.length > 3, l.en.length > 3, l.tr !== l.en]));
@@ -205,13 +205,13 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   ok(R.news.n && R.news.n[0] > 10.2 && R.news.n[0] < 14.7 && !R.news.gzOn && R.news.drop === null, 'gazeteci çocuk yoldan geçmiyor / gazete sistemine karıştı ' + JSON.stringify(R.news));
   await step(30);
   ok(await q(() => BT.ilan.news() === null), 'gazeteci çocuk yoldan çıkmadı');
-  /* dolmuş */
-  await q(() => { BT.S.ads = [{ id: 'dolmus', left: 3 }]; BT.ilan.world.bT = 0.01; BT.ilan.world.bus = null; });
+  /* vapur: kıyıdan açıkta denizde (x < -0,7 ya da y < -0,7) geçer, eski kayıttaki dolmuş vapura döner */
+  await q(() => { BT.S.ads = [{ id: 'vapur', left: 3 }]; BT.ilan.world.bT = 0.01; BT.ilan.world.bus = null; });
   await step(2);
   R.bus = await q(() => { const b = BT.ilan.bus(); return b ? [b.x, b.y] : null; });
-  ok(R.bus && R.bus[0] > 10.2 && R.bus[0] < 14.7, 'dolmuş yoldan geçmiyor ' + JSON.stringify(R.bus));
-  await step(15);
-  ok(await q(() => BT.ilan.bus() === null), 'dolmuş yoldan çıkmadı');
+  ok(R.bus && (R.bus[0] < -0.7 || R.bus[1] < -0.7), 'vapur denizde değil ' + JSON.stringify(R.bus));
+  await step(40);
+  ok(await q(() => BT.ilan.bus() === null), 'vapur ufuktan çıkmadı');
   /* radyo + panayır çizimi hatasız */
   await q(() => { BT.S.ads = [{ id: 'radyo', left: 3 }, { id: 'panayir', left: 1 }]; BT.ilan.world.rT = 0.01; });
   await step(2); await sleep(400);
@@ -225,7 +225,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   ok(!R.btn.hid && R.btn.a === 'ad' && /İLAN VER/.test(R.btn.txt), 'kapıda İLAN VER düğmesi yok ' + JSON.stringify(R.btn));
   await p.click('#actBtn'); await sleep(300);
   R.panel = await q(() => ({ open: !document.getElementById('adScr').classList.contains('hidden'), paused: BT.paused(), title: document.getElementById('adTitle').innerText, sub: document.getElementById('adSub').innerText, rows: [...document.querySelectorAll('#adRows .trow')].map(r => r.innerText.replace(/\s+/g, ' ')), btns: document.querySelectorAll('#adRows button.pub:not([disabled])').length }));
-  ok(R.panel.open && R.panel.paused && /İlan Bürosu/.test(R.panel.title) && /Yayında 0\/2/.test(R.panel.sub), 'panel açılmadı ' + JSON.stringify(R.panel));
+  ok(R.panel.open && R.panel.paused && /İlan Bürosu/.test(R.panel.title) && /Yayında 0\/6/.test(R.panel.sub), 'panel açılmadı ' + JSON.stringify(R.panel));
   ok(R.panel.rows.length === 6 && R.panel.rows.every(r => /Süre: \d gün/.test(r)) && R.panel.btns === 6, 'panel satırları ' + JSON.stringify(R.panel.rows));
   ok(/Tellal.*Süre: 1 gün.*Müşteri \+%15/.test(R.panel.rows[0]) && /Kahvehane.*Süre: 2 gün.*Müşteri \+%10 • Sabır \+%10/.test(R.panel.rows[1]), 'panel süre/etki metni ' + JSON.stringify(R.panel.rows));
   const price = await q(() => BT.ilan.price('radyo')), cashB = await q(() => BT.S.cash);
@@ -259,10 +259,13 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   };
   await reload();
   R.ld = await q(() => ({ lv: BT.ilan.lv(), ads: BT.ilan.ads(), started: BT.S.started, chip: BT.ilan.chip() }));
-  ok(R.ld.started && R.ld.lv === 3 && R.ld.ads.length === 2 && R.ld.ads[0].left === 2 && R.ld.chip === '📣 2 gün · 1 gün', 'yükleme adLv/ads korumadı ' + JSON.stringify(R.ld));
+  ok(R.ld.started && R.ld.lv === 3 && R.ld.ads.length === 2 && R.ld.ads[0].left === 2 && R.ld.chip === '📣 2 ilan', 'yükleme adLv/ads korumadı ' + JSON.stringify(R.ld));
   await reload(() => { const d = JSON.parse(localStorage.getItem('balikci_slot_1')); d.adLv = 1; d.ads = [{ id: 'zzz', left: 1 }, { id: 'radyo', left: 3 }, { id: 'tellal', left: 99 }, { id: 'tellal', left: 1 }, null, 7, { id: 'kahve', left: 'x' }]; localStorage.setItem('balikci_slot_1', JSON.stringify(d)); });
   R.bad = await q(() => ({ lv: BT.ilan.lv(), ads: BT.ilan.ads(), started: BT.S.started }));
   ok(R.bad.started && R.bad.lv === 1 && R.bad.ads.length === 1 && R.bad.ads[0].id === 'tellal' && R.bad.ads[0].left === 1, 'bozuk kayıt elenmedi ' + JSON.stringify(R.bad));
+  await reload(() => { const d = JSON.parse(localStorage.getItem('balikci_slot_1')); d.adLv = 2; d.ads = [{ id: 'dolmus', left: 2 }]; localStorage.setItem('balikci_slot_1', JSON.stringify(d)); });
+  R.mig = await q(() => BT.ilan.ads().map(a => a.id + ':' + a.left).join());
+  ok(R.mig === 'vapur:2', 'eski kayıttaki dolmuş reklamı vapura dönmedi ' + R.mig);   /* v2.23 */
   await reload(() => { const d = JSON.parse(localStorage.getItem('balikci_slot_1')); delete d.adLv; delete d.ads; localStorage.setItem('balikci_slot_1', JSON.stringify(d)); });
   R.old = await q(() => ({ lv: BT.ilan.lv(), ads: BT.ilan.ads(), started: BT.S.started, cust: BT.ilan.cust(), flow: BT.roadFlow() }));
   ok(R.old.started && R.old.lv === 0 && R.old.ads.length === 0 && R.old.cust === 1, 'eski kayıt boş başlamadı ' + JSON.stringify(R.old));
@@ -283,7 +286,7 @@ const fail = []; const ok = (c, m) => { if (!c) fail.push(m); };
   });
   ok(R.lang.tr.name === 'İlan Bürosu' && R.lang.en.name === 'Ad Bureau', 'ad TR/EN yanlış ' + JSON.stringify([R.lang.tr.name, R.lang.en.name]));
   ok(R.lang.tr.pub === 'YAYINLA' && R.lang.en.pub === 'PUBLISH' && R.lang.tr.close === 'KAPAT' && R.lang.en.close === 'CLOSE', 'panel düğme metinleri ' + JSON.stringify([R.lang.tr.pub, R.lang.en.pub, R.lang.tr.close, R.lang.en.close]));
-  ok(/Yayında 0\/2/.test(R.lang.tr.sub) && /Running 0\/2/.test(R.lang.en.sub), 'panel alt yazı ' + JSON.stringify([R.lang.tr.sub, R.lang.en.sub]));
+  ok(/Yayında 0\/6/.test(R.lang.tr.sub) && /Running 0\/6/.test(R.lang.en.sub), 'panel alt yazı ' + JSON.stringify([R.lang.tr.sub, R.lang.en.sub]));
   ok(R.lang.en.rows.some(r => /Town Crier.*Duration: 1 day.*Customers \+15%/.test(r)) && R.lang.en.rows.some(r => /Fair Stand.*Customers ×2 • Tourists arrive/.test(r)), 'EN satırlar ' + JSON.stringify(R.lang.en.rows));
   ok(R.lang.tr.names && R.lang.en.names && R.lang.tr.effs && R.lang.en.effs, 'reklam adı/etki/dünya metni eksik');
   R.en = await q(() => { BT.setLang('en'); const T = BT.T; const o = { b: T('adBuilt'), u: T('adUp', { l: 2 }), e: T('adEnded', { n: 'Town Crier' }), p: T('adPublished', { n: 'Town Crier', d: '2 days' }), idle: T('adBbIdle'), lock: T('adLockLv', { l: 2 }), full: T('adFull') }; BT.setLang('tr'); return o; });

@@ -755,16 +755,8 @@ function buildMeydan() {
   var r = worldRas(min(M.x0, B.x0), min(M.y0, B.y0), max(M.x1, B.x1), max(M.y1, B.y1), 8, 4);
   var SL = ['#cfc5ad', '#c6bba1', '#d6ccb5', '#bfb398', '#cbc0a6'].map(C), DZ = C('#9c9079'), MOSS = C('#8f9a6a');
   var BD = C('#a99d84'), BDL = C('#bdb299'), BDJ = C('#8a7f68'), EDGE = C('#7d725c');
-  eachXY(r, 0, function (x, y, fx, fy) {
-    if (x < M.x0 || x >= M.x1 || y < M.y0 || y >= M.y1) return null;
-    var e = min(x - M.x0, M.x1 - x, y - M.y0, M.y1 - y), g = hash(fx, fy), c;
-    if (e < 0.06) return EDGE;
-    if (e < 0.3) {
-      var along = (x - M.x0 < 0.3 || M.x1 - x < 0.3) ? y : x;
-      if (mod(along, 0.55) < 0.04 || e > 0.26) return BDJ;
-      c = e < 0.12 ? BDL : BD;
-      return g > 0.93 ? dk(c, 0.07) : c;
-    }
+  function stoneAt(x, y, fx, fy, g) {
+    var c;
     var gx = (x - M.x0 - 0.3) / 0.6, gy = (y - M.y0 - 0.3) / 0.6, cj = floor(gy);
     if (cj & 1) gx += 0.5;                               /* yarım taş şaşırtması */
     var ci = floor(gx), lx = gx - ci, ly = gy - cj;
@@ -775,42 +767,24 @@ function buildMeydan() {
     if (hs > 0.9 && abs(lx - ly - 0.1) < 0.025) c = dk(c, 0.2);            /* çatlak */
     if (g > 0.95) c = dk(c, 0.05); else if (g < 0.03) c = lt(c, 0.1);
     return c;
+  }
+  eachXY(r, 0, function (x, y, fx, fy) {
+    if (x < M.x0 || x >= M.x1 || y < M.y0 || y >= M.y1) return null;
+    var e = min(x - M.x0, M.x1 - x, y - M.y0, M.y1 - y), g = hash(fx, fy), c;
+    if (e < 0.06) return EDGE;
+    if (e < 0.3) {
+      var along = (x - M.x0 < 0.3 || M.x1 - x < 0.3) ? y : x;
+      if (mod(along, 0.55) < 0.04 || e > 0.26) return BDJ;
+      c = e < 0.12 ? BDL : BD;
+      return g > 0.93 ? dk(c, 0.07) : c;
+    }
+    return stoneAt(x, y, fx, fy, g);
   }, [M.x0, M.y0, M.x1, M.y1]);
-  /* köprü: z=1 tahta güverte (tahtalar y boyunca, x boyunca dizili), önde yan yüzler, korkuluklar */
-  var WD = ['#8a5a33', '#966239', '#7f5230', '#8f5d35'].map(C), GAP = C('#4f321c'), NAIL = C('#3a2414');
-  eachXY(r, 1, function (x, y) {
+  /* v2.23: ahşap köprü kalktı — iskele ucu ile meydan arasındaki şerit meydanla aynı taş döşeme (kesintisiz, korkuluksuz) */
+  eachXY(r, 0, function (x, y, fx, fy) {
     if (x < B.x0 || x >= B.x1 || y < B.y0 || y >= B.y1) return null;
-    var q = (x - B.x0) / 0.35, pi = floor(q), lq = q - pi;
-    if (lq < 0.12) return GAP;
-    var c = WD[floor(hash(pi, 9) * WD.length)];
-    if ((y - B.y0 < 0.12 || B.y1 - y < 0.12) && abs(lq - 0.55) < 0.12) return NAIL;
-    if (lq < 0.26) c = lt(c, 0.14); else if (lq > 0.9) c = dk(c, 0.12);
-    if (hash(pi * 3, floor(y * 20)) > 0.86) c = dk(c, 0.1);
-    return c;
+    return stoneAt(x, y, fx, fy, hash(fx, fy));
   }, [B.x0, B.y0, B.x1, B.y1]);
-  var SIDE = C('#5e3c22'), SIDE2 = C('#4a2f1c');
-  var fa = max(0, floor((B.x0 - B.y1) * 12 * K) - r.ox - 1), fb = min(r.w, Math.ceil((B.x1 - B.y0) * 12 * K) - r.ox + 1);
-  var ga = max(0, floor((B.x0 + B.y0) * 6 * K) - r.oy - 2), gb = min(r.h, Math.ceil((B.x1 + B.y1) * 6 * K) - r.oy + 2);
-  for (var j = ga; j < gb; j++) for (var i = fa; i < fb; i++) {
-    var u = (r.ox + i + 0.5) / K, v = (r.oy + j + 0.5) / K;
-    var xa = u / 12 + B.y1, za = (xa + B.y1) * 6 - v;             /* ön sol yüz (y = y1) */
-    if (xa >= B.x0 && xa < B.x1 && za >= 0 && za < 1) { r.setI(i, j, mod(xa - B.x0, 0.35) < 0.05 ? SIDE2 : SIDE); continue; }
-    var yb = B.x1 - u / 12, zb = (B.x1 + yb) * 6 - v;              /* ön sağ yüz (x = x1) */
-    if (yb >= B.y0 && yb < B.y1 && zb >= 0 && zb < 1) r.setI(i, j, SIDE2);
-  }
-  function rail(yy) {
-    for (var X = B.x0; X <= B.x1 + 0.001; X += 1 / (12 * K)) {
-      var fx = wfx(X, yy), fz = wfy(X, yy, 6);
-      r.set(fx, fz - 1, '#8a6038'); r.set(fx, fz, '#5a3a22'); r.set(fx, fz + 1, '#3e2716');
-      r.set(fx, wfy(X, yy, 3.5), '#4a2f1c', 0.85);
-    }
-    for (var p2 = B.x0; p2 <= B.x1 + 0.001; p2 += 1.2) {
-      var px = wfx(p2, yy), ya = wfy(p2, yy, 6.5), yb2 = wfy(p2, yy, 1);
-      for (var y2 = ya; y2 <= yb2; y2++) { r.set(px - 1, y2, '#7a5232'); r.set(px, y2, '#4a2f1c'); }
-      r.set(px - 1, ya - 1, '#9a6a3e'); r.set(px, ya - 1, '#7a5232');
-    }
-  }
-  rail(B.y0); rail(B.y1);
   return r.sprite();
 }
 HKA.drawMeydanGround = function () {
@@ -860,12 +834,7 @@ function buildYard() {
   });
   return r.sprite();
 }
-HKA.drawYardGround = function () {
-  var K = G().K, s = need('yard' + K, buildYard);
-  if (!s) return false;
-  put(s, s.ox, s.oy);
-  return true;
-};
+HKA.drawYardGround = function () { return true; };   /* v2.23: Hizmet Sahası zemini/patikası kalktı (lokanta arazisi kumsalla aynı zemin) */
 
 /* =====================================================================
    VİNYET: klasikle aynı radyal gradyan, bir kez ara tuvale çizilir (her karede gradyan dolgusu yok)

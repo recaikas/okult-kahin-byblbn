@@ -153,19 +153,19 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     };
     const left = () => t.inn.length + (t.cur ? 1 : 0);
     /* a) masada başla, sandık erişimine (masa ∩ sandık) kay: sandıktan alma yok, kesim sürüyor */
-    setup(); P.x = 5.7; P.y = 1.7; E.step(0.05, 3); o.a0 = E.active();
-    P.x = 4.3; P.y = 1.7; const l0 = left(); E.step(0.05, 10);
+    setup(); P.x = 1.1; P.y = 1.7; E.step(0.05, 3); o.a0 = E.active();
+    P.x = -0.3; P.y = 1.7; const l0 = left(); E.step(0.05, 10);
     o.a = { act: E.active(), box: s.box.length, carry: P.carry.length, cut: l0 - left() };
     /* b) masa ∩ hasır: hasırdan toplama yok; masa boşalana kadar hiç fileto sırtlanmaz; boşalınca toplanır */
-    setup(); P.x = 5.7; P.y = 1.7; E.step(0.05, 3);
-    P.x = 6.4; P.y = 2.0; o.b0 = [Math.hypot(P.x - t.x, P.y - t.y).toFixed(2), Math.hypot(P.x - t.mat.x, P.y - t.mat.y).toFixed(2)];
+    setup(); P.x = 1.1; P.y = 1.7; E.step(0.05, 3);
+    P.x = 1.8; P.y = 2.0; o.b0 = [Math.hypot(P.x - t.x, P.y - t.y).toFixed(2), Math.hypot(P.x - t.mat.x, P.y - t.mat.y).toFixed(2)];
     let during = 0, maxMat = 0, n = 0;
     while (left() > 0 && n++ < 400) { E.step(0.05, 1); during = Math.max(during, P.carry.length); maxMat = Math.max(maxMat, t.mat.items.length); }
     o.b = { during, act: E.active(), mat: t.mat.items.length, maxMat, carryBefore: P.carry.length };
     E.step(0.05, 40);
     o.after = { carry: P.carry.length, mat: t.mat.items.length, act: E.active() };
     /* c) erişim yarıçapı + 0,3 dışına çıkınca kilit düşer: sandık (yakın) devreye girer */
-    setup(); P.x = 5.7; P.y = 1.7; E.step(0.05, 3); P.x = 3.4; P.y = 2.3; E.step(0.05, 6);
+    setup(); P.x = 1.1; P.y = 1.7; E.step(0.05, 3); P.x = s.bx; P.y = s.by; E.step(0.05, 6);
     o.c = { act: E.active(), carry: P.carry.length };
     far(); P.carry.length = 0; s.rate = rate0; s.box.length = 0; t.mat.items.length = 0; t.inn.length = 0; t.cur = null;
     return o;
@@ -183,7 +183,7 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     P.x = 9; P.y = 5.5; E.step(0.05, 2);
     t.inn.length = 0; for (let i = 0; i < 6; i++) t.inn.push({ k: 'fish', f: 'hamsi' });
     t.mat.items.length = 0; for (let i = 0; i < 4; i++) t.mat.items.push({ k: 'fileto', f: 'hamsi' });
-    P.x = 6.4; P.y = 2.0; E.step(0.05, 8);
+    P.x = 1.8; P.y = 2.0; E.step(0.05, 8);
     const o = { act: E.active(), carry: P.carry.length, left: t.inn.length + (t.cur ? 1 : 0) };
     E.set(true); P.carry.length = 0; t.inn.length = 0; t.cur = null; t.mat.items.length = 0; P.x = 9; P.y = 5.5; E.step(0.05, 2);
     return o;
