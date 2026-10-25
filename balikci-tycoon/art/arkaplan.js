@@ -752,7 +752,7 @@ HKA.drawRoad = function () {
 function buildMeydan() {
   var M = G().v('MEYDAN'), B = G().v('BRIDGE'), K = G().K;
   if (!M || !B) return null;
-  var r = worldRas(min(M.x0, B.x0), min(M.y0, B.y0), max(M.x1, B.x1), max(M.y1, B.y1), 8, 4);
+  var r = worldRas(M.x0, M.y0, M.x1, M.y1, 8, 4);
   var SL = ['#cfc5ad', '#c6bba1', '#d6ccb5', '#bfb398', '#cbc0a6'].map(C), DZ = C('#9c9079'), MOSS = C('#8f9a6a');
   var BD = C('#a99d84'), BDL = C('#bdb299'), BDJ = C('#8a7f68'), EDGE = C('#7d725c');
   function stoneAt(x, y, fx, fy, g) {
@@ -780,11 +780,7 @@ function buildMeydan() {
     }
     return stoneAt(x, y, fx, fy, g);
   }, [M.x0, M.y0, M.x1, M.y1]);
-  /* v2.23: ahşap köprü kalktı — iskele ucu ile meydan arasındaki şerit meydanla aynı taş döşeme (kesintisiz, korkuluksuz) */
-  eachXY(r, 0, function (x, y, fx, fy) {
-    if (x < B.x0 || x >= B.x1 || y < B.y0 || y >= B.y1) return null;
-    return stoneAt(x, y, fx, fy, hash(fx, fy));
-  }, [B.x0, B.y0, B.x1, B.y1]);
+  /* v2.24: iskele–meydan arası taş şerit kalktı (BRIDGE yalnız yürünebilirlik; zemin doğal kumsal) */
   return r.sprite();
 }
 HKA.drawMeydanGround = function () {
