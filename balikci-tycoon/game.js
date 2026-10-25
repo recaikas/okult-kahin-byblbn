@@ -87,7 +87,7 @@ var STR = {
     halEmpty: 'Henüz ürün yok', halSold: '{n} ürün satıldı: +{v}', halBought: '{n} ürün alındı: {v}', halBoughtPal: '{n} ürün alındı ({v}) — Hal hamalı depoya taşıyor', halBoughtCarry: '{n} ürün alındı ({v}) — depoya teslim edildi', halPalN: 'Palette {n}', halStaffFull: 'En çok 2 Hal hamalı', kFume: 'füme', kFileto: 'fileto', fumeCrate: 'Füme Kasası',
     envUp1: '🌿 Liman canlanıyor: yol çakıl oldu, ağaçlar yeşeriyor', envUp2: '🪨 Yol arnavut kaldırımı oldu, sahil toparlandı',
     envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
-    specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
+    specComing: 'Özel bir müşteri geliyor...', parComing: 'Tanıdık bir yüz geliyor… ya da öyle sanıyorsun!', daySpec: 'Özel müşteriler',
     custTitle: '📖 MÜŞTERİ DEFTERİ', custSub: 'Koya gelen herkes. Görmediğin kara gölge, adını söylemeyen ?????. Siparişini bitir, adını öğren.', custStory: 'HİKÂYE', custSpec: 'ÖZEL', custTypes: 'TİPLER', custTap: 'Bir karta dokun.', custNever: 'Henüz koya gelmedi.', custNoName: 'Adını henüz söylemedi. Siparişini tamamla, kendini tanıtsın. Mesleği, konuşmasını bitirince belli olur.', custVisits: 'Kaç kez geldi: {n}', custServed: 'Servis edilen: {n}', custTypeD: 'Sipariş {a}–{b} · sabır {p} sn · fiyat ×{m}', custStoryD: 'Dipteki Söz hikâyesinin bir parçası.', custNewName: '📖 Deftere yazıldı: {n}',
     termsAsk: 'Skor tablosu herkese açıktır. İşletme ve karakter adının görünmesi için Topluluk Kuralları\'nı kabul etmelisin: küfür, nefret, taciz, kişisel bilgi ve reklam yok. Uygunsuz adlar bildirilebilir ve kaldırılır.', termsAccept: 'KABUL EDİYORUM', termsLater: 'ŞİMDİ DEĞİL', termsThanks: 'Teşekkürler! Adın skor tablosunda.', termsChk: 'Topluluk Kuralları\'nı ve Kullanım Koşulları\'nı kabul ediyorum', termsLink: 'Oku', repMenu: 'Bu oyuncu için seçenekler', repTitle: 'Bu ad hakkında', repSub: 'Uygunsuz bir ad mı gördün? Bildir; inceleyip kaldırırız. Gizlersen bu cihazda bir daha görmezsin.', repBtn: '🚩 BİLDİR VE GİZLE', repHide: '🚫 YALNIZ GİZLE', repThanks: 'Bildirdin, teşekkürler. İnceleyeceğiz.', repLimit: 'Bugün çok bildirim gönderdin; satır gizlendi.', repOffline: 'Bildirim gönderilemedi (bağlantı yok); satır bu cihazda gizlendi.', repHidN: '{n} oyuncu gizli · göster', termsBtn: '📜 Topluluk Kuralları', lineIng: '{d} malzemesi (tezgâhta satılmaz, mutfağa gider)', mxCreditF: 'veresiye', mxCredit: 'Muhtar veresiye aldı: yarın sabah {v} ödeyecek', mxCreditPay: 'Muhtar borcunu ödedi: +{v}', mxHoron: '🎻 Horon başladı! 15 sn kimse sabırsızlanmıyor', mxLive: '🎥 Canlı yayın! 30 sn: her satış itibar, kaçan müşteri kayıp', mxFcast: '⚓ Kaptan: "Yarın {e} var, hazırlıklı ol." Yarın ağlar biraz daha hızlı dolar', mxReviewUp: '📝 Sedef Hanım beğendi: yarın daha çok müşteri gelecek', mxStrict: '🧐 Bay Hesapçı şikâyet etti', mxSouv: '🧳 Mehmet Amca bir hatıra bıraktı: {n}', mxSouvCash: '🧳 Mehmet Amca döviz bıraktı: +{v}', dayInsp: 'Gizli müfettiş', inspGood: 'Temiz rapor (kaçan %{r}): +{v}', inspBad: 'Olumsuz rapor (kaçan %{r}): −{v} ceza', helpGot: 'ANLADIM', helpReset: '💡 Sekme ipuçlarını yeniden göster', helpResetD: 'İpuçları sıfırlandı: her sekme ilk açılışta yeniden anlatılacak',
     storyName: 'Dipteki Söz', storyNext: 'Sıradaki: Gün {d} · {t} — bir koy sakini tezgâhına gelecek', storyFin: 'Hikâye tamamlandı. Unvan: Dipteki Sözün Bekçisi', storyBer: 'Bereket Ölçeri', storyBerD: 'ağ verimi {p}%', storyBuffs: 'Kalıcı etkiler', storyFaces: 'Koyun yüzleri', storyDone: '✦ Dipteki Söz tamamlandı: Dipteki Sözün Bekçisi',
@@ -303,7 +303,7 @@ var STR = {
     halEmpty: 'No goods yet', halSold: '{n} sold: +{v}', halBought: '{n} bought: {v}', halBoughtPal: '{n} bought ({v}) — the market porter is taking them to the depot', halBoughtCarry: '{n} bought ({v}) — delivered to the depot', halPalN: 'On pallet {n}', halStaffFull: 'At most 2 market porters', kFume: 'smoked', kFileto: 'fillet', fumeCrate: 'Smoke Crate',
     envUp1: '🌿 The harbor comes alive: gravel road, trees turning green', envUp2: '🪨 The road is cobbled now, the shore tidied up',
     envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
-    specComing: 'A special customer is coming...', daySpec: 'Special customers',
+    specComing: 'A special customer is coming...', parComing: 'A familiar face is coming… or so you think!', daySpec: 'Special customers',
     custTitle: '📖 CUSTOMER BOOK', custSub: 'Everyone who visits the cove. Unseen are shadows; those who haven\'t told their name are ?????. Finish their order to learn it.', custStory: 'STORY', custSpec: 'SPECIAL', custTypes: 'TYPES', custTap: 'Tap a card.', custNever: 'Hasn\'t visited the cove yet.', custNoName: 'Hasn\'t told you their name yet. Complete their order and they\'ll introduce themselves. Their job shows once they finish talking.', custVisits: 'Visits: {n}', custServed: 'Served: {n}', custTypeD: 'Order {a}–{b} · patience {p}s · price ×{m}', custStoryD: 'Part of The Promise Below.', custNewName: '📖 Added to the book: {n}',
     termsAsk: 'The leaderboard is public. To show your business and character names you must accept the Community Rules: no profanity, hate, harassment, personal information or advertising. Inappropriate names can be reported and are removed.', termsAccept: 'I ACCEPT', termsLater: 'NOT NOW', termsThanks: 'Thanks! Your name is on the leaderboard.', termsChk: 'I accept the Community Rules and Terms of Use', termsLink: 'Read', repMenu: 'Options for this player', repTitle: 'About this name', repSub: 'Saw an inappropriate name? Report it and we will review and remove it. Hide it and you will not see it on this device again.', repBtn: '🚩 REPORT AND HIDE', repHide: '🚫 JUST HIDE', repThanks: 'Reported, thank you. We will review it.', repLimit: 'You sent many reports today; the row is hidden.', repOffline: 'Could not send the report (offline); the row is hidden on this device.', repHidN: '{n} players hidden · show', termsBtn: '📜 Community Rules', lineIng: 'ingredient for {d} (not sold at a stall, goes to the kitchen)', mxCreditF: 'on credit', mxCredit: 'The headman bought on credit: he\'ll pay {v} tomorrow morning', mxCreditPay: 'The headman paid his debt: +{v}', mxHoron: '🎻 Horon time! For 15 s nobody gets impatient', mxLive: '🎥 Live broadcast! 30 s: each sale earns reputation, each lost customer costs', mxFcast: '⚓ The captain: "Tomorrow brings {e}, be ready." Nets fill a little faster tomorrow', mxReviewUp: '📝 Critic Sedef liked it: more customers tomorrow', mxStrict: '🧐 Mr. Tally filed a complaint', mxSouv: '🧳 Uncle Mehmet left a keepsake: {n}', mxSouvCash: '🧳 Uncle Mehmet left some foreign cash: +{v}', dayInsp: 'Secret inspector', inspGood: 'Clean report ({r}% lost): +{v}', inspBad: 'Bad report ({r}% lost): −{v} fine', helpGot: 'GOT IT', helpReset: '💡 Show tab tips again', helpResetD: 'Tips reset: each tab will explain itself again on first open',
     storyName: 'The Promise Below', storyNext: 'Next: Day {d} · {t} — someone from the cove will visit your stall', storyFin: 'Story complete. Title: Keeper of the Promise Below', storyBer: 'Bounty Gauge', storyBerD: 'net yield {p}%', storyBuffs: 'Permanent effects', storyFaces: 'Faces of the cove', storyDone: '✦ The Promise Below complete: Keeper of the Promise Below',
@@ -2295,8 +2295,9 @@ function loadDay(d) {
     day.market = !!d.day[2] && isMarketDay(day.n);
     day.feat = custById(d.day[3]) ? d.day[3] : null;
     var sps = String(d.day[4] || '').split(',').filter(function (q) { return specById(q); });
-    if (sps.length === 2) {
+    if (sps.length === 2 || sps.length === 3) {
       day.spec = sps; day.normals = parseInt(d.day[6], 10) || 0;
+      day.sp3 = (parseInt(d.day[8], 10) || 0) ? 2 : 0;   /* v2.25: yola çıkmış parodi konuk kayıtla dönmez → bugünlük bitti say */
       var sp0 = parseInt(d.day[5], 10) || 0;
       day.sp = sp0 === 2 ? 1 : sp0 === 3 ? 4 : sp0;   /* müşteriler kaydedilmez: yarım kalan adımı güvenle sürdür */
       day.popT = 0;
@@ -3617,7 +3618,7 @@ function buildSave() {
     serv: servSave(),
     adLv: adLvl(), ads: adSave(),                     /* v2.18-deneme: İlan Bürosu seviyesi + yayındaki reklamlar [{id, left}] */
     insaat: insSave(),                                /* v2.18-deneme: sürmekte olan inşaatlar {bina: {lv, left}} */
-    day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || '', (day.spec || []).join(','), day.sp || 0, day.normals || 0, day.phase === 'summary' ? 1 : 0],
+    day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || '', (day.spec || []).join(','), day.sp || 0, day.normals || 0, day.phase === 'summary' ? 1 : 0, day.sp3 || 0],
     dst: { inc: Math.round(day.st.inc || 0), served: day.st.served | 0, lost: day.st.lost | 0, fish: day.st.fish | 0, by: day.st.by || {}, out: day.st.out || {}, spec: (day.st.spec || []).slice(0, 40), wage: Math.round(day.st.wage || 0), tax: Math.round(day.st.tax || 0) },   /* v2.21: gün istatistiği */
     stalls: counters.map(function (c) { return [c.key, c.open ? 1 : 0]; }),
     workers: workers.filter(function (w) { return !ROLES[w.role].lok; }).map(function (w) { return (w.lv | 0) > 1 ? [w.role, w.zone === undefined ? 0 : w.zone, w.lv | 0] : [w.role, w.zone === undefined ? 0 : w.zone]; }),   /* v2.18-deneme: usta seviyesi (yoksa 1) */
@@ -4902,7 +4903,7 @@ function updateCounter(c, dt) {
       var hi = pool.filter(function (t) { return t.mult >= 1.8; });
       if (hi.length) pool = hi;
     }
-    var type = pick(pool);
+    var type = pickCust(pool);
     if (adLive('panayir') && Math.random() < 0.3) { var tou = pool.filter(function (t) { return t.id === 'turist'; }); if (tou.length) type = tou[0]; }   /* v2.18-deneme: Panayır → turist gelir */
     if (day.feat && Math.random() < 0.45) {           /* günün müşterisi daha sık gelir */
       var ft = pool.filter(function (t) { return t.id === day.feat; });
@@ -5049,7 +5050,7 @@ function updateCustomers(dt) {
     if (cu.state === 'walk') {
       var p = queueSlotPos(cu.c, cu.slot);
       var dx = p.x - cu.x, dy = p.y - cu.y, L = Math.hypot(dx, dy);
-      var wv = cu.spec ? SPEC_WALK : 2.1;             /* v1.3.3: özel müşteri ağır adımlarla gelir */
+      var wv = cu.spec ? SPEC_WALK : 2.1 * (cu.type && cu.type.slow || 1);   /* v2.25: bastonlular ağır gelir */             /* v1.3.3: özel müşteri ağır adımlarla gelir */
       if (L < 0.14) { cu.state = 'wait'; if (cu.spec) specArrive(cu); }
       else { cu.x += dx / L * wv * dt; cu.y += dy / L * wv * dt; cu.bob += dt * (cu.spec ? 5 : 8); }
     } else if (cu.state === 'wait') {
@@ -5989,6 +5990,84 @@ var CUST_FIT = {
   kopekli:  { beanie: '#5a7a4a', knit: '#e8dcc0', pants: '#3a3226' },
   hemsire:  { hairStyle: 6, glasses: true, pants: '#5a8ab0' }
 };
+/* v2.25 — yeni sokak müşterileri: her tip 3 renkte (sarı / mavi / siyah) ayrı tip olarak gelir; taraftarlar forma renginde.
+   w: seçilme ağırlığı (3 renk birlikte ≈ 1 eski tip), slow: yürüyüş çarpanı, skinC/hairC: sabit ten/saç rengi. */
+var CUST_VAR = [
+  { k: 's', tr: 'Sarı', en: 'Yellow', c: '#d9b02a', c2: '#ecc84a', d: '#8a6a10' },
+  { k: 'm', tr: 'Mavi', en: 'Blue', c: '#2f5fa8', c2: '#4a7cc4', d: '#1a3a6a' },
+  { k: 'k', tr: 'Siyah', en: 'Black', c: '#26262c', c2: '#3a3a42', d: '#121216' }
+];
+var CUST_GEN = [
+  { id: 'amca', n: { tr: 'Bastonlu Amca', en: 'Old Man with Cane' }, qty: [1, 3], pat: 160, mult: 1.00, rep: 1, lvl: 1, tag: 'cheap', slow: 0.55,
+    note: { tr: 'Bastonuyla ağır ağır gelir; çok sabırlıdır.', en: 'Shuffles in slowly with his cane; very patient.' },
+    fit: function (v) { return { cap: v.c, vest: v.d, cane: '#6b4a2a', glasses: true, must: true, short: 1, hairStyle: 4, hairC: '#c9c9c4', pants: '#3a3226' }; } },
+  { id: 'nine', n: { tr: 'Bastonlu Teyze', en: 'Old Lady with Cane' }, qty: [2, 4], pat: 170, mult: 1.00, rep: 1, lvl: 1, tag: 'cheap', slow: 0.5,
+    note: { tr: 'Bastonuyla yavaş gelir; pazarlık sever.', en: 'Comes slowly with her cane; loves to haggle.' },
+    fit: function (v) { return { scarf: v.c, scarfDots: '#f4e9d2', cane: '#6b4a2a', glasses: true, short: 1, belly: 1, skirt: v.d }; } },
+  { id: 'takimbey', n: { tr: 'Takım Elbiseli Bey', en: 'Suited Gentleman' }, qty: [2, 4], pat: 45, mult: 1.50, rep: 2, lvl: 2, tag: 'rich',
+    fit: function (v) { return { tie: v.k === 'k' ? '#8e1b1b' : '#1a1a1e', briefcase: true, hairStyle: 0, tall: 1, pants: v.d }; } },
+  { id: 'takimhan', n: { tr: 'Şapkalı Şık Hanım', en: 'Lady in Suit & Hat' }, qty: [2, 4], pat: 50, mult: 1.50, rep: 2, lvl: 2, tag: 'rich',
+    fit: function (v) { return { fedora: v.d, bag: true, hairStyle: 2, skirt: v.d }; } },
+  { id: 'gangbey', n: { tr: 'Gangster', en: 'Gangster' }, qty: [2, 5], pat: 38, mult: 1.60, rep: 2, lvl: 3, tag: 'rich',
+    fit: function (v) { return { fedora: v.d, shades: true, chain: true, must: true, pants: v.d }; } },
+  { id: 'ganghan', n: { tr: 'Gangster Kadın', en: 'Gangster Lady' }, qty: [2, 5], pat: 38, mult: 1.60, rep: 2, lvl: 3, tag: 'rich',
+    fit: function (v) { return { shades: true, chain: true, hairStyle: 3, pants: v.d }; } },
+  { id: 'mafbey', n: { tr: 'Mafya Babası', en: 'Mafia Boss' }, qty: [4, 7], pat: 50, mult: 1.90, rep: 3, lvl: 4, tag: 'premium',
+    fit: function (v) { return { fedora: v.d, stripes: v.c2, tie: '#c9952f', thickMust: true, belly: 1, pipe: true, pants: v.d }; } },
+  { id: 'mafhan', n: { tr: 'Mafya Hanımı', en: 'Mafia Madam' }, qty: [4, 7], pat: 50, mult: 1.90, rep: 3, lvl: 4, tag: 'premium',
+    fit: function (v) { return { sunHat: v.d, shades: true, chain: true, hairStyle: 6, skirt: v.d }; } },
+  { id: 'hizmetci', n: { tr: 'Hizmetçi', en: 'Housemaid' }, qty: [5, 9], pat: 80, mult: 1.20, rep: 1, lvl: 2, tag: 'any',
+    note: { tr: 'Konağın mutfağı için çok alır.', en: 'Buys a lot for the mansion kitchen.' },
+    fit: function (v) { return { apron: '#f7f7f2', headband: '#f7f7f2', hairStyle: 6, bigBag: '#6b4a2a', skirt: v.d }; } },
+  { id: 'hippibey', n: { tr: 'Hippi', en: 'Hippie' }, qty: [1, 3], pat: 150, mult: 0.90, rep: 1, lvl: 1, tag: 'cheap',
+    fit: function (v) { return { headband: v.c2, hairStyle: 2, beard: true, glasses: true, guitar: '#a8743a', pants: '#5a7aa8' }; } },
+  { id: 'hippihan', n: { tr: 'Hippi Kız', en: 'Hippie Girl' }, qty: [1, 3], pat: 150, mult: 0.90, rep: 1, lvl: 1, tag: 'cheap',
+    fit: function (v) { return { headband: v.c2, hairStyle: 2, glasses: true, bag: true, skirt: '#a85a8a' }; } },
+  { id: 'esmerbey', n: { tr: 'Esmer Delikanlı', en: 'Street-Style Guy' }, qty: [2, 4], pat: 60, mult: 1.15, rep: 1, lvl: 1, tag: 'any',
+    fit: function (v) { return { cap: v.d, chain: true, skinC: '#6e4628', hairC: '#1a1410', hairStyle: 5, tall: 1, pants: '#2a2a30' }; } },
+  { id: 'esmerhan', n: { tr: 'Esmer Hanım', en: 'Elegant Lady' }, qty: [2, 4], pat: 70, mult: 1.15, rep: 1, lvl: 1, tag: 'any',
+    fit: function (v) { return { bag: true, skinC: '#6e4628', hairC: '#1a1410', hairStyle: 5, skirt: v.d }; } },
+  { id: 'sarisinbey', n: { tr: 'Sarışın Delikanlı', en: 'Blond Guy' }, qty: [2, 4], pat: 60, mult: 1.15, rep: 1, lvl: 1, tag: 'any',
+    fit: function (v) { return { hairC: '#e8c870', hairStyle: 8, shades: true, pants: v.d }; } },
+  { id: 'sarisinhan', n: { tr: 'Sarışın Hanım', en: 'Blonde Lady' }, qty: [2, 4], pat: 70, mult: 1.15, rep: 1, lvl: 1, tag: 'any',
+    fit: function (v) { return { hairC: '#e8c870', hairStyle: 2, bag: true, skirt: v.d }; } },
+  { id: 'tulumbey', n: { tr: 'Tulumlu Balıkçı', en: 'Fisherman in Oilskins' }, qty: [3, 6], pat: 90, mult: 1.10, rep: 1, lvl: 1, tag: 'any',
+    fit: function (v) { return { sunHat: v.c, beard: true, boot: '#2a2a2a', pants: v.c }; } },
+  { id: 'tulumhan', n: { tr: 'Tulumlu Balıkçı Kadın', en: 'Fisherwoman in Oilskins' }, qty: [3, 6], pat: 90, mult: 1.10, rep: 1, lvl: 1, tag: 'any',
+    fit: function (v) { return { sunHat: v.c, hairStyle: 3, boot: '#2a2a2a', pants: v.c }; } },
+  { id: 'avcibey', n: { tr: 'Avcı', en: 'Hunter' }, qty: [2, 5], pat: 75, mult: 1.20, rep: 1, lvl: 2, tag: 'any',
+    fit: function (v) { return { cap: v.c, vest: '#4a5a2e', beard: true, bigBag: '#6b4a2a', boot: '#3a2a1a', pants: '#3a4026' }; } },
+  { id: 'avcihan', n: { tr: 'Avcı Kadın', en: 'Huntress' }, qty: [2, 5], pat: 75, mult: 1.20, rep: 1, lvl: 2, tag: 'any',
+    fit: function (v) { return { beanie: v.c, vest: '#4a5a2e', hairStyle: 3, bag: true, boot: '#3a2a1a', pants: '#3a4026' }; } }
+];
+/* taraftarlar: yalnız forma renkleri (kulüp adı ya da arması yok) */
+var CUST_FANS = [
+  { id: 'fan_bm', n: { tr: 'Bordo-Mavi Taraftar', en: 'Claret & Blue Fan' }, coat: '#7a1f2e', coat2: '#5aa0d8', fit: { beanie: '#5aa0d8', pants: '#1f2a3a' } },
+  { id: 'fan_sl', n: { tr: 'Sarı-Lacivert Taraftar', en: 'Yellow & Navy Fan' }, coat: '#f0c419', coat2: '#f6d44a', fit: { stripes: '#1b2a5a', beanie: '#1b2a5a', pants: '#1b2a5a' } },
+  { id: 'fan_kb', n: { tr: 'Kırmızı Formalı Taraftar', en: 'Red Shirt Fan' }, coat: '#c8102e', coat2: '#e83a4a', fit: { cap: '#1a1a1a', pants: '#f2f2f2' } },
+  { id: 'fan_sk', n: { tr: 'Sarı-Kırmızı Taraftar', en: 'Yellow & Red Fan' }, coat: '#e8a018', coat2: '#f2b83a', fit: { stripes: '#a8122a', beanie: '#a8122a', pants: '#2a2a30' } },
+  { id: 'fan_sb', n: { tr: 'Siyah-Beyaz Taraftar', en: 'Black & White Fan' }, coat: '#1a1a1e', coat2: '#2c2c32', fit: { stripes: '#f2f2f2', beanie: '#f2f2f2', pants: '#1a1a1e' } }
+];
+(function () {
+  CUST_GEN.forEach(function (g) {
+    CUST_VAR.forEach(function (v) {
+      var id = g.id + '_' + v.k;
+      CUST.push({ id: id, n: { tr: g.n.tr + ' (' + v.tr + ')', en: g.n.en + ' (' + v.en + ')' }, coat: v.c, coat2: v.c2, qty: g.qty, pat: g.pat, mult: g.mult, rep: g.rep, lvl: g.lvl, tag: g.tag, w: 1 / 3, slow: g.slow, note: g.note });
+      CUST_FIT[id] = g.fit(v);
+    });
+  });
+  CUST_FANS.forEach(function (f) {
+    CUST.push({ id: f.id, n: f.n, coat: f.coat, coat2: f.coat2, qty: [2, 5], pat: 60, mult: 1.05, rep: 1, lvl: 1, tag: 'any',
+      note: { tr: 'Maç günü formasıyla gelir; gol sevinci gibi alışveriş yapar.', en: 'Comes in the match-day shirt; shops like celebrating a goal.' } });
+    CUST_FIT[f.id] = f.fit;
+  });
+})();
+/* ağırlıklı tip seçimi (yeni renkli tipler eski tipleri ezmesin) */
+function pickCust(pool) {
+  var t = 0, i; for (i = 0; i < pool.length; i++) t += pool[i].w || 1;
+  var r = Math.random() * t; for (i = 0; i < pool.length; i++) { r -= pool[i].w || 1; if (r <= 0) return pool[i]; }
+  return pool[pool.length - 1];
+}
 function custOutfit(cu) {
   if (cu.spec && specById(cu.spec)) return specOutfit(specById(cu.spec), cu.face);
   var t = cu.type, f = CUST_FIT[t.id] || {}, o = {}, k;
@@ -5998,6 +6077,8 @@ function custOutfit(cu) {
   o.hair = PAL.hair[cu.hair % PAL.hair.length];
   o.face = cu.face;
   if (cu.hair === 1 && o.must === undefined && !o.scarf) o.must = true;
+  if (f.skinC) o.skin = f.skinC;   /* v2.25: tipe özgü ten / saç rengi */
+  if (f.hairC) o.hair = f.hairC;
   /* v1.3: aynı tipin müşterileri birbirinin kopyası olmasın — saç modeli ve boy kişiye göre */
   if (cu.hs === undefined) { cu.hs = irnd(0, 3); cu.ht = irnd(0, 5); }
   if (o.hairStyle === undefined) o.hairStyle = [0, 1, 3, 5][cu.hs];
@@ -13232,7 +13313,8 @@ function normSpecials(list) {
       /* v2.9 — mekanik alanları */
       mech: typeof s.mech === 'string' ? s.mech : '', minLv: specNum(s.minLv, 0, 0, 10) | 0, slot: s.slot === 'day' || s.slot === 'eve' ? s.slot : '',
       rare: specNum(s.rare, 1, 0.05, 3), hidden: !!s.hidden, only: !!s.only, chain: typeof s.chain === 'string' ? s.chain : '',
-      mad: specLang(s.mad, null), hi2: specLang(s.hi2, null), hi3: specLang(s.hi3, null)
+      mad: specLang(s.mad, null), hi2: specLang(s.hi2, null), hi3: specLang(s.hi3, null),
+      par: !!s.par              /* v2.25: parodi konuk — yalnız günün 3. (öğle) yerine gelir */
     });
   });
   return out;
@@ -13250,7 +13332,7 @@ function pickSpecials() {
   /* v2.9: 1. sıra gündüz, 2. sıra kapanış müşterisi. Seviye şartı (minLv), sıra şartı (slot), ağırlık (rare),
      yalnız zincirle gelenler (only) ve dünkü zincirin sözü (S.specForce) dikkate alınır. */
   var last = S.specLast || (S.specLast = {}), dn = day.n || 1, prev = day.spec || [], lv = repLevel();
-  var ok = function (s, pos) { return !s.only && !(s.minLv && lv < s.minLv) && !(pos === 0 && s.slot === 'eve') && !(pos === 1 && s.slot === 'day') && prev.indexOf(s.id) < 0; };
+  var ok = function (s, pos) { return !s.only && !s.par && !(s.minLv && lv < s.minLv) && !(pos === 0 && s.slot === 'eve') && !(pos === 1 && s.slot === 'day') && prev.indexOf(s.id) < 0; };
   var wpick = function (list) { var t = 0, i; for (i = 0; i < list.length; i++) t += list[i].rare || 1; var r = Math.random() * t; for (i = 0; i < list.length; i++) { r -= list[i].rare || 1; if (r <= 0) return list[i]; } return list[list.length - 1]; };
   var chosen = [null, null];
   if (S.specForce && specById(S.specForce)) { chosen[0] = specById(S.specForce); }
@@ -13273,7 +13355,15 @@ function pickSpecials() {
   if (!chosen[0]) chosen[0] = chosen[1] || SPECIALS[0];
   if (!chosen[1]) chosen[1] = chosen[0];
   chosen.forEach(function (q2) { last[q2.id] = dn; });
-  day.spec = [chosen[0].id, chosen[1].id]; day.sp = 0; day.normals = 0; day.popT = 0;
+  day.spec = [chosen[0].id, chosen[1].id]; day.sp = 0; day.normals = 0; day.popT = 0; day.sp3 = 0;
+  /* v2.25: 3. özel müşteri: parodi konuk. Hiç gelmemiş olan önce; hepsi geldiyse en uzun süredir gelmeyen. */
+  var par = SPECIALS.filter(function (s) { return s.par && prev.indexOf(s.id) < 0 && !(s.minLv && lv < s.minLv); });
+  if (par.length) {
+    var pf = par.filter(function (s) { return last[s.id] === undefined; }), p3;
+    if (pf.length) p3 = wpick(pf);
+    else { par.sort(function (x, y) { return (last[x.id] || 0) - (last[y.id] || 0); }); p3 = par[0]; }
+    last[p3.id] = dn; day.spec.push(p3.id);
+  }
 }
 function specType(sp) {
   return { id: 'spec_' + sp.id, n: sp.n, coat: sp.look.coat, coat2: sp.look.coat2,
@@ -13282,7 +13372,7 @@ function specType(sp) {
 function specOutfit(sp, face) {
   var o = {}, k;
   for (k in sp.look) o[k] = sp.look[k];
-  o.skin = PAL.skin[sp.look.sk || 0]; o.face = face;
+  o.skin = sp.look.skinC || PAL.skin[sp.look.sk || 0]; o.face = face;   /* v2.25: skinC = özel ten (mor titan, buz kralı…) */
   return o;
 }
 /* özel müşteri hangi tezgâha: kendi balığının tezgâhı; olmuyorsa açık ve satış yapabilen herhangi biri */
@@ -13360,6 +13450,15 @@ function updateSpecials(dt) {
     }
   }
   if (day.sp === 3 && !specActive(1)) day.sp = 4;  /* işi bitti → kapanış serbest */
+  /* v2.25: 3. özel müşteri (parodi konuk): 1. özelden sonra, gün ortasında bildirimle gelir; kapanışı tutmaz */
+  if (day.spec && day.spec[2] && !day.sp3 && day.phase === 'play' && day.sp >= 1 && day.t > DAY_LEN * 0.32 && day.t < DAY_LEN - SPEC2_AT - 8) {
+    if (spawnSpecial(2)) {
+      day.sp3 = 1;
+      el.specPop.classList.remove('hidden', 'go'); void el.specPop.offsetWidth; el.specPop.classList.add('go');
+      el.specPopT.textContent = T('parComing'); sfx.bell();
+      setTimeout(function () { if (day.sp !== 2) el.specPop.classList.add('hidden'); }, 3200);
+    }
+  }
 }
 /* =========================================================
    v2.9 — ÖZEL MÜŞTERİ MEKANİKLERİ. Her özel müşterinin specials.js › mech alanı bir etki seçer;
@@ -20515,7 +20614,7 @@ window.BT = {
   /* test/önizleme: bir kıyafeti verilen tuvale çiz */
   drawOutfitOn: function (cv, o, t) { var old = ctx, oldK = curK, g = cv.getContext('2d'); ctx = g; curK = cv.dataset && cv.dataset.k ? +cv.dataset.k : 1; try { if (curK > 1) g.setTransform(curK, 0, 0, curK, Math.round(cv.width / curK / 2) * curK, cv.height - 4 * curK); else g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), cv.height - 4); drawPerson({ x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: t || 0, act: 0, carry: [] }, o); } catch (e) { } ctx = old; curK = oldK; },
   specOutfit: function (id, face) { return specOutfit(specById(id), face || 1); },
-  specState: function () { return { spec: day.spec, sp: day.sp, normals: day.normals, active: customers.filter(function (c) { return c.spec; }).map(function (c) { return c.spec + ':' + c.state; }) }; },
+  specState: function () { return { spec: day.spec, sp: day.sp, sp3: day.sp3, normals: day.normals, active: customers.filter(function (c) { return c.spec; }).map(function (c) { return c.spec + ':' + c.state; }) }; },
   autoState: function () { return { min: S.autoMin, t: Math.round(saveT), left: Math.round(autoLeft()) }; }, fastForwardAutosave: function (sec) { saveT += sec; },
   yardFolk: function () { return yardFolk; }, roadFlow: function () { return roadFlow(); }, ui: { openSettings: openSettings, openPauseMenu: openPauseMenu, openStallScreen: openStallScreen, openHal: openHal, openOffice: openOffice, openChapter: openChapter, fbShow: fbShow, fbClose: fbClose, showChapterCard: showChapterCard, closeSettings: function () { el.settingsScreen.classList.add('hidden'); syncPause(); } }, mkt: { corpAction: function (c, k) { corpAction(c, k); }, ownPct: function (c) { return ownPct(c); }, shares: function (c) { return shares(c); }, migrate: function (d) { return migrateMarket(d); }, newMarket: function () { return newMarket(); } }, T: function (k) { return T(k); }, rushNow: function () { return rushNow(); }, mgrAct: function () { return mgrAct; }, showChapterCard: function () { showChapterCard(); }, chapterGroups: function () { return chapterGroups(); }, ACH_IDS: function () { return (typeof ACH !== 'undefined' ? ACH : []).map(function (q) { return q.id; }); },
   cue: { play: function (id) { cuePlay(id); }, stop: function () { cueStop(0.3); }, on: function () { return CUE.on; }, held: function () { return !!music.held; }, pos: function () { return { si: music.si, li: music.li, bar: music.bar }; } },
