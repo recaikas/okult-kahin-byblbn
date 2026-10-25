@@ -205,7 +205,7 @@ var STR = {
     rdFl: 'Yol Çiçekliği', rdFlD: 'Yol kenarına çiçeklik • müşteri akışı +%{p}', rdFlDone: 'Yola çiçeklik kondu 🌷',
     rdBb: 'Yol Reklam Panosu', rdBbD: 'İşletmenin adı ve amblemi yolda • müşteri akışı +%{p}', rdBbDone: 'Reklam panosu yolda yerini aldı 📣',
     lvEffect: 'Ağ +%18, tezgâh +4 stok, personel +%10 hız, müşteri +%12, yeni yapı yeri',
-    rentUp: 'Kira: günlük {a} → {b}', rentCard: 'Kira: günlük {v}', dayRent: 'Kira ({n} dükkân)', rentShort: '(kasa yetmedi, eksik kısım silindi)', rentFirst: '🏠 Dükkân kirası kesildi: {v}. Açık her dükkân (kapalı olsa da) gün sonunda kira öder; seviye arttıkça kira da artar.',
+    rentUp: 'Kira: günlük {a} → {b}', rentCard: 'Kira: günlük {v}', dayRent: 'Kira ({n} dükkân)', dayOpex: 'İşletme gideri (buz, yakıt, ambalaj · %{p})', opexFirst: '🧊 İşletme gideri kesildi: cironun %{p}\'i buz, yakıt ve ambalaja gitti. Seviye arttıkça bu pay da artar.', rentShort: '(kasa yetmedi, eksik kısım silindi)', rentFirst: '🏠 Dükkân kirası kesildi: {v}. Açık her dükkân (kapalı olsa da) gün sonunda kira öder; seviye arttıkça kira da artar.',
     staffFull: 'Personel limiti dolu ({n})',
     tut6: 'Alt bardan bir yükseltme satın al',
     nextStage: 'Sonraki aşama',
@@ -413,7 +413,7 @@ var STR = {
     rdFl: 'Roadside Flowerbed', rdFlD: 'Flowerbed by the road • customer flow +{p}%', rdFlDone: 'A flowerbed on the road 🌷',
     rdBb: 'Road Billboard', rdBbD: 'Your company name and emblem by the road • customer flow +{p}%', rdBbDone: 'Billboard up by the road 📣',
     lvEffect: 'Nets +18%, stall +4 stock, staff +10% speed, customers +12%, new build spot',
-    rentUp: 'Rent: {a} → {b} a day', rentCard: 'Rent: {v} a day', dayRent: 'Rent ({n} shops)', rentShort: '(not enough cash; the rest was waived)', rentFirst: '🏠 Shop rent paid: {v}. Every unlocked shop (even when closed) pays rent at day end; higher levels pay more.',
+    rentUp: 'Rent: {a} → {b} a day', rentCard: 'Rent: {v} a day', dayRent: 'Rent ({n} shops)', dayOpex: 'Running costs (ice, fuel, packaging · {p}%)', opexFirst: '🧊 Running costs paid: {p}% of turnover went on ice, fuel and packaging. The share grows with your level.', rentShort: '(not enough cash; the rest was waived)', rentFirst: '🏠 Shop rent paid: {v}. Every unlocked shop (even when closed) pays rent at day end; higher levels pay more.',
     staffFull: 'Staff limit reached ({n})',
     tut6: 'Buy an upgrade from the bottom bar',
     nextStage: 'Next stage',
@@ -2775,6 +2775,7 @@ function endDay() {
   };
   day.last.pet = petDayEnd();                      /* v2.18-deneme: hayvanların mama ücreti */
   day.last.rent = rentDayEnd();                    /* v2.24-deneme: dükkân kirası (kapalı olsa da) */
+  day.last.opex = opexDayEnd(day.last.inc);        /* v2.25: işletme gideri (ciro payı) */
   if (M && M.office) closeDay();                 /* borsa günü oyun günüyle aynı */
   if (day.n === 1) gzMark('ilkgun', { n: S.served | 0 });   /* v2.16: ilk günün sonu → ertesi sabah gazetesi */
   insDayEnd();                                     /* v2.18-deneme: inşaatlarda kalan gün azalır */
@@ -8612,6 +8613,18 @@ function rentDayEnd() {
   if (!S.rentN) { S.rentN = 1; setTimeout(function () { toast(T('rentFirst', { v: money(tot) })); }, 3200); }
   return { tot: tot, paid: Math.round(paid), l: l };
 }
+/* v2.25 — İŞLETME GİDERİ: buz, yakıt, ambalaj. Günlük cironun seviyeyle artan payı (Sv3'e dek yok, sonra Sv başına %4, en çok %30).
+   Geç oyunda gelir giderleri çok aşıyordu (Sv10: gelir 115 bin, gider 7 bin); kira gibi kasadan kesilir, kasa 0'ın altına inmez. */
+var OPEX_FREE_LV = 3, OPEX_STEP = 0.04, OPEX_MAX = 0.30;
+function opexRate() { return window.HK_OPEX_OFF ? 0 : Math.min(OPEX_MAX, Math.max(0, repLevel() - OPEX_FREE_LV) * OPEX_STEP); }
+function opexDayEnd(inc) {
+  var r = opexRate(), v = Math.round((inc || 0) * r);
+  if (v <= 0) return null;
+  var paid = Math.min(S.cash, v); S.cash = Math.max(0, S.cash - v);
+  S.help = S.help || {};
+  if (!S.help.opex) { S.help.opex = 1; setTimeout(function () { toast(T('opexFirst', { p: Math.round(r * 100) })); }, 4200); }
+  return { v: v, paid: Math.round(paid), p: Math.round(r * 100) };
+}
 function areaWorkMul(z) { var a = z >= 0 && AREAS[z]; return a && !a.lok ? 1 + AREA_WSPD * (a.lvl - 1) : 1; }
 function areaCustMul(z) { var a = AREAS[z]; return a && !a.lok ? 1 + AREA_CUST * (a.lvl - 1) : 1; }
 
@@ -9115,8 +9128,9 @@ function showDayCard() {
   if (L.saz) h += dayRow('🪕', T('lkSazDay'), L.saz.paid ? '−' + money(L.saz.fee) : T('lkSazUnpaid'), 'r');   /* v2.23: sazcı yevmiyesi */
   /* v2.21: maaş + vergi + net (gelir − giderler); tezgâh kasalarında bekleyen para ayrıca (günlük gelire dahil, henüz kasada değil) */
   if (L.wage > 0) h += dayRow('👷', T('dayWage'), '−' + money(L.wage), 'r');
+  if (L.opex) h += dayRow('🧊', T('dayOpex', { p: L.opex.p }), '−' + money(L.opex.paid), 'r');   /* v2.25 */
   if (L.tax > 0) h += dayRow('🏛️', T('dayTax'), '−' + money(L.tax), 'r');
-  var outT = (L.wage || 0) + (L.tax || 0) + (L.rent ? L.rent.paid : 0) + (L.pet ? L.pet.fee : 0) + (L.saz && L.saz.paid ? L.saz.fee : 0);
+  var outT = (L.wage || 0) + (L.tax || 0) + (L.rent ? L.rent.paid : 0) + (L.pet ? L.pet.fee : 0) + (L.saz && L.saz.paid ? L.saz.fee : 0) + (L.opex ? L.opex.paid : 0);
   if (outT > 0) { var net = Math.round(L.inc - outT); h += dayRow(net >= 0 ? '📈' : '📉', T('dayNet'), '<b style="color:' + (net >= 0 ? 'var(--green)' : '#ff6b5a') + '">' + (net < 0 ? '−' : '+') + money(Math.abs(net)) + '</b>'); }
   if (L.wait >= 1) h += dayRow('🪙', T('dayWait'), money(L.wait));
   if (L.insp) h += dayRow('🕵️', T('dayInsp'), T(L.insp.good ? 'inspGood' : 'inspBad', { v: money(L.insp.v), r: L.insp.r }), L.insp.good ? 'g' : 'r');
@@ -20541,7 +20555,7 @@ window.BT = {
   setLang: function (l) { setLangTo(l); }, lang: function () { return lang; },
   M: function () { return M; },
   sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
-  nameBad: nameBad, evs: function () { return Object.keys(S.evs || {}); }, evQ: function () { return EV_Q.slice(); }, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, specMeDur: specMeDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, canStandFor: canStandFor, playerBlocks: function () { pblkT = -1; return playerBlocks(); }, inPlayerBlock: function (x, y) { pblkT = -1; return inPlayerBlock(x, y); }, moveActor: moveActor, routeVia: routeVia, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, chScene: { st: function () { return CHS; }, start: function () { chSceneStart(); }, end: function () { chSceneEnd(); }, pos: function () { return chScenePos(); } }, rent: { of: rentOf, total: rentTotal, zones: rentZones, dayEnd: rentDayEnd, workMul: areaWorkMul, custMul: areaCustMul }, wageTotal: function () { return wageTotal(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
+  nameBad: nameBad, evs: function () { return Object.keys(S.evs || {}); }, evQ: function () { return EV_Q.slice(); }, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, specMeDur: specMeDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, canStandFor: canStandFor, playerBlocks: function () { pblkT = -1; return playerBlocks(); }, inPlayerBlock: function (x, y) { pblkT = -1; return inPlayerBlock(x, y); }, moveActor: moveActor, routeVia: routeVia, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, chScene: { st: function () { return CHS; }, start: function () { chSceneStart(); }, end: function () { chSceneEnd(); }, pos: function () { return chScenePos(); } }, opex: { rate: opexRate, dayEnd: opexDayEnd }, rent: { of: rentOf, total: rentTotal, zones: rentZones, dayEnd: rentDayEnd, workMul: areaWorkMul, custMul: areaCustMul }, wageTotal: function () { return wageTotal(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
   dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(), landX: LANDX, landY: LANDY,
     pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
     y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },
