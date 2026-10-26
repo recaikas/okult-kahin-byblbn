@@ -1341,6 +1341,44 @@ HKA.drawTellal = function (o) {
   return true;
 };
 
+/* v2.26: ŞEMSİYE (ince) — yağmurda müşterinin başının üstünde. Kubbe önbellekli sprite (renk başına): dört dilim, solda ışık,
+   sağda gölge, telden kaburgalar, fistolu kenar; sap ince piksel, ucu J kıvrık. Rüzgârla yarım piksel sallanır, kenardan damla süzülür. */
+var UMBF = null;
+HKA.drawUmbrella = function (cu, ol) {
+  var H = G(); if (H.K !== 2) return false;
+  init();
+  if (!UMBF) UMBF = { col: H.v('umbCol'), wx: H.v('WX') };
+  if (!UMBF.col) return false;
+  var R = Math.round, t = H.t, c = UMBF.col(cu), wind = UMBF.wx ? UMBF.wx.wind : 0.4;
+  var w = cu.state !== 'wait' ? WALK[(Math.floor((cu.bob || 0) * 0.16 * ANIM.walkFps)) & 3] : null;
+  var sx = R(H.pX(cu.x, cu.y)), sy = R(H.pY(cu.x, cu.y, cu.z || 0)) + (w ? w.body : 0), f = cu.face > 0 ? 1 : -1;
+  var top = sy - 34 + (ol && ol.tall ? -4 : ol && ol.short ? 2 : 0), hx = sx + f * 4;
+  var sw = R((Math.sin(t * 6 + (cu.bob || 0)) * 0.7 + wind) * 2);           /* ince piksel */
+  var spr = L.sprite('umb26|' + c, function (b) {
+    var T0 = L.tone(c), li = lite(c, 0.35), j, i;
+    for (j = 0; j <= 10; j++) {
+      var q = (10.5 - j) / 10.5, rw = R(17 * Math.sqrt(Math.max(0, 1 - q * q * q)));
+      for (i = -rw; i <= rw; i++) {
+        var u = i / 17, panel = Math.floor((u + 1) * 2), k = (u + 1) * 2 - panel;
+        var cc = u < -0.35 ? (k < 0.5 ? li : T0.l) : u > 0.35 ? T0.d : (panel & 1 ? T0.m : T0.l);
+        b.set(i, j + 1, cc);
+      }
+    }
+    for (j = 1; j <= 11; j++) { var rr = 17 * j / 11; b.set(R(-rr * 0.5), j, T0.d); b.set(R(rr * 0.5), j, T0.o); }   /* kaburgalar */
+    for (i = -17; i <= 17; i++) if (((i + 17) % 6) < 3) b.set(i, 12, T0.d);    /* fistolu kenar */
+    b.outline(0.55);
+    b.set(0, -1, '#3a2a1e'); b.set(0, -2, '#3a2a1e'); b.set(0, 0, '#5a4430');                                       /* tepe ucu */
+  });
+  L.blit(spr, hx + f * 2 + sw / 2, top);
+  L.fr(hx, top, 0, 13, 1, 30, '#3a2a1e'); L.fr(hx, top, 1, 13, 1, 30, '#5a4430');                                  /* sap */
+  L.fr(hx, top, -f * 1 + (f > 0 ? -1 : 1), 42, 2, 1, '#3a2a1e'); L.fr(hx, top, -f * 3 + (f > 0 ? 0 : 1), 41, 1, 2, '#3a2a1e');   /* J kıvrımı */
+  if (UMBF.wx && UMBF.wx.vis > 0.2) for (var d = 0; d < 2; d++) {                                                 /* kenardan süzülen damla */
+    var ph = (t * 1.6 + (cu.bob || 0) * 0.37 + d * 0.5) % 1, ex = (d ? 15 : -16) + sw;
+    L.fr(hx, top, ex, 14 + R(ph * 16), 1, 2, 'rgba(214,236,248,' + (0.85 * (1 - ph)).toFixed(2) + ')');
+  }
+  return true;
+};
+
 /* test / tanı */
 HKA.karakterStats = function () { return { outfits: OUT.size, builds: builds, cats: CATS.size, emotes: EMO.size, pets: PETS.size }; };
 })();

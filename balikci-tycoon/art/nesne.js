@@ -3235,6 +3235,60 @@ HKA.kit = {
   gf: gf, gv: gv, P: P, shadowSpr: shadowSpr
 };
 
+/* v2.26: YOLCU VAPURU (köprüye yanaşmış; o: {sx, sy pruva su hattı (ekran), gw, g0, g1, t, ph, a, mv}).
+   Gövde + salon + köşk + baca tek ince sprite (çapa = pruva su hattı); duman, bayrak, köpük, pruva korkuluğu ve iskele tahtası her kare. */
+function ferrySprite() {
+  return L.sprite('ferry26', function (b) {
+    var x, y, i, wh = '#f2f0ea', whD = '#dcd8cc', whL = '#ffffff';
+    for (y = -30; y < 0; y++) {                                         /* gövde: eğik pruva, yuvarlak kıç */
+      var x0 = R((y + 30) * 0.2), x1 = 121 - (y > -10 ? R((y + 10) * 0.5) : 0);
+      for (x = x0; x <= x1; x++) {
+        var c = y <= -29 ? whL : y < -18 ? (x > 112 ? whD : wh) : y < -16 ? '#c4553d' : y < -9 ? (L.bayer[y & 3][x & 3] < (y + 16) / 9 * 0.45 ? whD : wh) : y < -4 ? '#2a6f97' : '#1d3f57';
+        b.set(x, y, c);
+      }
+    }
+    for (i = 0; i < 8; i++) { var px0 = 22 + i * 12; b.rect(px0 - 2, -26, 4, 4, '#9aa4ab'); b.rect(px0 - 1, -25, 2, 2, '#2e4a5c'); b.set(px0 - 1, -25, '#bfe0f0'); }   /* lombozlar */
+    L.text(b, 'HAMSİ KOYU', 14, -15, '#2a6f97');
+    b.rect(7, -24, 2, 3, '#3a3a3a');                                     /* çapa kenedi */
+    b.rect(16, -46, 96, 16, '#fbfaf6'); b.rect(16, -31, 96, 1, '#c9c4b6'); b.rect(110, -46, 2, 16, '#d8d4c8');          /* alt salon */
+    for (i = 0; i < 11; i++) { var wx = 21 + i * 8; b.rect(wx, -42, 4, 6, '#6fa8c8'); b.rect(wx, -42, 4, 1, '#a9d3e8'); b.rect(wx + 3, -41, 1, 5, '#4f86a6'); }
+    [26, 98].forEach(function (cx) { b.circ(cx, -38, 3, '#e07a2e'); b.circ(cx, -38, 1, '#fbfaf6'); b.set(cx - 3, -38, '#f4f0e6'); b.set(cx + 3, -38, '#f4f0e6'); });   /* can simitleri */
+    b.rect(8, -48, 108, 2, '#8a949c'); b.rect(8, -48, 108, 1, '#a9b2b8');                                              /* gezinti güvertesi */
+    b.rect(20, -55, 96, 1, '#ece9e0'); for (x = 20; x < 116; x += 8) b.rect(x, -54, 1, 6, '#c9c7bd');                  /* korkuluk */
+    b.rect(32, -64, 52, 16, '#f4f0e6'); b.rect(30, -66, 56, 2, '#8a949c'); b.rect(82, -64, 2, 16, '#d8d4c8');          /* kaptan köşkü */
+    for (i = 0; i < 6; i++) { b.rect(36 + i * 8, -61, 5, 4, '#6fa8c8'); b.rect(36 + i * 8, -61, 5, 1, '#a9d3e8'); }
+    b.rect(66, -82, 12, 16, '#c4553d'); b.rect(76, -82, 2, 16, '#9a3a2a'); b.rect(66, -82, 12, 2, '#2c2c2c'); b.rect(66, -76, 12, 2, '#f4f0e6');   /* baca */
+    b.rect(14, -76, 2, 28, '#5d3c1c'); b.rect(15, -76, 1, 28, '#7a5232');                                               /* direk */
+    b.outline(0.5);
+  });
+}
+var FERRY_HK = null;
+HKA.drawDockFerry = function (o) {
+  var H = G(); if (H.K !== 2) return false;
+  if (!FERRY_HK) FERRY_HK = { gang: gf('drawGangway'), flag: gf('hkFlag') };
+  if (!FERRY_HK.gang) return false;
+  var g = H.ctx, a0 = g.globalAlpha, a = o.a === undefined ? 1 : o.a, t = o.t || 0;
+  var rock = o.mv ? R(Math.sin(t * 0.9) * 0.9) : 0, sx = R(o.sx), sy = R(o.sy) + rock, i;
+  g.globalAlpha = a0 * a;
+  for (i = 0; i < 6; i++) {                                             /* su: gövde dibinde köpük, pruvada çırpıntı, giderken iz */
+    var ph = (t * 0.8 + i * 0.17) % 1;
+    L.fr(sx, sy, -6 + i * 22 + R(ph * 8), 1 + (i & 1), 10 - (i & 1) * 4, 1, 'rgba(238,250,252,' + (0.55 - ph * 0.4).toFixed(2) + ')');
+  }
+  L.fr(sx, sy, -7 + R(Math.sin(t * 2.2) * 1.5), -2, 6, 2, 'rgba(238,250,252,.6)');
+  if (o.mv) for (i = 0; i < 4; i++) L.fr(sx, sy, 124 + i * 9, (i & 1) * 2, 12 - i * 2, 1, 'rgba(238,250,252,.45)');
+  L.blit(ferrySprite(), sx, sy);
+  if (!(o.gw > 0)) { L.fr(sx, sy, 8, -55, 12, 1, '#ece9e0'); L.fr(sx, sy, 8, -54, 1, 6, '#c9c7bd'); L.fr(sx, sy, 16, -54, 1, 6, '#c9c7bd'); }   /* pruva kapısı kapalı */
+  for (i = 0; i < 3; i++) {                                             /* baca dumanı: rüzgârla sağa */
+    var sp = (t * 0.45 + i / 3) % 1, r = 2 + R(sp * 4);
+    L.fr(sx, sy, 74 + R(sp * 26) - r, -86 - R(sp * 16) - r, r * 2, r * 2 - 1, 'rgba(230,228,222,' + (0.55 * (1 - sp)).toFixed(2) + ')');
+  }
+  g.globalAlpha = a0 * a;
+  if (FERRY_HK.flag) FERRY_HK.flag(sx + 8, sy - 38, 5, 3);
+  FERRY_HK.gang(o);
+  g.globalAlpha = a0;
+  return true;
+};
+
 /* ince modun açılıp kapanmasında yerel önbellekler */
-HKA.onReset(function () { GV = {}; GLOW = null; TF_COL = null; LK_TC = null; });
+HKA.onReset(function () { GV = {}; GLOW = null; TF_COL = null; LK_TC = null; FERRY_HK = null; });
 })();

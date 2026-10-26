@@ -2783,7 +2783,7 @@ function endDay() {
     n: day.n, market: day.market, inc: day.st.inc, served: day.st.served,
     lost: day.st.lost, fish: day.st.fish, top: topSeller(), out: worstOut(), spec: (day.st.spec || []).slice(),
     wage: Math.round(day.st.wage || 0), tax: Math.round(day.st.tax || 0), wait: counters.reduce(function (a, c) { return a + trayValue(c); }, 0),
-    next: isMarketDay(day.n + 1), auc: auc
+    next: isMarketDay(day.n + 1), auc: auc, wx: day.st.wx ? 1 : 0   /* v2.26: lodos/yağmur günü */
   };
   day.last.pet = petDayEnd();                      /* v2.18-deneme: hayvanların mama ücreti */
   day.last.rent = rentDayEnd();                    /* v2.24-deneme: dükkân kirası (kapalı olsa da) */
@@ -3757,6 +3757,7 @@ var saveFailT = 0;
 function numIn(v, lo, hi, int) { var n = typeof v === 'number' ? v : (typeof v === 'string' && v.trim() !== '' ? +v : NaN); if (!isFinite(n)) n = lo; n = clamp(n, lo, hi); return int ? Math.floor(n) : n; }
 function loadFrom(d) {
   if (!d) return false;
+  wxReset(); ferryReset();                        /* v2.26: hava (yağmur) ve vapur kayıtta tutulmaz; yüklemede sıfırlanır */
   emekLoading = false;
   try {
     /* v1.9.7: elle bozulmuş kayıt — metin, eksi, sonsuz sayılar geçerli aralığa (normal oyunda para eksiye düşmez) */
@@ -3861,6 +3862,7 @@ function resetWorld() {
   var k;
   if (typeof closeBar === 'function') closeBar();
   if (ARR.on) arrClose(true);                       /* v2.17 */
+  wxReset(); ferryReset();                        /* v2.26: hava ve vapur yüklemede sıfırlanır */
   workers.length = 0; customers.length = 0; flyers.length = 0; floats.length = 0; puffs.length = 0; yardFolk.length = 0; mgrAct.length = 0; lokReset();
   event = null; eventT = 0; nextEvent = 80;
   TAX.on = false; TAX.call = {}; TAX.yell = []; TAX.over = false; TAX.overT = undefined; TAX.paid = false;   /* v2.21: başka slota geçince memur yürümeye devam etmesin */
@@ -4885,7 +4887,7 @@ function patienceMul(z) { return (1 + decorCount() * 0.02) * (1 + mgrEff(z, 'pat
 
 function updateCounter(c, dt) {
   if (!c.open) return;                       /* v2.1: kapalı tezgâha müşteri gelmez */
-  var custMul = (event ? stormMul(event) : 1) * (1 + 0.06 * storyBuff('sert')) * areaFlow(c.z) * dayCustMul() * (1 + envFlow() + roadFlow()) * rushMul() * adCust();   /* v1.2: çevre yatırımı; v1.9.3: yol çiçeklikleri + panolar */
+  var custMul = (event ? stormMul(event) : 1) * (1 + 0.06 * storyBuff('sert')) * areaFlow(c.z) * dayCustMul() * (1 + envFlow() + roadFlow()) * rushMul() * adCust() * wxMul();   /* v2.26: yağmurda ×0,4, yağmur sonrası ×1,5; v1.2: çevre yatırımı; v1.9.3: yol çiçeklikleri + panolar */
   c.spawnT -= dt * custMul * petFlow(c) * areaCustMul(c.z);   /* v2.24: bölge Sv başına +%12 müşteri */         /* v2.18-deneme: hayvanlı tezgâh (+%5 kedi, +%3 köpek; toplam en çok +%10) */
   var qmax = queueMax(c.z), freeIdx = -1, i;
   for (i = 0; i < qmax; i++) if (!c.slots[i]) { freeIdx = i; break; }
@@ -4905,22 +4907,8 @@ function updateCounter(c, dt) {
     if (acikTezgah && toplamBekleyen > acikTezgah * 2) c.spawnT *= 1 + (toplamBekleyen / (acikTezgah * 2) - 1) * 0.9;
     /* tezgâh kullanılamıyorsa bu türe müşteri gelmez */
     if (!c.fish || !fishReady(c.fish)) return;
-    var lvl = repLevel();
-    var pool = CUST.filter(function (t) { return (t.lvl <= lvl || (t.id === 'turist' && adLive('panayir'))) && (!t.serv || servUnlock(t.serv)) && custFits(t, c); });   /* Panayır günü turist seviyeden önce de gelir */
-    if (!pool.length) return;
-    var todP = pool.filter(function (t) { return !t.tod || todIn(t.tod) || Math.random() < 0.25; });   /* v2.9: saatine uymayan tip seyrek gelir */
-    if (todP.length) pool = todP;
-    var prem = perkSum('premium') + perkSum('vip');
-    if (prem > 0 && Math.random() < prem * 2) {
-      var hi = pool.filter(function (t) { return t.mult >= 1.8; });
-      if (hi.length) pool = hi;
-    }
-    var type = pickCust(pool);
-    if (adLive('panayir') && Math.random() < 0.3) { var tou = pool.filter(function (t) { return t.id === 'turist'; }); if (tou.length) type = tou[0]; }   /* v2.18-deneme: Panayır → turist gelir */
-    if (day.feat && Math.random() < 0.45) {           /* günün müşterisi daha sık gelir */
-      var ft = pool.filter(function (t) { return t.id === day.feat; });
-      if (ft.length) type = ft[0];
-    }
+    var type = custTypeFor(c);                       /* v2.26: tip seçimi ayrı fonksiyonda (vapur yolcuları da kullanır) */
+    if (!type) return;
     var ord = makeOrderFor(c, type);
     /* son güvenlik: üretilemeyen/işlenemeyen/satılamayan ürünle müşteri doğmaz */
     if (ord && (!canProduce(ord.f) || !canProcess(ord.k, ord.f) || !canSell(ord.f))) ord = null;
@@ -4931,6 +4919,7 @@ function updateCounter(c, dt) {
         state: 'walk', slot: freeIdx, c: c, pat: type.pat * patienceMul(c.z), patMax: type.pat * patienceMul(c.z),
         mood: 1, hair: irnd(0, 2), tone: irnd(0, 2)
       };
+      if (WX.on) cu.umb = 1;                         /* v2.26: yağmurda gelen şemsiyesiyle gelir */
       c.slots[freeIdx] = cu; customers.push(cu);
       S.custSeen = S.custSeen || {}; if (S.custSeen[type.id] === undefined) { S.custSeen[type.id] = 0; custNew(); }   /* v2.5: defterde tip açılır */
       day.normals = (day.normals || 0) + 1;           /* v0.9: özel müşteri zamanlaması için */
@@ -4957,6 +4946,26 @@ function updateCounter(c, dt) {
       break;
     }
   }
+}
+/* v2.26: bu tezgâha gelecek normal müşteri tipi (CUST ağırlıkları, seviye, saat, prim, panayır, günün müşterisi); uygun tip yoksa null */
+function custTypeFor(c) {
+  var lvl = repLevel();
+  var pool = CUST.filter(function (t) { return (t.lvl <= lvl || (t.id === 'turist' && adLive('panayir'))) && (!t.serv || servUnlock(t.serv)) && custFits(t, c); });   /* Panayır günü turist seviyeden önce de gelir */
+  if (!pool.length) return null;
+  var todP = pool.filter(function (t) { return !t.tod || todIn(t.tod) || Math.random() < 0.25; });   /* v2.9: saatine uymayan tip seyrek gelir */
+  if (todP.length) pool = todP;
+  var prem = perkSum('premium') + perkSum('vip');
+  if (prem > 0 && Math.random() < prem * 2) {
+    var hi = pool.filter(function (t) { return t.mult >= 1.8; });
+    if (hi.length) pool = hi;
+  }
+  var type = pickCust(pool);
+  if (adLive('panayir') && Math.random() < 0.3) { var tou = pool.filter(function (t) { return t.id === 'turist'; }); if (tou.length) type = tou[0]; }   /* v2.18-deneme: Panayır → turist gelir */
+  if (day.feat && Math.random() < 0.45) {           /* günün müşterisi daha sık gelir */
+    var ft = pool.filter(function (t) { return t.id === day.feat; });
+    if (ft.length) type = ft[0];
+  }
+  return type;
 }
 /* füme makinesi: bekleyen füme siparişi (ya da 2'lik küçük stok) için tezgâhtaki filetoyu tüter */
 function updateFumeMachines(dt) {
@@ -5060,10 +5069,10 @@ function updateCustomers(dt) {
     var cu = customers[i];
     cu.bob += dt * 4;
     if (cu.state === 'walk') {
-      var p = queueSlotPos(cu.c, cu.slot);
+      var p = cu.wp || queueSlotPos(cu.c, cu.slot);   /* v2.26: vapur yolcusu önce iskele tahtasından köprüye iner (ara nokta) */
       var dx = p.x - cu.x, dy = p.y - cu.y, L = Math.hypot(dx, dy);
-      var wv = cu.spec ? SPEC_WALK : 2.1 * (cu.type && cu.type.slow || 1);   /* v2.25: bastonlular ağır gelir */             /* v1.3.3: özel müşteri ağır adımlarla gelir */
-      if (L < 0.14) { cu.state = 'wait'; if (cu.spec) specArrive(cu); }
+      var wv = cu.spec ? SPEC_WALK : 2.1 * (cu.type && cu.type.slow || 1) * (cu.wp ? 0.55 : 1);   /* v2.25: bastonlular ağır gelir; v2.26: iskele tahtasında ağır adım */             /* v1.3.3: özel müşteri ağır adımlarla gelir */
+      if (L < 0.14) { if (cu.wp) cu.wp = null; else { cu.state = 'wait'; if (cu.spec) specArrive(cu); } }
       else { cu.x += dx / L * wv * dt; cu.y += dy / L * wv * dt; cu.bob += dt * (cu.spec ? 5 : 8); }
     } else if (cu.state === 'wait') {
       var q = queueSlotPos(cu.c, cu.slot);
@@ -6232,6 +6241,7 @@ function drawCustomer(cu) {
   if (spq && spq.dance && cu.state === 'wait') { cu.z = Math.abs(Math.sin((cu.fidget || 0) * 5)) * 0.18; if (Math.sin((cu.fidget || 0) * 2.5) > 0) o.face = -o.face; }
   drawPersonAt(cu, o);
   cu.z = z0;
+  if (cu.umb) drawUmbrella(cu, o);          /* v2.26: yağmurda şemsiye (ince modda HKA.drawUmbrella) */
   if (cu.spec) drawSpecialTag(cu);
   if (cu.state === 'leave') {                                    /* mutlu ayrılış */
     if ((cu.leaveT = (cu.leaveT || 0) + 0.016) < 1.2) drawEmote(cu.x, cu.y, 34, cu.happyLeave === false ? 'angry' : 'love');
@@ -8500,6 +8510,7 @@ function render() {
   camT(0, 0);
   drawVignette();                           /* v0.1 — kenarları yumuşatan vinyet */
   drawHasmetFx();                           /* v2.22 — Haşmet Bey giriş (kırmızı) / çıkış (parıltı) */
+  if (S.started) drawWeather();             /* v2.26 — lodos: yağmur çizgileri + koyu ton */
   if (S.started) dayTint();                 /* v1.2 — sabah/gündüz/akşam tonu */
   if (tg) drawTutEdge(tg);                  /* v1.9 — hedef ekran dışındaysa kenarda ok */
   ctx.translate(camOX, camOY);
@@ -9303,6 +9314,7 @@ function showDayCard() {
   var outT = (L.wage || 0) + (L.tax || 0) + (L.rent ? L.rent.paid : 0) + (L.pet ? L.pet.fee : 0) + (L.saz && L.saz.paid ? L.saz.fee : 0) + (L.opex ? L.opex.paid : 0);
   if (outT > 0) { var net = Math.round(L.inc - outT); h += dayRow(net >= 0 ? '📈' : '📉', T('dayNet'), '<b style="color:' + (net >= 0 ? 'var(--green)' : '#ff6b5a') + '">' + (net < 0 ? '−' : '+') + money(Math.abs(net)) + '</b>'); }
   if (L.wait >= 1) h += dayRow('🪙', T('dayWait'), money(L.wait));
+  if (L.wx) h += dayRow('🌧️', T('wxDayL'), T('wxDayV'));   /* v2.26 */
   if (L.insp) h += dayRow('🕵️', T('dayInsp'), T(L.insp.good ? 'inspGood' : 'inspBad', { v: money(L.insp.v), r: L.insp.r }), L.insp.good ? 'g' : 'r');
   if (S.company) {
     submitScore(true);
@@ -9794,6 +9806,7 @@ function frame(ts) {
   var rawDt = (ts - last) / 1000 || 0, dt = Math.min(0.05, rawDt);
   last = ts;
   seaBedSet(!!(S.started && !intro.on && !paused && !document.hidden && volLvl >= 2 && soundOn && audioReady));   /* v2.1: deniz yatağı */
+  rainBedSet(!!(S.started && !intro.on && !paused && !document.hidden && volLvl >= 1 && soundOn && audioReady && WX.vis > 0.05));   /* v2.26: yağmur sesi */
   if (intro.on) { updateIntro(dt); return; }
   if (!S.started) { gameT += dt; updateFx(dt); render(); drawHeroPreview(gameT); return; }
   if (paused) { if (!document.hidden) render(); return; }   /* duraklatıldı: dünya tamamen donar */
@@ -9818,6 +9831,8 @@ function gameStep(dt, sim) {
   updateTax(dt);                    /* v2.14 — vergi memuru */
   updateGz(dt);                     /* v2.16 — gazeteci çocuk + yerdeki özel sayı */
   adTick(dt);                       /* v2.18-deneme — İlan Bürosu: tellal, gazeteci çocuk, dolmuş, radyo */
+  ferryTick(dt);                    /* v2.26 — yolcu vapuru */
+  wxTick(dt);                       /* v2.26 — lodos + yağmur */
   petTick(dt);                      /* v2.18-deneme — hayvanlar */
   tarifTick(dt);                    /* v2.18-deneme — Güveç Ocakları */
   lokTick(dt);                      /* v2.19-deneme — Sahil Lokantası */
@@ -13194,6 +13209,344 @@ function pushAds(push) {
   if (ADW.tellal) push(ADW.tellal.x + ADW.tellal.y + 0.2, function () { if (ADW.tellal) drawTellal(tellalObj(ADW.tellal)); });
   if (ADW.news) push(ADW.news.x + ADW.news.y + 0.2, function () { if (ADW.news) { drawNewsboy(ADW.news); if (ADW.news.t % 7 < 3) uiQ.push({ t: 4, x: ADW.news.x, y: ADW.news.y, z: 42, s: '“' + NM(AD_NEWS) + '”', c: '#ffe2c8', a: 1 }); } });
   if (ADW.bus) push(ADW.bus.x + ADW.bus.y + 0.3, function () { if (ADW.bus) drawFerry(ADW.bus); });
+  ferryPush(push);                                  /* v2.26: yanaşan yolcu vapuru + gezinen yolcular */
+}
+/* =========================================================
+   v2.26 — CANLI LİMAN: YOLCU VAPURU + LODOS / YAĞMUR
+   1) YOLCU VAPURU: günde birkaç kez rastgele aralıkla (İlan Bürosu'nun Vapur reklamı yayındayken daha sık) doğudan beyaz yolcu
+      vapuru gelir, anakara köprüsünün doğu (kemerli) yüzüne pruvadan yanaşır; pruva kapısından köprü korkuluğuna iskele tahtası iner.
+      4–9 yolcu tek tek iner. Her yolcu NORMAL müşteridir: kuyruğunda boş yer olan RASTGELE açık tezgâh, CUST ağırlıklarıyla tip
+      (custTypeFor), makeOrderFor siparişi (mkCustomer). Yer yoksa yolcu köprüden anakaraya doğru gezinerek gider. Sonra vapur düdük
+      çalıp geri geri açılır. Yer: köprü doğu yüzü, y = FERRY_DY (köprü ayağı −0,8 ile fener −3,4 arası); vapur denizde, meydanın
+      kuzeyinde (tekne, ağ, süs yok). Yolcular "sanal zemin" koordinatında yürür (z yok): vapurun gezinti güvertesi köprü
+      güvertesinin ekranda ~4 px üstünde; tahta hafifçe aşağı iner. Kayıtta tutulmaz (yüklemede sıfırlanır).
+   2) LODOS + YAĞMUR: 4. günden itibaren (vergi günü hariç) ~5 günde bir, gün ortasında 40–90 sn'lik sağanak. Kuyruktaki müşterilerin
+      bir kısmı koşarak kaçar (kayıp SAYILMAZ, vergi memurundaki gibi), kalanlar şemsiye açar. Yağmurda müşteri akışı ×0,4,
+      yağmur dinince ~20 sn ×1,5. Ekran: kapalı ton + rüzgârla eğik yağmur çizgileri + savrulan zerreler (DÜŞÜK grafikte daha az).
+      Ses: döngülü hışırtı (ortam sesi kanalı; ses ayarlarına uyar). Gün kartında "Hava: lodos ve yağmur" satırı.
+   Test bayrakları: window.HK_WX_OFF (kendiliğinden yağmur yok), window.HK_FERRY_OFF (kendiliğinden vapur yok); BT.wx / BT.ferry elle çağırır.
+   ========================================================= */
+Object.assign(STR.tr, { ferryIn: '⛴️ Vapur yanaştı: {n} yolcu indi', ferryLbl: 'Yolcu Vapuru', wxIn: '🌧️ Lodos patladı, yağmur başladı!', wxOut: '🌤️ Yağmur dindi, millet yine sokakta!', wxDayL: 'Hava', wxDayV: 'lodos ve yağmur' });
+Object.assign(STR.en, { ferryIn: '⛴️ Ferry docked: {n} passengers', ferryLbl: 'Passenger Ferry', wxIn: '🌧️ A gale blows in, rain starts!', wxOut: '🌤️ The rain stopped, everyone is back out!', wxDayL: 'Weather', wxDayV: 'gale and rain' });
+var WX_FLEE_LINES = [
+  { tr: 'Islandık!', en: 'We\'re soaked!' },
+  { tr: 'Şemsiyem uçtu!', en: 'My umbrella blew away!' },
+  { tr: 'Lodos bu, şakası yok! Eve!', en: 'It\'s the lodos, no joke! Home!' },
+  { tr: 'Saçım mahvoldu, balık sonra!', en: 'My hair is ruined, fish can wait!' },
+  { tr: 'Çamaşırlar ipte kaldı!', en: 'My laundry is still on the line!' },
+  { tr: 'Gök delindi, kaçın!', en: 'The sky sprang a leak, run!' },
+  { tr: 'Ayakkabılarım su aldı!', en: 'My shoes are full of water!' },
+  { tr: 'Balık zaten ıslak, ben niye ıslanayım?', en: 'The fish is wet already, why should I be?' }
+];
+var WX_UMB_LINES = [
+  { tr: 'Şemsiyem var, ben beklerim.', en: 'I\'ve got an umbrella, I\'ll wait.' },
+  { tr: 'Yağmurda hamsi bir başka olur!', en: 'Anchovies taste better in the rain!' },
+  { tr: 'Lodos da geçer, sıra da gelir.', en: 'The gale will pass, my turn will come.' }
+];
+var WX_RAIN_MUL = 0.4, WX_AFTER_MUL = 1.5, WX_AFTER_T = 20, WX_P = 0.2, WX_FLEE_P = 0.5;
+var UMB_COLS = ['#c4553d', '#2a6f97', '#e2b13c', '#3f7f5a', '#7a4a8a', '#2c2c34', '#d97a9a'];
+function umbCol(cu) { return UMB_COLS[((cu.hair | 0) * 3 + (cu.tone | 0) * 5 + (cu.hs | 0)) % UMB_COLS.length]; }
+
+/* ---------- yolcu vapuru ---------- */
+var FERRY_FX = MAINBR.x + MAINBR.w, FERRY_DY = -2.2, FERRY_IN = 260;
+/* sanal zemin noktaları: S = vapur güvertesi (pruva kapısının içi), E = köprü güvertesi (korkuluğun içi) */
+var FERRY_S = { x: FERRY_FX + 0.17, y: FERRY_DY - 0.83 }, FERRY_E = { x: FERRY_FX - 0.45, y: FERRY_DY };
+var FERRY = { ph: 0, t: 0, off: 0, gw: 0, n: 0, left: 0, got: 0, gone: 0, popT: 0, waitT: 0, nextT: 0, walk: [], calls: 0 };
+function ferryReset() { FERRY.ph = 0; FERRY.t = 0; FERRY.off = 0; FERRY.gw = 0; FERRY.left = 0; FERRY.nextT = 0; FERRY.walk.length = 0; }
+function ferryGap() { return rnd(70, 130) * (adLive('vapur') ? 0.55 : 1); }     /* oyun saniyesi; gün 300 sn → günde ~2–4 sefer */
+function ferryAuto() { return !window.HK_FERRY_OFF && S.tut >= tutN() && day.phase === 'play' && !TAX.on && !CHS.on && !storyVis; }
+function ferryHorn(at) {
+  var d = Math.sqrt(dist2(player.x, player.y, FERRY_FX, FERRY_DY)), m = clamp(1.25 - d / 22, 0.3, 1);
+  tone(98, 0.85, 'sawtooth', 0.075 * m, { at: at || 0, atk: 0.07, lp: 520 });
+  tone(147, 0.85, 'sawtooth', 0.05 * m, { at: at || 0, atk: 0.07, lp: 520 });
+  tone(98, 0.5, 'sawtooth', 0.06 * m, { at: (at || 0) + 1.05, atk: 0.05, lp: 480 });
+  tone(147, 0.5, 'sawtooth', 0.04 * m, { at: (at || 0) + 1.05, atk: 0.05, lp: 480 });
+}
+function ferryCall(n) {
+  if (FERRY.ph) return false;
+  FERRY.ph = 1; FERRY.t = 0; FERRY.off = FERRY_IN; FERRY.gw = 0; FERRY.got = 0; FERRY.gone = 0; FERRY.waitT = 0; FERRY.popT = 0.5; FERRY.calls++;
+  FERRY.n = FERRY.left = n ? clamp(n | 0, 1, 12) : irnd(4, 9);
+  return true;
+}
+/* kuyruğunda boş yer olan açık tezgâhlar (normal doğuşla aynı koşullar) */
+function ferryStalls() {
+  var out = [], i, j;
+  for (i = 0; i < counters.length; i++) {
+    var c = counters[i];
+    if (!c.open || AREAS[c.z].locked || !c.fish || !fishReady(c.fish) || trayFull(c) || (TAX.on && !taxSafe(c))) continue;
+    for (j = 0; j < queueMax(c.z); j++) if (!c.slots[j]) { out.push(c); break; }
+  }
+  return out;
+}
+function ferryPop() {
+  FERRY.left--;
+  var cs = day.phase === 'play' ? ferryStalls() : [], c = cs.length ? pick(cs) : null, type = c ? custTypeFor(c) : null, ord = type ? makeOrderFor(c, type) : null, j;
+  if (ord && (!canProduce(ord.f) || !canProcess(ord.k, ord.f) || !canSell(ord.f))) ord = null;
+  if (ord) {
+    var slot = -1; for (j = 0; j < queueMax(c.z); j++) if (!c.slots[j]) { slot = j; break; }
+    var cu = mkCustomer(c, type, slot, ord);
+    cu.x = FERRY_S.x; cu.y = FERRY_S.y; cu.wp = { x: FERRY_E.x, y: FERRY_E.y }; cu.ferry = 1; cu.face = -1;
+    day.normals = (day.normals || 0) + 1; FERRY.got++;
+    return cu;
+  }
+  /* yer yok: gezinen yolcu (müşteri değil) köprüden anakaraya yürür */
+  var tp = pick(CUST.filter(function (t) { return t.lvl <= repLevel(); })) || CUST[0];
+  FERRY.gone++;
+  FERRY.walk.push({ x: FERRY_S.x, y: FERRY_S.y, z: 0, bob: rnd(0, 6), face: -1, vx: 0, vy: 0, type: tp, hair: irnd(0, 2), tone: irnd(0, 2), wp: 1,
+    tx: rnd(12.4, 13.6), sp: rnd(1.0, 1.4), umb: WX.on ? 1 : 0 });
+  return null;
+}
+function ferryTick(dt) {
+  if (!S.started) return;
+  var F = FERRY, i;
+  for (i = F.walk.length - 1; i >= 0; i--) {                          /* gezinen yolcular */
+    var w = F.walk[i], tx = w.wp ? FERRY_E.x : w.tx, ty = w.wp ? FERRY_E.y : -9.2, dx = tx - w.x, dy = ty - w.y, L = Math.hypot(dx, dy), sp = w.wp ? 1.1 : w.sp;
+    w.bob += dt * 7;
+    if (L < 0.12) { if (w.wp) w.wp = 0; else { F.walk.splice(i, 1); continue; } }
+    else { w.x += dx / L * sp * dt; w.y += dy / L * sp * dt; var sx = pX(dx, dy); if (Math.abs(sx) > 0.01) w.face = sx > 0 ? 1 : -1; }
+    if (w.y < -8.5) F.walk.splice(i, 1);
+  }
+  if (!F.ph) {
+    if (!ferryAuto()) return;
+    if (!F.nextT) F.nextT = ferryGap() * rnd(0.35, 1);
+    F.nextT -= dt;
+    if (F.nextT <= 0) { F.nextT = 0; ferryCall(); }
+    return;
+  }
+  F.t += dt;
+  if (F.ph === 1) {                                                    /* yaklaşıyor: yavaşlayarak */
+    if (F.t < dt * 1.5) ferryHorn(0);
+    F.off = Math.max(0, F.off - Math.max(12, F.off * 0.85) * dt);
+    if (F.off <= 0) { F.ph = 2; F.t = 0; toast(T('ferryIn', { n: F.n })); ferryHorn(0.2); }
+  } else if (F.ph === 2) {                                             /* yanaştı: tahta iner, yolcular iner, tahta kalkar */
+    var stop = F.left <= 0 || TAX.on || day.phase !== 'play';
+    if (!stop) {
+      F.gw = Math.min(1, F.gw + dt * 1.5);
+      if (F.gw >= 1) { F.popT -= dt; if (F.popT <= 0) { F.popT = rnd(0.6, 0.85); ferryPop(); } }
+    } else {
+      F.waitT += dt;
+      if (F.waitT > 2.2) F.gw = Math.max(0, F.gw - dt * 1.5);
+      if (F.waitT > 2.2 && F.gw <= 0) { F.ph = 3; F.t = 0; F.left = 0; ferryHorn(0); }
+    }
+  } else if (F.ph === 3) {                                             /* geri geri açılır, hızlanarak */
+    F.off += (6 + F.t * 16) * dt;
+    if (F.off > FERRY_IN + 40) { F.ph = 0; F.off = 0; F.nextT = ferryGap(); }
+  }
+}
+function ferryObj() {
+  var F = FERRY, bx = pX(FERRY_FX, FERRY_DY), by = pY(FERRY_FX, FERRY_DY, -MAINBR_DZ);
+  return { sx: bx + F.off, sy: by, gw: F.gw, g0: { x: bx + 6, y: by - 24 }, g1: { x: pX(FERRY_E.x, FERRY_E.y), y: pY(FERRY_E.x, FERRY_E.y, 0) },
+    t: gameT, ph: F.ph, n: F.left, a: clamp((FERRY_IN + 30 - F.off) / 70, 0, 1), mv: F.ph === 2 ? 0 : 1, rain: WX.vis };
+}
+function ferryPush(push) {
+  if (FERRY.ph) push(FERRY_FX + FERRY_DY - 1.1, function () { if (FERRY.ph) { var o = ferryObj(); drawDockFerry(o); if (FERRY.ph === 2 && FERRY.gw > 0.5 && dist2(player.x, player.y, FERRY_FX, FERRY_DY) < 64) uiText(FERRY_FX, FERRY_DY, 27, '⛴️ ' + T('ferryLbl'), '#ffe9b8', 7, 0.9, 32, 0, true); } });
+  for (var i = 0; i < FERRY.walk.length; i++) (function (w) {
+    push(w.x + w.y + 0.2, function () { var o = custOutfit(w); o.walk = true; o.mood = 1; drawPersonAt(w, o); if (w.umb) drawUmbrella(w, o); });
+  })(FERRY.walk[i]);
+  wxYellUI();
+}
+/* --- köprüye yanaşmış vapur (klasik; ince modda HKA.drawDockFerry). o.sx, o.sy = pruvanın su hattı (ekran), gövde sağa ~61 px, yükseklik ~41 px.
+   Gezinti güvertesi sy−24 (pruva kapısı o.g0), iskele tahtası o.g0 → o.g1 (köprü güvertesi), o.gw kadar uzar. --- */
+function drawDockFerry(o) {
+  var rock = o.mv ? R(Math.sin((o.t || 0) * 0.9) * 0.9) : 0, sx = R(o.sx), sy = R(o.sy) + rock, i, a0 = ctx.globalAlpha;
+  ctx.globalAlpha = a0 * (o.a === undefined ? 1 : o.a);
+  var wk = 0.3 + (o.mv ? 0.2 : 0.1 * Math.sin((o.t || 0) * 2));                    /* su izi + pruvada çırpıntı */
+  ctx.globalAlpha = a0 * o.a * wk; px(sx - 2, sy + 1, 64, 1, PAL.foam); px(sx - 4, sy - 1, 4, 2, PAL.foam);
+  if (o.mv) { px(sx + 62, sy, 18, 1, PAL.foam); px(sx + 66, sy + 2, 12, 1, PAL.foam); }
+  ctx.globalAlpha = a0 * o.a;
+  /* gövde: beyaz, kırmızı çizgi, mavi su hattı; pruva solda, eğik */
+  px(sx + 3, sy - 14, 56, 14, '#f2f0ea');
+  px(sx, sy - 15, 4, 4, '#f2f0ea'); px(sx + 1, sy - 11, 3, 4, '#f2f0ea'); px(sx + 2, sy - 7, 2, 4, '#e6e2d6');
+  px(sx + 59, sy - 14, 2, 11, '#e6e2d6');
+  px(sx, sy - 15, 61, 1, '#ffffff'); px(sx + 1, sy - 9, 60, 1, '#c4553d');
+  px(sx + 2, sy - 4, 59, 2, '#2a6f97'); px(sx + 3, sy - 2, 57, 2, '#1d3f57');
+  for (i = 0; i < 8; i++) px(sx + 10 + i * 6, sy - 12, 2, 2, '#2e4a5c');
+  px(sx + 4, sy - 12, 1, 2, '#3a3a3a');                                                   /* çapa kenedi */
+  /* alt salon + pencereler */
+  px(sx + 8, sy - 23, 48, 8, '#fbfaf6'); px(sx + 8, sy - 16, 48, 1, '#c9c4b6'); px(sx + 55, sy - 23, 1, 8, '#d8d4c8');
+  for (i = 0; i < 11; i++) px(sx + 10 + i * 4, sy - 21, 2, 3, '#6fa8c8');
+  px(sx + 12, sy - 20, 2, 4, '#e07a2e'); px(sx + 12, sy - 19, 2, 2, '#fbfaf6');           /* can simidi */
+  /* gezinti güvertesi + korkuluk (pruva kapısı açıkken önü boş) */
+  px(sx + 4, sy - 24, 54, 1, '#8a949c');
+  var r0 = o.gw > 0 ? 10 : 4;
+  px(sx + r0, sy - 27, 58 - r0, 1, '#e8e6de');
+  for (i = r0; i < 58; i += 4) px(sx + i, sy - 26, 1, 2, '#c9c7bd');
+  /* kaptan köşkü + baca + direk */
+  px(sx + 16, sy - 32, 26, 8, '#f4f0e6'); px(sx + 15, sy - 33, 28, 1, '#8a949c'); px(sx + 41, sy - 32, 1, 8, '#d8d4c8');
+  for (i = 0; i < 5; i++) px(sx + 18 + i * 5, sy - 31, 3, 2, '#6fa8c8');
+  px(sx + 33, sy - 41, 6, 8, '#c4553d'); px(sx + 33, sy - 41, 6, 1, '#2c2c2c'); px(sx + 33, sy - 38, 6, 1, '#f4f0e6');
+  var sm = Math.sin((o.t || 0) * 1.3);
+  ctx.globalAlpha = a0 * o.a * 0.45; px(sx + 38 + R(sm), sy - 44, 3, 2, '#e6e4de'); px(sx + 41 + R(sm * 2), sy - 47, 4, 2, '#e6e4de'); ctx.globalAlpha = a0 * o.a;
+  px(sx + 7, sy - 38, 1, 14, '#5d3c1c'); hkFlag(sx + 8, sy - 38, 5, 3);
+  drawGangway(o);
+  ctx.globalAlpha = a0;
+}
+/* iskele tahtası (her iki modda bu çizer): pruva kapısı o.g0'dan köprü korkuluğunun içine (o.g1), o.gw kadar uzamış */
+function drawGangway(o) {
+  var i;
+  if (o.gw > 0) {
+    var g0 = o.g0, ex = lerp(g0.x, o.g1.x, o.gw), ey = lerp(g0.y - 3, o.g1.y, o.gw), nx = -2.6, ny = 1.3;
+    quad([[g0.x + nx, g0.y + ny], [ex + nx, ey + ny], [ex - nx, ey - ny], [g0.x - nx, g0.y - ny]], '#9a7348');
+    quad([[g0.x + nx, g0.y + ny], [ex + nx, ey + ny], [ex + nx, ey + ny + 1], [g0.x + nx, g0.y + ny + 1]], '#5d4128');
+    for (i = 1; i < 5; i++) { var u = i / 5; px(lerp(g0.x, ex, u) - 2, lerp(g0.y, ey, u), 4, 1, '#7a5634'); }
+    ctx.strokeStyle = '#e8dcc0'; ctx.lineWidth = 1; ctx.beginPath();                    /* halat korkuluk (önde) */
+    ctx.moveTo(R(g0.x + nx), R(g0.y + ny - 5)); ctx.lineTo(R(ex + nx), R(ey + ny - 5)); ctx.stroke();
+    px(g0.x + nx, g0.y + ny - 5, 1, 5, '#5d4128'); px(ex + nx, ey + ny - 5, 1, 5, '#5d4128');
+  }
+}
+
+/* ---------- lodos + yağmur ---------- */
+var WX = { on: false, t: 0, dur: 0, after: 0, vis: 0, dn: -1, at: 0, k: 0, fled: 0, stay: 0, close: 0, wind: 0.45, yell: [] };
+function wxMul() { return WX.on ? WX_RAIN_MUL : (WX.after > 0 ? WX_AFTER_MUL : 1); }
+function wxReset() { for (var i = 0; i < customers.length; i++) customers[i].umb = 0; WX.on = false; WX.t = 0; WX.after = 0; WX.vis = 0; WX.dn = -1; WX.at = 0; WX.close = 0; WX.yell.length = 0; }
+function wxStart() {
+  if (WX.on) return false;
+  WX.on = true; WX.t = 0; WX.dur = rnd(40, 90); WX.after = 0; WX.at = 0; WX.k++; WX.close = 0;
+  day.st.wx = 1;
+  var fl = [], st = [], i, cu;
+  for (i = 0; i < customers.length; i++) {
+    cu = customers[i];
+    if (cu.story || cu.state === 'leave' || !cu.c) continue;
+    (!cu.spec && Math.random() < WX_FLEE_P ? fl : st).push(cu);
+  }
+  if (!fl.length) for (i = 0; i < st.length - 1; i++) if (!st[i].spec) { fl.push(st.splice(i, 1)[0]); break; }   /* en az biri kaçar, biri kalır */
+  if (!st.length && fl.length > 1) st.push(fl.pop());
+  for (i = 0; i < fl.length; i++) {                                    /* kaçanlar koşar; kayıp SAYILMAZ (vergi memurundaki gibi) */
+    cu = fl[i];
+    if (cu.c.slots[cu.slot] === cu) cu.c.slots[cu.slot] = null;
+    cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; cu.flee = true; cu.wxFled = 1; cu.wp = null; cu.umb = 0;
+    addFloat(cu.x, cu.y - 0.7, '!', '#9fd0ff');
+  }
+  if (fl.length) counters.forEach(function (c) { shiftQueue(c); });
+  for (i = 0; i < st.length; i++) { st[i].umb = 1; st[i].umbOff = undefined; }
+  for (i = 0; i < FERRY.walk.length; i++) FERRY.walk[i].umb = 1;
+  WX.fled = fl.length; WX.stay = st.length; WX.yell.length = 0;
+  for (i = 0; i < Math.min(4, fl.length); i++) WX.yell.push({ o: fl[i], s: NM(WX_FLEE_LINES[(WX.k * 3 + i) % WX_FLEE_LINES.length]), d: 0.25 + i * 0.7, t: 0 });
+  if (st.length) WX.yell.push({ o: st[0], s: NM(WX_UMB_LINES[WX.k % WX_UMB_LINES.length]), d: 0.6 + Math.min(4, fl.length) * 0.7, t: 0, u: 1 });
+  toast(T('wxIn'));
+  noise(0.5, 0.07, { f: 300, to: 90, q: 0.6, dst: ambBus }); noise(0.5, 0.05, { f: 1800, to: 600, q: 0.5, at: 0.3, dst: ambBus });   /* lodos savruluşu */
+  return true;
+}
+function wxStop(rush) {
+  if (!WX.on) return false;
+  WX.on = false; WX.after = rush ? WX_AFTER_T : 0; WX.close = 3.2;
+  var i;
+  for (i = 0; i < customers.length; i++) if (customers[i].umb) customers[i].umbOff = rnd(0.3, 3);
+  for (i = 0; i < FERRY.walk.length; i++) if (FERRY.walk[i].umb) FERRY.walk[i].umbOff = rnd(0.3, 3);
+  if (rush) toast(T('wxOut'));
+  return true;
+}
+function wxCloseUmb(a, dt) { if (a.umb && a.umbOff !== undefined) { a.umbOff -= dt; if (a.umbOff <= 0) { a.umb = 0; a.umbOff = undefined; } } }
+function wxTick(dt) {
+  if (!S.started) return;
+  var i;
+  if (WX.dn !== day.n) {                                               /* günün havası: ~5 günde bir, 4. günden sonra, vergi günü değil */
+    WX.dn = day.n; WX.at = 0;
+    if (!window.HK_WX_OFF && day.n > 3 && day.n % TAX_EVERY !== 0 && Math.random() < WX_P) WX.at = DAY_LEN * rnd(0.3, 0.6);
+  }
+  if (!WX.on && WX.at && day.phase === 'play' && day.t >= WX.at) { WX.at = 0; if (!TAX.on && !CHS.on && !window.HK_WX_OFF) wxStart(); }
+  if (WX.on) { WX.t += dt; if (WX.t >= WX.dur) wxStop(true); else if (day.phase !== 'play' || TAX.on) wxStop(false); }
+  if (WX.after > 0) WX.after = Math.max(0, WX.after - dt);
+  WX.vis = clamp(WX.vis + (WX.on ? dt / 2.5 : -dt / 3.5), 0, 1);
+  WX.wind = 0.42 + Math.sin(gameT * 0.7) * 0.12 + Math.sin(gameT * 2.3) * 0.05;   /* lodos: sağa yatık, ara ara sert esinti */
+  for (i = 0; i < WX.yell.length; i++) WX.yell[i].t += dt;
+  if (WX.yell.length && WX.yell[WX.yell.length - 1].t > WX.yell[WX.yell.length - 1].d + 3) WX.yell.length = 0;
+  if (WX.close > 0) {
+    WX.close -= dt;
+    for (i = 0; i < customers.length; i++) wxCloseUmb(customers[i], dt);
+    for (i = 0; i < FERRY.walk.length; i++) wxCloseUmb(FERRY.walk[i], dt);
+    if (WX.close <= 0) { for (i = 0; i < customers.length; i++) { customers[i].umb = 0; customers[i].umbOff = undefined; } }
+  }
+  if (WX.vis > 0) rainStep(dt);
+}
+function wxYellUI() {
+  for (var i = 0; i < WX.yell.length; i++) {
+    var yl = WX.yell[i];
+    if (yl.t > yl.d && yl.t < yl.d + 2.6 && yl.o.y > -8) uiQ.push({ t: 4, x: yl.o.x, y: yl.o.y, z: 40, s: (yl.u ? '☂️ “' : '💦 “') + yl.s + '”', c: yl.u ? '#d8f2ff' : '#ffe2c8', a: 1 });
+  }
+}
+/* yağmur parçacıkları: sabit diziler (kare başına bellek ayrılmaz); konum ekran oranı (0–1) */
+var RAIN_MAX = 150, RAIN_LOW = 56, FLK_MAX = 14, FLK_LOW = 5, SPL_MAX = 10, SPL_LOW = 3;
+var RN = null;
+function rainSeed() {
+  RN = { x: new Float32Array(RAIN_MAX), y: new Float32Array(RAIN_MAX), v: new Float32Array(RAIN_MAX), l: new Float32Array(RAIN_MAX),
+    fx: new Float32Array(FLK_MAX), fy: new Float32Array(FLK_MAX), fv: new Float32Array(FLK_MAX), fp: new Float32Array(FLK_MAX),
+    sx: new Float32Array(SPL_MAX), sy: new Float32Array(SPL_MAX), st: new Float32Array(SPL_MAX) };
+  for (var i = 0; i < RAIN_MAX; i++) { RN.x[i] = Math.random(); RN.y[i] = Math.random(); RN.v[i] = rnd(210, 300); RN.l[i] = rnd(5, 9); }
+  for (i = 0; i < FLK_MAX; i++) { RN.fx[i] = Math.random(); RN.fy[i] = Math.random(); RN.fv[i] = rnd(70, 130); RN.fp[i] = rnd(0, TAU); }
+  for (i = 0; i < SPL_MAX; i++) { RN.sx[i] = Math.random(); RN.sy[i] = rnd(0.25, 0.95); RN.st[i] = rnd(0, 0.35); }
+}
+function rainStep(dt) {
+  if (!RN) rainSeed();
+  var w = WX.wind, iw = 1 / Math.max(1, W), ih = 1 / Math.max(1, H), n = FINE ? RAIN_MAX : RAIN_LOW, i;
+  for (i = 0; i < n; i++) {
+    RN.y[i] += RN.v[i] * dt * ih; RN.x[i] += RN.v[i] * w * dt * iw;
+    if (RN.y[i] > 1.03) { RN.y[i] -= 1.06; RN.x[i] = Math.random() * 1.1 - 0.15; }
+    if (RN.x[i] > 1.02) RN.x[i] -= 1.08;
+  }
+  n = FINE ? FLK_MAX : FLK_LOW;
+  for (i = 0; i < n; i++) {                                            /* rüzgârla savrulan zerreler: yatay, dalgalı */
+    RN.fp[i] += dt * 5; RN.fx[i] += RN.fv[i] * (0.6 + w) * dt * iw; RN.fy[i] += (Math.sin(RN.fp[i]) * 28 + 22) * dt * ih;
+    if (RN.fx[i] > 1.02 || RN.fy[i] > 1.02) { RN.fx[i] = -0.03; RN.fy[i] = Math.random() * 0.8; }
+  }
+  n = FINE ? SPL_MAX : SPL_LOW;
+  for (i = 0; i < n; i++) { RN.st[i] += dt; if (RN.st[i] > 0.35) { RN.st[i] = 0; RN.sx[i] = Math.random(); RN.sy[i] = rnd(0.25, 0.95); } }
+}
+function drawWeather() {
+  var a = WX.vis; if (a < 0.01) return;
+  if (!RN) rainSeed();
+  var w = WX.wind, n = FINE ? RAIN_MAX : RAIN_LOW, i, X, Y, l;
+  ctx.save();
+  ctx.globalAlpha = 0.24 * a; ctx.fillStyle = '#1a2838'; ctx.fillRect(0, 0, W, H);     /* kapalı hava tonu */
+  ctx.globalAlpha = (FINE ? 0.6 : 0.45) * a; ctx.strokeStyle = '#dcecf6'; ctx.lineWidth = FINE ? 0.5 : 1;
+  ctx.beginPath();
+  for (i = 0; i < n; i++) { X = RN.x[i] * W; Y = RN.y[i] * H; l = RN.l[i]; ctx.moveTo(X, Y); ctx.lineTo(X - w * l, Y - l); }
+  ctx.stroke();
+  ctx.fillStyle = '#e4eef3'; n = FINE ? FLK_MAX : FLK_LOW;
+  for (i = 0; i < n; i++) { ctx.globalAlpha = 0.5 * a; ctx.fillRect(R(RN.fx[i] * W), R(RN.fy[i] * H), (i & 1) ? 2 : 1, 1); }
+  n = FINE ? SPL_MAX : SPL_LOW;
+  for (i = 0; i < n; i++) {                                            /* yere çarpan damla: kısa sıçrama */
+    var u = RN.st[i] / 0.35, sx = R(RN.sx[i] * W), sy = R(RN.sy[i] * H), r = 1 + R(u * 2);
+    ctx.globalAlpha = 0.45 * a * (1 - u); ctx.fillRect(sx - r, sy, 1, 1); ctx.fillRect(sx + r, sy, 1, 1); ctx.fillRect(sx, sy - 1 - R(u * 2), 1, 1);
+  }
+  ctx.restore();
+}
+/* yağmur sesi: döngülü gürültü → bant geçiren → yavaş esinti dalgası; ortam kanalında (ses ayarları + ortam sesi düzeyi) */
+var rainBed = null;
+function rainBedSet(on) {
+  if (!AC || !masterGain) return;
+  try {
+    if (!rainBed) {
+      if (!on) return;
+      var src = AC.createBufferSource(); src.buffer = noiseBuffer(); src.loop = true;
+      var bp = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2400; bp.Q.value = 0.45;
+      var g = AC.createGain(); g.gain.value = 0;
+      var sw = AC.createGain(); sw.gain.value = 0.7;
+      var lfo = AC.createOscillator(); lfo.frequency.value = 0.21;
+      var lg = AC.createGain(); lg.gain.value = 0.3;
+      lfo.connect(lg); lg.connect(sw.gain);
+      src.connect(bp); bp.connect(sw); sw.connect(g); g.connect(ambBus || masterGain);
+      src.start(); lfo.start();
+      rainBed = { g: g, on: false };
+    }
+    if (rainBed.on === on) return;
+    rainBed.on = on;
+    var t = AC.currentTime, gg = rainBed.g.gain;
+    gg.cancelScheduledValues(t); gg.setValueAtTime(gg.value, t); gg.linearRampToValueAtTime(on ? 0.05 : 0, t + (on ? 2 : 2.5));
+  } catch (e) { }
+}
+/* --- şemsiye (klasik; ince modda HKA.drawUmbrella): sapı öndeki elde, kubbe başın üstünde, rüzgârla hafif sallanır --- */
+function drawUmbrella(cu, ol) {
+  var o = cu.state !== 'wait', w = o ? WALK[phase4((cu.bob || 0) * 0.16, ANIM.walkFps)] : null;
+  var sx = R(pX(cu.x, cu.y)), sy = R(pY(cu.x, cu.y, cu.z || 0)) + (w ? w.body : 0), f = cu.face > 0 ? 1 : -1;
+  var c = umbCol(cu), d = shade(c, -34), l = shade(c, 30), sw = R(Math.sin(gameT * 6 + (cu.bob || 0)) * 0.7 + WX.wind);
+  var hx = sx + f * 4, top = sy - 31 + (ol && ol.tall ? -4 : ol && ol.short ? 2 : 0), cx = hx + sw + f * 2;   /* kubbe yüze doğru eğik: sipariş tabelasının altında kalmasın */
+  px(hx, top + 5, 1, 15, '#3a2a1e'); px(hx - f, top + 19, 1, 1, '#3a2a1e');            /* sap + kıvrık uç */
+  px(cx, top - 1, 1, 1, '#3a2a1e');
+  px(cx - 3, top, 7, 1, c); px(cx - 5, top + 1, 11, 1, c); px(cx - 7, top + 2, 15, 2, c); px(cx - 8, top + 4, 17, 1, c);
+  px(cx - 3, top + 1, 2, 1, l); px(cx - 5, top + 2, 2, 1, l);
+  px(cx + 3, top + 2, 4, 2, d); px(cx + 5, top + 4, 3, 1, d);
+  for (var k = -8; k <= 7; k += 4) px(cx + k, top + 5, 2, 1, d);                      /* fistolu kenar */
 }
 /* --- YAPI › Meydan kartları: büro kur/yükselt + (kuruluysa) İlan Ver --- */
 function adCards(out, lvNow) {
@@ -13508,6 +13861,7 @@ function mkCustomer(c, type, slot, ord, spec) {
     S.custSeen = S.custSeen || {};
     if (!S.custSeen[type.id]) { S.custSeen[type.id] = 0; custNew(); }
   }
+  if (WX.on) cu.umb = 1;                             /* v2.26: yağmurda şemsiyeli */
   c.slots[slot] = cu; customers.push(cu);
   return cu;
 }
@@ -20451,6 +20805,8 @@ function hookLok(name, f0) {
   drawVignette = hook('drawVignette', drawVignette);
   drawOffice = hook('drawOffice', drawOffice);
   drawAdBureau = hook('drawAdBureau', drawAdBureau);   /* v2.18-deneme: İlan Bürosu (o: {x, y, w, h, lv, hh, door, t, radio, fair, ads, up}) */
+  drawDockFerry = hook('drawDockFerry', drawDockFerry);   /* v2.26: köprüye yanaşan yolcu vapuru + iskele tahtası (o: {sx, sy (pruva su hattı, ekran), gw 0–1, g0:{x,y} kapı, g1:{x,y} köprü ucu (ekran), t, ph, n}) */
+  drawUmbrella = hook('drawUmbrella', drawUmbrella);     /* v2.26: müşteri şemsiyesi (cu: müşteri; cu.x, cu.y, cu.face, cu.bob, cu.state; renk umbCol(cu); ol: kıyafet {tall, short}) */
   drawTellal = hook('drawTellal', drawTellal);         /* v2.18-deneme: tellal NPC (o: {x, y, z, face, walk, bob, vx, vy, say, t, bell}) */
   drawAdPoster = hook('drawAdPoster', drawAdPoster);   /* v2.18-deneme: yol panosu afişi (o: {x, y, i, ad, text, left, t}) */
   drawScaffold = hook('drawScaffold', drawScaffold);   /* v2.18-deneme: inşaat iskelesi (o: {id, x, y, w, h, left, lv, t, up, hh}; etiketi oyun çizer) */
@@ -20920,7 +21276,15 @@ Object.assign(window.BT, {
 });
 /* v2.18-deneme — Füme Kasası test kancaları */
 Object.assign(window.BT, { crate: { has: hasCrate, shelfN: shelfN, crateN: crateN, can: ctrCan, room: ctrRoom, spot: crateSpot, obj: crateObj, unmet: ctrUnmet, hamalJob: hamalJob, drawCrate: drawFumeCrate } });
-Object.assign(window.BT, { tarif: tarifBT() });     /* v2.18-deneme — Tarif Defteri + Güveç Ocağı test kancaları */
+Object.assign(window.BT, { tarif: tarifBT() });
+/* v2.26 — canlı liman test kancaları: lodos/yağmur + yolcu vapuru */
+Object.assign(window.BT, {
+  wx: { start: function () { return wxStart(); }, dur: function (s) { WX.dur = WX.t + s; }, stop: function (rush) { return wxStop(rush !== false); }, mul: function () { return wxMul(); }, flee: WX_FLEE_LINES, umbLines: WX_UMB_LINES,
+    st: function () { return { on: WX.on, t: WX.t, dur: WX.dur, after: WX.after, vis: WX.vis, at: WX.at, dn: WX.dn, fled: WX.fled, stay: WX.stay, mul: wxMul(), umb: customers.filter(function (c) { return c.umb; }).length, yell: WX.yell.length }; } },
+  ferry: { call: function (n) { return ferryCall(n); }, pop: ferryPop, stalls: function () { return ferryStalls().map(function (c) { return c.key; }); }, obj: ferryObj, S: FERRY_S, E: FERRY_E, dy: FERRY_DY,
+    st: function () { var F = FERRY; return { ph: F.ph, t: F.t, off: F.off, gw: F.gw, n: F.n, left: F.left, got: F.got, gone: F.gone, walk: F.walk.length, nextT: F.nextT, calls: F.calls, pax: customers.filter(function (c) { return c.ferry; }).length }; } },
+  custTypeFor: custTypeFor
+});     /* v2.18-deneme — Tarif Defteri + Güveç Ocağı test kancaları */
 /* v2.19-deneme — Sahil Lokantası test kancaları */
 function lokBT() {
   return {
