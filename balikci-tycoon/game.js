@@ -5071,9 +5071,10 @@ function updateCustomers(dt) {
     if (cu.state === 'walk') {
       var p = cu.wp || queueSlotPos(cu.c, cu.slot);   /* v2.26: vapur yolcusu önce iskele tahtasından köprüye iner (ara nokta) */
       var dx = p.x - cu.x, dy = p.y - cu.y, L = Math.hypot(dx, dy);
-      var wv = cu.spec ? SPEC_WALK : 2.1 * (cu.type && cu.type.slow || 1) * (cu.wp ? 0.55 : 1);   /* v2.25: bastonlular ağır gelir; v2.26: iskele tahtasında ağır adım */             /* v1.3.3: özel müşteri ağır adımlarla gelir */
-      if (L < 0.14) { if (cu.wp) cu.wp = null; else { cu.state = 'wait'; if (cu.spec) specArrive(cu); } }
+      var wv = cu.spec ? SPEC_WALK : 2.1 * (cu.type && cu.type.slow || 1) * (cu.wp ? (cu.wp.s || 1) : 1);   /* v2.25: bastonlular ağır gelir; v2.26: iskele tahtasında ağır adım (v2.26.1: ara noktanın s çarpanı) */             /* v1.3.3: özel müşteri ağır adımlarla gelir */
+      if (L < 0.14) { if (cu.wp) { cu.wp = cu.wps && ++cu.wpi < cu.wps.length ? cu.wps[cu.wpi] : null; if (!cu.wp) cu.wps = null; } else { cu.state = 'wait'; if (cu.spec) specArrive(cu); } }   /* v2.26.1: vapur yolcusu ara nokta zinciri (tahta → iskele → meydan) */
       else { cu.x += dx / L * wv * dt; cu.y += dy / L * wv * dt; cu.bob += dt * (cu.spec ? 5 : 8); }
+      if (cu.ferry && cu.z) cu.z = cu.wps ? ferryZ(cu, cu.wpi) : 0;                  /* v2.26.1: tahtadan inerken yükseklik */
     } else if (cu.state === 'wait') {
       var q = queueSlotPos(cu.c, cu.slot);
       cu.x = lerp(cu.x, q.x, 1 - Math.pow(0.001, dt));
@@ -8368,6 +8369,7 @@ function render() {
   drawLand();
   drawMainBridgeScene();   /* v2.24: anakara köprüsü */
   drawRoad();
+  drawMainBridgeFoot(MAINBR);   /* v2.26.1: köprü ayağı yola/kuma yumuşak geçer (kaya, kum, baş babaları) */
   for (var a = 0; a < AREAS.length; a++) { if (AREAS[a].lok && lokOpen()) lokTr(function () { drawLokTerrace(lokTerObj('floor')); }); else drawArea(AREAS[a], a); }
   drawLokPatika();   /* v2.20-deneme: lokanta karada — iskele döşemesi yok */
   drawMeydanGround();
@@ -12331,40 +12333,110 @@ function drawMeydanGround() {
 var MAINBR = { x: 10.2, y0: -25.6, y1: -0.4, w: 4.4 };
 var MAINBR_DZ = 20, MAINBR_SP = 3.6;
 var MAINBR_LAMPS = [[14.3, -3.4], [14.3, -10.6], [14.3, -17.8], [10.5, -7.0], [10.5, -14.2]];
-function drawMainBridge(o) {
-  var x0 = o.x, x1 = o.x + o.w, ya = o.y0, yb = o.y1, DZ = MAINBR_DZ, SP = MAINBR_SP, k, n = Math.round((yb - ya - 0.4) / SP);
-  isoBox(x0, ya, o.w, yb - ya, -DZ, 0, '#a4a79d', '#767b79', '#868b87');                        /* gövde: gri taş */
-  var gz;
-  ctx.save(); ctx.globalAlpha = 0.28; ctx.strokeStyle = '#4e5553'; ctx.lineWidth = 1;
-  for (gz = -5; gz > -DZ; gz -= 5) { ctx.beginPath(); ctx.moveTo(R(pX(x1, ya)), R(pY(x1, ya, gz))); ctx.lineTo(R(pX(x1, yb)), R(pY(x1, yb, gz))); ctx.stroke(); }
-  for (k = 0; k <= n; k++) { var py = yb - 0.4 - k * SP; ctx.beginPath(); ctx.moveTo(R(pX(x1, py)), R(pY(x1, py, 0))); ctx.lineTo(R(pX(x1, py)), R(pY(x1, py, -DZ))); ctx.stroke(); }
+/* v2.26.1: köprü doğallaştı — sıcak kireç taşı (meydan/ev paleti), sıra sıra kesme taş + derz, kemerlerde koyu kemer taşları (kilit taşı açık),
+   kemer altında gölgeli tonoz + karanlık su, ayaklarda mahmuz (sel yaran), su hattında yosun + ıslak bant, ayak diplerinde köpük ve gölge,
+   korniş ve korkuluk başlıklarında ışık. Klasik çizimin durağan kısmı bir kez 1x tuvale çizilir (MAINBR_CV), her karede yalnız drawImage + köpük.
+   Ada ucundaki taş rampa, kum ve kaya yığını drawMainBridgeFoot'ta (yoldan sonra, kırpmasız). */
+var MAINBR_STN = ['#c9bea4', '#c1b59a', '#cfc4ab', '#b8ac91', '#c5b99e', '#bdb196'];
+var MAINBR_AR = { hw: 1.2, sp: 2 };                                   /* kemer yarı açıklığı (karo), kemer üzengisi su hattının kaç px üstünde */
+var MAINBR_CV = null, MAINBR_BX = { u0: 120, v0: -46, w: 372, h: 166 };
+function mainBrHash(a, b) { var h = Math.imul(a | 0, 374761393) ^ Math.imul(b | 0, 668265263); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967295; }
+function mainBrStatic(o) {
+  var x0 = o.x, x1 = o.x + o.w, ya = o.y0, yb = o.y1, DZ = MAINBR_DZ, SP = MAINBR_SP, k, n = Math.round((yb - ya - 0.4) / SP), r, z, yy, i;
+  var hw = MAINBR_AR.hw, zs = -DZ + MAINBR_AR.sp, R0 = hw * 12;
+  /* gövde: üst (güverte), doğu yüzü (kesme taş sıraları) */
+  isoBox(x0, ya, o.w, yb - ya, -DZ, 0, '#cbc1a8', '#b4a88f', '#a89c83');
+  for (r = 0, z = -2.2; z > -DZ; z -= 2.5, r++) {                                                  /* taş blokları: sıra sıra, şaşırtmalı, ton farkı */
+    var z1 = z, z0 = Math.max(-DZ, z - 2.5);
+    for (yy = yb - (r & 1) * 0.37; yy > ya; yy -= 0.75) {
+      var hs = mainBrHash(R(yy * 4), r), c = hs > 0.82 ? '#b3a78e' : hs < 0.2 ? '#9c907a' : hs < 0.45 ? '#a49880' : null;
+      if (c) wallQ(x1, Math.max(ya, yy - 0.72), x1, yy, z0, z1, c);
+    }
+  }
+  ctx.save(); ctx.globalAlpha = 0.6; ctx.strokeStyle = '#7e735e'; ctx.lineWidth = 1; ctx.beginPath();
+  for (r = 0, z = -2.2; z > -DZ; z -= 2.5, r++) {
+    ctx.moveTo(R(pX(x1, ya)), R(pY(x1, ya, z))); ctx.lineTo(R(pX(x1, yb)), R(pY(x1, yb, z)));
+    for (yy = yb - (r & 1) * 0.37; yy > ya; yy -= 0.75) { ctx.moveTo(R(pX(x1, yy)) + 0.5, R(pY(x1, yy, z))); ctx.lineTo(R(pX(x1, yy)) + 0.5, R(pY(x1, yy, Math.max(-DZ, z - 2.5)))); }
+  }
+  ctx.stroke(); ctx.restore();
+  ctx.save(); ctx.globalAlpha = 0.16;                                                              /* yağmur izleri: kornişten aşağı koyu süzülme */
+  for (i = 0; i < 26; i++) { var sy = yb - 0.3 - mainBrHash(i, 7) * (yb - ya - 0.6), sl = 4 + mainBrHash(i, 8) * 9; px(pX(x1, sy), pY(x1, sy, -2.2), 1, sl, '#5d5446'); }
   ctx.restore();
-  wallQ(x1, ya, x1, yb, -3, 0, '#b9bab1');                                                    /* korniş */
-  for (k = 0; k < n; k++) {                                                                   /* kemer açıklıkları */
-    var yc = yb - 0.4 - (k + 0.5) * SP, hw = (SP - 0.9) / 2, r = hw * 12, cx = R(pX(x1, yc)), cy = R(pY(x1, yc, -DZ)), t;
-    ctx.beginPath(); ctx.moveTo(cx - r, cy + r / 2);
-    for (t = 0; t <= 12; t++) { var a = Math.PI - t / 12 * Math.PI; ctx.lineTo(cx + r * Math.cos(a), cy - r * Math.cos(a) / 2 - r * Math.sin(a)); }
-    ctx.closePath(); ctx.save(); ctx.fillStyle = '#1f3d4a'; ctx.fill(); ctx.clip();
-    ctx.fillStyle = '#2d6580'; ctx.fillRect(cx - r - 1, cy - r * 0.55, 2 * r + 2, r * 0.9);
-    ctx.fillStyle = '#55a3ba'; ctx.fillRect(cx - r - 1, cy - 2, 2 * r + 2, 3);
+  ctx.save(); ctx.globalAlpha = 0.35; wallQ(x1, ya, x1, yb, -DZ, -DZ + 5, '#6e6452'); ctx.restore();   /* ıslak bant */
+  ctx.save(); ctx.globalAlpha = 0.9; wallQ(x1, ya, x1, yb, -DZ, -DZ + 2, '#66704a'); ctx.restore();    /* yosun */
+  for (i = 0; i < 40; i++) { var my = yb - mainBrHash(i, 3) * (yb - ya); px(pX(x1, my), pY(x1, my, -DZ + 2) - 1 - R(mainBrHash(i, 4) * 2), 1, 2, '#7d8a54'); }
+  wallQ(x1, ya, x1, yb, -2.2, 0, '#d6ccb3');                                                       /* korniş */
+  ctx.save(); ctx.strokeStyle = '#ece4d0'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(R(pX(x1, ya)), R(pY(x1, ya, 0)) + 0.5); ctx.lineTo(R(pX(x1, yb)), R(pY(x1, yb, 0)) + 0.5); ctx.stroke();
+  ctx.strokeStyle = '#776c58'; ctx.beginPath(); ctx.moveTo(R(pX(x1, ya)), R(pY(x1, ya, -2.2)) + 0.5); ctx.lineTo(R(pX(x1, yb)), R(pY(x1, yb, -2.2)) + 0.5); ctx.stroke(); ctx.restore();
+  for (k = 0; k < n; k++) {                                                                        /* kemerler: tonoz gölgesi, su, kemer taşları, kilit taşı */
+    var yc = yb - 0.4 - (k + 0.5) * SP, cx = pX(x1, yc), cy = pY(x1, yc, zs), t;
+    ctx.beginPath(); ctx.moveTo(cx - R0, pY(x1, yc, -DZ) + R0 / 2);
+    for (t = 0; t <= 16; t++) { var a = Math.PI - t / 16 * Math.PI; ctx.lineTo(cx + R0 * Math.cos(a), cy - R0 * Math.cos(a) / 2 - R0 * Math.sin(a)); }
+    ctx.lineTo(cx + R0, pY(x1, yc, -DZ) - R0 / 2); ctx.closePath();
+    ctx.save(); ctx.fillStyle = '#2f3335'; ctx.fill(); ctx.clip();                                     /* tonoz gölgesi */
+    ctx.fillStyle = '#1f3d4a'; ctx.fillRect(cx - R0 - 1, cy - R0 * 0.15, 2 * R0 + 2, R0 * 1.4);          /* kemer altı su */
+    ctx.fillStyle = '#2b5566'; ctx.fillRect(cx - R0 * 0.7, cy + 2, R0 * 0.8, 1); ctx.fillRect(cx - R0 * 0.9, cy + 5, R0 * 0.6, 1);
+    ctx.fillStyle = '#4a463e'; ctx.fillRect(cx + R0 * 0.2, cy - R0 * 1.2, R0, R0 * 1.25);              /* içteki ayak duvarı (kuzey ayağın +y yüzü) */
+    ctx.fillStyle = '#3c3933'; for (t = 0; t < 4; t++) ctx.fillRect(cx + R0 * 0.2, cy - R0 * 1.2 + 3 + t * 3, R0, 1);
     ctx.restore();
-    ctx.save(); ctx.strokeStyle = '#c7c6ba'; ctx.lineWidth = 2; ctx.beginPath();
-    for (t = 0; t <= 12; t++) { var b = Math.PI - t / 12 * Math.PI, rr = r + 1.5; ctx.lineTo(cx + rr * Math.cos(b), cy - rr * Math.cos(b) / 2 - rr * Math.sin(b)); }
+    ctx.save(); ctx.strokeStyle = '#94886f'; ctx.lineWidth = 3; ctx.beginPath();
+    for (t = 0; t <= 16; t++) { var b = Math.PI - t / 16 * Math.PI, rr = R0 + 1.6; ctx.lineTo(cx + rr * Math.cos(b), cy - rr * Math.cos(b) / 2 - rr * Math.sin(b)); }
+    ctx.stroke(); ctx.strokeStyle = '#6c624f'; ctx.lineWidth = 1; ctx.beginPath();
+    for (t = 1; t < 11; t++) { var e = Math.PI - t / 11 * Math.PI; ctx.moveTo(cx + R0 * Math.cos(e), cy - R0 * Math.cos(e) / 2 - R0 * Math.sin(e)); ctx.lineTo(cx + (R0 + 3.2) * Math.cos(e), cy - (R0 + 3.2) * Math.cos(e) / 2 - (R0 + 3.2) * Math.sin(e)); }
     ctx.stroke(); ctx.restore();
-    px(cx - 1, R(cy - r - r * 0.5 - 2), 3, 2, '#d3d2c6');                                        /* kilit taşı */
+    px(cx - 1, R(cy - R0 - 3.5), 3, 4, '#ddd3bb'); px(cx - 1, R(cy - R0 - 3.5), 3, 1, '#efe8d6');               /* kilit taşı */
   }
-  for (k = 0; k <= n; k++) {                                                                  /* ayak dibinde köpük */
-    var fy2 = yb - 0.4 - k * SP; ctx.save(); ctx.globalAlpha = 0.5 + Math.sin((o.t || 0) * 1.4 + k) * 0.15;
-    px(pX(x1, fy2) - 7, pY(x1, fy2, -DZ) - 1, 8, 2, '#eefafc'); ctx.restore();
+  for (k = 0; k <= n; k++) {                                                                       /* ayak mahmuzları (sel yaran) */
+    var qy = yb - 0.4 - k * SP;
+    isoBox(x1 - 0.05, qy - 0.3, 0.3, 0.6, -DZ, -DZ + 8, '#d0c6ae', '#b8ac93', '#9e937b');
+    isoBox(x1 - 0.05, qy - 0.22, 0.2, 0.44, -DZ + 8, -DZ + 9.5, '#dcd3bd', '#c4b9a1', '#a99e86');
+    ctx.save(); ctx.globalAlpha = 0.85; wallQ(x1 + 0.25, qy - 0.3, x1 + 0.25, qy + 0.3, -DZ, -DZ + 2, '#66704a'); wallQ(x1 - 0.05, qy + 0.3, x1 + 0.25, qy + 0.3, -DZ, -DZ + 2, '#728050'); ctx.restore();
   }
-  for (var sd = 0; sd < 2; sd++) {                                                            /* alçak korkuluk + sütunlar */
-    var bx = sd ? x1 - 0.24 : x0;
-    isoBox(bx, ya, 0.24, yb - ya, 0, 4.5, '#c2c2b8', '#8a8f8c', '#9b9f9a');
-    for (k = 0; k <= n; k++) { var qy = yb - 0.4 - k * SP; isoBox(sd ? x1 - 0.34 : x0 - 0.08, qy - 0.17, 0.42, 0.34, 0, 8, '#cfcec2', '#8f9491', '#a3a69f'); }
+  ctx.save(); ctx.globalAlpha = 0.16; isoQuad(x1, ya, 0.9, yb - ya, -DZ, '#14303c'); ctx.restore();   /* suda köprü gölgesi */
+  ctx.save(); ctx.globalAlpha = 0.55; isoQuad(x1, ya, 0.1, yb - ya, -DZ, '#eefafc'); ctx.restore(); /* su hattı köpüğü */
+  /* güverte: arnavut taşı sıraları + oluk şeritleri + ada ucuna doğru kum */
+  ctx.save(); ctx.globalAlpha = 0.45; ctx.strokeStyle = '#9c9079'; ctx.lineWidth = 1; ctx.beginPath();
+  for (yy = ya + 0.32; yy < yb; yy += 0.32) { ctx.moveTo(R(pX(x0 + 0.26, yy)), R(pY(x0 + 0.26, yy, 0))); ctx.lineTo(R(pX(x1 - 0.26, yy)), R(pY(x1 - 0.26, yy, 0))); }
+  ctx.stroke(); ctx.restore();
+  for (yy = ya + 0.32, r = 0; yy < yb; yy += 0.32, r++) for (i = 0; i < 9; i++) {
+    var hx = mainBrHash(i, r), gx = x0 + 0.3 + i * 0.44 + (r & 1) * 0.22;
+    if (gx > x1 - 0.3) continue;
+    if (hx > 0.78) isoQuad(gx, yy - 0.3, 0.4, 0.28, 0, '#d6ccb5'); else if (hx < 0.18) isoQuad(gx, yy - 0.3, 0.4, 0.28, 0, '#bfb398');
   }
-  ctx.save(); ctx.globalAlpha = 0.3; ctx.strokeStyle = '#7d7f77'; ctx.lineWidth = 1;
-  for (var jy = ya + 0.6; jy < yb; jy += 0.7) { ctx.beginPath(); ctx.moveTo(R(pX(x0 + 0.24, jy)), R(pY(x0 + 0.24, jy, 0))); ctx.lineTo(R(pX(x1 - 0.24, jy)), R(pY(x1 - 0.24, jy, 0))); ctx.stroke(); }
-  ctx.restore();
+  isoQuad(x0 + 0.24, ya, 0.16, yb - ya, 0, '#d8d2c4'); isoQuad(x1 - 0.4, ya, 0.16, yb - ya, 0, '#d8d2c4');
+  for (i = 0; i < 60; i++) { var sy2 = yb - Math.pow(mainBrHash(i, 11), 2) * 1.6, sx2 = x0 + 0.3 + mainBrHash(i, 12) * (o.w - 0.6); px(pX(sx2, sy2), pY(sx2, sy2, 0), 2, 1, mainBrHash(i, 13) > 0.5 ? '#d9c590' : '#cdb986'); }
+  /* korkuluklar: taş sıra + başlık ışığı; dikmeler başlıklı */
+  for (var sd = 0; sd < 2; sd++) {
+    var bx = sd ? x1 - 0.26 : x0;
+    isoBox(bx, ya, 0.26, yb - ya, 0, 4.5, '#e3dbc8', '#c9bea6', '#b2a78e');
+    ctx.save(); ctx.globalAlpha = 0.45; ctx.strokeStyle = '#867b66'; ctx.lineWidth = 1; ctx.beginPath();
+    ctx.moveTo(R(pX(bx + 0.26, ya)), R(pY(bx + 0.26, ya, 2.2)) + 0.5); ctx.lineTo(R(pX(bx + 0.26, yb)), R(pY(bx + 0.26, yb, 2.2)) + 0.5); ctx.stroke(); ctx.restore();
+    wallQ(bx + 0.26, ya, bx + 0.26, yb, 3.8, 4.5, '#d2c8b2');
+    for (k = 0; k <= n; k++) {
+      var qy2 = yb - 0.4 - k * SP, px0 = sd ? x1 - 0.34 : x0 - 0.08;
+      isoBox(px0, qy2 - 0.2, 0.42, 0.4, 0, 7.5, '#d6ccb5', '#c3b79e', '#a99d85');
+      isoBox(px0 - 0.04, qy2 - 0.24, 0.5, 0.48, 7.5, 8.8, '#eee7d6', '#d6ccb5', '#bdb29a');
+    }
+  }
+}
+function drawMainBridge(o) {
+  var B = MAINBR_BX, DZ = MAINBR_DZ, SP = MAINBR_SP, k, n = Math.round((o.y1 - o.y0 - 0.4) / SP), x1 = o.x + o.w;
+  if (!MAINBR_CV) {
+    MAINBR_CV = document.createElement('canvas'); MAINBR_CV.width = B.w; MAINBR_CV.height = B.h;
+    var g = MAINBR_CV.getContext('2d'), oc = ctx, ok = curK;
+    g.imageSmoothingEnabled = false; g.setTransform(1, 0, 0, 1, -B.u0, -B.v0);
+    ctx = g; curK = 1;
+    try { mainBrStatic(o); } finally { ctx = oc; curK = ok; }
+  }
+  ctx.drawImage(MAINBR_CV, B.u0, B.v0);
+  for (k = 0; k <= n; k++) {                                                                       /* ayak dibinde köpük: mahmuzun iki yanında, dalgalı */
+    var fy = o.y1 - 0.4 - k * SP, ph = Math.sin((o.t || 0) * 1.4 + k * 1.7);
+    ctx.save(); ctx.globalAlpha = 0.5 + ph * 0.2;
+    px(pX(x1 + 0.3, fy) - 3, pY(x1 + 0.3, fy, -DZ), 6, 1, '#eefafc');
+    px(pX(x1 + 0.1, fy + 0.35) - 2 + R(ph), pY(x1 + 0.1, fy + 0.35, -DZ) + 1, 4, 1, '#eefafc');
+    px(pX(x1 + 0.1, fy - 0.35) - 2 - R(ph), pY(x1 + 0.1, fy - 0.35, -DZ), 4, 1, '#eefafc');
+    ctx.restore();
+  }
 }
 /* ufuk (kasaba) kırpması + kıyı kırpması (kemerli yüz kumsalın üstüne taşmaz) + uzakta sis */
 function drawMainBridgeScene() {
@@ -12384,6 +12456,32 @@ function drawMainBridgeScene() {
   g.addColorStop(0, 'rgba(178,218,228,0.9)'); g.addColorStop(0.4, 'rgba(178,218,228,0.35)'); g.addColorStop(1, 'rgba(178,218,228,0)');
   ctx.fillStyle = g; ctx.fillRect(-1e5, hz, 2e5, 130);
   ctx.restore();
+}
+/* v2.26.1: köprünün adaya indiği yer (yoldan sonra, kırpmasız): güverte taşları kısa bir rampayla kuma/yola dağılır, korkuluk uçlarında
+   başlıklı baş babaları, kıyı çizgisinde (kemerli yüzün kumsala değdiği yerde) kaya dolgusu + kum. Sert dikdörtgen kenar kalmaz.
+   İnce modda HKA.drawMainBridgeFoot. */
+var MAINBR_ROCKS = [[9.62, -0.78, 0.2], [9.92, -0.62, 0.16], [9.78, -0.48, 0.12], [10.08, -0.86, 0.14], [14.62, -0.82, 0.18], [14.9, -0.62, 0.15], [15.2, -0.86, 0.2],
+  [15.5, -0.7, 0.14], [15.78, -0.9, 0.17], [16.08, -0.74, 0.13], [16.32, -0.92, 0.12], [14.78, -0.46, 0.1]];
+function drawMainBridgeFoot(o) {
+  var x0 = o.x, x1 = o.x + o.w, i, yy;
+  isoQuad(x0 + 0.26, -0.78, o.w - 0.52, 0.42, 0, '#c6bba1');                                         /* taş rampa */
+  ctx.save(); ctx.globalAlpha = 0.45; ctx.strokeStyle = '#9c9079'; ctx.lineWidth = 1; ctx.beginPath();
+  for (yy = -0.7; yy < -0.36; yy += 0.16) { ctx.moveTo(R(pX(x0 + 0.26, yy)), R(pY(x0 + 0.26, yy, 0))); ctx.lineTo(R(pX(x1 - 0.26, yy)), R(pY(x1 - 0.26, yy, 0))); }
+  ctx.stroke(); ctx.restore();
+  for (i = 0; i < 70; i++) {                                                                        /* dağılan taşlar + kum */
+    var fx = x0 + 0.3 + mainBrHash(i, 21) * (o.w - 0.6), fy = -0.42 + Math.pow(mainBrHash(i, 22), 1.6) * 0.38, h = mainBrHash(i, 23);
+    px(pX(fx, fy), pY(fx, fy, 0), 2, 1, h > 0.55 ? '#d9c590' : h > 0.25 ? '#c6bba1' : '#b9ad92');
+  }
+  for (i = 0; i < MAINBR_ROCKS.length; i++) {                                                       /* kaya dolgusu */
+    var q = MAINBR_ROCKS[i], rx = pX(q[0], q[1]), ry = pY(q[0], q[1], 0), s = q[2] * 12;
+    px(rx - s, ry - s * 0.35, 2 * s, s * 0.8, '#8a8170'); px(rx - s * 0.8, ry - s * 0.7, s * 1.4, s * 0.5, '#b0a691'); px(rx - s * 0.6, ry - s * 0.7, s * 0.6, 1, '#cdc4ae');
+    px(rx - s, ry + s * 0.4, 2 * s, 1, '#6a6356');
+  }
+  for (var sd = 0; sd < 2; sd++) {                                                                  /* baş babaları */
+    var bx = sd ? x1 - 0.42 : x0 - 0.04;
+    isoBox(bx, -0.8, 0.46, 0.44, 0, 9, '#d6ccb5', '#c3b79e', '#a99d85');
+    isoBox(bx - 0.04, -0.84, 0.54, 0.52, 9, 10.5, '#eee7d6', '#d6ccb5', '#bdb29a');
+  }
 }
 function plotOutline(o, label, col) {
   var x = o.x - o.w / 2, y = o.y - o.h / 2;
@@ -13215,6 +13313,7 @@ function pushAds(push) {
    v2.26 — CANLI LİMAN: YOLCU VAPURU + LODOS / YAĞMUR
    1) YOLCU VAPURU: günde birkaç kez rastgele aralıkla (İlan Bürosu'nun Vapur reklamı yayındayken daha sık) doğudan beyaz yolcu
       vapuru gelir, anakara köprüsünün doğu (kemerli) yüzüne pruvadan yanaşır; pruva kapısından köprü korkuluğuna iskele tahtası iner.
+      (v2.26.1: köprüye değil, meydanın kuzey kıyısındaki ahşap vapur iskelesine bordadan yanaşır — ayrıntı "yolcu vapuru" bölümünde.)
       4–9 yolcu tek tek iner. Her yolcu NORMAL müşteridir: kuyruğunda boş yer olan RASTGELE açık tezgâh, CUST ağırlıklarıyla tip
       (custTypeFor), makeOrderFor siparişi (mkCustomer). Yer yoksa yolcu köprüden anakaraya doğru gezinerek gider. Sonra vapur düdük
       çalıp geri geri açılır. Yer: köprü doğu yüzü, y = FERRY_DY (köprü ayağı −0,8 ile fener −3,4 arası); vapur denizde, meydanın
@@ -13248,15 +13347,27 @@ var UMB_COLS = ['#c4553d', '#2a6f97', '#e2b13c', '#3f7f5a', '#7a4a8a', '#2c2c34'
 function umbCol(cu) { return UMB_COLS[((cu.hair | 0) * 3 + (cu.tone | 0) * 5 + (cu.hs | 0)) % UMB_COLS.length]; }
 
 /* ---------- yolcu vapuru ---------- */
-var FERRY_FX = MAINBR.x + MAINBR.w, FERRY_DY = -2.2, FERRY_IN = 260;
-/* sanal zemin noktaları: S = vapur güvertesi (pruva kapısının içi), E = köprü güvertesi (korkuluğun içi) */
-var FERRY_S = { x: FERRY_FX + 0.17, y: FERRY_DY - 0.83 }, FERRY_E = { x: FERRY_FX - 0.45, y: FERRY_DY };
-var FERRY = { ph: 0, t: 0, off: 0, gw: 0, n: 0, left: 0, got: 0, gone: 0, popT: 0, waitT: 0, nextT: 0, walk: [], calls: 0 };
-function ferryReset() { FERRY.ph = 0; FERRY.t = 0; FERRY.off = 0; FERRY.gw = 0; FERRY.left = 0; FERRY.nextT = 0; FERRY.walk.length = 0; }
+/* v2.26.1: vapur artık köprünün kemerine pruvadan dayanmaz. Meydanın kuzey kıyısında, Personel Kulübesi ile Depo arasındaki boşluğun
+   önünde köprüye paralel uzanan küçük ahşap VAPUR İSKELESİ (FPIER) var. Şehir Hatları tipi (çift başlı, koyu gövde, beyaz üst yapı,
+   tek baca) vapur köprüye paralel (y ekseni boyunca) anakaradan süzülerek gelir, iskelenin batısına BORDADAN yanaşır, iki palamarla
+   bağlanır, borda kapısından iskeleye tahta iner; sonra geri geri açılır. Yolcular: kapı (vapur güvertesi, z = FERRY_DZ) → tahta →
+   iskele → kıyı → meydanın kuzey şeridi → tezgâh (gezinenler köprüden anakaraya). Vapurun su hattı z = FERRY_WL (iskele kenarının
+   su seviyesi; iskele güvertesi z = 0). Yer, telefonda köprü ayağından ve meydandan görünecek kadar köprüye yakın (ekranda
+   u = x − y ≈ 18,2 … 21,8) ama köprü ayağının (z = −20) önünde: vapurun batı bordası köprü ayağının ekrandaki izinin ~5 px önünde. */
+var FPIER = { x0: 17.52, x1: 18.14, y0: -3.3, y1: -0.45 };            /* iskele güvertesi (z = 0); kökü kuma y = −0,15'e dek iner */
+var FERRY_X = 16.87, FERRY_Y = -2.7, FERRY_HB = 0.42, FERRY_HL = 1.3;   /* vapur gövdesi: merkez, yarı en, yarı boy (karo) */
+var FERRY_WL = -5, FERRY_DZ = 6, FERRY_IN = 9, FERRY_GY = -2.45;       /* su hattı, ana güverte (z), yaklaşma mesafesi (karo, kuzeyden), tahta hizası (y) */
+/* yolcu yolu: S = borda kapısının içi (z = FERRY_DZ); WP: tahta ucu (yavaş adım) → iskele kökü → meydanın kuzey şeridi (kulübenin kuzeyi) */
+var FERRY_S = { x: FERRY_X + FERRY_HB - 0.08, y: FERRY_GY };
+var FERRY_WP = [{ x: FPIER.x0 + 0.26, y: FERRY_GY, s: 0.55 }, { x: (FPIER.x0 + FPIER.x1) / 2, y: -0.15 }, { x: 16.05, y: 0.52 }];
+var FERRY_WALK = [FERRY_WP[0], FERRY_WP[1], FERRY_WP[2], { x: 14.0, y: 0.52 }];   /* gezinen yolcu: sonra köprüden anakaraya */
+var FERRY_E = FERRY_WP[1];
+var FERRY = { ph: 0, t: 0, off: 0, gw: 0, n: 0, left: 0, got: 0, gone: 0, popT: 0, waitT: 0, nextT: 0, walk: [], calls: 0, dir: 0 };
+function ferryReset() { FERRY.ph = 0; FERRY.t = 0; FERRY.off = 0; FERRY.gw = 0; FERRY.left = 0; FERRY.nextT = 0; FERRY.dir = 0; FERRY.walk.length = 0; }
 function ferryGap() { return rnd(70, 130) * (adLive('vapur') ? 0.55 : 1); }     /* oyun saniyesi; gün 300 sn → günde ~2–4 sefer */
 function ferryAuto() { return !window.HK_FERRY_OFF && S.tut >= tutN() && day.phase === 'play' && !TAX.on && !CHS.on && !storyVis; }
 function ferryHorn(at) {
-  var d = Math.sqrt(dist2(player.x, player.y, FERRY_FX, FERRY_DY)), m = clamp(1.25 - d / 22, 0.3, 1);
+  var d = Math.sqrt(dist2(player.x, player.y, FERRY_X, FERRY_Y)), m = clamp(1.25 - d / 22, 0.3, 1);
   tone(98, 0.85, 'sawtooth', 0.075 * m, { at: at || 0, atk: 0.07, lp: 520 });
   tone(147, 0.85, 'sawtooth', 0.05 * m, { at: at || 0, atk: 0.07, lp: 520 });
   tone(98, 0.5, 'sawtooth', 0.06 * m, { at: (at || 0) + 1.05, atk: 0.05, lp: 480 });
@@ -13264,7 +13375,7 @@ function ferryHorn(at) {
 }
 function ferryCall(n) {
   if (FERRY.ph) return false;
-  FERRY.ph = 1; FERRY.t = 0; FERRY.off = FERRY_IN; FERRY.gw = 0; FERRY.got = 0; FERRY.gone = 0; FERRY.waitT = 0; FERRY.popT = 0.5; FERRY.calls++;
+  FERRY.ph = 1; FERRY.t = 0; FERRY.off = FERRY_IN; FERRY.gw = 0; FERRY.got = 0; FERRY.gone = 0; FERRY.waitT = 0; FERRY.popT = 0.5; FERRY.calls++; FERRY.dir = 1;
   FERRY.n = FERRY.left = n ? clamp(n | 0, 1, 12) : irnd(4, 9);
   return true;
 }
@@ -13278,6 +13389,11 @@ function ferryStalls() {
   }
   return out;
 }
+/* v2.26.1: tahtadaki yolcunun yüksekliği: kapıda z = FERRY_DZ, iskelede 0 (tahta boyunca doğrusal) */
+function ferryZ(a, wi) {
+  if (wi > 0) return 0;
+  return FERRY_DZ * clamp((FERRY_WP[0].x - a.x) / (FERRY_WP[0].x - FERRY_S.x), 0, 1);
+}
 function ferryPop() {
   FERRY.left--;
   var cs = day.phase === 'play' ? ferryStalls() : [], c = cs.length ? pick(cs) : null, type = c ? custTypeFor(c) : null, ord = type ? makeOrderFor(c, type) : null, j;
@@ -13285,25 +13401,27 @@ function ferryPop() {
   if (ord) {
     var slot = -1; for (j = 0; j < queueMax(c.z); j++) if (!c.slots[j]) { slot = j; break; }
     var cu = mkCustomer(c, type, slot, ord);
-    cu.x = FERRY_S.x; cu.y = FERRY_S.y; cu.wp = { x: FERRY_E.x, y: FERRY_E.y }; cu.ferry = 1; cu.face = -1;
+    cu.x = FERRY_S.x; cu.y = FERRY_S.y; cu.z = FERRY_DZ; cu.wps = FERRY_WP; cu.wpi = 0; cu.wp = FERRY_WP[0]; cu.ferry = 1; cu.face = 1;   /* v2.26.1: ara noktalar zinciri */
     day.normals = (day.normals || 0) + 1; FERRY.got++;
     return cu;
   }
-  /* yer yok: gezinen yolcu (müşteri değil) köprüden anakaraya yürür */
+  /* yer yok: gezinen yolcu (müşteri değil) iskeleden meydana, oradan köprüden anakaraya yürür */
   var tp = pick(CUST.filter(function (t) { return t.lvl <= repLevel(); })) || CUST[0];
   FERRY.gone++;
-  FERRY.walk.push({ x: FERRY_S.x, y: FERRY_S.y, z: 0, bob: rnd(0, 6), face: -1, vx: 0, vy: 0, type: tp, hair: irnd(0, 2), tone: irnd(0, 2), wp: 1,
+  FERRY.walk.push({ x: FERRY_S.x, y: FERRY_S.y, z: FERRY_DZ, bob: rnd(0, 6), face: 1, vx: 0, vy: 0, type: tp, hair: irnd(0, 2), tone: irnd(0, 2), wp: 0,
     tx: rnd(12.4, 13.6), sp: rnd(1.0, 1.4), umb: WX.on ? 1 : 0 });
   return null;
 }
 function ferryTick(dt) {
   if (!S.started) return;
   var F = FERRY, i;
-  for (i = F.walk.length - 1; i >= 0; i--) {                          /* gezinen yolcular */
-    var w = F.walk[i], tx = w.wp ? FERRY_E.x : w.tx, ty = w.wp ? FERRY_E.y : -9.2, dx = tx - w.x, dy = ty - w.y, L = Math.hypot(dx, dy), sp = w.wp ? 1.1 : w.sp;
+  for (i = F.walk.length - 1; i >= 0; i--) {                          /* gezinen yolcular: ara noktalar, sonra köprüden kuzeye */
+    var w = F.walk[i], wq = w.wp < FERRY_WALK.length ? FERRY_WALK[w.wp] : null, tx = wq ? wq.x : w.tx, ty = wq ? wq.y : -9.2,
+      dx = tx - w.x, dy = ty - w.y, L = Math.hypot(dx, dy), sp = wq ? (wq.s || 1.1) : w.sp;
     w.bob += dt * 7;
-    if (L < 0.12) { if (w.wp) w.wp = 0; else { F.walk.splice(i, 1); continue; } }
+    if (L < 0.12) { if (wq) w.wp++; else { F.walk.splice(i, 1); continue; } }
     else { w.x += dx / L * sp * dt; w.y += dy / L * sp * dt; var sx = pX(dx, dy); if (Math.abs(sx) > 0.01) w.face = sx > 0 ? 1 : -1; }
+    w.z = ferryZ(w, w.wp);
     if (w.y < -8.5) F.walk.splice(i, 1);
   }
   if (!F.ph) {
@@ -13314,10 +13432,11 @@ function ferryTick(dt) {
     return;
   }
   F.t += dt;
-  if (F.ph === 1) {                                                    /* yaklaşıyor: yavaşlayarak */
+  if (F.ph === 1) {                                                    /* yaklaşıyor: anakaradan süzülür, yavaşlayarak yanaşır */
     if (F.t < dt * 1.5) ferryHorn(0);
-    F.off = Math.max(0, F.off - Math.max(12, F.off * 0.85) * dt);
-    if (F.off <= 0) { F.ph = 2; F.t = 0; toast(T('ferryIn', { n: F.n })); ferryHorn(0.2); }
+    F.dir = 1;
+    F.off = Math.max(0, F.off - Math.max(0.45, F.off * 0.75) * dt);
+    if (F.off <= 0) { F.ph = 2; F.t = 0; F.dir = 0; toast(T('ferryIn', { n: F.n })); ferryHorn(0.2); }
   } else if (F.ph === 2) {                                             /* yanaştı: tahta iner, yolcular iner, tahta kalkar */
     var stop = F.left <= 0 || TAX.on || day.phase !== 'play';
     if (!stop) {
@@ -13328,71 +13447,155 @@ function ferryTick(dt) {
       if (F.waitT > 2.2) F.gw = Math.max(0, F.gw - dt * 1.5);
       if (F.waitT > 2.2 && F.gw <= 0) { F.ph = 3; F.t = 0; F.left = 0; ferryHorn(0); }
     }
-  } else if (F.ph === 3) {                                             /* geri geri açılır, hızlanarak */
-    F.off += (6 + F.t * 16) * dt;
-    if (F.off > FERRY_IN + 40) { F.ph = 0; F.off = 0; F.nextT = ferryGap(); }
+  } else if (F.ph === 3) {                                             /* geri geri açılır, yavaşça hızlanarak */
+    F.dir = -1;
+    F.off += (0.12 + F.t * 0.45) * dt;
+    if (F.off > FERRY_IN + 1.5) { F.ph = 0; F.off = 0; F.dir = 0; F.nextT = ferryGap(); }
   }
 }
+/* çizim nesnesi (her karede aynı nesne: ayırma yok). x, y = gövde merkezi (dünya), su hattı z = FERRY_WL.
+   g0 = borda kapısı (ekran), g1 = iskele kenarı (ekran), gn = tahta yarı eni (ekran vektörü), gw 0–1, dir: 1 geliyor, −1 gidiyor, 0 bağlı */
+var FERRY_O = { x: 0, y: 0, off: 0, gw: 0, t: 0, ph: 0, n: 0, a: 1, mv: 0, dir: 0, rain: 0, g0: { x: 0, y: 0 }, g1: { x: 0, y: 0 }, gn: { x: -1.8, y: 0.9 } };
 function ferryObj() {
-  var F = FERRY, bx = pX(FERRY_FX, FERRY_DY), by = pY(FERRY_FX, FERRY_DY, -MAINBR_DZ);
-  return { sx: bx + F.off, sy: by, gw: F.gw, g0: { x: bx + 6, y: by - 24 }, g1: { x: pX(FERRY_E.x, FERRY_E.y), y: pY(FERRY_E.x, FERRY_E.y, 0) },
-    t: gameT, ph: F.ph, n: F.left, a: clamp((FERRY_IN + 30 - F.off) / 70, 0, 1), mv: F.ph === 2 ? 0 : 1, rain: WX.vis };
+  var F = FERRY, o = FERRY_O, x = FERRY_X, y = FERRY_Y - F.off;
+  o.x = x; o.y = y; o.off = F.off; o.gw = F.gw; o.t = gameT; o.ph = F.ph; o.n = F.left; o.dir = F.dir;
+  o.a = clamp((FERRY_IN + 1.3 - F.off) / 2.6, 0, 1); o.mv = F.ph === 2 ? 0 : 1; o.rain = WX.vis;
+  o.g0.x = pX(x + FERRY_HB, FERRY_GY); o.g0.y = pY(x + FERRY_HB, FERRY_GY, FERRY_DZ);
+  o.g1.x = pX(FPIER.x0 + 0.16, FERRY_GY); o.g1.y = pY(FPIER.x0 + 0.16, FERRY_GY, 0);
+  return o;
 }
+function ferryDrawE() {
+  if (!FERRY.ph) return;
+  drawDockFerry(ferryObj());
+  if (FERRY.ph === 2 && FERRY.gw > 0.5 && dist2(player.x, player.y, FERRY_X, FERRY_Y) < 64) uiText(FERRY_X, FERRY_Y, 36, '⛴️ ' + T('ferryLbl'), '#ffe9b8', 7, 0.9, 32, 0, true);
+}
+function ferryPierE() { drawFerryPier(FPIER); }
 function ferryPush(push) {
-  if (FERRY.ph) push(FERRY_FX + FERRY_DY - 1.1, function () { if (FERRY.ph) { var o = ferryObj(); drawDockFerry(o); if (FERRY.ph === 2 && FERRY.gw > 0.5 && dist2(player.x, player.y, FERRY_FX, FERRY_DY) < 64) uiText(FERRY_FX, FERRY_DY, 27, '⛴️ ' + T('ferryLbl'), '#ffe9b8', 7, 0.9, 32, 0, true); } });
+  push(FPIER.x0 + FPIER.y0 + 0.25, ferryPierE);                     /* v2.26.1: iskele hep durur; vapurdan sonra, üstündeki yolculardan önce */
+  if (FERRY.ph) push(FERRY_X + FERRY_Y - 0.6 - FERRY.off, ferryDrawE);
   for (var i = 0; i < FERRY.walk.length; i++) (function (w) {
     push(w.x + w.y + 0.2, function () { var o = custOutfit(w); o.walk = true; o.mood = 1; drawPersonAt(w, o); if (w.umb) drawUmbrella(w, o); });
   })(FERRY.walk[i]);
   wxYellUI();
 }
-/* --- köprüye yanaşmış vapur (klasik; ince modda HKA.drawDockFerry). o.sx, o.sy = pruvanın su hattı (ekran), gövde sağa ~61 px, yükseklik ~41 px.
-   Gezinti güvertesi sy−24 (pruva kapısı o.g0), iskele tahtası o.g0 → o.g1 (köprü güvertesi), o.gw kadar uzar. --- */
+/* --- klasik çizimler (ince modda HKA.drawFerryPier / HKA.drawDockFerry). Ortak yardımcı: ayırmasız dörtgen. --- */
+function quad4(ax, ay, bx, by, cx, cy, dx, dy, c) {
+  ctx.beginPath(); ctx.moveTo(R(ax), R(ay)); ctx.lineTo(R(bx), R(by)); ctx.lineTo(R(cx), R(cy)); ctx.lineTo(R(dx), R(dy)); ctx.closePath(); ctx.fillStyle = c; ctx.fill();
+}
+function wallP(x0, y0, x1, y1, z0, z1, c) { quad4(pX(x0, y0), pY(x0, y0, z0), pX(x1, y1), pY(x1, y1, z0), pX(x1, y1), pY(x1, y1, z1), pX(x0, y0), pY(x0, y0, z1), c); }
+function boxP(x, y, w, h, z0, z1, top, left, right) {                 /* isoBox'un ayırmasız eşi */
+  var bx = x + w, by = y + h;
+  wallP(bx, y, bx, by, z0, z1, right); wallP(x, by, bx, by, z0, z1, left);
+  quad4(pX(x, y), pY(x, y, z1), pX(bx, y), pY(bx, y, z1), pX(bx, by), pY(bx, by, z1), pX(x, by), pY(x, by, z1), top);
+}
+/* vapur iskelesi (klasik): kazıklı ahşap güverte, kumda rampa, babalar, can simidi direği */
+function drawFerryPier(p) {
+  var x0 = p.x0, x1 = p.x1, y0 = p.y0, y1 = p.y1, w = x1 - x0, k, t = gameT;
+  for (k = 0; k < 5; k++) { var py = y0 + 0.12 + k * (y1 - y0 - 0.24) / 4; boxP(x1 - 0.1, py - 0.05, 0.1, 0.1, -7, -4, '#6a4424', '#5a3a20', '#4a2e18'); }   /* kazıklar */
+  boxP(x0, y0, w, y1 - y0, -4, 0, '#c4925a', '#9a6236', '#7a4a28');                                 /* güverte */
+  quad4(pX(x0 + 0.04, y1), pY(x0 + 0.04, y1, 0), pX(x1 - 0.04, y1), pY(x1 - 0.04, y1, 0), pX(x1 - 0.1, y1 + 0.3), pY(x1 - 0.1, y1 + 0.3, 0), pX(x0 + 0.1, y1 + 0.3), pY(x0 + 0.1, y1 + 0.3, 0), '#b8874f');   /* kumdaki rampa */
+  ctx.save(); ctx.globalAlpha = 0.55; ctx.strokeStyle = '#7d4e2b'; ctx.lineWidth = 1; ctx.beginPath();
+  for (var yy = y0 + 0.22; yy < y1 + 0.25; yy += 0.22) { ctx.moveTo(R(pX(x0, yy)), R(pY(x0, yy, 0))); ctx.lineTo(R(pX(x1, yy)), R(pY(x1, yy, 0))); }
+  ctx.stroke(); ctx.restore();
+  wallP(x1, y0, x1, y1, -1.2, 0, '#b27744');                                                             /* kenar kirişi ışığı */
+  ctx.save(); ctx.globalAlpha = 0.45 + Math.sin(t * 1.6) * 0.12;                                        /* kazık diplerinde köpük */
+  for (k = 0; k < 5; k++) { var fy = y0 + 0.12 + k * (y1 - y0 - 0.24) / 4; px(pX(x1, fy) - 2, pY(x1, fy, -6.5) - 1, 5, 1, PAL.foam); }
+  ctx.restore();
+  for (k = 0; k < 2; k++) { var bby = FERRY_Y + (k ? -1.15 : 1.15), bxs = pX(x0 + 0.12, bby), bys = pY(x0 + 0.12, bby, 0);   /* babalar (palamar) */ px(bxs - 1, bys - 4, 3, 4, '#3c3a38'); px(bxs - 2, bys - 5, 5, 1, '#5a5754'); }
+  var lx = pX(x1 - 0.12, y1 - 0.5), ly = pY(x1 - 0.12, y1 - 0.5, 0);                                      /* can simidi direği */
+  px(lx, ly - 13, 1, 13, '#5d3c1c'); px(lx - 2, ly - 12, 5, 5, '#e07a2e'); px(lx - 1, ly - 11, 3, 3, '#f4efe2'); px(lx, ly - 10, 1, 1, '#5d3c1c');
+}
+/* vapur (klasik): çift başlı Şehir Hatları tipi — koyu gövde + kırmızı su hattı, beyaz üst yapı, pencere sıraları, tek baca (krem, siyah tepe, kırmızı bant),
+   can simitleri, halat usturmaçalar, bayrak. Gövde merkezi o.x, o.y; su hattı z = FERRY_WL (+ hafif sallantı). Kenarlar köprüye paralel (y boyunca). */
 function drawDockFerry(o) {
-  var rock = o.mv ? R(Math.sin((o.t || 0) * 0.9) * 0.9) : 0, sx = R(o.sx), sy = R(o.sy) + rock, i, a0 = ctx.globalAlpha;
-  ctx.globalAlpha = a0 * (o.a === undefined ? 1 : o.a);
-  var wk = 0.3 + (o.mv ? 0.2 : 0.1 * Math.sin((o.t || 0) * 2));                    /* su izi + pruvada çırpıntı */
-  ctx.globalAlpha = a0 * o.a * wk; px(sx - 2, sy + 1, 64, 1, PAL.foam); px(sx - 4, sy - 1, 4, 2, PAL.foam);
-  if (o.mv) { px(sx + 62, sy, 18, 1, PAL.foam); px(sx + 66, sy + 2, 12, 1, PAL.foam); }
+  var a0 = ctx.globalAlpha, t = o.t || 0, i, x = o.x, y = o.y, hb = FERRY_HB, hl = FERRY_HL, tp = 0.5;
+  var bz = o.mv ? Math.sin(t * 1.7) * 0.8 : Math.sin(t * 1.25) * 0.5, wl = FERRY_WL + bz, dz = FERRY_DZ + bz;
+  var X0 = x - hb, X1 = x + hb, Yn = y - hl, Ys = y + hl, W = '#f4f1e8', WL = '#ebe7dc', WD = '#d9d3c6';
   ctx.globalAlpha = a0 * o.a;
-  /* gövde: beyaz, kırmızı çizgi, mavi su hattı; pruva solda, eğik */
-  px(sx + 3, sy - 14, 56, 14, '#f2f0ea');
-  px(sx, sy - 15, 4, 4, '#f2f0ea'); px(sx + 1, sy - 11, 3, 4, '#f2f0ea'); px(sx + 2, sy - 7, 2, 4, '#e6e2d6');
-  px(sx + 59, sy - 14, 2, 11, '#e6e2d6');
-  px(sx, sy - 15, 61, 1, '#ffffff'); px(sx + 1, sy - 9, 60, 1, '#c4553d');
-  px(sx + 2, sy - 4, 59, 2, '#2a6f97'); px(sx + 3, sy - 2, 57, 2, '#1d3f57');
-  for (i = 0; i < 8; i++) px(sx + 10 + i * 6, sy - 12, 2, 2, '#2e4a5c');
-  px(sx + 4, sy - 12, 1, 2, '#3a3a3a');                                                   /* çapa kenedi */
-  /* alt salon + pencereler */
-  px(sx + 8, sy - 23, 48, 8, '#fbfaf6'); px(sx + 8, sy - 16, 48, 1, '#c9c4b6'); px(sx + 55, sy - 23, 1, 8, '#d8d4c8');
-  for (i = 0; i < 11; i++) px(sx + 10 + i * 4, sy - 21, 2, 3, '#6fa8c8');
-  px(sx + 12, sy - 20, 2, 4, '#e07a2e'); px(sx + 12, sy - 19, 2, 2, '#fbfaf6');           /* can simidi */
-  /* gezinti güvertesi + korkuluk (pruva kapısı açıkken önü boş) */
-  px(sx + 4, sy - 24, 54, 1, '#8a949c');
-  var r0 = o.gw > 0 ? 10 : 4;
-  px(sx + r0, sy - 27, 58 - r0, 1, '#e8e6de');
-  for (i = r0; i < 58; i += 4) px(sx + i, sy - 26, 1, 2, '#c9c7bd');
-  /* kaptan köşkü + baca + direk */
-  px(sx + 16, sy - 32, 26, 8, '#f4f0e6'); px(sx + 15, sy - 33, 28, 1, '#8a949c'); px(sx + 41, sy - 32, 1, 8, '#d8d4c8');
-  for (i = 0; i < 5; i++) px(sx + 18 + i * 5, sy - 31, 3, 2, '#6fa8c8');
-  px(sx + 33, sy - 41, 6, 8, '#c4553d'); px(sx + 33, sy - 41, 6, 1, '#2c2c2c'); px(sx + 33, sy - 38, 6, 1, '#f4f0e6');
-  var sm = Math.sin((o.t || 0) * 1.3);
-  ctx.globalAlpha = a0 * o.a * 0.45; px(sx + 38 + R(sm), sy - 44, 3, 2, '#e6e4de'); px(sx + 41 + R(sm * 2), sy - 47, 4, 2, '#e6e4de'); ctx.globalAlpha = a0 * o.a;
-  px(sx + 7, sy - 38, 1, 14, '#5d3c1c'); hkFlag(sx + 8, sy - 38, 5, 3);
+  ctx.save(); ctx.globalAlpha = a0 * o.a * 0.22; quad4(pX(X1 + 0.12, Yn + tp), pY(X1 + 0.12, Yn + tp, FERRY_WL), pX(X1 + 0.12, Ys - tp), pY(X1 + 0.12, Ys - tp, FERRY_WL), pX(x, Ys + 0.1), pY(x, Ys + 0.1, FERRY_WL), pX(x, Yn - 0.1), pY(x, Yn - 0.1, FERRY_WL), '#0e2c3a'); ctx.restore();   /* gövde gölgesi */
+  drawFerryWake(o, x, y);
+  ctx.globalAlpha = a0 * o.a;
+  /* gövde: sancak bordası (+x), pruva omuzu (+x+y), kırmızı su hattı, beyaz küpeşte, ahşap güverte */
+  wallP(X1, Yn + tp, X1, Ys - tp, wl, dz, '#24303c'); wallP(X1, Ys - tp, x, Ys, wl, dz, '#33424f');
+  wallP(X1, Yn + tp, X1, Ys - tp, wl, wl + 1.5, '#9a3a2a'); wallP(X1, Ys - tp, x, Ys, wl, wl + 1.5, '#a8452f');
+  wallP(X1, Yn + tp, X1, Ys - tp, dz - 1, dz, '#e8e4da'); wallP(X1, Ys - tp, x, Ys, dz - 1, dz, '#f4f1e8');
+  ctx.beginPath(); ctx.moveTo(R(pX(X0, Yn + tp)), R(pY(X0, Yn + tp, dz))); ctx.lineTo(R(pX(x, Yn)), R(pY(x, Yn, dz))); ctx.lineTo(R(pX(X1, Yn + tp)), R(pY(X1, Yn + tp, dz)));
+  ctx.lineTo(R(pX(X1, Ys - tp)), R(pY(X1, Ys - tp, dz))); ctx.lineTo(R(pX(x, Ys)), R(pY(x, Ys, dz))); ctx.lineTo(R(pX(X0, Ys - tp)), R(pY(X0, Ys - tp, dz))); ctx.closePath();
+  ctx.fillStyle = '#b88a58'; ctx.fill();
+  for (i = 0; i < 10; i++) { var py0 = Yn + 0.5 + i * 0.18; px(pX(X1, py0), pY(X1, py0, wl + 4.5), 1, 1, '#9fc4d8'); }   /* lombozlar */
+  /* ana salon + pencere sırası + borda kapısı + can simitleri */
+  var sy0 = y - 0.92, sy1 = y + 0.92;
+  boxP(x - 0.28, sy0, 0.56, sy1 - sy0, dz, dz + 6.5, W, WL, WD);
+  for (i = 0; i < 10; i++) { var wy = sy0 + 0.08 + i * 0.18; if (Math.abs(wy - FERRY_GY) < 0.12) continue; px(pX(x + 0.28, wy) - 1, pY(x + 0.28, wy, dz + 5.2), 2, 2, '#3f6f8f'); }
+  px(pX(x + 0.28, FERRY_GY) - 1, pY(x + 0.28, FERRY_GY, dz + 5.6), 3, 6, o.gw > 0 ? '#2a2420' : '#8a8478');                   /* borda kapısı */
+  for (i = 0; i < 2; i++) { var cby = i ? sy1 - 0.25 : sy0 + 0.3, cbx = pX(x + 0.28, cby), cbz = pY(x + 0.28, cby, dz + 2.6); px(cbx - 1, cbz - 1, 3, 3, '#e07a2e'); px(cbx, cbz, 1, 1, W); }
+  /* üst güverte döşemesi (saçak), korkuluk, üst salon, iki uçta kaptan köşkü, baca, direk + bayrak */
+  boxP(x - 0.36, y - 1.02, 0.72, 2.04, dz + 6.5, dz + 7.3, '#c9c4b6', WL, '#cfc9bb');
+  boxP(x - 0.22, y - 0.95, 0.44, 0.3, dz + 7.3, dz + 12.3, W, WL, WD);                                            /* kıç köşk (çift başlı) */
+  boxP(x - 0.24, y - 0.65, 0.48, 1.23, dz + 7.3, dz + 11.8, W, WL, WD);
+  for (i = 0; i < 6; i++) { var uy = y - 0.56 + i * 0.2; px(pX(x + 0.24, uy) - 1, pY(x + 0.24, uy, dz + 10.4), 2, 2, '#3f6f8f'); }
+  boxP(x - 0.26, y + 0.58, 0.52, 0.32, dz + 7.3, dz + 12.8, W, WL, WD);                                           /* pruva köşkü */
+  wallP(x - 0.24, y + 0.9, x + 0.26, y + 0.9, dz + 10.2, dz + 12.1, '#2c3e4c'); wallP(x + 0.26, y + 0.6, x + 0.26, y + 0.88, dz + 10.2, dz + 12.1, '#24323e');
+  wallP(x + 0.36, y - 1.02, x + 0.36, y + 1.02, dz + 8.8, dz + 9.3, '#ffffff');                                     /* korkuluk küpeştesi */
+  for (i = 0; i < 9; i++) { var ry = y - 0.98 + i * 0.245; px(pX(x + 0.36, ry), pY(x + 0.36, ry, dz + 9), 1, 2, '#d6d2c8'); }
+  boxP(x - 0.13, y - 0.25, 0.26, 0.3, dz + 11.8, dz + 20, '#2a2a2a', '#e8d9a8', '#cdbd8c');                       /* baca: krem, kırmızı bant, siyah tepe */
+  wallP(x + 0.13, y - 0.25, x + 0.13, y + 0.05, dz + 18.5, dz + 20, '#2a2a2a'); wallP(x - 0.13, y + 0.05, x + 0.13, y + 0.05, dz + 18.5, dz + 20, '#333333');
+  wallP(x + 0.13, y - 0.25, x + 0.13, y + 0.05, dz + 15.5, dz + 16.5, '#b8402c'); wallP(x - 0.13, y + 0.05, x + 0.13, y + 0.05, dz + 15.5, dz + 16.5, '#c4553d');
+  var mx = pX(x, y - 0.8), my = pY(x, y - 0.8, dz + 12.3);
+  px(mx, my - 9, 1, 9, '#5d3c1c'); hkFlag(mx + 1, my - 9, 6, 4);
+  for (i = 0; i < 4; i++) { var fy = Yn + 0.55 + i * 0.5, fx = pX(X1, fy), fyy = pY(X1, fy, dz - 1); px(fx, fyy, 1, 2, '#c9b183'); px(fx - 1, fyy + 2, 2, 3, '#8a6a44'); }   /* halat usturmaçalar */
+  var sm = Math.sin(t * 1.3), fx2 = pX(x, y - 0.1), fy2 = pY(x, y - 0.1, dz + 20);                                 /* baca dumanı */
+  ctx.globalAlpha = a0 * o.a * 0.45; px(fx2 + 1 + R(sm), fy2 - 3, 3, 2, '#e6e4de'); px(fx2 + 4 + R(sm * 2), fy2 - 6, 4, 2, '#e6e4de'); ctx.globalAlpha = a0 * o.a;
+  if (!o.mv) drawFerryRopes(o, bz);
   drawGangway(o);
   ctx.globalAlpha = a0;
 }
-/* iskele tahtası (her iki modda bu çizer): pruva kapısı o.g0'dan köprü korkuluğunun içine (o.g1), o.gw kadar uzamış */
-function drawGangway(o) {
-  var i;
-  if (o.gw > 0) {
-    var g0 = o.g0, ex = lerp(g0.x, o.g1.x, o.gw), ey = lerp(g0.y - 3, o.g1.y, o.gw), nx = -2.6, ny = 1.3;
-    quad([[g0.x + nx, g0.y + ny], [ex + nx, ey + ny], [ex - nx, ey - ny], [g0.x - nx, g0.y - ny]], '#9a7348');
-    quad([[g0.x + nx, g0.y + ny], [ex + nx, ey + ny], [ex + nx, ey + ny + 1], [g0.x + nx, g0.y + ny + 1]], '#5d4128');
-    for (i = 1; i < 5; i++) { var u = i / 5; px(lerp(g0.x, ex, u) - 2, lerp(g0.y, ey, u), 4, 1, '#7a5634'); }
-    ctx.strokeStyle = '#e8dcc0'; ctx.lineWidth = 1; ctx.beginPath();                    /* halat korkuluk (önde) */
-    ctx.moveTo(R(g0.x + nx), R(g0.y + ny - 5)); ctx.lineTo(R(ex + nx), R(ey + ny - 5)); ctx.stroke();
-    px(g0.x + nx, g0.y + ny - 5, 1, 5, '#5d4128'); px(ex + nx, ey + ny - 5, 1, 5, '#5d4128');
+/* su: yanaşıkken borda dibinde hafif köpük; giderken/gelirken kıçta iz (V) + pruva dalgası. İki modda da bu çizer (ayırmasız). */
+function fq(v) { return Math.round(v * curK) / curK; }                             /* ince ızgaraya hizala (klasikte tam piksel) */
+function drawFerryWake(o, x, y) {
+  var t = o.t || 0, i, a0 = ctx.globalAlpha, X1 = x + FERRY_HB, Ys = y + FERRY_HL, Yn = y - FERRY_HL, wl = FERRY_WL, f = ctx.fillStyle, h = 1 / curK;
+  ctx.fillStyle = PAL.foam;
+  for (i = 0; i < 6; i++) {                                                          /* bordada su çizgisi */
+    var ph = (t * 0.7 + i * 0.19) % 1, yy = Yn + 0.4 + i * 0.4 + ph * 0.2;
+    ctx.globalAlpha = a0 * (0.5 - ph * 0.35); ctx.fillRect(fq(pX(X1 + 0.03, yy)), fq(pY(X1 + 0.03, yy, wl)), 4, h);
   }
+  if (o.dir) {
+    var tail = o.dir > 0 ? Yn : Ys, sg = o.dir > 0 ? -1 : 1;                         /* hareketin tersine uzanan iz */
+    for (i = 0; i < 9; i++) {
+      var q = (i + (t * 2.2) % 1) / 9, d = q * 2.4, sp = 0.1 + q * 0.5;
+      ctx.globalAlpha = a0 * 0.55 * (1 - q);
+      ctx.fillRect(fq(pX(x - sp, tail + sg * d)), fq(pY(x - sp, tail + sg * d, wl)), 3, h);
+      ctx.fillRect(fq(pX(x + sp, tail + sg * d)), fq(pY(x + sp, tail + sg * d, wl)), 3, h);
+      if (i < 4) { ctx.globalAlpha = a0 * 0.35 * (1 - q); ctx.fillRect(fq(pX(x, tail + sg * d)) - 2, fq(pY(x, tail + sg * d, wl)), 5, h); }
+    }
+    var head = o.dir > 0 ? Ys : Yn, hs = -sg;                                        /* pruva dalgası */
+    ctx.globalAlpha = a0 * (0.55 + Math.sin(t * 6) * 0.15);
+    ctx.fillRect(fq(pX(x, head + hs * 0.05)) - 3, fq(pY(x, head + hs * 0.05, wl)), 6, h * 2);
+    ctx.fillRect(fq(pX(x + 0.2, head - hs * 0.2)), fq(pY(x + 0.2, head - hs * 0.2, wl)) + 1, 3, h);
+  }
+  ctx.globalAlpha = a0; ctx.fillStyle = f;
+}
+/* palamarlar (iki modda da bu çizer): vapurun baş/kıç babalarından iskele babalarına sarkık halat */
+function drawFerryRopes(o, bz) {
+  var k, j, f = ctx.fillStyle, K = curK, s = 1 / K;
+  ctx.fillStyle = '#d9c8a0';
+  for (k = 0; k < 2; k++) {
+    var ya = o.y + (k ? -1.05 : 1.05), yb = FERRY_Y + (k ? -1.15 : 1.15);
+    var ax = pX(o.x + FERRY_HB - 0.06, ya), ay = pY(o.x + FERRY_HB - 0.06, ya, FERRY_DZ + bz + 0.6), ex = pX(FPIER.x0 + 0.12, yb), ey = pY(FPIER.x0 + 0.12, yb, 3);
+    for (j = 0; j <= 12; j++) { var u = j / 12; ctx.fillRect(Math.round((ax + (ex - ax) * u) * K) / K, Math.round((ay + (ey - ay) * u + Math.sin(u * Math.PI) * 2.2) * K) / K, s, s); }
+  }
+  ctx.fillStyle = f;
+}
+/* iskele tahtası (her iki modda bu çizer): borda kapısı o.g0'dan iskele kenarına (o.g1), o.gw kadar uzamış; o.gn yarı en (ekran vektörü) */
+function drawGangway(o) {
+  if (!(o.gw > 0)) return;
+  var g0 = o.g0, n = o.gn, ex = lerp(g0.x, o.g1.x, o.gw), ey = lerp(g0.y, o.g1.y, o.gw), i;
+  quad4(g0.x + n.x, g0.y + n.y, ex + n.x, ey + n.y, ex - n.x, ey - n.y, g0.x - n.x, g0.y - n.y, '#9a7348');
+  quad4(g0.x + n.x, g0.y + n.y, ex + n.x, ey + n.y, ex + n.x, ey + n.y + 1, g0.x + n.x, g0.y + n.y + 1, '#5d4128');
+  for (i = 1; i < 4; i++) { var u = i / 4, cx = lerp(g0.x, ex, u), cy = lerp(g0.y, ey, u); quad4(cx + n.x, cy + n.y, cx + n.x + 1, cy + n.y, cx - n.x + 1, cy - n.y, cx - n.x, cy - n.y, '#7a5634'); }
+  ctx.strokeStyle = '#e8dcc0'; ctx.lineWidth = 1; ctx.beginPath();                    /* halat korkuluk (önde) */
+  ctx.moveTo(R(g0.x + n.x), R(g0.y + n.y - 5)); ctx.lineTo(R(ex + n.x), R(ey + n.y - 5)); ctx.stroke();
+  px(g0.x + n.x, g0.y + n.y - 5, 1, 5, '#5d4128'); px(ex + n.x, ey + n.y - 5, 1, 5, '#5d4128');
 }
 
 /* ---------- lodos + yağmur ---------- */
@@ -13414,7 +13617,7 @@ function wxStart() {
   for (i = 0; i < fl.length; i++) {                                    /* kaçanlar koşar; kayıp SAYILMAZ (vergi memurundaki gibi) */
     cu = fl[i];
     if (cu.c.slots[cu.slot] === cu) cu.c.slots[cu.slot] = null;
-    cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; cu.flee = true; cu.wxFled = 1; cu.wp = null; cu.umb = 0;
+    cu.state = 'leave'; cu.happyLeave = true; cu.leaveT = 0; cu.flee = true; cu.wxFled = 1; cu.wp = null; cu.wps = null; cu.umb = 0; if (cu.ferry) cu.z = 0;   /* v2.26.1: tahtadaysa yere iner */
     addFloat(cu.x, cu.y - 0.7, '!', '#9fd0ff');
   }
   if (fl.length) counters.forEach(function (c) { shiftQueue(c); });
@@ -15229,6 +15432,9 @@ function layoutRects() {
   AREA_LAMPS.forEach(function (ls, z) { ls.forEach(function (l, k) { add('lamba ' + z + '-' + k, 'lp' + z + k, z, l.x, l.y, 0.2, 0.2); }); });
   BINS.forEach(function (b, i) { add('çöp ' + i, 'bin' + i, b.z, b.x, b.y, 0.3, 0.3); });
   add('Ana Kasa', 'safe', 0, safe.x, safe.y, 0.5, 0.5);
+  /* v2.26.1: vapur iskelesi (kumdaki rampasıyla) + vapurun yanaşma yeri: hep ayrılı */
+  add('vapur iskelesi', 'fpier', 0, (FPIER.x0 + FPIER.x1) / 2, (FPIER.y0 + FPIER.y1 + 0.3) / 2, (FPIER.x1 - FPIER.x0) / 2, (FPIER.y1 + 0.3 - FPIER.y0) / 2);
+  add('vapur yanaşma yeri', 'fpier', 0, FERRY_X, FERRY_Y, FERRY_HB, FERRY_HL);
   DECOR.forEach(function (d) { add('süs ' + d.id, 'dc' + d.id, d.z, d.x, d.y, 0.42, 0.42); });
   add('başlangıç noktası', 'start', 0, 4.5, 3.2, 0.25, 0.25);
   /* v2.16: meydan binaları + Şeref Panosu (pano bunlarla çakışmasın) */
@@ -20805,7 +21011,8 @@ function hookLok(name, f0) {
   drawVignette = hook('drawVignette', drawVignette);
   drawOffice = hook('drawOffice', drawOffice);
   drawAdBureau = hook('drawAdBureau', drawAdBureau);   /* v2.18-deneme: İlan Bürosu (o: {x, y, w, h, lv, hh, door, t, radio, fair, ads, up}) */
-  drawDockFerry = hook('drawDockFerry', drawDockFerry);   /* v2.26: köprüye yanaşan yolcu vapuru + iskele tahtası (o: {sx, sy (pruva su hattı, ekran), gw 0–1, g0:{x,y} kapı, g1:{x,y} köprü ucu (ekran), t, ph, n}) */
+  drawDockFerry = hook('drawDockFerry', drawDockFerry);   /* v2.26.1: vapur iskelesine bordadan yanaşan yolcu vapuru (o: {x, y gövde merkezi (dünya; su hattı z = FERRY_WL), off, gw 0–1, g0/g1 kapı/iskele kenarı (ekran), gn tahta yarı eni, t, ph, a, mv, dir}); su izi, palamar ve tahta ortak (drawFerryWake / drawFerryRopes / drawGangway) */
+  drawFerryPier = hook('drawFerryPier', drawFerryPier);   /* v2.26.1: ahşap vapur iskelesi (p = FPIER: {x0, x1, y0, y1}; güverte z = 0, kenar su hattına iner) */
   drawUmbrella = hook('drawUmbrella', drawUmbrella);     /* v2.26: müşteri şemsiyesi (cu: müşteri; cu.x, cu.y, cu.face, cu.bob, cu.state; renk umbCol(cu); ol: kıyafet {tall, short}) */
   drawTellal = hook('drawTellal', drawTellal);         /* v2.18-deneme: tellal NPC (o: {x, y, z, face, walk, bob, vx, vy, say, t, bell}) */
   drawAdPoster = hook('drawAdPoster', drawAdPoster);   /* v2.18-deneme: yol panosu afişi (o: {x, y, i, ad, text, left, t}) */
@@ -20826,6 +21033,7 @@ function hookLok(name, f0) {
   drawYardGround = hook('drawYardGround', drawYardGround);
   drawMeydanGround = hook('drawMeydanGround', drawMeydanGround);
   drawMainBridge = hook('drawMainBridge', drawMainBridge);   /* v2.24: anakara köprüsü (o: {x, y0, y1, w, t}); ufuk/kıyı kırpması ve sis oyunda */
+  drawMainBridgeFoot = hook('drawMainBridgeFoot', drawMainBridgeFoot);   /* v2.26.1: köprünün adaya indiği yer (kırpmasız, yoldan sonra): taş rampa, kum, kaya, baş babaları (o = MAINBR) */
   drawHut = hook('drawHut', drawHut);
   drawDepot = hook('drawDepot', drawDepot);
   drawDepotWing = hook('drawDepotWing', drawDepotWing);   /* v2.18-deneme: depo kanadı (o: {k:'ambar'|'soguk'|'kiler'|'uzanti'|'rampa', x, y, w, h, fill: 0-1, t}) */
@@ -21281,7 +21489,7 @@ Object.assign(window.BT, { tarif: tarifBT() });
 Object.assign(window.BT, {
   wx: { start: function () { return wxStart(); }, dur: function (s) { WX.dur = WX.t + s; }, stop: function (rush) { return wxStop(rush !== false); }, mul: function () { return wxMul(); }, flee: WX_FLEE_LINES, umbLines: WX_UMB_LINES,
     st: function () { return { on: WX.on, t: WX.t, dur: WX.dur, after: WX.after, vis: WX.vis, at: WX.at, dn: WX.dn, fled: WX.fled, stay: WX.stay, mul: wxMul(), umb: customers.filter(function (c) { return c.umb; }).length, yell: WX.yell.length }; } },
-  ferry: { call: function (n) { return ferryCall(n); }, pop: ferryPop, stalls: function () { return ferryStalls().map(function (c) { return c.key; }); }, obj: ferryObj, S: FERRY_S, E: FERRY_E, dy: FERRY_DY,
+  ferry: { call: function (n) { return ferryCall(n); }, pop: ferryPop, stalls: function () { return ferryStalls().map(function (c) { return c.key; }); }, obj: ferryObj, S: FERRY_S, E: FERRY_E, dy: FERRY_Y, pier: FPIER, wp: FERRY_WP, pos: { x: FERRY_X, y: FERRY_Y, hb: FERRY_HB, hl: FERRY_HL },
     st: function () { var F = FERRY; return { ph: F.ph, t: F.t, off: F.off, gw: F.gw, n: F.n, left: F.left, got: F.got, gone: F.gone, walk: F.walk.length, nextT: F.nextT, calls: F.calls, pax: customers.filter(function (c) { return c.ferry; }).length }; } },
   custTypeFor: custTypeFor
 });     /* v2.18-deneme — Tarif Defteri + Güveç Ocağı test kancaları */
