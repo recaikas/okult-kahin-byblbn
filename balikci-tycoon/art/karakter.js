@@ -69,6 +69,7 @@ function build(o, pose, arm, fx, mood) {
   var coat = col(o.coat, PAL.indigo), coat2 = col(o.coat2, coat);
   var skin = col(o.skin, PAL.skin[0]), hair = col(o.hair, PAL.hair[0]);
   var pants = col(o.pants, '#2b3a45'), boot = col(o.boot, '#1a2830'), bootTop = col(o.bootTop, '#2f4450');
+  if (o.mask) skin = col(o.mask, '#c62828');           /* v2.25: tam maske — baş ve eller maske renginde (ten görünmez) */
   var skL = lite(skin, 0.2), skS = dark(skin, 0.2), skD = dark(skin, 0.36);
   var hrL = lite(hair, 0.3), hrD = dark(hair, 0.3);
   var H2 = o.tall ? 8 : o.short ? -4 : 0;
@@ -246,7 +247,17 @@ function build(o, pose, arm, fx, mood) {
     rf(-3 + L2, TT + 8, 3, 1, bl1); rf(-5 + L2, TT + 9, 2, 1, bl1);
     pf(2 + L2, TT + 14, dark(coat, 0.3));
   }
-  if (!o.tie && !o.bowtie && !o.scarf) {              /* V yaka */
+  if (o.stripes) {                                    /* v2.25: dikey forma çizgileri — gövdenin (göbek dahil) kendi tonlarının üstüne */
+    var stc = col(o.stripes, '#f2f2f2'), stM = {};
+    stM[coat] = stc; stM[dark(coat, 0.1)] = stc; stM[mix(coat2, coat, 0.5)] = stc;
+    stM[cL] = lite(stc, 0.14); stM[lite(coat, 0.22)] = lite(stc, 0.2);
+    stM[cD] = dark(stc, 0.24); stM[dark(coat, 0.22)] = dark(stc, 0.22); stM[dark(coat, 0.3)] = dark(stc, 0.3); stM[dark(coat, 0.36)] = dark(stc, 0.36);
+    for (var sy3 = TT + 1; sy3 <= TB; sy3++) for (var sx3 = belly ? lean - 13 : tx; sx3 < (belly ? lean + 14 : tx + 16); sx3++) {
+      if (((sx3 - tx + 1) & 3) > 1) continue;
+      var stv = stM[b.get(sx3, sy3)]; if (stv) p(sx3, sy3, stv);
+    }
+  }
+  if (!o.tie && !o.bowtie && !o.scarf && !o.mask) {   /* V yaka */
     r(-3 + lean, TT, 6, 1, skS); r(-2 + lean, TT + 1, 4, 1, skS); r(-1 + lean, TT + 2, 2, 1, skD);
     p(-4 + lean, TT, lite(coat2, 0.2)); p(3 + lean, TT, lite(coat2, 0.2));
   }
@@ -380,9 +391,61 @@ function build(o, pose, arm, fx, mood) {
     handAt(hand.x, hand.y, fx > 0);
   }
 
+  var freeHand = arm === 0 && !raise;                  /* v2.25: öndeki el boşta sarkıyor (baston, kılıç, çekiç) */
+  if (o.sword && !carrying) {                         /* v2.25: kında kılıç — kalçadan arkaya çapraz, el kabzada */
+    var swc = col(o.sword, '#9aa4ae'), swL = lite(swc, 0.38), swD = dark(swc, 0.32), swG = '#c9952f';
+    var s0x = 6 + bo + L2, s0y = TB - 3;
+    for (var si = 0; si < 17; si++) {
+      var ssx = s0x - si, ssy = s0y + (si >> 1), band = si === 5 || si === 6 || si === 11;
+      pf(ssx, ssy, band ? '#4a3020' : si > 14 ? swL : lite(swc, 0.12)); pf(ssx, ssy + 1, band ? '#2a1a10' : si > 14 ? swc : swD);
+    }
+    pf(s0x - 17, s0y + 9, swD);
+    rf(s0x + 1, s0y - 2, 1, 5, swG); pf(s0x + 1, s0y - 2, lite(swG, 0.4)); pf(s0x + 1, s0y + 2, dark(swG, 0.3));   /* balçak */
+    rf(s0x + 2, s0y - 1, 2, 1, '#5a3a20'); rf(s0x + 2, s0y, 2, 1, '#3a2414'); pf(s0x + 4, s0y - 2, '#5a3a20');     /* kabza */
+    rf(s0x + 5, s0y - 3, 2, 2, swG); pf(s0x + 5, s0y - 3, lite(swG, 0.4));                                           /* topuz */
+    if (freeHand) handAt(hand.x, hand.y, fx > 0);
+  }
+  if (o.cane && freeHand) {                           /* v2.25: baston — öndeki elde, kıvrık sap, yere değer */
+    var cn = col(o.cane, '#6b4a2a'), cnL = lite(cn, 0.25), cnD = dark(cn, 0.3);
+    var cnx = hand.x + 2, cny = hand.y - 2;
+    rf(cnx, cny, 1, -cny - 2, cnL); rf(cnx + 1, cny, 1, -cny - 2, cn);
+    rf(cnx, -3, 2, 3, '#2a2420'); rf(cnx, -3, 2, 1, '#4a4038');                                   /* lastik uç */
+    rf(cnx, cny - 1, 4, 1, cnL); rf(cnx + 1, cny - 2, 3, 1, lite(cn, 0.4)); rf(cnx + 4, cny - 1, 1, 3, cnD); pf(cnx + 4, cny - 2, cn);   /* sap */
+    handAt(hand.x, hand.y, fx > 0);
+  }
+  if (o.hammer && !carrying) {                        /* v2.25: savaş çekici — öndeki elde, başı aşağıda */
+    var hmc = col(o.hammer, '#9aa4ae'), hmL = lite(hmc, 0.32), hmD = dark(hmc, 0.32);
+    var hhx = hand.x + 1, hhy = hand.y;
+    rf(hhx, hhy - 3, 2, 11, '#6a4424'); rf(hhx, hhy - 3, 1, 11, '#8a5a32');
+    pf(hhx + 1, hhy + 4, '#3a2414'); pf(hhx + 1, hhy + 6, '#3a2414'); rf(hhx, hhy - 4, 2, 1, hmD);   /* sargı + dip */
+    rf(hhx - 4, hhy + 8, 10, 6, hmc); rf(hhx - 4, hhy + 8, 10, 1, hmL); rf(hhx - 4, hhy + 9, 1, 4, hmL);
+    rf(hhx + 5, hhy + 9, 1, 5, hmD); rf(hhx - 4, hhy + 13, 10, 1, hmD);
+    rf(hhx - 2, hhy + 10, 6, 2, dark(hmc, 0.14)); rf(hhx - 2, hhy + 10, 6, 1, lite(hmc, 0.12));      /* ortadaki oyma */
+    b.del(X(hhx - 4, 1), hhy + 8); b.del(X(hhx + 5, 1), hhy + 13);
+    handAt(hand.x, hand.y, fx > 0);
+  }
+  if (o.keyboard && carrying) {                       /* v2.25: klavye — iki elle göğüs önünde */
+    var kbc = col(o.keyboard, '#2a2a30'), kbL = lite(kbc, 0.22), kbK = lite(kbc, 0.5), kbD = dark(kbc, 0.4);
+    var kx0 = -10 + lean, ky0 = TT + 6;
+    r(kx0, ky0, 20, 4, kbc); r(kx0, ky0, 20, 1, kbL); r(kx0, ky0 + 3, 20, 1, kbD);
+    for (var kk = 0; kk < 9; kk++) { p(kx0 + 2 + kk * 2, ky0 + 1, kbK); if (kk < 3 || kk > 6) p(kx0 + 1 + kk * 2, ky0 + 2, kbK); }
+    r(kx0 + 7, ky0 + 2, 6, 1, kbK); p(kx0 + 16, ky0 + 1, '#ffd76a');                              /* boşluk tuşu + bir renkli tuş */
+    r(kx0 - 1, ky0 + 1, 1, 2, kbD); r(kx0 + 20, ky0 + 1, 1, 2, kbD);
+    pf(-12 + L2, ky0 + 4, '#1a1a1e'); pf(-13 + L2, ky0 + 5, '#1a1a1e'); pf(-13 + L2, ky0 + 6, '#1a1a1e'); pf(-12 + L2, ky0 + 7, '#1a1a1e');   /* sarkan kablo */
+    handAt(-8 + lean, TT + 9, false, true); handAt(4 + lean, TT + 9, true, true);
+  }
+  if (o.gauntlet) {                                   /* v2.25: altın eldiven — öndeki el, biraz iri yumruk */
+    var gt = col(o.gauntlet, '#e0b040'), gtL = lite(gt, 0.32), gtD = dark(gt, 0.3);
+    var gx = hand.x - 1, gy = hand.y - 2;
+    rf(gx, gy, 6, 2, gtD); rf(gx, gy, 6, 1, gt);                                                 /* bilek kafesi */
+    rf(gx, gy + 2, 6, 4, gt); rf(gx, gy + 2, 6, 1, gtL); rf(gx, gy + 3, 1, 3, gtL); rf(gx + 5, gy + 3, 1, 3, gtD);
+    rf(gx + 1, gy + 5, 4, 1, gtD); pf(gx + 2, gy + 4, gtD); pf(gx + 4, gy + 4, gtD);              /* parmak boğumları */
+    pf(gx + 3, gy + 3, '#c02838'); pf(gx + 1, gy + 3, lite(gt, 0.55));
+  }
+
   /* ---------- saç (arka katman) ---------- */
   var hs = o.hairStyle | 0;
-  var hat = o.scarf ? 'scarf' : o.fez ? 'fez' : o.tophat ? 'tophat' : o.fedora ? 'fedora' : o.turban ? 'turban' : o.cap ? 'cap' :
+  var hat = o.mask ? 'mask' : o.scarf ? 'scarf' : o.fez ? 'fez' : o.tophat ? 'tophat' : o.fedora ? 'fedora' : o.turban ? 'turban' : o.cap ? 'cap' :
     o.chefHat ? 'chef' : o.sunHat ? 'sun' : o.beanie ? 'beanie' : '';
   var backOK = !hat || hat === 'cap' || hat === 'beanie' || hat === 'tophat' || hat === 'fedora' || hat === 'sun';
   if (hat === 'scarf') {
@@ -422,8 +485,33 @@ function build(o, pose, arm, fx, mood) {
   p(hx - 7, HY + 6, skin); p(hx - 7, HY + 7, skS); p(hx - 7, HY + 8, skin);      /* kulaklar */
   p(hx + 6, HY + 6, skS); p(hx + 6, HY + 7, skD); p(hx + 6, HY + 8, skS);
 
+  var fpc = o.facePaint && !o.mask ? col(o.facePaint, '#b8352b') : null;
+  if (fpc) { rf(c + 2, HY, 2, 14, fpc); pf(c + 2, HY + 13, dark(fpc, 0.2)); pf(c + 3, HY, lite(fpc, 0.15)); }   /* v2.25: yüz boyası — bir gözün üstünden aşağı */
+
   /* ---------- yüz (sağa bakış koordinatı, c = kafa kayması) ---------- */
-  var brow = mix(hair, skin, 0.4), pup = '#2a1810', ew = '#f4f0e6';
+  if (o.mask) {                                       /* v2.25: maske yüzü */
+    var mkD = dark(skin, 0.4);
+    if (o.maskFace) {                                 /* ön yüz plakası (altın) + parlayan göz yarıkları */
+      var mf = col(o.maskFace, '#e0b040'), mfL = lite(mf, 0.32), mfD = dark(mf, 0.3), mgl = col(o.eyeC, '#eaf8ff');
+      rf(c - 4, HY + 3, 10, 9, mf); rf(c - 3, HY + 12, 8, 1, mf); rf(c - 2, HY + 13, 6, 1, mfD);
+      rf(c - 4, HY + 3, 10, 1, mfL); rf(c - 4, HY + 4, 1, 8, mfL); rf(c + 5, HY + 4, 1, 8, mfD); pf(c + 4, HY + 12, mfD);
+      rf(c - 3, HY + 6, 3, 1, mgl); rf(c + 2, HY + 6, 3, 1, mgl); rf(c - 3, HY + 7, 3, 1, mfD); rf(c + 2, HY + 7, 3, 1, mfD);
+      rf(c - 1, HY + 11, 4, 1, mfD); pf(c - 3, HY + 9, mfD); pf(c + 4, HY + 9, mfD); pf(c, HY + 4, lite(mf, 0.5));
+    } else if (o.maskEye) {                           /* iri beyaz göz camları + ağ çizgileri */
+      var mw = col(o.maskEye, '#ffffff'), web = dark(skin, 0.24);
+      rf(c, HY + 1, 1, 13, web); rf(c - 6, HY + 11, 12, 1, web); rf(c - 6, HY + 2, 5, 1, web); rf(c + 2, HY + 2, 4, 1, web);
+      var LE = ['kkkk.', 'kwwwk', 'kwwwk', '.kwwk', '..kk.'], RE = ['.kkkk', 'kwwwk', 'kwwwk', 'kwwk.', '.kk..'];
+      for (var ly = 0; ly < 5; ly++) for (var lx = 0; lx < 5; lx++) {
+        var lc = LE[ly][lx], rc = RE[ly][lx];
+        if (lc !== '.') pf(c - 5 + lx, HY + 4 + ly, lc === 'k' ? mkD : (ly === 1 && lx === 1 ? '#ffffff' : mw));
+        if (rc !== '.') pf(c + 1 + lx, HY + 4 + ly, rc === 'k' ? mkD : (ly === 1 && lx === 1 ? '#ffffff' : dark(mw, 0.06)));
+      }
+    } else {                                          /* düz maske: göz delikleri */
+      rf(c - 4, HY + 5, 3, 3, mkD); rf(c + 2, HY + 5, 3, 3, mkD);
+      rf(c - 3, HY + 6, 2, 1, '#f4f0e6'); rf(c + 3, HY + 6, 2, 1, '#f4f0e6');
+    }
+  } else {
+  var brow = mix(hair, skin, 0.4), pup = o.eyeC ? col(o.eyeC, '#4fd6ff') : '#2a1810', ew = o.eyeC ? lite(pup, 0.55) : '#f4f0e6';
   var browY = o.glasses ? HY + 4 : HY + 5;
   if (mood === 1) {                                   /* kızgın kaşlar */
     rf(c - 4, browY - 1, 1, 1, brow); rf(c - 3, browY, 2, 1, brow);
@@ -432,6 +520,10 @@ function build(o, pose, arm, fx, mood) {
   if (!o.shades) {
     rf(c - 4, HY + 6, 1, 3, ew); rf(c - 3, HY + 6, 2, 3, pup); pf(c - 3, HY + 6, '#ffffff');
     rf(c + 2, HY + 6, 1, 3, ew); rf(c + 3, HY + 6, 2, 3, pup); pf(c + 3, HY + 6, '#ffffff');
+    if (o.eyeC) for (var gi2 = 0; gi2 < 3; gi2++) {    /* v2.25: parlayan göz: üstte hafif ışıma */
+      b.set(X(c - 4 + gi2, 1), HY + 5, pup, 0.4); b.set(X(c + 2 + gi2, 1), HY + 5, pup, 0.4);
+      b.set(X(c - 5, 1), HY + 6 + gi2, pup, 0.25); b.set(X(c + 5, 1), HY + 6 + gi2, pup, 0.25);
+    }
   }
   rf(c, HY + 8, 2, 2, skS); pf(c + 1, HY + 10, skD); pf(c, HY + 10, skS);        /* burun */
   b.set(X(c - 5, 2), HY + 10, '#f08070', 0.45); b.set(X(c - 5, 2) + 1, HY + 10, '#f08070', 0.45);   /* yanak */
@@ -482,6 +574,7 @@ function build(o, pose, arm, fx, mood) {
     rf(c + 1, HY + 5, 5, 5, ep); b.del(X(c + 1, 1), HY + 5); b.del(X(c + 5, 1), HY + 9); pf(c + 2, HY + 6, '#3a3a46');
     rf(c + 6, HY + 5, 1, 2, ep);
   }
+  }                                                   /* maske değilse */
 
   /* ---------- saç / başlık (ön katman) ---------- */
   var sideHair = function () { r(hx - 7, HY + 1, 1, 2, hair); r(hx + 6, HY + 1, 1, 2, hrD); r(hx - 6, HY + 1, 1, 3, hair); r(hx + 5, HY + 1, 1, 3, hrD); };
@@ -492,7 +585,13 @@ function build(o, pose, arm, fx, mood) {
     r(hx - 4, HY - 3, 4, 1, hrL); r(hx - 5, HY - 2, 3, 1, hrL);
     rf(c - 1, HY + 2, 3, 1, hair); pf(c + 2, HY + 2, hair); pf(c + 1, HY + 3, hair);   /* perçem yöne */
   };
-  if (hat === 'scarf') {
+  if (hat === 'mask') {                               /* v2.25: maske kubbesi — saçı tamamen örter */
+    r(hx - 4, HY - 3, 8, 1, skin); r(hx - 5, HY - 2, 10, 1, skin); r(hx - 6, HY - 1, 12, 1, skin);
+    r(hx - 6, HY - 1, 2, 1, skL); r(hx + 3, HY - 2, 2, 2, skS); p(hx + 5, HY - 1, skS);
+    p(hx - 3, HY - 2, lite(skin, 0.4)); p(hx - 2, HY - 2, lite(skin, 0.4));
+    if (o.maskEye) { var web2 = dark(skin, 0.24); rf(c, HY - 3, 1, 4, web2); rf(c - 4, HY - 1, 3, 1, web2); rf(c + 2, HY - 1, 3, 1, web2); }
+    if (o.maskFace) { rf(c - 1, HY - 3, 2, 3, dark(skin, 0.2)); }
+  } else if (hat === 'scarf') {
     var sf = col(o.scarf, '#c8553d'), sfD = dark(sf, 0.22), sfL = lite(sf, 0.2);
     r(hx - 5, HY - 3, 10, 1, sfL); r(hx - 6, HY - 2, 12, 5, sf); r(hx - 6, HY - 2, 12, 1, sfL); r(hx + 3, HY - 1, 3, 4, sfD);
     r(hx - 6, HY + 2, 12, 1, dark(sf, 0.12));
@@ -583,7 +682,7 @@ function build(o, pose, arm, fx, mood) {
     r(hx - 4, HY - 3, 8, 1, skin); r(hx - 5, HY - 2, 10, 1, skin); r(hx - 6, HY - 1, 12, 1, skin);
     r(hx - 6, HY - 1, 2, 1, skL); r(hx + 3, HY - 2, 2, 2, skS); p(hx + 5, HY - 1, skS); p(hx + 5, HY, skS); p(hx - 6, HY, skL);
     p(hx - 3, HY - 2, lite(skin, 0.45)); p(hx - 2, HY - 2, lite(skin, 0.45));
-    r(hx - 7, HY + 2, 2, 5, hair); r(hx + 5, HY + 2, 2, 5, hrD); p(hx - 7, HY + 6, skin);
+    if (o.hair) { r(hx - 7, HY + 2, 2, 5, hair); r(hx + 5, HY + 2, 2, 5, hrD); p(hx - 7, HY + 6, skin); }   /* v2.25: saç rengi yoksa tam kel */
   } else {
     shortHair();
     if (hs === 5) {                                   /* kıvırcık bulutun ön kenarı */
@@ -615,10 +714,35 @@ function build(o, pose, arm, fx, mood) {
   if ((hat === 'cap' || hat === 'beanie' || hat === 'tophat' || hat === 'sun') && hs === 5) {
     r(hx - 9, HY, 3, 7, hair); r(hx + 6, HY, 3, 7, hrD);
   }
-  if (o.headband) {                                   /* saç bandı */
+  if (o.headband && !o.mask) {                       /* saç bandı */
     var hbc = col(o.headband, '#f4f0e6');
     r(hx - 7, HY, 14, 2, hbc); r(hx - 7, HY, 14, 1, lite(hbc, 0.2)); r(hx + 4, HY, 3, 2, dark(hbc, 0.15));
     rf(c - 10, HY + 1, 3, 2, hbc); rf(c - 10, HY + 3, 2, 3, dark(hbc, 0.12));
+  }
+  if (fpc && hs === 4 && !hat) rf(c + 2, HY - 3, 2, 3, fpc);   /* boya kel kafada yukarı sürer */
+  if (o.crown && !hat) {                              /* v2.25: taç — altın (3 sivri + taşlar) ya da buz (düzensiz sivri) */
+    var crc = col(o.crown, '#e0b040'), crL = lite(crc, 0.38), crD = dark(crc, 0.3), crv = L.hx(crc);
+    var cy0 = HY - 4 - (hs === 5 ? 3 : hs === 8 ? 5 : hs === 6 ? 1 : 0);
+    if (crv[2] > crv[0] + 20) {                       /* buz tacı */
+      var CH = [2, 4, 2, 6, 3, 8, 6, 3, 5, 2, 4, 1];
+      for (var ci2 = 0; ci2 < 12; ci2++) {
+        var top2 = cy0 - CH[ci2] + 1;
+        for (var cy2 = top2; cy2 <= cy0 + 1; cy2++) {
+          var ccr = cy2 === top2 ? '#ffffff' : cy2 === top2 + 1 ? crL : cy2 === cy0 + 1 ? crD : (ci2 >= 9 ? dark(crc, 0.16) : crc);
+          p(hx - 6 + ci2, cy2, ccr);
+        }
+      }
+      p(hx - 2, cy0, '#7fe0ff'); p(hx + 1, cy0, '#7fe0ff'); b.set(hx - 1, cy0 - 3, '#ffffff', 0.6);
+    } else {
+      var CR = ['o...oo...o', '#...##...#', '##.####.##', 'bbbbbbbbbb', 'dddddddddd'];
+      for (var cry = 0; cry < 5; cry++) for (var crx = 0; crx < 10; crx++) {
+        var ch2 = CR[cry][crx]; if (ch2 === '.') continue;
+        var cc3 = ch2 === 'o' ? crL : ch2 === 'd' ? crD : crx >= 7 ? dark(crc, 0.16) : crx < 2 ? lite(crc, 0.16) : crc;
+        p(hx - 5 + crx, cy0 - 3 + cry, cc3);
+      }
+      p(hx - 1, cy0, '#c02838'); p(hx, cy0, '#a01828'); p(hx - 4, cy0, '#3a6ad0'); p(hx + 3, cy0, '#2a5ab8');
+      p(hx - 1, cy0 - 1, '#ff8090');
+    }
   }
   if (o.pipe) {                                       /* pipo */
     rf(c + 1, HY + 12, 5, 1, '#5a3a1a'); rf(c + 6, HY + 9, 3, 4, '#6a4424'); rf(c + 6, HY + 9, 3, 1, '#2a1a10');
@@ -657,7 +781,7 @@ HKA.drawPerson = function (a, o) {
   var bodyOff = moving ? WALK[wf].body : 0;
   gShadow(a.x, a.y, 0.62);
   var carrying = a.carry && a.carry.length;
-  var arm = (carrying || o.hold) ? 1 : working ? 2 + (Math.floor((H.t + (a.x + a.y) * 0.37) * ANIM.workFps) & 1) : 0;
+  var arm = (carrying || o.hold || o.keyboard) ? 1 : working ? 2 + (Math.floor((H.t + (a.x + a.y) * 0.37) * ANIM.workFps) & 1) : 0;
   var pose = moving ? (wf === 0 ? 0 : wf === 2 ? 2 : 1) : 3 + idle;
   var m = o.mood, mood = m === undefined ? 0 : m < 0.28 ? 1 : m < 0.55 ? 2 : 3;
   var idx = ((pose * 4 + arm) * 2 + (fx > 0 ? 1 : 0)) * 4 + mood;

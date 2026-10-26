@@ -5705,7 +5705,9 @@ function drawPerson(a, o) {
   var coat = o.coat || PAL.indigo;
   var coat2 = o.coat2 || coat;
   var skin = o.skin || PAL.skin[0];
-  var skinS = PAL.skinSh[PAL.skin.indexOf(skin) < 0 ? 0 : PAL.skin.indexOf(skin)];
+  var skI = PAL.skin.indexOf(skin);
+  var skinS = skI < 0 ? shade(skin, -26) : PAL.skinSh[skI];   /* v2.25: özel tenin (skinC) gölgesi kendinden */
+  if (o.mask) { skin = o.mask; skinS = shade(o.mask, -34); }   /* v2.25: tam maske — baş ve eller maske renginde */
   var hair = o.hair || PAL.hair[0];
   var pants = o.pants || '#2b3a45';
   var boot = o.boot || '#1a2830';
@@ -5727,6 +5729,7 @@ function drawPerson(a, o) {
       px(sx + 1, y - 4, 3, 1, o.bootTop || '#2f4450');
     }
   }
+  var yFoot = y;                                      /* v2.25: baston ucu için zemin */
   y -= hup;                                           /* gövde ve baş boya göre yukarı/aşağı */
 
   if (o.cape) {                                       /* v1.1: pelerin — gövdenin arkasından taşar */
@@ -5762,6 +5765,11 @@ function drawPerson(a, o) {
     px(bx0, y - 7, 3, 1, shade(coat, -26));
   }
 
+  if (o.stripes) {                                    /* v2.25: dikey forma çizgileri */
+    var stc = o.stripes, stD = shade(stc, -30), sw0 = o.belly ? -5 : -3, sw1 = o.belly ? 4 : 3;
+    for (var st = sw0; st <= sw1; st += 2) px(sx + st + lean, y - 14, 1, o.belly ? 8 : 7, st >= 2 ? stD : stc);
+    if (o.belly) { var bsx = sx + (fx > 0 ? 6 : -7) + lean; px(bsx, y - 12, 1, 5, stD); }
+  }
   if (o.scales) {                                     /* v1.1: balık pulu desenli elbise */
     for (var sr = 0; sr < 4; sr++) for (var sc = 0; sc < 4; sc++) px(sx - 4 + lean + sc * 2 + (sr % 2), y - 14 + sr * 2, 1, 1, o.scales);
   }
@@ -5776,7 +5784,7 @@ function drawPerson(a, o) {
   /* --- kollar --- */
   var carrying = a.carry && a.carry.length;
   var fa = w ? w.fa : 0, ba = w ? w.ba : 0;
-  if (carrying || o.hold) {                           /* taşıma: iki kol önde */
+  if (carrying || o.hold || o.keyboard) {             /* taşıma: iki kol önde (v2.25: klavye de) */
     px(sx - 6 + lean, y - 13, 2, 5, coat2);
     px(sx + 4 + lean, y - 13, 2, 5, coat2);
     px(sx - 6 + lean, y - 9, 2, 1, skin);
@@ -5807,8 +5815,8 @@ function drawPerson(a, o) {
     px(gx + 2, y - 8, 1, 1, PAL.brass);
   }
   if (o.briefcase) {                                  /* v2.14: evrak çantası */
-    var bcx = fx > 0 ? sx - 11 : sx + 5;
-    px(bcx, y - 10, 7, 5, o.briefcase); px(bcx, y - 10, 7, 1, shade(o.briefcase, 22)); px(bcx + 2, y - 11, 3, 1, shade(o.briefcase, -30));
+    var bcx = fx > 0 ? sx - 11 : sx + 5, bcC = typeof o.briefcase === 'string' ? o.briefcase : '#4a2c18';   /* v2.25: briefcase: true → deri rengi */
+    px(bcx, y - 10, 7, 5, bcC); px(bcx, y - 10, 7, 1, shade(bcC, 22)); px(bcx + 2, y - 11, 3, 1, shade(bcC, -30));
     px(bcx + 1, y - 8, 1, 1, PAL.brass); px(bcx + 5, y - 8, 1, 1, PAL.brass);
   }
   if (o.notebook) {                                   /* küçük not defteri */
@@ -5824,6 +5832,38 @@ function drawPerson(a, o) {
   }
   if (o.mic) { var mx = sx + fx * 5; px(mx, y - 15, 1, 5, '#2a2a2a'); px(mx - (fx > 0 ? 0 : 1), y - 17, 2, 2, '#9aa4ac'); }
   if (o.phone) { var phx = sx + fx * 6; px(phx, y - 21, 2, 3, '#1a1a1a'); px(phx, y - 21, 1, 1, '#7fd3ff'); px(phx, y - 18, 1, 5, coat2); }
+  /* v2.25: öndeki el (yön tarafı) — baston, kılıç, çekiç, altın eldiven */
+  var free = !carrying && !o.hold && !o.keyboard && !working;
+  var hfx = fx > 0 ? sx + 4 : sx - 6, hfy = y - 8 + (fx > 0 ? ba : fa);
+  if (carrying || o.hold || o.keyboard) { hfx = fx > 0 ? sx + 4 + lean : sx - 6 + lean; hfy = y - 9; }
+  else if (working) { hfx = sx + fx * 5 + lean; hfy = y - 8; }
+  if (o.sword && free) {                              /* kında kılıç: kalçadan arkaya çapraz */
+    var swC = o.sword;
+    for (var si = 0; si < 7; si++) px(sx + fx * (3 - si) - (fx > 0 ? 0 : 1), y - 8 + (si >> 1), 1, 1, si > 5 ? shade(swC, 40) : (si === 2 ? '#4a3020' : swC));
+    px(sx + fx * 4 - (fx > 0 ? 0 : 1), y - 10, 1, 3, '#c9952f');
+    px(hfx, hfy, 2, 1, skin);
+  }
+  if (o.cane && free) {                               /* baston: kıvrık sap, yere değer */
+    var cnx = fx > 0 ? sx + 6 : sx - 7;
+    px(cnx, hfy - 1, 1, yFoot - hfy, o.cane); px(cnx, yFoot - 1, 1, 1, '#2a2420');
+    px(fx > 0 ? sx + 4 : sx - 8, hfy - 2, 4, 1, shade(o.cane, 30));
+    px(hfx, hfy, 2, 1, skin);
+  }
+  if (o.hammer && free) {                             /* savaş çekici: başı aşağıda */
+    var hmx = fx > 0 ? hfx + 1 : hfx;
+    px(hmx, hfy - 1, 1, 5, '#6a4424');
+    px(hmx - 2, hfy + 4, 5, 3, o.hammer); px(hmx - 2, hfy + 4, 5, 1, shade(o.hammer, 40)); px(hmx + (fx > 0 ? 2 : -2), hfy + 5, 1, 2, shade(o.hammer, -40));
+    px(hfx, hfy, 2, 1, skin);
+  }
+  if (o.keyboard) {                                   /* klavye: iki elle göğüs önünde */
+    px(sx - 6 + lean, y - 11, 12, 2, o.keyboard); px(sx - 6 + lean, y - 10, 12, 1, shade(o.keyboard, -20));
+    for (var kk = 0; kk < 5; kk++) px(sx - 5 + kk * 2 + lean, y - 11, 1, 1, shade(o.keyboard, 70));
+    px(sx - 6 + lean, y - 9, 2, 1, skin); px(sx + 4 + lean, y - 9, 2, 1, skin);
+  }
+  if (o.gauntlet) {                                   /* altın eldiven: biraz iri yumruk */
+    px(hfx, hfy - 1, 2, 3, o.gauntlet); px(hfx + (fx > 0 ? 2 : -1), hfy, 1, 2, shade(o.gauntlet, -36));
+    px(hfx, hfy - 1, 2, 1, shade(o.gauntlet, 40));
+  }
 
   /* --- baş --- */
   var hy = y - 22;
@@ -5832,7 +5872,10 @@ function drawPerson(a, o) {
   px(sx - 4, hy + 2, 1, 2, skin); px(sx + 3, hy + 2, 1, 2, skin);   /* kulaklar */
 
   /* saç / başlık */
-  if (o.scarf) {                                      /* başörtüsü */
+  if (o.mask) {                                       /* v2.25: tam maske — saçı örter */
+    px(sx - 3, hy - 1, 6, 1, skin); px(sx - 2, hy - 2, 4, 1, skin); px(sx - 2, hy - 2, 2, 1, shade(skin, 40));
+    if (o.maskFace) { px(fx > 0 ? sx - 1 : sx - 3, hy + 1, 4, 5, o.maskFace); px(fx > 0 ? sx + 2 : sx - 3, hy + 2, 1, 4, shade(o.maskFace, -40)); }
+  } else if (o.scarf) {                                      /* başörtüsü */
     px(sx - 4, hy - 1, 8, 4, o.scarf);
     px(sx - 4, hy - 1, 8, 1, shade(o.scarf, 20));
     if (o.scarfDots) { px(sx - 3, hy, 1, 1, o.scarfDots); px(sx, hy + 1, 1, 1, o.scarfDots); px(sx + 2, hy, 1, 1, o.scarfDots); px(sx - 5, hy + 3, 1, 1, o.scarfDots); }
@@ -5874,7 +5917,7 @@ function drawPerson(a, o) {
     px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair);
   } else if (o.hairStyle === 4) {                     /* kel: yalnız yanlarda saç */
     px(sx - 3, hy - 1, 6, 1, skin); px(sx - 2, hy - 2, 4, 1, skin);
-    px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair);
+    if (o.hair) { px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair); }   /* v2.25: saç rengi yoksa tam kel */
   } else {
     px(sx - 4, hy - 2, 8, 3, hair);
     px(sx - 4, hy + 1, 1, 3, hair); px(sx + 3, hy + 1, 1, 3, hair);
@@ -5900,14 +5943,29 @@ function drawPerson(a, o) {
       px(tx, hy, 2, 2, hair); px(tx + (fx > 0 ? 0 : 1), hy + 2, 1, 4, hair);
     }
   }
-  if (o.headband) { px(sx - 4, hy - 1, 8, 1, o.headband); px(fx > 0 ? sx - 5 : sx + 4, hy, 1, 3, o.headband); }
+  if (o.headband && !o.mask) { px(sx - 4, hy - 1, 8, 1, o.headband); px(fx > 0 ? sx - 5 : sx + 4, hy, 1, 3, o.headband); }
   if (o.cap && o.hairStyle === 2) { px(sx - 5, hy + 1, 1, 7, hair); px(sx + 4, hy + 1, 1, 7, hair); }
   if (o.cap && o.hairStyle === 3) { var tx2 = fx > 0 ? sx - 6 : sx + 4; px(tx2, hy + 1, 2, 5, hair); }
+  var hatOn = o.mask || o.scarf || o.fez || o.tophat || o.fedora || o.turban || o.cap || o.chefHat || o.sunHat || o.beanie;
+  if (o.crown && !hatOn) {                            /* v2.25: taç — altın ya da buz (sivri) */
+    var crC = o.crown, crY = hy - 3 - (o.hairStyle === 5 || o.hairStyle === 8 ? 2 : 0);
+    var ice = parseInt(crC.substr(5, 2), 16) > parseInt(crC.substr(1, 2), 16) + 20;
+    px(sx - 3, crY, 6, 2, crC); px(sx - 3, crY + 1, 6, 1, shade(crC, -40));
+    if (ice) { px(sx - 3, crY - 2, 1, 2, crC); px(sx - 1, crY - 3, 1, 3, crC); px(sx, crY - 2, 1, 2, crC); px(sx + 2, crY - 2, 1, 2, crC); px(sx - 1, crY - 3, 1, 1, '#ffffff'); }
+    else { px(sx - 3, crY - 1, 1, 1, crC); px(sx - 1, crY - 2, 2, 2, crC); px(sx + 2, crY - 1, 1, 1, crC); px(sx - 1, crY, 2, 1, '#c02838'); }
+  }
+  if (o.facePaint && !o.mask) px(sx + (fx > 0 ? 1 : -2), o.hairStyle === 4 && !hatOn ? hy - 1 : hy + 1, 1, o.hairStyle === 4 && !hatOn ? 8 : 6, o.facePaint);   /* v2.25: yüz boyası */
 
   /* yüz */
   var ey = hy + 3;
-  dot(sx + (fx > 0 ? 1 : -2), ey, PAL.edge);
-  dot(sx + (fx > 0 ? 2 : -1), ey, PAL.edge);
+  if (o.mask) {                                       /* v2.25: maske yüzü */
+    if (o.maskEye) { px(sx - 1, ey - 1, 2, 2, o.maskEye); px(fx > 0 ? sx + 2 : sx - 3, ey - 1, 1, 2, o.maskEye); }
+    else if (o.maskFace) { px(sx + (fx > 0 ? 0 : -2), ey, 2, 1, o.eyeC || '#eaf8ff'); px(sx + (fx > 0 ? 0 : -2), ey + 2, 2, 1, shade(o.maskFace, -50)); }
+    else { dot(sx + (fx > 0 ? 1 : -2), ey, '#f4f0e6'); dot(sx + (fx > 0 ? 2 : -1), ey, '#f4f0e6'); }
+  } else {
+  var eyC = o.eyeC || PAL.edge;
+  dot(sx + (fx > 0 ? 1 : -2), ey, eyC);
+  dot(sx + (fx > 0 ? 2 : -1), ey, eyC);
   if (o.must) px(sx - 1, ey + 2, 3, 1, hair);         /* bıyık */
   if (o.thickMust) { px(sx - 2, ey + 2, 5, 2, hair); px(sx - 3, ey + 3, 1, 1, hair); px(sx + 3, ey + 3, 1, 1, hair); }
   if (o.beard) { px(sx - 3, ey + 2, 6, 3, hair); px(sx - 2, ey + 3, 4, 1, skinS); }
@@ -5915,6 +5973,7 @@ function drawPerson(a, o) {
   if (o.shades) { px(sx - 3, ey - 1, 6, 1, '#141414'); px(sx - 3, ey, 2, 1, '#141414'); px(sx + 1, ey, 2, 1, '#141414'); px(sx - 2, ey - 1, 1, 1, '#6f8ea8'); }
   if (o.eyepatch) { px(sx - 4, ey - 1, 8, 1, '#141414'); px(sx + (fx > 0 ? 1 : -2), ey - 1, 2, 2, '#141414'); }
   if (o.pipe) { px(sx + (fx > 0 ? 1 : -3), ey + 3, 3, 1, '#5a3a1a'); px(sx + (fx > 0 ? 4 : -4), ey + 1, 1, 3, '#5a3a1a'); }
+  }                                                   /* maske değilse */
   if (o.bird) {                                       /* v1.1: omuzda kuş (martı / papağan) */
     var bdx = fx > 0 ? sx - 6 : sx + 3;
     px(bdx, y - 18, 3, 2, o.bird); px(bdx + (fx > 0 ? 2 : 0), y - 20, 2, 2, o.bird);
@@ -5922,7 +5981,7 @@ function drawPerson(a, o) {
     px(bdx + (fx > 0 ? -1 : 3), y - 17, 1, 1, shade(o.bird, -30));
   }
   /* ağız: ruh haline göre */
-  if (o.mood !== undefined) {
+  if (o.mood !== undefined && !o.mask) {
     if (o.mood < 0.28) { px(sx - 1, ey + 3, 3, 1, '#8d3423'); px(sx - 2, ey + 2, 1, 1, '#8d3423'); px(sx + 2, ey + 2, 1, 1, '#8d3423'); }
     else if (o.mood < 0.55) px(sx - 1, ey + 3, 3, 1, '#7a3a2a');
     else { px(sx - 1, ey + 3, 3, 1, '#8d5f43'); px(sx - 2, ey + 3, 1, 1, '#8d5f43'); px(sx + 2, ey + 3, 1, 1, '#8d5f43'); }
