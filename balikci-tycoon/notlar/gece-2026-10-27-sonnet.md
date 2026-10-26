@@ -21,7 +21,9 @@ Sınır: bot elle balık tutmayı/ilk dakikaları oynamaz; erken oyun ölçümle
 5. **[Düşük/UX] Lokanta devri (otomasyon) şartı anlaşılmıyor.** Sv5, 4 ocak kurulu: şart "1 ocak için aşçı" gibi kısa bir mesajla çıkıyor; aşçı üst sınırı = min(seviye sınırı 3, kurulu ocak), toplam kadro tavanı 9; işe alım sırasına göre (önce Komi/Şef alınırsa) 3. aşçı "stat" nedeniyle alınamıyor ve oyuncu ne yapacağını bulamıyor. Öneri: devir şartı kartında "Aşçı 2/3 • Garson 0/1 …" ilerleme çubuğu.
 6. **[Düşük] Vergi memuru yalnız `S.ctrl === 2` iken gelir** (`updateTax`). Test/hile ile oyunu ctrl=2 yapmadan hızlandıran araçlarda vergi hiç çıkmaz (bot tuzağı; oyuncuyu etkilemez). Not olarak bırakıldı.
 7. **[Test notu] `barList()` kartlarının `go()` fonksiyonu parayı düşmüyor** (ücret `purchase()` içinde, düğme tıklamasında kesiliyor). `go()` çağıran hile/test aracı bedava alım yapar → test yazanlar için tuzak; `BT.buy(id)` gibi tek kapı yararlı olur.
-8. **[Hukuk/mağaza riski — kod hatası değil] Parodi özel müşteriler (`p_*`).** `specials.js` üst yorumu "gerçek/yaşayan ünlü adı, lakabı, imza sözü, tanınır görünüm kullanma" diyor. Parodi listesi (24 kişi) açıkça bilinen kurgu karakterlerin taklidi: Velet Kral Cofri, Kraliçe Serse, Mor Titan Tanoş, Göbekli Gök Tanrısı Tor, Sardalya Hayaleti Krato, Buz Kralı, Ejderci (konuşma satırı: "Ben Denizi zincir kırıcı, ejder anası, tava kraliçesi")… Ayrıca eski listede gerçek kişilere gönderme taşıyan kimlikler var (`gordon`, `opra`, `jami`, `bobros`, `edsirin`, `muslum`=Hüzünlü Hikmet, vb.). Marka/telif (kurgu karakter parodisi) ve "ölmüş ünlü" kuralı için `HUKUK.md` ile karşılaştırılıp mağaza yayınından önce gözden geçirilmeli. Taraftar müşterileri (Bordo-Mavi, Sarı-Lacivert, Kırmızı, Sarı-Kırmızı, Siyah-Beyaz) arma/ad içermiyor, forma renkleri ise tanınır; kabul edilebilir ama not.
+8. **[Düşük] İşletme gideri ilk-bilgi bayrağı kayıtta kayboluyor.** `opexDayEnd` `S.help.opex = 1` yazıyor ama yükleme (`loadFrom`, `S.help` yalnız `HELP` tablosundaki anahtarları alır) bu anahtarı atıyor. Adımlar: Sv4+ oyunda bir gün bitir (toast "işletme gideri…"), `BT.buildSave()` → `BT.loadFrom()` → `S.help.opex === undefined`; sonraki her oturumun ilk gün sonunda aynı toast yeniden çıkar. Düzeltme: bayrağı `S.opexN` gibi kayda yazılan alana taşı (kira `S.rentN` gibi).
+9. **[Orta risk] Eski kayıtta işletme gideri geçiş payı yok.** Kira için `S.rentD` (yüklemeden sonraki gün başlar) var; opex'te yok: Sv10 eski kayıt yüklenince ilk gün sonunda gelirin %28'i kesilir, net −%28 şoku (Sv5: −%8). Öneri: `S.opexD` ile 3–5 günlük kademeli geçiş ya da ilk gün yarım.
+10. **[Hukuk/mağaza riski — kod hatası değil] Parodi özel müşteriler (`p_*`).** `specials.js` üst yorumu "gerçek/yaşayan ünlü adı, lakabı, imza sözü, tanınır görünüm kullanma" diyor. Parodi listesi (24 kişi) açıkça bilinen kurgu karakterlerin taklidi: Velet Kral Cofri, Kraliçe Serse, Mor Titan Tanoş, Göbekli Gök Tanrısı Tor, Sardalya Hayaleti Krato, Buz Kralı, Ejderci (konuşma satırı: "Ben Denizi zincir kırıcı, ejder anası, tava kraliçesi")… Ayrıca eski listede gerçek kişilere gönderme taşıyan kimlikler var (`gordon`, `opra`, `jami`, `bobros`, `edsirin`, `muslum`=Hüzünlü Hikmet, vb.). Marka/telif (kurgu karakter parodisi) ve "ölmüş ünlü" kuralı için `HUKUK.md` ile karşılaştırılıp mağaza yayınından önce gözden geçirilmeli. Taraftar müşterileri (Bordo-Mavi, Sarı-Lacivert, Kırmızı, Sarı-Kırmızı, Siyah-Beyaz) arma/ad içermiyor, forma renkleri ise tanınır; kabul edilebilir ama not.
 
 ---
 
@@ -120,6 +122,86 @@ Toptancı 20,3 · Kaptan 13,8 · Garson 13,0 · Otel Aşçıbaşı 12,0 · Ev Ha
 - **Lodos**: görsel/ses iyi (şemsiyeler, replikler), ama olumsuz; kapanış vurgusu (yağmur sonrası ×1,5 20 sn) fark edilmiyor.
 - **Hızlandırma yok** (ölü zaman, C1).
 - Günün gelir/gider özeti ekranda var (maaş/kira/opex/vergi satırları); "net" satırı iyi.
+
+---
+
+## (B8) Uzun koşu: 10 gün üst üste (tohum 7, 4 bölge tam kadro, yükseltme yok) — gün 3–12
+Sütunlar: gün · gelir · maaş · kira · işletme gideri · vergi · kasa değişimi (net) · servis. Vergi günü 7. gündür; "yağmur" yazılı günler `wx` bayrağı.
+
+**Sv3** (başlangıç Sv3; itibar günde ~70 arttığı için koşu içinde Sv4–5'e kayıyor, bu yüzden opex %8 → %16 yükseliyor — kendi başına bir bulgu: "seviye sabit" tutmak mümkün değil, B4)
+| gün | gelir | maaş | kira | opex | vergi | net | servis |
+|---|---|---|---|---|---|---|---|
+| 3 | 16 419 | 1 063 | 340 | 1 314 | 0 | 13 436 | 147 |
+| 4 | 14 151 | 1 037 | 340 | 1 698 | 0 | 10 543 | 133 |
+| 5 | 17 589 | 1 063 | 340 | 2 111 | 0 | 14 275 | 183 |
+| 6 | 13 920 | 1 051 | 340 | 2 227 | 0 | 10 777 | 160 |
+| 7 | 14 800 | 1 048 | 340 | 2 368 | 5 759 | 5 048 | 125 |
+| 8 | 13 414 | 1 054 | 340 | 2 146 | 0 | 9 806 | 135 |
+| 9 | 18 858 | 1 049 | 340 | 3 017 | 0 | 14 325 | 122 |
+| 10 | 20 811 | 1 063 | 340 | 3 330 | 0 | 16 519 | 199 |
+| 11 | 16 116 | 1 050 | 340 | 2 579 | 0 | 11 821 | 145 |
+| 12 | 15 700 | 1 045 | 340 | 2 512 | 0 | 11 921 | 143 |
+Ort. gelir 16 178 · opex 2 330 (%14) · net 11 899.
+
+**Sv6**
+| gün | gelir | maaş | kira | opex | vergi | net | servis |
+|---|---|---|---|---|---|---|---|
+| 3 | 24 365 | 1 546 | 1 504 | 3 898 | 0 | 18 120 | 186 |
+| 4 | 23 634 | 1 542 | 1 504 | 3 781 | 0 | 17 395 | 203 |
+| 5 | 35 116 | 1 533 | 1 504 | 7 023 | 0 | 23 853 | 259 |
+| 6 | 26 363 | 1 546 | 1 504 | 5 273 | 0 | 18 272 | 202 |
+| 7 | 19 443 | 1 546 | 1 504 | 3 889 | 9 763 | 2 290 | 164 |
+| 8 | 25 282 | 1 524 | 1 504 | 6 068 | 0 | 17 054 | 170 |
+| 9 | 35 282 | 1 546 | 1 504 | 8 468 | 0 | 21 707 | 172 |
+| 10 | 31 677 | 1 540 | 1 504 | 7 602 | 0 | 22 668 | 242 |
+| 11 | 26 010 | 1 523 | 1 504 | 6 242 | 0 | 15 429 | 160 |
+| 12 | 23 817 | 1 538 | 1 504 | 5 716 | 0 | 16 077 | 174 |
+Ort. gelir 27 099 · opex 5 800 (%21) · net 17 287.
+
+**Sv9**
+| gün | gelir | maaş | kira | opex | vergi | net | servis |
+|---|---|---|---|---|---|---|---|
+| 3 | 31 045 | 1 546 | 1 504 | 7 451 | 0 | 19 944 | 171 |
+| 4 | 32 342 | 1 546 | 1 504 | 7 762 | 0 | 21 097 | 192 |
+| 5 | 34 584 | 1 528 | 1 504 | 8 300 | 0 | 23 468 | 227 |
+| 6 | 28 732 | 1 545 | 1 504 | 6 896 | 0 | 18 496 | 169 |
+| 7 | 26 166 | 1 538 | 1 504 | 7 326 | 10 334 | 4 449 | 145 |
+| 8 | 29 234 | 1 542 | 1 504 | 8 186 | 0 | 19 273 | 193 |
+| 9 | 27 422 | 1 546 | 1 504 | 7 678 | 0 | 16 204 | 174 |
+| 10 | 32 856 | 1 546 | 1 504 | 9 200 | 0 | 20 698 | 221 |
+| 11 | 26 611 | 1 546 | 1 504 | 7 451 | 0 | 16 668 | 175 |
+| 12 | 28 120 | 1 546 | 1 504 | 7 874 | 0 | 17 266 | 202 |
+Ort. gelir 29 711 · opex 7 812 (%26) · net 17 744.
+
+Okuma: gelir günden güne ±%30 dalgalanıyor (günün müşterisi, B7); vergi günü net 2–5k'ya düşüyor (gelir normalden %20–30 az + vergi 6–10k). Sv6→Sv9'da brüt +%10, net yalnız +%3: opex yüzdesi (%21 → %26) kazancın neredeyse tamamını yiyor. Sv9 net'i Sv6 ile aynı ⇒ bu aralıkta yeni seviye yükseltme bir şey kazandırmıyor.
+
+## (B9) Lokanta müdürü, vapur yolcusu, yağmur — sayılarla
+**Lokanta müdürü** (alım 20 000 + aday ücreti 1 500–3 500, maaş 75/dk ≈ 375/gün; test: Sv1 lokanta, tam kadro+devir, buff = fiyat +%12 & akış +%12; 4 tohum × 12 gün):
+| | lokanta geliri | grup/gün | maaş | net (toplam) |
+|---|---|---|---|---|
+| müdürsüz | 3 391 | 10 | 1 957 | 16 409 |
+| müdürlü | 3 783 (**+%11,6**) | 10 | 2 353 | 16 089 (**−320/gün**) |
+Fiyat buff'ı çalışıyor (+392/gün), **akış buff'ı grup sayısını artırmıyor** (10 → 10), maaş (+396/gün) kazancı yiyor ⇒ müdür **ilk 21,5k yatırım dışında bile günlük net negatif**. Müdürün gerçek değeri otomasyonu açması; ama lokanta zaten kadroyla devre girebiliyor (aşçı+garson+bulaşıkçı+şef+komi). Öneri: lokanta müdür maaşı 75 → 30/dk, ya da buff "grup başına +1 itibar" gibi daha güçlü; flow buff'ını lokanta için `LOK_RES_FLOW` ile bağla.
+
+**Vapur** (8 gün, Sv3 ve Sv7): günde **2,4–2,5 sefer**, **12,8 (Sv3) / 14,8 (Sv7) yolcu müşteriye dönüşüyor**, 1–2 yolcu yer yok diye "gezinen" oluyor. Toplam servisin (~180) %8'i; **gelir etkisi 0** (B2: 27 874 vs 27 823). Sefer başına ≈ 6 kişi, her biri normal müşteri doğuşundan yer alıyor.
+
+**Yağmur** (Sv7, 4 bölge, 60 sn yağmur t=90–150, ardından 20 sn "yağmur sonrası ×1,5"; 3 gün ortalaması 10 sn pencerelerle; kontrol = yağmursuz gün):
+| aralık | geliş (yağmur / kontrol) | gelir (yağmur / kontrol) |
+|---|---|---|
+| 0–90 sn (önce) | 62 / 52 | 9 099 / 7 254 (gürültü) |
+| **90–150 sn (yağmur)** | **20 / 39 (−%49)** | **3 401 / 5 132 (−%34)** |
+| 150–170 sn (sonrası) | 15 / 13 (+%15) | 1 522 / 1 556 (±0) |
+| 170–300 sn | 82 / 77 | 12 920 / 10 978 |
+| **tüm gün** | **178 / 181 (−%2)** | **26 942 / 24 920 (gürültü)** |
+Yağmur süresince doğuş −%49 (çarpan ×0,4 kuyruk yavaşlatmasıyla değil, kaçanlarla birleşince) ve gelir −%34; "yağmur sonrası ×1,5 rush" 20 sn'de yalnız +%15 doğuş getiriyor (kuyruk darboğazı) → kayıp geri kazanılmıyor, ama tüm gün düzeyinde etki gürültü içinde (önceki A/B: −%6). Yani lodos oyuncuya hissedilir bir bedel çıkarmıyor.
+
+## (B10) Kayıt al/yükle ve eski kayıt uyumu
+Deneme: Sv8, 4 bölge + lokanta + müdür + 2 hayvan + vergi borcu, 9 gün oynanmış → `buildSave()` (15 KB) → `loadFrom()`.
+- Gidiş-dönüş: sayfa/konsol hatası **yok**; farklar yalnız zaman damgaları, anlık `day.8`, `dst.out` yuvarlama, `loose.t` (geçici tabak/kasa kalemleri) ve **`help.opex` (A8)**. Kasa +516: yükleme "uzakta kazanç" sayıyor (beklenen).
+- **Anahtar silme fuzz'ı**: üst düzey 70 anahtarın her biri tek tek silinip yüklendi, +20 adım oynandı → hata ve `NaN` **yok**.
+- v6 + yeni alanlar silinmiş (lok, pet, ad, tax, mgr, …): yükleniyor, Sv10 kalıyor.
+- Bozuk değer (`cash='abc'`, `rep=-5`): kasa 0'a (+uzakta kazanç) ve itibar 0'a çekiliyor; çökme yok.
+- Riskler: **A8** (opex bayrağı) ve **A9** (eski kayıtta opex şoku).
 
 ---
 
