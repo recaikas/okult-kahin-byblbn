@@ -848,5 +848,249 @@ HKA.drawVignette = function () {
   return true;
 };
 
-HKA.onReset(function () { store.clear(); chunks = null; geoKey = ''; _vig = null; _vigKey = ''; _grass = null; });
+/* =====================================================================
+   v2.26.1: ANAKARA KÖPRÜSÜ (ince) — elle piksellenmiş kesme taş: sıcak kireç taşı (meydan/ev paleti), sıra sıra blok + derz,
+   blok başına ton farkı ve pah ışığı, kornişten süzülen yağmur izleri, su hattında ıslak bant + yosun, kemerlerde koyu kemer taşları
+   (açık kilit taşı) ve gölgeli tonoz (kemerin içine bakan ışın izlenir: iç ayak duvarı + karanlık su), ayaklarda mahmuz, korkuluk
+   ve dikme başlıklarında ışık, güvertede arnavut taşı + oluk + ada ucuna doğru kum. Suda ayak dibi köpüğü ve köprü gölgesi.
+   Yöntem: her ince piksel için görüş ışını kutulara (gövde, korniş, korkuluk, dikme, mahmuz) kesilir, en öndeki yüz boyanır.
+   Tampon satır satır, kare bütçesiyle kurulur (bitene dek klasik önbellek görünür); sonra yalnız drawImage + birkaç köpük.
+   Ada ucu (taş rampa, kum, kaya, baş babaları) ayrı: HKA.drawMainBridgeFoot (yoldan sonra, kırpmasız).
+   ===================================================================== */
+var BR = null;
+var BRP = null;
+function brPal() {
+  if (BRP) return BRP;
+  BRP = {
+    st: ['#c9bea4', '#c1b59a', '#cfc4ab', '#b8ac91', '#c5b99e', '#bdb196', '#c8b99a'].map(C),
+    vs: ['#a89a7e', '#9f9177', '#b0a286', '#988a70'].map(C), key: C('#ddd3bb'),
+    mort: C('#8d826c'), mortD: C('#6f6553'),
+    alg: ['#5d6b3f', '#6c7a48', '#4f5c36', '#7d8a54'].map(C),
+    setts: ['#cfc5ad', '#c6bba1', '#d6ccb5', '#bfb398', '#cbc0a6'].map(C), sm: C('#9c9079'), moss: C('#8f9a6a'),
+    curb: C('#d8d2c4'), curbD: C('#a29a88'), sand: ['#dcc592', '#d6bf8a', '#e3cf9e'].map(C),
+    cop: C('#e4dcc9'), copL: C('#f2ecdd'), copJ: C('#b7ad96'), corn: C('#d8cfb7'),
+    wIn: C('#4f4b43'), soff: C('#3a3a37'), wat0: C('#2b4f5c'), wat1: C('#132832'), watL: C('#3d6b78'),
+    foam: C('#eefafc'), shd: C('#0e2c3a')
+  };
+  return BRP;
+}
+/* kesme taş: t yüz boyunca (sanat px), z düşey; sıra yüksekliği rh; blok boyu ~11 px, sıraya göre şaşırtmalı */
+function brAshlar(t, z, rh, seed) {
+  var P = brPal(), q = z / rh, row = floor(q), f = (q - row) * rh, off = hash(row, seed) * 11, tt = t + off, bi = floor(tt / 11), ft = tt - bi * 11;
+  if (hash(bi, row * 3 + seed) > 0.62 && abs(ft - 5.5) < 0.5) return P.mort;          /* bazı bloklar ikiye bölünür */
+  if (ft < 0.5 || f < 0.5) return P.mort;
+  var c = P.st[floor(hash(bi * 7 + seed, row) * P.st.length)];
+  if (f > rh - 0.6 || ft < 1.1) c = lt(c, 0.1); else if (f < 1.0 || ft > 10.2) c = dk(c, 0.08);
+  var g = hash(floor(t * 2), floor(z * 2) + seed * 13);
+  if (g > 0.95) c = dk(c, 0.07); else if (g < 0.03) c = lt(c, 0.08);
+  return c;
+}
+function brBuild() {
+  var M = G().v('MAINBR'), K = G().K; if (!M) return null;
+  var DZ = G().v('MAINBR_DZ') || 20, SP = G().v('MAINBR_SP') || 3.6;
+  var x0 = M.x, x1 = M.x + M.w, ya = M.y0, yb = M.y1, n = round((yb - ya - 0.4) / SP), boxes = [], k;
+  function bx(kind, X0, X1, Y0, Y1, Z0, Z1, i) { boxes.push({ k: kind, x0: X0, x1: X1, y0: Y0, y1: Y1, z0: Z0, z1: Z1, i: i, u0: (X0 - Y1) * 12, u1: (X1 - Y0) * 12, v0: (X0 + Y0) * 6 - Z1, v1: (X1 + Y1) * 6 - Z0 }); }
+  bx('body', x0, x1, ya, yb, -DZ, 0);
+  bx('corn', x1 - 0.1, x1 + 0.07, ya, yb, -2.2, 0);
+  bx('par', x1 - 0.26, x1 + 0.02, ya, yb, 0, 4.5); bx('par', x0 - 0.02, x0 + 0.26, ya, yb, 0, 4.5);
+  for (k = 0; k <= n; k++) {
+    var qy = yb - 0.4 - k * SP;
+    bx('post', x1 - 0.34, x1 + 0.08, qy - 0.2, qy + 0.2, 0, 7.5, k); bx('cap', x1 - 0.38, x1 + 0.12, qy - 0.24, qy + 0.24, 7.5, 8.8, k);
+    bx('post', x0 - 0.08, x0 + 0.34, qy - 0.2, qy + 0.2, 0, 7.5, k); bx('cap', x0 - 0.12, x0 + 0.38, qy - 0.24, qy + 0.24, 7.5, 8.8, k);
+    bx('cw', x1 - 0.1, x1 + 0.26, qy - 0.3, qy + 0.3, -DZ - 1, -DZ + 8, k); bx('cwc', x1 - 0.1, x1 + 0.18, qy - 0.24, qy + 0.24, -DZ + 8, -DZ + 9.6, k);
+  }
+  var hz = -42, u0 = (x0 - 0.15 - yb) * 12, u1 = (x1 + 1.2 - ya) * 12, v1 = (x1 + 1.2 + yb) * 6 + DZ + 2;
+  var fx0 = floor(u0 * K), fy0 = floor(hz * K), r = new Ras(Math.ceil(u1 * K) - fx0, Math.ceil(v1 * K) - fy0, fx0, fy0);
+  return { r: r, j: 0, boxes: boxes, row: [], M: M, DZ: DZ, SP: SP, n: n, x0: x0, x1: x1, ya: ya, yb: yb, K: K, s: null, R0: 14.4, zs: -DZ + 2 };
+}
+/* doğu yüzündeki kemer: y,z → {0: duvar, 1: açıklık, 2: kemer taşı (seg ≥ 0, 99 kilit)} ; B.ak = kemer merkezi */
+function brArch(B, y, z) {
+  var k = round((B.yb - 0.4 - y) / B.SP - 0.5); if (k < 0 || k >= B.n) return 0;
+  var yc = B.yb - 0.4 - (k + 0.5) * B.SP, dt = (y - yc) * 12, dz = z - B.zs, R0 = B.R0, ad = abs(dt);
+  B.yc = yc; B.dt = dt; B.dz = dz;
+  if (z <= -B.DZ) return 0;
+  if (dz < 0) { if (ad < R0) return 1; if (ad < R0 + 3.4) { B.seg = -1; return 2; } return 0; }
+  var d = Math.sqrt(dt * dt + dz * dz);
+  if (d < R0) return 1;
+  var a = Math.atan2(dz, -dt) / Math.PI * 13, seg = floor(a);
+  if (seg === 6 && d < R0 + 4.6) { B.seg = 99; B.fa = a - seg; B.d = d; return 2; }
+  if (d < R0 + 3.4) { B.seg = seg; B.fa = a - seg; B.d = d; return 2; }
+  return 0;
+}
+function brEast(B, y, z) {                                   /* doğu yüzü (x = x1): kemer, kemer taşı, kesme taş + yıpranma */
+  var P = brPal(), w = brArch(B, y, z), c;
+  if (w === 2) {
+    if (B.seg === -1) { c = brAshlar(-y * 12, z + 40, 2.5, 5); return dk(c, 0.2); }
+    if (B.seg === 99) return (B.fa < 0.08 || B.fa > 0.92) ? P.mortD : (B.d > B.R0 + 3.9 ? lt(P.key, 0.12) : P.key);
+    if (B.fa < 0.09 || B.d > B.R0 + 2.9) return P.mortD;
+    c = P.vs[floor(hash(B.seg, round(B.yc)) * P.vs.length)];
+    return B.d < B.R0 + 0.8 ? dk(c, 0.12) : c;
+  }
+  if (w === 1) {                                              /* açıklık: ışını tonozun içine izle */
+    var X = B.x1, Y = y, Z = z, yc = B.yc, i;
+    for (i = 1; i < 70; i++) {
+      X -= 0.03; Y -= 0.03; Z -= 0.36;
+      var dx = B.x1 - X;
+      if (Z <= -B.DZ) { c = mx(P.wat0, P.wat1, min(1, dx / 0.7)); if (hash(floor(Y * 18), floor(X * 40)) > 0.9 && dx < 0.6) c = mx(c, P.watL, 0.6); return c; }
+      var dt = (Y - yc) * 12, dz = Z - B.zs;
+      if (abs(dt) >= B.R0 || (dz >= 0 && dt * dt + dz * dz >= B.R0 * B.R0)) {
+        c = dz < 0 || dt < -B.R0 + 1 ? P.wIn : P.soff;
+        if (((Z + 40) % 2.5) < 0.5) c = dk(c, 0.25);
+        return mx(c, P.wat1, min(0.75, dx / 1.4));
+      }
+    }
+    return P.wat1;
+  }
+  c = brAshlar(-y * 12, z + 40, 2.5, 3);
+  var DZ = B.DZ, h = hash(floor(-y * 8), 77);
+  if (z > -3.1) c = dk(c, 0.14);                                                         /* korniş altı gölge */
+  else if (h > 0.86 && z > -3 - 4 - hash(floor(-y * 8), 78) * 10) c = dk(c, 0.12);       /* yağmur izi */
+  var wl = -DZ + 2.2 + sin(y * 9) * 0.5 + hash(floor(-y * 24), 5) * 1.2;
+  if (z < wl) { var ag = P.alg[floor(hash(floor(-y * 24), floor(z * 2)) * 3)]; c = (z < wl - 0.8 || hash(floor(-y * 30), floor(z * 4)) > 0.4) ? ag : mx(c, ag, 0.5); if (hash(floor(-y * 40), floor(z * 4) + 3) > 0.96) c = P.alg[3]; }
+  else if (z < -DZ + 5.5) c = dk(c, 0.18 * (1 - (z + DZ - 2) / 3.5));
+  return c;
+}
+function brDeck(B, x, y) {                                   /* güverte: arnavut taşı, oluk, ada ucuna kum */
+  var P = brPal(), e = min(x - B.x0, B.x1 - x), c;
+  if (e < 0.42) {
+    if (((y % 0.9) + 0.9) % 0.9 < 0.04) c = P.curbD; else c = e < 0.3 ? P.curb : lt(P.curb, 0.1);
+  } else {
+    var rj = floor(y / 0.3), ox = (rj & 1) * 0.21, gx = x - B.x0 + ox, ci = floor(gx / 0.42), lx = gx - ci * 0.42, ly = y - rj * 0.3;
+    var m1 = min(lx, 0.42 - lx), m2 = min(ly, 0.3 - ly);
+    if (m1 < 0.03 || m2 < 0.03) c = (e < 0.8 && hash(ci, rj * 3) > 0.7) ? P.moss : P.sm;
+    else {
+      c = P.setts[floor(hash(ci * 5 + 1, rj) * P.setts.length)];
+      if (lx < 0.07 || ly < 0.06) c = lt(c, 0.14); else if (lx > 0.35 || ly > 0.25) c = dk(c, 0.12);
+      if (abs(x - (B.x0 + B.x1) / 2) < 0.9) c = lt(c, 0.05);
+    }
+  }
+  var sd = (y - (B.yb - 1.8)) / 1.8;                                                        /* ada ucunda kum */
+  if (sd > 0) { var p = Math.pow(sd, 1.4) * (0.4 + (e < 0.6 ? 0.35 : 0)); if (hash(floor(x * 30), floor(y * 40)) < p) c = P.sand[floor(hash(floor(x * 20), floor(y * 20)) * 3)]; }
+  return c;
+}
+function brFace(B, b, f, x, y, z) {                          /* kutu yüzü rengi; f: 0 üst, 1 sol (+y), 2 sağ (+x) */
+  var P = brPal(), c;
+  switch (b.k) {
+    case 'body': if (f === 0) return brDeck(B, x, y); if (f === 2) return brEast(B, y, z); return dk(brAshlar(x * 12, z + 40, 2.5, 9), 0.04);
+    case 'corn':
+      if (f === 0) return lt(P.corn, 0.12);
+      if (z > -0.5) return lt(P.corn, 0.16); if (z < -1.7) return dk(P.corn, 0.22);
+      return ((((-y) % 0.75) + 0.75) % 0.75 < 0.04) ? P.copJ : (f === 2 ? dk(P.corn, 0.06) : P.corn);
+    case 'par':
+      if (f === 0) { if (((y % 0.75) + 0.75) % 0.75 < 0.04) return P.copJ; return (x - b.x0 < 0.05 || b.x1 - x < 0.05) ? P.copL : P.cop; }
+      if (z > 3.9) return f === 2 ? dk(P.cop, 0.1) : P.cop;
+      c = brAshlar(f === 2 ? -y * 12 : x * 12, z, 2.25, 11 + (b.x0 > B.x0 + 1 ? 1 : 0));
+      return f === 2 ? dk(c, 0.16) : c;
+    case 'post': case 'cw':
+      c = brAshlar(f === 2 ? -y * 12 : x * 12, z + 40, 2.5, 13 + b.i);
+      if (f === 0) return lt(c, 0.14);
+      if (b.k === 'cw' && z < -B.DZ + 2.4 + hash(floor(-y * 24), 9)) c = P.alg[floor(hash(floor(-y * 30), floor(z * 3)) * 3)];
+      return f === 2 ? dk(c, 0.16) : c;
+    default:                                                  /* başlıklar */
+      if (f === 0) return (x - b.x0 < 0.06 || y - b.y0 < 0.06) ? P.copL : lt(P.cop, 0.06);
+      return f === 2 ? dk(P.cop, 0.12) : (z > b.z1 - 0.5 ? P.copL : P.cop);
+  }
+}
+function brStep(B) {
+  var r = B.r, K = B.K, P = brPal(), boxes = B.boxes, row = B.row, nb, i, q;
+  for (var j = B.j; j < r.h; j++) {
+    if ((j & 3) === 0 && j > B.j && now() > budgetEnd) { B.j = j; return false; }
+    var fy = r.oy + j, v = (fy + 0.5) / K;
+    row.length = 0;
+    for (q = 0; q < boxes.length; q++) if (v >= boxes[q].v0 - 0.5 && v <= boxes[q].v1 + 0.5) row.push(boxes[q]);
+    nb = row.length;
+    for (i = 0; i < r.w; i++) {
+      var fx = r.ox + i, u = (fx + 0.5) / K, U = u / 12, best = -1e9, bb = null, bf = 0;
+      for (q = 0; q < nb; q++) {
+        var b = row[q]; if (u < b.u0 - 0.5 || u > b.u1 + 0.5) continue;
+        var hx = 2 * b.x1 - U, hy = 2 * b.y1 + U, hzz = (b.z1 + v) / 6, hi = hx, f = 2;
+        if (hy < hi) { hi = hy; f = 1; } if (hzz < hi) { hi = hzz; f = 0; }
+        var lo = max(2 * b.x0 - U, 2 * b.y0 + U, (b.z0 + v) / 6);
+        if (hi > lo && hi > best) { best = hi; bb = b; bf = f; }
+      }
+      if (bb) { r.setI(i, j, brFace(B, bb, bf, (best + U) / 2, (best - U) / 2, 6 * best - v)); continue; }
+      var s = (v - B.DZ) / 6, X = (s + U) / 2, Y = (s - U) / 2;                         /* su: ayak dibi köpüğü + gölge */
+      if (Y < B.ya || Y > B.yb + 0.3 || X < B.x1) continue;
+      var dx = X - B.x1, kq = round((B.yb - 0.4 - Y) / B.SP), qy = B.yb - 0.4 - kq * B.SP, near = abs(Y - qy) < 0.42 && kq >= 0 && kq <= B.n;
+      var dd = near ? X - (B.x1 + 0.26) + max(0, abs(Y - qy) - 0.3) * 1.2 : dx, g = bayer[fy & 3][fx & 3];
+      if (dd < 0.05 && dd > -0.3) { r.setI(i, j, P.foam, hash(fx, 11) > 0.2 ? 0.85 : 0.5); continue; }
+      if (dd < 0.15 && dd > -0.3 && hash(fx >> 1, fy) > 0.45) { r.setI(i, j, P.foam, 0.45); continue; }
+      if (dx < 1.1) r.setI(i, j, P.shd, 0.24 * (1 - dx / 1.1) * (0.85 + g * 0.3));
+    }
+  }
+  B.s = r.sprite(); B.r = null;
+  return true;
+}
+var BR_FOAM = ['rgba(238,250,252,0.35)', 'rgba(238,250,252,0.55)', 'rgba(238,250,252,0.75)'];
+HKA.drawMainBridge = function (o) {
+  var H = G(), K = H.K;
+  if (!BR || BR.K !== K) { BR = brBuild(); if (!BR) return false; }
+  if (!BR.s) { if (now() > budgetEnd || !brStep(BR)) return false; }
+  if (!BR.s) return false;
+  put(BR.s, BR.s.ox, BR.s.oy);
+  var t = o.t || 0, g = H.ctx;                                                            /* mahmuz dibinde dalgalanan köpük */
+  for (var k = 0; k <= BR.n; k++) {
+    var qy = BR.yb - 0.4 - k * BR.SP, ph = sin(t * 1.4 + k * 1.7), X = (BR.x1 + 0.34 - qy) * 12, Y = (BR.x1 + 0.34 + qy) * 6 + BR.DZ;
+    g.fillStyle = BR_FOAM[ph > 0.3 ? 2 : ph > -0.3 ? 1 : 0];
+    g.fillRect((round(X * K) - 5) / K, round(Y * K) / K, 8 / K, 1 / K);
+    g.fillRect((round(X * K) - 2 + round(ph * 2)) / K, (round(Y * K) + 2) / K, 5 / K, 1 / K);
+  }
+  return true;
+};
+/* ada ucu: taş rampa kuma/yola dağılır, kaya dolgusu (gölgeli yuvarlak taşlar, dibinde yosun + köpük), korkuluk uçlarında baş babaları */
+function brFootBuild() {
+  var M = G().v('MAINBR'), RK = G().v('MAINBR_ROCKS'), K = G().K; if (!M || !RK) return null;
+  var P = brPal(), x0 = M.x, x1 = M.x + M.w, r = worldRas(9.1, -1.2, 16.8, 0.15, 12, 6), i;
+  var B = { x0: x0, x1: x1, yb: 0.6 };
+  eachXY(r, 0, function (x, y, fx, fy) {
+    var c = null, sd = 0;
+    for (var q = 0; q < RK.length; q++) { var dx = (x - RK[q][0]) / (RK[q][2] * 2.1), dy = (y - RK[q][1]) / (RK[q][2] * 1.6), d = dx * dx + dy * dy; if (d < 1) sd = max(sd, 1 - d); }
+    if (x > x0 + 0.2 && x < x1 - 0.2 && y > -0.85 && y < -0.1) {
+      var fade = (y + 0.5) / 0.4, ed = min(x - x0 - 0.2, x1 - 0.2 - x) / 0.25, th = max(fade, 1 - ed);
+      if (th < bayer[fy & 3][fx & 3] * 0.9 + (hash(fx >> 2, fy >> 2) - 0.5) * 0.5) c = brDeck(B, x, y);
+      else if (hash(fx, fy) > 0.82 && th < 1.4) c = P.sand[floor(hash(fx >> 1, fy) * 3)];
+    }
+    if (!c && sd > 0) { PA = min(1, sd * 1.6); c = P.sand[floor(hash(fx >> 1, fy >> 1) * 3)]; if (sd > 0.5 && hash(fx, fy) > 0.9) c = dk(c, 0.12); }
+    return c;
+  }, [9.1, -1.2, 16.8, 0.15]);
+  var Lx = -0.55, Ly = -0.62, Lz = 0.56, SH = ['#55504a', '#6f685d', '#8c8475', '#a9a08e', '#c3baa6', '#d8d0bd'].map(C);
+  var rs = RK.slice().sort(function (a, b) { return (a[0] + a[1]) - (b[0] + b[1]); });
+  for (i = 0; i < rs.length; i++) {                                                       /* kayalar */
+    var q = rs[i], cx = (q[0] - q[1]) * 12 * K, s = q[2], rx = s * 13 * K, ry = s * 9 * K, cy = ((q[0] + q[1]) * 6 - s * 5) * K, sea = q[1] < -0.62;
+    for (var yy = -ry; yy <= ry; yy++) for (var xx = -rx; xx <= rx; xx++) {
+      var nx = xx / rx, ny = yy / ry, dd = nx * nx + ny * ny * (ny > 0 ? 1.6 : 1); if (dd > 1) continue;
+      var bump = hash(floor((cx + xx) / 3), floor((cy + yy) / 3)) * 0.25, nz = Math.sqrt(max(0, 1 - dd));
+      var lum = (Lx * nx + Ly * ny + Lz * nz) * 0.9 + 0.35 + bump - 0.12, ci = min(5, max(0, floor(lum * 5 + bayer[(cy + yy) & 3][(cx + xx) & 3] * 0.9)));
+      var col = dd > 0.86 ? SH[0] : SH[ci];
+      if (sea && ny > 0.35 && hash(floor(xx), floor(yy)) > 0.3) col = P.alg[floor(hash(xx, yy + 5) * 3)];
+      r.set(cx + xx, cy + yy, col);
+    }
+    if (sea) for (var fq = -rx - 2; fq <= rx + 2; fq++) if (hash(fq, i) > 0.35) r.set(cx + fq, cy + ry * 0.75 + 1 + (abs(fq) > rx * 0.6 ? -1 : 0), P.foam, 0.75);
+  }
+  var nw = [];                                                                            /* baş babaları */
+  [x0 - 0.04, x1 - 0.42].forEach(function (bx0) { nw.push({ k: 'post', x0: bx0, x1: bx0 + 0.46, y0: -0.82, y1: -0.38, z0: 0, z1: 9, i: 7 }); nw.push({ k: 'cap', x0: bx0 - 0.04, x1: bx0 + 0.5, y0: -0.86, y1: -0.34, z0: 9, z1: 10.6, i: 7 }); });
+  var BB = { DZ: 20, x0: x0 };
+  for (var j = 0; j < r.h; j++) {
+    var v = (r.oy + j + 0.5) / K;
+    for (var ii = 0; ii < r.w; ii++) {
+      var U = (r.ox + ii + 0.5) / K / 12, best = -1e9, bb = null, bf = 0;
+      for (var n2 = 0; n2 < nw.length; n2++) {
+        var b = nw[n2], hx = 2 * b.x1 - U, hy = 2 * b.y1 + U, hzz = (b.z1 + v) / 6, hi = hx, f = 2;
+        if (hy < hi) { hi = hy; f = 1; } if (hzz < hi) { hi = hzz; f = 0; }
+        var lo = max(2 * b.x0 - U, 2 * b.y0 + U, (b.z0 + v) / 6);
+        if (hi > lo && hi > best) { best = hi; bb = b; bf = f; }
+      }
+      if (bb) r.setI(ii, j, brFace(BB, bb, bf, (best + U) / 2, (best - U) / 2, 6 * best - v));
+    }
+  }
+  return r.sprite();
+}
+HKA.drawMainBridgeFoot = function () {
+  var s = need('brfoot' + G().K, brFootBuild);
+  if (!s) return false;
+  put(s, s.ox, s.oy);
+  return true;
+};
+
+HKA.onReset(function () { store.clear(); chunks = null; geoKey = ''; _vig = null; _vigKey = ''; _grass = null; BR = null; BRP = null; });
 })();
