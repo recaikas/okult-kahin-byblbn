@@ -149,7 +149,8 @@ const fail = [], R = {}; const ok = (c, m) => { if (!c) fail.push(m); };
   R.gift = await p.evaluate(() => {
     const d = BT.decorById('ligbayrak'), shop = BT.PADS ? null : null;
     const ch = BT.chapter().g.find(g => /Süs/.test(g.t));
-    return { got: d.got, box: d.box, inBox: BT.S.dbox.indexOf('ligbayrak') >= 0, pad: BT.pads.some(q => q.kind === 'decor' && BT.decor[q.decor].id === 'ligbayrak'), chN: ch && ch.n, nonGift: BT.decor.filter(q => !q.gift).length, toast: document.getElementById('toast').textContent };
+    /* v2.25: Gözcü Kulübesi (xtra) Bölüm hedefine sayılmaz */
+    return { got: d.got, box: d.box, inBox: BT.S.dbox.indexOf('ligbayrak') >= 0, pad: BT.pads.some(q => q.kind === 'decor' && BT.decor[q.decor].id === 'ligbayrak'), chN: ch && ch.n, nonGift: BT.decor.filter(q => !q.gift && !q.xtra).length, toast: document.getElementById('toast').textContent };
   });
   ok(R.gift.got && R.gift.box && R.gift.inBox, 'giftDecor sandığa eklemedi ' + JSON.stringify(R.gift));
   ok(!R.gift.pad && R.gift.chN === R.gift.nonGift, 'hediye süsü mağazada / Bölüm hedefinde ' + JSON.stringify(R.gift));

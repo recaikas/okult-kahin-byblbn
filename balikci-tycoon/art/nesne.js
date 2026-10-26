@@ -2355,6 +2355,7 @@ function decorSpr(id, fr, on) {
 function beamSpr() { return L.sprite('beam|' + G().K, function (b) { for (var x = -52; x <= 52; x++) { var h = 10 + Math.abs(x) * 0.25; for (var y = -h / 2; y <= h / 2; y++) b.set(x, Math.round(-74 - x * 0.12 + y), '#fff0a8'); } }); }
 HKA.drawDecor = function (d) {
   var sx = R(pX(d.x, d.y)), sy = R(pY(d.x, d.y, 0)), t = T(), id = d.id;
+  if (id === 'gozcu') return false;                /* v2.25: oyun drawWatchHut'a yönlendirir (aşağıda HKA.drawWatchHut) */
   if (id === 'tekne') { gf('drawBoat')({ x: d.x, y: d.y - 1.6, r: 1 }); return; }
   if (id === 'lamba') { gf('drawLamp')(d.x, d.y); return; }
   var fr = 0, on = 0;
@@ -2452,6 +2453,74 @@ HKA.drawPetHouse = function (d) {
   var dog = d.pet === 'dog', idx = parseInt(String(d.id || '').replace(/\D/g, ''), 10) || 0;
   gf('shadow')(d.x, d.y + 0.1, dog ? 0.7 : 0.55);
   at(petHouseSpr(dog, idx), d.x, d.y, 0);
+};
+
+/* --- v2.25 GÖZCÜ KULÜBESİ: taş eşik, kırmızı-beyaz şeritli ahşap gövde, kemerli açık kapı (ön-sol yüz), sağ yüzde mazgal,
+   kurşun kaplı piramit çatı, yaldızlı alem + dalgalanan kırmızı flama. Ölçüler klasik drawWatchHut ile aynı (gövde ±0,34, duvar 34, tepe 47). --- */
+function watchHutSpr(fr) {
+  return spr('whut|' + fr + '|' + G().K, 0, 0, function (b) {
+    var p = P(), hw = 0.34, x0 = -hw, y0 = -hw, x1 = hw, y1 = hw, H = 34, RH = 13, ov = 0.09, n = 5, k;
+    var RED = '#c0392b', REDD = '#8e2a20', WHT = '#efe6d2', WHTD = '#c9bea4', WD = '#6f4526', WDD = '#4a2c18', WL = '#8a5a30';
+    /* taş eşik */
+    box(b, x0 - 0.05, y0 - 0.05, 2 * hw + 0.1, 2 * hw + 0.1, 0, 2, p.stoneLite, stoneW(p.stone), stoneW(p.stoneDark));
+    /* şeritli duvarlar (dikey tahta dokusu) */
+    for (k = 0; k < n; k++) {
+      var a0 = x0 + 2 * hw * k / n, a1 = x0 + 2 * hw * (k + 1) / n, b0 = y0 + 2 * hw * k / n, b1 = y0 + 2 * hw * (k + 1) / n;
+      wall(b, a0, y1, a1, y1, 2, H, woodV(k % 2 ? WHT : RED, 3));
+      wall(b, x1, b0, x1, b1, 2, H, woodV(k % 2 ? WHTD : REDD, 3));
+    }
+    /* süpürgelik + saçak kirişi + ortada ince kuşak */
+    wall(b, x0, y1, x1, y1, 2, 5, woodH(WD, 3)); wall(b, x1, y0, x1, y1, 2, 5, woodH(WDD, 3));
+    wall(b, x0, y1, x1, y1, H - 3.5, H, woodH(WD, 3)); wall(b, x1, y0, x1, y1, H - 3.5, H, woodH(WDD, 3));
+    hl(b, x0, y1, x1, y1, H - 3.5, lite(WL, 0.25)); hl(b, x1, y0, x1, y1, H - 3.5, WL);
+    hl(b, x0, y1, x1, y1, 5, lite(WD, 0.3)); hl(b, x1, y0, x1, y1, 5, WD);
+    /* kemerli kapı: pervaz, karanlık iç (sol iç duvar ve tabanda loş ışık), taş eşik */
+    archDoor(b, 0, y1, 0.235, 24, 5, function (u, z) { return u < -0.75 || z > 27.6 ? lite(WL, 0.18) : WL; });
+    archDoor(b, 0, y1, 0.185, 23, 4, function (u, z) { return u < -0.55 ? '#3a2618' : z < 1.6 ? '#4a3524' : z > 24.5 ? '#140d08' : '#1e140d'; });
+    hl(b, -0.2, y1, 0.2, y1, 2, '#b8b09a');
+    /* kapı üstü: yaldızlı hilal + yıldız */
+    var hx = R(fx(0, y1)), hy = R(fy(0, y1, 31.2));
+    b.rect(hx - 2, hy - 1, 1, 3, p.brass); b.set(hx - 1, hy - 2, p.brass); b.set(hx - 1, hy + 2, p.brass); b.set(hx, hy - 2, p.brassLite); b.set(hx, hy + 2, p.brassLite);
+    b.set(hx + 2, hy, p.brassLite);
+    /* sağ yüzde mazgal pencere */
+    winR(b, x1, -0.085, 0.085, 18, 25, '#1e140d', WD);
+    hl(b, x1, -0.12, x1, 0.12, 16.6, lite(WD, 0.25));
+    /* köşe dikmeleri */
+    vl(b, x0, y1, 2, H, WDD, 2); vl(b, x1, y1, 2, H, lite(WD, 0.12), 2); vl(b, x1, y0, 2, H, WDD, 2);
+    /* kurşun kaplı piramit çatı (öndeki iki yüz) */
+    var zt = H + RH, ze = H - 1, A = P3(0, 0, zt), E2 = P3(x1 + ov, y0 - ov, ze), E3 = P3(x1 + ov, y1 + ov, ze), E4 = P3(x0 - ov, y1 + ov, ze);
+    poly(b, [E4, E3, A], grain('#8fa2ad', 0.05, 7));
+    poly(b, [E3, E2, A], grain('#62747f', 0.05, 8));
+    for (k = 1; k < 4; k++) {                                       /* levha sıraları */
+      var r = k / 4, la = [E4[0] + (A[0] - E4[0]) * r, E4[1] + (A[1] - E4[1]) * r], lb = [E3[0] + (A[0] - E3[0]) * r, E3[1] + (A[1] - E3[1]) * r], lc = [E2[0] + (A[0] - E2[0]) * r, E2[1] + (A[1] - E2[1]) * r];
+      line(b, la[0], la[1], lb[0], lb[1], '#738690'); line(b, lb[0], lb[1], lc[0], lc[1], '#4f5f69');
+    }
+    line(b, E4[0], E4[1] + 1, E3[0], E3[1] + 1, '#2e3a42'); line(b, E3[0], E3[1] + 1, E2[0], E2[1] + 1, '#25313a');
+    line(b, E4[0], E4[1], E3[0], E3[1], '#b0c0c8');
+    line(b, E3[0], E3[1], A[0], A[1], '#c9d6dc');                    /* ön mahya */
+    /* alem: pirinç sap, yaldızlı top, hilal */
+    var ax = R(A[0]), ay = R(A[1]);
+    b.rect(ax, ay - 20, 2, 20, '#b9892c'); b.rect(ax, ay - 20, 1, 20, '#e0b858');
+    b.rect(ax - 2, ay - 6, 6, 3, p.brass); b.rect(ax - 2, ay - 6, 6, 1, p.brassLite);
+    b.rect(ax - 1, ay - 25, 4, 4, '#ffc94a'); b.set(ax - 1, ay - 25, '#fff0b0'); b.rect(ax, ay - 26, 2, 1, '#ffe08a');
+    /* flama: kırlangıç kuyruklu kırmızı, beyaz hilal; kare ile dalgalanır */
+    for (var i = 0; i < 16; i++) {
+      var tt = i / 16, half = Math.round(4 * (1 - tt * 0.45)), wv = Math.round(Math.sin(i * 0.42 - fr * 2.1) * 1.4 * tt);
+      for (var j = -half; j <= half; j++) {
+        if (i > 12 && Math.abs(j) < (i - 12)) continue;               /* kırlangıç kuyruğu */
+        b.set(ax + 2 + i, ay - 17 + j + wv, j === -half ? '#e25a48' : j === half ? '#8e2a20' : '#d23a2a');
+      }
+    }
+    var mx = ax + 6, my = ay - 17 + Math.round(Math.sin(4 * 0.42 - fr * 2.1) * 1.4 * 0.25);
+    b.set(mx, my - 2, '#f4e9d2'); b.set(mx - 1, my - 1, '#f4e9d2'); b.set(mx - 1, my, '#f4e9d2'); b.set(mx - 1, my + 1, '#f4e9d2'); b.set(mx, my + 2, '#f4e9d2');
+    b.set(mx + 2, my, '#f4e9d2');
+    b.outline(0.55);
+  });
+}
+HKA.drawWatchHut = function (d) {
+  gf('shadow')(d.x, d.y + 0.1, 0.8);
+  var s = Math.sin(T() * 2.6), fr = s > 0.35 ? 2 : s < -0.35 ? 0 : 1;
+  at(watchHutSpr(fr), d.x, d.y, 0);
 };
 
 /* --- hediye süsü: lig bayrağı (taş kaide, pirinç direk, lacivert flama, altın şerit, yıldız) --- */
