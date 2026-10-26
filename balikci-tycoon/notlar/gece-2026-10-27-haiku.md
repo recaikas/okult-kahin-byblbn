@@ -17,6 +17,12 @@ tüm tezgâhlar açık, oyuncu hiç balık tutmuyor ve yerinde duruyor. Yani aş
   tezgâha taşıyan biri olmadan satış 0. Yani yeni oyuncu, ilk işçiyi almadan (≈360 para) hiç gelir göremiyor.
   İlk gün nasıl bir yol izlenmesi gerektiği (ilk balığı kim taşıyor) oyunun içinden anlaşılmıyor olabilir;
   yeni oyuncu için kontrol edilmeli.
+- **Kayıt (dayanıklılık, oyuncuya görünmez):** `loadFrom(d)` açık bir dünyaya uygulanırsa işçileri SİLMEDEN ekler.
+  Tekrar üretim: oyun açıkken 2 işçi varken `BT.loadFrom(JSON.parse(JSON.stringify(BT.buildSave())))` → işçi sayısı 2 → 4.
+  Normal akışta (`useSlot` → `resetWorld()` → `loadFrom`) sorun çıkmaz; yani oyuncu yüklemesinde hata yok.
+  Önerilen önlem: `loadFrom` başına da `workers.length = 0` (ya da kaydı yalnız `resetWorld` sonrası uygula). Konum: game.js `loadFrom` (~3758), `d.workers.forEach` (~3830).
+- **Özellik turu (vapur, yağmur, özel müşteri, kayıt):** `BT.ferry.call(6)` ve `BT.wx.start()` hatasız çalıştı; iki gün sonra ve kayıt/yükleme sonrası konsol hatası yok.
+  `ERRS []`. Kayıt alanı 72 anahtar; yüklemeden sonra nakit 7540 → 7536 (gün içi harcama farkı).
 
 ## (B) DENGE
 
