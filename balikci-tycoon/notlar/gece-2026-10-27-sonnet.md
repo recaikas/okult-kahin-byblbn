@@ -105,7 +105,7 @@ Toptancı 20,3 · Kaptan 13,8 · Garson 13,0 · Otel Aşçıbaşı 12,0 · Ev Ha
 - **Günün müşterisi** (`day.feat`): %45 olasılıkla her doğuşu o tipe çeviriyor; bir tezgâhta 18–24 kişi aynı tip. Aynı tezgâhta gün geliri 8,8k ↔ 16,1k. Oyuncu nedenini bilemiyor. Öneri: %45 → %25 ve gün kartında "Günün müşterisi: X".
 - Yeni sokak müşterileri 3 renkte ayrı *tip* (mafya mavi/sarı/siyah ayrı) → `featPool` renkleri ayrı sayıyor, "Mafya günü" olasılığı 3 kat. Öneri: aileyi tek say.
 - Özel müşteriler: günde 3 hedef; ortalama **2,78**. Sv5–7'de (1–2 bölge) günlerin %38–45'inde <3 (özel için boş kuyruk yeri yok); Sv10'da %100.
-- Hayvanlar: mama 8 (kedi)/12 (köpek) günde; akış +%5/+%3 (tavan +%10). Akış çarpanları B2/B5'teki nedenle etkisiz kalabilir; elde ölçülmedi.
+- Hayvanlar: mama 8 (kedi)/12 (köpek) günde; akış +%5/+%3 (tavan +%10). A/B (4 tohum × 14 gün, Sv7, 4 kedi + 4 köpek): gelir 27 133 → 28 428 (+%4,8), net +764/gün (mama dahil) — ölçülebilir ama küçük; akış çarpanlarının neredeyse hepsi kuyruk darboğazında erirken hayvanlar +%5 verebiliyor (tavan +%10'a ulaşmıyor).
 
 ---
 
@@ -140,4 +140,5 @@ Toptancı 20,3 · Kaptan 13,8 · Garson 13,0 · Otel Aşçıbaşı 12,0 · Ev Ha
 
 ## Sürüm günlüğü
 - 20:2x UTC — ilk taslak.
+- 20:5x UTC (hayvan A/B eklendi)
 - 20:5x UTC — B1–B7, UX, C: bölüm seviyesi/ilerleme/reklam/lokanta/vapur A-B ölçümleri; stres testi temiz.
