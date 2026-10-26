@@ -203,6 +203,13 @@ Deneme: Sv8, 4 bölge + lokanta + müdür + 2 hayvan + vergi borcu, 9 gün oynan
 - Bozuk değer (`cash='abc'`, `rep=-5`): kasa 0'a (+uzakta kazanç) ve itibar 0'a çekiliyor; çökme yok.
 - Riskler: **A8** (opex bayrağı) ve **A9** (eski kayıtta opex şoku).
 
+## (B11) Bölge müdürleri (4 bölge; alım 4,5k/9k/12k/16k + aday ücreti ≈ 2,5k; maaş 25/45/55/65 dk) — Sv7, 4 tohum × 14 gün
+| buff çifti | gelir | maaş | net | taban net |
+|---|---|---|---|---|
+| fiyat +%12 & sabır +%35 | 33 242 (**+%22,5**) | 2 551 (+1 015) | 20 648 (**+3,8k/gün**) | 16 807 |
+| maaş −%30 & akış +%12 | 31 667 (+%16,7) | 2 093 | 19 654 (+2,8k/gün) | 16 807 |
+Yatırım ≈ 50k ⇒ geri ödeme **~13 gün (fiyat+sabır)** / ~18 gün. Bölge müdürleri B2'deki "ek kadro/kulübe"nin tersine gerçekten kazandırıyor (sabır buff'ı kaçan müşteriyi azaltıyor). Lokanta müdürü (B9) ise aynı maaş/fiyat oranıyla negatif — bölge müdürü ↔ lokanta müdürü uçurumu: lokanta müdür maaşı düşürülmeli.
+
 ---
 
 ## (C) EKLENEBİLİR FİKİRLER — etki ↑ / emek ↓
@@ -223,4 +230,8 @@ Deneme: Sv8, 4 bölge + lokanta + müdür + 2 hayvan + vergi borcu, 9 gün oynan
 ## Sürüm günlüğü
 - 20:2x UTC — ilk taslak.
 - 20:5x UTC (hayvan A/B eklendi)
+- 22:0x UTC — B8–B11 eklendi (10 günlük koşular, müdürler, yağmur, kayıt uyumu).
 - 20:5x UTC — B1–B7, UX, C: bölüm seviyesi/ilerleme/reklam/lokanta/vapur A-B ölçümleri; stres testi temiz.
+
+
+**Ölçülmeyenler / sonraki tur:** Ticaret Ofisi (kontrat/borsa/Lisans: gün 100'de 90k lisansla gelir 102k'ya çıktı), Depo/Hal zinciri, Ağ Vinci, Panayır günü, çok dilli (EN) metin taşmaları, gerçek telefonda FPS.
