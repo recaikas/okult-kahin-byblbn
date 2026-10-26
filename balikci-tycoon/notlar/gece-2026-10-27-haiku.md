@@ -24,6 +24,10 @@ tüm tezgâhlar açık, oyuncu hiç balık tutmuyor ve yerinde duruyor. Yani aş
 - **Özellik turu (vapur, yağmur, özel müşteri, kayıt):** `BT.ferry.call(6)` ve `BT.wx.start()` hatasız çalıştı; iki gün sonra ve kayıt/yükleme sonrası konsol hatası yok.
   `ERRS []`. Kayıt alanı 72 anahtar; yüklemeden sonra nakit 7540 → 7536 (gün içi harcama farkı).
 
+- **Pazar günü (5. gün):** Seviye 4, 4 işçi, 2 bölge ile 6 günlük testte pazar günü geliri **2,765**, normal günler **1,404–1,847**
+  (≈ +50%). Servis 75 (normal 48–63). Gün sonu kartındaki "pazar" akışı (hazırlık ekranı → "PAZARI AÇ") sorunsuz çalıştı.
+  Pazar günü ciro gideri de artıyor (221 vs ~70–110); net yine pozitif.
+
 ## (B) DENGE
 
 Ölçüm: gün sonu kartındaki `inc` (gelir), `wage` (maaş), `rent` (ödenen kira), `opex` (ciro payı gideri).
