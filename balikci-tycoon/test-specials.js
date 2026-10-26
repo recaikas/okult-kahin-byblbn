@@ -13,7 +13,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   await p.goto(URL); await sleep(900);
   await p.click('#introSkip'); await p.click('#playBtn'); await p.click('#slotRows .sb[data-n="1"]'); await p.click('#heroGo'); await p.click('#nameGo'); await p.click('#autoOpts button[data-m="10"]'); await sleep(500);
   R.pool = await p.evaluate(() => ({ n: BT.SPECIALS.length, first: BT.SPECIALS.slice(0, 2).map(s => s.n.tr) }));
-  ok(R.pool.n === 69 && R.pool.first.join() === 'Caner,Pelin', 'havuz yanlış');
+  ok(R.pool.n === 90 && R.pool.first.join() === 'Caner,Pelin', 'havuz yanlış');
   /* v1.1: specials.js — her karakter hatasız çizilir, özellikler okunur, id'ler benzersiz */
   R.data = await p.evaluate(() => {
     const cv = document.createElement('canvas'); cv.width = 40; cv.height = 44; let drawErr = 0;
@@ -23,14 +23,14 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
       sabri: by('sabri').pat, opra: by('opra').qty, cak: by('cak').tip, mikail: by('mikail').moon, en: by('gordon').hi.en,
       badFav: BT.SPECIALS.filter(s => !['hamsi','uskumru','palamut','levrek','somon','ton'].includes(s.fav)).length };
   });
-  ok(!R.data.drawErr && R.data.ids === 69 && !R.data.noTrait.length && !R.data.badFav, 'karakter verisi hatalı ' + JSON.stringify(R.data));
+  ok(!R.data.drawErr && R.data.ids === 90 && !R.data.noTrait.length && !R.data.badFav, 'karakter verisi hatalı ' + JSON.stringify(R.data));
   ok(R.data.sabri === 420 && R.data.opra.join() === '10,14' && R.data.cak === 2 && R.data.mikail === true && /shouted/i.test(R.data.en), 'özellikler okunmadı ' + JSON.stringify(R.data));
   /* stok bol: herkes hızla servis edilsin */
   const feed = () => p.evaluate(() => { BT.S.ctrl = 2; const c = BT.counters[0]; while (c.buffer.length < 18) c.buffer.push({ k: 'fileto', f: 'hamsi' }); });
   await feed();
   /* 1) gün başında özel müşteri yok; birkaç normal müşteriden sonra gelir */
   R.early = await p.evaluate(() => BT.specState());
-  ok(R.early.spec && R.early.spec.length === 2 && R.early.sp === 0 && !R.early.active.length, 'gün başında özel müşteri çıktı');
+  ok(R.early.spec && R.early.spec.length === 3 && R.early.sp === 0 && !R.early.active.length, 'gün başında özel müşteri çıktı');
   let firstSeenAt = null;
   for (let i = 0; i < 60 && !firstSeenAt; i++) {
     await p.evaluate(() => BT.counters[0].spawnT = Math.min(BT.counters[0].spawnT, 0.2)); await feed(); await sleep(500);
@@ -68,7 +68,7 @@ const URL = process.env.URL || 'http://localhost:8099/index.html';
   /* v1.1: ALBÜM sekmesi tanışılanları listeler */
   await p.click('#menuBtn'); await sleep(300); await p.click('#menuTabs .tab[data-t="album"]'); await sleep(300);
   R.album = await p.evaluate(() => ({ rows: document.querySelectorAll('#tabBody .row').length, txt: document.getElementById('tabBody').textContent.slice(0, 200) }));
-  ok(R.album.rows === R.met + 1 && /\/69/.test(R.album.txt), 'albüm yanlış ' + JSON.stringify(R.album));
+  ok(R.album.rows === R.met + 1 && /\/90/.test(R.album.txt), 'albüm yanlış ' + JSON.stringify(R.album));
   await p.screenshot({ path: (process.env.SC || '/tmp') + '/album.png' });
   await b.close();
   console.log(JSON.stringify({ R, errs }, null, 1));

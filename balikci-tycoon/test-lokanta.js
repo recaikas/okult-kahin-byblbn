@@ -1274,8 +1274,9 @@ if (SHOT) fs.mkdirSync(SHOT, { recursive: true });
     /* PERSONEL sekmesinde lokanta kadrosu */
     const ps = await p.evaluate(() => {
       BT.S.cash = 1e6; BT.lok.X.openBar('staff'); BT.lok.X.setBuildZone(9);   /* v2.24: PERSONEL bölge bölge — lokanta kadrosu Genel çipinde */
-      const card = BT.lok.X.barList().find(c => c.id === 'lks'); if (!card) return { card: false };
-      card.go(); const subs = BT.lok.X.barList().map(c => c.id).filter(id => /^lr/.test(id));
+      /* v2.25: rol kartları doğrudan ana listede ('lks' SEÇ özet kartı kalktı) */
+      const card = BT.lok.X.barList().find(c => c.id === 'lrlk_asci'); if (!card) return { card: false };
+      const subs = BT.lok.X.barList().map(c => c.id).filter(id => /^lr/.test(id));
       const n0 = BT.lok.crew().length; BT.lok.X.barList().find(c => c.id === 'lrlk_garson').go(); const n1 = BT.lok.crew().length;
       BT.lok.X.closeBar && BT.lok.X.closeBar(); return { card: true, subs: subs.join(), hired: n1 - n0 };
     });

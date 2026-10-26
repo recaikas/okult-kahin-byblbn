@@ -87,7 +87,7 @@ var STR = {
     halEmpty: 'Henüz ürün yok', halSold: '{n} ürün satıldı: +{v}', halBought: '{n} ürün alındı: {v}', halBoughtPal: '{n} ürün alındı ({v}) — Hal hamalı depoya taşıyor', halBoughtCarry: '{n} ürün alındı ({v}) — depoya teslim edildi', halPalN: 'Palette {n}', halStaffFull: 'En çok 2 Hal hamalı', kFume: 'füme', kFileto: 'fileto', fumeCrate: 'Füme Kasası',
     envUp1: '🌿 Liman canlanıyor: yol çakıl oldu, ağaçlar yeşeriyor', envUp2: '🪨 Yol arnavut kaldırımı oldu, sahil toparlandı',
     envUp3: '🌺 Liman pırıl pırıl: çiçekler açtı, yola fenerler dikildi',
-    specComing: 'Özel bir müşteri geliyor...', daySpec: 'Özel müşteriler',
+    specComing: 'Özel bir müşteri geliyor...', parComing: 'Tanıdık bir yüz geliyor… ya da öyle sanıyorsun!', daySpec: 'Özel müşteriler',
     custTitle: '📖 MÜŞTERİ DEFTERİ', custSub: 'Koya gelen herkes. Görmediğin kara gölge, adını söylemeyen ?????. Siparişini bitir, adını öğren.', custStory: 'HİKÂYE', custSpec: 'ÖZEL', custTypes: 'TİPLER', custTap: 'Bir karta dokun.', custNever: 'Henüz koya gelmedi.', custNoName: 'Adını henüz söylemedi. Siparişini tamamla, kendini tanıtsın. Mesleği, konuşmasını bitirince belli olur.', custVisits: 'Kaç kez geldi: {n}', custServed: 'Servis edilen: {n}', custTypeD: 'Sipariş {a}–{b} · sabır {p} sn · fiyat ×{m}', custStoryD: 'Dipteki Söz hikâyesinin bir parçası.', custNewName: '📖 Deftere yazıldı: {n}',
     termsAsk: 'Skor tablosu herkese açıktır. İşletme ve karakter adının görünmesi için Topluluk Kuralları\'nı kabul etmelisin: küfür, nefret, taciz, kişisel bilgi ve reklam yok. Uygunsuz adlar bildirilebilir ve kaldırılır.', termsAccept: 'KABUL EDİYORUM', termsLater: 'ŞİMDİ DEĞİL', termsThanks: 'Teşekkürler! Adın skor tablosunda.', termsChk: 'Topluluk Kuralları\'nı ve Kullanım Koşulları\'nı kabul ediyorum', termsLink: 'Oku', repMenu: 'Bu oyuncu için seçenekler', repTitle: 'Bu ad hakkında', repSub: 'Uygunsuz bir ad mı gördün? Bildir; inceleyip kaldırırız. Gizlersen bu cihazda bir daha görmezsin.', repBtn: '🚩 BİLDİR VE GİZLE', repHide: '🚫 YALNIZ GİZLE', repThanks: 'Bildirdin, teşekkürler. İnceleyeceğiz.', repLimit: 'Bugün çok bildirim gönderdin; satır gizlendi.', repOffline: 'Bildirim gönderilemedi (bağlantı yok); satır bu cihazda gizlendi.', repHidN: '{n} oyuncu gizli · göster', termsBtn: '📜 Topluluk Kuralları', lineIng: '{d} malzemesi (tezgâhta satılmaz, mutfağa gider)', mxCreditF: 'veresiye', mxCredit: 'Muhtar veresiye aldı: yarın sabah {v} ödeyecek', mxCreditPay: 'Muhtar borcunu ödedi: +{v}', mxHoron: '🎻 Horon başladı! 15 sn kimse sabırsızlanmıyor', mxLive: '🎥 Canlı yayın! 30 sn: her satış itibar, kaçan müşteri kayıp', mxFcast: '⚓ Kaptan: "Yarın {e} var, hazırlıklı ol." Yarın ağlar biraz daha hızlı dolar', mxReviewUp: '📝 Sedef Hanım beğendi: yarın daha çok müşteri gelecek', mxStrict: '🧐 Bay Hesapçı şikâyet etti', mxSouv: '🧳 Mehmet Amca bir hatıra bıraktı: {n}', mxSouvCash: '🧳 Mehmet Amca döviz bıraktı: +{v}', dayInsp: 'Gizli müfettiş', inspGood: 'Temiz rapor (kaçan %{r}): +{v}', inspBad: 'Olumsuz rapor (kaçan %{r}): −{v} ceza', helpGot: 'ANLADIM', helpReset: '💡 Sekme ipuçlarını yeniden göster', helpResetD: 'İpuçları sıfırlandı: her sekme ilk açılışta yeniden anlatılacak',
     storyName: 'Dipteki Söz', storyNext: 'Sıradaki: Gün {d} · {t} — bir koy sakini tezgâhına gelecek', storyFin: 'Hikâye tamamlandı. Unvan: Dipteki Sözün Bekçisi', storyBer: 'Bereket Ölçeri', storyBerD: 'ağ verimi {p}%', storyBuffs: 'Kalıcı etkiler', storyFaces: 'Koyun yüzleri', storyDone: '✦ Dipteki Söz tamamlandı: Dipteki Sözün Bekçisi',
@@ -158,7 +158,7 @@ var STR = {
     noStall: 'Açık tezgâh yok', active: 'AKTİF', none: 'YOK',
     /* v2.1 — bölge personeli + tezgâh açma */
     hiredZ: '{i} {n} işe alındı — {z}', harborWide: 'liman geneli',
-    zGen: 'Genel', zoneStaff: '{n} personeli', zoneStaffD: 'Kadro {a}/{b} — rol seç',
+    zGen: 'Genel', zoneStaff: '{n} personeli', crewCnt: 'Kadro {a}/{b}', zoneStaffD: 'Kadro {a}/{b} — rol seç',
     zoneFull: 'Bu bölgenin kadrosu dolu', zoneOf: '{n} bölgesi',
     stallSwitch: 'AÇIK TEZGÂHLAR', stallSwitchD: '{a}/{b} tezgâh açık — aç/kapat',
     stallManage: 'AÇ / KAPAT', stallTitle: 'TEZGÂHLAR',
@@ -201,11 +201,11 @@ var STR = {
     emptyArea: 'Açılacak yeni alan yok', emptyLevel: 'Şimdilik yükseltme yok',
     emptyBuild: 'Yapı noktası yok', emptyProj: 'Yeni büyük projeler 2. bölümde',
     slotEmpty: 'Boş yapı yeri', slotOf: '{n} bölgesi', slotPickD: 'Bir yapı seç', zGen: 'Genel',
-    areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs', roadShow: 'Yol vitrini', mZoneRow: 'Kadro {a}/{b} • açık tezgâh', mgrRush: '⏰ Yoğun saat! Müdürler tezgâhlara yardıma indi', mgrHelp: 'yardımda',
+    areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs', roadShow: 'Yol vitrini', whutSub: 'Köprü başı · Alp Er Tunga burada nöbet tutar', mZoneRow: 'Kadro {a}/{b} • açık tezgâh', mgrRush: '⏰ Yoğun saat! Müdürler tezgâhlara yardıma indi', mgrHelp: 'yardımda',
     rdFl: 'Yol Çiçekliği', rdFlD: 'Yol kenarına çiçeklik • müşteri akışı +%{p}', rdFlDone: 'Yola çiçeklik kondu 🌷',
     rdBb: 'Yol Reklam Panosu', rdBbD: 'İşletmenin adı ve amblemi yolda • müşteri akışı +%{p}', rdBbDone: 'Reklam panosu yolda yerini aldı 📣',
     lvEffect: 'Ağ +%18, tezgâh +4 stok, personel +%10 hız, müşteri +%12, yeni yapı yeri',
-    rentUp: 'Kira: günlük {a} → {b}', rentCard: 'Kira: günlük {v}', dayRent: 'Kira ({n} dükkân)', rentShort: '(kasa yetmedi, eksik kısım silindi)', rentFirst: '🏠 Dükkân kirası kesildi: {v}. Açık her dükkân (kapalı olsa da) gün sonunda kira öder; seviye arttıkça kira da artar.',
+    rentUp: 'Kira: günlük {a} → {b}', rentCard: 'Kira: günlük {v}', dayRent: 'Kira ({n} dükkân)', dayOpex: 'İşletme gideri (buz, yakıt, ambalaj · %{p})', opexFirst: '🧊 İşletme gideri kesildi: cironun %{p}\'i buz, yakıt ve ambalaja gitti. Seviye arttıkça bu pay da artar.', rentShort: '(kasa yetmedi, eksik kısım silindi)', rentFirst: '🏠 Dükkân kirası kesildi: {v}. Açık her dükkân (kapalı olsa da) gün sonunda kira öder; seviye arttıkça kira da artar.',
     staffFull: 'Personel limiti dolu ({n})',
     tut6: 'Alt bardan bir yükseltme satın al',
     nextStage: 'Sonraki aşama',
@@ -303,7 +303,7 @@ var STR = {
     halEmpty: 'No goods yet', halSold: '{n} sold: +{v}', halBought: '{n} bought: {v}', halBoughtPal: '{n} bought ({v}) — the market porter is taking them to the depot', halBoughtCarry: '{n} bought ({v}) — delivered to the depot', halPalN: 'On pallet {n}', halStaffFull: 'At most 2 market porters', kFume: 'smoked', kFileto: 'fillet', fumeCrate: 'Smoke Crate',
     envUp1: '🌿 The harbor comes alive: gravel road, trees turning green', envUp2: '🪨 The road is cobbled now, the shore tidied up',
     envUp3: '🌺 The harbor shines: flowers bloom, lamps line the road',
-    specComing: 'A special customer is coming...', daySpec: 'Special customers',
+    specComing: 'A special customer is coming...', parComing: 'A familiar face is coming… or so you think!', daySpec: 'Special customers',
     custTitle: '📖 CUSTOMER BOOK', custSub: 'Everyone who visits the cove. Unseen are shadows; those who haven\'t told their name are ?????. Finish their order to learn it.', custStory: 'STORY', custSpec: 'SPECIAL', custTypes: 'TYPES', custTap: 'Tap a card.', custNever: 'Hasn\'t visited the cove yet.', custNoName: 'Hasn\'t told you their name yet. Complete their order and they\'ll introduce themselves. Their job shows once they finish talking.', custVisits: 'Visits: {n}', custServed: 'Served: {n}', custTypeD: 'Order {a}–{b} · patience {p}s · price ×{m}', custStoryD: 'Part of The Promise Below.', custNewName: '📖 Added to the book: {n}',
     termsAsk: 'The leaderboard is public. To show your business and character names you must accept the Community Rules: no profanity, hate, harassment, personal information or advertising. Inappropriate names can be reported and are removed.', termsAccept: 'I ACCEPT', termsLater: 'NOT NOW', termsThanks: 'Thanks! Your name is on the leaderboard.', termsChk: 'I accept the Community Rules and Terms of Use', termsLink: 'Read', repMenu: 'Options for this player', repTitle: 'About this name', repSub: 'Saw an inappropriate name? Report it and we will review and remove it. Hide it and you will not see it on this device again.', repBtn: '🚩 REPORT AND HIDE', repHide: '🚫 JUST HIDE', repThanks: 'Reported, thank you. We will review it.', repLimit: 'You sent many reports today; the row is hidden.', repOffline: 'Could not send the report (offline); the row is hidden on this device.', repHidN: '{n} players hidden · show', termsBtn: '📜 Community Rules', lineIng: 'ingredient for {d} (not sold at a stall, goes to the kitchen)', mxCreditF: 'on credit', mxCredit: 'The headman bought on credit: he\'ll pay {v} tomorrow morning', mxCreditPay: 'The headman paid his debt: +{v}', mxHoron: '🎻 Horon time! For 15 s nobody gets impatient', mxLive: '🎥 Live broadcast! 30 s: each sale earns reputation, each lost customer costs', mxFcast: '⚓ The captain: "Tomorrow brings {e}, be ready." Nets fill a little faster tomorrow', mxReviewUp: '📝 Critic Sedef liked it: more customers tomorrow', mxStrict: '🧐 Mr. Tally filed a complaint', mxSouv: '🧳 Uncle Mehmet left a keepsake: {n}', mxSouvCash: '🧳 Uncle Mehmet left some foreign cash: +{v}', dayInsp: 'Secret inspector', inspGood: 'Clean report ({r}% lost): +{v}', inspBad: 'Bad report ({r}% lost): −{v} fine', helpGot: 'GOT IT', helpReset: '💡 Show tab tips again', helpResetD: 'Tips reset: each tab will explain itself again on first open',
     storyName: 'The Promise Below', storyNext: 'Next: Day {d} · {t} — someone from the cove will visit your stall', storyFin: 'Story complete. Title: Keeper of the Promise Below', storyBer: 'Bounty Gauge', storyBerD: 'net yield {p}%', storyBuffs: 'Permanent effects', storyFaces: 'Faces of the cove', storyDone: '✦ The Promise Below complete: Keeper of the Promise Below',
@@ -368,7 +368,7 @@ var STR = {
     prepStock: 'Stall stock {a} / {b} — {n} open stalls', nowStock: 'stock {n}',
     noStall: 'No open stall', active: 'ACTIVE', none: 'NONE',
     hiredZ: '{i} {n} hired — {z}', harborWide: 'harbor-wide',
-    zGen: 'General', zoneStaff: '{n} staff', zoneStaffD: 'Crew {a}/{b} — pick a role',
+    zGen: 'General', zoneStaff: '{n} staff', crewCnt: 'Crew {a}/{b}', zoneStaffD: 'Crew {a}/{b} — pick a role',
     zoneFull: "This zone's crew is full", zoneOf: '{n} zone',
     stallSwitch: 'OPEN STALLS', stallSwitchD: '{a}/{b} stalls open — switch on/off',
     stallManage: 'ON / OFF', stallTitle: 'STALLS',
@@ -409,11 +409,11 @@ var STR = {
     emptyArea: 'No new area to unlock', emptyLevel: 'No upgrade available yet',
     emptyBuild: 'No build spot yet', emptyProj: 'New big projects come in Chapter 2',
     slotEmpty: 'Empty build spot', slotOf: '{n} area', slotPickD: 'Pick a building', zGen: 'General',
-    areaGives: 'New net, cutting table and stall', decorGroup: 'Decor', roadShow: 'Road showcase', mZoneRow: 'Crew {a}/{b} • open stalls', mgrRush: '⏰ Rush hour! Managers are helping at the stalls', mgrHelp: 'helping',
+    areaGives: 'New net, cutting table and stall', decorGroup: 'Decor', roadShow: 'Road showcase', whutSub: 'Bridge head · Alp Er Tunga keeps watch here', mZoneRow: 'Crew {a}/{b} • open stalls', mgrRush: '⏰ Rush hour! Managers are helping at the stalls', mgrHelp: 'helping',
     rdFl: 'Roadside Flowerbed', rdFlD: 'Flowerbed by the road • customer flow +{p}%', rdFlDone: 'A flowerbed on the road 🌷',
     rdBb: 'Road Billboard', rdBbD: 'Your company name and emblem by the road • customer flow +{p}%', rdBbDone: 'Billboard up by the road 📣',
     lvEffect: 'Nets +18%, stall +4 stock, staff +10% speed, customers +12%, new build spot',
-    rentUp: 'Rent: {a} → {b} a day', rentCard: 'Rent: {v} a day', dayRent: 'Rent ({n} shops)', rentShort: '(not enough cash; the rest was waived)', rentFirst: '🏠 Shop rent paid: {v}. Every unlocked shop (even when closed) pays rent at day end; higher levels pay more.',
+    rentUp: 'Rent: {a} → {b} a day', rentCard: 'Rent: {v} a day', dayRent: 'Rent ({n} shops)', dayOpex: 'Running costs (ice, fuel, packaging · {p}%)', opexFirst: '🧊 Running costs paid: {p}% of turnover went on ice, fuel and packaging. The share grows with your level.', rentShort: '(not enough cash; the rest was waived)', rentFirst: '🏠 Shop rent paid: {v}. Every unlocked shop (even when closed) pays rent at day end; higher levels pay more.',
     staffFull: 'Staff limit reached ({n})',
     tut6: 'Buy an upgrade from the bottom bar',
     nextStage: 'Next stage',
@@ -1464,11 +1464,16 @@ var MGR_BUFFS = {
   wspeed: { t: { tr: 'Personel %20 hızlı', en: 'Staff 20% faster' }, v: 0.20 },
   pat:    { t: { tr: 'Müşteri sabrı +%35', en: 'Customer patience +35%' }, v: 0.35 },
   flow:   { t: { tr: 'Müşteri akışı +%12', en: 'Customer flow +12%' }, v: 0.12 },
-  wage:   { t: { tr: 'Bölge maaşları -%30', en: 'Zone wages -30%' }, v: 0.30 },
+  wage:   { t: { tr: 'Personel maaşları -%30', en: 'Staff wages -30%' }, v: 0.30 },
   rep:    { t: { tr: 'Satış başına +1 itibar', en: '+1 reputation per sale' }, v: 1 }
 };
 var MGR_NAMES = ['Sadık Bey', 'Nevin Hanım', 'Ertuğrul Bey', 'Filiz Hanım', 'Cengiz Bey', 'Gülten Hanım', 'Levent Bey', 'Sibel Hanım', 'Orhan Bey', 'Meral Hanım', 'Kadir Bey', 'Aysel Hanım'];
 var MGR_DESK = [{ cost: 4500, wage: 25 },   /* v2.21: İskele müdürü getirisi maaşına yakındı */ { cost: 9000, wage: 45 }, { cost: 12000, wage: 55 }, { cost: 16000, wage: 65 }];
+MGR_DESK[4] = { cost: 20000, wage: 75 };   /* v2.25: Sahil Lokantası müdürü (slot = LOK_Z = 4; AREAS 'sahil') */
+function mgrLZ(z) { return z === LOK_Z; }  /* v2.25: müdür yuvası lokanta mı (lokanta otomasyonu S.auto değil S.lok.auto) */
+function mgrName(z) { return mgrLZ(z) ? T('lkName') : NM(AREAS[z].n); }
+/* v2.25: işçinin müdür yuvası: lokanta kadrosu (zone −1) lokanta müdüründen etkilenir */
+function wMgrZ(w) { return w && ROLES[w.role] && ROLES[w.role].lok ? LOK_Z : (w ? w.zone : -1); }
 function mgr(z) { return (z >= 0 && S.mgr && S.mgr[z]) || null; }
 function mgrEff(z, k) {
   var m = mgr(z); if (!m || !MGR_BUFFS[k]) return 0;
@@ -1493,12 +1498,18 @@ function hireMgr(z, c) {
   if (!S.mgr) S.mgr = [];
   S.mgr[z] = { n: c.n, a: c.a, b: c.b, wage: MGR_DESK[z].wage, look: c.look };
   S.mgrCand[z] = null;
+  if (mgrLZ(z)) {                                              /* v2.25: lokanta müdürü → lokanta otomasyonu açılır (S.auto[LZ] değil) */
+    sfx.star(); toast(T('mgrHired', { m: c.n, n: mgrName(z) }));
+    addPuff(LOK.gate.x, LOK.gate.y, '#ffc94a');
+    lokSetAuto(true);
+    return;
+  }
   if (!S.auto) S.auto = [];
   S.auto[z] = true;
   sfx.star(); toast(T('mgrHired', { m: c.n, n: NM(AREAS[z].n) }));
   var cc = zoneCounter(z); if (cc) addPuff(cc.x, cc.y, '#ffc94a');
 }
-function mgrWages() { var w = 0; for (var z = 0; z < AREAS.length; z++) if (mgr(z) && zoneOpen(z)) w += mgr(z).wage; return w; }
+function mgrWages() { var w = 0; for (var z = 0; z < AREAS.length; z++) if (mgr(z) && (mgrLZ(z) ? lokOpen() : zoneOpen(z))) w += mgr(z).wage; return w; }   /* v2.25: lokanta müdürü lokanta açıkken */
 function mgrPos(z) { return MGR_DESKS[z] || null; }
 function mgrOutfit(z, m) {
   var looks = [['#2a2f3a', '#3a4150', '#8d2a2a'], ['#3a2a4a', '#524064', '#d9a441'], ['#1f3a3a', '#2f5252', '#3f6fb0']][m.look % 3];
@@ -1934,7 +1945,7 @@ function trayPos(c) {
   return { x: c.x + 0.98, y: c.y + 0.55 };
 }
 function fumePos(c) { return { x: c.x + 0.95, y: c.y - 0.6 }; }
-var MGR_DESKS = [{ x: -2.2, y: 4.0 }, { x: -0.2, y: 11.4 }, { x: 7.7, y: 13.1 }, { x: 6.9, y: 23.15 }];   /* v1.9.4: bölge köşelerinde (oturma yeri yürünebilir) */
+var MGR_DESKS = [{ x: -2.2, y: 4.0 }, { x: -0.2, y: 11.4 }, { x: 7.7, y: 13.1 }, { x: 6.9, y: 23.15 }, { x: 34.8, y: 20.0 }];   /* v2.25: [4] = Sahil Lokantası müdür masası (doğu bahçe, masaların doğusu); */   /* v1.9.4: bölge köşelerinde (oturma yeri yürünebilir) */
 var AREA_LAMPS = [[{ x: 6.4, y: 0.23 }, { x: -2.8, y: 4.6 }], [{ x: 7.05, y: 6.25 }, { x: 6.52, y: 11.32 }], [{ x: 4.86, y: 12.25 }, { x: -2.8, y: 12.9 }], [{ x: 4.7, y: 17.75 }, { x: -2.8, y: 23.2 }]];
 function slotEff(z, eff) {
   var v = 0;
@@ -2295,8 +2306,9 @@ function loadDay(d) {
     day.market = !!d.day[2] && isMarketDay(day.n);
     day.feat = custById(d.day[3]) ? d.day[3] : null;
     var sps = String(d.day[4] || '').split(',').filter(function (q) { return specById(q); });
-    if (sps.length === 2) {
+    if (sps.length === 2 || sps.length === 3) {
       day.spec = sps; day.normals = parseInt(d.day[6], 10) || 0;
+      day.sp3 = (parseInt(d.day[8], 10) || 0) ? 2 : 0;   /* v2.25: yola çıkmış parodi konuk kayıtla dönmez → bugünlük bitti say */
       var sp0 = parseInt(d.day[5], 10) || 0;
       day.sp = sp0 === 2 ? 1 : sp0 === 3 ? 4 : sp0;   /* müşteriler kaydedilmez: yarım kalan adımı güvenle sürdür */
       day.popT = 0;
@@ -2775,6 +2787,7 @@ function endDay() {
   };
   day.last.pet = petDayEnd();                      /* v2.18-deneme: hayvanların mama ücreti */
   day.last.rent = rentDayEnd();                    /* v2.24-deneme: dükkân kirası (kapalı olsa da) */
+  day.last.opex = opexDayEnd(day.last.inc);        /* v2.25: işletme gideri (ciro payı) */
   if (M && M.office) closeDay();                 /* borsa günü oyun günüyle aynı */
   if (day.n === 1) gzMark('ilkgun', { n: S.served | 0 });   /* v2.16: ilk günün sonu → ertesi sabah gazetesi */
   insDayEnd();                                     /* v2.18-deneme: inşaatlarda kalan gün azalır */
@@ -3473,7 +3486,7 @@ function repFromOld(r) {
   return Math.round(REP_LEVELS[REP_LEVELS.length - 1].need + (r - 350) * 13);
 }
 function repTitle() { return NM(REP_LEVELS[repLevel() - 1].t); }
-function wageTotal() { var w = 0; for (var i = 0; i < workers.length; i++) w += workerWage(workers[i]) * (1 - mgrEff(workers[i].zone, 'wage')); return (w + mgrWages()) * (1 - Math.min(0.5, servEff('wage'))); }
+function wageTotal() { var w = 0; for (var i = 0; i < workers.length; i++) w += workerWage(workers[i]) * (1 - mgrEff(wMgrZ(workers[i]), 'wage')); return (w + mgrWages()) * (1 - Math.min(0.5, servEff('wage'))); }
 function upCost(v) { return Math.max(1, Math.round(v * (1 - Math.min(0.45, perkSum('upcost') + servEff('upcost'))))); }
 function pct(n) { return lang === 'tr' ? '%' + n : n + '%'; }
 function perMin() { return lang === 'tr' ? '/dk' : '/min'; }
@@ -3617,7 +3630,7 @@ function buildSave() {
     serv: servSave(),
     adLv: adLvl(), ads: adSave(),                     /* v2.18-deneme: İlan Bürosu seviyesi + yayındaki reklamlar [{id, left}] */
     insaat: insSave(),                                /* v2.18-deneme: sürmekte olan inşaatlar {bina: {lv, left}} */
-    day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || '', (day.spec || []).join(','), day.sp || 0, day.normals || 0, day.phase === 'summary' ? 1 : 0],
+    day: [day.n, Math.round(day.t), day.market ? 1 : 0, day.feat || '', (day.spec || []).join(','), day.sp || 0, day.normals || 0, day.phase === 'summary' ? 1 : 0, day.sp3 || 0],
     dst: { inc: Math.round(day.st.inc || 0), served: day.st.served | 0, lost: day.st.lost | 0, fish: day.st.fish | 0, by: day.st.by || {}, out: day.st.out || {}, spec: (day.st.spec || []).slice(0, 40), wage: Math.round(day.st.wage || 0), tax: Math.round(day.st.tax || 0) },   /* v2.21: gün istatistiği */
     stalls: counters.map(function (c) { return [c.key, c.open ? 1 : 0]; }),
     workers: workers.filter(function (w) { return !ROLES[w.role].lok; }).map(function (w) { return (w.lv | 0) > 1 ? [w.role, w.zone === undefined ? 0 : w.zone, w.lv | 0] : [w.role, w.zone === undefined ? 0 : w.zone]; }),   /* v2.18-deneme: usta seviyesi (yoksa 1) */
@@ -3800,7 +3813,7 @@ function loadFrom(d) {
     WHALL.pal = {};
     if (md[4] && typeof md[4] === 'object') for (var pk in md[4]) { var pn = parseInt(md[4][pk], 10); if (pn > 0 && /^(fileto|fume)\|[a-z]+$/.test(pk) && FISH[pk.split('|')[1]]) WHALL.pal[pk] = Math.min(pn, 999); }
     SLOTS.forEach(function (sl) { if (sl.b === 'kulube') { sl.b = null; HUT.lvl = Math.max(HUT.lvl, 1); } });
-    if (d.decor) d.decor.forEach(function (v, i) { if (DECOR[i]) DECOR[i].got = !!v; });
+    if (Array.isArray(d.decor)) DECOR.forEach(function (q, i) { q.got = !!d.decor[i]; });   /* v2.25: kayıttan kısa liste (eski kayıt: Gözcü Kulübesi yok) → eksikler alınmamış; önceki oturumdan kalmaz */
     decorLoad(d.dpos, d.dbox);                     /* v2.17: eski kayıtta yok → süsler varsayılan yerinde; geçersiz yer → varsayılan */
     if (d.proj) { project.inv = d.proj[0] || 0; project.stage = d.proj[1] || 0; project.done = !!d.proj[2]; }
     servLoad(d.serv);   /* v0.4 §41 — yoksa hiçbir bina kurulmaz, para kesilmez */
@@ -4582,7 +4595,7 @@ function updateWorkers(dt) {
   for (var i = 0; i < workers.length; i++) {
     var w = workers[i], R2 = ROLES[w.role];
     if (!R2) { workers.splice(i--, 1); continue; }
-    var sp = R2.speed * mul * (w.zone >= 0 && zoneAuto(w.zone) ? 1.2 : 1) * (1 + mgrEff(w.zone, 'wspeed')) * wLvMul(w) * areaWorkMul(w.zone);   /* v2.24: bölge Sv başına +%10 */
+    var sp = R2.speed * mul * (w.zone >= 0 && zoneAuto(w.zone) ? 1.2 : 1) * (1 + mgrEff(wMgrZ(w), 'wspeed')) * wLvMul(w) * areaWorkMul(w.zone);   /* v2.24: bölge Sv başına +%10 */
     if (w.role === 'hamal') { if (emek()) aiHamalE(w, sp, dt); else aiHamal(w, sp, dt); }   /* v2.18-deneme: Emekçi Mod'da "bittikçe yenile" */
     else if (w.role === 'tezgahtar') { if (emek()) aiVendorE(w, sp, dt); else aiTezgahtar(w, sp, dt); }
     else if (w.role === 'balikci') { if (emek()) aiBalikci(w, sp, dt); else aiHamal(w, sp, dt); }   /* mod kapalıysa hamal gibi taşır */
@@ -4902,7 +4915,7 @@ function updateCounter(c, dt) {
       var hi = pool.filter(function (t) { return t.mult >= 1.8; });
       if (hi.length) pool = hi;
     }
-    var type = pick(pool);
+    var type = pickCust(pool);
     if (adLive('panayir') && Math.random() < 0.3) { var tou = pool.filter(function (t) { return t.id === 'turist'; }); if (tou.length) type = tou[0]; }   /* v2.18-deneme: Panayır → turist gelir */
     if (day.feat && Math.random() < 0.45) {           /* günün müşterisi daha sık gelir */
       var ft = pool.filter(function (t) { return t.id === day.feat; });
@@ -5049,7 +5062,7 @@ function updateCustomers(dt) {
     if (cu.state === 'walk') {
       var p = queueSlotPos(cu.c, cu.slot);
       var dx = p.x - cu.x, dy = p.y - cu.y, L = Math.hypot(dx, dy);
-      var wv = cu.spec ? SPEC_WALK : 2.1;             /* v1.3.3: özel müşteri ağır adımlarla gelir */
+      var wv = cu.spec ? SPEC_WALK : 2.1 * (cu.type && cu.type.slow || 1);   /* v2.25: bastonlular ağır gelir */             /* v1.3.3: özel müşteri ağır adımlarla gelir */
       if (L < 0.14) { cu.state = 'wait'; if (cu.spec) specArrive(cu); }
       else { cu.x += dx / L * wv * dt; cu.y += dy / L * wv * dt; cu.bob += dt * (cu.spec ? 5 : 8); }
     } else if (cu.state === 'wait') {
@@ -5704,7 +5717,9 @@ function drawPerson(a, o) {
   var coat = o.coat || PAL.indigo;
   var coat2 = o.coat2 || coat;
   var skin = o.skin || PAL.skin[0];
-  var skinS = PAL.skinSh[PAL.skin.indexOf(skin) < 0 ? 0 : PAL.skin.indexOf(skin)];
+  var skI = PAL.skin.indexOf(skin);
+  var skinS = skI < 0 ? shade(skin, -26) : PAL.skinSh[skI];   /* v2.25: özel tenin (skinC) gölgesi kendinden */
+  if (o.mask) { skin = o.mask; skinS = shade(o.mask, -34); }   /* v2.25: tam maske — baş ve eller maske renginde */
   var hair = o.hair || PAL.hair[0];
   var pants = o.pants || '#2b3a45';
   var boot = o.boot || '#1a2830';
@@ -5726,6 +5741,7 @@ function drawPerson(a, o) {
       px(sx + 1, y - 4, 3, 1, o.bootTop || '#2f4450');
     }
   }
+  var yFoot = y;                                      /* v2.25: baston ucu için zemin */
   y -= hup;                                           /* gövde ve baş boya göre yukarı/aşağı */
 
   if (o.cape) {                                       /* v1.1: pelerin — gövdenin arkasından taşar */
@@ -5761,6 +5777,11 @@ function drawPerson(a, o) {
     px(bx0, y - 7, 3, 1, shade(coat, -26));
   }
 
+  if (o.stripes) {                                    /* v2.25: dikey forma çizgileri */
+    var stc = o.stripes, stD = shade(stc, -30), sw0 = o.belly ? -5 : -3, sw1 = o.belly ? 4 : 3;
+    for (var st = sw0; st <= sw1; st += 2) px(sx + st + lean, y - 14, 1, o.belly ? 8 : 7, st >= 2 ? stD : stc);
+    if (o.belly) { var bsx = sx + (fx > 0 ? 6 : -7) + lean; px(bsx, y - 12, 1, 5, stD); }
+  }
   if (o.scales) {                                     /* v1.1: balık pulu desenli elbise */
     for (var sr = 0; sr < 4; sr++) for (var sc = 0; sc < 4; sc++) px(sx - 4 + lean + sc * 2 + (sr % 2), y - 14 + sr * 2, 1, 1, o.scales);
   }
@@ -5775,7 +5796,7 @@ function drawPerson(a, o) {
   /* --- kollar --- */
   var carrying = a.carry && a.carry.length;
   var fa = w ? w.fa : 0, ba = w ? w.ba : 0;
-  if (carrying || o.hold) {                           /* taşıma: iki kol önde */
+  if (carrying || o.hold || o.keyboard) {             /* taşıma: iki kol önde (v2.25: klavye de) */
     px(sx - 6 + lean, y - 13, 2, 5, coat2);
     px(sx + 4 + lean, y - 13, 2, 5, coat2);
     px(sx - 6 + lean, y - 9, 2, 1, skin);
@@ -5806,8 +5827,8 @@ function drawPerson(a, o) {
     px(gx + 2, y - 8, 1, 1, PAL.brass);
   }
   if (o.briefcase) {                                  /* v2.14: evrak çantası */
-    var bcx = fx > 0 ? sx - 11 : sx + 5;
-    px(bcx, y - 10, 7, 5, o.briefcase); px(bcx, y - 10, 7, 1, shade(o.briefcase, 22)); px(bcx + 2, y - 11, 3, 1, shade(o.briefcase, -30));
+    var bcx = fx > 0 ? sx - 11 : sx + 5, bcC = typeof o.briefcase === 'string' ? o.briefcase : '#4a2c18';   /* v2.25: briefcase: true → deri rengi */
+    px(bcx, y - 10, 7, 5, bcC); px(bcx, y - 10, 7, 1, shade(bcC, 22)); px(bcx + 2, y - 11, 3, 1, shade(bcC, -30));
     px(bcx + 1, y - 8, 1, 1, PAL.brass); px(bcx + 5, y - 8, 1, 1, PAL.brass);
   }
   if (o.notebook) {                                   /* küçük not defteri */
@@ -5823,6 +5844,38 @@ function drawPerson(a, o) {
   }
   if (o.mic) { var mx = sx + fx * 5; px(mx, y - 15, 1, 5, '#2a2a2a'); px(mx - (fx > 0 ? 0 : 1), y - 17, 2, 2, '#9aa4ac'); }
   if (o.phone) { var phx = sx + fx * 6; px(phx, y - 21, 2, 3, '#1a1a1a'); px(phx, y - 21, 1, 1, '#7fd3ff'); px(phx, y - 18, 1, 5, coat2); }
+  /* v2.25: öndeki el (yön tarafı) — baston, kılıç, çekiç, altın eldiven */
+  var free = !carrying && !o.hold && !o.keyboard && !working;
+  var hfx = fx > 0 ? sx + 4 : sx - 6, hfy = y - 8 + (fx > 0 ? ba : fa);
+  if (carrying || o.hold || o.keyboard) { hfx = fx > 0 ? sx + 4 + lean : sx - 6 + lean; hfy = y - 9; }
+  else if (working) { hfx = sx + fx * 5 + lean; hfy = y - 8; }
+  if (o.sword && free) {                              /* kında kılıç: kalçadan arkaya çapraz */
+    var swC = o.sword;
+    for (var si = 0; si < 7; si++) px(sx + fx * (3 - si) - (fx > 0 ? 0 : 1), y - 8 + (si >> 1), 1, 1, si > 5 ? shade(swC, 40) : (si === 2 ? '#4a3020' : swC));
+    px(sx + fx * 4 - (fx > 0 ? 0 : 1), y - 10, 1, 3, '#c9952f');
+    px(hfx, hfy, 2, 1, skin);
+  }
+  if (o.cane && free) {                               /* baston: kıvrık sap, yere değer */
+    var cnx = fx > 0 ? sx + 6 : sx - 7;
+    px(cnx, hfy - 1, 1, yFoot - hfy, o.cane); px(cnx, yFoot - 1, 1, 1, '#2a2420');
+    px(fx > 0 ? sx + 4 : sx - 8, hfy - 2, 4, 1, shade(o.cane, 30));
+    px(hfx, hfy, 2, 1, skin);
+  }
+  if (o.hammer && free) {                             /* savaş çekici: başı aşağıda */
+    var hmx = fx > 0 ? hfx + 1 : hfx;
+    px(hmx, hfy - 1, 1, 5, '#6a4424');
+    px(hmx - 2, hfy + 4, 5, 3, o.hammer); px(hmx - 2, hfy + 4, 5, 1, shade(o.hammer, 40)); px(hmx + (fx > 0 ? 2 : -2), hfy + 5, 1, 2, shade(o.hammer, -40));
+    px(hfx, hfy, 2, 1, skin);
+  }
+  if (o.keyboard) {                                   /* klavye: iki elle göğüs önünde */
+    px(sx - 6 + lean, y - 11, 12, 2, o.keyboard); px(sx - 6 + lean, y - 10, 12, 1, shade(o.keyboard, -20));
+    for (var kk = 0; kk < 5; kk++) px(sx - 5 + kk * 2 + lean, y - 11, 1, 1, shade(o.keyboard, 70));
+    px(sx - 6 + lean, y - 9, 2, 1, skin); px(sx + 4 + lean, y - 9, 2, 1, skin);
+  }
+  if (o.gauntlet) {                                   /* altın eldiven: biraz iri yumruk */
+    px(hfx, hfy - 1, 2, 3, o.gauntlet); px(hfx + (fx > 0 ? 2 : -1), hfy, 1, 2, shade(o.gauntlet, -36));
+    px(hfx, hfy - 1, 2, 1, shade(o.gauntlet, 40));
+  }
 
   /* --- baş --- */
   var hy = y - 22;
@@ -5831,7 +5884,10 @@ function drawPerson(a, o) {
   px(sx - 4, hy + 2, 1, 2, skin); px(sx + 3, hy + 2, 1, 2, skin);   /* kulaklar */
 
   /* saç / başlık */
-  if (o.scarf) {                                      /* başörtüsü */
+  if (o.mask) {                                       /* v2.25: tam maske — saçı örter */
+    px(sx - 3, hy - 1, 6, 1, skin); px(sx - 2, hy - 2, 4, 1, skin); px(sx - 2, hy - 2, 2, 1, shade(skin, 40));
+    if (o.maskFace) { px(fx > 0 ? sx - 1 : sx - 3, hy + 1, 4, 5, o.maskFace); px(fx > 0 ? sx + 2 : sx - 3, hy + 2, 1, 4, shade(o.maskFace, -40)); }
+  } else if (o.scarf) {                                      /* başörtüsü */
     px(sx - 4, hy - 1, 8, 4, o.scarf);
     px(sx - 4, hy - 1, 8, 1, shade(o.scarf, 20));
     if (o.scarfDots) { px(sx - 3, hy, 1, 1, o.scarfDots); px(sx, hy + 1, 1, 1, o.scarfDots); px(sx + 2, hy, 1, 1, o.scarfDots); px(sx - 5, hy + 3, 1, 1, o.scarfDots); }
@@ -5873,7 +5929,7 @@ function drawPerson(a, o) {
     px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair);
   } else if (o.hairStyle === 4) {                     /* kel: yalnız yanlarda saç */
     px(sx - 3, hy - 1, 6, 1, skin); px(sx - 2, hy - 2, 4, 1, skin);
-    px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair);
+    if (o.hair) { px(sx - 4, hy + 1, 1, 2, hair); px(sx + 3, hy + 1, 1, 2, hair); }   /* v2.25: saç rengi yoksa tam kel */
   } else {
     px(sx - 4, hy - 2, 8, 3, hair);
     px(sx - 4, hy + 1, 1, 3, hair); px(sx + 3, hy + 1, 1, 3, hair);
@@ -5899,14 +5955,29 @@ function drawPerson(a, o) {
       px(tx, hy, 2, 2, hair); px(tx + (fx > 0 ? 0 : 1), hy + 2, 1, 4, hair);
     }
   }
-  if (o.headband) { px(sx - 4, hy - 1, 8, 1, o.headband); px(fx > 0 ? sx - 5 : sx + 4, hy, 1, 3, o.headband); }
+  if (o.headband && !o.mask) { px(sx - 4, hy - 1, 8, 1, o.headband); px(fx > 0 ? sx - 5 : sx + 4, hy, 1, 3, o.headband); }
   if (o.cap && o.hairStyle === 2) { px(sx - 5, hy + 1, 1, 7, hair); px(sx + 4, hy + 1, 1, 7, hair); }
   if (o.cap && o.hairStyle === 3) { var tx2 = fx > 0 ? sx - 6 : sx + 4; px(tx2, hy + 1, 2, 5, hair); }
+  var hatOn = o.mask || o.scarf || o.fez || o.tophat || o.fedora || o.turban || o.cap || o.chefHat || o.sunHat || o.beanie;
+  if (o.crown && !hatOn) {                            /* v2.25: taç — altın ya da buz (sivri) */
+    var crC = o.crown, crY = hy - 3 - (o.hairStyle === 5 || o.hairStyle === 8 ? 2 : 0);
+    var ice = parseInt(crC.substr(5, 2), 16) > parseInt(crC.substr(1, 2), 16) + 20;
+    px(sx - 3, crY, 6, 2, crC); px(sx - 3, crY + 1, 6, 1, shade(crC, -40));
+    if (ice) { px(sx - 3, crY - 2, 1, 2, crC); px(sx - 1, crY - 3, 1, 3, crC); px(sx, crY - 2, 1, 2, crC); px(sx + 2, crY - 2, 1, 2, crC); px(sx - 1, crY - 3, 1, 1, '#ffffff'); }
+    else { px(sx - 3, crY - 1, 1, 1, crC); px(sx - 1, crY - 2, 2, 2, crC); px(sx + 2, crY - 1, 1, 1, crC); px(sx - 1, crY, 2, 1, '#c02838'); }
+  }
+  if (o.facePaint && !o.mask) px(sx + (fx > 0 ? 1 : -2), o.hairStyle === 4 && !hatOn ? hy - 1 : hy + 1, 1, o.hairStyle === 4 && !hatOn ? 8 : 6, o.facePaint);   /* v2.25: yüz boyası */
 
   /* yüz */
   var ey = hy + 3;
-  dot(sx + (fx > 0 ? 1 : -2), ey, PAL.edge);
-  dot(sx + (fx > 0 ? 2 : -1), ey, PAL.edge);
+  if (o.mask) {                                       /* v2.25: maske yüzü */
+    if (o.maskEye) { px(sx - 1, ey - 1, 2, 2, o.maskEye); px(fx > 0 ? sx + 2 : sx - 3, ey - 1, 1, 2, o.maskEye); }
+    else if (o.maskFace) { px(sx + (fx > 0 ? 0 : -2), ey, 2, 1, o.eyeC || '#eaf8ff'); px(sx + (fx > 0 ? 0 : -2), ey + 2, 2, 1, shade(o.maskFace, -50)); }
+    else { dot(sx + (fx > 0 ? 1 : -2), ey, '#f4f0e6'); dot(sx + (fx > 0 ? 2 : -1), ey, '#f4f0e6'); }
+  } else {
+  var eyC = o.eyeC || PAL.edge;
+  dot(sx + (fx > 0 ? 1 : -2), ey, eyC);
+  dot(sx + (fx > 0 ? 2 : -1), ey, eyC);
   if (o.must) px(sx - 1, ey + 2, 3, 1, hair);         /* bıyık */
   if (o.thickMust) { px(sx - 2, ey + 2, 5, 2, hair); px(sx - 3, ey + 3, 1, 1, hair); px(sx + 3, ey + 3, 1, 1, hair); }
   if (o.beard) { px(sx - 3, ey + 2, 6, 3, hair); px(sx - 2, ey + 3, 4, 1, skinS); }
@@ -5914,6 +5985,7 @@ function drawPerson(a, o) {
   if (o.shades) { px(sx - 3, ey - 1, 6, 1, '#141414'); px(sx - 3, ey, 2, 1, '#141414'); px(sx + 1, ey, 2, 1, '#141414'); px(sx - 2, ey - 1, 1, 1, '#6f8ea8'); }
   if (o.eyepatch) { px(sx - 4, ey - 1, 8, 1, '#141414'); px(sx + (fx > 0 ? 1 : -2), ey - 1, 2, 2, '#141414'); }
   if (o.pipe) { px(sx + (fx > 0 ? 1 : -3), ey + 3, 3, 1, '#5a3a1a'); px(sx + (fx > 0 ? 4 : -4), ey + 1, 1, 3, '#5a3a1a'); }
+  }                                                   /* maske değilse */
   if (o.bird) {                                       /* v1.1: omuzda kuş (martı / papağan) */
     var bdx = fx > 0 ? sx - 6 : sx + 3;
     px(bdx, y - 18, 3, 2, o.bird); px(bdx + (fx > 0 ? 2 : 0), y - 20, 2, 2, o.bird);
@@ -5921,7 +5993,7 @@ function drawPerson(a, o) {
     px(bdx + (fx > 0 ? -1 : 3), y - 17, 1, 1, shade(o.bird, -30));
   }
   /* ağız: ruh haline göre */
-  if (o.mood !== undefined) {
+  if (o.mood !== undefined && !o.mask) {
     if (o.mood < 0.28) { px(sx - 1, ey + 3, 3, 1, '#8d3423'); px(sx - 2, ey + 2, 1, 1, '#8d3423'); px(sx + 2, ey + 2, 1, 1, '#8d3423'); }
     else if (o.mood < 0.55) px(sx - 1, ey + 3, 3, 1, '#7a3a2a');
     else { px(sx - 1, ey + 3, 3, 1, '#8d5f43'); px(sx - 2, ey + 3, 1, 1, '#8d5f43'); px(sx + 2, ey + 3, 1, 1, '#8d5f43'); }
@@ -5989,6 +6061,84 @@ var CUST_FIT = {
   kopekli:  { beanie: '#5a7a4a', knit: '#e8dcc0', pants: '#3a3226' },
   hemsire:  { hairStyle: 6, glasses: true, pants: '#5a8ab0' }
 };
+/* v2.25 — yeni sokak müşterileri: her tip 3 renkte (sarı / mavi / siyah) ayrı tip olarak gelir; taraftarlar forma renginde.
+   w: seçilme ağırlığı (3 renk birlikte ≈ 1 eski tip), slow: yürüyüş çarpanı, skinC/hairC: sabit ten/saç rengi. */
+var CUST_VAR = [
+  { k: 's', tr: 'Sarı', en: 'Yellow', c: '#d9b02a', c2: '#ecc84a', d: '#8a6a10' },
+  { k: 'm', tr: 'Mavi', en: 'Blue', c: '#2f5fa8', c2: '#4a7cc4', d: '#1a3a6a' },
+  { k: 'k', tr: 'Siyah', en: 'Black', c: '#26262c', c2: '#3a3a42', d: '#121216' }
+];
+var CUST_GEN = [
+  { id: 'amca', n: { tr: 'Bastonlu Amca', en: 'Old Man with Cane' }, qty: [1, 3], pat: 160, mult: 1.00, rep: 1, lvl: 1, tag: 'cheap', slow: 0.55,
+    note: { tr: 'Bastonuyla ağır ağır gelir; çok sabırlıdır.', en: 'Shuffles in slowly with his cane; very patient.' },
+    fit: function (v) { return { cap: v.c, vest: v.d, cane: '#6b4a2a', glasses: true, must: true, short: 1, hairStyle: 4, hairC: '#c9c9c4', pants: '#3a3226' }; } },
+  { id: 'nine', n: { tr: 'Bastonlu Teyze', en: 'Old Lady with Cane' }, qty: [2, 4], pat: 170, mult: 1.00, rep: 1, lvl: 1, tag: 'cheap', slow: 0.5,
+    note: { tr: 'Bastonuyla yavaş gelir; pazarlık sever.', en: 'Comes slowly with her cane; loves to haggle.' },
+    fit: function (v) { return { scarf: v.c, scarfDots: '#f4e9d2', cane: '#6b4a2a', glasses: true, short: 1, belly: 1, skirt: v.d }; } },
+  { id: 'takimbey', n: { tr: 'Takım Elbiseli Bey', en: 'Suited Gentleman' }, qty: [2, 4], pat: 45, mult: 1.50, rep: 2, lvl: 2, tag: 'rich',
+    fit: function (v) { return { tie: v.k === 'k' ? '#8e1b1b' : '#1a1a1e', briefcase: true, hairStyle: 0, tall: 1, pants: v.d }; } },
+  { id: 'takimhan', n: { tr: 'Şapkalı Şık Hanım', en: 'Lady in Suit & Hat' }, qty: [2, 4], pat: 50, mult: 1.50, rep: 2, lvl: 2, tag: 'rich',
+    fit: function (v) { return { fedora: v.d, bag: true, hairStyle: 2, skirt: v.d }; } },
+  { id: 'gangbey', n: { tr: 'Gangster', en: 'Gangster' }, qty: [2, 5], pat: 38, mult: 1.60, rep: 2, lvl: 3, tag: 'rich',
+    fit: function (v) { return { fedora: v.d, shades: true, chain: true, must: true, pants: v.d }; } },
+  { id: 'ganghan', n: { tr: 'Gangster Kadın', en: 'Gangster Lady' }, qty: [2, 5], pat: 38, mult: 1.60, rep: 2, lvl: 3, tag: 'rich',
+    fit: function (v) { return { shades: true, chain: true, hairStyle: 3, pants: v.d }; } },
+  { id: 'mafbey', n: { tr: 'Mafya Babası', en: 'Mafia Boss' }, qty: [4, 7], pat: 50, mult: 1.90, rep: 3, lvl: 4, tag: 'premium',
+    fit: function (v) { return { fedora: v.d, stripes: v.c2, tie: '#c9952f', thickMust: true, belly: 1, pipe: true, pants: v.d }; } },
+  { id: 'mafhan', n: { tr: 'Mafya Hanımı', en: 'Mafia Madam' }, qty: [4, 7], pat: 50, mult: 1.90, rep: 3, lvl: 4, tag: 'premium',
+    fit: function (v) { return { sunHat: v.d, shades: true, chain: true, hairStyle: 6, skirt: v.d }; } },
+  { id: 'hizmetci', n: { tr: 'Hizmetçi', en: 'Housemaid' }, qty: [5, 9], pat: 80, mult: 1.20, rep: 1, lvl: 2, tag: 'any',
+    note: { tr: 'Konağın mutfağı için çok alır.', en: 'Buys a lot for the mansion kitchen.' },
+    fit: function (v) { return { apron: '#f7f7f2', headband: '#f7f7f2', hairStyle: 6, bigBag: '#6b4a2a', skirt: v.d }; } },
+  { id: 'hippibey', n: { tr: 'Hippi', en: 'Hippie' }, qty: [1, 3], pat: 150, mult: 0.90, rep: 1, lvl: 1, tag: 'cheap',
+    fit: function (v) { return { headband: v.c2, hairStyle: 2, beard: true, glasses: true, guitar: '#a8743a', pants: '#5a7aa8' }; } },
+  { id: 'hippihan', n: { tr: 'Hippi Kız', en: 'Hippie Girl' }, qty: [1, 3], pat: 150, mult: 0.90, rep: 1, lvl: 1, tag: 'cheap',
+    fit: function (v) { return { headband: v.c2, hairStyle: 2, glasses: true, bag: true, skirt: '#a85a8a' }; } },
+  { id: 'esmerbey', n: { tr: 'Esmer Delikanlı', en: 'Street-Style Guy' }, qty: [2, 4], pat: 60, mult: 1.15, rep: 1, lvl: 1, tag: 'any',
+    fit: function (v) { return { cap: v.d, chain: true, skinC: '#6e4628', hairC: '#1a1410', hairStyle: 5, tall: 1, pants: '#2a2a30' }; } },
+  { id: 'esmerhan', n: { tr: 'Esmer Hanım', en: 'Elegant Lady' }, qty: [2, 4], pat: 70, mult: 1.15, rep: 1, lvl: 1, tag: 'any',
+    fit: function (v) { return { bag: true, skinC: '#6e4628', hairC: '#1a1410', hairStyle: 5, skirt: v.d }; } },
+  { id: 'sarisinbey', n: { tr: 'Sarışın Delikanlı', en: 'Blond Guy' }, qty: [2, 4], pat: 60, mult: 1.15, rep: 1, lvl: 1, tag: 'any',
+    fit: function (v) { return { hairC: '#e8c870', hairStyle: 8, shades: true, pants: v.d }; } },
+  { id: 'sarisinhan', n: { tr: 'Sarışın Hanım', en: 'Blonde Lady' }, qty: [2, 4], pat: 70, mult: 1.15, rep: 1, lvl: 1, tag: 'any',
+    fit: function (v) { return { hairC: '#e8c870', hairStyle: 2, bag: true, skirt: v.d }; } },
+  { id: 'tulumbey', n: { tr: 'Tulumlu Balıkçı', en: 'Fisherman in Oilskins' }, qty: [3, 6], pat: 90, mult: 1.10, rep: 1, lvl: 1, tag: 'any',
+    fit: function (v) { return { sunHat: v.c, beard: true, boot: '#2a2a2a', pants: v.c }; } },
+  { id: 'tulumhan', n: { tr: 'Tulumlu Balıkçı Kadın', en: 'Fisherwoman in Oilskins' }, qty: [3, 6], pat: 90, mult: 1.10, rep: 1, lvl: 1, tag: 'any',
+    fit: function (v) { return { sunHat: v.c, hairStyle: 3, boot: '#2a2a2a', pants: v.c }; } },
+  { id: 'avcibey', n: { tr: 'Avcı', en: 'Hunter' }, qty: [2, 5], pat: 75, mult: 1.20, rep: 1, lvl: 2, tag: 'any',
+    fit: function (v) { return { cap: v.c, vest: '#4a5a2e', beard: true, bigBag: '#6b4a2a', boot: '#3a2a1a', pants: '#3a4026' }; } },
+  { id: 'avcihan', n: { tr: 'Avcı Kadın', en: 'Huntress' }, qty: [2, 5], pat: 75, mult: 1.20, rep: 1, lvl: 2, tag: 'any',
+    fit: function (v) { return { beanie: v.c, vest: '#4a5a2e', hairStyle: 3, bag: true, boot: '#3a2a1a', pants: '#3a4026' }; } }
+];
+/* taraftarlar: yalnız forma renkleri (kulüp adı ya da arması yok) */
+var CUST_FANS = [
+  { id: 'fan_bm', n: { tr: 'Bordo-Mavi Taraftar', en: 'Claret & Blue Fan' }, coat: '#7a1f2e', coat2: '#5aa0d8', fit: { beanie: '#5aa0d8', pants: '#1f2a3a' } },
+  { id: 'fan_sl', n: { tr: 'Sarı-Lacivert Taraftar', en: 'Yellow & Navy Fan' }, coat: '#f0c419', coat2: '#f6d44a', fit: { stripes: '#1b2a5a', beanie: '#1b2a5a', pants: '#1b2a5a' } },
+  { id: 'fan_kb', n: { tr: 'Kırmızı Formalı Taraftar', en: 'Red Shirt Fan' }, coat: '#c8102e', coat2: '#e83a4a', fit: { cap: '#1a1a1a', pants: '#f2f2f2' } },
+  { id: 'fan_sk', n: { tr: 'Sarı-Kırmızı Taraftar', en: 'Yellow & Red Fan' }, coat: '#e8a018', coat2: '#f2b83a', fit: { stripes: '#a8122a', beanie: '#a8122a', pants: '#2a2a30' } },
+  { id: 'fan_sb', n: { tr: 'Siyah-Beyaz Taraftar', en: 'Black & White Fan' }, coat: '#1a1a1e', coat2: '#2c2c32', fit: { stripes: '#f2f2f2', beanie: '#f2f2f2', pants: '#1a1a1e' } }
+];
+(function () {
+  CUST_GEN.forEach(function (g) {
+    CUST_VAR.forEach(function (v) {
+      var id = g.id + '_' + v.k;
+      CUST.push({ id: id, n: { tr: g.n.tr + ' (' + v.tr + ')', en: g.n.en + ' (' + v.en + ')' }, coat: v.c, coat2: v.c2, qty: g.qty, pat: g.pat, mult: g.mult, rep: g.rep, lvl: g.lvl, tag: g.tag, w: 1 / 3, slow: g.slow, note: g.note });
+      CUST_FIT[id] = g.fit(v);
+    });
+  });
+  CUST_FANS.forEach(function (f) {
+    CUST.push({ id: f.id, n: f.n, coat: f.coat, coat2: f.coat2, qty: [2, 5], pat: 60, mult: 1.05, rep: 1, lvl: 1, tag: 'any',
+      note: { tr: 'Maç günü formasıyla gelir; gol sevinci gibi alışveriş yapar.', en: 'Comes in the match-day shirt; shops like celebrating a goal.' } });
+    CUST_FIT[f.id] = f.fit;
+  });
+})();
+/* ağırlıklı tip seçimi (yeni renkli tipler eski tipleri ezmesin) */
+function pickCust(pool) {
+  var t = 0, i; for (i = 0; i < pool.length; i++) t += pool[i].w || 1;
+  var r = Math.random() * t; for (i = 0; i < pool.length; i++) { r -= pool[i].w || 1; if (r <= 0) return pool[i]; }
+  return pool[pool.length - 1];
+}
 function custOutfit(cu) {
   if (cu.spec && specById(cu.spec)) return specOutfit(specById(cu.spec), cu.face);
   var t = cu.type, f = CUST_FIT[t.id] || {}, o = {}, k;
@@ -5998,6 +6148,8 @@ function custOutfit(cu) {
   o.hair = PAL.hair[cu.hair % PAL.hair.length];
   o.face = cu.face;
   if (cu.hair === 1 && o.must === undefined && !o.scarf) o.must = true;
+  if (f.skinC) o.skin = f.skinC;   /* v2.25: tipe özgü ten / saç rengi */
+  if (f.hairC) o.hair = f.hairC;
   /* v1.3: aynı tipin müşterileri birbirinin kopyası olmasın — saç modeli ve boy kişiye göre */
   if (cu.hs === undefined) { cu.hs = irnd(0, 3); cu.ht = irnd(0, 5); }
   if (o.hairStyle === undefined) o.hairStyle = [0, 1, 3, 5][cu.hs];
@@ -8001,6 +8153,7 @@ function drawProject() {
 
 /* ---------- kozmetik ---------- */
 function drawDecor(d) {
+  if (d.id === 'gozcu') { drawWatchHut(d); return; }     /* v2.25: Gözcü Kulübesi (ince modda HKA.drawWatchHut) */
   var sx = R(pX(d.x, d.y)), sy = R(pY(d.x, d.y, 0));
   if (d.id === 'bayrak') {
     px(sx - 1, sy - 34, 2, 34, '#d8d2c4');
@@ -8241,7 +8394,7 @@ function render() {
   for (i = 0; i < BINS.length; i++) (function (bn) {
     if (AREAS[bn.z].locked) return; push(bn.x + bn.y, function () { drawBin(bn); });
   })(BINS[i]);
-  if (guardOn()) push(GUARD.x + GUARD.y, drawGuard);   /* v2.15: Alp Er Tunga nöbette */
+  if (guardOn()) { guardPlace(); push(GUARD.x + GUARD.y, drawGuard); }   /* v2.15: Alp Er Tunga nöbette (v2.25: köprü başında / kulübe kapısında) */
   if (GZD) push(GZD.x + GZD.y - 0.05, function () { drawGzPaper(GZD); });   /* v2.16: yerdeki özel sayı */
   if (GZB.on) push(GZB.x + GZB.y + 0.2, function () { drawNewsboy(GZB); });   /* v2.16: gazeteci çocuk */
   if (dolph) push(dolph.x + dolph.y, drawStoryDolphin);   /* v2.15: denizden gelen yunus */
@@ -8267,6 +8420,9 @@ function render() {
   for (i = 0; i < 3; i++) (function (z) {
     var mp = mgr(z) && zoneOpen(z) ? mgrPos(z) : null; if (mp) push(mp.x + mp.y, function () { drawMgrDesk(z); });
   })(i);
+  (function (z) {                                    /* v2.25: Sahil Lokantası müdür masası */
+    var mp = mgr(z) && lokOpen() ? mgrPos(z) : null; if (mp) push(mp.x + mp.y, function () { drawMgrDesk(z); });
+  })(LOK_Z);
   for (i = 0; i < counters.length; i++) (function (c) {
     if (AREAS[c.z].locked) return; push(c.x + c.y, function () { quietDraw(c.z, c.x, c.y, function () { drawCounter(c); stCounterDeco(c); }); });
   })(counters[i]);
@@ -8554,6 +8710,70 @@ function syncHUD(dt) {
   }
 }
 
+/* v2.25: PERSONEL kartları — barZone/barLok alt listeleri ile ana liste aynı kart nesnelerini kullanır. after: alt listeden dönüş (isteğe bağlı) */
+function zoneRoleCards(out, zn, after) {
+  var zrl = zoneRoles(zn);
+  for (var i = 0; i < zrl.length; i++) (function (r) {
+    var full = zoneFree(zn) <= 0, rb = roleBlock(zn, r), have = roleCount(zn, r);
+    var h2 = emekHamal2(zn, r);                   /* v2.18-deneme: ikinci hamal ancak bölge Sv3 */
+    out.push({ id: 'zr' + r + zn, ic: ROLES[r].icon, t: NM(ROLES[r].n) + (have ? ' ×' + have : ''),
+      s: roleDesc(r) + ' • ' + money(roleWage(r)) + perMin(),
+      cost: hireCost(r, zn), blocked: full || !!rb || h2, why: full ? T('zoneFull') : h2 ? T('em_hamal2') : T('roleOrder', { m: rb }),
+      go: function () {
+        /* v2.10: eski karta hızlı ikinci dokunuş kuralı atlamasın — alım anında yeniden denetle */
+        if (emekHamal2(zn, r)) { sfx.bad(); toast(T('em_hamal2')); if (after) after(); renderBar(); return; }
+        if (zoneFree(zn) <= 0 || roleBlock(zn, r)) { sfx.bad(); toast(zoneFree(zn) <= 0 ? T('zoneFull') : T('roleOrder', { m: roleBlock(zn, r) })); if (after) after(); renderBar(); return; }
+        hire(r, false, zn); if (after) after(); save(); renderBar(); } });   /* v2.25: alımdan sonra aynı bölge sayfasında kal */
+  })(zrl[i]);
+}
+function lokRoleCards(out, after) {
+  LOK_ROLES.forEach(function (r) {
+    var why = lokHireWhy(r), have = lokCrew(r).length, c0 = lokHireCost(r);
+    out.push({ id: 'lr' + r, ic: ROLES[r].icon, t: NM(ROLES[r].n) + (have ? ' ×' + have : ''), s: NM(ROLES[r].d) + ' • ' + money(roleWage(r)) + perMin(),
+      cost: c0, blocked: !!why && why !== 'cash', why: why && why !== 'cash' ? T('lkHire_' + why) : '',
+      go: function () { S.cash += c0; lokHire(r); if (after) after(); renderBar(); } });   /* purchase() bedeli düştü; lokHire kendisi de düşer ve kuralları alım anında yeniden denetler → çift ödeme olmasın diye iade */
+  });
+}
+/* v2.25: bölge müdürü / Personele Devret kartı (kadro sayısı kart altyazısında) */
+function zoneAutoCards(out, z3) {
+  if (!zoneOpen(z3) || !zoneStaff(z3)) return;                           /* v1.9.1: personel almadan otomasyon kartı çıkmaz */
+  var ch = zoneChain(z3), on = zoneAuto(z3), cnt = T('crewCnt', { a: zoneStaff(z3), b: zoneStaffCap(z3) });
+  var st = zoneRoles(z3).map(function (r) { return (ch[r] ? '✓' : '✗') + NM(ROLES[r].n); }).join(' ');
+  if (!ch.ok && !mgr(z3)) {                                             /* v2.2: müdür kartı hep görünür, eksik rolü söyler */
+    out.push({ id: 'mg' + z3, ic: '👔', t: T('mgrCard', { n: NM(AREAS[z3].n) }), s: cnt + ' • ' + T('mgrNeedStaff', { m: ch.miss.join(', ') }) + ' • ' + st,
+      blocked: true, why: T('autoMissing', { m: ch.miss.join(', ') }) });
+    return;
+  }
+  if (ch.ok && !on && !mgr(z3)) {                                       /* v1.3: tam otomasyon için müdür gerekir */
+    out.push({ id: 'mg' + z3, ic: '👔', t: T('mgrCard', { n: NM(AREAS[z3].n) }), s: cnt + ' • ' + T('mgrCardD'),
+      pick: T('mgrPick'), go: function () { barMgr = z3; cfId = null; renderBar(); } });
+    return;
+  }
+  out.push({ id: 'au' + z3, ic: on ? '⚙️' : '🤝', t: T(on ? 'autoCardOn' : 'autoCard', { n: NM(AREAS[z3].n) }) + (mgr(z3) ? ' • 👔 ' + mgr(z3).n : ''),
+    s: cnt + ' • ' + (on ? T('autoCardOnD') : st) + (mgr(z3) ? ' • ' + mgrText(mgr(z3)) : ''), pick: ch.ok ? T(on ? 'autoBack' : 'autoGive') : null,
+    blocked: !ch.ok, why: T('autoNeed', { n: ch.miss.length }),
+    go: function () { setZoneAuto(z3, !on); } });
+}
+/* v2.25: Sahil Lokantası müdürü / Personele Devret — bölge kartlarının aynısı (müdür yuvası LOK_Z, otomasyon S.lok.auto) */
+function lokAutoCards(out) {
+  if (!lokOpen() || !lokCrew().length) return;
+  var lch = lokChain(), lon = lokAuto(), lm = mgr(LOK_Z), cnt = T('crewCnt', { a: lokCrew().length, b: lokCrewCap() });
+  var lst = LOK_ROLES.map(function (r) { return (lch.have[r] ? '✓' : '✗') + NM(ROLES[r].n) + (r === 'lk_asci' ? ' ' + lch.have[r] + '/' + lokBuiltN() : ''); }).join(' ');
+  if (!lch.ok && !lm) {
+    out.push({ id: 'mg' + LOK_Z, ic: '👔', t: T('mgrCard', { n: T('lkName') }), s: cnt + ' • ' + T('mgrNeedStaff', { m: lch.miss.join(', ') }) + ' • ' + lst,
+      blocked: true, why: T('autoMissing', { m: lch.miss.join(', ') }) });
+    return;
+  }
+  if (lch.ok && !lon && !lm) {
+    out.push({ id: 'mg' + LOK_Z, ic: '👔', t: T('mgrCard', { n: T('lkName') }), s: cnt + ' • ' + T('mgrCardD'),
+      pick: T('mgrPick'), go: function () { barMgr = LOK_Z; cfId = null; renderBar(); } });
+    return;
+  }
+  out.push({ id: 'lau', ic: lon ? '⚙️' : '🤝', t: T(lon ? 'lkAutoOn' : 'lkAutoCard') + (lm ? ' • 👔 ' + lm.n : ''),
+    s: cnt + ' • ' + (lon ? T('lkAutoOnD') : T('lkAutoD') + ' • ' + lst) + (lm ? ' • ' + mgrText(lm) : '') + (lch.ok ? '' : ' • ' + T('missShort', { m: lch.miss.join(', ') })),
+    pick: lch.ok ? T(lon ? 'autoBack' : 'autoGive') : null, blocked: !lch.ok, why: T('autoMissing', { m: lch.miss.join(', ') }),
+    go: function () { lokSetAuto(!lon); } });
+}
 /* ---------- alt panel ---------- */
 /* =========================================================
    ALT GELİŞTİRME BARI (GDD v0.3.1 §3)
@@ -8612,6 +8832,18 @@ function rentDayEnd() {
   if (!S.rentN) { S.rentN = 1; setTimeout(function () { toast(T('rentFirst', { v: money(tot) })); }, 3200); }
   return { tot: tot, paid: Math.round(paid), l: l };
 }
+/* v2.25 — İŞLETME GİDERİ: buz, yakıt, ambalaj. Günlük cironun seviyeyle artan payı (Sv3'e dek yok, sonra Sv başına %4, en çok %30).
+   Geç oyunda gelir giderleri çok aşıyordu (Sv10: gelir 115 bin, gider 7 bin); kira gibi kasadan kesilir, kasa 0'ın altına inmez. */
+var OPEX_FREE_LV = 3, OPEX_STEP = 0.04, OPEX_MAX = 0.30;
+function opexRate() { return window.HK_OPEX_OFF ? 0 : Math.min(OPEX_MAX, Math.max(0, repLevel() - OPEX_FREE_LV) * OPEX_STEP); }
+function opexDayEnd(inc) {
+  var r = opexRate(), v = Math.round((inc || 0) * r);
+  if (v <= 0) return null;
+  var paid = Math.min(S.cash, v); S.cash = Math.max(0, S.cash - v);
+  S.help = S.help || {};
+  if (!S.help.opex) { S.help.opex = 1; setTimeout(function () { toast(T('opexFirst', { p: Math.round(r * 100) })); }, 4200); }
+  return { v: v, paid: Math.round(paid), p: Math.round(r * 100) };
+}
 function areaWorkMul(z) { var a = z >= 0 && AREAS[z]; return a && !a.lok ? 1 + AREA_WSPD * (a.lvl - 1) : 1; }
 function areaCustMul(z) { var a = AREAS[z]; return a && !a.lok ? 1 + AREA_CUST * (a.lvl - 1) : 1; }
 
@@ -8647,7 +8879,7 @@ function barList() {
     /* v2.22-deneme — PERSONEL: bölge kadroları, müdür adayları, personele devret, hayvanlar (eskiden YÜKSELT'te) */
     if (barMgr !== null) {                                             /* v1.3: müdür adayları */
       var mz = barMgr;
-      out.push({ id: 'back', ic: '↩', t: T('back'), s: T('mgrListT', { n: NM(AREAS[mz].n) }), back: true });
+      out.push({ id: 'back', ic: '↩', t: T('back'), s: T('mgrListT', { n: mgrName(mz) }), back: true });
       mgrCands(mz).forEach(function (cd, ci) {
         out.push({ id: 'mc' + mz + ci, ic: '👔', t: cd.n, s: mgrText(cd) + ' • ' + T('mgrCost', { d: money(MGR_DESK[mz].cost), f: money(cd.fee), w: money(MGR_DESK[mz].wage) + perMin() }),
           cost: upCost(MGR_DESK[mz].cost + cd.fee), go: function () { hireMgr(mz, cd); barMgr = null; } });
@@ -8655,76 +8887,27 @@ function barList() {
       return out;
     }
     if (barPet) return petBarList();                                   /* v2.18-deneme: HAYVANLAR */
+    /* v2.25: bölge/lokanta rol kartları artık ana listede; barLok / barZone alt listeleri (başka kod set ederse) aynı kartlarla çalışır */
     if (barLok && lokOpen()) {                                         /* v2.22-deneme: Sahil Lokantası kadrosu (lokanta paneli KADRO ile aynı kurallar) */
       out.push({ id: 'back', ic: '↩', t: T('back'), s: T('lkName') + ' ' + lokCrew().length + '/' + lokCrewCap(), back: true });
-      LOK_ROLES.forEach(function (r) {
-        var why = lokHireWhy(r), have = lokCrew(r).length;
-        out.push({ id: 'lr' + r, ic: ROLES[r].icon, t: NM(ROLES[r].n) + (have ? ' ×' + have : ''), s: NM(ROLES[r].d) + ' • ' + money(roleWage(r)) + perMin(),
-          cost: lokHireCost(r), blocked: !!why && why !== 'cash', why: why && why !== 'cash' ? T('lkHire_' + why) : '',
-          go: function () { lokHire(r); barLok = false; renderBar(); } });
-      });
+      lokRoleCards(out, function () { barLok = false; });
       return out;
     }
     /* --- v2.1: bölge personeli alt listesi --- */
     if (barZone !== null) {
       var zn = barZone;
       out.push({ id: 'back', ic: '↩', t: T('back'), s: NM(AREAS[zn].n) + ' ' + zoneStaff(zn) + '/' + zoneStaffCap(zn), back: true });
-      var zrl = zoneRoles(zn);
-      for (i = 0; i < zrl.length; i++) (function (r) {
-        var full = zoneFree(zn) <= 0, rb = roleBlock(zn, r), have = roleCount(zn, r);
-        var h2 = emekHamal2(zn, r);                   /* v2.18-deneme: ikinci hamal ancak bölge Sv3 */
-        out.push({ id: 'zr' + r + zn, ic: ROLES[r].icon, t: NM(ROLES[r].n) + (have ? ' ×' + have : ''),
-          s: roleDesc(r) + ' • ' + money(roleWage(r)) + perMin(),
-          cost: hireCost(r, zn), blocked: full || !!rb || h2, why: full ? T('zoneFull') : h2 ? T('em_hamal2') : T('roleOrder', { m: rb }),
-          go: function () {
-            /* v2.10: eski karta hızlı ikinci dokunuş kuralı atlamasın — alım anında yeniden denetle */
-            if (emekHamal2(zn, r)) { sfx.bad(); toast(T('em_hamal2')); barZone = null; renderBar(); return; }
-            if (zoneFree(zn) <= 0 || roleBlock(zn, r)) { sfx.bad(); toast(zoneFree(zn) <= 0 ? T('zoneFull') : T('roleOrder', { m: roleBlock(zn, r) })); barZone = null; renderBar(); return; }
-            hire(r, false, zn); barZone = null; save(); renderBar(); } });
-      })(zrl[i]);
+      zoneRoleCards(out, zn, function () { barZone = null; });
       return out;
     }
     var ss = bzSel2();                                                 /* v2.24: PERSONEL bölge bölge (YAPI ile ortak seçim); Genel = bölgeden bağımsız kartlar */
-    if (ss === BZ_GEN && lokOpen()) out.push({ id: 'lks', ic: '🍽', t: T('lkStaffCard'), s: T('zoneStaffD', { a: lokCrew().length, b: lokCrewCap() }) + ' • ' + LOK_ROLES.map(function (r) { return ROLES[r].icon + lokCrew(r).length; }).join(' '),
-      pick: lokCrew().length < lokCrewCap() ? T('choose') : null, blocked: lokCrew().length >= lokCrewCap(), why: T('lkHire_full'),
-      go: function () { barLok = true; cfId = null; renderBar(); } });   /* v2.22-deneme: lokanta kadrosu da PERSONEL'de */
-    /* --- v2.1: her açık bölge için personel kartı --- */
-    for (i = 0; i < zoneCount(); i++) (function (z2) {
-      if (!zoneOpen(z2) || z2 !== ss) return;
-      var free = zoneFree(z2);
-      var zfn = zoneFish(z2).filter(function (q) { return lineLive(q); }).map(function (q) { return NM(FISH[q].n); });
-      out.push({ id: 'zs' + z2, ic: '👷', t: T('zoneStaff', { n: NM(AREAS[z2].n) }),
-        s: T('zoneStaffD', { a: zoneStaff(z2), b: zoneStaffCap(z2) }) + (zfn.length ? ' • ' + zfn.join(', ') : '') + (zoneStaff(z2) && !zoneChain(z2).ok ? ' • ' + T('missShort', { m: zoneChain(z2).miss.join(', ') }) : ''),
-        pick: free > 0 ? T('choose') : null, blocked: free <= 0, why: T('zoneFull'),
-        go: function () { barZone = z2; cfId = null; renderBar(); } });
-    })(i);
-    if (ss === BZ_GEN) petBarCard(out); else zonePetCard(out, ss);     /* v2.18-deneme: HAYVANLAR kartı; v2.24: bölgede yalnız o bölgenin hayvanları */
-    /* --- v0.5: personele devret (tam otomasyon) --- */
-    for (i = 0; i < zoneCount(); i++) (function (z3) {
-      if (!zoneOpen(z3) || !zoneStaff(z3) || z3 !== ss) return;          /* v1.9.1: personel almadan otomasyon kartı çıkmaz */
-      var ch = zoneChain(z3), on = zoneAuto(z3);
-      var st = zoneRoles(z3).map(function (r) { return (ch[r] ? '✓' : '✗') + NM(ROLES[r].n); }).join(' ');
-      if (!ch.ok && !mgr(z3)) {                                         /* v2.2: müdür kartı hep görünür, eksik rolü söyler */
-        out.push({ id: 'mg' + z3, ic: '👔', t: T('mgrCard', { n: NM(AREAS[z3].n) }), s: T('mgrNeedStaff', { m: ch.miss.join(', ') }) + ' • ' + st,
-          blocked: true, why: T('autoMissing', { m: ch.miss.join(', ') }) });
-        return;
-      }
-      if (ch.ok && !on && !mgr(z3)) {                                   /* v1.3: tam otomasyon için müdür gerekir */
-        out.push({ id: 'mg' + z3, ic: '👔', t: T('mgrCard', { n: NM(AREAS[z3].n) }), s: T('mgrCardD'),
-          pick: T('mgrPick'), go: function () { barMgr = z3; cfId = null; renderBar(); } });
-        return;
-      }
-      out.push({ id: 'au' + z3, ic: on ? '⚙️' : '🤝', t: T(on ? 'autoCardOn' : 'autoCard', { n: NM(AREAS[z3].n) }) + (mgr(z3) ? ' • 👔 ' + mgr(z3).n : ''),
-        s: (on ? T('autoCardOnD') : st) + (mgr(z3) ? ' • ' + mgrText(mgr(z3)) : ''), pick: ch.ok ? T(on ? 'autoBack' : 'autoGive') : null,
-        blocked: !ch.ok, why: T('autoNeed', { n: ch.miss.length }),
-        go: function () { setZoneAuto(z3, !on); } });
-    })(i);
-    if (ss === BZ_GEN && lokOpen() && lokCrew().length) {              /* v2.24-deneme: Sahil Lokantası — Personele Devret */
-      var lch = lokChain(), lon = lokAuto();
-      var lst = LOK_ROLES.map(function (r) { return (lch.have[r] ? '✓' : '✗') + NM(ROLES[r].n) + (r === 'lk_asci' ? ' ' + lch.have[r] + '/' + lokBuiltN() : ''); }).join(' ');
-      out.push({ id: 'lau', ic: lon ? '⚙️' : '🤝', t: T(lon ? 'lkAutoOn' : 'lkAutoCard'), s: (lon ? T('lkAutoOnD') : T('lkAutoD') + ' • ' + lst) + (lch.ok ? '' : ' • ' + T('missShort', { m: lch.miss.join(', ') })),
-        pick: lch.ok ? T(lon ? 'autoBack' : 'autoGive') : null, blocked: !lch.ok, why: T('autoMissing', { m: lch.miss.join(', ') }),
-        go: function () { lokSetAuto(!lon); } });
+    /* v2.25: her sayfa: 1) müdür / Personele Devret  2) rol kartları (doğrudan)  3) hayvanlar */
+    if (ss === BZ_GEN) {
+      if (lokOpen()) { lokAutoCards(out); lokRoleCards(out); }
+      petBarCard(out);                                                 /* v2.18-deneme: HAYVANLAR kartı */
+    } else {
+      if (zoneOpen(ss)) { zoneAutoCards(out, ss); zoneRoleCards(out, ss); }
+      zonePetCard(out, ss);                                            /* v2.24: bölgede yalnız o bölgenin hayvanları */
     }
     if (!out.length) out.push({ empty: T('emptyStaff') });
   } else if (barTab === 'build') {
@@ -8760,7 +8943,7 @@ function barList() {
       for (i = 0; i < DECOR.length; i++) {
         var dc = DECOR[i];
         if (dc.got || AREAS[dc.z].locked || !decorShop(dc)) continue;   /* v2.17: hediye süsü yalnız hediyeyle gelir */
-        out.push({ id: 'd' + i, ic: dc.icon, t: NM(dc.n), s: T('decorGroup') + ' • ' + (dc.road ? T('roadShow') : NM(AREAS[dc.z].n)), cost: dc.cost,
+        out.push({ id: 'd' + i, ic: dc.icon, t: NM(dc.n), s: T('decorGroup') + ' • ' + (dc.sub ? T(dc.sub) : dc.road ? T('roadShow') : NM(AREAS[dc.z].n)), cost: dc.cost,   /* v2.25: sub = kendi alt yazısı */
           blocked: dc.lv && lvNow < dc.lv, why: T('needLv', { l: dc.lv }),
           go: function (k) { return function () { DECOR[k].got = true; sfx.build(); toast(T('decorBought', { n: NM(DECOR[k].n) })); }; }(i) });
       }
@@ -8914,7 +9097,7 @@ function renderBarZones() {
   bzList().forEach(function (z) {
     h += '<button data-z="' + z + '"' + (z === sel ? ' class="on"' : '') + '>' + ICO(BZ_ICO[z]) + '<span>' + NM(AREAS[z].n) + (stf ? '' : (bzHot(buildSub, z) ? ' •' : '')) + '</span></button>';
   });
-  if (stf && bzGenOn()) h += '<button data-z="' + BZ_GEN + '"' + (sel === BZ_GEN ? ' class="on"' : '') + '>' + ICO('bina') + '<span>' + T('zGen') + '</span></button>';
+  if (stf && bzGenOn()) h += '<button data-z="' + BZ_GEN + '"' + (sel === BZ_GEN ? ' class="on"' : '') + '>' + ICO(lokOpen() ? 'restoran' : 'bina') + '<span>' + T(lokOpen() ? 'lkName' : 'zGen') + '</span></button>';   /* v2.25: lokanta açıksa Genel çipi Sahil Lokantası; yalnız hayvanlar varsa Genel */
   if (box.dataset.h !== h) { box.dataset.h = h; box.innerHTML = h; }
 }
 function setBuildZone(z) { buildZone = z; cfId = null; renderBar(); sfx.tap(); }
@@ -9115,8 +9298,9 @@ function showDayCard() {
   if (L.saz) h += dayRow('🪕', T('lkSazDay'), L.saz.paid ? '−' + money(L.saz.fee) : T('lkSazUnpaid'), 'r');   /* v2.23: sazcı yevmiyesi */
   /* v2.21: maaş + vergi + net (gelir − giderler); tezgâh kasalarında bekleyen para ayrıca (günlük gelire dahil, henüz kasada değil) */
   if (L.wage > 0) h += dayRow('👷', T('dayWage'), '−' + money(L.wage), 'r');
+  if (L.opex) h += dayRow('🧊', T('dayOpex', { p: L.opex.p }), '−' + money(L.opex.paid), 'r');   /* v2.25 */
   if (L.tax > 0) h += dayRow('🏛️', T('dayTax'), '−' + money(L.tax), 'r');
-  var outT = (L.wage || 0) + (L.tax || 0) + (L.rent ? L.rent.paid : 0) + (L.pet ? L.pet.fee : 0) + (L.saz && L.saz.paid ? L.saz.fee : 0);
+  var outT = (L.wage || 0) + (L.tax || 0) + (L.rent ? L.rent.paid : 0) + (L.pet ? L.pet.fee : 0) + (L.saz && L.saz.paid ? L.saz.fee : 0) + (L.opex ? L.opex.paid : 0);
   if (outT > 0) { var net = Math.round(L.inc - outT); h += dayRow(net >= 0 ? '📈' : '📉', T('dayNet'), '<b style="color:' + (net >= 0 ? 'var(--green)' : '#ff6b5a') + '">' + (net < 0 ? '−' : '+') + money(Math.abs(net)) + '</b>'); }
   if (L.wait >= 1) h += dayRow('🪙', T('dayWait'), money(L.wait));
   if (L.insp) h += dayRow('🕵️', T('dayInsp'), T(L.insp.good ? 'inspGood' : 'inspBad', { v: money(L.insp.v), r: L.insp.r }), L.insp.good ? 'g' : 'r');
@@ -13232,7 +13416,8 @@ function normSpecials(list) {
       /* v2.9 — mekanik alanları */
       mech: typeof s.mech === 'string' ? s.mech : '', minLv: specNum(s.minLv, 0, 0, 10) | 0, slot: s.slot === 'day' || s.slot === 'eve' ? s.slot : '',
       rare: specNum(s.rare, 1, 0.05, 3), hidden: !!s.hidden, only: !!s.only, chain: typeof s.chain === 'string' ? s.chain : '',
-      mad: specLang(s.mad, null), hi2: specLang(s.hi2, null), hi3: specLang(s.hi3, null)
+      mad: specLang(s.mad, null), hi2: specLang(s.hi2, null), hi3: specLang(s.hi3, null),
+      par: !!s.par              /* v2.25: parodi konuk — yalnız günün 3. (öğle) yerine gelir */
     });
   });
   return out;
@@ -13250,7 +13435,7 @@ function pickSpecials() {
   /* v2.9: 1. sıra gündüz, 2. sıra kapanış müşterisi. Seviye şartı (minLv), sıra şartı (slot), ağırlık (rare),
      yalnız zincirle gelenler (only) ve dünkü zincirin sözü (S.specForce) dikkate alınır. */
   var last = S.specLast || (S.specLast = {}), dn = day.n || 1, prev = day.spec || [], lv = repLevel();
-  var ok = function (s, pos) { return !s.only && !(s.minLv && lv < s.minLv) && !(pos === 0 && s.slot === 'eve') && !(pos === 1 && s.slot === 'day') && prev.indexOf(s.id) < 0; };
+  var ok = function (s, pos) { return !s.only && !s.par && !(s.minLv && lv < s.minLv) && !(pos === 0 && s.slot === 'eve') && !(pos === 1 && s.slot === 'day') && prev.indexOf(s.id) < 0; };
   var wpick = function (list) { var t = 0, i; for (i = 0; i < list.length; i++) t += list[i].rare || 1; var r = Math.random() * t; for (i = 0; i < list.length; i++) { r -= list[i].rare || 1; if (r <= 0) return list[i]; } return list[list.length - 1]; };
   var chosen = [null, null];
   if (S.specForce && specById(S.specForce)) { chosen[0] = specById(S.specForce); }
@@ -13273,7 +13458,15 @@ function pickSpecials() {
   if (!chosen[0]) chosen[0] = chosen[1] || SPECIALS[0];
   if (!chosen[1]) chosen[1] = chosen[0];
   chosen.forEach(function (q2) { last[q2.id] = dn; });
-  day.spec = [chosen[0].id, chosen[1].id]; day.sp = 0; day.normals = 0; day.popT = 0;
+  day.spec = [chosen[0].id, chosen[1].id]; day.sp = 0; day.normals = 0; day.popT = 0; day.sp3 = 0;
+  /* v2.25: 3. özel müşteri: parodi konuk. Hiç gelmemiş olan önce; hepsi geldiyse en uzun süredir gelmeyen. */
+  var par = SPECIALS.filter(function (s) { return s.par && prev.indexOf(s.id) < 0 && !(s.minLv && lv < s.minLv); });
+  if (par.length) {
+    var pf = par.filter(function (s) { return last[s.id] === undefined; }), p3;
+    if (pf.length) p3 = wpick(pf);
+    else { par.sort(function (x, y) { return (last[x.id] || 0) - (last[y.id] || 0); }); p3 = par[0]; }
+    last[p3.id] = dn; day.spec.push(p3.id);
+  }
 }
 function specType(sp) {
   return { id: 'spec_' + sp.id, n: sp.n, coat: sp.look.coat, coat2: sp.look.coat2,
@@ -13282,7 +13475,7 @@ function specType(sp) {
 function specOutfit(sp, face) {
   var o = {}, k;
   for (k in sp.look) o[k] = sp.look[k];
-  o.skin = PAL.skin[sp.look.sk || 0]; o.face = face;
+  o.skin = sp.look.skinC || PAL.skin[sp.look.sk || 0]; o.face = face;   /* v2.25: skinC = özel ten (mor titan, buz kralı…) */
   return o;
 }
 /* özel müşteri hangi tezgâha: kendi balığının tezgâhı; olmuyorsa açık ve satış yapabilen herhangi biri */
@@ -13360,6 +13553,15 @@ function updateSpecials(dt) {
     }
   }
   if (day.sp === 3 && !specActive(1)) day.sp = 4;  /* işi bitti → kapanış serbest */
+  /* v2.25: 3. özel müşteri (parodi konuk): 1. özelden sonra, gün ortasında bildirimle gelir; kapanışı tutmaz */
+  if (day.spec && day.spec[2] && !day.sp3 && day.phase === 'play' && day.sp >= 1 && day.t > DAY_LEN * 0.32 && day.t < DAY_LEN - SPEC2_AT - 8) {
+    if (spawnSpecial(2)) {
+      day.sp3 = 1;
+      el.specPop.classList.remove('hidden', 'go'); void el.specPop.offsetWidth; el.specPop.classList.add('go');
+      el.specPopT.textContent = T('parComing'); sfx.bell();
+      setTimeout(function () { if (day.sp !== 2) el.specPop.classList.add('hidden'); }, 3200);
+    }
+  }
 }
 /* =========================================================
    v2.9 — ÖZEL MÜŞTERİ MEKANİKLERİ. Her özel müşterinin specials.js › mech alanı bir etki seçer;
@@ -13540,8 +13742,18 @@ function storyOn() { return !!(window.HK_STORY && STORY_SPECS.st_a) && !window.H
 /* v2.15 — ALP ER TUNGA NÖBETTE: hikâyede kendini tanıttığı günden (6) sonra koyun kıyısında, yayıyla denize bakarak
    bekler; ara ara başını çevirip ufku tarar. 12. gün yayını höyüğe astıktan sonra yay yanındaki kazıkta asılı durur.
    Yalnız görüntü: yürüme alanının dışında durur, kimseyi engellemez. O gün hikâye ziyaretçisi oysa ikinci kez görünmez. */
-var GUARD = { x: 12.4, y: 0.9, z: 0, vx: 0, vy: 0, bob: 0, face: -1, act: 0, carry: [] };
+/* v2.25: nöbet yeri köprünün ada ucuna taşındı — doğu korkuluğun hemen yanı (x 15,25; müşteri şeridi x ≤ 14,6'nın, meydan personel
+   yollarının ve köprü fenerlerinin dışında), yüzü köprüye (sola) dönük. Gözcü Kulübesi kuruluysa kulübenin kapısının önünde durur;
+   kulübe taşınınca onunla gider (guardPlace her karede yeri günceller). */
+var GUARD_POST = { x: 15.25, y: 0.2 }, WHUT_DOOR = [-0.18, 0.58];   /* kulübesiz nöbet yeri · kulübe merkezinden kapı önüne (+y, ön-sol yüz; biraz solda: kemer görünsün) */
+var GUARD = { x: GUARD_POST.x, y: GUARD_POST.y, z: 0, vx: 0, vy: 0, bob: 0, face: -1, act: 0, carry: [] };
 var GUARD_FROM = 6, GUARD_BOW = 12;
+function guardHut() { var d = decorById('gozcu'); return d && d.got && !d.box ? d : null; }   /* v2.25: kurulu (sandıkta değil) Gözcü Kulübesi */
+function guardPlace() {
+  var h = guardHut();
+  if (h) { GUARD.x = h.x + WHUT_DOOR[0]; GUARD.y = h.y + WHUT_DOOR[1]; } else { GUARD.x = GUARD_POST.x; GUARD.y = GUARD_POST.y; }
+  return h;
+}
 /* Aynı anda tek Alp Er Tunga: hikâye ziyaretçisi (kuyrukta, sahnede, SATIŞTAN SONRA giderken de) sahnedeyse nöbetçi çizilmez.
    Eski kural yalnız storyVis'e bakıyordu; sahne bitince storyVis boşalıyor ama ziyaretçi birkaç sn daha yürüyüp gidiyor, nöbetçi hemen belirip ikizi oluyordu.
    (Ziyaretçi 7., 8. ve 12. günlerde hikâyenin gereği gelir; nöbetçi onlar sürerken postundan çekilir.) */
@@ -13640,7 +13852,7 @@ function alpNext() {
 function alpSave() { return alpOrdOK(S.alpOrd) ? { o: S.alpOrd.slice(), i: Math.max(0, S.alpI | 0) } : null; }
 function alpLoad(d) { if (d && alpOrdOK(d.o)) { S.alpOrd = d.o.slice(); S.alpI = clamp(d.i | 0, 0, d.o.length); } else { S.alpOrd = null; S.alpI = 0; } }
 function updateAlp(dt) {
-  ALP.sayT += dt;
+  ALP.sayT += dt; guardPlace();
   if (!guardOn() || storyOpenNow() || TAX.on || (intro && intro.on) || dist2(player.x, player.y, GUARD.x, GUARD.y) > ALP_NEAR * ALP_NEAR) return;
   ALP.t += dt;
   if (ALP.t < ALP_EVERY) return;
@@ -13648,14 +13860,15 @@ function updateAlp(dt) {
 }
 function alpBalloon() {                                   /* uzun sözler iki satıra bölünür (telefon genişliği) */
   if (ALP.idx < 0 || ALP.sayT >= ALP_SHOW) return;
-  var tx = ALP_LINES[ALP.idx][lang === 'tr' ? 0 : 1], w = tx.split(' '), best = 0, h = 0, k, a, b;
+  var tx = ALP_LINES[ALP.idx][lang === 'tr' ? 0 : 1], w = tx.split(' '), best = 0, h = 0, k, a, b, z = guardHut() ? 88 : 62;   /* v2.25: kulübe flamasının üstünde */
   if (tx.length > 32) { for (k = 1; k < w.length; k++) { a = w.slice(0, k).join(' ').length; if (Math.abs(a - tx.length / 2) < Math.abs(best - tx.length / 2) || !best) { best = a; h = k; } } }
-  if (h) { a = w.slice(0, h).join(' '); b = w.slice(h).join(' '); uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: 62, s: b + '”', c: '#ffe2c8', a: 1 }); uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: 62 + 14, s: '“' + a, c: '#ffe2c8', a: 1 }); }
-  else uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: 62, s: '“' + tx + '”', c: '#ffe2c8', a: 1 });
+  if (h) { a = w.slice(0, h).join(' '); b = w.slice(h).join(' '); uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: z, s: b + '”', c: '#ffe2c8', a: 1 }); uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: z + 14, s: '“' + a, c: '#ffe2c8', a: 1 }); }
+  else uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: z, s: '“' + tx + '”', c: '#ffe2c8', a: 1 });
 }
 function drawGuard() {
   var sp = STORY_SPECS.st_a, st = S.story, scan = Math.sin(gameT * 0.35) > 0.82;   /* uzun bekleyiş, kısa bir bakış */
-  var o = specOutfit(sp, scan ? -1 : 1); o.walk = false; o.mood = 1;          /* denize (sağ üst) bakar */
+  var hut = guardPlace();
+  var o = specOutfit(sp, scan ? 1 : -1); o.walk = false; o.mood = 1;          /* v2.25: köprüye (sola) bakar, ara ara meydana göz atar */
   GUARD.face = o.face; GUARD.bob = 0;
   drawPersonAt(GUARD, o);
   var sx = R(pX(GUARD.x, GUARD.y)), sy = R(pY(GUARD.x, GUARD.y, 0)), i, f = GUARD.face;
@@ -13664,12 +13877,15 @@ function drawGuard() {
     for (i = 0; i < 17; i++) { var dx = Math.round(Math.sin(Math.PI * i / 16) * 3) * f; px(bx + dx, by + i, 1, 1, i % 5 ? WOOD : WOODL); }
     px(bx, by, 1, 17, STR); px(bx, by, 1, 1, WOODL); px(bx, by + 16, 1, 1, WOODL);
   }
-  if (st.step >= GUARD_BOW) {                                /* yay kazıkta asılı */
+  if (st.step >= GUARD_BOW && hut) {                         /* v2.25: yay kulübenin sağ (doğu) duvarındaki çivide asılı */
+    var hx = R(pX(hut.x + 0.36, hut.y - 0.2)), hy = R(pY(hut.x + 0.36, hut.y - 0.2, 31));   /* pencerenin arka yanı */
+    px(hx - 1, hy - 1, 2, 2, '#3a2a1a'); bow(hx + 1, hy);
+  } else if (st.step >= GUARD_BOW) {                         /* yay kazıkta asılı */
     var kx = sx + 12 * -f;
     px(kx, sy - 22, 2, 22, '#5a4029'); px(kx, sy - 22, 1, 22, '#7a5a3a'); px(kx - 1, sy - 23, 4, 1, '#3a2a1a');
     bow(kx + (f > 0 ? -2 : 3), sy - 21);
   } else bow(sx + 6 * f, sy - 24);
-  if (dist2(player.x, player.y, GUARD.x, GUARD.y) < 9) uiLabel(GUARD.x, GUARD.y, 44, T('guardLbl'), '#e4b94a', 0.95);
+  if (dist2(player.x, player.y, GUARD.x, GUARD.y) < 9) uiLabel(GUARD.x, GUARD.y, hut ? 74 : 44, T('guardLbl'), '#e4b94a', 0.95);   /* v2.25: kulübe varken flamanın üstünde */
   alpBalloon();
 }
 function storyOpenNow() { return !!(window.HK_STORY && window.HK_STORY.isOpen()); }
@@ -14026,7 +14242,7 @@ function chapterGroups() {
   n = 0; for (i = 0; i <= KITCHEN_Z; i++) n += AREAS[i].lvl - 1; add('🏗️', 'chLevels', n, (KITCHEN_Z + 1) * (MAXLV - 1));
   n = 0; t = 0; for (i = 0; i < PADS.length; i++) if (PADS[i].max && PADS[i].kind !== 'decor' && !PADS[i].emek) { n += PADS[i].lvl || 0; t += PADS[i].max; } add('⬆️', 'chPads', n, t);   /* süs noktaları Süsler satırında sayılır */
   n = 0; for (i = 0; i < SLOTS.length; i++) if (SLOTS[i].b) n++; add('🔨', 'chSlots', n, SLOTS.length);
-  n = 0; t = 0; for (i = 0; i < DECOR.length; i++) if (decorShop(DECOR[i])) { t++; if (DECOR[i].got) n++; } add('🌺', 'chDecor', n, t);   /* v2.17: hediye süsleri hedefe sayılmaz */
+  n = 0; t = 0; for (i = 0; i < DECOR.length; i++) if (decorShop(DECOR[i]) && !DECOR[i].xtra) { t++; if (DECOR[i].got) n++; } add('🌺', 'chDecor', n, t);   /* v2.17: hediye süsleri hedefe sayılmaz; v2.25: Gözcü Kulübesi de (xtra) */
   add('🌿', 'chEnv', envStage(), ENV_UPS.length);
   add('🔥', 'chFume', (fumeMachine(0) ? 1 : 0) + (fumeMachine(1) ? 1 : 0), 2);
   add('🏘️', 'chMeydan', (HUT.lvl ? 1 : 0) + (DEPOT.lvl ? 1 : 0) + (WHALL.built ? 1 : 0), 3);
@@ -16142,6 +16358,13 @@ S.pet = null;                                      /* S0 anlık görüntüsünde
   }
   DECOR.forEach(function (d) { if (d.hx === undefined) { d.hx = d.x; d.hy = d.y; d.box = false; } });
 })();
+/* v2.25 — GÖZCÜ KULÜBESİ: YAPI › Dekor'dan alınan süs; varsayılan yeri köprünün ada ucu (Alp Er Tunga'nın nöbet yeri), düzenleme
+   modunda taşınır. Kuruluyken nöbetçi kapısının önünde durur (guardPlace). Etkisi diğer süslerle aynı: süs sabrı +%2 (decorCount).
+   Kayıt dizinleri kaymasın diye DECOR'un SONUNA eklenir (decor[] sıra ile saklanır; eski kayıtta yok → alınmamış) ve PADS'e girmez.
+   Bölüm 1 hedefine sayılmaz (xtra): eski kayıtların bölüm ilerlemesi değişmesin. */
+DECOR.push({ id: 'gozcu', z: 0, x: 15.25, y: -0.05, cost: 1200, xtra: 1, sub: 'whutSub', n: { tr: 'Gözcü Kulübesi', en: "Watchman's Hut" }, icon: '🛖', got: false });
+(function (d) { d.hx = d.x; d.hy = d.y; d.box = false; })(DECOR[DECOR.length - 1]);
+ARR_HGT.gozcu = 46;
 function petsOn() { return !window.HK_PET_OFF; }
 function petNew() { return { l: [], sd: { cat: [], dog: [] }, nx: { cat: 0, dog: 0 }, f: {} }; }
 function petQ() { return S.pet || (S.pet = petNew()); }
@@ -16612,6 +16835,51 @@ function drawPet(o) {
   if (o.st === 'sleep' && phase2(gameT, 0.5)) { px(sx - d * 5, sy - 10, 2, 1, PAL.cream); px(sx - d * 6, sy - 13, 1, 1, PAL.cream); }
 }
 /* kedi evi (ahşap, kiremit çatı, yuvarlak kapı) ve kulübe (tahta, kemerli kapı, kemik) */
+/* v2.25 — GÖZCÜ KULÜBESİ (klasik piksel; ince modda HKA.drawWatchHut): taş eşik üstünde dar, uzun ahşap nöbetçi kulübesi;
+   kırmızı-beyaz dikey şeritli duvarlar, ön (sol, +y) yüzde kemerli açık kapı, sağ yüzde mazgal pencere, kurşun kaplı sivri
+   (piramit) çatı, tepede yaldızlı alem ve dalgalanan kırmızı flama. Gövde ±0,34 karo (süs ayak izi ±0,42'nin içinde). */
+function drawWatchHut(d) {
+  var hw = 0.34, cx = d.x, cy = d.y, x0 = cx - hw, y0 = cy - hw, x1 = cx + hw, y1 = cy + hw, H = 34, RH = 13, ov = 0.09, k, n = 5;
+  var RED = '#c0392b', REDD = '#8e2a20', WHT = '#efe6d2', WHTD = '#c9bea4', WD = '#6f4526', WDD = '#4a2c18';
+  function fq(xa, xb, za, zb, c) { wallQ(xa, y1, xb, y1, za, zb, c); }      /* ön (+y) yüz parçası */
+  function rq(ya, yb, za, zb, c) { wallQ(x1, ya, x1, yb, za, zb, c); }      /* sağ (+x) yüz parçası */
+  shadow(cx, cy + 0.1, 0.8);
+  isoBox(x0 - 0.05, y0 - 0.05, 2 * hw + 0.1, 2 * hw + 0.1, 0, 2, '#bdb6a4', '#9a937f', '#857e6c');   /* taş eşik */
+  for (k = 0; k < n; k++) {                                                 /* şeritli duvarlar */
+    fq(x0 + 2 * hw * k / n, x0 + 2 * hw * (k + 1) / n, 2, H, k % 2 ? WHT : RED);
+    rq(y0 + 2 * hw * k / n, y0 + 2 * hw * (k + 1) / n, 2, H, k % 2 ? WHTD : REDD);
+  }
+  fq(x0, x1, 2, 5, WD); rq(y0, y1, 2, 5, WDD);                              /* süpürgelik */
+  fq(x0, x1, H - 3, H, WD); rq(y0, y1, H - 3, H, WDD);                      /* saçak kirişi */
+  isoLine(x0, y1, x1, y1, H - 3, '#8a5a30', 1);
+  /* kemerli kapı: ahşap pervaz, karanlık iç, iç yan duvar şeridi, eşik */
+  fq(cx - 0.23, cx + 0.23, 2, 27, '#8a5a30'); fq(cx - 0.15, cx + 0.15, 27, 30, '#8a5a30');
+  fq(cx - 0.19, cx + 0.19, 3, 26, '#1e140d'); fq(cx - 0.11, cx + 0.11, 26, 28, '#1e140d');
+  fq(cx - 0.19, cx - 0.13, 3, 26, '#3a2618');
+  fq(cx - 0.2, cx + 0.2, 2, 3, '#a8a08c');
+  px(R(pX(cx, y1)), R(pY(cx, y1, 31)), 2, 1, '#d9a441');                   /* kapı üstünde yaldızlı hilal izi */
+  /* sağ yüzde mazgal pencere */
+  rq(cy - 0.13, cy + 0.13, 16, 27, WD); rq(cy - 0.08, cy + 0.08, 18, 25, '#1e140d');
+  /* köşe dikmeleri */
+  vline(x0, y1, 2, H, WDD); vline(x1, y1, 2, H, WD); vline(x1, y0, 2, H, WDD);
+  /* kurşun kaplı piramit çatı (yalnız öndeki iki yüz görünür) */
+  var E2 = [x1 + ov, y0 - ov], E3 = [x1 + ov, y1 + ov], E4 = [x0 - ov, y1 + ov], A = [cx, cy], zt = H + RH, ze = H - 1;
+  quad([[pX(E4[0], E4[1]), pY(E4[0], E4[1], ze)], [pX(E3[0], E3[1]), pY(E3[0], E3[1], ze)], [pX(A[0], A[1]), pY(A[0], A[1], zt)]], '#8fa2ad');
+  quad([[pX(E3[0], E3[1]), pY(E3[0], E3[1], ze)], [pX(E2[0], E2[1]), pY(E2[0], E2[1], ze)], [pX(A[0], A[1]), pY(A[0], A[1], zt)]], '#62747f');
+  for (var r = 0.34; r < 0.9; r += 0.33) {                                  /* kurşun levha sıraları */
+    var zr = lerp(ze, zt, r);
+    isoLine(lerp(E4[0], A[0], r), lerp(E4[1], A[1], r), lerp(E3[0], A[0], r), lerp(E3[1], A[1], r), zr, '#738690', 1);
+    isoLine(lerp(E3[0], A[0], r), lerp(E3[1], A[1], r), lerp(E2[0], A[0], r), lerp(E2[1], A[1], r), zr, '#4f5f69', 1);
+  }
+  isoLine(E4[0], E4[1], E3[0], E3[1], ze, '#2e3a42', 1); isoLine(E3[0], E3[1], E2[0], E2[1], ze, '#2e3a42', 1);
+  ctx.strokeStyle = '#c3d0d6'; ctx.lineWidth = 1; ctx.beginPath();          /* mahya (ön köşe) */
+  ctx.moveTo(R(pX(E3[0], E3[1])), R(pY(E3[0], E3[1], ze))); ctx.lineTo(R(pX(cx, cy)), R(pY(cx, cy, zt))); ctx.stroke();
+  /* alem + flama */
+  var ax = R(pX(cx, cy)), ay = R(pY(cx, cy, zt)), wv = Math.sin(gameT * 2.6) > 0 ? 1 : 0;
+  px(ax, ay - 10, 1, 10, '#b9892c'); px(ax - 1, ay - 12, 3, 2, '#ffc94a'); px(ax, ay - 13, 1, 1, '#ffe08a');
+  for (k = 0; k < 7; k++) { var fh = k < 3 ? 4 : k < 5 ? 3 : 2; px(ax + 1 + k, ay - 10 + (k > 3 ? wv : 0) + (4 - fh) / 2, 1, fh, k ? '#d23a2a' : '#a82a1e'); }
+  px(ax + 3, ay - 9 + 0, 1, 2, '#f4e9d2');
+}
 function drawPetHouse(d) {
   var dog = d.pet === 'dog', hw = dog ? 0.4 : 0.31, hh = dog ? 0.34 : 0.27, h = dog ? 12 : 8, rh = dog ? 7 : 6;
   var x0 = d.x - hw, y0 = d.y - hh, x1 = d.x + hw, y1 = d.y + hh, cx = d.x;
@@ -18381,10 +18649,10 @@ function lokFlow() {
   f *= adCust() * (1 + roadFlow());                                          /* İlan Bürosu + yol */
   if (q.star > 0) f *= 1 + (q.star - 3) * 0.05;                              /* eleştirmen yıldızı ±%10 (Aşama 2) */
   if (lokResToday()) f *= LOK_RES_FLOW;                                      /* rezervasyon günü: misafir kalabalığı */
-  return f * (1 + lokEff('flow'));                                           /* v2.22: süsler + kapı / tabela kademesi */
+  return f * (1 + lokEff('flow')) * (1 + mgrEff(LOK_Z, 'flow'));   /* v2.25: lokanta müdürü: misafir grubu akışı */                                           /* v2.22: süsler + kapı / tabela kademesi */
 }
 function lokInterval() { return clamp(24 / lokFlow(), 8, 45); }
-function lokPatMul() { return 1 + lokEff('pat'); }                         /* v2.22: süsler + masa kademesi (memnuniyet) */
+function lokPatMul() { return (1 + lokEff('pat')) * (1 + mgrEff(LOK_Z, 'pat')); }   /* v2.25: lokanta müdürü: misafir sabrı */                         /* v2.22: süsler + masa kademesi (memnuniyet) */
 function lokGW(k) { return LOK_G[k].w * (lokSazOn() && (k === 'turist' || k === 'is') ? LOK_SAZ_GOOD : 1); }   /* v2.23: saz çalarken yüksek ödeyen gruplar daha sık */
 function lokPickType() {
   var tot = 0; LOK_GK.forEach(function (k) { tot += lokGW(k); });
@@ -18464,14 +18732,14 @@ function lokLeave(g, angry, why) {                        /* grup kalkar */
 }
 function lokPayOut(t) {                                   /* yemek bitti: ödeme yığını masada, kirli tabak, grup çıkar */
   var g = t.g, L = LOK_G[g.type], ord = g.ord, q = lokQ();
-  var base = lokPlateVal(ord.rec) * g.n * L.pay * (1 + lokEff('pay'));   /* v2.22: meze vitrini kademesi (+%5/10/15) + süsler */
+  var base = lokPlateVal(ord.rec) * g.n * L.pay * (1 + lokEff('pay')) * (1 + mgrEff(LOK_Z, 'value'));   /* v2.22: meze vitrini kademesi (+%5/10/15) + süsler; v2.25: lokanta müdürü tabak değeri */
   var tipF = clamp(0.3 * (1 - g.serve / (g.patMax * 0.75)), 0, 0.3) * L.tip;      /* hızlı servis: bahşiş +%30'a kadar (turist daha bol) */
   var tip = Math.round(base * tipF * (1 + lokEff('tip'))), pay = Math.round(base) + tip;   /* v2.22: süsler bahşişi artırır */
   var parts = Math.min(5, g.n + 1), each = Math.floor(pay / parts);
   for (var k = 0; k < parts; k++) t.pay.push({ k: 'money', v: k === parts - 1 ? pay - each * (parts - 1) : each });
   t.dirty = g.n; t.st = 'dirty'; t.last = ord.rec; t.plates = 0; t.g = null; g.paid = true; g.tipF = tipF;
   noteDayIncome(pay);
-  q.sv++; S.served++; S.rep += tipF > 0.2 ? 2 : 1; checkRepLevel();
+  q.sv++; S.served++; S.rep += (tipF > 0.2 ? 2 : 1) + mgrEff(LOK_Z, 'rep'); checkRepLevel();   /* v2.25: lokanta müdürü: grup başına +1 itibar */
   lokRelease2(g);
   if (g.type === 'elestirmen') { g.dm = Math.max(g.dm | 0, lokDirtyN(t.i)); lokCriticRate(g, false); }
   var m0 = g.mem[0]; addFloat(m0.x, m0.y - 0.8, '+' + money(pay) + (tip > 0 ? ' (' + money(tip) + ' ' + T('lkTip') + ')' : ''), '#ffd98a'); sfx.coin();
@@ -20188,6 +20456,7 @@ function hookLok(name, f0) {
   drawScaffold = hook('drawScaffold', drawScaffold);   /* v2.18-deneme: inşaat iskelesi (o: {id, x, y, w, h, left, lv, t, up, hh}; etiketi oyun çizer) */
   drawProject = hook('drawProject', drawProject);
   drawDecor = hook('drawDecor', drawDecor);
+  drawWatchHut = hook('drawWatchHut', drawWatchHut);   /* v2.25: Gözcü Kulübesi (d: DECOR girdisi; ayak d.x, d.y; gövde ±0,34 karo, duvar 34, çatı tepesi 47, kapı +y yüzünde) */
   drawPet = hook('drawPet', drawPet);                 /* v2.18-deneme: kedi / köpek (o: {k, x, y, dir, st, own, coat, tabby, n, t, carry, love, sulk}) */
   drawPetHouse = hook('drawPetHouse', drawPetHouse);  /* v2.18-deneme: kedi evi / kulübe (d: DECOR girdisi, d.pet = 'cat' | 'dog') */
   drawGiftDecor = hook('drawGiftDecor', drawGiftDecor);   /* v2.17: hediye süsleri (d: DECOR girdisi, ör. ligbayrak) */
@@ -20515,7 +20784,7 @@ window.BT = {
   /* test/önizleme: bir kıyafeti verilen tuvale çiz */
   drawOutfitOn: function (cv, o, t) { var old = ctx, oldK = curK, g = cv.getContext('2d'); ctx = g; curK = cv.dataset && cv.dataset.k ? +cv.dataset.k : 1; try { if (curK > 1) g.setTransform(curK, 0, 0, curK, Math.round(cv.width / curK / 2) * curK, cv.height - 4 * curK); else g.setTransform(1, 0, 0, 1, Math.round(cv.width / 2), cv.height - 4); drawPerson({ x: 0, y: 0, z: 0, vx: 0, vy: 0, bob: t || 0, act: 0, carry: [] }, o); } catch (e) { } ctx = old; curK = oldK; },
   specOutfit: function (id, face) { return specOutfit(specById(id), face || 1); },
-  specState: function () { return { spec: day.spec, sp: day.sp, normals: day.normals, active: customers.filter(function (c) { return c.spec; }).map(function (c) { return c.spec + ':' + c.state; }) }; },
+  specState: function () { return { spec: day.spec, sp: day.sp, sp3: day.sp3, normals: day.normals, active: customers.filter(function (c) { return c.spec; }).map(function (c) { return c.spec + ':' + c.state; }) }; },
   autoState: function () { return { min: S.autoMin, t: Math.round(saveT), left: Math.round(autoLeft()) }; }, fastForwardAutosave: function (sec) { saveT += sec; },
   yardFolk: function () { return yardFolk; }, roadFlow: function () { return roadFlow(); }, ui: { openSettings: openSettings, openPauseMenu: openPauseMenu, openStallScreen: openStallScreen, openHal: openHal, openOffice: openOffice, openChapter: openChapter, fbShow: fbShow, fbClose: fbClose, showChapterCard: showChapterCard, closeSettings: function () { el.settingsScreen.classList.add('hidden'); syncPause(); } }, mkt: { corpAction: function (c, k) { corpAction(c, k); }, ownPct: function (c) { return ownPct(c); }, shares: function (c) { return shares(c); }, migrate: function (d) { return migrateMarket(d); }, newMarket: function () { return newMarket(); } }, T: function (k) { return T(k); }, rushNow: function () { return rushNow(); }, mgrAct: function () { return mgrAct; }, showChapterCard: function () { showChapterCard(); }, chapterGroups: function () { return chapterGroups(); }, ACH_IDS: function () { return (typeof ACH !== 'undefined' ? ACH : []).map(function (q) { return q.id; }); },
   cue: { play: function (id) { cuePlay(id); }, stop: function () { cueStop(0.3); }, on: function () { return CUE.on; }, held: function () { return !!music.held; }, pos: function () { return { si: music.si, li: music.li, bar: music.bar }; } },
@@ -20541,7 +20810,7 @@ window.BT = {
   setLang: function (l) { setLangTo(l); }, lang: function () { return lang; },
   M: function () { return M; },
   sellable: function () { return sellableFish(); }, fishReady: fishReady, lines: LINES,
-  nameBad: nameBad, evs: function () { return Object.keys(S.evs || {}); }, evQ: function () { return EV_Q.slice(); }, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, specMeDur: specMeDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, canStandFor: canStandFor, playerBlocks: function () { pblkT = -1; return playerBlocks(); }, inPlayerBlock: function (x, y) { pblkT = -1; return inPlayerBlock(x, y); }, moveActor: moveActor, routeVia: routeVia, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, chScene: { st: function () { return CHS; }, start: function () { chSceneStart(); }, end: function () { chSceneEnd(); }, pos: function () { return chScenePos(); } }, rent: { of: rentOf, total: rentTotal, zones: rentZones, dayEnd: rentDayEnd, workMul: areaWorkMul, custMul: areaCustMul }, wageTotal: function () { return wageTotal(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
+  nameBad: nameBad, evs: function () { return Object.keys(S.evs || {}); }, evQ: function () { return EV_Q.slice(); }, back: backAction, submitScore: function (f) { submitScore(f); }, pid: function () { return PLAYER_ID; }, onlineOK: function () { return onlineOK; }, saveNow: function () { if (S.started) save(); }, pickSpecials: function () { pickSpecials(); }, canvasPt: function (x, y, z) { return [pX(x, y) + camOX, pY(x, y, z || 0) + camOY]; }, SERV_DRAW: SERV_DRAW, makeOrderFor: makeOrderFor, spawnSpecial: spawnSpecial, specTalking: specTalking, sayDur: sayDur, specHiDur: specHiDur, specMeDur: specMeDur, PLOTS: PLOTS, SERVYARD: SERVYARD, canStand: canStand, canStandFor: canStandFor, playerBlocks: function () { pblkT = -1; return playerBlocks(); }, inPlayerBlock: function (x, y) { pblkT = -1; return inPlayerBlock(x, y); }, moveActor: moveActor, routeVia: routeVia, BUILDINGS: BUILDINGS, layoutRects: layoutRects, layoutClashes: layoutClashes, MGR_DESKS: MGR_DESKS, AREA_LAMPS: AREA_LAMPS, chapter: function () { return chapterProgress(); }, openChapterEnd: function () { openChapterEnd(); }, chScene: { st: function () { return CHS; }, start: function () { chSceneStart(); }, end: function () { chSceneEnd(); }, pos: function () { return chScenePos(); } }, opex: { rate: opexRate, dayEnd: opexDayEnd }, rent: { of: rentOf, total: rentTotal, zones: rentZones, dayEnd: rentDayEnd, workMul: areaWorkMul, custMul: areaCustMul }, wageTotal: function () { return wageTotal(); }, mgr: mgr, mgrEff: mgrEff, mgrCands: mgrCands, CUST: CUST, custLook: function (id, i) { return custOutfit({ type: custById(id), tone: i % 4, hair: i % 3, face: 1, hs: i % 4, ht: i % 6 }); }, XNETS: XNETS, zoneNets: zoneNets, pileCap: pileCap, validate: function () { return validateWorld(); }, stallOf: stallOf, stallFume: stallFume, fumeMachine: fumeMachine,
   dbg: function () { return { W: W, H: H, PXS: PXS, VW: VW, VH: VH, maxY: maxOpenY(), landX: LANDX, landY: LANDY,
     pYtest: pY(4.5, 3.2, 0), pXtest: pX(4.5, 3.2), camOX: camOX, camOY: camOY,
     y0: pY(0, 0, 0) - 46, y1: pY(10, maxOpenY(), 0) + 42 }; },
