@@ -201,7 +201,7 @@ var STR = {
     emptyArea: 'Açılacak yeni alan yok', emptyLevel: 'Şimdilik yükseltme yok',
     emptyBuild: 'Yapı noktası yok', emptyProj: 'Yeni büyük projeler 2. bölümde',
     slotEmpty: 'Boş yapı yeri', slotOf: '{n} bölgesi', slotPickD: 'Bir yapı seç', zGen: 'Genel',
-    areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs', roadShow: 'Yol vitrini', mZoneRow: 'Kadro {a}/{b} • açık tezgâh', mgrRush: '⏰ Yoğun saat! Müdürler tezgâhlara yardıma indi', mgrHelp: 'yardımda',
+    areaGives: 'Yeni ağ, kesim ve tezgâh', decorGroup: 'Süs', roadShow: 'Yol vitrini', whutSub: 'Köprü başı · Alp Er Tunga burada nöbet tutar', mZoneRow: 'Kadro {a}/{b} • açık tezgâh', mgrRush: '⏰ Yoğun saat! Müdürler tezgâhlara yardıma indi', mgrHelp: 'yardımda',
     rdFl: 'Yol Çiçekliği', rdFlD: 'Yol kenarına çiçeklik • müşteri akışı +%{p}', rdFlDone: 'Yola çiçeklik kondu 🌷',
     rdBb: 'Yol Reklam Panosu', rdBbD: 'İşletmenin adı ve amblemi yolda • müşteri akışı +%{p}', rdBbDone: 'Reklam panosu yolda yerini aldı 📣',
     lvEffect: 'Ağ +%18, tezgâh +4 stok, personel +%10 hız, müşteri +%12, yeni yapı yeri',
@@ -409,7 +409,7 @@ var STR = {
     emptyArea: 'No new area to unlock', emptyLevel: 'No upgrade available yet',
     emptyBuild: 'No build spot yet', emptyProj: 'New big projects come in Chapter 2',
     slotEmpty: 'Empty build spot', slotOf: '{n} area', slotPickD: 'Pick a building', zGen: 'General',
-    areaGives: 'New net, cutting table and stall', decorGroup: 'Decor', roadShow: 'Road showcase', mZoneRow: 'Crew {a}/{b} • open stalls', mgrRush: '⏰ Rush hour! Managers are helping at the stalls', mgrHelp: 'helping',
+    areaGives: 'New net, cutting table and stall', decorGroup: 'Decor', roadShow: 'Road showcase', whutSub: 'Bridge head · Alp Er Tunga keeps watch here', mZoneRow: 'Crew {a}/{b} • open stalls', mgrRush: '⏰ Rush hour! Managers are helping at the stalls', mgrHelp: 'helping',
     rdFl: 'Roadside Flowerbed', rdFlD: 'Flowerbed by the road • customer flow +{p}%', rdFlDone: 'A flowerbed on the road 🌷',
     rdBb: 'Road Billboard', rdBbD: 'Your company name and emblem by the road • customer flow +{p}%', rdBbDone: 'Billboard up by the road 📣',
     lvEffect: 'Nets +18%, stall +4 stock, staff +10% speed, customers +12%, new build spot',
@@ -3813,7 +3813,7 @@ function loadFrom(d) {
     WHALL.pal = {};
     if (md[4] && typeof md[4] === 'object') for (var pk in md[4]) { var pn = parseInt(md[4][pk], 10); if (pn > 0 && /^(fileto|fume)\|[a-z]+$/.test(pk) && FISH[pk.split('|')[1]]) WHALL.pal[pk] = Math.min(pn, 999); }
     SLOTS.forEach(function (sl) { if (sl.b === 'kulube') { sl.b = null; HUT.lvl = Math.max(HUT.lvl, 1); } });
-    if (d.decor) d.decor.forEach(function (v, i) { if (DECOR[i]) DECOR[i].got = !!v; });
+    if (Array.isArray(d.decor)) DECOR.forEach(function (q, i) { q.got = !!d.decor[i]; });   /* v2.25: kayıttan kısa liste (eski kayıt: Gözcü Kulübesi yok) → eksikler alınmamış; önceki oturumdan kalmaz */
     decorLoad(d.dpos, d.dbox);                     /* v2.17: eski kayıtta yok → süsler varsayılan yerinde; geçersiz yer → varsayılan */
     if (d.proj) { project.inv = d.proj[0] || 0; project.stage = d.proj[1] || 0; project.done = !!d.proj[2]; }
     servLoad(d.serv);   /* v0.4 §41 — yoksa hiçbir bina kurulmaz, para kesilmez */
@@ -8153,6 +8153,7 @@ function drawProject() {
 
 /* ---------- kozmetik ---------- */
 function drawDecor(d) {
+  if (d.id === 'gozcu') { drawWatchHut(d); return; }     /* v2.25: Gözcü Kulübesi (ince modda HKA.drawWatchHut) */
   var sx = R(pX(d.x, d.y)), sy = R(pY(d.x, d.y, 0));
   if (d.id === 'bayrak') {
     px(sx - 1, sy - 34, 2, 34, '#d8d2c4');
@@ -8393,7 +8394,7 @@ function render() {
   for (i = 0; i < BINS.length; i++) (function (bn) {
     if (AREAS[bn.z].locked) return; push(bn.x + bn.y, function () { drawBin(bn); });
   })(BINS[i]);
-  if (guardOn()) push(GUARD.x + GUARD.y, drawGuard);   /* v2.15: Alp Er Tunga nöbette */
+  if (guardOn()) { guardPlace(); push(GUARD.x + GUARD.y, drawGuard); }   /* v2.15: Alp Er Tunga nöbette (v2.25: köprü başında / kulübe kapısında) */
   if (GZD) push(GZD.x + GZD.y - 0.05, function () { drawGzPaper(GZD); });   /* v2.16: yerdeki özel sayı */
   if (GZB.on) push(GZB.x + GZB.y + 0.2, function () { drawNewsboy(GZB); });   /* v2.16: gazeteci çocuk */
   if (dolph) push(dolph.x + dolph.y, drawStoryDolphin);   /* v2.15: denizden gelen yunus */
@@ -8942,7 +8943,7 @@ function barList() {
       for (i = 0; i < DECOR.length; i++) {
         var dc = DECOR[i];
         if (dc.got || AREAS[dc.z].locked || !decorShop(dc)) continue;   /* v2.17: hediye süsü yalnız hediyeyle gelir */
-        out.push({ id: 'd' + i, ic: dc.icon, t: NM(dc.n), s: T('decorGroup') + ' • ' + (dc.road ? T('roadShow') : NM(AREAS[dc.z].n)), cost: dc.cost,
+        out.push({ id: 'd' + i, ic: dc.icon, t: NM(dc.n), s: T('decorGroup') + ' • ' + (dc.sub ? T(dc.sub) : dc.road ? T('roadShow') : NM(AREAS[dc.z].n)), cost: dc.cost,   /* v2.25: sub = kendi alt yazısı */
           blocked: dc.lv && lvNow < dc.lv, why: T('needLv', { l: dc.lv }),
           go: function (k) { return function () { DECOR[k].got = true; sfx.build(); toast(T('decorBought', { n: NM(DECOR[k].n) })); }; }(i) });
       }
@@ -13741,8 +13742,18 @@ function storyOn() { return !!(window.HK_STORY && STORY_SPECS.st_a) && !window.H
 /* v2.15 — ALP ER TUNGA NÖBETTE: hikâyede kendini tanıttığı günden (6) sonra koyun kıyısında, yayıyla denize bakarak
    bekler; ara ara başını çevirip ufku tarar. 12. gün yayını höyüğe astıktan sonra yay yanındaki kazıkta asılı durur.
    Yalnız görüntü: yürüme alanının dışında durur, kimseyi engellemez. O gün hikâye ziyaretçisi oysa ikinci kez görünmez. */
-var GUARD = { x: 12.4, y: 0.9, z: 0, vx: 0, vy: 0, bob: 0, face: -1, act: 0, carry: [] };
+/* v2.25: nöbet yeri köprünün ada ucuna taşındı — doğu korkuluğun hemen yanı (x 15,25; müşteri şeridi x ≤ 14,6'nın, meydan personel
+   yollarının ve köprü fenerlerinin dışında), yüzü köprüye (sola) dönük. Gözcü Kulübesi kuruluysa kulübenin kapısının önünde durur;
+   kulübe taşınınca onunla gider (guardPlace her karede yeri günceller). */
+var GUARD_POST = { x: 15.25, y: 0.2 }, WHUT_DOOR = [-0.18, 0.58];   /* kulübesiz nöbet yeri · kulübe merkezinden kapı önüne (+y, ön-sol yüz; biraz solda: kemer görünsün) */
+var GUARD = { x: GUARD_POST.x, y: GUARD_POST.y, z: 0, vx: 0, vy: 0, bob: 0, face: -1, act: 0, carry: [] };
 var GUARD_FROM = 6, GUARD_BOW = 12;
+function guardHut() { var d = decorById('gozcu'); return d && d.got && !d.box ? d : null; }   /* v2.25: kurulu (sandıkta değil) Gözcü Kulübesi */
+function guardPlace() {
+  var h = guardHut();
+  if (h) { GUARD.x = h.x + WHUT_DOOR[0]; GUARD.y = h.y + WHUT_DOOR[1]; } else { GUARD.x = GUARD_POST.x; GUARD.y = GUARD_POST.y; }
+  return h;
+}
 /* Aynı anda tek Alp Er Tunga: hikâye ziyaretçisi (kuyrukta, sahnede, SATIŞTAN SONRA giderken de) sahnedeyse nöbetçi çizilmez.
    Eski kural yalnız storyVis'e bakıyordu; sahne bitince storyVis boşalıyor ama ziyaretçi birkaç sn daha yürüyüp gidiyor, nöbetçi hemen belirip ikizi oluyordu.
    (Ziyaretçi 7., 8. ve 12. günlerde hikâyenin gereği gelir; nöbetçi onlar sürerken postundan çekilir.) */
@@ -13841,7 +13852,7 @@ function alpNext() {
 function alpSave() { return alpOrdOK(S.alpOrd) ? { o: S.alpOrd.slice(), i: Math.max(0, S.alpI | 0) } : null; }
 function alpLoad(d) { if (d && alpOrdOK(d.o)) { S.alpOrd = d.o.slice(); S.alpI = clamp(d.i | 0, 0, d.o.length); } else { S.alpOrd = null; S.alpI = 0; } }
 function updateAlp(dt) {
-  ALP.sayT += dt;
+  ALP.sayT += dt; guardPlace();
   if (!guardOn() || storyOpenNow() || TAX.on || (intro && intro.on) || dist2(player.x, player.y, GUARD.x, GUARD.y) > ALP_NEAR * ALP_NEAR) return;
   ALP.t += dt;
   if (ALP.t < ALP_EVERY) return;
@@ -13849,14 +13860,15 @@ function updateAlp(dt) {
 }
 function alpBalloon() {                                   /* uzun sözler iki satıra bölünür (telefon genişliği) */
   if (ALP.idx < 0 || ALP.sayT >= ALP_SHOW) return;
-  var tx = ALP_LINES[ALP.idx][lang === 'tr' ? 0 : 1], w = tx.split(' '), best = 0, h = 0, k, a, b;
+  var tx = ALP_LINES[ALP.idx][lang === 'tr' ? 0 : 1], w = tx.split(' '), best = 0, h = 0, k, a, b, z = guardHut() ? 88 : 62;   /* v2.25: kulübe flamasının üstünde */
   if (tx.length > 32) { for (k = 1; k < w.length; k++) { a = w.slice(0, k).join(' ').length; if (Math.abs(a - tx.length / 2) < Math.abs(best - tx.length / 2) || !best) { best = a; h = k; } } }
-  if (h) { a = w.slice(0, h).join(' '); b = w.slice(h).join(' '); uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: 62, s: b + '”', c: '#ffe2c8', a: 1 }); uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: 62 + 14, s: '“' + a, c: '#ffe2c8', a: 1 }); }
-  else uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: 62, s: '“' + tx + '”', c: '#ffe2c8', a: 1 });
+  if (h) { a = w.slice(0, h).join(' '); b = w.slice(h).join(' '); uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: z, s: b + '”', c: '#ffe2c8', a: 1 }); uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: z + 14, s: '“' + a, c: '#ffe2c8', a: 1 }); }
+  else uiQ.push({ t: 4, x: GUARD.x, y: GUARD.y, z: z, s: '“' + tx + '”', c: '#ffe2c8', a: 1 });
 }
 function drawGuard() {
   var sp = STORY_SPECS.st_a, st = S.story, scan = Math.sin(gameT * 0.35) > 0.82;   /* uzun bekleyiş, kısa bir bakış */
-  var o = specOutfit(sp, scan ? -1 : 1); o.walk = false; o.mood = 1;          /* denize (sağ üst) bakar */
+  var hut = guardPlace();
+  var o = specOutfit(sp, scan ? 1 : -1); o.walk = false; o.mood = 1;          /* v2.25: köprüye (sola) bakar, ara ara meydana göz atar */
   GUARD.face = o.face; GUARD.bob = 0;
   drawPersonAt(GUARD, o);
   var sx = R(pX(GUARD.x, GUARD.y)), sy = R(pY(GUARD.x, GUARD.y, 0)), i, f = GUARD.face;
@@ -13865,12 +13877,15 @@ function drawGuard() {
     for (i = 0; i < 17; i++) { var dx = Math.round(Math.sin(Math.PI * i / 16) * 3) * f; px(bx + dx, by + i, 1, 1, i % 5 ? WOOD : WOODL); }
     px(bx, by, 1, 17, STR); px(bx, by, 1, 1, WOODL); px(bx, by + 16, 1, 1, WOODL);
   }
-  if (st.step >= GUARD_BOW) {                                /* yay kazıkta asılı */
+  if (st.step >= GUARD_BOW && hut) {                         /* v2.25: yay kulübenin sağ (doğu) duvarındaki çivide asılı */
+    var hx = R(pX(hut.x + 0.36, hut.y - 0.2)), hy = R(pY(hut.x + 0.36, hut.y - 0.2, 31));   /* pencerenin arka yanı */
+    px(hx - 1, hy - 1, 2, 2, '#3a2a1a'); bow(hx + 1, hy);
+  } else if (st.step >= GUARD_BOW) {                         /* yay kazıkta asılı */
     var kx = sx + 12 * -f;
     px(kx, sy - 22, 2, 22, '#5a4029'); px(kx, sy - 22, 1, 22, '#7a5a3a'); px(kx - 1, sy - 23, 4, 1, '#3a2a1a');
     bow(kx + (f > 0 ? -2 : 3), sy - 21);
   } else bow(sx + 6 * f, sy - 24);
-  if (dist2(player.x, player.y, GUARD.x, GUARD.y) < 9) uiLabel(GUARD.x, GUARD.y, 44, T('guardLbl'), '#e4b94a', 0.95);
+  if (dist2(player.x, player.y, GUARD.x, GUARD.y) < 9) uiLabel(GUARD.x, GUARD.y, hut ? 74 : 44, T('guardLbl'), '#e4b94a', 0.95);   /* v2.25: kulübe varken flamanın üstünde */
   alpBalloon();
 }
 function storyOpenNow() { return !!(window.HK_STORY && window.HK_STORY.isOpen()); }
@@ -14227,7 +14242,7 @@ function chapterGroups() {
   n = 0; for (i = 0; i <= KITCHEN_Z; i++) n += AREAS[i].lvl - 1; add('🏗️', 'chLevels', n, (KITCHEN_Z + 1) * (MAXLV - 1));
   n = 0; t = 0; for (i = 0; i < PADS.length; i++) if (PADS[i].max && PADS[i].kind !== 'decor' && !PADS[i].emek) { n += PADS[i].lvl || 0; t += PADS[i].max; } add('⬆️', 'chPads', n, t);   /* süs noktaları Süsler satırında sayılır */
   n = 0; for (i = 0; i < SLOTS.length; i++) if (SLOTS[i].b) n++; add('🔨', 'chSlots', n, SLOTS.length);
-  n = 0; t = 0; for (i = 0; i < DECOR.length; i++) if (decorShop(DECOR[i])) { t++; if (DECOR[i].got) n++; } add('🌺', 'chDecor', n, t);   /* v2.17: hediye süsleri hedefe sayılmaz */
+  n = 0; t = 0; for (i = 0; i < DECOR.length; i++) if (decorShop(DECOR[i]) && !DECOR[i].xtra) { t++; if (DECOR[i].got) n++; } add('🌺', 'chDecor', n, t);   /* v2.17: hediye süsleri hedefe sayılmaz; v2.25: Gözcü Kulübesi de (xtra) */
   add('🌿', 'chEnv', envStage(), ENV_UPS.length);
   add('🔥', 'chFume', (fumeMachine(0) ? 1 : 0) + (fumeMachine(1) ? 1 : 0), 2);
   add('🏘️', 'chMeydan', (HUT.lvl ? 1 : 0) + (DEPOT.lvl ? 1 : 0) + (WHALL.built ? 1 : 0), 3);
@@ -16343,6 +16358,13 @@ S.pet = null;                                      /* S0 anlık görüntüsünde
   }
   DECOR.forEach(function (d) { if (d.hx === undefined) { d.hx = d.x; d.hy = d.y; d.box = false; } });
 })();
+/* v2.25 — GÖZCÜ KULÜBESİ: YAPI › Dekor'dan alınan süs; varsayılan yeri köprünün ada ucu (Alp Er Tunga'nın nöbet yeri), düzenleme
+   modunda taşınır. Kuruluyken nöbetçi kapısının önünde durur (guardPlace). Etkisi diğer süslerle aynı: süs sabrı +%2 (decorCount).
+   Kayıt dizinleri kaymasın diye DECOR'un SONUNA eklenir (decor[] sıra ile saklanır; eski kayıtta yok → alınmamış) ve PADS'e girmez.
+   Bölüm 1 hedefine sayılmaz (xtra): eski kayıtların bölüm ilerlemesi değişmesin. */
+DECOR.push({ id: 'gozcu', z: 0, x: 15.25, y: -0.05, cost: 1200, xtra: 1, sub: 'whutSub', n: { tr: 'Gözcü Kulübesi', en: "Watchman's Hut" }, icon: '🛖', got: false });
+(function (d) { d.hx = d.x; d.hy = d.y; d.box = false; })(DECOR[DECOR.length - 1]);
+ARR_HGT.gozcu = 46;
 function petsOn() { return !window.HK_PET_OFF; }
 function petNew() { return { l: [], sd: { cat: [], dog: [] }, nx: { cat: 0, dog: 0 }, f: {} }; }
 function petQ() { return S.pet || (S.pet = petNew()); }
@@ -16813,6 +16835,51 @@ function drawPet(o) {
   if (o.st === 'sleep' && phase2(gameT, 0.5)) { px(sx - d * 5, sy - 10, 2, 1, PAL.cream); px(sx - d * 6, sy - 13, 1, 1, PAL.cream); }
 }
 /* kedi evi (ahşap, kiremit çatı, yuvarlak kapı) ve kulübe (tahta, kemerli kapı, kemik) */
+/* v2.25 — GÖZCÜ KULÜBESİ (klasik piksel; ince modda HKA.drawWatchHut): taş eşik üstünde dar, uzun ahşap nöbetçi kulübesi;
+   kırmızı-beyaz dikey şeritli duvarlar, ön (sol, +y) yüzde kemerli açık kapı, sağ yüzde mazgal pencere, kurşun kaplı sivri
+   (piramit) çatı, tepede yaldızlı alem ve dalgalanan kırmızı flama. Gövde ±0,34 karo (süs ayak izi ±0,42'nin içinde). */
+function drawWatchHut(d) {
+  var hw = 0.34, cx = d.x, cy = d.y, x0 = cx - hw, y0 = cy - hw, x1 = cx + hw, y1 = cy + hw, H = 34, RH = 13, ov = 0.09, k, n = 5;
+  var RED = '#c0392b', REDD = '#8e2a20', WHT = '#efe6d2', WHTD = '#c9bea4', WD = '#6f4526', WDD = '#4a2c18';
+  function fq(xa, xb, za, zb, c) { wallQ(xa, y1, xb, y1, za, zb, c); }      /* ön (+y) yüz parçası */
+  function rq(ya, yb, za, zb, c) { wallQ(x1, ya, x1, yb, za, zb, c); }      /* sağ (+x) yüz parçası */
+  shadow(cx, cy + 0.1, 0.8);
+  isoBox(x0 - 0.05, y0 - 0.05, 2 * hw + 0.1, 2 * hw + 0.1, 0, 2, '#bdb6a4', '#9a937f', '#857e6c');   /* taş eşik */
+  for (k = 0; k < n; k++) {                                                 /* şeritli duvarlar */
+    fq(x0 + 2 * hw * k / n, x0 + 2 * hw * (k + 1) / n, 2, H, k % 2 ? WHT : RED);
+    rq(y0 + 2 * hw * k / n, y0 + 2 * hw * (k + 1) / n, 2, H, k % 2 ? WHTD : REDD);
+  }
+  fq(x0, x1, 2, 5, WD); rq(y0, y1, 2, 5, WDD);                              /* süpürgelik */
+  fq(x0, x1, H - 3, H, WD); rq(y0, y1, H - 3, H, WDD);                      /* saçak kirişi */
+  isoLine(x0, y1, x1, y1, H - 3, '#8a5a30', 1);
+  /* kemerli kapı: ahşap pervaz, karanlık iç, iç yan duvar şeridi, eşik */
+  fq(cx - 0.23, cx + 0.23, 2, 27, '#8a5a30'); fq(cx - 0.15, cx + 0.15, 27, 30, '#8a5a30');
+  fq(cx - 0.19, cx + 0.19, 3, 26, '#1e140d'); fq(cx - 0.11, cx + 0.11, 26, 28, '#1e140d');
+  fq(cx - 0.19, cx - 0.13, 3, 26, '#3a2618');
+  fq(cx - 0.2, cx + 0.2, 2, 3, '#a8a08c');
+  px(R(pX(cx, y1)), R(pY(cx, y1, 31)), 2, 1, '#d9a441');                   /* kapı üstünde yaldızlı hilal izi */
+  /* sağ yüzde mazgal pencere */
+  rq(cy - 0.13, cy + 0.13, 16, 27, WD); rq(cy - 0.08, cy + 0.08, 18, 25, '#1e140d');
+  /* köşe dikmeleri */
+  vline(x0, y1, 2, H, WDD); vline(x1, y1, 2, H, WD); vline(x1, y0, 2, H, WDD);
+  /* kurşun kaplı piramit çatı (yalnız öndeki iki yüz görünür) */
+  var E2 = [x1 + ov, y0 - ov], E3 = [x1 + ov, y1 + ov], E4 = [x0 - ov, y1 + ov], A = [cx, cy], zt = H + RH, ze = H - 1;
+  quad([[pX(E4[0], E4[1]), pY(E4[0], E4[1], ze)], [pX(E3[0], E3[1]), pY(E3[0], E3[1], ze)], [pX(A[0], A[1]), pY(A[0], A[1], zt)]], '#8fa2ad');
+  quad([[pX(E3[0], E3[1]), pY(E3[0], E3[1], ze)], [pX(E2[0], E2[1]), pY(E2[0], E2[1], ze)], [pX(A[0], A[1]), pY(A[0], A[1], zt)]], '#62747f');
+  for (var r = 0.34; r < 0.9; r += 0.33) {                                  /* kurşun levha sıraları */
+    var zr = lerp(ze, zt, r);
+    isoLine(lerp(E4[0], A[0], r), lerp(E4[1], A[1], r), lerp(E3[0], A[0], r), lerp(E3[1], A[1], r), zr, '#738690', 1);
+    isoLine(lerp(E3[0], A[0], r), lerp(E3[1], A[1], r), lerp(E2[0], A[0], r), lerp(E2[1], A[1], r), zr, '#4f5f69', 1);
+  }
+  isoLine(E4[0], E4[1], E3[0], E3[1], ze, '#2e3a42', 1); isoLine(E3[0], E3[1], E2[0], E2[1], ze, '#2e3a42', 1);
+  ctx.strokeStyle = '#c3d0d6'; ctx.lineWidth = 1; ctx.beginPath();          /* mahya (ön köşe) */
+  ctx.moveTo(R(pX(E3[0], E3[1])), R(pY(E3[0], E3[1], ze))); ctx.lineTo(R(pX(cx, cy)), R(pY(cx, cy, zt))); ctx.stroke();
+  /* alem + flama */
+  var ax = R(pX(cx, cy)), ay = R(pY(cx, cy, zt)), wv = Math.sin(gameT * 2.6) > 0 ? 1 : 0;
+  px(ax, ay - 10, 1, 10, '#b9892c'); px(ax - 1, ay - 12, 3, 2, '#ffc94a'); px(ax, ay - 13, 1, 1, '#ffe08a');
+  for (k = 0; k < 7; k++) { var fh = k < 3 ? 4 : k < 5 ? 3 : 2; px(ax + 1 + k, ay - 10 + (k > 3 ? wv : 0) + (4 - fh) / 2, 1, fh, k ? '#d23a2a' : '#a82a1e'); }
+  px(ax + 3, ay - 9 + 0, 1, 2, '#f4e9d2');
+}
 function drawPetHouse(d) {
   var dog = d.pet === 'dog', hw = dog ? 0.4 : 0.31, hh = dog ? 0.34 : 0.27, h = dog ? 12 : 8, rh = dog ? 7 : 6;
   var x0 = d.x - hw, y0 = d.y - hh, x1 = d.x + hw, y1 = d.y + hh, cx = d.x;
@@ -20389,6 +20456,7 @@ function hookLok(name, f0) {
   drawScaffold = hook('drawScaffold', drawScaffold);   /* v2.18-deneme: inşaat iskelesi (o: {id, x, y, w, h, left, lv, t, up, hh}; etiketi oyun çizer) */
   drawProject = hook('drawProject', drawProject);
   drawDecor = hook('drawDecor', drawDecor);
+  drawWatchHut = hook('drawWatchHut', drawWatchHut);   /* v2.25: Gözcü Kulübesi (d: DECOR girdisi; ayak d.x, d.y; gövde ±0,34 karo, duvar 34, çatı tepesi 47, kapı +y yüzünde) */
   drawPet = hook('drawPet', drawPet);                 /* v2.18-deneme: kedi / köpek (o: {k, x, y, dir, st, own, coat, tabby, n, t, carry, love, sulk}) */
   drawPetHouse = hook('drawPetHouse', drawPetHouse);  /* v2.18-deneme: kedi evi / kulübe (d: DECOR girdisi, d.pet = 'cat' | 'dog') */
   drawGiftDecor = hook('drawGiftDecor', drawGiftDecor);   /* v2.17: hediye süsleri (d: DECOR girdisi, ör. ligbayrak) */
