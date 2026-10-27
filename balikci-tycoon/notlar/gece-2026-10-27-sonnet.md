@@ -210,6 +210,44 @@ Deneme: Sv8, 4 bölge + lokanta + müdür + 2 hayvan + vergi borcu, 9 gün oynan
 | maaş −%30 & akış +%12 | 31 667 (+%16,7) | 2 093 | 19 654 (+2,8k/gün) | 16 807 |
 Yatırım ≈ 50k ⇒ geri ödeme **~13 gün (fiyat+sabır)** / ~18 gün. Bölge müdürleri B2'deki "ek kadro/kulübe"nin tersine gerçekten kazandırıyor (sabır buff'ı kaçan müşteriyi azaltıyor). Lokanta müdürü (B9) ise aynı maaş/fiyat oranıyla negatif — bölge müdürü ↔ lokanta müdürü uçurumu: lokanta müdür maaşı düşürülmeli.
 
+## (B12) İlk 30 dakika (yeni oyuncu) — kısmen ölçüm, kısmen tahmin
+Ölçülen (taze oyun, gerçek bayraklar, 390×844): Açılış → "Hayırlı olsun Yusuf! Lodos Su Ürünleri kapılarını açtı." toast'ı, üstte "HEDEF 1/9: Ağın başında bekle — balık birikiyor", altta WASD koçu. Öğretici **9 hedef**: ağda bekle → balık al → kesim masası → kesim → fileto tezgâhta → ilk satış → para topla → **ilk personel (800)** → ikinci personel.
+- **A11 (yeni, görsel hata)**: açılışta karşılama toast'ı koç kutusunu ("WASD veya ok tuşlarıyla yürü") yarıya örtüyor — iki balon üst üste (ekran görüntüsü: `shots/41-first.png`, bu dosyaya eklenmedi). Yeniden üretme: yeni oyun → ad ver → 2 sn bekle (HK_HELP/HK_STORY bayrakları kapalı olmadan). Öneri: toast'ı koç görünürken yukarı kaydır ya da koçu 3 sn geciktir.
+- 1. hedef pasif bekleme ("Ağın başında bekle"), 8 sn sonra bile hedef aynı; oyuncu yürümezse ilerlemiyor (koç yalnız yürümeyi anlatıyor, "ağa git" demiyor). Sarı noktalı yol var ama kısa bir ok/el işareti ağa baksa iyi olur.
+- Elle oynama hızı ölçülemedi (gerçek tuş girişi gerekir). Tahmin (bot verisinden): tek tezgâh 5,4 sn aralıkla ~55 müşteri/gün; hamsi 6$ × 2–4 adet ⇒ tam servisle ~700–800$/gün tavan, elle ~%50 ⇒ **ilk gün ≈ 350–450$**. İlk personel (800$, öğretici hedef 8) **2.–3. günde (≈10–15 dk)**; 5 rollük zincir 10,7k ⇒ gelir otomasyonla 1,6–2,4k/gün olunca **~gün 8–10 (≈45–50 dk)**. Yani ilk 30 dakikada oyuncu tam otomasyona ulaşmıyor; 1–2 personel alıyor, ağır kısmı hâlâ elle. Hedef 9 ("ikinci personel") bitince oyuncu bir sonraki adımı (tezgâh/Pazar) bulmalı: kart çubuğunda "hot" parlaması var, ama "Pazar 975$ • Sv2 gerekir" bilgisi YAPI'da değil ALAN'da.
+- Sıkıcı nokta: 1. günden 5. güne kadar gelir düz ve oyuncunun yapacağı hamle yok (birikim); Sv2–Sv3 1. günde bile açılıyor (itibar ≈ 70/gün) ama açılan şey (Pazar) için para yok.
+
+## (B13) Seviye geçiş günleri (bot, 1→4 bölge büyüyor; insan elle oynarsa ilk günler ~%30–40 yavaş)
+| seviye | itibar eşiği | gün (bot) | seviyede kalma |
+|---|---|---|---|
+| Sv2 | 15 | 1 | <1 |
+| Sv3 | 45 | 1 | 2 |
+| Sv4 | 150 | 3 | 2 |
+| Sv5 | 350 | 5 | 5 |
+| Sv6 | 700 | 10 | 5 |
+| Sv7 | 1 100 | 15 | 7 |
+| Sv8 | 1 700 | 22 | 8 |
+| Sv9 | 2 800 | 30 | 9 |
+| Sv10 | 4 500 | **39** | — |
+İtibar ≈ gün başına 60–80 (ilk 10 gün: 70, 142, 221, 289, 408, 474, 531, 594, 681, 745) — kümülatif ~%75 doğrusal; yani seviyeler "günde yaklaşık 70 itibar" ile zamana bağlı, ekonomi ile ilgisi zayıf (B4). Elle oynayan insanda tahmini Sv5 ≈ gün 8, Sv10 ≈ gün 55–60 (≈ 5 saat). Öneri: eşikleri 1,5–2× yap (Sv5=500, Sv7=2 000, Sv10=9 000) ya da kazancı ciroyla ölçekle.
+
+## (B14) YAPI › Yükseltme / Eklentiler — fiyat/etki ve geri ödeme (Sv7, günlük gelir: İskele 2,6k · Pazar 4k · Fümehane ~12k · Mutfak ~12k)
+| kart | maliyet (Sv1→2) | etki | tahmini geri ödeme |
+|---|---|---|---|
+| Bölge Sv (İskele/Pazar/Fümehane/Mutfak) | 825 / 1 800 / 3 150 / 5 625 | ağ +%18, stok +4, personel hız +%10, müşteri +%12, yapı yeri; kira +%50 | **~2 / 2,6 / 1,7 / 3 gün** (ölçülen toplam: 3 gün). Sonraki seviyeler 2 550 / 5 100 / 8 250 / 12 750… ×~3 |
+| Tezgâh (kâr +%3, raf +1) | 473 / 570 / 1 500 / 2 625 | gelirin +%3'ü | z0 6 gün · z2 4 gün · z3 7 gün; her seviye maliyet ×2,2, kazanç aynı ⇒ Sv5'te 20–40 gün |
+| Ağ / Kesim Masası / Kasa Tepsisi | 338–2 288 | hız +%10, hasır +1, kasa +%10 | **ölçülemedi (±0)** — otomatik kadroda hız darboğaz değil |
+| Fümehane (tütme +%10) / Aşçı Ocağı | 1 200 / 2 288 | tütme/pişirme hızı | ölçülemedi |
+| **Füme Makinesi** (Eklenti, İskele 3 200, Pazar 4 800) | 8 000 | "füme de ister, 2,4× değer" | Tezgâh başına 5–10 füme/gün; **İskele +~0,3k, Pazar +~1k gün** (beklenen ≈ +1,3k/gün ⇒ **~6 gün**); toplam gelirde gürültü içinde (−%2…+%1) |
+| Yapı yeri / süsler | 350–5 200 | süs +%2…8 akış | akış etkisiz (B2/B5) ⇒ **geri ödeme yok**; saf kozmetik |
+Sonuç: bölge Sv ve müdür/pazarlık dışında kalan yükseltmelerin çoğu ya ölçülemiyor ya akış darboğazına çarpıyor. Yani "YAPI" paneli seçenek bolluğu sunuyor ama oyuncu için gerçek karar tek: bölge Sv + müdür + pazarlık.
+
+## (A-yeniden-üretme) Doğrulanan hataların adımları
+- **A1 "Sv.0→1"** (doğrulandı): yeni oyun → alt bar **YÜKSELT** → kartlar "KAPASİTE Sv.0→1 / HIZ Sv.0→1 / KESKİN BIÇAK Sv.0→1 / SESLİ SATICI Sv.0→1".
+- **A8 opex bayrağı** (doğrulandı): konsol: `BT.S.cash=1e6; BT.S.rep=1100; BT.S.lvFloor=7; BT.day.phase='play'; BT.day.st.inc=20000; BT.endDay();` gün sonuna kadar bekle → `BT.S.help.opex === 1`; sonra `BT.loadFrom(JSON.parse(JSON.stringify(BT.buildSave())))` → `BT.S.help.opex === undefined`.
+- **A9 eski kayıtta opex şoku** (doğrulandı): `const sv=BT.buildSave(); delete sv.rent; BT.loadFrom(sv); BT.S.rep=4500; BT.S.lvFloor=10; BT.day.phase='play'; BT.day.st.inc=50000; BT.endDay();` → gün sonu `opex = {v:14000, p:28}`, kira `rentD=2` (kira geçiş payı var, opex'te yok).
+- **A3 vapur gelir etkisi ±0** ve **A4 reklam etkisiz**: B2/B5'teki A/B betikleriyle (tohum 1–4) tekrarlandı; farklar gürültü bandında (±%3).
+
 ---
 
 ## (C) EKLENEBİLİR FİKİRLER — etki ↑ / emek ↓
@@ -230,8 +268,9 @@ Yatırım ≈ 50k ⇒ geri ödeme **~13 gün (fiyat+sabır)** / ~18 gün. Bölge
 ## Sürüm günlüğü
 - 20:2x UTC — ilk taslak.
 - 20:5x UTC (hayvan A/B eklendi)
+- 00:1x UTC — B12–B14 + yeniden üretme adımları.
 - 22:0x UTC — B8–B11 eklendi (10 günlük koşular, müdürler, yağmur, kayıt uyumu).
 - 20:5x UTC — B1–B7, UX, C: bölüm seviyesi/ilerleme/reklam/lokanta/vapur A-B ölçümleri; stres testi temiz.
 
 
-**Ölçülmeyenler / sonraki tur:** Ticaret Ofisi (kontrat/borsa/Lisans: gün 100'de 90k lisansla gelir 102k'ya çıktı), Depo/Hal zinciri, Ağ Vinci, Panayır günü, çok dilli (EN) metin taşmaları, gerçek telefonda FPS.
+**Ölçülmeyenler / sonraki tur:** (gerçek tuş girişiyle ilk 30 dk elle oyun süresi, Ticaret Ofisi (kontrat/borsa/Lisans: gün 100'de 90k lisansla gelir 102k'ya çıktı), Depo/Hal zinciri, Ağ Vinci, Panayır günü, çok dilli (EN) metin taşmaları, gerçek telefonda FPS.
