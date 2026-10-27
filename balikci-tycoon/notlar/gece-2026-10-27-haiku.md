@@ -58,7 +58,34 @@ Okumalar:
 Genel: Seviye 1–3 rahat, 5 orta, **8 ve 10 zor/negatif** (bu ekip ve sabit kapasite ile). Seviye 8+ için ya kira
 düşürülmeli ya da o seviyede kapasite (tezgâh/işçi) otomatik artmalı.
 
+
+**5 günlük seviye turu (00:02, 4 işçi + tahsildar ekibi; ikinci bölgeye hamal/filetocu, üçüncüye hamal):**
+
+| Sv | Gün | Gelir | Maaş | Kira (ödenen) | Ciro gideri | Servis | Kaybedilen | Kasa |
+|---|---|---|---|---|---|---|---|---|
+| 5 | 1 | 1605 | 603 | 453 | 128 | 49 | 19 | 988 |
+| 5 | 2 | 1672 | 607 | 453 | 134 | 58 | 25 | 1766 |
+| 5 | 3 | 1777 | 719 | 453 | 142 | 55 | 24 | 930 |
+| 5 | 4 | 1745 | 719 | 453 | 140 | 58 | 22 | 1363 |
+| 5 | 5 (pazar) | 3393 | 658 | 453 | 271 | 41 | 14 | 3773 |
+| 8 | 1 | 2038 | 603 | 1308 | 408 | 56 | 31 | 286 |
+| 8 | 2 | 1671 | 607 | 1308 | 334 | 44 | 26 | 8 |
+| 8 | 3 | 1687 | 530 | 1165 | 0 | 41 | 33 | 0 |
+| 8 | 4 | 1845 | 529 | 1308 | 8 | 55 | 29 | 0 |
+| 8 | 5 (pazar) | 2266 | 586 | 1308 | 372 | 55 | 36 | 0 |
+
+- Sv5: gelir ~1600–1800/gün, pazar günü 3393 (≈ ×2). Net ≈ +300…+600 (normal günler), pazar ≈ +2400. Kasa büyüyor ama yavaş.
+- Sv8: gelir Sv5 ile aynı seviyede (~1700–2000); kira 1308 + ciro gideri 330–410 → gelirin ~%95'i gider. Kasa 3. günde 0, sonra kira ve ciro eksik ödeniyor.
+  Sv8'de gelir büyümediği için (kapasite sabit) oyun ya ekip büyütmeyi zorunlu kılıyor ya batıyor.
+- Tahsildar/işçi fiyatları: 2. bölgede filetocu 1299, 3. bölgede tezgâhtar 3234 (pazar günü, kasa 3773 iken alındı).
+
 Sınırlar: oyuncu balık tutmuyor, zone 0 dışındaki bölgeler sadece hamal ile dolduruldu, Sahil Lokantası / hizmet binaları / kontratlar dahil değil.
+- **Vapur + yağmur aynı anda (00:00 turu):** `BT.ferry.call(6)` ve `BT.wx.start()` aynı günde çağrıldı; ikisi de `true` döndü,
+  gün hatasız bitti (`ERRS []`). Tip sayımında taraftarlar (`fan_*`), bastonlu (`amca_k`, `nine_*`) ve parodi (`p_kokarca`) müşteriler göründü.
+- **Gözcü Kulübesi / Alp Er Tunga (kısmen doğrulandı):** Alp'in kulübeyi takip ettiği kod okumasıyla doğrulandı: `guardPlace()`
+  (game.js ~14309) her karede kulübe kapısına göre konum atıyor. Ancak `GUARD` konumu hook'lara açık değil; hikâye adımı
+  gerektiriyor. Çalışma zamanında yalnız kod okumasıyla doğrulandı, oyunda gözlenmedi.
+- **Ana bulgu, karşılaştırma:** Sv8 kasa 0 ile 3. günde; kira 1308/gün. Yukarıdaki (B) tablosu ile tutarlı.
 
 ## (C) EKLENEBİLİR FİKİRLER
 
