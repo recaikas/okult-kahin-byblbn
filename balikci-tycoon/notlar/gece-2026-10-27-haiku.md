@@ -82,6 +82,8 @@ düşürülmeli ya da o seviyede kapasite (tezgâh/işçi) otomatik artmalı.
 Sınırlar: oyuncu balık tutmuyor, zone 0 dışındaki bölgeler sadece hamal ile dolduruldu, Sahil Lokantası / hizmet binaları / kontratlar dahil değil.
 - **Vapur + yağmur aynı anda (00:00 turu):** `BT.ferry.call(6)` ve `BT.wx.start()` aynı günde çağrıldı; ikisi de `true` döndü,
   gün hatasız bitti (`ERRS []`). Tip sayımında taraftarlar (`fan_*`), bastonlu (`amca_k`, `nine_*`) ve parodi (`p_kokarca`) müşteriler göründü.
+- **İngilizce mod (1 gün, 00:17):** `BT.setLang('en')` ile bir gün hatasız (`ERRS []`); parodi `p_gobek`, `okan`, `selin` ve taraftar tipleri göründü.
+- **`BT.ferry.call()` `false` dönebiliyor:** Vapur zaten yoldaysa çağrı reddedilir (`FERRY.ph` doluyken). Bu tasarım gereği; test yazarken dikkat edilmeli.
 - **Parodi konuklar (statik kontrol):** `specials.js` içinde 22 parodi kaydının tamamında TR ve EN metin sayısı eşit, eksik çeviri yok.
 - **Gözcü Kulübesi / Alp Er Tunga (kısmen doğrulandı):** Alp'in kulübeyi takip ettiği kod okumasıyla doğrulandı: `guardPlace()`
   (game.js ~14309) her karede kulübe kapısına göre konum atıyor. Ancak `GUARD` konumu hook'lara açık değil; hikâye adımı
