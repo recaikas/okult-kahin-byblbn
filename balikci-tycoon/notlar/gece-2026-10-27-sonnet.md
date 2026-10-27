@@ -273,4 +273,4 @@ Sonuç: bölge Sv ve müdür/pazarlık dışında kalan yükseltmelerin çoğu y
 - 20:5x UTC — B1–B7, UX, C: bölüm seviyesi/ilerleme/reklam/lokanta/vapur A-B ölçümleri; stres testi temiz.
 
 
-**Ölçülmeyenler / sonraki tur:** (gerçek tuş girişiyle ilk 30 dk elle oyun süresi, Ticaret Ofisi (kontrat/borsa/Lisans: gün 100'de 90k lisansla gelir 102k'ya çıktı), Depo/Hal zinciri, Ağ Vinci, Panayır günü, çok dilli (EN) metin taşmaları, gerçek telefonda FPS.
+**Ölçülmeyenler / sonraki tur:** gerçek tuş girişiyle ilk 30 dk elle oyun süresi; Ticaret Ofisi (kontrat/borsa/Lisans: gün 100'de 90k lisansla gelir 102k'ya çıktı), Depo/Hal zinciri, Ağ Vinci, Panayır günü, çok dilli (EN) metin taşmaları, gerçek telefonda FPS.
