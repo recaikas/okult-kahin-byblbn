@@ -85,7 +85,12 @@ Sınırlar: oyuncu balık tutmuyor, zone 0 dışındaki bölgeler sadece hamal i
 - **İngilizce mod (1 gün, 00:17):** `BT.setLang('en')` ile bir gün hatasız (`ERRS []`); parodi `p_gobek`, `okan`, `selin` ve taraftar tipleri göründü.
 - **`BT.ferry.call()` `false` dönebiliyor:** Vapur zaten yoldaysa çağrı reddedilir (`FERRY.ph` doluyken). Bu tasarım gereği; test yazarken dikkat edilmeli.
 - **Eğitim kapısı (test düzeneği hatası, ilk taslakta):** `S.ctrl` yürüme eğitimi durumudur (0 = öğreniyor, 1 = geçiş, 2 = normal). Bot hiç yürümediği için ilk turlarda `ctrl` 0 kaldı; vergi memuru (`ctrl === 2` şartı), gözcü (`gzBlocked`), evcil hayvanlar bu sürede kapalıydı. İlk denge tablolarındaki vergi (0) bu yüzden düşük. Düzeltme: `S.ctrl = 2` ile tekrar ölçülüyor. Gerçek oyuncu yürüyerek 2'ye geçer.
-- **Kira kısmi ödemesi borç olmadan siliniyor:** `rentDayEnd()` (game.js ~8844) ödenmeyen kısmı `Math.min(S.cash, tot)` ile kesiyor ve kalanı hiçbir yere yazmıyor. Kasa 0 iken oyuncu kiranın tamamını bedavaya kapatıyor (15 gün testte Sv8 kasa 0, kira 842–1308 "ödendi" gibi kayboldu; ödenen 0 değil ama yazılmayan kısım borca dönmedi). Bu bir denge/tutarlılık hatası olabilir.
+- **Kira kısmi ödemesi borç olmadan siliniyor:** `rentDayEnd()` (game.js ~8844) ödenebilecek kadarını (`Math.min(S.cash, tot)`) kasadan
+  düşüyor; kalan kısım hiçbir yere yazılmıyor. Kasa 0 iken kira fiilen bedava. Gösterim: gün kartında "kısmi" yazıyor, ama kalan borç yok.
+  Denge/tutarlılık açısından düzeltilmeli (ya borç olarak saklanmalı ya da kasa 0 iken kiranın ödenmemesi açıkça belirtilmeli).
+- **Sahil Lokantası (açılamadı, test kurulumu):** Bölge (`BT.lok.Z` = 4) açıldı, ama `BT.lok.open()` ve `BT.lok.buy('lok_open')` false
+  döndü; `why` boş. Hangi ön koşulun eksik olduğu doğrulanamadı. Oyun içi yoldan (itibar/ön koşul) açmak gerekiyor; bir sonraki turda denenecek.
+  Not: `BT.lok.whyNot('lok')` bir sipariş nesnesi bekliyor, metin değil; bu benim kullanım hatamdı, oyun hatası değil.
 - **İflas testi (Sv8, 15 gün, `S.ctrl = 2`, 02:04):** Kasa 0'da kaldı ama oyun bitmedi (`ERRS []`). Vergi memuru 7. ve 14. günlerde geldi
   ve 547 ve 310 aldı (satıştan, ziyaret sırasında). Yani vergi, gelir oldukça borca dönmedi; "son hafta mühür" koşulu gerçekleşmedi.
   Kira ise her gün kısmen (kasa kadar) ödendi, kalanı silindi. Sonuç: kasası boş bir oyuncu da oyunu sürdürebiliyor; batma koşulu
