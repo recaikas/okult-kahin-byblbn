@@ -1,5 +1,6 @@
 /* v2.15 — vergi borcu: ödenemeyen borca yazılır ve her hafta ikiye katlanır (×2, ×4); 4. ziyarette en eski borç
-   ödenemezse liman mühürlenir → "Liman Battı" gazetesi → kart → ana menü, kayıt silinir. Kaçışan müşteriler ve
+   ödenemezse liman mühürlenir → "Liman Battı" gazetesi → HACİZ kartı → ana menü. v2.26.2: kayıt silinmez; kasaya el konur,
+   borç silinir, itibar %20 düşer, OYNA ile kaldığı günden devam edilir. Kaçışan müşteriler ve
    çalışanlar her hafta farklı replik söyler (20 + 20, iki dil). İsteğe bağlı: node test-borc.js <görüntü klasörü> */
 const { chromium } = require('./test-offline');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -45,19 +46,25 @@ const SHOT = process.argv[2];
   let over = false;
   for (let i = 0; i < 90 && !over; i++) { await sleep(1000); over = await p.evaluate(() => BT.tax.over()); if (SHOT && !R.s2 && await p.evaluate(() => BT.tax.st().overT !== undefined)) { R.s2 = 1; await sleep(1200); await p.screenshot({ path: SHOT + '/borc-2-muhur.png' }); } }
   ok(over, 'liman mühürlenmedi');
-  R.slot = await p.evaluate(() => localStorage.getItem('balikci_slot_1') !== null);
-  ok(!R.slot, 'kayıt silinmedi');
+  R.slot = await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('balikci_slot_1') || 'null'); return s && { cash: s.cash, debt: JSON.stringify(s.tax && s.tax.debt), day: s.day && s.day[0] }; });
+  ok(R.slot && R.slot.cash === 0 && R.slot.debt === '[]', 'haciz kaydı yanlış (kayıt silinmemeli, kasa 0, borç boş) ' + JSON.stringify(R.slot));
   for (let i = 0; i < 3; i++) {
     await sleep(3200); if (SHOT) await p.screenshot({ path: SHOT + '/borc-3-gazete' + i + '.png' });
     for (let k = 0; k < 3; k++) { await p.click('#introScr').catch(() => {}); await sleep(250); }
   }
   for (let i = 0; i < 20 && await p.evaluate(() => document.getElementById('endScr').classList.contains('hidden')); i++) { await p.click('#introScr').catch(() => {}); await sleep(500); }
   R.card = await p.evaluate(() => ({ vis: !document.getElementById('endScr').classList.contains('hidden'), t: document.getElementById('endT').textContent }));
-  ok(R.card.vis && /LİMAN BATTI|HARBOUR SANK/.test(R.card.t), 'oyun sonu kartı yok ' + JSON.stringify(R.card));
+  ok(R.card.vis && /HACİZ|SEIZED/.test(R.card.t), 'oyun sonu kartı yok ' + JSON.stringify(R.card));
   if (SHOT) await p.screenshot({ path: SHOT + '/borc-4-kart.png' });
   await p.click('#endGo'); await sleep(800);
   R.menu = await p.evaluate(() => ({ start: !document.getElementById('startScreen').classList.contains('hidden'), started: BT.S.started, over: BT.tax.over() }));
   ok(R.menu.start && !R.menu.started && !R.menu.over, 'ana menüye dönmedi ' + JSON.stringify(R.menu));
+  /* OYNA: aynı kayıttan devam */
+  await p.click('#playBtn'); await sleep(600);
+  await p.evaluate(() => { const a = document.querySelector('#autoOpts button[data-m="10"]'); if (a && a.offsetParent) a.click(); });
+  await sleep(900);
+  R.cont = await p.evaluate(() => ({ started: BT.S.started, day: BT.day.n, cash: BT.S.cash, debt: JSON.stringify(BT.tax.q().debt), over: BT.tax.over() }));
+  ok(R.cont.started && R.cont.day >= 7 && R.cont.debt === '[]' && !R.cont.over, 'hacizden sonra oyuna devam edilemedi ' + JSON.stringify(R.cont));
   await b.close();
   console.log(JSON.stringify({ R, errs }, null, 1));
   console.log(fail.length || errs.length ? 'BORC_FAIL ' + JSON.stringify(fail) : 'BORC_OK');

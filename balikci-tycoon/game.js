@@ -32,7 +32,7 @@ var STR = {
     welcomeCo: 'Hayırlı olsun! {n} kapılarını açtı.', tapStart: '▶ BAŞLAMAK İÇİN DOKUN', skip: 'ATLA ▶▶',
     dayScore: 'Skor (toplam balık)', dayRank: '{s} • {r}. sıra', fishN: '{n} balık',
     tag: 'KÜÇÜK İSKELEDEN BÜYÜK LİMANA',
-    langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM', taxWarn: '🎩 Yarın vergi memuru Haşmet Bey limana uğrayacak…', taxPaid: '🧾 Vergi makbuzu: {n} ürün · −{v}', taxName: 'Vergi Memuru Haşmet Bey', guardLbl: 'Alp Er Tunga · nöbette', dolphLbl: '🐬 Yunus seni çağırıyor', dolphHint: '🐬 İskelenin batı kıyısında bir yunus sıçrıyor… yanına git!', dolphHintN: '🐬 İskelenin kuzey ucunda bir yunus sıçrıyor… yanına git!', taxWarnDebt: '🎩 Yarın Haşmet Bey geliyor! Faiziyle borcun: {v}. Kasada para olsun!', taxWarnLast: '⚠ SON HAFTA! Yarın {v} borcunu ödeyemezsen liman mühürlenir!', taxDebt: '📕 Ödenemeyen vergi borca yazıldı: {v}. Haftaya iki katı!', taxDebtOff: '✅ Haşmet Bey\'e borcun kapandı', overK: 'OYUN BİTTİ', overT: 'LİMAN BATTI', overBy: 'HAŞMET BEY HER ZAMAN GELİR', overGo: 'ANA MENÜ', overP: '{c} vergi borcu yüzünden mühürlendi. {d} gün boyunca {s} müşteriye balık sattın. Hamsiler hâlâ koyda… belki bir gün, yeniden.', visLbl: 'GRAFİK', visClassic: 'DÜŞÜK', visFine: 'YÜKSEK', gfxAsk: 'Oyun bu cihazda biraz takılıyor. Grafiği DÜŞÜK\'e alalım mı? Daha akıcı olur; istediğin zaman Ayarlar › GRAFİK\'ten geri alabilirsin.', gfxAskYes: 'DÜŞÜK\'E AL', gfxLowOn: 'Grafik: DÜŞÜK',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SES', zoomLbl: 'GÖRÜNTÜ / ZOOM', taxWarn: '🎩 Yarın vergi memuru Haşmet Bey limana uğrayacak…', taxRiskAsk: '🎩 Dikkat: Haşmet Bey {d} gün içinde gelecek ve yaklaşık {v} isteyecek. Bu alımdan sonra kasada o kadar kalmıyor; ödenmeyen vergi borca yazılır, borç büyüyüp üç hafta ödenmezse liman mühürlenir (haciz). Yine de alınsın mı?', taxRiskYes: 'YİNE DE AL', taxPaid: '🧾 Vergi makbuzu: {n} ürün · −{v}', taxName: 'Vergi Memuru Haşmet Bey', guardLbl: 'Alp Er Tunga · nöbette', dolphLbl: '🐬 Yunus seni çağırıyor', dolphHint: '🐬 İskelenin batı kıyısında bir yunus sıçrıyor… yanına git!', dolphHintN: '🐬 İskelenin kuzey ucunda bir yunus sıçrıyor… yanına git!', taxWarnDebt: '🎩 Yarın Haşmet Bey geliyor! Faiziyle borcun: {v}. Kasada para olsun!', taxWarnLast: '⚠ SON HAFTA! Yarın {v} borcunu ödeyemezsen liman mühürlenir!', taxDebt: '📕 Ödenemeyen vergi borca yazıldı: {v}. Haftaya iki katı!', taxDebtOff: '✅ Haşmet Bey\'e borcun kapandı', overK: 'LİMAN MÜHÜRLENDİ', overT: 'HACİZ!', overBy: 'HAŞMET BEY HER ZAMAN GELİR', overGo: 'ANA MENÜ', overP: '{c} vergi borcu yüzünden mühürlendi. Haşmet Bey kasadaki {v} paraya el koydu; borç silindi, itibar %20 düştü. {d} günlük emeğin duruyor: ANA MENÜ › OYNA ile kaldığın yerden devam et — bu sefer vergiye para ayır!', visLbl: 'GRAFİK', visClassic: 'DÜŞÜK', visFine: 'YÜKSEK', gfxAsk: 'Oyun bu cihazda biraz takılıyor. Grafiği DÜŞÜK\'e alalım mı? Daha akıcı olur; istediğin zaman Ayarlar › GRAFİK\'ten geri alabilirsin.', gfxAskYes: 'DÜŞÜK\'E AL', gfxLowOn: 'Grafik: DÜŞÜK',
     /* v2.16 — Liman Gazetesi özel sayı */
     gzBoy: 'Gazeteci Çocuk', gzYell: 'Son dakika! Liman Gazetesi özel sayı!', gzYellMorn: 'Gazeteee! Liman Gazetesi!', gzOnGround: 'Özel sayı!', gzFame: 'Şeref Panosu · {n}/{m}', gzArch: 'LİMAN GAZETESİ ARŞİVİ', gzArchN: '{a}/{n} sayı', gzDay: '{d}. GÜN', gzRead: 'OKU', gzShareBtn: 'PAYLAŞ', gzLockedD: 'Bu sayı henüz çıkmadı', gzMissed: 'Bu sayı kaçırıldı', gzMissedD: 'Bu kayıtta o gün çoktan geçmişti', gzOpenRow: 'Açılış sayısı', gzCh1Row: 'Bölüm 1 sonu', gzShareTxt: 'Liman Gazetesi\'nde manşet oldum! Hamsi Koyu\'nu sen de oyna:', gzShareTag: 'KARADENİZ\'DE BİR BALIKÇI LİMANI', gzSaved: '📰 Gazete görseli indirildi', gzShareErr: 'Görsel hazırlanamadı',
     resetAsk: 'Tüm ilerleme silinsin mi?',
@@ -252,7 +252,7 @@ var STR = {
     welcomeCo: '{n} is open for business!', tapStart: '▶ TAP TO BEGIN', skip: 'SKIP ▶▶',
     dayScore: 'Score (total fish)', dayRank: '{s} • #{r}', fishN: '{n} fish',
     tag: 'FROM A TINY PIER TO A GRAND HARBOR',
-    langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM', taxWarn: '🎩 Tomorrow the tax collector Mr. Haşmet will visit the harbour…', taxPaid: '🧾 Tax receipt: {n} items · −{v}', taxName: 'Tax Collector Mr. Haşmet', guardLbl: 'Alp Er Tunga · on watch', dolphLbl: '🐬 The dolphin is calling you', dolphHint: '🐬 A dolphin is leaping by the west edge of the pier… go to it!', dolphHintN: '🐬 A dolphin is leaping at the north end of the pier… go to it!', taxWarnDebt: '🎩 Mr. Haşmet comes tomorrow! Your debt with interest: {v}. Keep cash in the safe!', taxWarnLast: '⚠ LAST WEEK! If you can\'t pay your {v} debt tomorrow, the harbour will be sealed!', taxDebt: '📕 Unpaid tax added to your debt: {v}. It doubles next week!', taxDebtOff: '✅ Your debt to Mr. Haşmet is cleared', overK: 'GAME OVER', overT: 'THE HARBOUR SANK', overBy: 'MR. HAŞMET ALWAYS COMES BACK', overGo: 'MAIN MENU', overP: '{c} was sealed over unpaid taxes. For {d} days you sold fish to {s} customers. The anchovies are still in the bay… maybe one day, again.', visLbl: 'GRAPHICS', visClassic: 'LOW', visFine: 'HIGH', gfxAsk: 'The game is stuttering a little on this device. Switch graphics to LOW? It will run smoother; you can change it back any time in Settings › GRAPHICS.', gfxAskYes: 'SWITCH TO LOW', gfxLowOn: 'Graphics: LOW',
+    langLbl: 'DİL / LANGUAGE', soundLbl: 'SOUND', zoomLbl: 'VIEW / ZOOM', taxWarn: '🎩 Tomorrow the tax collector Mr. Haşmet will visit the harbour…', taxRiskAsk: '🎩 Careful: Mr. Haşmet comes in {d} day(s) and will ask for about {v}. After this purchase you won\'t have that much; unpaid tax becomes debt, and debt left for three weeks gets the harbour sealed (seizure). Buy anyway?', taxRiskYes: 'BUY ANYWAY', taxPaid: '🧾 Tax receipt: {n} items · −{v}', taxName: 'Tax Collector Mr. Haşmet', guardLbl: 'Alp Er Tunga · on watch', dolphLbl: '🐬 The dolphin is calling you', dolphHint: '🐬 A dolphin is leaping by the west edge of the pier… go to it!', dolphHintN: '🐬 A dolphin is leaping at the north end of the pier… go to it!', taxWarnDebt: '🎩 Mr. Haşmet comes tomorrow! Your debt with interest: {v}. Keep cash in the safe!', taxWarnLast: '⚠ LAST WEEK! If you can\'t pay your {v} debt tomorrow, the harbour will be sealed!', taxDebt: '📕 Unpaid tax added to your debt: {v}. It doubles next week!', taxDebtOff: '✅ Your debt to Mr. Haşmet is cleared', overK: 'HARBOUR SEALED', overT: 'SEIZED!', overBy: 'MR. HAŞMET ALWAYS COMES BACK', overGo: 'MAIN MENU', overP: '{c} was sealed over unpaid taxes. Mr. Haşmet seized the {v} in the till; the debt is cleared and reputation fell by 20%. Your {d} days of work are kept: MAIN MENU › PLAY to carry on — and keep money aside for tax this time!', visLbl: 'GRAPHICS', visClassic: 'LOW', visFine: 'HIGH', gfxAsk: 'The game is stuttering a little on this device. Switch graphics to LOW? It will run smoother; you can change it back any time in Settings › GRAPHICS.', gfxAskYes: 'SWITCH TO LOW', gfxLowOn: 'Graphics: LOW',
     /* v2.16 — Harbour Gazette special issue */
     gzBoy: 'Paperboy', gzYell: 'Breaking news! Harbour Gazette special issue!', gzYellMorn: 'Paaaper! Harbour Gazette!', gzOnGround: 'Special issue!', gzFame: 'Wall of Fame · {n}/{m}', gzArch: 'HARBOUR GAZETTE ARCHIVE', gzArchN: '{a}/{n} issues', gzDay: 'DAY {d}', gzRead: 'READ', gzShareBtn: 'SHARE', gzLockedD: 'This issue is not out yet', gzMissedD: 'That day had long passed in this save', gzMissed: 'You missed this issue', gzOpenRow: 'First issue', gzCh1Row: 'End of Chapter 1', gzShareTxt: 'I made the Harbour Gazette headlines! Play Hamsi Koyu too:', gzShareTag: 'A FISHING HARBOUR ON THE BLACK SEA', gzSaved: '📰 Newspaper image downloaded', gzShareErr: 'Could not prepare the image',
     resetAsk: 'Erase all progress?',
@@ -8819,7 +8819,22 @@ function openBar(t) {
 function purchase(cost, blocked, fn) {
   if (blocked) { sfx.bad(); return false; }
   if (S.cash < cost) { toast(T('noMoney')); sfx.bad(); return false; }
+  var need = taxNeedSoon();                                      /* v2.26.2: vergi parası kalmayacaksa bir kez sor */
+  if (need > 0 && S.cash - cost < need && Date.now() - taxAskT > 90000) {
+    taxAskT = Date.now();
+    ask(T('taxRiskAsk', { v: money(need), d: taxDaysLeft() }), T('taxRiskYes'), function () { purchase(cost, false, fn); });
+    return false;
+  }
   S.cash -= cost; fn(); save(); renderBar(); return true;
+}
+/* yakında istenecek vergi: borç varsa bir sonraki ziyarette istenen + biriken; borç yoksa yalnız vergi günü yarın/bugünse */
+var taxAskT = -1e9;
+function taxDaysLeft() { var r = TAX_EVERY - (day.n % TAX_EVERY); return r === TAX_EVERY ? (taxQ().last === day.n ? TAX_EVERY : 0) : r; }
+function taxNeedSoon() {
+  if (!S.started || S.ctrl !== 2) return 0;
+  var q = taxQ(), debt = taxDebtNext(), dl = taxDaysLeft();
+  if (!debt && dl > 1) return 0;
+  return Math.round(debt + (q.due || 0));
 }
 function areaLevelEffect(a) { var z = AREAS.indexOf(a); return T('lvEffect') + (z > 0 && a.cost ? ' • ' + T('rentUp', { a: money(rentOf(z, a.lvl)), b: money(rentOf(z, a.lvl + 1)) }) : ''); }
 /* v2.24-deneme — DÜKKÂN KİRASI: açık (kilidi kalkmış) her bölge günlük kira öder — Balık Pazarı, Fümehane, Balıkçı Mutfağı ve Sahil Lokantası
@@ -14942,11 +14957,16 @@ function gameOverTax() {
   if (CUE.on) cueStop(1.2);
   closeBar(); dismissCustomers();
   submitScore(true);                                            /* skor tablosundaki yer kalır */
-  var paper = overPaper(), n = curSlot;
-  overStat = { c: S.company || '', d: day.n, s: S.served | 0 };
+  var paper = overPaper();
+  /* v2.26.2 — HACİZ: liman mühürlenince kayıt artık SİLİNMEZ (bot testinde 34 günlük oyun, 10 personel bir anda gidiyordu).
+     Haşmet Bey kasadaki paranın tamamına el koyar, bütün vergi borcu silinir, itibar %20 düşer; oyun bu hâliyle kaydedilir ve
+     oyuncu ANA MENÜ › OYNA ile kaldığı yerden devam eder. Gazete ve kart aynı kalır (ders verici an). */
+  var seized = Math.max(0, Math.floor(S.cash)), q = taxQ();
+  S.cash = 0; q.debt = []; q.items = 0; q.due = 0; q.by = {}; q.last = day.n; q.vis = 0; q.vsh = 0; q.vv = 0; q.vset = 0;
+  S.rep = Math.max(0, Math.round(S.rep * 0.8));
+  overStat = { c: S.company || '', d: day.n, s: S.served | 0, v: seized };
   takeHarborSnap();
-  if (n) { Store.del(slotKey(n)); gzWipe(n); if (parseInt(Store.get(LAST_KEY), 10) === n) Store.del(LAST_KEY); }
-  curSlot = 0;                                                  /* save() artık hiçbir yuvaya yazmaz */
+  save();
   openIntro(showOverCard, paper);
   el.introGate.classList.add('hidden'); el.introScr.classList.remove('gate');
   musicPlay('menu'); introScene(0);
@@ -14955,7 +14975,7 @@ var overStat = null;
 function showOverCard() {
   var o = overStat || { c: '', d: day.n, s: 0 };
   el.endK.textContent = T('overK'); el.endT.textContent = T('overT'); el.endBy.textContent = T('overBy'); el.endGo.textContent = T('overGo');
-  el.endP.textContent = T('overP', { c: o.c || 'Hamsi Koyu', d: o.d, s: o.s });
+  el.endP.textContent = T('overP', { c: o.c || 'Hamsi Koyu', d: o.d, s: o.s, v: money(o.v || 0) });
   el.endBy.style.animation = 'none'; void el.endBy.offsetWidth; el.endBy.style.animation = '';
   el.endScr.classList.add('over'); el.endScr.classList.remove('hidden'); syncPause(); musicPlay('menu', SONG_CREDITS);
 }
@@ -16379,11 +16399,18 @@ function iPickBox(a, s, dt, filt) {
     fly(s.bx, s.by, 6, a.x, a.y, carryTopZ(a, a.carry.length), it, 0.26); sfx.pick();
   });
 }
+/* v2.26.2: sandıktan oyuncunun eline yalnız bölgenin kesim masasının alabileceği kadar balık gelir. Eskiden hasıra giderken sandığın
+   yanından geçen oyuncunun eli 8 balıkla doluyor, hasırdan fileto alamıyordu; masa da doluysa tek çıkış çöp kovasıydı (bot testi). */
+function boxTake(s) {
+  var t = zoneTable(s.z);
+  if (!t || AREAS[t.z].locked) return null;
+  return function (it) { return it.k !== 'fish' || tableRoom(t, it.f, player) > 0; };
+}
 function emekPlayerBox(dt) {
   var nets = allNets(), acted = false;
   for (var i = 0; i < nets.length; i++) {
     var s = nets[i]; if (!s.box.length || !emNetOn(s) || zoneAuto(s.z)) continue;
-    if (nearSt('b' + i, s.bx, s.by, 0.8)) acted = iPickBox(player, s, dt) || acted;
+    if (nearSt('b' + i, s.bx, s.by, 0.8)) acted = iPickBox(player, s, dt, boxTake(s)) || acted;
   }
   return acted;
 }
@@ -16432,7 +16459,8 @@ function emStations() {
   for (i = 0; i < nets.length; i++) {
     s = nets[i]; if (!emNetOn(s) || zoneAuto(s.z)) continue;
     emSt(L, i < spots.length ? 'n' + i : 'x' + (i - spots.length), s.stock.length && fits(player, s.stock[s.stock.length - 1]), s.x, s.y + 0.9, 1.6, 0.7);
-    emSt(L, 'b' + i, s.box.length && emAnyFits(s.box), s.bx, s.by, 0.8, 0.5);
+    var bt = boxTake(s);
+    emSt(L, 'b' + i, s.box.length && emAnyFits(bt ? s.box.filter(bt) : s.box), s.bx, s.by, 0.8, 0.5);
   }
   for (i = 0; i < tables.length; i++) {
     tb = tables[i]; if (AREAS[tb.z].locked || zoneAuto(i)) continue;
@@ -21155,7 +21183,7 @@ Object.assign(STR.en, {
   forgetDone: 'Online data deleted; a new anonymous ID was created'
 });
 var FB_OUTBOX = 'balikci_feedback_outbox', FB_MAX = 20, FB_LEN = 500, FB_GAP = 61000, FB_CATS = ['bug', 'idea', 'love'];
-var FB_VER = '2.21';                                    /* görüşle birlikte giden oyun sürümü */
+var FB_VER = '2.26';                                    /* görüşle birlikte giden oyun sürümü */
 var fbScr = document.getElementById('fbScr'), fbCard = document.getElementById('fbCard'), fbText = document.getElementById('fbText'),
   fbCount = document.getElementById('fbCount'), fbErrEl = document.getElementById('fbErr'), fbSendBtn = document.getElementById('fbSend');
 var fb = { stars: 0, cat: '', busy: false, lastSent: 0, flushBusy: false, stop: false, timer: 0, toastTm: 0 };
@@ -21353,7 +21381,7 @@ window.BT = {
   yardFolk: function () { return yardFolk; }, roadFlow: function () { return roadFlow(); }, ui: { openSettings: openSettings, openPauseMenu: openPauseMenu, openStallScreen: openStallScreen, openHal: openHal, openOffice: openOffice, openChapter: openChapter, fbShow: fbShow, fbClose: fbClose, showChapterCard: showChapterCard, closeSettings: function () { el.settingsScreen.classList.add('hidden'); syncPause(); } }, mkt: { corpAction: function (c, k) { corpAction(c, k); }, ownPct: function (c) { return ownPct(c); }, shares: function (c) { return shares(c); }, migrate: function (d) { return migrateMarket(d); }, newMarket: function () { return newMarket(); } }, T: function (k) { return T(k); }, rushNow: function () { return rushNow(); }, mgrAct: function () { return mgrAct; }, showChapterCard: function () { showChapterCard(); }, chapterGroups: function () { return chapterGroups(); }, ACH_IDS: function () { return (typeof ACH !== 'undefined' ? ACH : []).map(function (q) { return q.id; }); },
   cue: { play: function (id) { cuePlay(id); }, stop: function () { cueStop(0.3); }, on: function () { return CUE.on; }, held: function () { return !!music.held; }, pos: function () { return { si: music.si, li: music.li, bar: music.bar }; } },
   HFX: HFX,
-  tax: { q: function () { return taxQ(); }, st: function () { return TAX; }, start: function () { taxStart(); }, lines: TAX_LINES, mgrLines: TAX_MGR_LINES, collect: function () { taxCollect(); }, mgrAct: function () { return mgrAct; }, debtLines: TAX_DEBT_LINES, fleeLines: TAX_FLEE_LINES, workLines: TAX_WORK_LINES, over: function () { return overOn; } },
+  tax: { q: function () { return taxQ(); }, st: function () { return TAX; }, start: function () { taxStart(); }, lines: TAX_LINES, mgrLines: TAX_MGR_LINES, collect: function () { taxCollect(); }, mgrAct: function () { return mgrAct; }, debtLines: TAX_DEBT_LINES, fleeLines: TAX_FLEE_LINES, workLines: TAX_WORK_LINES, over: function () { return overOn; }, need: function () { return taxNeedSoon(); } },
   CTYPES: CTYPES, S: S, safe: safe, watchN: function () { return WATCH_N; }, workerWatch: workerWatch, BINS: BINS, HUT: HUT, DEPOT: DEPOT, WHALL: WHALL, office: office, MEYDAN: MEYDAN, BRIDGE: BRIDGE, depotCount: function () { return depotCount(); }, openHal: function () { openHal(); }, DECOR: DECOR, decorClearance: function () { return decorClearance(); },
   trayFull: function (k) { var c = counterByKey(k); return c ? trayFull(c) : null; }, zoneAuto: function (z) { return zoneAuto(z); },
   zoneChain: function (z) { return zoneChain(z); }, setZoneAuto: function (z, on) { setZoneAuto(z, on); }, reassignWorkers: function () { reassignWorkers(); }, player: player, spots: spots, tables: tables, smoker: smoker, counters: counters,
